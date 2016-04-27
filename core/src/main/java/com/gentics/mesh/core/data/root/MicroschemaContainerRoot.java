@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -37,9 +38,30 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	MicroschemaContainer create(Microschema microschema, User user);
 
 	/**
+	 * Check whether the given microschema is assigned to this root node.
+	 * 
+	 * @param microschema
+	 * @return
+	 */
+	boolean contains(MicroschemaContainer microschema);
+
+	/**
 	 * Get the microschema container version from the given reference
 	 * @param reference reference
 	 * @return
 	 */
 	Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference);
+
+	/**
+	 * Get the microschema container version from the given reference. Ignore
+	 * the version number from the reference, but take the version from the
+	 * release instead
+	 * 
+	 * @param reference
+	 *            reference
+	 * @param release
+	 *            release
+	 * @return
+	 */
+	Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference, Release release);
 }

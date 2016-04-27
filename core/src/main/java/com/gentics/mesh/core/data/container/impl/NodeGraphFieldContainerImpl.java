@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -36,7 +37,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -66,8 +66,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void setSchemaContainerVersion(SchemaContainerVersion schema) {
-		setSingleLinkOutTo(schema.getImpl(), HAS_SCHEMA_CONTAINER_VERSION);
+	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> version) {
+		setSingleLinkOutTo(version.getImpl(), HAS_SCHEMA_CONTAINER_VERSION);
 	}
 
 	@Override
@@ -96,8 +96,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields, FieldSchemaContainer schema) {
-		super.updateFieldsFromRest(ac, restFields, schema);
+	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
+		super.updateFieldsFromRest(ac, restFields);
 
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		if (restFields.hasField(segmentFieldName)) {
@@ -173,7 +173,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void clone(NodeGraphFieldContainer container) {
-		List<GraphField> otherFields = container.getFields(container.getSchemaContainerVersion().getSchema());
+		List<GraphField> otherFields = container.getFields();
 
 		for (GraphField graphField : otherFields) {
 			graphField.cloneTo(this);
@@ -199,7 +199,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void validate() {
 		Schema schema = getSchemaContainerVersion().getSchema();
-		Map<String, GraphField> fieldsMap = getFields(schema).stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
+		Map<String, GraphField> fieldsMap = getFields().stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
 
 		schema.getFields().stream().forEach(fieldSchema -> {
 			GraphField field = fieldsMap.get(fieldSchema.getName());

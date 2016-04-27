@@ -35,7 +35,6 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		route("/*").handler(springConfiguration.authHandler());
-		addSchemaProjectHandlers();
 
 		addDiffHandler();
 		addChangesHandler();
@@ -57,24 +56,6 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
-		});
-	}
-
-	private void addSchemaProjectHandlers() {
-		Route route = route("/:schemaUuid/projects/:projectUuid").method(PUT).produces(APPLICATION_JSON);
-		route.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
-			String schemaUuid = ac.getParameter("schemaUuid");
-			String projectUuid = ac.getParameter("projectUuid");
-			crudHandler.handleAddProjectToSchema(ac, schemaUuid, projectUuid);
-		});
-
-		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE).produces(APPLICATION_JSON);
-		route.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
-			String schemaUuid = ac.getParameter("schemaUuid");
-			String projectUuid = ac.getParameter("projectUuid");
-			crudHandler.handleRemoveProjectFromSchema(ac, projectUuid, schemaUuid);
 		});
 	}
 

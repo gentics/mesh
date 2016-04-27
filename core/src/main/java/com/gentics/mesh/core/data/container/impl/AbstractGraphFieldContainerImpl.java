@@ -173,7 +173,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 		// Create a new micronode and assign the given schema to it
 		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
-		micronode.setMicroschemaContainerVersion(microschema);
+		micronode.setSchemaContainerVersion(microschema);
 		if (existingMicronode != null) {
 			micronode.clone(existingMicronode);
 
@@ -346,7 +346,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public void updateFieldsFromRest(InternalActionContext ac, FieldMap fieldMap, FieldSchemaContainer schema) {
+	public void updateFieldsFromRest(InternalActionContext ac, FieldMap fieldMap) {
+		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
 		//TODO: This should return an observable
 		// Initially all fields are not yet handled
 		List<String> unhandledFieldKeys = new ArrayList<>(fieldMap.size());
@@ -383,7 +384,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public List<GraphField> getFields(FieldSchemaContainer schema) {
+	public List<GraphField> getFields() {
+		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
 		List<GraphField> fields = new ArrayList<>();
 		for (FieldSchema fieldSchema : schema.getFields()) {
 			GraphField field = getField(fieldSchema);

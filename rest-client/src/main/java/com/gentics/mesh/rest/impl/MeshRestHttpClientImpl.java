@@ -45,6 +45,8 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -284,6 +286,46 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	public Future<GenericMessageResponse> deleteProject(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(DELETE, "/projects/" + uuid, GenericMessageResponse.class);
+	}
+
+	@Override
+	public Future<Schema> assignSchemaToProject(String projectName, String schemaUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
+		return handleRequest(PUT, "/" + projectName + "/schemas/" + schemaUuid, Schema.class);
+	}
+
+	@Override
+	public Future<Schema> unassignSchemaFromProject(String projectName, String schemaUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
+		return handleRequest(DELETE, "/" + projectName + "/schemas/" + schemaUuid, Schema.class);
+	}
+
+	@Override
+	public Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		return handleRequest(GET, "/" + projectName + "/schemas" + getQuery(parameters), SchemaListResponse.class);
+	}
+
+	@Override
+	public Future<Microschema> assignMicroschemaToProject(String projectName, String microschemaUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(microschemaUuid, "microschemaUuid must not be null");
+		return handleRequest(PUT, "/" + projectName + "/microschemas/" + microschemaUuid, Microschema.class);
+	}
+
+	@Override
+	public Future<Microschema> unassignMicroschemaFromProject(String projectName, String microschemaUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(microschemaUuid, "microschemaUuid must not be null");
+		return handleRequest(DELETE, "/" + projectName + "/microschemas/" + microschemaUuid, Microschema.class);
+	}
+
+	@Override
+	public Future<MicroschemaListResponse> findMicroschemas(String projectName, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		return handleRequest(GET, "/" + projectName + "/microschemas" + getQuery(parameters), MicroschemaListResponse.class);
 	}
 
 	@Override
@@ -630,27 +672,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public Future<Schema> addSchemaToProject(String schemaUuid, String projectUuid) {
-		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
-		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		return handleRequest(PUT, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaModel.class);
-	}
-
-	@Override
 	public Future<SchemaListResponse> findSchemas(QueryParameterProvider... parameters) {
 		return handleRequest(GET, "/schemas" + getQuery(parameters), SchemaListResponse.class);
-	}
-
-	@Override
-	public Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters) {
-		return handleRequest(GET, "/" + projectName + "/schemas" + getQuery(parameters), SchemaListResponse.class);
-	}
-
-	@Override
-	public Future<Schema> removeSchemaFromProject(String schemaUuid, String projectUuid) {
-		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
-		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		return handleRequest(DELETE, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaModel.class);
 	}
 
 	@Override
@@ -992,5 +1015,29 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			SchemaReference... schemaVersionReferences) {
 		return assignReleaseSchemaVersions(projectName, releaseUuid,
 				new SchemaReferenceList(Arrays.asList(schemaVersionReferences)));
+	}
+
+	@Override
+	public Future<MicroschemaReferenceList> getReleaseMicroschemaVersions(String projectName, String releaseUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+
+		return handleRequest(GET, "/" + projectName + "/releases/" + releaseUuid + "/microschemas", MicroschemaReferenceList.class);
+	}
+
+	@Override
+	public Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			MicroschemaReferenceList microschemaVersionReferences) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+
+		return handleRequest(PUT, "/" + projectName + "/releases/" + releaseUuid + "/microschemas", MicroschemaReferenceList.class, microschemaVersionReferences);
+	}
+
+	@Override
+	public Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			MicroschemaReference... microschemaVersionReferences) {
+		return assignReleaseMicroschemaVersions(projectName, releaseUuid,
+				new MicroschemaReferenceList(Arrays.asList(microschemaVersionReferences)));
 	}
 }

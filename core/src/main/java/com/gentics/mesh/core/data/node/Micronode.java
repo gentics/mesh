@@ -12,21 +12,6 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	public static final String TYPE = "micronode";
 
 	/**
-	 * Return the microschema container version that holds the microschema that is used in combination with this micronode.
-	 * 
-	 * @return microschema container version
-	 */
-	MicroschemaContainerVersion getMicroschemaContainerVersion();
-
-	/**
-	 * Set the microschema container version that is used in combination with this micronode.
-	 * 
-	 * @param microschema
-	 *            microschema container
-	 */
-	void setMicroschemaContainerVersion(MicroschemaContainerVersion microschema);
-
-	/**
 	 * Get the container of this micronode.
 	 *
 	 * @return container
@@ -40,4 +25,8 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	 * @param micronode micronode
 	 */
 	void clone(Micronode micronode);
+
+	@Override
+	MicroschemaContainerVersion getSchemaContainerVersion();
+	
 }

@@ -2,10 +2,11 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 
 import java.io.IOException;
 
@@ -14,6 +15,7 @@ import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -62,6 +64,8 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		microschema.validate();
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		MicroschemaContainerVersion version = getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+
+		microschema.setVersion(1);
 		container.setLatestVersion(version);
 		version.setName(microschema.getName());
 		version.setSchema(microschema);
@@ -107,12 +111,17 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 	@Override
 	public Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference) {
+		return fromReference(reference, null);
+	}
+
+	@Override
+	public Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference, Release release) {
 		if (reference == null) {
-			return Observable.error(error(INTERNAL_SERVER_ERROR, "Missing microschema reference"));
+			throw error(INTERNAL_SERVER_ERROR, "Missing microschema reference");
 		}
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
-		Integer version = reference.getVersion();
+		Integer version = release == null ? reference.getVersion() : null;
 		Observable<MicroschemaContainer> containerObs = null;
 		if (!isEmpty(microschemaName)) {
 			containerObs = findByName(microschemaName);
@@ -121,11 +130,35 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		}
 		// Return the specified version or fallback to latest version.
 		return containerObs.map(container -> {
-			if (version == null) {
-				return container.getLatestVersion();
-			} else {
-				return container.findVersionByRev(version);
+			if (container == null) {
+				throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
+						isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
 			}
+
+			MicroschemaContainerVersion foundVersion = null;
+
+			if (release != null) {
+				foundVersion = release.getVersion(container);
+			} else if (version != null) {
+				foundVersion = container.findVersionByRev(version);
+			} else {
+				foundVersion = container.getLatestVersion();
+			}
+
+			if (foundVersion == null) {
+				throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
+						isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
+			}
+			return foundVersion;
 		});
+	}
+
+	@Override
+	public boolean contains(MicroschemaContainer microschema) {
+		if (findByUuidSync(microschema.getUuid()) == null) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 }

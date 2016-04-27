@@ -536,6 +536,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertSuccess(migrationFuture);
 		expectResponseMessage(migrationFuture, "migration_invoked", "content");
 
+		// assign the new schema version to the release
+		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(concorde.getSchemaContainer().getUuid()));
+		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+				new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
+
 		// Wait for migration to complete
 		failingLatch(latch);
 
@@ -614,7 +619,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName("mynewproject");
 		ProjectResponse projectResponse = call(() -> getClient().createProject(createProject));
-		call(() -> getClient().addSchemaToProject(schemaContainer("folder").getUuid(), projectResponse.getUuid()));
+		call(() -> getClient().assignSchemaToProject(projectResponse.getName(), schemaContainer("folder").getUuid()));
 
 		NodeCreateRequest createNode = new NodeCreateRequest();
 		createNode.setLanguage("en");
@@ -643,7 +648,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName("mynewproject");
 		ProjectResponse projectResponse = call(() -> getClient().createProject(createProject));
-		call(() -> getClient().addSchemaToProject(schemaContainer("folder").getUuid(), projectResponse.getUuid()));
+		call(() -> getClient().assignSchemaToProject(projectResponse.getName(), schemaContainer("folder").getUuid()));
 
 		NodeCreateRequest createNode = new NodeCreateRequest();
 		createNode.setLanguage("en");
@@ -818,7 +823,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
 			Micronode micronode = vcardListField.createMicronode();
-			micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
+			micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 			micronode.createString("firstName").setString(testdata.v1());
 			micronode.createString("lastName").setString(testdata.v2());
 		}

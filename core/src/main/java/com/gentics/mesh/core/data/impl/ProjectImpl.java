@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BASE_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
@@ -30,12 +31,14 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
@@ -118,6 +121,17 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (root == null) {
 			root = getGraph().addFramedVertex(ProjectSchemaContainerRootImpl.class);
 			linkOut(root.getImpl(), HAS_SCHEMA_ROOT);
+		}
+		return root;
+	}
+
+	@Override
+	public MicroschemaContainerRoot getMicroschemaContainerRoot() {
+		MicroschemaContainerRoot root = out(HAS_MICROSCHEMA_ROOT).has(ProjectMicroschemaContainerRootImpl.class)
+				.nextOrDefaultExplicit(ProjectMicroschemaContainerRootImpl.class, null);
+		if (root == null) {
+			root = getGraph().addFramedVertex(ProjectMicroschemaContainerRootImpl.class);
+			linkOut(root.getImpl(), HAS_MICROSCHEMA_ROOT);
 		}
 		return root;
 	}

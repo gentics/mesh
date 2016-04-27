@@ -22,8 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -41,7 +41,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -169,7 +168,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		return obsSchemaContainer.flatMap(schemaContainer -> {
 
 			Observable<Tuple<SearchQueueBatch, Node>> obsTuple = db.noTrx(() -> {
-				Schema schema = schemaContainer.getLatestVersion().getSchema();
 				String body = ac.getBodyAsString();
 
 				NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
@@ -194,7 +192,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 							throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 						}
 						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release, requestUser);
-						container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+						container.updateFieldsFromRest(ac, requestModel.getFields());
 						// TODO add container specific batch
 						SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 						return Tuple.tuple(batch, node);

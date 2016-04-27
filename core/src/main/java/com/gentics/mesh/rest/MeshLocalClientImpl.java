@@ -44,6 +44,8 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -355,6 +357,48 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public Future<Schema> assignSchemaToProject(String projectName, String schemaUuid) {
+		LocalActionContextImpl<Schema> ac = createContext(Schema.class);
+		schemaCrudHandler.handleAddSchemaToProject(ac, schemaUuid);
+		return ac.getFuture();
+	}
+
+	@Override
+	public Future<Schema> unassignSchemaFromProject(String projectName, String schemaUuid) {
+		LocalActionContextImpl<Schema> ac = createContext(Schema.class);
+		schemaCrudHandler.handleRemoveSchemaFromProject(ac, schemaUuid);
+		return ac.getFuture();
+	}
+
+	@Override
+	public Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters) {
+		LocalActionContextImpl<SchemaListResponse> ac = createContext(SchemaListResponse.class, parameters);
+		schemaCrudHandler.handleReadProjectList(ac);
+		return ac.getFuture();
+	}
+
+	@Override
+	public Future<Microschema> assignMicroschemaToProject(String projectName, String microschemaUuid) {
+		LocalActionContextImpl<Microschema> ac = createContext(Microschema.class);
+		microschemaCrudHandler.handleAddMicroschemaToProject(ac, microschemaUuid);
+		return ac.getFuture();
+	}
+
+	@Override
+	public Future<Microschema> unassignMicroschemaFromProject(String projectName, String microschemaUuid) {
+		LocalActionContextImpl<Microschema> ac = createContext(Microschema.class);
+		microschemaCrudHandler.handleRemoveMicroschemaFromProject(ac, microschemaUuid);
+		return ac.getFuture();
+	}
+
+	@Override
+	public Future<MicroschemaListResponse> findMicroschemas(String projectName, QueryParameterProvider... parameters) {
+		LocalActionContextImpl<MicroschemaListResponse> ac = createContext(MicroschemaListResponse.class, parameters);
+		microschemaCrudHandler.handleReadProjectList(ac);
+		return ac.getFuture();
+	}
+
+	@Override
 	public Future<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class, parameters);
 		ac.setProject(projectName);
@@ -458,30 +502,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public Future<Schema> addSchemaToProject(String schemaUuid, String projectUuid) {
-		LocalActionContextImpl<Schema> ac = createContext(SchemaModel.class);
-		schemaCrudHandler.handleAddProjectToSchema(ac, schemaUuid, projectUuid);
-		return ac.getFuture();
-	}
-
-	@Override
-	public Future<Schema> removeSchemaFromProject(String schemaUuid, String projectUuid) {
-		LocalActionContextImpl<Schema> ac = createContext(SchemaModel.class);
-		schemaCrudHandler.handleRemoveProjectFromSchema(ac, projectUuid, schemaUuid);
-		return ac.getFuture();
-	}
-
-	@Override
 	public Future<SchemaListResponse> findSchemas(QueryParameterProvider... parameters) {
 		LocalActionContextImpl<SchemaListResponse> ac = createContext(SchemaListResponse.class, parameters);
-		schemaCrudHandler.handleReadList(ac);
-		return ac.getFuture();
-	}
-
-	@Override
-	public Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters) {
-		LocalActionContextImpl<SchemaListResponse> ac = createContext(SchemaListResponse.class, parameters);
-		ac.setProject(projectName);
 		schemaCrudHandler.handleReadList(ac);
 		return ac.getFuture();
 	}
@@ -1050,6 +1072,26 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
 			SchemaReference... schemaVersionReferences) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Future<MicroschemaReferenceList> getReleaseMicroschemaVersions(String projectName, String releaseUuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			MicroschemaReferenceList microschemaVersionReferences) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			MicroschemaReference... microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}

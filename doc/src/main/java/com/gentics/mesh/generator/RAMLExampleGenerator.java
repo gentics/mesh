@@ -58,6 +58,10 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseListResponse;
+import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -70,11 +74,14 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -170,6 +177,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		schemaJson();
 		microschemaJson();
 		projectJson();
+		releaseJson();
 		searchStatusJson();
 
 		genericResponseJson();
@@ -245,6 +253,36 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		projectCreate.setName("New project");
 		write(projectCreate);
 
+	}
+
+	private void releaseJson() throws JsonGenerationException, JsonMappingException, IOException {
+		write(getReleaseResponse("summer2016"));
+
+		ReleaseListResponse releaseList = new ReleaseListResponse();
+		releaseList.getData().add(getReleaseResponse("summer2016"));
+		releaseList.getData().add(getReleaseResponse("autumn2016"));
+		setPaging(releaseList, 1, 10, 2, 20);
+		write(releaseList);
+
+		ReleaseCreateRequest create = new ReleaseCreateRequest();
+		create.setName("winter2016");
+		write(create);
+
+		ReleaseUpdateRequest update = new ReleaseUpdateRequest();
+		update.setName("spring2016");
+		update.setActive(false);
+		write(update);
+
+		SchemaReferenceList schemas = new SchemaReferenceList();
+		schemas.add(getSchemaReference("content"));
+		schemas.add(getSchemaReference("folder"));
+		schemas.add(getSchemaReference("binary-data"));
+		write(schemas);
+
+		MicroschemaReferenceList microschemas = new MicroschemaReferenceList();
+		microschemas.add(getMicroschemaReference("vcard", 2));
+		microschemas.add(getMicroschemaReference("geolocation", 1));
+		write(microschemas);
 	}
 
 	private void roleJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -404,6 +442,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		Microschema microschema = new MicroschemaModel();
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
+		microschema.setVersion(1);
 		microschema.setUuid(UUIDUtil.randomUUID());
 
 		NumberFieldSchema longitudeFieldSchema = new NumberFieldSchemaImpl();
@@ -755,6 +794,10 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		return schemaReference;
 	}
 
+	private MicroschemaReference getMicroschemaReference(String name, int version) {
+		return new MicroschemaReference().setName(name).setUuid(randomUUID()).setVersion(version);
+	}
+
 	private BinaryFieldTransformRequest getBinaryFieldTransformRequest() {
 		BinaryFieldTransformRequest request = new BinaryFieldTransformRequest();
 		request.setHeight(200);
@@ -903,6 +946,21 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 	private VersionReference getVersionReference(String number) {
 		return new VersionReference(randomUUID(), number);
+	}
+
+	private ReleaseResponse getReleaseResponse(String name) {
+		ReleaseResponse response = new ReleaseResponse();
+		response.setName(name);
+		response.setUuid(randomUUID());
+		response.setActive(true);
+		response.setCreated(getTimestamp());
+		response.setCreator(getUserReference());
+		response.setEdited(getTimestamp());
+		response.setEditor(getUserReference());
+		response.setMigrated(true);
+		response.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		response.setRolePerms("READ", "UPDATE", "DELETE", "CREATE");
+		return response;
 	}
 
 	private void write(Object object) throws JsonGenerationException, JsonMappingException, IOException {

@@ -96,7 +96,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 			MicronodeField micronodeB = ((MicronodeField) obj);
 
 			// Load each field using the field schema 
-			Microschema schema = micronodeA.getMicroschemaContainerVersion().getSchema();
+			Microschema schema = micronodeA.getSchemaContainerVersion().getSchema();
 			for (FieldSchema fieldSchema : schema.getFields()) {
 				GraphField graphField = micronodeA.getField(fieldSchema);
 				try {

@@ -30,11 +30,17 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
+import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
+import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
+import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
+import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
@@ -52,9 +58,19 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Autowired
 	private SchemaVerticle schemaVerticle;
 
+	@Autowired
+	private MicroschemaVerticle microschemaVerticle;
+
+	@Autowired
+	private ProjectSchemaVerticle projectSchemaVerticle;
+
+	@Autowired
+	private ProjectMicroschemaVerticle projectMicroschemaVerticle;
+
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		return new ArrayList<AbstractSpringVerticle>(Arrays.asList(releaseVerticle, projectVerticle, schemaVerticle));
+		return new ArrayList<AbstractSpringVerticle>(Arrays.asList(releaseVerticle, projectVerticle, schemaVerticle,
+				microschemaVerticle, projectSchemaVerticle, projectMicroschemaVerticle));
 	}
 
 	@Override
@@ -394,6 +410,8 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	}
 
+	// Tests for assignment of schema versions to releases
+
 	@Test
 	public void testReadSchemaVersions() throws Exception {
 		Project project = project();
@@ -415,7 +433,7 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		Project project = project();
 
 		// assign schema to project
-		call(() -> getClient().addSchemaToProject(schema.getUuid(), project.getUuid()));
+		call(() -> getClient().assignSchemaToProject(project.getName(), schema.getUuid()));
 
 		// generate version 2
 		updateSchema(schema.getUuid(), "newschemaname");
@@ -489,7 +507,7 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		updateSchema(schema.getUuid(), "newschemaname");
 
 		// assign schema to project
-		call(() -> getClient().addSchemaToProject(schema.getUuid(), project.getUuid()));
+		call(() -> getClient().assignSchemaToProject(project.getName(), schema.getUuid()));
 
 		// try to downgrade schema version
 		call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
@@ -514,7 +532,7 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		Project project = project();
 
 		// assign schema to project
-		call(() -> getClient().addSchemaToProject(schema.getUuid(), project.getUuid()));
+		call(() -> getClient().assignSchemaToProject(project.getName(), schema.getUuid()));
 
 		// generate version 2
 		updateSchema(schema.getUuid(), "newschemaname");
@@ -538,6 +556,154 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 				() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 		assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 				.contains(new SchemaReference().setName("anothernewschemaname").setUuid(schema.getUuid())
+						.setVersion(3));
+	}
+
+	// Tests for assignment of microschema versions to releases
+
+	@Test
+	public void testReadMicroschemaVersions() throws Exception {
+		Project project = project();
+		MicroschemaReferenceList list = call(
+				() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+
+		MicroschemaReference vcard = microschemaContainer("vcard").getLatestVersion().transformToReference();
+		MicroschemaReference captionedImage = microschemaContainer("captionedImage").getLatestVersion().transformToReference();
+
+		assertThat(list).as("release microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.containsOnly(vcard, captionedImage);
+	}
+
+	@Test
+	public void testAssignMicroschemaVersion() throws Exception {
+		// create version 1 of a microschema
+		Microschema microschema = createMicroschema("microschemaname");
+		Project project = project();
+
+		// assign microschema to project
+		call(() -> getClient().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
+
+		// generate version 2
+		updateMicroschema(microschema.getUuid(), "newmicroschemaname");
+
+		// generate version 3
+		updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname");
+
+		// check that version 1 is assigned to release
+		MicroschemaReferenceList list = call(
+				() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+		assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.contains(new MicroschemaReference().setName("microschemaname").setUuid(microschema.getUuid())
+						.setVersion(1));
+
+		// assign version 2 to the release
+		call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new MicroschemaReferenceList(Arrays.asList(new MicroschemaReference().setUuid(microschema.getUuid()).setVersion(2)))));
+
+		// assert
+		list = call(
+				() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+		assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid())
+						.setVersion(2));
+	}
+
+	@Test
+	public void testAssignBogusMicroschemaVersion() throws Exception {
+		Project project = project();
+
+		call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new MicroschemaReference().setName("vcard").setVersion(4711)), BAD_REQUEST,
+				"error_microschema_reference_not_found", "vcard", "-", "4711");
+	}
+
+	@Test
+	public void testAssignBogusMicroschemaUuid() throws Exception {
+		Project project = project();
+
+		call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new MicroschemaReference().setUuid("bogusuuid").setVersion(1)), BAD_REQUEST,
+				"error_microschema_reference_not_found", "-", "bogusuuid", "1");
+	}
+
+	@Test
+	public void testAssignBogusMicroschemaName() throws Exception {
+		Project project = project();
+
+		call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new MicroschemaReference().setName("bogusname").setVersion(1)), BAD_REQUEST,
+				"error_microschema_reference_not_found", "bogusname", "-", "1");
+	}
+
+	@Test
+	public void testAssignUnassignedMicroschemaVersion() throws Exception {
+		Schema schema = createSchema("microschemaname");
+		Project project = project();
+
+		call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new MicroschemaReference().setName(schema.getName()).setVersion(schema.getVersion())), BAD_REQUEST,
+				"error_microschema_reference_not_found", schema.getName(), "-", Integer.toString(schema.getVersion()));
+	}
+
+	@Test
+	public void testAssignOlderMicroschemaVersion() throws Exception {
+		// create version 1 of a microschema
+		Microschema microschema = createMicroschema("microschemaname");
+		Project project = project();
+
+		// generate version 2
+		updateMicroschema(microschema.getUuid(), "newmicroschemaname");
+
+		// assign microschema to project
+		call(() -> getClient().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
+
+		// try to downgrade microschema version
+		call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new MicroschemaReference().setUuid(microschema.getUuid()).setVersion(1)), BAD_REQUEST,
+				"error_release_downgrade_microschema_version", "microschemaname", "2", "1");
+	}
+
+	@Test
+	public void testAssignMicroschemaVersionNoPermission() throws Exception {
+		Project project = project();
+		role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
+
+		call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new MicroschemaReference().setName("vcard").setVersion(1)),
+				FORBIDDEN, "error_missing_perm", project.getInitialRelease().getUuid());
+	}
+
+	@Test
+	public void testAssignLatestMicroschemaVersion() throws Exception {
+		// create version 1 of a microschema
+		Microschema microschema = createMicroschema("microschemaname");
+		Project project = project();
+
+		// assign microschema to project
+		call(() -> getClient().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
+
+		// generate version 2
+		updateMicroschema(microschema.getUuid(), "newmicroschemaname");
+
+		// generate version 3
+		updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname");
+
+		// check that version 1 is assigned to release
+		MicroschemaReferenceList list = call(
+				() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+		assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.contains(new MicroschemaReference().setName("microschemaname").setUuid(microschema.getUuid())
+						.setVersion(1));
+
+		// assign latest version to the release
+		call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new MicroschemaReferenceList(Arrays.asList(new MicroschemaReference().setUuid(microschema.getUuid())))));
+
+		// assert
+		list = call(
+				() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+		assertThat(list).as("Updated microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.contains(new MicroschemaReference().setName("anothernewmicroschemaname").setUuid(microschema.getUuid())
 						.setVersion(3));
 	}
 }

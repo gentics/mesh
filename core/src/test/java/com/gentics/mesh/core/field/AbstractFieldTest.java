@@ -190,7 +190,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	protected void updateContainer(InternalActionContext ac, NodeGraphFieldContainer container, String fieldKey, Field field) {
 		FieldMap fieldMap = new FieldMapJsonImpl();
 		fieldMap.put(fieldKey, field);
-		container.updateFieldsFromRest(ac, fieldMap, container.getSchemaContainerVersion().getSchema());
+		container.updateFieldsFromRest(ac, fieldMap);
 	}
 
 }

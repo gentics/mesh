@@ -467,21 +467,6 @@ traits:
           body:
             application/json:
               example: !include json/GenericMessageResponse.example.json
-    /projects/{uuid}:
-      put:
-        description: Add the schema to the project.
-        responses:
-          200:
-            body:
-              application/json:
-                example: !include json/GenericMessageResponse.example.json
-      delete:
-        description: Remove the schema from the project.
-        responses:
-          200:
-            body:
-              application/json:
-                example: !include json/GenericMessageResponse.example.json
   /{uuid}/diff:
     post:
       description: Create a diff of the latest and posted schema.
@@ -561,6 +546,166 @@ traits:
     post:
       description: Invoke a microschema migration.
 
+#------------------------------------------------------------------------------
+# Project Schema Verticle
+#------------------------------------------------------------------------------
+/{projectName}/schemas:
+  displayName: Project Schemas
+  uriParameters:
+    projectName:
+      description: Name of the project.
+      type: string
+  get:
+    is: [ paged, include_role_perms ]
+    description: Load all schemas of the project.
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/SchemaListResponse.example.json
+  /{uuid}:
+    uriParameters:
+      uuid:
+        description: Uuid of the schema
+        type: string
+    put:
+      description: Add the schema to the project
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+    delete:
+      description: Remove the schema from the project
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+
+#------------------------------------------------------------------------------
+# Project Microschema Verticle
+#------------------------------------------------------------------------------
+/{projectName}/microschemas:
+  displayName: Project Microschemas
+  uriParameters:
+    projectName:
+      description: Name of the project.
+      type: string
+  get:
+    is: [ paged, include_role_perms ]
+    description: Load all microschemas of the project.
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/MicroschemaListResponse.example.json
+  /{uuid}:
+    uriParameters:
+      uuid:
+        description: Uuid of the microschema
+        type: string
+    put:
+      description: Add the microschema to the project
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+    delete:
+      description: Remove the microschema from the project
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+
+#------------------------------------------------------------------------------
+# Release Verticle
+#------------------------------------------------------------------------------
+/{projectName}/releases:
+  displayName: Project Releases
+  uriParameters:
+    projectName:
+      description: Name of the project.
+      type: string
+  get:
+    is: [ paged, include_role_perms ]
+    description: List all releases of the project
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/ReleaseListResponse.example.json
+  post:
+    description: Create a new release.
+    body:
+      application/json:
+        example: !include json/ReleaseCreateRequest.example.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/ReleaseResponse.example.json
+  /{uuid}:
+    uriParameters:
+      uuid:
+        description: Uuid of the release
+        type: string
+    get:
+      is: [ include_role_perms ]
+      description: Load the release
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/ReleaseResponse.example.json
+    put:
+      description: Update the release
+      body:
+        application/json:
+          example: !include json/ReleaseUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/ReleaseResponse.example.json
+    /schemas:
+      get:
+        description: List schema versions assigned to the release
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/SchemaReferenceList.example.json
+      put:
+        description: Change schema version assignment of the release
+        body:
+          application/json:
+            example: !include json/SchemaReferenceList.example.json
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/SchemaReferenceList.example.json
+    /microschemas:
+      get:
+        description: List microschema versions assigned to the release
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/MicroschemaReferenceList.example.json
+      put:
+        description: Change microschema version assignment of the release
+        body:
+          application/json:
+            example: !include json/MicroschemaReferenceList.example.json
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/MicroschemaReferenceList.example.json
 
 #------------------------------------------------------------------------------
 # WebRoot Verticle
@@ -905,7 +1050,6 @@ traits:
           body:
             application/json:
               example: !include json/GenericMessageResponse.example.json
-
 
 #------------------------------------------------------------------------------
 # Search Verticle

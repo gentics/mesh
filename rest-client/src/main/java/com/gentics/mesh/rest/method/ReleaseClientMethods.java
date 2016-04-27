@@ -4,6 +4,8 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.query.QueryParameterProvider;
@@ -79,4 +81,31 @@ public interface ReleaseClientMethods {
 	 * @return
 	 */
 	Future<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReference...schemaVersionReferences);
+
+	/**
+	 * Get microschema versions assigned to a release
+	 *
+	 * @param projectName
+	 * @param releaseUuid
+	 * @return
+	 */
+	Future<MicroschemaReferenceList> getReleaseMicroschemaVersions(String projectName, String releaseUuid);
+
+	/**
+	 * Assign the given microschema versions to the release
+	 * @param projectName 
+	 * @param releaseUuid
+	 * @param microschemaVersionReferences
+	 * @return
+	 */
+	Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid, MicroschemaReferenceList microschemaVersionReferences);
+
+	/**
+	 * Assign the given microschema versions to the release
+	 * @param projectName 
+	 * @param releaseUuid
+	 * @param microschemaVersionReferences
+	 * @return
+	 */
+	Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid, MicroschemaReference...microschemaVersionReferences);
 }

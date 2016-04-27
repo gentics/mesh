@@ -13,10 +13,13 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
@@ -97,6 +100,62 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	}
 
 	/**
+	 * Handle getting the microschema versions of a release.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of release to be queried
+	 */
+	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		db.asyncNoTrxExperimental(() -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM).flatMap((release) -> getMicroschemaVersions(release));
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
+	/**
+	 * Handle assignment of microschema version to a release.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of release
+	 */
+	public void handleAssignMicroschemaVersion(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		db.asyncNoTrxExperimental(() -> {
+			RootVertex<Release> root = getRootVertex(ac);
+			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(release -> {
+				MicroschemaReferenceList microschemaReferenceList = ac.fromJson(MicroschemaReferenceList.class);
+				MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
+
+				return db.trx(() -> {
+					Observable<MicroschemaContainerVersion> obs = Observable.from(microschemaReferenceList)
+							.flatMap(reference -> microschemaContainerRoot.fromReference(reference));
+					obs.toBlocking().forEach(version -> {
+						MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
+						if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
+							throw error(BAD_REQUEST, "error_release_downgrade_microschema_version", version.getName(),
+									Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
+						}
+						release.assignMicroschemaVersion(version);
+
+						// TODO start microschema migration
+//						DeliveryOptions options = new DeliveryOptions();
+//						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER,
+//								release.getRoot().getProject().getUuid());
+//						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
+//						options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
+//						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
+//						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
+//						Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options);
+					});
+					return getMicroschemaVersions(release);
+				});
+			});
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
+	/**
 	 * Get the rest model of the schema versions of the release
 	 * 
 	 * @param release
@@ -112,6 +171,25 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			});
 		} catch (Exception e) {
 			throw error(INTERNAL_SERVER_ERROR, "Unknown error while getting schema versions", e);
+		}
+	}
+
+	/**
+	 * Get the rest model of the microschema versions of the release
+	 * 
+	 * @param release
+	 *            release
+	 * @return observable emitting the rest model
+	 */
+	protected Observable<MicroschemaReferenceList> getMicroschemaVersions(Release release) {
+		try {
+			return Observable.from(release.findAllMicroschemaVersions()).map(MicroschemaContainerVersion::transformToReference).collect(() -> {
+				return new MicroschemaReferenceList();
+			} , (x, y) -> {
+				x.add(y);
+			});
+		} catch (Exception e) {
+			throw error(INTERNAL_SERVER_ERROR, "Unknown error while getting microschema versions", e);
 		}
 	}
 }
