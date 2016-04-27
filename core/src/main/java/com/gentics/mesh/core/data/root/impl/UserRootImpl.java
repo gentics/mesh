@@ -117,7 +117,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		throw new NotImplementedException("The user root should never be deleted");
 	}
 

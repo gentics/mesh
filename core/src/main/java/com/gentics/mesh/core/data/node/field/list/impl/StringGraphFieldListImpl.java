@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
@@ -49,7 +50,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		getElement().remove();
 	}
 

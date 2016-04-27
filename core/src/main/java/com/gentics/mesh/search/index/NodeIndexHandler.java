@@ -513,20 +513,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Utility method that can be used to remove the <code>field.</code> field from the source map. This is useful when you want to just update the field values
-	 * (eg. reuse the old sourcemap for a new sourcemap of a different language (same node)).
-	 * 
-	 * @param map
-	 */
-	private void removeFieldEntries(Map<String, Object> map) {
-		for (String key : map.keySet()) {
-			if (key.startsWith("field.")) {
-				map.remove(key);
-			}
-		}
-	}
-
-	/**
 	 * Transform the given schema and add it to the source map.
 	 * 
 	 * @param map

@@ -14,6 +14,7 @@ public final class ChangesList {
 		List<Change> list = new ArrayList<>();
 		list.add(new Change_093BEFB47FA4476FBE37FD27C613F7AA());
 		list.add(new Change_610A32F04FC7414E8A32F04FC7614EF5());
+		list.add(new Change_610A32F04FC7414E8A32F04FC7614EF3());
 		return list;
 	}
 }

@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
@@ -39,7 +40,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		getElement().remove();
 	}
 

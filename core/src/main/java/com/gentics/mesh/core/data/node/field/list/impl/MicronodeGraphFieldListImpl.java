@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
@@ -130,7 +131,9 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					addItem(String.valueOf(counter++), micronode);
 				}
 				// Delete remaining items in order to prevent dangling micronodes
-				existing.values().stream().forEach(Micronode::delete);
+				existing.values().stream().forEach(micronode -> {
+					micronode.delete(null);
+				});
 			} , e -> {
 				subscriber.onError(e);
 			} , () -> {
@@ -141,8 +144,10 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public void delete() {
-		getList().stream().map(MicronodeGraphField::getMicronode).forEach(Micronode::delete);
+	public void delete(SearchQueueBatch batch) {
+		getList().stream().map(MicronodeGraphField::getMicronode).forEach(micronode -> {
+			micronode.delete(null);
+		});
 		getElement().remove();
 	}
 

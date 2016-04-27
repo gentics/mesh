@@ -19,7 +19,6 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.etc.MeshSearchQueueProcessor;
 import com.gentics.mesh.search.AbstractSearchVerticleTest;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.index.IndexHandler;
@@ -28,9 +27,6 @@ import com.gentics.mesh.search.index.NodeIndexHandler;
 import io.vertx.core.Future;
 
 public class SearchVerticleTest extends AbstractSearchVerticleTest {
-
-	@Autowired
-	private MeshSearchQueueProcessor processor;
 
 	@Autowired
 	private NodeIndexHandler nodeIndexHandler;
@@ -111,7 +107,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 		}
 		String documentId = nodeIndexHandler.composeDocumentId(node, "en");
 		searchProvider.deleteDocument(Node.TYPE, indexType, documentId).toBlocking().single();
-		processor.process();
+		meshRoot().getSearchQueue().processAll();
 		assertNotNull("The document with uuid {" + uuid + "} could still be found within the search index.",
 				searchProvider.getDocument(Node.TYPE, indexType, documentId).toBlocking().first());
 	}

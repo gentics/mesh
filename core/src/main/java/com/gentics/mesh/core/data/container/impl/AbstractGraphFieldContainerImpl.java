@@ -168,6 +168,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		Micronode existingMicronode = null;
 		if (existing != null) {
 			existingMicronode = existing.getMicronode();
+			//existing.getMicronode().delete(null);
 		}
 
 		// Create a new micronode and assign the given schema to it

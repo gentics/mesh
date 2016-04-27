@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.tagfamily;
 
-import static com.gentics.mesh.util.MeshAssert.assertDeleted;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
+import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -16,9 +18,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.graphdb.Trx;
@@ -34,7 +40,6 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformToReference() throws Exception {
 		TagFamily tagFamily = tagFamily("colors");
-		InternalActionContext ac = getMockedInternalActionContext("");
 		TagFamilyReference reference = tagFamily.transformToReference();
 		assertNotNull(reference);
 		assertEquals(tagFamily.getUuid(), reference.getUuid());
@@ -126,14 +131,41 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
+		SearchQueueBatch batch = createBatch();
+		Map<String, ElementEntry> affectedElements = new HashMap<>();
 		try (Trx tx = db.trx()) {
-			Map<String, String> uuidToBeDeleted = new HashMap<>();
 			TagFamily tagFamily = tagFamily("colors");
-			uuidToBeDeleted.put("tagFamily", tagFamily.getUuid());
-			uuidToBeDeleted.put("tagFamily.red", tag("red").getUuid());
-			tagFamily.delete();
-			assertDeleted(uuidToBeDeleted);
+			affectedElements.put("tagFamily", new ElementEntry(DELETE_ACTION, tagFamily.getUuid()));
+
+			int i = 0;
+			Tag redTag = tag("red");
+			affectedElements.put("tagFamily.red", new ElementEntry(DELETE_ACTION, redTag.getUuid()));
+			// Tagged nodes should be updated
+			for (Node node : redTag.getNodes()) {
+				affectedElements.put("red tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(), node.getAvailableLanguageNames()));
+				i++;
+			}
+
+			Tag greenTag = tag("green");
+			affectedElements.put("tagFamily.green", new ElementEntry(DELETE_ACTION, greenTag.getUuid()));
+			for (Node node : greenTag.getNodes()) {
+				affectedElements.put("green tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(), node.getAvailableLanguageNames()));
+				i++;
+			}
+
+			Tag blueTag = tag("blue");
+			affectedElements.put("tagFamily.blue", new ElementEntry(DELETE_ACTION, blueTag.getUuid()));
+			for (Node node : blueTag.getNodes()) {
+				affectedElements.put("blue tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(), node.getAvailableLanguageNames()));
+				i++;
+			}
+
+			tagFamily.delete(batch);
+			tx.success();
 		}
+		batch.reload();
+		assertAffectedElements(affectedElements, batch);
+
 	}
 
 	@Test
@@ -196,7 +228,8 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		String uuid = tagFamily.getUuid();
 		TagFamily foundTagFamily = root.findByUuid(uuid).toBlocking().single();
 		assertNotNull(foundTagFamily);
-		tagFamily.delete();
+		SearchQueueBatch batch = createBatch();
+		tagFamily.delete(batch);
 		// TODO check for attached nodes
 		Project project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(project);

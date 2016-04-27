@@ -22,7 +22,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	/**
 	 * Delete the field container. This will also delete linked elements like lists.
 	 */
-	void delete();
+	void delete(SearchQueueBatch batch);
 
 	/**
 	 * Return the display field value for this container.

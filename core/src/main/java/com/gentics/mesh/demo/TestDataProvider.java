@@ -172,7 +172,6 @@ public class TestDataProvider {
 			return null;
 		});
 		log.info("Added BasicPermissions to nodes");
-
 	}
 
 	/**

@@ -1,6 +1,13 @@
 package com.gentics.mesh.core.data.search.impl;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -76,7 +83,7 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		getVertex().remove();
 	}
 

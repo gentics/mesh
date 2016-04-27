@@ -110,7 +110,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		throw new NotImplementedException("The role root node can't be deleted");
 	}
 

@@ -238,6 +238,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public long getGraphFieldContainerCount() {
+		return out(HAS_FIELD_CONTAINER).has(NodeGraphFieldContainerImpl.class).count();
+	}
+
+	@Override
 	public NodeGraphFieldContainer getGraphFieldContainer(Language language) {
 		return getGraphFieldContainer(language, getProject().getLatestRelease(), Type.DRAFT, NodeGraphFieldContainerImpl.class);
 	}
@@ -942,8 +947,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return languageTags;
 	}
 
-	@Override
-	public void delete(boolean ignoreChecks) {
+	public void delete(boolean ignoreChecks, SearchQueueBatch batch) {
 		if (!ignoreChecks) {
 			// Prevent deletion of basenode
 			if (getProject().getBaseNode().getUuid().equals(getUuid())) {
@@ -955,18 +959,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			log.debug("Deleting node {" + getUuid() + "}");
 		}
 		for (Node child : getChildren()) {
-			child.delete();
+			child.delete(batch);
 		}
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
-			container.delete();
+			container.delete(batch);
 		}
 		getElement().remove();
 
 	}
 
 	@Override
-	public void delete() {
-		delete(false);
+	public void delete(SearchQueueBatch batch) {
+		delete(false, batch);
 	}
 
 	/**
@@ -1161,20 +1165,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<? extends Node> deleteLanguageContainer(InternalActionContext ac, Language language) {
-		return ac.getDatabase().trx(() -> {
-			// TODO add release
-			NodeGraphFieldContainer container = getGraphFieldContainer(language, null, Type.DRAFT);
-			if (container == null) {
-				throw error(NOT_FOUND, "node_no_language_found", language.getLanguageTag());
-			}
-			// Create the batch first since we can't delete the container and access it later in batch creation
-			SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-			SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-			container.addIndexBatchEntry(batch, DELETE_ACTION, null, null);
-			container.delete();
-			return batch;
-		}).process().map(i -> this);
+	public void deleteLanguageContainer(InternalActionContext ac, Language language, SearchQueueBatch batch) {
+		NodeGraphFieldContainer container = getGraphFieldContainer(language, null, Type.DRAFT);
+		if (container == null) {
+			throw error(NOT_FOUND, "node_no_language_found", language.getLanguageTag());
+		}
+		container.delete(batch);
 	}
 
 	@Override

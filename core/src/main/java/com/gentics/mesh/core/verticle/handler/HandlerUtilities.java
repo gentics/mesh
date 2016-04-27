@@ -11,19 +11,21 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.elasticsearch.common.collect.Tuple;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.util.UUIDUtil;
 
 import rx.Observable;
 
@@ -76,14 +78,15 @@ public final class HandlerUtilities {
 
 						String elementUuid = element.getUuid();
 						if (element instanceof IndexableElement) {
-							SearchQueueBatch batch = ((IndexableElement) element).createIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+							SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+							SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 							String name = null;
 							if (element instanceof NamedElement) {
 								name = ((NamedElement) element).getName();
 							}
 							final String objectName = name;
 							String id = objectName != null ? elementUuid + "/" + objectName : elementUuid;
-							element.delete();
+							element.delete(batch);
 							return Tuple.tuple(id, batch);
 						} else {
 							throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");

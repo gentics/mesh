@@ -4,7 +4,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,6 +15,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Test;
@@ -28,12 +32,15 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.hazelcast.util.ConcurrentReferenceHashMap.Option;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
@@ -289,7 +296,8 @@ public class RoleTest extends AbstractBasicObjectTest {
 		String uuid = role.getUuid();
 		role = boot.roleRoot().findByUuid(uuid).toBlocking().single();
 		assertNotNull(role);
-		role.delete();
+		SearchQueueBatch batch = createBatch();
+		role.delete(batch);
 		Role foundRole = boot.roleRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(foundRole);
 
@@ -333,14 +341,26 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() throws Exception {
 		String uuid;
+		SearchQueueBatch batch = createBatch();
 		try (Trx tx = db.trx()) {
 			Role role = role();
 			uuid = role.getUuid();
-			role.delete();
+			role.delete(batch);
 			tx.success();
 		}
+		batch.reload();
 		assertElement(boot.roleRoot(), uuid, false);
 
+		// Check role entry
+		Optional<? extends SearchQueueEntry> roleEntry = batch.findEntryByUuid(uuid);
+		assertThat(roleEntry).isPresent();
+		assertEquals(DELETE_ACTION, roleEntry.get().getElementAction());
+
+		Optional<? extends SearchQueueEntry> groupEntry = batch.findEntryByUuid(group().getUuid());
+		assertThat(groupEntry).isPresent();
+		assertEquals(STORE_ACTION, groupEntry.get().getElementAction());
+
+		assertEquals(2, batch.getEntries().size());
 	}
 
 	@Test

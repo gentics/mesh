@@ -17,6 +17,7 @@ import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
@@ -26,12 +27,14 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Observable;
@@ -68,8 +71,16 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
-				Observable<? extends Node> obs = node.deleteLanguageContainer(ac, language);
-				return obs.map(updatedNode -> {
+				// Create the batch first since we can't delete the container and access it later in batch creation
+				SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+				node.deleteLanguageContainer(ac, language, batch);
+				// Check whether this is the last container and delete the node
+				if (node.getGraphFieldContainerCount() == 0) {
+					node.delete(batch);
+				}
+
+				return batch.process().map(sqb -> {
 					return message(ac, "node_deleted_language", uuid, languageTag);
 				});
 

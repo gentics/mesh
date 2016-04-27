@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -141,6 +142,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, Type type);
+
+	/**
+	 * Return the amount of field containers of the node.
+	 * 
+	 * @return
+	 */
+	long getGraphFieldContainerCount();
 
 	/**
 	 * Return a page of tags that are assigned to the node.
@@ -355,9 +363,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param ac
 	 * @param language
-	 * @return
+	 *            Language which will be used to find the field container which should be deleted
+	 * @param batch
 	 */
-	Observable<? extends Node> deleteLanguageContainer(InternalActionContext ac, Language language);
+	void deleteLanguageContainer(InternalActionContext ac, Language language, SearchQueueBatch batch);
 
 	/**
 	 * Return the path segment of this node.
@@ -418,8 +427,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Delete the node and ignore any checks.
 	 * 
 	 * @param ignoreChecks
+	 * @param batch
 	 */
-	void delete(boolean ignoreChecks);
+	void delete(boolean ignoreChecks, SearchQueueBatch batch);
 
 	/**
 	 * Set the breadcrumb information to the given rest node.

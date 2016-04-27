@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.group;
 
 import static com.gentics.mesh.util.MeshAssert.assertElement;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -19,6 +20,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -123,9 +125,10 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreateDelete() throws Exception {
 		Group group = meshRoot().getGroupRoot().create("newGroup", user());
+		SearchQueueBatch batch = createBatch();
 		assertNotNull(group);
 		String uuid = group.getUuid();
-		group.delete();
+		group.delete(batch);
 		group = meshRoot().getGroupRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(group);
 	}
@@ -165,15 +168,21 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() throws Exception {
 		Group group = meshRoot().getGroupRoot().create("newGroup", user());
+
 		assertNotNull(group);
 		assertEquals("newGroup", group.getName());
 		String uuid = group.getUuid();
 		String userUuid = user().getUuid();
 		group().addUser(user());
+
 		// TODO add users to group?
-		group.delete();
+		SearchQueueBatch batch = createBatch();
+		group.delete(batch);
 		assertElement(meshRoot().getGroupRoot(), uuid, false);
 		assertElement(meshRoot().getUserRoot(), userUuid, true);
+		assertThat(batch.findEntryByUuid(uuid)).isPresent();
+		assertEquals(1, batch.getEntries().size());
+
 	}
 
 	@Test

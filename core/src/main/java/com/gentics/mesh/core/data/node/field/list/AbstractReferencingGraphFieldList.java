@@ -37,7 +37,7 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 		container.getImpl().unlinkOut(getImpl(), HAS_LIST);
 
 		if (in(HAS_LIST).count() == 0) {
-			delete();
+			delete(null);
 		}
 	}
 
@@ -45,5 +45,9 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	public GraphField cloneTo(GraphFieldContainer container) {
 		container.getImpl().linkOut(getImpl(), HAS_LIST);
 		return container.getList(getClass(), getFieldKey());
+	}
+
+	public void removeField() {
+		delete(null);
 	}
 }

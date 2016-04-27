@@ -19,6 +19,7 @@ public abstract class AbstractChange implements Change {
 	protected static final Logger log = LoggerFactory.getLogger(AbstractChange.class);
 
 	private static final String MESH_ROOT_TYPE = "com.gentics.mesh.core.data.root.impl.MeshRootImpl";
+	private static final String MESH_SEARCH_QUEUE_ENTRY_TYPE = "com.gentics.mesh.core.data.search.impl.SearchQueueEntryImpl";
 
 	private TransactionalGraph graph;
 
@@ -76,6 +77,7 @@ public abstract class AbstractChange implements Change {
 		// 2. Add entry to batch 
 		Vertex entry = getGraph().addVertex(null);
 		entry.setProperty("element_type", elementType);
+		entry.setProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, MESH_SEARCH_QUEUE_ENTRY_TYPE);
 		entry.setProperty("element_action", "reindex_all");
 		batch.addEdge("HAS_ITEM", entry);
 	}

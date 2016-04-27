@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -37,6 +38,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.RestAssert;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
@@ -203,6 +205,10 @@ public abstract class AbstractDBTest {
 
 	public MeshRoot meshRoot() {
 		return dataProvider.getMeshRoot();
+	}
+
+	public SearchQueueBatch createBatch() {
+		return meshRoot().getSearchQueue().createBatch(UUIDUtil.randomUUID());
 	}
 
 	public Node content() {

@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.util.CompareUtils;
 
@@ -44,7 +45,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		getElement().remove();
 	}
 

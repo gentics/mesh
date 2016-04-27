@@ -62,7 +62,7 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 		container.getImpl().unlinkOut(getImpl(), HAS_LIST);
 
 		if (in(HAS_LIST).count() == 0) {
-			delete();
+			delete(null);
 		}
 	}
 
@@ -72,7 +72,6 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 		return container.getList(getClass(), getFieldKey());
 	}
 
-
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof ListGraphField) {
@@ -81,5 +80,9 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 			return CompareUtils.equals(listA, listB);
 		}
 		return false;
+	}
+
+	public void removeField() {
+		delete(null);
 	}
 }

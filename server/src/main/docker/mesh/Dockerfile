@@ -10,7 +10,7 @@ ADD ./maven /mesh
 WORKDIR /mesh
 
 RUN mkdir /data
-RUN ln -s /mesh/data /data
+RUN ln -s /data /mesh/data
 VOLUME /data
 
 CMD [ "java", "-jar" , "mesh.jar" ]

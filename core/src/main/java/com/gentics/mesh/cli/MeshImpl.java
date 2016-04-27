@@ -125,7 +125,7 @@ public class MeshImpl implements Mesh {
 	public void invokeUpdateCheck() {
 		log.info("Checking for updates..");
 
-		HttpClientRequest request = Mesh.vertx().createHttpClient().get("updates.getmesh.io", "/api/updatecheck?v=" + Mesh.getVersion(), rh -> {
+		HttpClientRequest request = Mesh.vertx().createHttpClient().get("updates.getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
 			rh.bodyHandler(bh -> {
 				//JsonObject info = bh.toJsonObject();
 			});

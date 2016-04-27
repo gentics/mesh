@@ -29,3 +29,4 @@ mesh-graphdb
 /typings
 binaryImageCache
 .factorypath
+mesh-ui-config.js

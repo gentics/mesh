@@ -87,9 +87,9 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		for (SearchQueueEntry entry : getEntries()) {
-			entry.delete();
+			entry.delete(batch);
 		}
 		getVertex().remove();
 	}
@@ -127,7 +127,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 				// We successfully finished this batch. Delete it.
 				db.trx(() -> {
 					reload();
-					delete();
+					delete(null);
 					return null;
 				});
 				// Refresh index

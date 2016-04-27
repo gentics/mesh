@@ -39,20 +39,23 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
-				try {
-					Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
-					SchemaChangesListModel model = new SchemaChangesListModel();
-					model.getChanges().addAll(MicroschemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
-					if (model.getChanges().isEmpty()) {
-						return Observable.just(message(ac, "schema_update_no_difference_detected", element.getName()));
-					} else {
-						return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
-							return Observable.just(message(ac, "migration_invoked", element.getName()));
-						});
+				return db.trx(() -> {
+					try {
+						Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
+						SchemaChangesListModel model = new SchemaChangesListModel();
+						model.getChanges().addAll(MicroschemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
+						String name = element.getName();
+						if (model.getChanges().isEmpty()) {
+							return Observable.just(message(ac, "schema_update_no_difference_detected", name));
+						} else {
+							return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
+								return Observable.just(message(ac, "migration_invoked", name));
+							});
+						}
+					} catch (Exception e) {
+						return Observable.error(e);
 					}
-				} catch (Exception e) {
-					return Observable.error(e);
-				}
+				});
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 

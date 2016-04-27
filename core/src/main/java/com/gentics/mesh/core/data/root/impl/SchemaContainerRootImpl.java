@@ -101,7 +101,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		// TODO maybe we should add a check here to prevent deletion of the meshroot.schemaRoot ?
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting schema container root {" + getUuid() + "}");
