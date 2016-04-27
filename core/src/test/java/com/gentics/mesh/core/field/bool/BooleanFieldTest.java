@@ -192,7 +192,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(BOOLEAN_FIELD, FETCH, CREATE_EMPTY, (node) -> {
+		invokeRemoveFieldViaNullValueTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (node) -> {
 			BooleanField field = new BooleanFieldImpl();
 			field.setValue(null);
 			updateContainer(ac, node, BOOLEAN_FIELD, field);
@@ -201,9 +201,9 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 
 	@Test
 	@Override
-	public void testDeleteRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeDeleteRequiredFieldViaNullValueTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (container) -> {
+		invokeRemoveRequiredFieldViaNullValueTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (container) -> {
 			BooleanField field = new BooleanFieldImpl();
 			field.setValue(null);
 			updateContainer(ac, container, BOOLEAN_FIELD, field);

@@ -169,7 +169,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(STRING_FIELD, FETCH, CREATE_EMPTY, (node) -> {
+		invokeRemoveFieldViaNullValueTestcase(STRING_FIELD, FETCH, FILLTEXT, (node) -> {
 			StringField field = new StringFieldImpl();
 			field.setString(null);
 			updateContainer(ac, node, STRING_FIELD, field);
@@ -178,9 +178,9 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 
 	@Test
 	@Override
-	public void testDeleteRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeDeleteRequiredFieldViaNullValueTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
+		invokeRemoveRequiredFieldViaNullValueTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
 			StringField field = new StringFieldImpl();
 			field.setString(null);
 			updateContainer(ac, container, STRING_FIELD, field);

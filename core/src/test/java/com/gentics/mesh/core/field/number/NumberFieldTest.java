@@ -180,7 +180,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(NUMBER_FIELD, FETCH, CREATE_EMPTY, (node) -> {
+		invokeRemoveFieldViaNullValueTestcase(NUMBER_FIELD, FETCH, FILL, (node) -> {
 			NumberField field = new NumberFieldImpl();
 			field.setNumber(null);
 			updateContainer(ac, node, NUMBER_FIELD, field);
@@ -189,9 +189,9 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 
 	@Test
 	@Override
-	public void testDeleteRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeDeleteRequiredFieldViaNullValueTestcase(NUMBER_FIELD, FETCH, FILL, (container) -> {
+		invokeRemoveRequiredFieldViaNullValueTestcase(NUMBER_FIELD, FETCH, FILL, (container) -> {
 			NumberField field = new NumberFieldImpl();
 			field.setNumber(null);
 			updateContainer(ac, container, NUMBER_FIELD, field);

@@ -162,7 +162,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(HTML_FIELD, FETCH, CREATE_EMPTY, (node) -> {
+		invokeRemoveFieldViaNullValueTestcase(HTML_FIELD, FETCH, FILLTEXT, (node) -> {
 			HtmlField field = new HtmlFieldImpl();
 			field.setHTML(null);
 			updateContainer(ac, node, HTML_FIELD, field);
@@ -183,9 +183,9 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 
 	@Test
 	@Override
-	public void testDeleteRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeDeleteRequiredFieldViaNullValueTestcase(HTML_FIELD, FETCH, FILLTEXT, (container) -> {
+		invokeRemoveRequiredFieldViaNullValueTestcase(HTML_FIELD, FETCH, FILLTEXT, (container) -> {
 			HtmlField field = new HtmlFieldImpl();
 			field.setHTML(null);
 			updateContainer(ac, container, HTML_FIELD, field);

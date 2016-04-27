@@ -110,7 +110,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 * @param updater
 	 *            Action which updates the given node using a null value
 	 */
-	protected void invokeDeleteRequiredFieldViaNullValueTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
+	protected void invokeRemoveRequiredFieldViaNullValueTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
 			Action1<NodeGraphFieldContainer> updater) {
 		NodeGraphFieldContainer container = createNode(true).v2();
 		createDummyData.set(container, fieldName);

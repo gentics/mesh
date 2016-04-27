@@ -208,9 +208,9 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 	@Test
 	@Override
-	public void testDeleteRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeDeleteRequiredFieldViaNullValueTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (container) -> {
+		invokeRemoveRequiredFieldViaNullValueTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (container) -> {
 			BinaryField field = null;
 			updateContainer(ac, container, BINARY_FIELD, field);
 		});

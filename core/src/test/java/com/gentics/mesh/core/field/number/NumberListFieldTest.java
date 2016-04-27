@@ -156,7 +156,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(NUMBER_LIST, FETCH, CREATE_EMPTY, (node) -> {
+		invokeRemoveFieldViaNullValueTestcase(NUMBER_LIST, FETCH, FILLNUMBERS, (node) -> {
 			NumberFieldListImpl field = null;
 			updateContainer(ac, node, NUMBER_LIST, field);
 		});
@@ -164,9 +164,9 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Test
 	@Override
-	public void testDeleteRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeDeleteRequiredFieldViaNullValueTestcase(NUMBER_LIST, FETCH, FILLNUMBERS, (container) -> {
+		invokeRemoveRequiredFieldViaNullValueTestcase(NUMBER_LIST, FETCH, FILLNUMBERS, (container) -> {
 			NumberFieldListImpl field = null;
 			updateContainer(ac, container, NUMBER_LIST, field);
 		});

@@ -169,9 +169,9 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 
 	@Test
 	@Override
-	public void testDeleteRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNullValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeDeleteRequiredFieldViaNullValueTestcase(NODE_FIELD, FETCH, FILL, (container) -> {
+		invokeRemoveRequiredFieldViaNullValueTestcase(NODE_FIELD, FETCH, FILL, (container) -> {
 			NodeResponse field = null;
 			updateContainer(ac, container, NODE_FIELD, field);
 		});

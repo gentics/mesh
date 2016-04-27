@@ -144,7 +144,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Test
 	@Override
-	public void testDeleteRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNullValue() {
 		// TODO Auto-generated method stub
 
 	}
