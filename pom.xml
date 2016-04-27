@@ -219,9 +219,9 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<groupId>org.jolokia</groupId>
+					<groupId>io.fabric8</groupId>
 					<artifactId>docker-maven-plugin</artifactId>
-					<version>0.13.3</version>
+					<version>0.14.2</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>

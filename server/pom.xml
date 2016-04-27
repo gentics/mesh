@@ -40,7 +40,6 @@
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.14.2</version>
 				<configuration>
 					<skip>${docker.skip}</skip>
 					<dockerHost>${dockerHostProtocol}://${dockerHost}:2375</dockerHost>
