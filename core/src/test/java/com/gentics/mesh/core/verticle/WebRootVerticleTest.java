@@ -19,8 +19,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.node.AbstractBinaryVerticleTest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -28,6 +30,7 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
@@ -129,6 +132,50 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = content("news_2015");
 		test.assertMeshNode(node, restNode.getNodeResponse());
 		// assertNotNull(restNode.getProperties());
+
+	}
+
+	@Test
+	public void testReadContentWithNodeRefByPath() throws Exception {
+
+		Node parentNode = folder("2015");
+		// Update content schema and add node field
+		SchemaContainer folderSchema = schemaContainer("folder");
+		Schema schema = folderSchema.getLatestVersion().getSchema();
+		schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
+		folderSchema.getLatestVersion().setSchema(schema);
+		ServerSchemaStorage.getInstance().addSchema(schema);
+
+		// Create content which is only german
+		SchemaContainer contentSchema = schemaContainer("content");
+		Node node = parentNode.create(user(), contentSchema.getLatestVersion(), project());
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), contentSchema.getLatestVersion());
+		englishContainer.createString("name").setString("german_name");
+		englishContainer.createString("title").setString("german title");
+		englishContainer.createString("displayName").setString("german displayName");
+		englishContainer.createString("filename").setString("test.de.html");
+
+		// Add node reference to node 2015
+		parentNode.getGraphFieldContainer(english()).createNode("nodeRef", node);
+
+		String path = "/News/2015";
+		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path,
+				new NodeRequestParameter().setResolveLinks(LinkType.MEDIUM).setLanguages("en", "de"));
+		latchFor(future);
+		assertSuccess(future);
+		WebRootResponse restNode = future.result();
+		assertEquals("The node reference did not point to the german node.", "/dummy/News/2015/test.de.html",
+				restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
+		assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
+
+		// Again with no german fallback option (only english)
+		future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(LinkType.MEDIUM).setLanguages("en"));
+		latchFor(future);
+		assertSuccess(future);
+		restNode = future.result();
+		assertEquals("The node reference did not point to the 404 path.", "/dummy/error/404",
+				restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
+		assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
 
 	}
 

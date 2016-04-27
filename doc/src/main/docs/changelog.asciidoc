@@ -90,6 +90,7 @@
 === 0.6.9 - 
 
 * Enhancement: It is now possible to also include non-container nodes in a navigation response using the includeAll parameter. By default only container nodes will be included in the response.  
+* Fix: A minor issue within the webroot path handling of node references was fixed. CL-425
 
 === Upcoming changes
 

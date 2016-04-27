@@ -8,6 +8,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,9 +59,11 @@ public class WebRootHandler {
 		// List<String> languageTags = ac.getSelectedLanguageTags();
 		db.asyncNoTrxExperimental(() -> {
 
+			// Load all nodes for the given path
 			Observable<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
 			PathSegment lastSegment = nodePath.toBlocking().last().getLast();
 
+			// Check whether the path actually points to a valid node
 			if (lastSegment != null) {
 				Node node = lastSegment.getNode();
 				if (node == null) {
@@ -76,7 +80,11 @@ public class WebRootHandler {
 							return null;
 						}
 					} else {
-						return node.transformToRest(ac, 0, lastSegment.getLanguageTag());
+						// Use the language for which the node was resolved
+						List<String> languageTags = new ArrayList<>();
+						languageTags.add(lastSegment.getLanguageTag());
+						languageTags.addAll(ac.getSelectedLanguageTags());
+						return node.transformToRest(ac, 0, languageTags.toArray(new String[0]));
 					}
 
 				} else {
