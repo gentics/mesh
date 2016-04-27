@@ -540,6 +540,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// Add children
 		for (Node child : nodes) {
 			//TODO assure that the schema version is correct?
+
 			if (child.getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
 				NavigationElement childElement = new NavigationElement();
 				// We found at least one child so lets create the array
@@ -548,6 +549,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 				currentElement.getChildren().add(childElement);
 				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement));
+			} else if (ac.getNavigationRequestParameter().isIncludeAll()) {
+				// We found at least one child so lets create the array
+				if (currentElement.getChildren() == null) {
+					currentElement.setChildren(new ArrayList<>());
+				}
+				NavigationElement childElement = new NavigationElement();
+				currentElement.getChildren().add(childElement);
+				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement));
 			}
 		}
 		return Observable.merge(obsResponses).last();

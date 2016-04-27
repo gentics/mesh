@@ -8,14 +8,17 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.query.impl.NavigationRequestParameter;
@@ -127,7 +130,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 
 		assertThat(response).hasDepth(1).isValid(4);
 		assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
-		
+
 	}
 
 	/**
@@ -146,6 +149,58 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		NavigationResponse response = future.result();
 		assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
 		assertThat(response).hasDepth(2).isValid(6);
+	}
+
+	/**
+	 * Test reading a node with a maxDepth value of two and the includeAll flag set to true.
+	 * 
+	 * We expect the response to also include regular content nodes.
+	 */
+	@Test
+	public void testReadChildrenDepthTwoIncludeAll() {
+		Node node = folder("news");
+		String uuid = node.getUuid();
+		assertNotNull(node);
+		assertNotNull(node.getUuid());
+
+		Future<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, uuid,
+				new NavigationRequestParameter().setMaxDepth(2).setIncludeAll(true));
+		latchFor(future);
+		assertSuccess(future);
+		NavigationResponse response = future.result();
+		assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
+
+		String[] expectedNodes = { "2015", "2014", "News Overview_english_name" };
+		List<String> nodeNames = response.getRoot().getChildren().stream().map(e -> e.getNode().getFields().getStringField("name").getString())
+				.collect(Collectors.toList());
+		assertThat(response).hasDepth(2).isValid(8);
+		assertThat(nodeNames).containsExactly(expectedNodes);
+	}
+
+	/**
+	 * Test reading a node with a maxDepth value of two and the includeAll flag set to false.
+	 * 
+	 * We expect the response to only include container nodes.
+	 */
+	@Test
+	public void testReadChildrenDepthTwoIncludeAllDisabled() {
+		Node node = folder("news");
+		String uuid = node.getUuid();
+		assertNotNull(node);
+		assertNotNull(node.getUuid());
+
+		Future<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, uuid,
+				new NavigationRequestParameter().setMaxDepth(2).setIncludeAll(false));
+		latchFor(future);
+		assertSuccess(future);
+		NavigationResponse response = future.result();
+		assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
+
+		String[] expectedNodes = { "2015", "2014" };
+		List<String> nodeNames = response.getRoot().getChildren().stream().map(e -> e.getNode().getFields().getStringField("name").getString())
+				.collect(Collectors.toList());
+		assertThat(response).hasDepth(2).isValid(4);
+		assertThat(nodeNames).containsExactly(expectedNodes);
 	}
 
 	/**

@@ -16,6 +16,10 @@ securitySchemes:
 traits:
   - recursively:
       queryParameters:
+        includeAll:
+          description: When set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.
+          default: false
+          type: string
         maxDepth:
           description: Maximum depth for the navigation tree structure.
           default: 10
