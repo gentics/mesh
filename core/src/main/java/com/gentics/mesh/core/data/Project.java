@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -57,6 +58,13 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @return
 	 */
 	SchemaContainerRoot getSchemaContainerRoot();
+
+	/**
+	 * Return the microschema container root for the project
+	 *
+	 * @return
+	 */
+	MicroschemaContainerRoot getMicroschemaContainerRoot();
 
 	/**
 	 * Return a list of languages that were assigned to the project.

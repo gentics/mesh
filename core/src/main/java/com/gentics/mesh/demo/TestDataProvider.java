@@ -420,6 +420,7 @@ public class TestDataProvider {
 
 		MicroschemaContainer vcardMicroschemaContainer = rootService.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
+		project.getMicroschemaContainerRoot().addMicroschema(vcardMicroschemaContainer);
 	}
 
 	/**
@@ -447,6 +448,7 @@ public class TestDataProvider {
 
 		MicroschemaContainer microschemaContainer = rootService.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
+		project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {

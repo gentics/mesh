@@ -116,9 +116,9 @@ public final class MockingUtils {
 		when(micronode.getUuid()).thenReturn(randomUUID());
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
 		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
-		when(micronode.getMicroschemaContainerVersion()).thenReturn(latestVersion);
+		when(micronode.getSchemaContainerVersion()).thenReturn(latestVersion);
 		Microschema microschema = microschemaContainer.getLatestVersion().getSchema();
-		when(micronode.getMicroschemaContainerVersion().getSchema()).thenReturn(microschema);
+		when(micronode.getSchemaContainerVersion().getSchema()).thenReturn(microschema);
 
 		// longitude field
 		NumberGraphField longitudeField = mock(NumberGraphFieldImpl.class);

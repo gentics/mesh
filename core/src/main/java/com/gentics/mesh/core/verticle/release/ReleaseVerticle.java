@@ -50,6 +50,11 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 			crudHandler.handleGetSchemaVersions(InternalActionContext.create(rc), uuid);
 		});
 
+		route("/:uuid/microschemas").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			String uuid = rc.request().getParam("uuid");
+			crudHandler.handleGetMicroschemaVersions(InternalActionContext.create(rc), uuid);
+		});
+
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
@@ -68,6 +73,10 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		route("/:uuid/schemas").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			crudHandler.handleAssignSchemaVersion(InternalActionContext.create(rc), uuid);
+		});
+		route("/:uuid/microschemas").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
+			String uuid = rc.request().params().get("uuid");
+			crudHandler.handleAssignMicroschemaVersion(InternalActionContext.create(rc), uuid);
 		});
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");

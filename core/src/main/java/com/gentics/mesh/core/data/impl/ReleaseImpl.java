@@ -12,18 +12,26 @@ import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -157,30 +165,12 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public void assignSchemaVersion(SchemaContainerVersion schemaContainerVersion) {
-		setUniqueLinkOutTo(schemaContainerVersion.getImpl(), HAS_VERSION);
-
-		// unlink all other versions
-		SchemaContainerVersion previous = schemaContainerVersion.getPreviousVersion();
-		while (previous != null) {
-			unlinkOut(previous.getImpl(), HAS_VERSION);
-			previous = previous.getPreviousVersion();
-		}
-
-		SchemaContainerVersion next = schemaContainerVersion.getNextVersion();
-		while (next != null) {
-			unlinkOut(next.getImpl(), HAS_VERSION);
-			next = next.getNextVersion();
-		}
+		assign(schemaContainerVersion);
 	}
 
 	@Override
 	public void unassignSchema(SchemaContainer schemaContainer) {
-		SchemaContainerVersion version = schemaContainer.getLatestVersion();
-
-		while (version != null) {
-			unlinkOut(version.getImpl(), HAS_VERSION);
-			version = version.getPreviousVersion();
-		}
+		unassign(schemaContainer);
 	}
 
 	@Override
@@ -199,7 +189,8 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public SchemaContainerVersion getVersion(SchemaContainer schemaContainer) {
-		return out(HAS_VERSION).has(SchemaContainerVersionImpl.class).mark().in(HAS_PARENT_CONTAINER).has("name", schemaContainer.getName()).back()
+		return out(HAS_VERSION).has(SchemaContainerVersionImpl.class).mark().in(HAS_PARENT_CONTAINER)
+				.has("name", schemaContainer.getName()).back()
 				.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
@@ -207,5 +198,78 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	public List<? extends SchemaContainerVersion> findAllSchemaVersions()
 			throws InvalidArgumentException {
 		return out(HAS_VERSION).has(SchemaContainerVersionImpl.class).toListExplicit(SchemaContainerVersionImpl.class);
+	}
+
+	@Override
+	public void assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion) {
+		assign(microschemaContainerVersion);
+	}
+
+	@Override
+	public void unassignMicroschema(MicroschemaContainer microschemaContainer) {
+		unassign(microschemaContainer);
+	}
+
+	@Override
+	public boolean contains(MicroschemaContainer microschema) {
+		MicroschemaContainer foundMicroschemaContainer = out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class).in(HAS_PARENT_CONTAINER).has("name", microschema.getName())
+				.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
+		return foundMicroschemaContainer != null;
+	}
+
+	@Override
+	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
+		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_VERSION)
+				.has(MicroschemaContainerVersionImpl.class).has("uuid", microschemaContainerVersion.getUuid())
+				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		return foundMicroschemaContainerVersion != null;
+	}
+
+	@Override
+	public MicroschemaContainerVersion getVersion(MicroschemaContainer microschemaContainer) {
+		return out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class).mark().in(HAS_PARENT_CONTAINER)
+				.has("name", microschemaContainer.getName()).back()
+				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+	}
+
+	@Override
+	public List<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() throws InvalidArgumentException {
+		return out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class).toListExplicit(MicroschemaContainerVersionImpl.class);
+	}
+
+	/**
+	 * Assign the given schema container version to this release and unassign all other versions
+	 * @param version version to assign
+	 */
+	protected <R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void assign(
+			GraphFieldSchemaContainerVersion<R, RE, SCV, SC> version) {
+		setUniqueLinkOutTo(version.getImpl(), HAS_VERSION);
+
+		// unlink all other versions
+		SCV previous = version.getPreviousVersion();
+		while (previous != null) {
+			unlinkOut(previous.getImpl(), HAS_VERSION);
+			previous = previous.getPreviousVersion();
+		}
+
+		SCV next = version.getNextVersion();
+		while (next != null) {
+			unlinkOut(next.getImpl(), HAS_VERSION);
+			next = next.getNextVersion();
+		}
+	}
+
+	/**
+	 * Unassign all version of the container from the release
+	 * @param container
+	 */
+	protected <R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void unassign(
+			GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
+		SCV version = container.getLatestVersion();
+
+		while (version != null) {
+			unlinkOut(version.getImpl(), HAS_VERSION);
+			version = version.getPreviousVersion();
+		}
 	}
 }

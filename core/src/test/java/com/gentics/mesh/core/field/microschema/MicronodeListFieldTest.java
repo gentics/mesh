@@ -106,12 +106,12 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		MicronodeGraphFieldList testField = container.createMicronodeFieldList("testField");
 
 		Micronode micronode = testField.createMicronode();
-		micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
+		micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 		micronode.createString("firstName").setString("Donald");
 		micronode.createString("lastName").setString("Duck");
 
 		micronode = testField.createMicronode();
-		micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
+		micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 		micronode.createString("firstName").setString("Mickey");
 		micronode.createString("lastName").setString("Mouse");
 
@@ -131,7 +131,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 		// Create a micronode within the first list
 		Micronode micronodeA = fieldA.createMicronode();
-		micronodeA.setMicroschemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+		micronodeA.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
 		micronodeA.createString("firstName").setString("Donald");
 		micronodeA.createString("lastName").setString("Duck");
 		assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
@@ -140,7 +140,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
 		// Create another micronode in the second list
 		Micronode micronodeB = fieldB.createMicronode();
-		micronodeB.setMicroschemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+		micronodeB.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
 		micronodeB.createString("firstName").setString("Donald");
 		micronodeB.createString("lastName").setString("Duck");
 
@@ -148,7 +148,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 		// Add another list to fieldB
 		Micronode micronodeC = fieldB.createMicronode();
-		micronodeC.setMicroschemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+		micronodeC.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
 		micronodeC.createString("firstName").setString("Donald");
 		micronodeC.createString("lastName").setString("Duck");
 		assertFalse("Field b contains more items compared to field a and thus both lists are not equal", fieldA.equals(fieldB));
@@ -177,7 +177,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 		// rest set - graph set - different values
 		Micronode micronodeA = fieldA.createMicronode();
-		micronodeA.setMicroschemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+		micronodeA.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
 		micronodeA.createString("firstName").setString("Donald");
 		MicronodeResponse dummyValue2 = new MicronodeResponse();
 		dummyValue2.getFields().put("firstName", FieldUtil.createStringField("Dagobert"));

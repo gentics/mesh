@@ -3,6 +3,8 @@ package com.gentics.mesh.core.verticle.schema;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
@@ -76,42 +79,49 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		HandlerUtilities.readElementList(ac, () -> ac.getProject().getSchemaContainerRoot());
 	}
 
-	public void handleAddProjectToSchema(InternalActionContext ac, String schemaUuid, String projectUuid) {
+	public void handleAddSchemaToProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
-		validateParameter(projectUuid, "projectUuid");
 
 		db.asyncNoTrxExperimental(() -> {
+			Project project = ac.getProject();
+			String projectUuid = project.getUuid();
 			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
-			Observable<Project> obsProject = boot.projectRoot().loadObjectByUuid(ac, projectUuid, UPDATE_PERM);
+			Observable<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), GraphPermission.UPDATE_PERM);
 
-			return Observable.zip(obsProject, obsSchema, (project, schema) -> {
-				SchemaContainer addedSchema = db.trx(() -> {
+			return Observable.zip(obsPerm, obsSchema, (perm, schema) -> {
+				if (!perm.booleanValue()) {
+					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				}
+				return db.trx(() -> {
 					//TODO SQB ?
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
-					return schema;
+					return schema.transformToRest(ac, 0);
 				});
-				return addedSchema.transformToRest(ac, 0);
 			}).flatMap(x -> x);
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
-	public void handleRemoveProjectFromSchema(InternalActionContext ac, String projectUuid, String schemaUuid) {
-		validateParameter(projectUuid, "projectUuid");
+	public void handleRemoveSchemaFromProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
 		db.asyncNoTrxExperimental(() -> {
-			Observable<Project> obsProject = boot.projectRoot().loadObjectByUuid(ac, projectUuid, UPDATE_PERM);
-			// TODO check whether schema is assigned to project
+			Project project = ac.getProject();
+			String projectUuid = project.getUuid();
 			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
+			Observable<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), GraphPermission.UPDATE_PERM);
 
-			return Observable.zip(obsProject, obsSchema, (project, schema) -> {
-				SchemaContainer removedSchema = db.trx(() -> {
+			// TODO check whether schema is assigned to project
+
+			return Observable.zip(obsPerm, obsSchema, (perm, schema) -> {
+				if (!perm.booleanValue()) {
+					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				}
+				return db.trx(() -> {
 					project.getSchemaContainerRoot().removeSchemaContainer(schema);
-					return schema;
+					return schema.transformToRest(ac, 0);
 				});
-				return removedSchema.transformToRest(ac, 0);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

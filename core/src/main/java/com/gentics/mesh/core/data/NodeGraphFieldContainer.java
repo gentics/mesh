@@ -6,6 +6,7 @@ import java.util.Set;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -62,20 +63,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param version
 	 */
 	void setVersion(VersionNumber version);
-
-	/**
-	 * Return the schema container version that holds the schema that is used in combination with this node.
-	 * 
-	 * @return Schema container version
-	 */
-	SchemaContainerVersion getSchemaContainerVersion();
-
-	/**
-	 * Set the schema container version that is used in combination with this node.
-	 * 
-	 * @param schema
-	 */
-	void setSchemaContainerVersion(SchemaContainerVersion schema);
 
 	/**
 	 * Get the next version.
@@ -150,4 +137,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	List<FieldContainerChange> compareTo(FieldMap dummyMap, Schema schema);
+
+	@Override
+	SchemaContainerVersion getSchemaContainerVersion();
 }

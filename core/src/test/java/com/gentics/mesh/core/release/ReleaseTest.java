@@ -16,11 +16,16 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
@@ -310,6 +315,100 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 				.hasSchemaVersion(secondVersion);
 	}
 
+	@Test
+	public void testReadMicroschemaVersions() throws Exception {
+		Project project = project();
+		List<MicroschemaContainerVersion> versions = project.getMicroschemaContainerRoot().findAll().stream()
+				.map(MicroschemaContainer::getLatestVersion).collect(Collectors.toList());
+
+		List<MicroschemaContainerVersion> found = new ArrayList<>();
+		for (MicroschemaContainerVersion version : project.getInitialRelease().findAllMicroschemaVersions()) {
+			found.add(version);
+		}
+		assertThat(found).as("List of microschema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
+	}
+
+	/**
+	 * Test assigning a microschema to a project
+	 * @throws Exception
+	 */
+	@Test
+	public void testAssignMicroschema() throws Exception {
+		MicroschemaContainer microschemaContainer = createMicroschema("bla");
+		updateMicroschema(microschemaContainer, "newfield");
+		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
+
+		assertThat(latestVersion).as("latest version").isNotNull();
+		MicroschemaContainerVersion previousVersion = latestVersion.getPreviousVersion();
+		assertThat(previousVersion).as("Previous version").isNotNull();
+
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("New Release", user());
+
+		for (Release release : Arrays.asList(initialRelease, newRelease)) {
+			assertThat(release).as(release.getName()).hasNotMicroschema(microschemaContainer).hasNotMicroschemaVersion(latestVersion)
+					.hasNotMicroschemaVersion(previousVersion);
+		}
+
+		// assign the schema to the project
+		project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
+
+		initialRelease.reload();
+		newRelease.reload();
+
+		for (Release release : Arrays.asList(initialRelease, newRelease)) {
+			assertThat(release).as(release.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(latestVersion)
+					.hasNotMicroschemaVersion(previousVersion);
+		}
+	}
+
+	/**
+	 * Test unassigning a microschema from a project
+	 * @throws Exception
+	 */
+	@Test
+	public void testUnassignMicroschema() throws Exception {
+		Project project = project();
+		List<? extends MicroschemaContainer> microschemas = project.getMicroschemaContainerRoot().findAll();
+		MicroschemaContainer microschemaContainer = microschemas.get(0);
+
+		Release initialRelease = project.getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("New Release", user());
+
+		project.getMicroschemaContainerRoot().removeMicroschema(microschemaContainer);
+		initialRelease.reload();
+		newRelease.reload();
+
+		for (Release release : Arrays.asList(initialRelease, newRelease)) {
+			assertThat(release).as(release.getName()).hasNotMicroschema(microschemaContainer)
+					.hasNotMicroschemaVersion(microschemaContainer.getLatestVersion());
+		}
+	}
+
+	@Test
+	public void testReleaseMicroschemaVersion() throws Exception {
+		Project project = project();
+
+		MicroschemaContainer microschemaContainer = createMicroschema("bla");
+		MicroschemaContainerVersion firstVersion = microschemaContainer.getLatestVersion();
+
+		// assign the microschema to the project
+		project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
+
+		// update microschema
+		updateMicroschema(microschemaContainer, "newfield");
+		MicroschemaContainerVersion secondVersion = microschemaContainer.getLatestVersion();
+
+		Release initialRelease = project.getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("New Release", user());
+
+		assertThat(initialRelease).as(initialRelease.getName()).hasMicroschema(microschemaContainer)
+				.hasMicroschemaVersion(firstVersion).hasNotMicroschemaVersion(secondVersion);
+		assertThat(newRelease).as(newRelease.getName()).hasMicroschema(microschemaContainer).hasNotMicroschemaVersion(firstVersion)
+				.hasMicroschemaVersion(secondVersion);
+	}
+
 	/**
 	 * Create a new schema with a single string field "name"
 	 * @param name schema name
@@ -345,5 +444,40 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = getMockedInternalActionContext("");
 		schemaContainer.getLatestVersion().applyChanges(ac, model).toBlocking().last();
 		schemaContainer.reload();
+	}
+
+	/**
+	 * Create a new microschema with a single string field "name"
+	 * @param name microschema name
+	 * @return microschema container
+	 * @throws Exception
+	 */
+	protected MicroschemaContainer createMicroschema(String name) throws Exception {
+		MicroschemaModel microschema = new MicroschemaModel();
+		microschema.setName(name);
+		microschema.addField(FieldUtil.createStringFieldSchema("name"));
+		return meshRoot().getMicroschemaContainerRoot().create(microschema, user());
+	}
+
+	/**
+	 * Update the microschema container by adding a new string field with given name and reload the microschema container
+	 * @param microschemaContainer microschema container
+	 * @param newName new name
+	 * @throws Exception
+	 */
+	protected void updateMicroschema(MicroschemaContainer microschemaContainer, String newName) throws Exception {
+		Microschema microschema = microschemaContainer.getLatestVersion().getSchema();
+
+		Microschema updatedMicroschema = new MicroschemaModel();
+		updatedMicroschema.setName(microschema.getName());
+		updatedMicroschema.getFields().addAll(microschema.getFields());
+		updatedMicroschema.addField(FieldUtil.createStringFieldSchema(newName));
+
+		SchemaChangesListModel model = new SchemaChangesListModel();
+		model.getChanges().addAll(MicroschemaComparator.getIntance().diff(microschema, updatedMicroschema));
+
+		InternalActionContext ac = getMockedInternalActionContext("");
+		microschemaContainer.getLatestVersion().applyChanges(ac, model).toBlocking().last();
+		microschemaContainer.reload();
 	}
 }

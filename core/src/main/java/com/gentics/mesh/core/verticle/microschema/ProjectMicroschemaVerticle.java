@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle.schema;
+package com.gentics.mesh.core.verticle.microschema;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -14,18 +14,17 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 
 /**
- * Verticle for /api/v1/PROJECTNAME/schemas
+ * Verticle for /api/v1/PROJECTNAME/microschemas
  */
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
-
+public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 	@Autowired
-	private SchemaContainerCrudHandler crudHandler;
+	private MicroschemaCrudHandler crudHandler;
 
-	protected ProjectSchemaVerticle() {
-		super("schemas");
+	protected ProjectMicroschemaVerticle() {
+		super("microschemas");
 	}
 
 	@Override
@@ -46,7 +45,7 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 		route("/:uuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
-			crudHandler.handleAddSchemaToProject(ac, uuid);
+			crudHandler.handleAddMicroschemaToProject(ac, uuid);
 		});
 	}
 
@@ -54,7 +53,7 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
-			crudHandler.handleRemoveSchemaFromProject(ac, uuid);
+			crudHandler.handleRemoveMicroschemaFromProject(ac, uuid);
 		});
 	}
 }

@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
@@ -56,39 +57,12 @@ public interface SchemaClientMethods {
 	Future<GenericMessageResponse> deleteSchema(String uuid);
 
 	/**
-	 * Add the given schema to the given project.
-	 * 
-	 * @param schemaUuid
-	 * @param projectUuid
-	 * @return
-	 */
-	Future<Schema> addSchemaToProject(String schemaUuid, String projectUuid);
-
-	/**
-	 * Remove the given schema from the given project.
-	 * 
-	 * @param schemaUuid
-	 * @param projectUuid
-	 * @return
-	 */
-	Future<Schema> removeSchemaFromProject(String schemaUuid, String projectUuid);
-
-	/**
 	 * Load multiple schemas.
 	 * 
 	 * @param parameters
 	 * @return
 	 */
 	Future<SchemaListResponse> findSchemas(QueryParameterProvider... parameters);
-
-	/**
-	 * Load multiple schemas that were assigned to the given project.
-	 * 
-	 * @param projectName
-	 * @param parameters
-	 * @return
-	 */
-	Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters);
 
 	/**
 	 * Load multiple microschemas.
@@ -109,4 +83,57 @@ public interface SchemaClientMethods {
 	 */
 	Future<GenericMessageResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes);
 
+
+	/**
+	 * Assign a schema to the project
+	 *
+	 * @param projectName project name
+	 * @param schemaUuid schema uuid
+	 * @return
+	 */
+	Future<Schema> assignSchemaToProject(String projectName, String schemaUuid);
+
+	/**
+	 * Unassign a schema from the project
+	 *
+	 * @param projectName project name
+	 * @param schemaUuid schema uuid
+	 * @return
+	 */
+	Future<Schema> unassignSchemaFromProject(String projectName, String schemaUuid);
+
+	/**
+	 * Find all schemas assigned to the project
+	 *
+	 * @param projectName project name
+	 * @param parameters
+	 * @return
+	 */
+	Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters);
+
+	/**
+	 * Assign a microschema to the project
+	 *
+	 * @param projectName project name
+	 * @param microschemaUuid microschema uuid
+	 * @return
+	 */
+	Future<Microschema> assignMicroschemaToProject(String projectName, String microschemaUuid);
+
+	/**
+	 * Unassign a microschema from the project
+	 * @param projectName project name
+	 * @param microschemaUuid microschema uuid
+	 * @return
+	 */
+	Future<Microschema> unassignMicroschemaFromProject(String projectName, String microschemaUuid);
+
+	/**
+	 * Find all microschemas assigned to the project
+	 *
+	 * @param projectName project name
+	 * @param parameters
+	 * @return
+	 */
+	Future<MicroschemaListResponse> findMicroschemas(String projectName, QueryParameterProvider... parameters);
 }

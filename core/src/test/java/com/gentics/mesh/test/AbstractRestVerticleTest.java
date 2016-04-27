@@ -36,6 +36,7 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -466,6 +467,18 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	// Microschema
+
+	protected Microschema createMicroschema(String microschemaName) {
+		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
+		microschema.setName(microschemaName);
+		return call(() -> getClient().createMicroschema(microschema));
+	}
+
+	protected GenericMessageResponse updateMicroschema(String uuid, String microschemaName) {
+		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
+		microschema.setName(microschemaName);
+		return call(() -> getClient().updateMicroschema(uuid, microschema));
+	}
 
 	public void assertEqualsSanitizedJson(String msg, String expectedJson, String unsanitizedResponseJson) {
 		String sanitizedJson = unsanitizedResponseJson.replaceAll("uuid\":\"[^\"]*\"", "uuid\":\"uuid-value\"");

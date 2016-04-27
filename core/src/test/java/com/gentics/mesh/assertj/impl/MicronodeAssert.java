@@ -25,7 +25,7 @@ public class MicronodeAssert extends AbstractObjectAssert<MicronodeAssert, Micro
 	 * @return fluent API
 	 */
 	public MicronodeAssert isOf(MicroschemaContainerVersion microschemaContainer) {
-		assertThat(actual.getMicroschemaContainerVersion()).as(descriptionText() + " Microschema").equals(microschemaContainer);
+		assertThat(actual.getSchemaContainerVersion()).as(descriptionText() + " Microschema").equals(microschemaContainer);
 		return this;
 	}
 

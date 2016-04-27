@@ -445,7 +445,7 @@ public class DemoDataProvider {
 				String projectName = projectsArray.getString(e);
 				ProjectResponse project = getProject(projectName);
 				for (Schema schema : schemas.values()) {
-					Future<Schema> updateFuture = client.addSchemaToProject(schema.getUuid(), project.getUuid());
+					Future<Schema> updateFuture = client.assignSchemaToProject(project.getName(), schema.getUuid());
 					latchFor(updateFuture);
 				}
 			}

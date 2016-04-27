@@ -44,8 +44,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
@@ -119,7 +117,6 @@ public class NodeMigrationHandler extends AbstractHandler {
 		ac.setProject(project);
 		ac.setRelease(release);
 
-		Schema oldSchema = fromVersion.getSchema();
 		Schema newSchema = toVersion.getSchema();
 
 		// Iterate over all containers and invoke a migration for each one
@@ -146,9 +143,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 									oldPublished.getLanguage(), release, oldPublished.getEditor(), oldPublished);
 							migrated.setVersion(oldPublished.getVersion().nextPublished());
 							node.setPublished(migrated, releaseUuid);
-							migrate(ac, migrated, restModel, oldSchema, newSchema, touchedFields, migrationScripts, NodeUpdateRequest.class);
-							
-							migrated.setSchemaContainerVersion(toVersion);
+							migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
+
 							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
 
 							ac.setVersion("draft");
@@ -167,10 +163,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 						migrated.setVersion(container.getVersion().nextPublished());
 						node.setPublished(migrated, releaseUuid);
 					}
-					migrate(ac, migrated, restModel, oldSchema, newSchema, touchedFields, migrationScripts, NodeUpdateRequest.class);
+					migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
-					// Update the schema reference to the new version
-					migrated.setSchemaContainerVersion(toVersion);
 					migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.DRAFT);
 					if (publish) {
 						migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
@@ -241,14 +235,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 					ac.setLanguageTags(Arrays.asList(container.getLanguage().getLanguageTag()));
 
 					MicronodeResponse restModel = micronode.transformToRestSync(ac, 0).toBlocking().last();
-					Microschema oldSchema = fromVersion.getSchema();
-					Microschema newSchema = toVersion.getSchema();
 
 					// Migrate the micronode
-					migrate(ac, micronode, restModel, oldSchema, newSchema, touchedFields, migrationScripts, MicronodeResponse.class);
-
-					// Update the microschema reference to the new version
-					micronode.setMicroschemaContainerVersion(toVersion);
+					migrate(ac, micronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);
 
 					//TODO do we need to update the search queue batch? Micrnodes are not searchable at the moment.
 					return null;
@@ -350,7 +339,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Migrate the given container
+	 * Migrate the given container. This will also set the new version to the container
 	 * 
 	 * @param ac
 	 *            context
@@ -358,10 +347,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 *            container to migrate
 	 * @param restModel
 	 *            rest model of the container
-	 * @param oldSchema
-	 *            old schema
-	 * @param newSchema
-	 *            new schema
+	 * @param newVersion
+	 *            new schema version
 	 * @param touchedFields
 	 *            set of touched fields
 	 * @param migrationScripts
@@ -370,16 +357,16 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @throws Exception
 	 */
 	protected <T extends FieldContainer> void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer container, RestModel restModel,
-			FieldSchemaContainer oldSchema, FieldSchemaContainer newSchema, Set<String> touchedFields,
+			GraphFieldSchemaContainerVersion<?, ?, ?, ?> newVersion, Set<String> touchedFields,
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Class<T> clazz) throws Exception {
 		// collect the files for all binary fields (keys are the sha512sums,
 		// values are filepaths to the binary files)
-		Map<String, String> filePaths = container.getFields(oldSchema).stream().filter(f -> f instanceof BinaryGraphField)
+		Map<String, String> filePaths = container.getFields().stream().filter(f -> f instanceof BinaryGraphField)
 				.map(f -> (BinaryGraphField) f)
 				.collect(Collectors.toMap(BinaryGraphField::getSHA512Sum, BinaryGraphField::getFilePath, (existingPath, newPath) -> existingPath));
 
 		// remove all touched fields (if necessary, they will be readded later)
-		container.getFields(oldSchema).stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(container));
+		container.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(container));
 
 		String nodeJson = JsonUtil.toJson(restModel);
 
@@ -409,11 +396,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// transform the result back to the Rest Model
 		T transformedRestModel = JsonUtil.readValue(nodeJson, clazz);
 
-		container.updateFieldsFromRest(ac, transformedRestModel.getFields(), newSchema);
+		container.setSchemaContainerVersion(newVersion);
+		container.updateFieldsFromRest(ac, transformedRestModel.getFields());
 		// create a map containing fieldnames (as keys) and
 		// sha512sums of the supposedly stored binary contents
 		// of all binary fields
-		Map<String, String> existingBinaryFields = newSchema.getFields().stream().filter(f -> "binary".equals(f.getType()))
+		Map<String, String> existingBinaryFields = newVersion.getSchema().getFields().stream().filter(f -> "binary".equals(f.getType()))
 				.map(f -> Tuple.tuple(f.getName(), transformedRestModel.getFields().getBinaryField(f.getName()))).filter(t -> t.v2() != null)
 				.collect(Collectors.toMap(t -> t.v1(), t -> t.v2().getSha512sum()));
 

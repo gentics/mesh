@@ -23,9 +23,11 @@ public class MicroschemaReference extends NameUuidReference<MicroschemaReference
 	 * Set the microschema version.
 	 * 
 	 * @param version
+	 * @return fluent API
 	 */
-	public void setVersion(Integer version) {
+	public MicroschemaReference setVersion(Integer version) {
 		this.version = version;
+		return this;
 	}
 
 }

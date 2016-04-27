@@ -2,21 +2,18 @@ package com.gentics.mesh.core.data.node.field.nesting;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
@@ -41,7 +38,6 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 	};
 
 	FieldUpdater MICRONODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
 		MicronodeFieldSchema microschemaFieldSchema = (MicronodeFieldSchema) fieldSchema;
 		MicronodeField micronodeRestField = fieldMap.getMicronodeField(fieldKey);
@@ -58,49 +54,26 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 			return;
 		}
 		MicroschemaReference microschemaReference = micronodeRestField.getMicroschema();
-		// TODO check for null
-		if (microschemaReference == null) {
-			return;
-		}
-		String microschemaName = microschemaReference.getName();
-		String microschemaUuid = microschemaReference.getUuid();
-		MicroschemaContainer microschemaContainer = null;
 
-		if (isEmpty(microschemaName) && isEmpty(microschemaUuid)) {
-			//TODO i18n
-			throw error(BAD_REQUEST, "No valid microschema reference could be found for field {" + fieldKey + "}");
-		}
-		// 1. Load microschema by uuid
-		if (isEmpty(microschemaUuid)) {
-			microschemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().single();
-		}
-		// 2. Load microschema by name
-		if (microschemaContainer == null && !isEmpty(microschemaName)) {
-			microschemaContainer = boot.microschemaContainerRoot().findByName(microschemaName).toBlocking().single();
-		}
+		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot()
+				.fromReference(microschemaReference, ac.getRelease(null)).toBlocking().single();
 
-		if (microschemaContainer == null) {
-			throw error(BAD_REQUEST, "microschema_reference_invalid", fieldKey);
-		}
-
-		//TODO versioning: Use released schema version instead of latest
-		MicroschemaContainerVersion microschemaContainerVersion = microschemaContainer.getLatestVersion();
 		Micronode micronode = null;
 
 		// check whether microschema is allowed
 		//TODO should we allow all microschemas if the list is empty?
 		if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
-				|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
-			log.error("Node update not allowed since the microschema {" + microschemaContainer.getName() + "} is now allowed. Allowed microschemas {"
+				|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainerVersion.getName())) {
+			log.error("Node update not allowed since the microschema {" + microschemaContainerVersion.getName() + "} is now allowed. Allowed microschemas {"
 					+ microschemaFieldSchema.getAllowedMicroSchemas() + "}");
-			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaContainer.getName());
+			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaContainerVersion.getName());
 		}
 
 		// create a new micronode field, that will be filled
 		micronodeGraphField = container.createMicronode(fieldKey, microschemaContainerVersion);
 		micronode = micronodeGraphField.getMicronode();
 
-		micronode.updateFieldsFromRest(ac, micronodeRestField.getFields(), micronode.getMicroschemaContainerVersion().getSchema());
+		micronode.updateFieldsFromRest(ac, micronodeRestField.getFields());
 	};
 
 	FieldGetter MICRONODE_GETTER = (container, fieldSchema) -> {

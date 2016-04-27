@@ -247,18 +247,9 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 			return createIndexBatch(STORE_ACTION);
 		}).process().map(i -> {
 			return db.noTrx(() -> {
-				// Make sure to unlink the old schema container from the container root and assign the new version to the root.
-				DeliveryOptions options = new DeliveryOptions();
-				options.addHeader(NodeMigrationVerticle.UUID_HEADER, this.getSchemaContainer().getUuid());
-				options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, this.getUuid());
-				options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, this.getNextVersion().getUuid());
-				Mesh.vertx().eventBus().send(getMigrationAddress(), null, options);
-
 				return message(ac, "migration_invoked", getName());
 			});
-
 		});
-
 	}
 
 	/**

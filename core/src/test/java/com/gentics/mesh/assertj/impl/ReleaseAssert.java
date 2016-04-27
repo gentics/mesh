@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 
@@ -124,6 +126,46 @@ public class ReleaseAssert extends AbstractAssert<ReleaseAssert, Release> {
 	 */
 	public ReleaseAssert hasNotSchema(SchemaContainer schemaContainer) {
 		assertThat(actual.contains(schemaContainer)).as(descriptionText() + " has schema").isFalse();
+		return this;
+	}
+
+	/**
+	 * Assert that the microschema version is assigned to the release
+	 * @param version microschema version
+	 * @return fluent API
+	 */
+	public ReleaseAssert hasMicroschemaVersion(MicroschemaContainerVersion version) {
+		assertThat(actual.contains(version)).as(descriptionText() + " has version").isTrue();
+		return this;
+	}
+
+	/**
+	 * Assert that the microschema version is not assigned to the release
+	 * @param version schema version
+	 * @return fluent API
+	 */
+	public ReleaseAssert hasNotMicroschemaVersion(MicroschemaContainerVersion version) {
+		assertThat(actual.contains(version)).as(descriptionText() + " has version").isFalse();
+		return this;
+	}
+
+	/**
+	 * Assert that the microschema is assigned (in any version) to the release
+	 * @param microschemaContainer microschema
+	 * @return fluent API
+	 */
+	public ReleaseAssert hasMicroschema(MicroschemaContainer microschemaContainer) {
+		assertThat(actual.contains(microschemaContainer)).as(descriptionText() + " has schema").isTrue();
+		return this;
+	}
+
+	/**
+	 * Assert that the microschema is not assigned (in any version) to the release
+	 * @param microschemaContainer microschema
+	 * @return fluent API
+	 */
+	public ReleaseAssert hasNotMicroschema(MicroschemaContainer microschemaContainer) {
+		assertThat(actual.contains(microschemaContainer)).as(descriptionText() + " has schema").isFalse();
 		return this;
 	}
 }

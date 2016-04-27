@@ -3,6 +3,8 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 
 import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
@@ -105,4 +107,48 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * @throws InvalidArgumentException
 	 */
 	List<? extends SchemaContainerVersion> findAllSchemaVersions() throws InvalidArgumentException;
+
+	/**
+	 * Assign the given microschema version to the release
+	 * Unassign all other versions of the microschema
+	 * @param microschemaContainerVersion
+	 */
+	void assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion);
+
+	/**
+	 * Unassign all versions of the given microschema from this release
+	 * @param microschemaContainer
+	 */
+	void unassignMicroschema(MicroschemaContainer microschemaContainer);
+
+	/**
+	 * Check whether a version of this microschema container is assigned to this release
+	 *
+	 * @param microschema microschema
+	 * @return true iff assigned
+	 */
+	boolean contains(MicroschemaContainer microschema);
+
+	/**
+	 * Check whether the given microschema container version is assigned to this release
+	 *
+	 * @param microschemaContainerVersion microschema container version
+	 * @return true iff assigned
+	 */
+	boolean contains(MicroschemaContainerVersion microschemaContainerVersion);
+
+	/**
+	 * Get the microschema container version of the given microschema container, that is assigned to this release or null if not assigned at all
+	 * @param microschemaContainer schema container
+	 * @return assigned version or null
+	 */
+	MicroschemaContainerVersion getVersion(MicroschemaContainer microschemaContainer);
+
+	/**
+	 * Get list of all microschema container versions
+	 * @return list
+	 * @throws InvalidArgumentException
+	 */
+	List<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() throws InvalidArgumentException;
+
 }

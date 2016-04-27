@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
@@ -73,8 +72,6 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 	@Override
 	public Observable<Boolean> update(InternalActionContext ac, MicronodeFieldList list) {
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-
 		// Transform the list of micronodes into a hashmap. This way we can lookup micronode fields faster
 		Map<String, Micronode> existing = getList().stream().collect(Collectors.toMap(field -> {
 			return field.getMicronode().getUuid();
@@ -92,7 +89,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
 				}
 
-				return boot.microschemaContainerRoot().fromReference(microschemaReference);
+				return ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference, ac.getRelease(null));
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
 			} , (node, microschemaContainerVersion) -> {
 				// Load the micronode for the current field
@@ -101,11 +98,11 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				// Create a new micronode if none could be found
 				if (micronode == null) {
 					micronode = getGraph().addFramedVertex(MicronodeImpl.class);
-					micronode.setMicroschemaContainerVersion(microschemaContainerVersion);
+					micronode.setSchemaContainerVersion(microschemaContainerVersion);
 				} else {
 					// Avoid microschema container changes for micronode updates
-					if (!equalsIgnoreCase(micronode.getMicroschemaContainerVersion().getUuid(), microschemaContainerVersion.getUuid())) {
-						MicroschemaContainerVersion usedContainerVersion = micronode.getMicroschemaContainerVersion();
+					if (!equalsIgnoreCase(micronode.getSchemaContainerVersion().getUuid(), microschemaContainerVersion.getUuid())) {
+						MicroschemaContainerVersion usedContainerVersion = micronode.getSchemaContainerVersion();
 						String usedSchema = "name:" + usedContainerVersion.getName() + " uuid:" + usedContainerVersion.getSchemaContainer().getUuid()
 								+ " version:" + usedContainerVersion.getVersion();
 						String referencedSchema = "name:" + microschemaContainerVersion.getName() + " uuid:"
@@ -117,7 +114,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 				// Update the micronode since it could be found
 				try {
-					micronode.updateFieldsFromRest(ac, node.getFields(), micronode.getMicroschemaContainerVersion().getSchema());
+					micronode.updateFieldsFromRest(ac, node.getFields());
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Unknown error while updating micronode list.", e);
 				}

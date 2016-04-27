@@ -455,8 +455,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							fieldsMap.put(fieldSchema.getName(), Observable.from(micronodeGraphFieldList.getList()).map(item -> {
 								Map<String, Object> itemMap = new HashMap<>();
 								Micronode micronode = item.getMicronode();
-								addMicroschema(itemMap, micronode.getMicroschemaContainerVersion());
-								addFields(itemMap, micronode, micronode.getMicroschemaContainerVersion().getSchema().getFields());
+								addMicroschema(itemMap, micronode.getSchemaContainerVersion());
+								addFields(itemMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
 								return itemMap;
 							}).toList().toBlocking().first());
 						}
@@ -496,8 +496,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					Micronode micronode = micronodeGraphField.getMicronode();
 					if (micronode != null) {
 						Map<String, Object> micronodeMap = new HashMap<>();
-						addMicroschema(micronodeMap, micronode.getMicroschemaContainerVersion());
-						addFields(micronodeMap, micronode, micronode.getMicroschemaContainerVersion().getSchema().getFields());
+						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
+						addFields(micronodeMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
 						fieldsMap.put(fieldSchema.getName(), micronodeMap);
 					}
 				}

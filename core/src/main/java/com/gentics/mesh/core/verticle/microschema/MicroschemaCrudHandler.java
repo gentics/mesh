@@ -3,12 +3,15 @@ package com.gentics.mesh.core.verticle.microschema;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
@@ -96,4 +99,51 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	}
 
+	public void handleReadProjectList(InternalActionContext ac) {
+		HandlerUtilities.readElementList(ac, () -> ac.getProject().getMicroschemaContainerRoot());
+	}
+
+	public void handleAddMicroschemaToProject(InternalActionContext ac, String microschemaUuid) {
+		validateParameter(microschemaUuid, "microschemaUuid");
+
+		db.asyncNoTrxExperimental(() -> {
+			Project project = ac.getProject();
+			String projectUuid = project.getUuid();
+			Observable<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), UPDATE_PERM);
+			Observable<MicroschemaContainer> obsMicroschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+
+			return Observable.zip(obsPerm, obsMicroschema, (perm, microschema) -> {
+				if (!perm.booleanValue()) {
+					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				}
+				return db.trx(() -> {
+					project.getMicroschemaContainerRoot().addMicroschema(microschema);
+					return microschema.transformToRest(ac, 0);
+				});
+			}).flatMap(x -> x);
+
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
+	public void handleRemoveMicroschemaFromProject(InternalActionContext ac, String microschemaUuid) {
+		validateParameter(microschemaUuid, "microschemaUuid");
+
+		db.asyncNoTrxExperimental(() -> {
+			Project project = ac.getProject();
+			String projectUuid = project.getUuid();
+			Observable<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), UPDATE_PERM);
+			// TODO check whether microschema is assigned to project
+			Observable<MicroschemaContainer> obsMicroschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+
+			return Observable.zip(obsPerm, obsMicroschema, (perm, microschema) -> {
+				if (!perm.booleanValue()) {
+					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				}
+				return db.trx(() -> {
+					project.getMicroschemaContainerRoot().removeMicroschema(microschema);
+					return microschema.transformToRest(ac, 0);
+				});
+			}).flatMap(x -> x);
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
 }

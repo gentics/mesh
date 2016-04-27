@@ -21,11 +21,11 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
 import rx.Observable;
 
@@ -296,13 +296,12 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 			int level);
 
 	/**
-	 * Use the given map of rest fields and the schema information to set the data from the map to this container.
+	 * Use the given map of rest fields to set the data from the map to this container.
 	 * 
 	 * @param ac
 	 * @param restFields
-	 * @param schema
 	 */
-	void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields, FieldSchemaContainer schema);
+	void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields);
 
 	/**
 	 * Return the graph field for the given field schema.
@@ -313,13 +312,11 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	GraphField getField(FieldSchema fieldSchema);
 
 	/**
-	 * Get all fields defined in the given schema, that are present in this container
+	 * Get all fields, that are present in this container
 	 *
-	 * @param schema
-	 *            schema
 	 * @return
 	 */
-	List<GraphField> getFields(FieldSchemaContainer schema);
+	List<GraphField> getFields();
 
 	/**
 	 * Get the list graph field of specified type
@@ -342,4 +339,15 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 */
 	void deleteFieldEdge(String key);
 
+	/**
+	 * Get the schema container version used by this container
+	 * @return schema container version
+	 */
+	GraphFieldSchemaContainerVersion<?, ?, ?, ?> getSchemaContainerVersion();
+
+	/**
+	 * Set the schema container version used by this container
+	 * @param version schema container version
+	 */
+	void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> version);
 }

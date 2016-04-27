@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -81,6 +82,12 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		List<? extends SchemaContainer> projectSchemas = getProject().getSchemaContainerRoot().findAll();
 		for (SchemaContainer schemaContainer : projectSchemas) {
 			release.assignSchemaVersion(schemaContainer.getLatestVersion());
+		}
+
+		// ... same for microschemas
+		List<? extends MicroschemaContainer> projectMicroschemas = getProject().getMicroschemaContainerRoot().findAll();
+		for (MicroschemaContainer microschemaContainer : projectMicroschemas) {
+			release.assignMicroschemaVersion(microschemaContainer.getLatestVersion());
 		}
 
 		return release;

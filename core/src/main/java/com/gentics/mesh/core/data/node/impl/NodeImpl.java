@@ -1080,11 +1080,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				NodeGraphFieldContainer container = getGraphFieldContainer(language, release, Type.DRAFT);
 				if (container == null) {
-					SchemaContainerVersion latestSchemaVersion = getSchemaContainer().getLatestVersion();
-					Schema schema = latestSchemaVersion.getSchema();
 					// Create a new field container
 					container = createGraphFieldContainer(language, release, ac.getUser());
-					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+					container.updateFieldsFromRest(ac, requestModel.getFields());
 
 					// check whether the node has a parent node in this
 					// release, if not, we set the parent node from the previous
@@ -1111,9 +1109,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					container = createGraphFieldContainer(language, release, ac.getUser());
 
 					// Update the existing fields
-					SchemaContainerVersion latestSchemaVersion = container.getSchemaContainerVersion();
-					Schema schema = latestSchemaVersion.getSchema();
-					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+					container.updateFieldsFromRest(ac, requestModel.getFields());
 				}
 				return createIndexBatch(STORE_ACTION, Arrays.asList(container), release.getUuid(), Type.DRAFT);
 			}).process().map(i -> this);
