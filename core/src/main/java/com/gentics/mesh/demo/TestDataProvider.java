@@ -509,7 +509,7 @@ public class TestDataProvider {
 		}
 
 		if (contents.containsKey(name.toLowerCase())) {
-			throw new RuntimeException("Collsion of contents detected for key " + name.toLowerCase());
+			throw new RuntimeException("Collision of contents detected for key " + name.toLowerCase());
 		}
 		contents.put(name.toLowerCase(), node);
 		return node;

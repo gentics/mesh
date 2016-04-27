@@ -117,8 +117,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<String> getPathSegment(InternalActionContext ac) {
-		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(),
-				ac.getRelease(getProject()).getUuid(), ac.getVersion());
+		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), ac.getRelease(getProject()).getUuid(),
+				ac.getVersion());
 		if (container != null) {
 			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
@@ -233,8 +233,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, Type type) {
 		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()
-				.has(NodeGraphFieldContainerImpl.class).toListExplicit(NodeGraphFieldContainerImpl.class);
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().has(NodeGraphFieldContainerImpl.class)
+				.toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -277,8 +277,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// check whether there is a current draft version
 		draftEdge = getGraphFieldContainerEdge(languageTag, releaseUuid, Type.DRAFT);
 		if (draftEdge != null) {
-			previous = draftEdge.inV().has(NodeGraphFieldContainerImpl.class)
-					.nextOrDefault(NodeGraphFieldContainerImpl.class, null);
+			previous = draftEdge.inV().has(NodeGraphFieldContainerImpl.class).nextOrDefault(NodeGraphFieldContainerImpl.class, null);
 		}
 
 		// create the new container
@@ -323,8 +322,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// if there is no initial edge, create one
 		if (getGraphFieldContainerEdge(languageTag, releaseUuid, Type.INITIAL) == null) {
-			GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
-					GraphFieldContainerEdgeImpl.class);
+			GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(), GraphFieldContainerEdgeImpl.class);
 			initialEdge.setLanguageTag(languageTag);
 			initialEdge.setReleaseUuid(releaseUuid);
 			initialEdge.setType(Type.INITIAL);
@@ -335,16 +333,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Get an existing edge
-	 * @param languageTag language tag
-	 * @param releaseUuid release uuid
-	 * @param type edge type
+	 * 
+	 * @param languageTag
+	 *            language tag
+	 * @param releaseUuid
+	 *            release uuid
+	 * @param type
+	 *            edge type
 	 * @return existing edge or null
 	 */
 	protected EdgeFrame getGraphFieldContainerEdge(String languageTag, String releaseUuid, Type type) {
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag)
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag)
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		if (edgeTraversal.hasNext()) {
 			return edgeTraversal.next();
 		} else {
@@ -354,13 +354,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Get all graph field
+	 * 
 	 * @param releaseUuid
 	 * @param type
 	 * @return
 	 */
 	protected List<? extends EdgeFrame> getGraphFieldContainerEdges(String releaseUuid, Type type) {
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		return edgeTraversal.toList();
 	}
@@ -392,8 +392,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Node getParentNode(String releaseUuid) {
-		return outE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).inV().has(NodeImpl.class)
-				.nextOrDefaultExplicit(NodeImpl.class, null);
+		return outE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).inV().has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	@Override
@@ -503,8 +502,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(), ac.getVersion());
 			if (fieldContainer == null) {
 				// if a published version was requested, we check whether any published language variant exists for the node, if not, response with NOT_FOUND
-				if (Type.forVersion(ac.getVersion()) == Type.PUBLISHED
-						&& getGraphFieldContainers(release, Type.PUBLISHED).isEmpty()) {
+				if (Type.forVersion(ac.getVersion()) == Type.PUBLISHED && getGraphFieldContainers(release, Type.PUBLISHED).isEmpty()) {
 					throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 				}
 
@@ -606,8 +604,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// languagePaths
 				Map<String, String> languagePaths = new HashMap<>();
-				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release,
-						Type.forVersion(ac.getVersion()))) {
+				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release, Type.forVersion(ac.getVersion()))) {
 					Language currLanguage = currentFieldContainer.getLanguage();
 					languagePaths.put(currLanguage.getLanguageTag(),
 							linkReplacer.resolve(this, ac.getResolveLinksType(), currLanguage.getLanguageTag()).toBlocking().single());
@@ -660,8 +657,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(BAD_REQUEST, "navigation_error_no_container");
 			}
 			NavigationResponse response = new NavigationResponse();
-			return buildNavigationResponse(ac, this, ac.getNavigationRequestParameter().getMaxDepth(), 0, response,
-					response.getRoot(), ac.getRelease(getProject()).getUuid(), Type.forVersion(ac.getVersion()));
+			return buildNavigationResponse(ac, this, ac.getNavigationRequestParameter().getMaxDepth(), 0, response, response.getRoot(),
+					ac.getRelease(getProject()).getUuid(), Type.forVersion(ac.getVersion()));
 		});
 	}
 
@@ -686,8 +683,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            TODO
 	 * @return
 	 */
-	private Observable<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth,
-			int level, NavigationResponse navigation, NavigationElement currentElement, String releaseUuid, Type type) {
+	private Observable<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
+			NavigationResponse navigation, NavigationElement currentElement, String releaseUuid, Type type) {
 		List<? extends Node> nodes = node.getChildren(ac.getUser(), releaseUuid, type);
 		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
 
@@ -714,8 +711,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					currentElement.setChildren(new ArrayList<>());
 				}
 				currentElement.getChildren().add(childElement);
-				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement,
-						releaseUuid, type));
+				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement, releaseUuid, type));
+			} else if (ac.getNavigationRequestParameter().isIncludeAll()) {
+				// We found at least one child so lets create the array
+				if (currentElement.getChildren() == null) {
+					currentElement.setChildren(new ArrayList<>());
+				}
+				NavigationElement childElement = new NavigationElement();
+				currentElement.getChildren().add(childElement);
+				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, releaseUuid, type));
 			}
 		}
 		return Observable.merge(obsResponses).last();
@@ -739,17 +743,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		getGraphFieldContainers(release, Type.PUBLISHED).stream().forEach(c -> {
 			PublishStatusModel status = new PublishStatusModel().setPublished(true)
-					.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString()))
-					.setPublisher(c.getEditor().transformToReference()).setPublishTime(c.getLastEditedTimestamp());
+					.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString())).setPublisher(c.getEditor().transformToReference())
+					.setPublishTime(c.getLastEditedTimestamp());
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
 
-		getGraphFieldContainers(release, Type.DRAFT).stream()
-				.filter(c -> !languages.containsKey(c.getLanguage().getLanguageTag())).forEach(c -> {
-					PublishStatusModel status = new PublishStatusModel().setPublished(false)
-							.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString()));
-					languages.put(c.getLanguage().getLanguageTag(), status);
-				});
+		getGraphFieldContainers(release, Type.DRAFT).stream().filter(c -> !languages.containsKey(c.getLanguage().getLanguageTag())).forEach(c -> {
+			PublishStatusModel status = new PublishStatusModel().setPublished(false)
+					.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString()));
+			languages.put(c.getLanguage().getLanguageTag(), status);
+		});
 
 		return Observable.just(publishStatus);
 	}
@@ -760,15 +763,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
-		List<? extends NodeGraphFieldContainer> unpublishedContainers = getGraphFieldContainers(release, Type.DRAFT)
-				.stream().filter(c -> !c.isPublished(releaseUuid)).collect(Collectors.toList());
+		List<? extends NodeGraphFieldContainer> unpublishedContainers = getGraphFieldContainers(release, Type.DRAFT).stream()
+				.filter(c -> !c.isPublished(releaseUuid)).collect(Collectors.toList());
 
 		// TODO check whether all required fields are filled
 
 		return db.trx(() -> {
 			// publish all unpublished containers
-			List<NodeGraphFieldContainer> published = unpublishedContainers.stream()
-					.map(c -> publish(c.getLanguage(), release, ac.getUser())).collect(Collectors.toList());
+			List<NodeGraphFieldContainer> published = unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser()))
+					.collect(Collectors.toList());
 
 			// reindex
 			return createIndexBatch(STORE_ACTION, published, releaseUuid, Type.PUBLISHED);
@@ -879,8 +882,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// create new published edge
-		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
-				GraphFieldContainerEdgeImpl.class);
+		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(), GraphFieldContainerEdgeImpl.class);
 		edge.setLanguageTag(languageTag);
 		edge.setReleaseUuid(releaseUuid);
 		edge.setType(Type.PUBLISHED);
@@ -888,9 +890,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Create a new published version of the given language in the release
-	 * @param language language
-	 * @param release release
-	 * @param user user
+	 * 
+	 * @param language
+	 *            language
+	 * @param release
+	 *            release
+	 * @param user
+	 *            user
 	 * @return published field container
 	 */
 	protected NodeGraphFieldContainer publish(Language language, Release release, User user) {
@@ -905,8 +911,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags, String releaseUuid,
-			String version) {
+	public NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags, String releaseUuid, String version) {
 		NodeGraphFieldContainer fieldContainer = null;
 
 		Type type = Type.forVersion(version);
@@ -974,8 +979,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	/**
-	 * Get a vertex traversal to find the children of this node, this user has
-	 * read permission for
+	 * Get a vertex traversal to find the children of this node, this user has read permission for
 	 *
 	 * @param requestUser
 	 *            user
@@ -997,11 +1001,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			traversal = in(HAS_PARENT_NODE);
 		}
 
-		traversal = traversal.has(NodeImpl.class).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser.getImpl()).back();
+		traversal = traversal.has(NodeImpl.class).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back();
 		if (releaseUuid != null && type != null) {
-			traversal = traversal.mark().outE(HAS_FIELD_CONTAINER)
-					.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
+			traversal = traversal.mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 					.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();
 		}
 		return traversal;
@@ -1013,8 +1015,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid,
-			Type type, PagingParameter pagingInfo) throws InvalidArgumentException {
+	public PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, Type type,
+			PagingParameter pagingInfo) throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = getChildrenTraversal(requestUser, releaseUuid, type);
 		VertexTraversal<?, ?, ?> countTraversal = getChildrenTraversal(requestUser, releaseUuid, type);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
@@ -1029,8 +1031,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Node child : getChildren()) {
 				child.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
@@ -1043,8 +1044,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public String getDisplayName(InternalActionContext ac) {
 		String displayFieldName = null;
 		try {
-			NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(),
-					ac.getRelease(getProject()).getUuid(), ac.getVersion());
+			NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), ac.getRelease(getProject()).getUuid(),
+					ac.getVersion());
 			if (container == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
@@ -1056,8 +1057,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return container.getDisplayFieldValue();
 			}
 		} catch (Exception e) {
-			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName
-					+ "}", e);
+			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}", e);
 			throw e;
 		}
 	}
@@ -1071,8 +1071,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(BAD_REQUEST, "error_language_not_set");
 			}
 			return db.trx(() -> {
-				Language language = BootstrapInitializer.getBoot().languageRoot()
-						.findByLanguageTag(requestModel.getLanguage());
+				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
 					throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 				}
@@ -1155,8 +1154,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return db.trx(() -> {
 			setParentNode(releaseUuid, targetNode);
 			// update the webroot path info for every field container.
-			getGraphFieldContainers().stream().forEach(
-					container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
+			getGraphFieldContainers().stream()
+					.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
 			SearchQueueBatch batch = createIndexBatch(STORE_ACTION);
 			return batch;
 		}).process().map(i -> {
@@ -1196,14 +1195,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Create an index batch for the given list of containers
-	 * @param action action
-	 * @param containers containers
-	 * @param releaseUuid release Uuid
-	 * @param type type
+	 * 
+	 * @param action
+	 *            action
+	 * @param containers
+	 *            containers
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param type
+	 *            type
 	 * @return batch
 	 */
-	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action,
-			List<? extends NodeGraphFieldContainer> containers, String releaseUuid, Type type) {
+	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action, List<? extends NodeGraphFieldContainer> containers, String releaseUuid,
+			Type type) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		for (NodeGraphFieldContainer container : containers) {
@@ -1233,9 +1237,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// segmentField
 			BinaryGraphField binaryField = container.getBinary(segmentFieldName);
 			if (binaryField == null) {
-				log.error("The node {" + getUuid()
-						+ "} did not contain a string or a binary field for segment field name {" + segmentFieldName
-						+ "}");
+				log.error(
+						"The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName + "}");
 			} else {
 				String binaryFilename = binaryField.getFileName();
 				if (segment.equals(binaryFilename)) {
