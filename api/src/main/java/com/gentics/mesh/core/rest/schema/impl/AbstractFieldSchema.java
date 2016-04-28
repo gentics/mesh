@@ -97,21 +97,6 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		Map<String, Object> schemaPropertiesA = getAllChangeProperties();
 		Map<String, Object> schemaPropertiesB = fieldSchema.getAllChangeProperties();
 
-		// Generate a structural diff. This way it is easy to determine which field properties have been updated, added or removed.
-		MapDifference<String, Object> diff = Maps.difference(schemaPropertiesA, schemaPropertiesB, new Equivalence<Object>() {
-
-			@Override
-			protected boolean doEquivalent(Object a, Object b) {
-				return Objects.deepEquals(a, b);
-			}
-
-			@Override
-			protected int doHash(Object t) {
-				return t.hashCode();
-			}
-
-		});
-
 		// Check whether the field type has been changed
 		if (!fieldSchema.getType().equals(getType())) {
 			change.setOperation(CHANGEFIELDTYPE);
@@ -121,15 +106,30 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 			}
 			// Add fieldB properties which are new
 			change.getProperties().putAll(schemaPropertiesB);
-			return change;
-		}
+		} else {
 
-		// Check whether fields have been updated
-		Map<String, ValueDifference<Object>> differentProperties = diff.entriesDiffering();
-		if (!differentProperties.isEmpty()) {
-			change.setOperation(UPDATEFIELD);
-			for (String key : differentProperties.keySet()) {
-				change.getProperties().put(key, differentProperties.get(key).rightValue());
+			// Generate a structural diff. This way it is easy to determine which field properties have been updated, added or removed.
+			MapDifference<String, Object> diff = Maps.difference(schemaPropertiesA, schemaPropertiesB, new Equivalence<Object>() {
+
+				@Override
+				protected boolean doEquivalent(Object a, Object b) {
+					return Objects.deepEquals(a, b);
+				}
+
+				@Override
+				protected int doHash(Object t) {
+					return t.hashCode();
+				}
+
+			});
+
+			// Check whether fields have been updated
+			Map<String, ValueDifference<Object>> differentProperties = diff.entriesDiffering();
+			if (!differentProperties.isEmpty()) {
+				change.setOperation(UPDATEFIELD);
+				for (String key : differentProperties.keySet()) {
+					change.getProperties().put(key, differentProperties.get(key).rightValue());
+				}
 			}
 		}
 		return change;
