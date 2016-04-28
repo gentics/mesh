@@ -24,7 +24,7 @@ public abstract class AbstractComparatorNodeTest<C extends FieldSchemaContainer>
 	@Test
 	@Override
 	public void testSameField() throws IOException {
-		C containerA = createContainer();	
+		C containerA = createContainer();
 		C containerB = createContainer();
 
 		NodeFieldSchema fieldA = createField("test");
@@ -36,7 +36,7 @@ public abstract class AbstractComparatorNodeTest<C extends FieldSchemaContainer>
 		NodeFieldSchema fieldB = createField("test");
 		fieldB.setRequired(true);
 		fieldB.setAllowedSchemas("one", "two");
-		fieldB.setLabel("label2");
+		fieldB.setLabel("label1");
 		containerB.addField(fieldB);
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
@@ -55,19 +55,20 @@ public abstract class AbstractComparatorNodeTest<C extends FieldSchemaContainer>
 		fieldA.setLabel("label1");
 		schemaA.addField(fieldA);
 
+		// field B has an additional allow property value
 		NodeFieldSchema fieldB = createField("test");
 		fieldB.setRequired(true);
+		fieldB.setAllowedSchemas("one", "two", "three");
 		fieldB.setLabel("label1");
 		schemaB.addField(fieldB);
 
-		// assert allow property:
-		fieldB.setAllowedSchemas("one", "two", "three");
+		// assert that the additional allow property has been detected
 		List<SchemaChangeModel> changes = getComparator().diff(schemaA, schemaB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty("allow", new String[] { "one", "two", "three" });
 		assertThat(changes.get(0).getProperties()).hasSize(2);
 
-		// assert required flag:
+		// assert that required flag changes and that the allow property does no longer cause a diff since both values are not the same 
 		fieldA.setAllowedSchemas("one", "two", "three");
 		fieldB.setRequired(false);
 		changes = getComparator().diff(schemaA, schemaB);

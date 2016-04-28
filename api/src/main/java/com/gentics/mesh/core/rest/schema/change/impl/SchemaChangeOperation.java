@@ -16,7 +16,7 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public enum SchemaChangeOperation {
 
-	ADDFIELD, REMOVEFIELD, CHANGEFIELDTYPE, UPDATEFIELD, UPDATESCHEMA, UPDATEMICROSCHEMA;
+	ADDFIELD, REMOVEFIELD, CHANGEFIELDTYPE, UPDATEFIELD, UPDATESCHEMA, UPDATEMICROSCHEMA, EMPTY;
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaChangeOperation.class);
 

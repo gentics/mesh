@@ -22,5 +22,4 @@ public class SchemaComparatorHtmlTest extends AbstractComparatorHtmlTest<Schema>
 	public Schema createContainer() {
 		return FieldUtil.createMinimalValidSchema();
 	}
-
 }

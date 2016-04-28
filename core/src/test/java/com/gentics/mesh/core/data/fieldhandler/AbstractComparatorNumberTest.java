@@ -40,7 +40,7 @@ public abstract class AbstractComparatorNumberTest<C extends FieldSchemaContaine
 		//		fieldB.setMax(2);
 		fieldB.setRequired(true);
 		//		fieldB.setStep(0.1f);
-		fieldB.setLabel("label2");
+		fieldB.setLabel("label1");
 		containerB.addField(fieldB);
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
@@ -73,8 +73,8 @@ public abstract class AbstractComparatorNumberTest<C extends FieldSchemaContaine
 		fieldB.setRequired(false);
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty("required", false);
-		assertThat(changes.get(0).getProperties()).hasSize(2);
+		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty("required", false).hasProperty("label", "label2");
+		assertThat(changes.get(0).getProperties()).hasSize(3);
 		fieldB.setRequired(true);
 
 		//TODO min, max, step?

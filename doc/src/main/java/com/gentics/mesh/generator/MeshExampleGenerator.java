@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LA
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class MeshExampleGenerator {
 		SchemaChangeModel removeFieldChange = SchemaChangeModel.createRemoveFieldChange("fieldToBeRemoved");
 		writeJson(removeFieldChange, "removefield.json");
 
-		SchemaChangeModel updateFieldChange = SchemaChangeModel.createUpdateFieldChange("fieldToBeUpdated");
+		SchemaChangeModel updateFieldChange = new SchemaChangeModel(UPDATEFIELD, "fieldToBeUpdated");
 		updateFieldChange.setProperty(NAME_KEY, "newName");
 		writeJson(updateFieldChange, "updatefield.json");
 

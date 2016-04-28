@@ -35,7 +35,7 @@ public abstract class AbstractComparatorMicronodeTest<C extends FieldSchemaConta
 
 		MicronodeFieldSchema fieldB = FieldUtil.createMicronodeFieldSchema("test");
 		fieldB.setRequired(true);
-		fieldB.setLabel("label2");
+		fieldB.setLabel("label1");
 		fieldB.setAllowedMicroSchemas("one", "two");
 		containerB.addField(fieldB);
 
@@ -65,8 +65,8 @@ public abstract class AbstractComparatorMicronodeTest<C extends FieldSchemaConta
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasNoProperty("required").hasProperty("allow",
-				new String[] { "one", "two", "three" });
-		assertThat(changes.get(0).getProperties()).hasSize(2);
+				new String[] { "one", "two", "three" }).hasProperty("label", "label2");
+		assertThat(changes.get(0).getProperties()).hasSize(3);
 
 		// assert required flag:
 		fieldB.setAllowedMicroSchemas("one", "two");

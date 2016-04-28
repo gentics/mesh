@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import java.io.IOException;
-import java.util.Optional;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.EMPTY;
 
+import java.io.IOException;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -22,17 +22,22 @@ public class FieldSchemaComparator {
 	 * @return
 	 * @throws IOException
 	 */
-	public Optional<SchemaChangeModel> compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) throws IOException {
+	public SchemaChangeModel compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) throws IOException {
 		if (fieldSchemaA != null && fieldSchemaB != null) {
-			return fieldSchemaA.compareTo(fieldSchemaB);
+			SchemaChangeModel change = fieldSchemaA.compareTo(fieldSchemaB);
+			// Only load the migration script if a change has been detected
+			if (change.getOperation() != EMPTY) {
+				change.loadMigrationScript();
+			}
+			return change;
 		} else if (fieldSchemaA != null && fieldSchemaB == null) {
 			SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange(fieldSchemaA.getName());
 			change.loadMigrationScript();
-			return Optional.of(change);
+			return change;
 		} else if (fieldSchemaA == null && fieldSchemaB != null) {
-			return Optional.of(SchemaChangeModel.createAddFieldChange(fieldSchemaB.getName(),  fieldSchemaB.getType()));
+			return SchemaChangeModel.createAddFieldChange(fieldSchemaB.getName(), fieldSchemaB.getType());
 		}
 
-		return Optional.empty();
+		return null;
 	}
 }

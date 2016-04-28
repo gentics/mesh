@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.change;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,9 +10,11 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
+import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -54,6 +57,65 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		Schema updatedSchema = mutator.apply(version);
 		assertNotNull(updatedSchema);
 		assertEquals("No changes were specified. No modification should happen.", schema, updatedSchema);
+	}
+
+	@Test
+	public void testUpdateTypeAndAllowProperty() {
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+
+		// 1. Create schema
+		Schema schema = new SchemaModel("testschema");
+
+		NumberFieldSchema numberField = new NumberFieldSchemaImpl();
+		numberField.setName("testField");
+		numberField.setRequired(true);
+		numberField.setLabel("originalLabel");
+		schema.addField(numberField);
+
+		version.setSchema(schema);
+
+		FieldTypeChange fieldTypeChange = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+		fieldTypeChange.setFieldName("testField");
+		fieldTypeChange.setRestProperty(SchemaChangeModel.TYPE_KEY, "string");
+		fieldTypeChange.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "testValue" });
+		version.setNextChange(fieldTypeChange);
+
+		// 3. Apply the changes
+		Schema updatedSchema = mutator.apply(version);
+
+		StringFieldSchema stringFieldSchema = updatedSchema.getField("testField", StringFieldSchemaImpl.class);
+		assertNotNull(stringFieldSchema);
+		assertThat(stringFieldSchema.getAllowedValues()).containsExactly("testValue");
+	}
+
+	@Test
+	public void testUpdateLabel() {
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+
+		// 1. Create schema
+		Schema schema = new SchemaModel("testschema");
+
+		StringFieldSchema stringField = new StringFieldSchemaImpl();
+		stringField.setAllowedValues("blub");
+		stringField.setName("stringField");
+		stringField.setRequired(true);
+		stringField.setLabel("originalLabel");
+		schema.addField(stringField);
+
+		version.setSchema(schema);
+
+		UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		stringFieldUpdate.setFieldName("stringField");
+		stringFieldUpdate.setRestProperty(SchemaChangeModel.LABEL_KEY, "UpdatedLabel");
+		version.setNextChange(stringFieldUpdate);
+
+		// 3. Apply the changes
+		Schema updatedSchema = mutator.apply(version);
+
+		StringFieldSchema stringFieldSchema = updatedSchema.getField("stringField", StringFieldSchemaImpl.class);
+		assertNotNull(stringFieldSchema);
+		assertEquals("UpdatedLabel", stringFieldSchema.getLabel());
+
 	}
 
 	@Test
@@ -130,7 +192,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
 		UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		stringFieldUpdate.setRestProperty("allowedValues", new String[] { "valueA", "valueB" });
+		stringFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "valueA", "valueB" });
 		stringFieldUpdate.setFieldName("stringField");
 		stringFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 		nodeFieldUpdate.setNextChange(stringFieldUpdate);
