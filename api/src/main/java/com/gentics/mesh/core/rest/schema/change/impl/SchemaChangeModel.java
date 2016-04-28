@@ -3,7 +3,6 @@ package com.gentics.mesh.core.rest.schema.change.impl;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEMICROSCHEMA;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 
@@ -58,23 +57,23 @@ public class SchemaChangeModel implements RestModel {
 	}
 
 	/**
-	 * Create a new change that includes field name information.
-	 * 
-	 * @param operation
-	 * @param fieldName
-	 */
-	private SchemaChangeModel(SchemaChangeOperation operation, String fieldName) {
-		this(operation);
-		getProperties().put(FIELD_NAME_KEY, fieldName);
-	}
-
-	/**
 	 * Create a new change.
 	 * 
 	 * @param operation
 	 */
 	private SchemaChangeModel(SchemaChangeOperation operation) {
 		this.operation = operation;
+	}
+
+	/**
+	 * Create a new change that includes field name information.
+	 * 
+	 * @param operation
+	 * @param fieldName
+	 */
+	public SchemaChangeModel(SchemaChangeOperation operation, String fieldName) {
+		this(operation);
+		getProperties().put(FIELD_NAME_KEY, fieldName);
 	}
 
 	/**
@@ -186,16 +185,6 @@ public class SchemaChangeModel implements RestModel {
 	 */
 	public static SchemaChangeModel createRemoveFieldChange(String name) {
 		return new SchemaChangeModel(REMOVEFIELD, name);
-	}
-
-	/**
-	 * Create a new field update change.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public static SchemaChangeModel createUpdateFieldChange(String name) {
-		return new SchemaChangeModel(UPDATEFIELD, name);
 	}
 
 	/**

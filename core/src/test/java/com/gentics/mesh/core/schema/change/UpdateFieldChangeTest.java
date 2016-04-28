@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema.change;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -53,7 +54,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() {
-		SchemaChangeModel model = SchemaChangeModel.createUpdateFieldChange("someField");
+		SchemaChangeModel model = new SchemaChangeModel(UPDATEFIELD, "someField");
 		UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		change.updateFromRest(model);
 		assertEquals("someField", change.getFieldName());

@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -33,30 +34,21 @@ public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements Mic
 	}
 
 	@Override
-	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
+	public SchemaChangeModel compareTo(FieldSchema fieldSchema) throws IOException {
+		SchemaChangeModel change = super.compareTo(fieldSchema);
 		if (fieldSchema instanceof MicronodeFieldSchema) {
 			MicronodeFieldSchema micronodeFieldSchema = (MicronodeFieldSchema) fieldSchema;
 
-			boolean modified = false;
-			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(fieldSchema.getName());
-
-			// required flag:
-			modified = compareRequiredField(change, micronodeFieldSchema, modified);
-
 			// allow
 			if (!Arrays.equals(getAllowedMicroSchemas(), micronodeFieldSchema.getAllowedMicroSchemas())) {
+				change.setOperation(UPDATEFIELD);
 				change.getProperties().put(SchemaChangeModel.ALLOW_KEY, micronodeFieldSchema.getAllowedMicroSchemas());
-				modified = true;
 			}
 
-			if (modified) {
-				change.loadMigrationScript();
-				return Optional.of(change);
-			}
 		} else {
 			return createTypeChange(fieldSchema);
 		}
-		return Optional.empty();
+		return change;
 	}
 
 	@Override

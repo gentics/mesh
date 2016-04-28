@@ -57,6 +57,36 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 	}
 
 	@Test
+	public void testUpdateLabel() {
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+
+		// 1. Create schema
+		Schema schema = new SchemaModel("testschema");
+
+		StringFieldSchema stringField = new StringFieldSchemaImpl();
+		stringField.setAllowedValues("blub");
+		stringField.setName("stringField");
+		stringField.setRequired(true);
+		stringField.setLabel("originalLabel");
+		schema.addField(stringField);
+
+		version.setSchema(schema);
+
+		UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		stringFieldUpdate.setFieldName("stringField");
+		stringFieldUpdate.setRestProperty(SchemaChangeModel.LABEL_KEY, "UpdatedLabel");
+		version.setNextChange(stringFieldUpdate);
+
+		// 3. Apply the changes
+		Schema updatedSchema = mutator.apply(version);
+
+		StringFieldSchema stringFieldSchema = updatedSchema.getField("stringField", StringFieldSchemaImpl.class);
+		assertNotNull(stringFieldSchema);
+		assertEquals("UpdatedLabel", stringFieldSchema.getLabel());
+
+	}
+
+	@Test
 	public void testAUpdateFields() {
 
 		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);

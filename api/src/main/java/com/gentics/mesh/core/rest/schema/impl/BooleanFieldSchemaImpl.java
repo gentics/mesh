@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
@@ -16,18 +15,12 @@ public class BooleanFieldSchemaImpl extends AbstractFieldSchema implements Boole
 	}
 
 	@Override
-	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
-		if (fieldSchema instanceof BooleanFieldSchema) {
-
-			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(fieldSchema.getName());
-			if (compareRequiredField(change, fieldSchema, false)) {
-				change.loadMigrationScript();
-				return Optional.of(change);
-			}
-		} else {
+	public SchemaChangeModel compareTo(FieldSchema fieldSchema) throws IOException {
+		SchemaChangeModel change = super.compareTo(fieldSchema);
+		if (!(fieldSchema instanceof BooleanFieldSchema)) {
 			return createTypeChange(fieldSchema);
 		}
-		return Optional.empty();
+		return change;
 	}
 
 }

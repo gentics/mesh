@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -33,34 +33,21 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 	}
 
 	@Override
-	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
+	public SchemaChangeModel compareTo(FieldSchema fieldSchema) throws IOException {
+		SchemaChangeModel change = super.compareTo(fieldSchema);
 		if (fieldSchema instanceof StringFieldSchema) {
 			StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
 
-			boolean modified = false;
-			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(fieldSchema.getName());
-
-			// required
-			if (isRequired() != stringFieldSchema.isRequired()) {
-				change.setProperty(SchemaChangeModel.REQUIRED_KEY, fieldSchema.isRequired());
-				modified = true;
-			}
-
 			// allow
 			if (!Arrays.equals(getAllowedValues(), stringFieldSchema.getAllowedValues())) {
+				change.setOperation(UPDATEFIELD);
 				change.getProperties().put(SchemaChangeModel.ALLOW_KEY, stringFieldSchema.getAllowedValues());
-				modified = true;
-			}
-
-			if (modified) {
-				change.loadMigrationScript();
-				return Optional.of(change);
 			}
 		} else {
 			return createTypeChange(fieldSchema);
 		}
 
-		return Optional.empty();
+		return change;
 	}
 
 	@Override

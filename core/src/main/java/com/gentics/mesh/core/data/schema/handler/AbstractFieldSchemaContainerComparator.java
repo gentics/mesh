@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.schema.handler;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.EMPTY;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
@@ -9,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -89,13 +89,13 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				changes.add(change);
 			} else {
 				// Field was not added or removed. It exists in both schemas. Lets see whether it changed
-				Optional<SchemaChangeModel> change = fieldComparator.compare(fieldInA, fieldInB);
+				SchemaChangeModel change = fieldComparator.compare(fieldInA, fieldInB);
 				// Change detected so lets add it to the list of changes
-				if (change.isPresent()) {
+				if (change.getOperation() != EMPTY) {
 					if (log.isDebugEnabled()) {
 						log.debug("Field {" + fieldInB.getName() + "} was modified.");
 					}
-					changes.add(change.get());
+					changes.add(change);
 				} else {
 					if (log.isDebugEnabled()) {
 						log.debug("Field {" + fieldInB.getName() + "} did not change.");

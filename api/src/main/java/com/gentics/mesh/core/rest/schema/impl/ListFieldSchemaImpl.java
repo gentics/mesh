@@ -1,14 +1,13 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -78,40 +77,31 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	}
 
 	@Override
-	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
+	public SchemaChangeModel compareTo(FieldSchema fieldSchema) throws IOException {
+		SchemaChangeModel change = super.compareTo(fieldSchema);
 		if (fieldSchema instanceof ListFieldSchema) {
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 
-			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(fieldSchema.getName());
-			boolean modified = false;
-
-			// required flag:
-			modified = compareRequiredField(change, listFieldSchema, modified);
-
 			// type property:
 			if (!Objects.equal(getListType(), listFieldSchema.getListType())) {
+				change.setOperation(UPDATEFIELD);
 				change.getProperties().put("listType", listFieldSchema.getListType());
-				modified = true;
 			}
 
 			// allow property:
 			if (!Arrays.equals(getAllowedSchemas(), listFieldSchema.getAllowedSchemas())) {
+				change.setOperation(UPDATEFIELD);
 				change.getProperties().put("allow", listFieldSchema.getAllowedSchemas());
-				modified = true;
 			}
 
 			// min
 
 			// max
 
-			if (modified) {
-				change.loadMigrationScript();
-				return Optional.of(change);
-			}
 		} else {
 			return createTypeChange(fieldSchema);
 		}
-		return Optional.empty();
+		return change;
 	}
 
 	@Override

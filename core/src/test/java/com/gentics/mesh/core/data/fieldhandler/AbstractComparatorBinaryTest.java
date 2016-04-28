@@ -29,8 +29,7 @@ public abstract class AbstractComparatorBinaryTest<C extends FieldSchemaContaine
 
 		BinaryFieldSchema fieldA = FieldUtil.createBinaryFieldSchema("test");
 		fieldA.setAllowedMimeTypes("some", "values");
-		// The label has no effect on the content and thus can be different.
-		fieldA.setLabel("someOtherLabel");
+		fieldA.setLabel("someLabel");
 		fieldA.setRequired(true);
 
 		BinaryFieldSchema fieldB = FieldUtil.createBinaryFieldSchema("test");

@@ -36,7 +36,7 @@ public abstract class AbstractComparatorNodeTest<C extends FieldSchemaContainer>
 		NodeFieldSchema fieldB = createField("test");
 		fieldB.setRequired(true);
 		fieldB.setAllowedSchemas("one", "two");
-		fieldB.setLabel("label2");
+		fieldB.setLabel("label1");
 		containerB.addField(fieldB);
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);

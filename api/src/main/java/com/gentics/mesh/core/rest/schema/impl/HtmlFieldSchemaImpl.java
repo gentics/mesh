@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import java.io.IOException;
-import java.util.Optional;
-
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -16,18 +14,11 @@ public class HtmlFieldSchemaImpl extends AbstractFieldSchema implements HtmlFiel
 	}
 
 	@Override
-	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
-		if (fieldSchema instanceof HtmlFieldSchema) {
-			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(getName());
-			HtmlFieldSchema htmlFieldSchema = (HtmlFieldSchema) fieldSchema;
-
-			if (compareRequiredField(change, htmlFieldSchema, false)) {
-				change.loadMigrationScript();
-				return Optional.of(change);
-			}
-		} else {
+	public SchemaChangeModel compareTo(FieldSchema fieldSchema) throws IOException {
+		SchemaChangeModel change = super.compareTo(fieldSchema);
+		if (!(fieldSchema instanceof HtmlFieldSchema)) {
 			return createTypeChange(fieldSchema);
 		}
-		return Optional.empty();
+		return change;
 	}
 }
