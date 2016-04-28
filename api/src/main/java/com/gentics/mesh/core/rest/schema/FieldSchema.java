@@ -84,4 +84,6 @@ public interface FieldSchema {
 	 * Validate the field properties.
 	 */
 	void validate();
+
+	Map<String, Object> getAllChangeProperties();
 }

@@ -1,21 +1,18 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.google.common.base.Objects;
 
 public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFieldSchema {
 
@@ -77,31 +74,20 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	}
 
 	@Override
-	public SchemaChangeModel compareTo(FieldSchema fieldSchema) throws IOException {
-		SchemaChangeModel change = super.compareTo(fieldSchema);
-		if (fieldSchema instanceof ListFieldSchema) {
-			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
+	public Map<String, Object> getAllChangeProperties() {
 
-			// type property:
-			if (!Objects.equal(getListType(), listFieldSchema.getListType())) {
-				change.setOperation(UPDATEFIELD);
-				change.getProperties().put("listType", listFieldSchema.getListType());
-			}
+		Map<String, Object> map = super.getAllChangeProperties();
 
-			// allow property:
-			if (!Arrays.equals(getAllowedSchemas(), listFieldSchema.getAllowedSchemas())) {
-				change.setOperation(UPDATEFIELD);
-				change.getProperties().put("allow", listFieldSchema.getAllowedSchemas());
-			}
+		// type property:
+		map.put("listType", getListType());
 
-			// min
+		// allow property:
+		map.put("allow", getAllowedSchemas());
 
-			// max
+		// min
 
-		} else {
-			return createTypeChange(fieldSchema);
-		}
-		return change;
+		// max
+		return map;
 	}
 
 	@Override

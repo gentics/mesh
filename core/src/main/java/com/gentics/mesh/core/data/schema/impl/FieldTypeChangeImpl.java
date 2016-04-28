@@ -5,6 +5,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
@@ -106,6 +108,16 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 			field.setRequired(fieldSchema.isRequired());
 			field.setLabel(fieldSchema.getLabel());
 			field.setName(fieldSchema.getName());
+
+			// Remove prefix from map keys
+			Map<String, Object> properties = new HashMap<>();
+			for (String key : getRestProperties().keySet()) {
+				Object value = getRestProperties().get(key);
+				key = key.replace(REST_PROPERTY_PREFIX_KEY, "");
+				properties.put(key, value);
+			}
+			field.apply(properties);
+
 			// Remove the old field
 			container.removeField(fieldSchema.getName());
 			// Add the new field
