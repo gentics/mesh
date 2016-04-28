@@ -1,5 +1,6 @@
 package com.gentics.mesh.generator;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static com.gentics.mesh.util.FieldUtil.createBooleanField;
 import static com.gentics.mesh.util.FieldUtil.createDateField;
 import static com.gentics.mesh.util.FieldUtil.createHtmlField;
@@ -519,7 +520,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		model.getChanges().add(SchemaChangeModel.createRemoveFieldChange("fieldToBeRemoved"));
 
 		// Update field
-		SchemaChangeModel updateFieldChange = SchemaChangeModel.createUpdateFieldChange("fieldToBeUpdated");
+		SchemaChangeModel updateFieldChange = new SchemaChangeModel(UPDATEFIELD, "fieldToBeUpdated");
 		updateFieldChange.setProperty(SchemaChangeModel.LABEL_KEY, "newLabel");
 		model.getChanges().add(updateFieldChange);
 
@@ -582,8 +583,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setAllowedSchemas(new String[] { "content", "video" });
-//		listFieldSchema.setMin(1);
-//		listFieldSchema.setMax(10);
+		//		listFieldSchema.setMin(1);
+		//		listFieldSchema.setMax(10);
 		listFieldSchema.setLabel("List of nodes");
 		listFieldSchema.setName("Nodes");
 		listFieldSchema.setListType("node");

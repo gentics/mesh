@@ -36,7 +36,7 @@ public abstract class AbstractComparatorDateTest<C extends FieldSchemaContainer>
 
 		DateFieldSchema fieldB = FieldUtil.createDateFieldSchema("test");
 		fieldB.setRequired(true);
-		fieldB.setLabel("label2");
+		fieldB.setLabel("label1");
 		containerB.addField(fieldB);
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
@@ -64,8 +64,8 @@ public abstract class AbstractComparatorDateTest<C extends FieldSchemaContainer>
 		fieldB.setRequired(false);
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty("required", false);
-		assertThat(changes.get(0).getProperties()).hasSize(2);
+		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty("required", false).hasProperty("label", "label2");
+		assertThat(changes.get(0).getProperties()).hasSize(3);
 
 	}
 

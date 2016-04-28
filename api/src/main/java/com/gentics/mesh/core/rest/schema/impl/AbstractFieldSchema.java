@@ -4,17 +4,26 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LABEL_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.EMPTY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.google.common.base.Equivalence;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.MapDifference.ValueDifference;
+import com.google.common.collect.Maps;
 
 public abstract class AbstractFieldSchema implements FieldSchema {
 
@@ -57,42 +66,6 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		return this;
 	}
 
-	/**
-	 * Compare the required field flag and update the change if the flag was changed.
-	 * 
-	 * @param change
-	 *            Change to be updated
-	 * @param fieldSchema
-	 *            Field to compare with
-	 * @param modified
-	 *            modified state flag to be used when no modification was found
-	 * @return True if a change was detected or the value of the <b>modified</b> argument of no change was detected
-	 */
-	protected boolean compareRequiredField(SchemaChangeModel change, FieldSchema fieldSchema, boolean modified) {
-		if (isRequired() != fieldSchema.isRequired()) {
-			change.setProperty(SchemaChangeModel.REQUIRED_KEY, fieldSchema.isRequired());
-			return true;
-		}
-		return modified;
-
-	}
-
-	/**
-	 * Create a type specific change.
-	 * 
-	 * @param fieldSchema
-	 * @return
-	 * @throws IOException
-	 */
-	protected Optional<SchemaChangeModel> createTypeChange(FieldSchema fieldSchema) throws IOException {
-		SchemaChangeModel change = SchemaChangeModel.createChangeFieldTypeChange(fieldSchema.getName(), fieldSchema.getType());
-			change.getProperties().put(LIST_TYPE_KEY, ((ListFieldSchema) fieldSchema).getListType());
-			if (fieldSchema instanceof ListFieldSchema) {
-		}
-		change.loadMigrationScript();
-		return Optional.of(change);
-	}
-
 	@Override
 	public void apply(Map<String, Object> fieldProperties) {
 		if (fieldProperties.get(SchemaChangeModel.REQUIRED_KEY) != null) {
@@ -109,6 +82,60 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		if (StringUtils.isEmpty(getName())) {
 			throw error(BAD_REQUEST, "schema_error_fieldname_not_set");
 		}
+	}
+
+	@Override
+	public SchemaChangeModel compareTo(FieldSchema fieldSchema) throws IOException {
+		//Create the initial empty change
+		SchemaChangeModel change = new SchemaChangeModel(EMPTY, getName());
+
+		Map<String, Object> schemaPropertiesA = getAllChangeProperties();
+		Map<String, Object> schemaPropertiesB = fieldSchema.getAllChangeProperties();
+
+		// Check whether the field type has been changed
+		if (!fieldSchema.getType().equals(getType())) {
+			change.setOperation(CHANGEFIELDTYPE);
+			change.setProperty(TYPE_KEY, fieldSchema.getType());
+			if (fieldSchema instanceof ListFieldSchema) {
+				change.getProperties().put(LIST_TYPE_KEY, ((ListFieldSchema) fieldSchema).getListType());
+			}
+			// Add fieldB properties which are new
+			change.getProperties().putAll(schemaPropertiesB);
+		} else {
+
+			// Generate a structural diff. This way it is easy to determine which field properties have been updated, added or removed.
+			MapDifference<String, Object> diff = Maps.difference(schemaPropertiesA, schemaPropertiesB, new Equivalence<Object>() {
+
+				@Override
+				protected boolean doEquivalent(Object a, Object b) {
+					return Objects.deepEquals(a, b);
+				}
+
+				@Override
+				protected int doHash(Object t) {
+					return t.hashCode();
+				}
+
+			});
+
+			// Check whether fields have been updated
+			Map<String, ValueDifference<Object>> differentProperties = diff.entriesDiffering();
+			if (!differentProperties.isEmpty()) {
+				change.setOperation(UPDATEFIELD);
+				for (String key : differentProperties.keySet()) {
+					change.getProperties().put(key, differentProperties.get(key).rightValue());
+				}
+			}
+		}
+		return change;
+	}
+
+	@Override
+	public Map<String, Object> getAllChangeProperties() {
+		Map<String, Object> map = new HashMap<>();
+		map.put(LABEL_KEY, getLabel());
+		map.put(REQUIRED_KEY, isRequired());
+		return map;
 	}
 
 }

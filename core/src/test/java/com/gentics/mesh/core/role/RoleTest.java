@@ -40,7 +40,6 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.hazelcast.util.ConcurrentReferenceHashMap.Option;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 

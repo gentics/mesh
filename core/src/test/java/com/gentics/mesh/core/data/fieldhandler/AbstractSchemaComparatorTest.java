@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
@@ -92,7 +93,7 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 		assertThat(changes.get(0)).is(ADDFIELD).forField("test").hasProperty("type", field.getType());
 
 		if (containerA.getFields().size() > 0) {
-			String lastField = containerA.getFields().get(containerA.getFields().size()-1).getName();
+			String lastField = containerA.getFields().get(containerA.getFields().size() - 1).getName();
 			assertThat(changes.get(0)).hasProperty("after", lastField);
 		} else {
 			assertThat(changes.get(0)).hasNoProperty("order");
@@ -123,6 +124,33 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 	 * @throws IOException
 	 */
 	public abstract void testUpdateField() throws IOException;
+
+	/**
+	 * Test changing the field label in between two fields and assert that the expected change was generated.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testChangeFieldLabel() throws IOException {
+
+		C containerA = createContainer();
+		containerA.setName("test");
+		T fieldA = createField("test");
+		fieldA.setLabel("OriginalLabel");
+		containerA.addField(fieldA);
+
+		String newLabel = "UpdatedLabel";
+		C containerB = createContainer();
+		containerB.setName("test");
+		T fieldB = createField("test");
+		fieldB.setLabel(newLabel);
+		containerB.addField(fieldB);
+
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty(SchemaChangeModel.LABEL_KEY, newLabel);
+
+	}
 
 	/**
 	 * Test changing the field type in between two fields and assert that the expected change was generated.

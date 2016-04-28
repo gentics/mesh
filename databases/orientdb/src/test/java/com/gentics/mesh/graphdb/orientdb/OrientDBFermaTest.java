@@ -55,14 +55,14 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 
 	private void setupTypesAndIndices() {
 		try (NoTrx tx = db.noTrx()) {
-			OrientGraphNoTx g = ((OrientGraphNoTx) ((DelegatingFramedOrientGraph) tx.getGraph()).getBaseGraph());
+			OrientGraphNoTx g = ((OrientGraphNoTx) ((DelegatingFramedOrientGraph<?>) tx.getGraph()).getBaseGraph());
 			// g.setUseClassForEdgeLabel(true);
 			g.setUseLightweightEdges(false);
 			g.setUseVertexFieldsForEdgeLabels(false);
 		}
 
 		try (NoTrx tx = db.noTrx()) {
-			OrientGraphNoTx g = ((OrientGraphNoTx) ((DelegatingFramedOrientGraph) tx.getGraph()).getBaseGraph());
+			OrientGraphNoTx g = ((OrientGraphNoTx) ((DelegatingFramedOrientGraph<?>) tx.getGraph()).getBaseGraph());
 			System.out.println(g.getClass().getName());
 
 			OrientEdgeType e = g.createEdgeType("HAS_MEMBER");
@@ -101,7 +101,7 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 
 		try (Trx tx = db.trx()) {
 			long start = System.currentTimeMillis();
-			 OrientGraph graph = ((OrientGraph) ((DelegatingFramedTransactionalOrientGraph) tx.getGraph()).getBaseGraph());
+			 OrientGraph graph = ((OrientGraph) ((DelegatingFramedTransactionalOrientGraph<?>) tx.getGraph()).getBaseGraph());
 			// assertEquals(nMembers, g.getMembers().size());
 			for (int i = 0; i < nChecks; i++) {
 				int nPerson = (int) (Math.random() * persons.size());
