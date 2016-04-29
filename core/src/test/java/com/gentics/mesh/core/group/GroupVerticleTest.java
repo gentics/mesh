@@ -394,10 +394,8 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 		}
 
-		QueryParameterProvider[] params = new QueryParameterProvider[]{
-				new PagingParameter().setPerPage(10000),
-				new RolePermissionParameter().setRoleUuid(role().getUuid())
-		};
+		QueryParameterProvider[] params = new QueryParameterProvider[] { new PagingParameter().setPerPage(10000),
+				new RolePermissionParameter().setRoleUuid(role().getUuid()) };
 
 		int readCount = 100;
 		for (int i = 0; i < readCount; i++) {

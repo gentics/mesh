@@ -93,6 +93,10 @@
 * Fix: A minor issue within the webroot path handling of node references was fixed. CL-425
 * Fix: Fix label and allow field property handling when updating schema fields. CL-357
 
+=== 0.6.10 - 29.04.2016
+
+* Fix: Various concurrency issues have been addressed.
+
 === Upcoming changes
 
 * Versioning for nodes
