@@ -35,9 +35,7 @@
 
 	<scm>
 		<connection>scm:git:git@git.gentics.com:psc/mesh.git</connection>
-		<developerConnection>scm:git:git@git.gentics.com:psc/mesh.git</developerConnection>
 		<url>https://git.gentics.com/psc/mesh</url>
-		<tag>mesh-0.1.0-rc6</tag>
 	</scm>
 
 	<parent>
@@ -171,6 +169,18 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.1</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-scm-plugin</artifactId>
+				<version>1.8.1</version>
+				<configuration>
+					<tag>${project.artifactId}-${project.version}</tag>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
