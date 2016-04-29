@@ -1,23 +1,22 @@
-node('dockerSlave') {
-   stage 'Checkout'
-   checkout scm
-   def mvnHome = tool 'M3'
-
-   stage 'VersionSet'
-   def v = version()
-   if (v) {
-     echo "Building version ${v}"
-   }
-   sh "${mvnHome}/bin/mvn versions:set -DnewVersion=${env.BUILD_NUMBER}"
-
-   stage 'Build'
-   sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-     sh "${mvnHome}/bin/mvn -B -Dmaven.test.failure.ignore clean install scm:tag"
-     step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
-   }
+stage 'Test'
+def splits = splitTests parallelism: [$class: 'CountDrivenParallelism', size: 5], generateInclusions: true
+def branches = [:]
+for (int i = 0; i < splits.size(); i++) {
+  def split = splits[i]
+  branches["split${i}"] = {
+    node('!master') {
+      checkout scm
+      writeFile file: (split.includes ? 'inclusions.txt' : 'exclusions.txt'), text: split.list.join("\n")
+      writeFile file: (split.includes ? 'exclusions.txt' : 'inclusions.txt'), text: ''
+      sh "cat exclusions.txt"
+      sh "cat inclusions.txt"
+      sh "ls -la"
+      def mvnHome = tool 'M3'
+      sh "${mvnHome}/bin/mvn -B clean test -Dmaven.test.failure.ignore"
+      step([$class: 'JUnitResultArchiver', testResults: 'target/surefire-reports/*.xml'])
+    }
+  }
 }
+parallel branches
+  
 
-def version() {
-  def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
-  matcher ? matcher[0][1] : null
-}
