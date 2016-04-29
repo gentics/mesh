@@ -214,11 +214,13 @@
 					<reuseForks>false</reuseForks>
 					<forkCount>${surefire.forkcount}</forkCount>
 					<trimStackTrace>false</trimStackTrace>
+					<!--
 					<includes>
 						<include>**/*Test.java</include>
 						<include>**/*TestSuite.java</include>
 						<include>**/*IntegrationTest.java</include>
 					</includes>
+					-->
 					<excludes>
 						<include>**/*AbstractTest.java</include>
 						<include>**/*Abstract*Test.java</include>
