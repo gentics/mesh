@@ -62,7 +62,12 @@ public final class MeshRestRequestUtil {
 					if (!StringUtils.isEmpty(contentType)) {
 						request.headers().add("content-type", contentType);
 					}
-					request.write(bodyData.toString());
+					// Somehow the buffer gets mix up after some requests. It seems that the buffer object is somehow reused and does not return the correct data. toString seems to alleviate the problem.
+					if (contentType != null && contentType.startsWith("application/json")) {
+						request.write(bodyData.toString());
+					} else {
+						request.write(bodyData);
+					}
 				}
 				request.end();
 			});
@@ -74,7 +79,13 @@ public final class MeshRestRequestUtil {
 				if (!StringUtils.isEmpty(contentType)) {
 					request.headers().add("content-type", contentType);
 				}
-				request.write(bodyData.toString());
+				// Somehow the buffer gets mix up after some requests. It seems that the buffer object is somehow reused and does not return the correct data. toString seems to alleviate the problem.
+				if (contentType != null && contentType.startsWith("application/json")) {
+					request.write(bodyData.toString());
+				} else {
+					request.write(bodyData);
+				}
+
 			}
 			request.end();
 		}
