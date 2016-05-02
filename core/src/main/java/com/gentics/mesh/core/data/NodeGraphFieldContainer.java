@@ -6,7 +6,9 @@ import java.util.Set;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -140,4 +142,18 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	@Override
 	SchemaContainerVersion getSchemaContainerVersion();
+
+	/**
+	 * Get all micronode fields that have a micronode using the given microschema container version
+	 * @param version microschema container version
+	 * @return list of micronode fields
+	 */
+	List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version);
+
+	/**
+	 * Get all micronode list fields that have at least one micronode using the given microschema container version
+	 * @param version microschema container version
+	 * @return list of micronode list fields
+	 */
+	List<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version);
 }

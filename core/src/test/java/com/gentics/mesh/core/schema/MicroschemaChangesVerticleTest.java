@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -17,7 +15,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -30,8 +27,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.test.TestUtils;
-
-import io.vertx.core.Future;
 
 public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
@@ -54,9 +49,11 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 
 		// 4. Invoke migration
 		assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
-		Future<GenericMessageResponse> future = getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges);
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges));
+		Microschema microschema = call(() -> getClient().findMicroschemaByUuid(container.getUuid()));
+		call(() -> getClient().assignReleaseMicroschemaVersions(project().getName(),
+				project().getLatestRelease().getUuid(),
+				new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
 
 		// 5. Wait for migration to finish
 		failingLatch(latch);
@@ -113,10 +110,11 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 3. Invoke migration
-		Future<GenericMessageResponse> future = getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges);
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "migration_invoked", "vcard");
+		call(() -> getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges));
+		Microschema microschema = call(() -> getClient().findMicroschemaByUuid(container.getUuid()));
+		call(() -> getClient().assignReleaseMicroschemaVersions(project().getName(),
+				project().getLatestRelease().getUuid(),
+				new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
 
 		// 4. Latch for completion
 		failingLatch(latch);
@@ -142,9 +140,11 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 3. Invoke migration
-		Future<GenericMessageResponse> future = getClient().updateMicroschema(vcardContainer.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().updateMicroschema(vcardContainer.getUuid(), request));
+		Microschema microschema = call(() -> getClient().findMicroschemaByUuid(vcardContainer.getUuid()));
+		call(() -> getClient().assignReleaseMicroschemaVersions(project().getName(),
+				project().getLatestRelease().getUuid(),
+				new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
 
 		// 4. Wait and assert
 		failingLatch(latch);
@@ -163,9 +163,7 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		Microschema request = new MicroschemaModel();
 		request.setName(name);
 
-		Future<GenericMessageResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);
-		latchFor(future);
-		expectException(future, CONFLICT, "schema_conflicting_name", name);
+		call(() -> getClient().updateMicroschema(microschema.getUuid(), request), CONFLICT, "schema_conflicting_name", name);
 		microschema.reload();
 		assertEquals("The name of the microschema was updated but it should not.", originalSchemaName, microschema.getName());
 	}

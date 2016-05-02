@@ -1,12 +1,18 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 
 import java.io.IOException;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -55,9 +61,17 @@ public class MicroschemaContainerVersionImpl
 		return NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public List<? extends Micronode> getMicronodes() {
-		return in(HAS_MICROSCHEMA_CONTAINER).has(MicronodeImpl.class).toListExplicit(MicronodeImpl.class);
+	public List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
+		return in(HAS_MICROSCHEMA_CONTAINER).has(MicronodeImpl.class).copySplit(
+				(a) -> a.in(HAS_FIELD).mark().inE(HAS_FIELD_CONTAINER)
+						.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.DRAFT.getCode())
+						.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back(),
+				(a) -> a.in(HAS_ITEM).in(HAS_LIST).mark()
+						.inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.DRAFT.getCode())
+						.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back())
+				.fairMerge().dedup().transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).toList();
 	}
 
 	@Override
@@ -108,5 +122,4 @@ public class MicroschemaContainerVersionImpl
 		reference.setVersion(getVersion());
 		return reference;
 	}
-
 }

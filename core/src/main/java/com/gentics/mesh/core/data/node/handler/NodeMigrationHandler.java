@@ -31,6 +31,8 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
@@ -192,6 +194,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 	/**
 	 * Migrate all micronodes referencing the given microschema container to the latest version
 	 *
+	 * @param project project
+	 * @param release release
 	 * @param fromVersion
 	 *            microschema container version to start from
 	 * @param toVersion
@@ -200,19 +204,21 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 *            JMX Status bean
 	 * @return
 	 */
-	public Observable<Void> migrateMicronodes(MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
+	public Observable<Void> migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
 			NodeMigrationStatus statusMBean) {
+		String releaseUuid = db.noTrx(release::getUuid);
 
-		// get the nodes, that need to be transformed
-		List<? extends Micronode> micronodes = db.noTrx(fromVersion::getMicronodes);
+		// get the containers, that need to be transformed
+		List<? extends NodeGraphFieldContainer> fieldContainers = db
+				.noTrx(() -> fromVersion.getFieldContainers(release.getUuid()));
 
-		// no micronodes, migration is done
-		if (micronodes.isEmpty()) {
+		// no field containers, migration is done
+		if (fieldContainers.isEmpty()) {
 			return Observable.just(null);
 		}
 
 		if (statusMBean != null) {
-			statusMBean.setTotalNodes(micronodes.size());
+			statusMBean.setTotalNodes(fieldContainers.size());
 		}
 
 		// collect the migration scripts
@@ -224,22 +230,63 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return Observable.error(e);
 		}
 
-		for (Micronode micronode : micronodes) {
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+
+		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
+		ac.setProject(project);
+		ac.setRelease(release);
+
+		for (NodeGraphFieldContainer container : fieldContainers) {
 			Exception e = db.trx(() -> {
 				try {
-					NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
-					NodeGraphFieldContainer container = micronode.getContainer();
-					if (container == null) {
-						throw new Exception("Found micronode without container");
+					Node node = container.getParentNode();
+					String languageTag = container.getLanguage().getLanguageTag();
+					ac.setLanguageTags(Arrays.asList(languageTag));
+					ac.setVersion("draft");
+
+					boolean publish = false;
+					if (container.isPublished(releaseUuid)) {
+						publish = true;
+					} else {
+						// check whether there is another published version
+						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, Type.PUBLISHED);
+						if (oldPublished != null) {
+							ac.setVersion("published");
+
+							// clone the field container
+							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(
+									oldPublished.getLanguage(), release, oldPublished.getEditor(), oldPublished);
+
+							migrated.setVersion(oldPublished.getVersion().nextPublished());
+							node.setPublished(migrated, releaseUuid);
+
+							// migrate
+							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields,
+									migrationScripts);
+
+							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
+
+							ac.setVersion("draft");
+						}
 					}
-					ac.setLanguageTags(Arrays.asList(container.getLanguage().getLanguageTag()));
 
-					MicronodeResponse restModel = micronode.transformToRestSync(ac, 0).toBlocking().last();
+					NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release,
+							container.getEditor(), container);
+					if (publish) {
+						migrated.setVersion(container.getVersion().nextPublished());
+						node.setPublished(migrated, releaseUuid);
+					}
 
-					// Migrate the micronode
-					migrate(ac, micronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);
+					// migrate
+					migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields,
+							migrationScripts);
 
-					//TODO do we need to update the search queue batch? Micrnodes are not searchable at the moment.
+					migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.DRAFT);
+					if (publish) {
+						migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
+					}
+
 					return null;
 				} catch (Exception e1) {
 					return e1;
@@ -419,6 +466,53 @@ public class NodeMigrationHandler extends AbstractHandler {
 				binaryField.setSHA512Sum(sha512Sum);
 			}
 		});
+	}
+
+	/**
+	 * Migrate all micronode fields from old schema version to new schema version
+	 * @param ac action context
+	 * @param container field container
+	 * @param fromVersion old schema version
+	 * @param toVersion new schema version
+	 * @param touchedFields touched fields
+	 * @param migrationScripts migration scripts
+	 * @throws Exception
+	 */
+	protected void migrateMicronodeFields(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container,
+			MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion, Set<String> touchedFields,
+			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts) throws Exception {
+		// iterate over all fields with micronodes to migrate
+		for (MicronodeGraphField field : container.getMicronodeFields(fromVersion)) {
+			// clone the field (this will clone the micronode)
+			field = container.createMicronode(field.getFieldKey(), fromVersion);
+			Micronode micronode = field.getMicronode();
+			// transform to rest and migrate
+			MicronodeResponse restModel = micronode.transformToRestSync(ac, 0).toBlocking().last();
+			migrate(ac, micronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);
+		}
+
+		// iterate over all micronode list fields to migrate
+		for (MicronodeGraphFieldList field : container.getMicronodeListFields(fromVersion)) {
+			MicronodeGraphFieldList oldListField = field;
+
+			// clone the field (this will not clone the micronodes)
+			field = container.createMicronodeFieldList(field.getFieldKey());
+
+			// clone every micronode
+			for (MicronodeGraphField oldField : oldListField.getList()) {
+				Micronode oldMicronode = oldField.getMicronode();
+				Micronode newMicronode = field.createMicronode();
+				newMicronode.setSchemaContainerVersion(oldMicronode.getSchemaContainerVersion());
+				newMicronode.clone(oldMicronode);
+
+				// migrate the micronode, if it uses the fromVersion
+				if (newMicronode.getSchemaContainerVersion().getImpl().equals(fromVersion.getImpl())) {
+					// transform to rest and migrate
+					MicronodeResponse restModel = newMicronode.transformToRestSync(ac, 0).toBlocking().last();
+					migrate(ac, newMicronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);
+				}
+			}
+		}
 	}
 
 	/**

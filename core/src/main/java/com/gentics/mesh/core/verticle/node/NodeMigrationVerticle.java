@@ -147,6 +147,8 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 		vertx.eventBus().consumer(MICROSCHEMA_MIGRATION_ADDRESS, (message) -> {
 
 			String microschemaUuid = message.headers().get(UUID_HEADER);
+			String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
+			String releaseUuid = message.headers().get(RELEASE_UUID_HEADER);
 			String fromVersionUuid = message.headers().get(FROM_VERSION_UUID_HEADER);
 			String toVersionUuuid = message.headers().get(TO_VERSION_UUID_HEADER);
 
@@ -161,6 +163,15 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 					message.fail(0, "Migration for microschema " + microschemaUuid + " is already running");
 				} else {
 					db.noTrx(() -> {
+						Project project = boot.projectRoot().findByUuidSync(projectUuid);
+						if (project == null) {
+							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
+						}
+						Release release = project.getReleaseRoot().findByUuidSync(releaseUuid);
+						if (release == null) {
+							throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
+						}
+
 						MicroschemaContainer schemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().single();
 
 						if (schemaContainer == null) {
@@ -180,7 +191,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.microschema);
 						setRunning(statusBean, statusMBeanName);
-						nodeMigrationHandler.migrateMicronodes(fromContainerVersion, toContainerVersion, statusBean);
+						nodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean);
 						return null;
 					});
 					setDone(microschemaUuid, statusMBeanName);

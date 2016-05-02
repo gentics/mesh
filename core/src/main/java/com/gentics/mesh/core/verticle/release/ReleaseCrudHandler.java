@@ -139,15 +139,15 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						}
 						release.assignMicroschemaVersion(version);
 
-						// TODO start microschema migration
-//						DeliveryOptions options = new DeliveryOptions();
-//						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER,
-//								release.getRoot().getProject().getUuid());
-//						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
-//						options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
-//						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
-//						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
-//						Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options);
+						// start microschema migration
+						DeliveryOptions options = new DeliveryOptions();
+						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER,
+								release.getRoot().getProject().getUuid());
+						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
+						options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
+						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
+						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
+						Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options);
 					});
 					return getMicroschemaVersions(release);
 				});

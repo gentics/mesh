@@ -23,7 +23,9 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -37,6 +39,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
@@ -370,6 +373,8 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 
 		DeliveryOptions options = new DeliveryOptions();
 		options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
+		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project().getUuid());
+		options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
 		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
@@ -382,15 +387,254 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 			throw result.cause();
 		}
 
-		// assert that migration worked
+		// assert that migration worked and created a new version
 		firstMicronodeField.getMicronode().reload();
-		assertThat(firstMicronodeField.getMicronode()).as("Migrated Micronode").isOf(versionB);
-		assertThat(firstMicronodeField.getMicronode().getString(fieldName).getString()).as("Migrated field value")
-				.isEqualTo("modified first content");
+		assertThat(firstMicronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
+		assertThat(firstMicronodeField.getMicronode().getString(fieldName).getString()).as("Old field value")
+				.isEqualTo("first content");
 
+		firstNode.reload();
+		assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("0.3");
+		assertThat(firstNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode())
+				.as("Migrated Micronode").isOf(versionB);
+		assertThat(firstNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode()
+				.getString(fieldName).getString()).as("Migrated field value").isEqualTo("modified first content");
+
+		secondNode.reload();
 		secondMicronodeField.getMicronode().reload();
-		assertThat(secondMicronodeField.getMicronode()).as("Migrated Micronode").isOf(versionB);
-		assertThat(secondMicronodeField.getMicronode().getString(fieldName).getString()).as("Migrated field value")
-				.isEqualTo("modified second content");
+		assertThat(secondMicronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
+		assertThat(secondMicronodeField.getMicronode().getString(fieldName).getString()).as("Old field value")
+				.isEqualTo("second content");
+
+		assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("0.3");
+		assertThat(secondNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode())
+				.as("Migrated Micronode").isOf(versionB);
+		assertThat(secondNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode()
+				.getString(fieldName).getString()).as("Migrated field value").isEqualTo("modified second content");
+	}
+
+	@Test
+	public void testMicroschemaMigrationInListField() throws Throwable {
+		String fieldName = "changedfield";
+		String micronodeFieldName = "micronodefield";
+
+		// create version 1 of the microschema
+		MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		container.setLatestVersion(versionA);
+		versionA.setSchemaContainer(container);
+
+		Microschema microschemaA = new MicroschemaModel();
+		microschemaA.setName("migratedSchema");
+		microschemaA.setVersion(1);
+		FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
+		microschemaA.addField(oldField);
+		versionA.setName("migratedSchema");
+		versionA.setSchema(microschemaA);
+		boot.microschemaContainerRoot().addMicroschema(container);
+
+		// create version 2 of the microschema (with the field renamed)
+		MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		versionB.setSchemaContainer(container);
+		Microschema microschemaB = new MicroschemaModel();
+		microschemaB.setName("migratedSchema");
+		microschemaB.setVersion(2);
+		FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
+		microschemaB.addField(newField);
+		versionB.setName("migratedSchema");
+		versionB.setSchema(microschemaB);
+		//boot.microschemaContainerRoot().addMicroschema(container);
+
+		// link the schemas with the changes in between
+		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		updateFieldChange.setFieldName(fieldName);
+		updateFieldChange.setCustomMigrationScript(
+				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
+
+		updateFieldChange.setPreviousContainerVersion(versionA);
+		updateFieldChange.setNextSchemaContainerVersion(versionB);
+		versionA.setNextVersion(versionB);
+
+		// create micronode based on the old schema
+		Language english = english();
+		Node firstNode = folder("2015");
+		Schema schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
+		schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName())
+				.setName(micronodeFieldName).setLabel("Micronode List Field"));
+		firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
+
+		MicronodeGraphFieldList firstMicronodeListField = firstNode
+				.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease(), user())
+				.createMicronodeFieldList(micronodeFieldName);
+		Micronode micronode = firstMicronodeListField.createMicronode();
+		micronode.setSchemaContainerVersion(versionA);
+		micronode.createString(fieldName).setString("first content");
+
+		Node secondNode = folder("news");
+		MicronodeGraphFieldList secondMicronodeListField = secondNode
+				.createGraphFieldContainer(english, secondNode.getProject().getLatestRelease(), user())
+				.createMicronodeFieldList(micronodeFieldName);
+		micronode = secondMicronodeListField.createMicronode();
+		micronode.setSchemaContainerVersion(versionA);
+		micronode.createString(fieldName).setString("second content");
+		micronode = secondMicronodeListField.createMicronode();
+		micronode.setSchemaContainerVersion(versionA);
+		micronode.createString(fieldName).setString("third content");
+
+		DeliveryOptions options = new DeliveryOptions();
+		options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
+		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project().getUuid());
+		options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
+		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
+		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
+		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
+		vertx.eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			future.complete(rh);
+		});
+
+		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+		if (result.cause() != null) {
+			throw result.cause();
+		}
+
+		// assert that migration worked and created a new version
+		firstMicronodeListField.getList().forEach((field) -> {
+			field.getMicronode().reload();
+		});
+		assertThat(firstMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);
+		assertThat(firstMicronodeListField.getList().get(0).getMicronode().getString(fieldName).getString()).as("Old field value")
+				.isEqualTo("first content");
+
+		firstNode.reload();
+		assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("0.3");
+		assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode())
+				.as("Migrated Micronode").isOf(versionB);
+		assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()
+				.getString(fieldName).getString()).as("Migrated field value").isEqualTo("modified first content");
+
+		secondNode.reload();
+		secondMicronodeListField.getList().forEach((field) -> {
+			field.getMicronode().reload();
+		});
+		assertThat(secondMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);
+		assertThat(secondMicronodeListField.getList().get(0).getMicronode().getString(fieldName).getString()).as("Old field value")
+				.isEqualTo("second content");
+		assertThat(secondMicronodeListField.getList().get(1).getMicronode()).as("Old Micronode").isOf(versionA);
+		assertThat(secondMicronodeListField.getList().get(1).getMicronode().getString(fieldName).getString()).as("Old field value")
+				.isEqualTo("third content");
+
+		assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("0.3");
+		assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode())
+				.as("Migrated Micronode").isOf(versionB);
+		assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()
+				.getString(fieldName).getString()).as("Migrated field value").isEqualTo("modified second content");
+		assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1)
+				.getMicronode()).as("Migrated Micronode").isOf(versionB);
+		assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1)
+				.getMicronode().getString(fieldName).getString()).as("Migrated field value")
+						.isEqualTo("modified third content");
+	}
+
+	@Test
+	public void testMicroschemaMigrationMixedList() throws Throwable {
+		String fieldName = "changedfield";
+		String micronodeFieldName = "micronodefield";
+
+		// create version 1 of the microschema
+		MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		container.setLatestVersion(versionA);
+		versionA.setSchemaContainer(container);
+
+		Microschema microschemaA = new MicroschemaModel();
+		microschemaA.setName("migratedSchema");
+		microschemaA.setVersion(1);
+		FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
+		microschemaA.addField(oldField);
+		versionA.setName("migratedSchema");
+		versionA.setSchema(microschemaA);
+		boot.microschemaContainerRoot().addMicroschema(container);
+
+		// create version 2 of the microschema (with the field renamed)
+		MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		versionB.setSchemaContainer(container);
+		Microschema microschemaB = new MicroschemaModel();
+		microschemaB.setName("migratedSchema");
+		microschemaB.setVersion(2);
+		FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
+		microschemaB.addField(newField);
+		versionB.setName("migratedSchema");
+		versionB.setSchema(microschemaB);
+		//boot.microschemaContainerRoot().addMicroschema(container);
+
+		// link the schemas with the changes in between
+		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		updateFieldChange.setFieldName(fieldName);
+		updateFieldChange.setCustomMigrationScript(
+				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
+
+		updateFieldChange.setPreviousContainerVersion(versionA);
+		updateFieldChange.setNextSchemaContainerVersion(versionB);
+		versionA.setNextVersion(versionB);
+
+		// create micronode based on the old schema
+		Language english = english();
+		Node firstNode = folder("2015");
+		Schema schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
+		schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName(), "vcard")
+				.setName(micronodeFieldName).setLabel("Micronode List Field"));
+		firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
+
+		MicronodeGraphFieldList firstMicronodeListField = firstNode
+				.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease(), user())
+				.createMicronodeFieldList(micronodeFieldName);
+		Micronode micronode = firstMicronodeListField.createMicronode();
+		micronode.setSchemaContainerVersion(versionA);
+		micronode.createString(fieldName).setString("first content");
+
+		// add another micronode from another microschema
+		micronode = firstMicronodeListField.createMicronode();
+		micronode.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+		micronode.createString("firstName").setString("Max");
+
+		DeliveryOptions options = new DeliveryOptions();
+		options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
+		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project().getUuid());
+		options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
+		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
+		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
+		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
+		vertx.eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			future.complete(rh);
+		});
+
+		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+		if (result.cause() != null) {
+			throw result.cause();
+		}
+
+		// assert that migration worked and created a new version
+		firstMicronodeListField.getList().forEach((field) -> {
+			field.getMicronode().reload();
+		});
+		assertThat(firstMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);
+		assertThat(firstMicronodeListField.getList().get(0).getMicronode().getString(fieldName).getString()).as("Old field value")
+				.isEqualTo("first content");
+		assertThat(firstMicronodeListField.getList().get(1).getMicronode()).as("Old Micronode").isOf(microschemaContainer("vcard").getLatestVersion());
+		assertThat(firstMicronodeListField.getList().get(1).getMicronode().getString("firstName").getString()).as("Old field value")
+				.isEqualTo("Max");
+
+		firstNode.reload();
+		assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("0.3");
+		assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode())
+				.as("Migrated Micronode").isOf(versionB);
+		assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()
+				.getString(fieldName).getString()).as("Migrated field value").isEqualTo("modified first content");
+
+		assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1)
+				.getMicronode()).as("Not migrated Micronode").isOf(microschemaContainer("vcard").getLatestVersion());
+		assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1)
+				.getMicronode().getString("firstName").getString()).as("Not migrated field value")
+						.isEqualTo("Max");
 	}
 }
