@@ -10,7 +10,7 @@ for (int i = 0; i < splits.size(); i++) {
       writeFile file: (split.includes ? 'exclusions.txt' : 'inclusions.txt'), text: ''
       def mvnHome = tool 'M3'
       sh "${mvnHome}/bin/mvn -B clean test -Dmaven.test.failure.ignore"
-      step([$class: 'JUnitResultArchiver', testResults: 'target/surefire-reports/*.xml'])
+      step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
     }
   }
 }
