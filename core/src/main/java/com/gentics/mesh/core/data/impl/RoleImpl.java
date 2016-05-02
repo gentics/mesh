@@ -89,12 +89,12 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public void grantPermissions(MeshVertex node, GraphPermission... permissions) {
+	public void grantPermissions(MeshVertex vertex, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
 
 			boolean found = false;
-			for (Edge edge : this.getElement().getEdges(Direction.OUT, permission.label())) {
-				if (edge.getVertex(Direction.IN).getId().equals(node.getImpl().getId())) {
+			for (Edge edge : vertex.getVertex().getEdges(Direction.IN, permission.label())) {
+				if (edge.getVertex(Direction.OUT).getId().equals(this.getImpl().getId())) {
 					found = true;
 
 					if (log.isTraceEnabled()) {
@@ -108,7 +108,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 				}
 			}
 			if (!found) {
-				addFramedEdge(permission.label(), node.getImpl());
+				addFramedEdge(permission.label(), vertex.getImpl());
 			}
 		}
 	}
