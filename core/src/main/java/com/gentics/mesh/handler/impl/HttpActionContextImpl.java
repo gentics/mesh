@@ -5,6 +5,7 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -22,8 +23,11 @@ public class HttpActionContextImpl extends AbstractActionContext implements Http
 
 	private RoutingContext rc;
 
+	private final Map<String, Object> data;
+
 	public HttpActionContextImpl(RoutingContext rc) {
 		this.rc = rc;
+		data = new ConcurrentHashMap<>(rc.data());
 	}
 
 	protected RoutingContext getRoutingContext() {
@@ -44,7 +48,7 @@ public class HttpActionContextImpl extends AbstractActionContext implements Http
 
 	@Override
 	public Map<String, Object> data() {
-		return rc.data();
+		return data;
 	}
 
 	@Override
