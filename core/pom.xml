@@ -18,6 +18,47 @@
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 	</properties>
 
+	<profiles>
+		<profile>
+			<!-- if ./exclusions.txt is present, use that as the exclusion list. Useful when skipping tests. -->
+			<id>exclusions</id>
+			<activation>
+				<file>
+					<exists>../exclusions.txt</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<excludesFile>../exclusions.txt</excludesFile>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- if ./inclusions.txt is present, use that as the inclusion list. Useful when skipping tests. -->
+			<id>inclusions</id>
+			<activation>
+				<file>
+					<exists>../inclusions.txt</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<includesFile>../inclusions.txt</includesFile>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<dependencies>
 		<!-- Internal dependencies -->
 		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>mesh-git</artifactId> <version>${project.version}</version> </dependency> -->
@@ -289,41 +330,15 @@
 			</plugin>
 			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-pmd-plugin</artifactId> </plugin> <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-checkstyle-plugin</artifactId> 
 				</plugin> <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>findbugs-maven-plugin</artifactId> </plugin> -->
-			<!--
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>pre-unit-test</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-						<configuration>
-							<destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
-							<propertyName>surefireArgLine</propertyName>
-						</configuration>
-					</execution>
-					<execution>
-						<id>post-unit-test</id>
-						<phase>test</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-						<configuration>
-							<dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			-->
+			<!-- <plugin> <groupId>org.jacoco</groupId> <artifactId>jacoco-maven-plugin</artifactId> <executions> <execution> <id>pre-unit-test</id> <goals> <goal>prepare-agent</goal> </goals> 
+				<configuration> <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile> <propertyName>surefireArgLine</propertyName> </configuration> </execution> <execution> 
+				<id>post-unit-test</id> <phase>test</phase> <goals> <goal>report</goal> </goals> <configuration> <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile> </configuration> 
+				</execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<!--
-					<argLine>${surefireArgLine}</argLine>
-					-->
+					<!-- <argLine>${surefireArgLine}</argLine> -->
 					<skip>${skip.unit.tests}</skip>
 					<forkCount>${surefire.forkcount}</forkCount>
 					<reuseForks>false</reuseForks>
@@ -336,12 +351,7 @@
 					<!-- // Kill the forked test if it takes more than 3h for execution. Nope, currently disabled -->
 					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
 					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
-					<!--
-					<includes>
-						<include>**/*Test.java</include>
-						<include>**/*TestSuite.java</include>
-					</includes>
-					-->
+					<!-- <includes> <include>**/*Test.java</include> <include>**/*TestSuite.java</include> </includes> -->
 					<excludes>
 						<exclude>**/*AbstractTest.java</exclude>
 						<exclude>**/*Abstract*.java</exclude>
@@ -391,7 +401,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
