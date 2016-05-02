@@ -24,10 +24,8 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
-import com.tinkerpop.blueprints.Direction;
+import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -70,44 +68,28 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(MeshVertex node) {
+	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
 		Set<GraphPermission> permissions = new HashSet<>();
-		Set<? extends String> labels = outE(GraphPermission.labels()).mark().inV().retain((MeshVertexImpl) node).back().label().toSet();
-		for (String label : labels) {
-			permissions.add(GraphPermission.valueOfLabel(label));
+		for (GraphPermission permission : GraphPermission.values()) {
+			if (hasPermission(permission, vertex.getImpl())) {
+				permissions.add(permission);
+			}
 		}
 		return permissions;
 	}
 
-	/**
-	 * @deprecated Use {@link #getPermissions(MeshVertex)} instead.
-	 */
 	@Override
-	@Deprecated
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
-		return out(permission.label()).retain(vertex.getImpl()).hasNext();
+		FramedGraph graph = Database.getThreadLocalGraph();
+		Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
+				MeshSpringConfiguration.getInstance().database().createComposedIndexKey(getId(), vertex.getImpl().getId()));
+		return edges.iterator().hasNext();
 	}
 
 	@Override
 	public void grantPermissions(MeshVertex vertex, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
-
-			boolean found = false;
-			for (Edge edge : vertex.getVertex().getEdges(Direction.IN, permission.label())) {
-				if (edge.getVertex(Direction.OUT).getId().equals(this.getImpl().getId())) {
-					found = true;
-
-					if (log.isTraceEnabled()) {
-						Vertex inV = edge.getVertex(Direction.IN);
-						Vertex outV = edge.getVertex(Direction.OUT);
-						log.trace("Found edge: " + edge.getLabel() + " from " + inV.getProperty("uuid") + ":"
-								+ inV.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + " to " + outV.getProperty("uuid") + ":"
-								+ outV.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + ":" + outV.getProperty("name"));
-					}
-					break;
-				}
-			}
-			if (!found) {
+			if (!hasPermission(permission, vertex)) {
 				addFramedEdge(permission.label(), vertex.getImpl());
 			}
 		}
