@@ -6,10 +6,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static coms.gentics.mesh.util.MeshAssert.assertElement;
+import static coms.gentics.mesh.util.MeshAssert.assertSuccess;
+import static coms.gentics.mesh.util.MeshAssert.failingLatch;
+import static coms.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -164,6 +164,35 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 		assertThat(searchProvider).recordedStoreEvents(1);
+	}
+
+	@Test
+	public void testCreateMultiple() {
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
+
+		long start = System.currentTimeMillis();
+		for (int i = 1; i < 10000; i++) {
+			searchProvider.reset();
+			NodeCreateRequest request = new NodeCreateRequest();
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+			request.setLanguage("en");
+			request.getFields().put("title", FieldUtil.createStringField("some title " + i));
+			request.getFields().put("name", FieldUtil.createStringField("some name " + i));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page_" + i + ".html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.setPublished(true);
+			request.setParentNodeUuid(uuid);
+
+			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+			latchFor(future);
+			assertSuccess(future);
+			long duration = System.currentTimeMillis() - start;
+			System.out.println("Duration:" + i + " " + (duration / i));
+		}
+
 	}
 
 	@Test
