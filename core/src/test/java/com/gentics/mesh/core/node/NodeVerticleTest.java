@@ -174,7 +174,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		long start = System.currentTimeMillis();
-		for (int i = 1; i < 1000; i++) {
+		for (int i = 1; i < 500; i++) {
 			searchProvider.reset();
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
