@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -28,13 +29,12 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.test.AbstractEmptyDBTest;
 
-public class GraphListFieldTest extends AbstractEmptyDBTest {
+public class GraphListFieldTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testNodeListTransformation() throws Exception {
-		setupData();
+
 		Node node = folder("2015");
 		Node newsNode = folder("news");
 

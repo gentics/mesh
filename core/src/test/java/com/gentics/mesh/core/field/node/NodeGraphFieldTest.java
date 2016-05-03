@@ -12,15 +12,15 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.test.AbstractEmptyDBTest;
 
-public class NodeGraphFieldTest extends AbstractEmptyDBTest {
+public class NodeGraphFieldTest extends AbstractBasicDBTest {
 
 	final String NODE_FIELD_NAME = "nodeField";
 
@@ -29,7 +29,6 @@ public class NodeGraphFieldTest extends AbstractEmptyDBTest {
 
 	@Test
 	public void testNodeFieldTransformation() throws Exception {
-		setupData();
 		Node newsNode = folder("news");
 		Node node = folder("2015");
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();

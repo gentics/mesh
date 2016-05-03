@@ -14,13 +14,13 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.test.AbstractEmptyDBTest;
 
-public class HtmlGraphFieldTest extends AbstractEmptyDBTest {
+public class HtmlGraphFieldTest extends AbstractBasicDBTest {
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;

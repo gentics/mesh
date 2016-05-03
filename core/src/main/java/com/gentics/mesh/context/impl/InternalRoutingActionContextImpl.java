@@ -50,7 +50,9 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	 */
 	public InternalRoutingActionContextImpl(RoutingContext rc) {
 		this.rc = rc;
-		this.data.putAll(rc.data());
+		if (rc.data() != null) {
+			this.data.putAll(rc.data());
+		}
 	}
 
 	@Override
