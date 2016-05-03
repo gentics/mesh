@@ -1,5 +1,5 @@
 stage 'Test'
-def splits = splitTests parallelism: [$class: 'CountDrivenParallelism', size: 4], generateInclusions: true
+def splits = splitTests parallelism: [$class: 'CountDrivenParallelism', size: 16], generateInclusions: true
 def branches = [:]
 for (int i = 0; i < splits.size(); i++) {
   def split = splits[i]
