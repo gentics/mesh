@@ -41,7 +41,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.2.4</version>
+		<version>3.2.5</version>
 	</parent>
 
 	<developers>
@@ -207,20 +207,12 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<argLine>${surefireArgLine}</argLine>
 					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
 					<runOrder>random</runOrder>
 					<reuseForks>false</reuseForks>
 					<forkCount>${surefire.forkcount}</forkCount>
 					<trimStackTrace>false</trimStackTrace>
-					<!--
-					<includes>
-						<include>**/*Test.java</include>
-						<include>**/*TestSuite.java</include>
-						<include>**/*IntegrationTest.java</include>
-					</includes>
-					-->
 					<excludes>
 						<include>**/*AbstractTest.java</include>
 						<include>**/*Abstract*Test.java</include>
