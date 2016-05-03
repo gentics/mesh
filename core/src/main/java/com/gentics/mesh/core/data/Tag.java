@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -46,12 +47,14 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.
 	 * 
 	 * @param requestUser
+	 * @param release
 	 * @param languageTags
+	 * @param type
 	 * @param pagingInfo
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo)
+	PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, Type type, PagingParameter pagingInfo)
 			throws InvalidArgumentException;
 
 	/**

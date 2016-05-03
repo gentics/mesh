@@ -21,6 +21,7 @@ import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.node.Node;
@@ -50,6 +50,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -180,15 +181,39 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo)
+	public PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, Type type, PagingParameter pagingInfo)
 			throws InvalidArgumentException {
 
-		VertexTraversal<?, ?, ?> traversal = in(HAS_TAG).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser.getImpl()).back();
-		VertexTraversal<?, ?, ?> countTraversal = in(HAS_TAG).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser.getImpl()).back();
+		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(requestUser, release, languageTags, type);
+		VertexTraversal<?, ?, ?> countTraversal = getTaggedNodesTraversal(requestUser, release, languageTags, type);
 		PageImpl<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
 		return nodePage;
+	}
+
+	/**
+	 * Get traversal that finds all nodes that are tagged with this tag
+	 * The nodes will be restricted to
+	 * <ol>
+	 * <li><i>requestUser</i> may read the node</li>
+	 * <li>node is tagged for the <i>release</i></li>
+	 * <li>node has field container in one of the <i>languageTags</i> in the <i>release</i> with <i>type</i></li>
+	 * </ol>
+	 * @param requestUser
+	 * @param release
+	 * @param languageTags
+	 * @param type
+	 * @return
+	 */
+	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(MeshAuthUser requestUser, Release release,
+			List<String> languageTags, Type type) {
+		
+		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release)
+				.mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back().mark()
+				.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+
+		traversal = GraphFieldContainerEdgeImpl.filterLanguages(traversal, languageTags);
+		return traversal.outV().back();
 	}
 
 	@Override

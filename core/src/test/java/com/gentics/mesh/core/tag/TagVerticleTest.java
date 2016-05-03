@@ -167,12 +167,9 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid = tag.getUuid();
 		TagFamily parentTagFamily = tagFamily("colors");
 
-		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid,
-				new RolePermissionParameter().setRoleUuid(role().getUuid()));
-		latchFor(future);
-		assertSuccess(future);
-		assertNotNull(future.result().getRolePerms());
-		assertEquals(4, future.result().getRolePerms().length);
+		TagResponse response = call(() -> getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid,
+				new RolePermissionParameter().setRoleUuid(role().getUuid())));
+		assertThat(response.getRolePerms()).as("Role perms").isNotNull().contains("create", "read", "update", "delete");
 	}
 
 	@Test

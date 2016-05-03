@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -38,7 +39,8 @@ public class TagCrudHandler extends AbstractHandler {
 		db.asyncNoTrxExperimental(() -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM).flatMap(tag -> {
 				try {
-					PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
+					PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null),
+							ac.getSelectedLanguageTags(), Type.forVersion(ac.getVersion()), ac.getPagingParameter());
 					return page.transformToRest(ac, 0);
 				} catch (Exception e) {
 					return Observable.error(e);
