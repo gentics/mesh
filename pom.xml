@@ -24,7 +24,7 @@
 		<elasticsearch.version>1.7.2</elasticsearch.version>
 		<orientdb.version>2.1.16</orientdb.version>
 
-		<surefire.forkcount>3</surefire.forkcount>
+		<surefire.forkcount>2</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 		<dockerHost>cetus.office</dockerHost>
