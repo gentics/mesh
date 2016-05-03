@@ -92,8 +92,10 @@
 		<module>core</module>
 		<module>verticles</module>
 		<module>server</module>
+<!--
 		<module>demo</module>
 		<module>doc</module>
+-->
 	</modules>
 
 	<dependencies>
