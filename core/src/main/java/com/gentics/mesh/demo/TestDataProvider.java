@@ -281,7 +281,6 @@ public class TestDataProvider {
 		String roleName = username + "_role";
 		Role role = root.getRoleRoot().create(roleName, user);
 		group.addRole(role);
-		System.err.println("Created role: " + role.getElement().getId());
 		role.grantPermissions(role, READ_PERM);
 		roles.put(roleName, role);
 
