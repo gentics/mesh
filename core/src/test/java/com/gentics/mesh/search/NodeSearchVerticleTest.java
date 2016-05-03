@@ -591,7 +591,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testTagCount() throws JSONException, InterruptedException {
 		fullIndex();
 		Node node = content("concorde");
-		int previousTagCount = node.getTags().size();
+		int previousTagCount = node.getTags(project().getLatestRelease()).size();
 		//Create tags:
 		int tagCount = 20;
 		for (int i = 0; i < tagCount; i++) {

@@ -21,6 +21,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -150,7 +151,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
-					PageImpl<? extends Tag> tagPage = node.getTags(ac.getPagingParameter());
+					PageImpl<? extends Tag> tagPage = node.getTags(ac.getRelease(null), ac.getPagingParameter());
 					return tagPage.transformToRest(ac, 0);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
@@ -165,13 +166,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
+			Release release = ac.getRelease(null);
 			Observable<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Observable<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
-					node.addTag(tag);
+					node.addTag(tag, release);
 					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 					return Tuple.tuple(batch, node);
 				});
@@ -203,6 +205,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTrxExperimental(() -> {
 
 			Project project = ac.getProject();
+			Release release = ac.getRelease(null);
 			Observable<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Observable<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
@@ -210,7 +213,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
 					// TODO get release specific containers
 					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
-					node.removeTag(tag);
+					node.removeTag(tag, release);
 					return Tuple.tuple(batch, node);
 				});
 

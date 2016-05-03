@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.tag;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
@@ -17,13 +18,18 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
@@ -31,6 +37,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -47,6 +54,9 @@ public class TagTest extends AbstractBasicObjectTest {
 	public static final String GERMAN_NAME = "test german name";
 
 	public static final String ENGLISH_NAME = "test english name";
+
+	@Autowired
+	private NodeMigrationHandler nodeMigrationHandler;
 
 	@Test
 	@Override
@@ -95,31 +105,32 @@ public class TagTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
-	public void testNodeTaggging() throws Exception {
+	public void testNodeTagging() throws Exception {
 		// 1. Create the tag
 		TagFamily root = tagFamily("basic");
-		Tag tag = root.create(ENGLISH_NAME, project(), user());
+		Project project = project();
+		Release release = project.getLatestRelease();
+		Tag tag = root.create(ENGLISH_NAME, project, user());
 		String uuid = tag.getUuid();
 		assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
 
 		// 2. Create the node
 		final String GERMAN_TEST_FILENAME = "german.html";
 		Node parentNode = folder("2015");
-		Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
+		Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project);
 		Language german = boot.languageRoot().findByLanguageTag("de");
-		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german,
-				node.getProject().getLatestRelease(), user());
+		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, release, user());
 
 		germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 		germanContainer.createString("name").setString("german node name");
 
 		// 3. Assign the tag to the node
-		node.addTag(tag);
+		node.addTag(tag, release);
 
 		// 4. Reload the tag and inspect the tagged nodes
 		Tag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().first();
-		assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes().size());
-		Node contentFromTag = reloadedTag.getNodes().iterator().next();
+		assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes(release).size());
+		Node contentFromTag = reloadedTag.getNodes(release).iterator().next();
 		NodeGraphFieldContainer fieldContainer = contentFromTag.getGraphFieldContainer(german);
 
 		assertNotNull(contentFromTag);
@@ -130,28 +141,128 @@ public class TagTest extends AbstractBasicObjectTest {
 		// Remove the file/content and check whether the content was really removed
 		reloadedTag.removeNode(contentFromTag);
 		// TODO verify for removed node
-		assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes().size());
+		assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes(release).size());
 
 	}
 
 	@Test
-	public void testNodeTagging() throws Exception {
-		final String TEST_TAG_NAME = "testTag";
-		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create(TEST_TAG_NAME, project(), user());
+	public void testNodeTaggingInRelease() throws Exception {
+		// 1. Create the tag
+		TagFamily root = tagFamily("basic");
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Tag tag = root.create(ENGLISH_NAME, project, user());
+		String uuid = tag.getUuid();
+		assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
 
-		Node node = folder("news");
-		node.addTag(tag);
+		// 2. Create new Release
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
-		Node reloadedNode = boot.nodeRoot().findByUuid(node.getUuid()).toBlocking().single();
-		boolean found = false;
-		for (Tag currentTag : reloadedNode.getTags()) {
-			if (currentTag.getUuid().equals(tag.getUuid())) {
-				found = true;
-			}
-		}
-		assertTrue("The tag {" + tag.getUuid() + "} was not found within the node tags.", found);
+		// 3. Migrate nodes to new release
+		nodeMigrationHandler.migrateNodes(newRelease);
 
+		// 4. Create and Tag a node
+		Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
+		node.addTag(tag, initialRelease);
+
+		// 5. Assert
+		assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release")
+				.usingElementComparatorOnFields("uuid", "name").containsOnly(tag);
+		assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release")
+				.usingElementComparatorOnFields("uuid").containsOnly(node);
+
+		assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release").isEmpty();
+		assertThat(new ArrayList<Node>(tag.getNodes(newRelease))).as("Nodes with tag in new Release").isEmpty();
+
+		// 6. Tag in new Release
+		node.addTag(tag, newRelease);
+
+		// 7. Assert again
+		assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release")
+				.usingElementComparatorOnFields("uuid", "name").containsOnly(tag);
+		assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release")
+				.usingElementComparatorOnFields("uuid").containsOnly(node);
+
+		assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release")
+				.usingElementComparatorOnFields("uuid", "name").containsOnly(tag);
+		assertThat(new ArrayList<Node>(tag.getNodes(newRelease))).as("Nodes with tag in new Release")
+				.usingElementComparatorOnFields("uuid").containsOnly(node);
+	}
+
+	@Test
+	public void testMigrateTagsForRelease() throws Exception {
+		// 1. Create the tag
+		TagFamily root = tagFamily("basic");
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Tag tag = root.create(ENGLISH_NAME, project, user());
+		String uuid = tag.getUuid();
+		assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
+
+		// 2. Create and Tag a node
+		Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
+		node.addTag(tag, initialRelease);
+		node.reload();
+
+		// 3. Create new Release
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		// 4. Migrate nodes to new release
+		nodeMigrationHandler.migrateNodes(newRelease);
+		node.reload();
+		tag.reload();
+
+		// 5. Assert
+		assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release")
+				.usingElementComparatorOnFields("uuid", "name").containsOnly(tag);
+		assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release")
+				.usingElementComparatorOnFields("uuid").containsOnly(node);
+
+		assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release")
+				.usingElementComparatorOnFields("uuid", "name").containsOnly(tag);
+		assertThat(new ArrayList<Node>(tag.getNodes(newRelease))).as("Nodes with tag in new Release")
+				.usingElementComparatorOnFields("uuid").containsOnly(node);
+	}
+
+	@Test
+	public void testNodeUntaggingInRelease() throws Exception {
+		Release initialRelease = null;
+		Release newRelease = null;
+		Node node = null;
+		Tag tag = null;
+
+		// 1. Create the tag
+		TagFamily root = tagFamily("basic");
+		Project project = project();
+		initialRelease = project.getInitialRelease();
+		tag = root.create(ENGLISH_NAME, project, user());
+		String uuid = tag.getUuid();
+		assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
+
+		// 2. Create and Tag a node
+		node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
+		node.addTag(tag, initialRelease);
+		node.reload();
+
+		// 3. Create new Release
+		newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		// 4. Migrate nodes to new release
+		nodeMigrationHandler.migrateNodes(newRelease);
+
+		// 5. Untag in initial Release
+		node.removeTag(tag, initialRelease);
+		node.reload();
+		tag.reload();
+
+		// 6. Assert
+		assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").isEmpty();
+		assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release").isEmpty();
+
+		assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release")
+				.usingElementComparatorOnFields("uuid", "name").containsOnly(tag);
+		assertThat(new ArrayList<Node>(tag.getNodes(newRelease))).as("Nodes with tag in new Release")
+				.usingElementComparatorOnFields("uuid").containsOnly(node);
 	}
 
 	@Test
@@ -188,7 +299,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertPage(globalTagPage, tags().size());
 
 		role().grantPermissions(noPermTag, READ_PERM);
-		globalTagPage = meshRoot().getTagRoot().findAll(null, new PagingParameter(1, 20));
+		globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(""), new PagingParameter(1, 20));
 		assertPage(globalTagPage, tags().size() + 1);
 	}
 
@@ -334,7 +445,8 @@ public class TagTest extends AbstractBasicObjectTest {
 		Map<String, ElementEntry> expectedEntries = new HashMap<>();
 		String uuid = tag.getUuid();
 		expectedEntries.put("tag", new ElementEntry(DELETE_ACTION, uuid));
-		expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), "en", "de"));
+		expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(),
+				project().getUuid(), project().getLatestRelease().getUuid(), Type.DRAFT, "en", "de"));
 		SearchQueueBatch batch = createBatch();
 		tag.delete(batch);
 		batch.reload();

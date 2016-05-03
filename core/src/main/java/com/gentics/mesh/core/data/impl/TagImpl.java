@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
@@ -74,8 +75,8 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public List<? extends Node> getNodes() {
-		return in(HAS_TAG).has(NodeImpl.class).toListExplicit(NodeImpl.class);
+	public List<? extends Node> getNodes(Release release) {
+		return TagEdgeImpl.getNodeTraversal(this, release).toListExplicit(NodeImpl.class);
 	}
 
 	@Override
@@ -161,10 +162,18 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 		batch.addEntry(this, DELETE_ACTION);
 
 		// Nodes which used this tag must be updated in the search index
-		for (Node node : getNodes()) {
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-				//TODO CL-336 - Define which release and which type should be removed from the index?
-				container.addIndexBatchEntry(batch, STORE_ACTION, null, Type.DRAFT);
+		// for all releases
+		for (Release release : getProject().getReleaseRoot().findAll()) {
+			String releaseUuid = release.getUuid();
+			// all nodes
+			for (Node node : getNodes(release)) {
+				// draft and published versions
+				for (Type type : Arrays.asList(Type.DRAFT, Type.PUBLISHED)) {
+					// all languages
+					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(release, type)) {
+						container.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, type);
+					}
+				}
 			}
 		}
 		getVertex().remove();
@@ -221,8 +230,15 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		for (Node node : getNodes()) {
-			batch.addEntry(node, STORE_ACTION);
+		for (Release release : getProject().getReleaseRoot().findAll()) {
+			String releaseUuid = release.getUuid();
+			for (Node node : getNodes(release)) {
+				for (Type type : Arrays.asList(Type.DRAFT, Type.PUBLISHED)) {
+					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(release, type)) {
+						container.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, type);
+					}
+				}
+			}
 		}
 		batch.addEntry(getTagFamily(), STORE_ACTION,
 				Arrays.asList(Tuple.tuple(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));

@@ -1,6 +1,7 @@
 package com.gentics.mesh.mock;
 
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -14,6 +15,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -277,7 +279,7 @@ public final class MockingUtils {
 		when(node.getProject()).thenReturn(project);
 
 		List<? extends Tag> tagList = Arrays.asList(tagA, tagB);
-		Mockito.<List<? extends Tag>> when(node.getTags()).thenReturn(tagList);
+		Mockito.<List<? extends Tag>> when(node.getTags(any(Release.class))).thenReturn(tagList);
 
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();

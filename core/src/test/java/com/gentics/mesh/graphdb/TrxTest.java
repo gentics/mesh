@@ -340,7 +340,7 @@ public class TrxTest extends AbstractBasicDBTest {
 
 								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
-								reloadedNode.addTag(tag);
+								reloadedNode.addTag(tag, reloadedProject.getLatestRelease());
 								tx.success();
 								if (retry == 0) {
 									try {
@@ -375,7 +375,7 @@ public class TrxTest extends AbstractBasicDBTest {
 				int expect = nThreads * (r + 1);
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
 				// node.reload();
-				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect, reloadedNode.getTags().size());
+				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect, reloadedNode.getTags(project().getLatestRelease()).size());
 			}
 		}
 	}

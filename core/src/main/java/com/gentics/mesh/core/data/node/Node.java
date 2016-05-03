@@ -45,25 +45,28 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	public static final int MAX_TRANSFORMATION_LEVEL = 2;
 
 	/**
-	 * Add the given tag to the list of tags for this node.
+	 * Add the given tag to the list of tags for this node in the given release.
 	 * 
 	 * @param tag
+	 * @param release
 	 */
-	void addTag(Tag tag);
+	void addTag(Tag tag, Release release);
 
 	/**
-	 * Remove the given tag from the list of tags for this node.
+	 * Remove the given tag from the list of tags for this node in the given release.
 	 * 
 	 * @param tag
+	 * @param release
 	 */
-	void removeTag(Tag tag);
+	void removeTag(Tag tag, Release release);
 
 	/**
-	 * Return a list of tags that were assigned to this node.
-	 * 
+	 * Return a list of tags that were assigned to this node in the given release
+	 *
+	 * @param release
 	 * @return
 	 */
-	List<? extends Tag> getTags();
+	List<? extends Tag> getTags(Release release);
 
 	/**
 	 * Return the draft field container for the given language in the latest release
@@ -152,12 +155,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return a page of tags that are assigned to the node.
-	 * 
+	 * @param release release
 	 * @param params
+	 * 
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Tag> getTags(PagingParameter params) throws InvalidArgumentException;
+	PageImpl<? extends Tag> getTags(Release release, PagingParameter params) throws InvalidArgumentException;
 
 	/**
 	 * Return a list of language names for draft versions in the latest release

@@ -11,8 +11,11 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -170,10 +173,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 			if (e.getProperty("out") == null) {
 				e.createProperty("out", OType.LINK);
 			}
+			for (String key : extraFields) {
+				if (e.getProperty(key) == null) {
+					e.createProperty(key, OType.STRING);
+				}
+			}
 			String indexName = "e." + label.toLowerCase();
-			String[] fields = { "out", "in" };
+			List<String> fields = new ArrayList<>(Arrays.asList("out", "in"));
+			fields.addAll(Arrays.asList(extraFields));
+
 			if (e.getClassIndex(indexName) == null) {
-				e.createIndex(indexName, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields);
+				e.createIndex(indexName, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields.toArray(new String[fields.size()]));
 			}
 		} finally {
 			tx.shutdown();

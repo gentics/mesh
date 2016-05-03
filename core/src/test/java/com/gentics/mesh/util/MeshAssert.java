@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.test.TestUtils;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -108,7 +109,27 @@ public final class MeshAssert {
 				if (!entry.getLanguages().isEmpty()) {
 					// Check each language individually since the document id is constructed (uuid+lang)
 					for (String language : entry.getLanguages()) {
-						Optional<? extends SearchQueueEntry> batchEntry = batch.findEntryByUuid(entry.getUuid() + "-" + language);
+						Optional<? extends SearchQueueEntry> batchEntry = batch.getEntries().stream().filter(e -> {
+							if (!e.getElementUuid().equals(entry.getUuid())) {
+								return false;
+							}
+							if (entry.getProjectUuid() != null && !entry.getProjectUuid()
+									.equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_PROJECT_UUID))) {
+								return false;
+							}
+							if (entry.getReleaseUuid() != null && !entry.getReleaseUuid()
+									.equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_RELEASE_UUID))) {
+								return false;
+							}
+							if (entry.getType() != null && !entry.getType().toString()
+									.equalsIgnoreCase(e.getCustomProperty(NodeIndexHandler.CUSTOM_VERSION))) {
+								return false;
+							}
+							if (!language.equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_LANGUAGE_TAG))) {
+								return false;
+							}
+							return true;
+						}).findAny();
 						assertThat(batchEntry).as("Entry for {" + key + "}/{" + entry.getUuid() + "} - language {" + language + "}").isPresent();
 						SearchQueueEntry batchEntryValue = batchEntry.get();
 						assertEquals("The created batch entry for {" + key + "} language {" + language + "} did not use the expected action",

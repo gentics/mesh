@@ -60,7 +60,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testAddTagToNode() throws Exception {
 		Node node = folder("2015");
 		Tag tag = tag("red");
-		assertFalse(node.getTags().contains(tag));
+		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 
 		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
@@ -75,7 +75,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		node.reload();
 		NodeResponse restNode = future.result();
 		assertThat(restNode).contains(tag);
-		assertTrue(node.getTags().contains(tag));
+		assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 
 		// TODO check for properties of the nested tag
 	}
@@ -84,34 +84,34 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testAddTagToNoPermNode() throws Exception {
 		Node node = folder("2015");
 		Tag tag = tag("red");
-		assertFalse(node.getTags().contains(tag));
+		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 		role().revokePermissions(node, UPDATE_PERM);
 
 		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
-		assertFalse(node.getTags().contains(tag));
+		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 	}
 
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
 		Node node = folder("2015");
 		Tag tag = tag("red");
-		assertFalse(node.getTags().contains(tag));
+		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 		role().revokePermissions(tag, READ_PERM);
 
 		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 
-		assertFalse(node.getTags().contains(tag));
+		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 	}
 
 	@Test
 	public void testRemoveTagFromNode() throws Exception {
 		Node node = folder("2015");
 		Tag tag = tag("bike");
-		assertTrue(node.getTags().contains(tag));
+		assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 
 		Future<NodeResponse> future;
 		future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
@@ -121,7 +121,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = future.result();
 		assertThat(restNode).contains(tag);
 		node.reload();
-		assertFalse(node.getTags().contains(tag));
+		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 		// TODO check for properties of the nested tag
 
 	}
@@ -140,27 +140,27 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveTagFromNoPermNode() throws Exception {
 		Node node = folder("2015");
 		Tag tag = tag("bike");
-		assertTrue(node.getTags().contains(tag));
+		assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 		role().revokePermissions(node, UPDATE_PERM);
 
 		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameter());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 
-		assertTrue("The tag should not be removed from the node", node.getTags().contains(tag));
+		assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
 	}
 
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
 		Node node = folder("2015");
 		Tag tag = tag("bike");
-		assertTrue(node.getTags().contains(tag));
+		assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 		role().revokePermissions(tag, READ_PERM);
 		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameter());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 
-		assertTrue("The tag should not have been removed from the node", node.getTags().contains(tag));
+		assertTrue("The tag should not have been removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
 	}
 
 }

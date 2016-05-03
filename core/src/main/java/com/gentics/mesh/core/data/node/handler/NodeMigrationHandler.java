@@ -371,7 +371,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 					node.setParentNode(newReleaseUuid, parent);
 				}
 
-				// TODO migrate tags
+				// migrate tags
+				node.getTags(oldRelease).forEach(tag -> node.addTag(tag, newRelease));
 				return null;
 			});
 		}

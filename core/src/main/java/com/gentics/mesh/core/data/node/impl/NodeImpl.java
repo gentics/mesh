@@ -45,6 +45,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.VersionNumber;
@@ -52,6 +53,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -221,8 +223,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<? extends Tag> getTags() {
-		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
+	public List<? extends Tag> getTags(Release release) {
+		return TagEdgeImpl.getTagTraversal(this, release).toListExplicit(TagImpl.class);
 	}
 
 	@Override
@@ -366,13 +368,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void addTag(Tag tag) {
-		setUniqueLinkOutTo(tag.getImpl(), HAS_TAG);
+	public void addTag(Tag tag, Release release) {
+		removeTag(tag, release);
+
+		TagEdge edge = addFramedEdge(HAS_TAG, tag.getImpl(), TagEdgeImpl.class);
+		edge.setReleaseUuid(release.getUuid());
 	}
 
 	@Override
-	public void removeTag(Tag tag) {
-		unlinkOut(tag.getImpl(), HAS_TAG);
+	public void removeTag(Tag tag, Release release) {
+		outE(HAS_TAG).has(TagEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).mark().inV().retain(tag.getImpl()).back()
+				.removeAll();
 	}
 
 	@Override
@@ -573,7 +579,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Tags
-			for (Tag tag : getTags()) {
+			for (Tag tag : getTags(release)) {
 				TagFamily tagFamily = tag.getTagFamily();
 				String tagFamilyName = tagFamily.getName();
 				String tagFamilyUuid = tagFamily.getUuid();
@@ -1023,10 +1029,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public PageImpl<? extends Tag> getTags(PagingParameter params) throws InvalidArgumentException {
+	public PageImpl<? extends Tag> getTags(Release release, PagingParameter params) throws InvalidArgumentException {
 		// TODO add permissions
-		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
-		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
+		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, release);
+		VertexTraversal<?, ?, ?> countTraversal = TagEdgeImpl.getTagTraversal(this, release);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, params, TagImpl.class);
 	}
 

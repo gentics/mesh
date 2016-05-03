@@ -18,8 +18,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -137,26 +139,32 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 			TagFamily tagFamily = tagFamily("colors");
 			affectedElements.put("tagFamily", new ElementEntry(DELETE_ACTION, tagFamily.getUuid()));
 
+			Project project = project();
+			Release release = project.getLatestRelease();
+
 			int i = 0;
 			Tag redTag = tag("red");
 			affectedElements.put("tagFamily.red", new ElementEntry(DELETE_ACTION, redTag.getUuid()));
 			// Tagged nodes should be updated
-			for (Node node : redTag.getNodes()) {
-				affectedElements.put("red tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(), node.getAvailableLanguageNames()));
+			for (Node node : redTag.getNodes(release)) {
+				affectedElements.put("red tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(),
+						project.getUuid(), release.getUuid(), Type.DRAFT, node.getAvailableLanguageNames()));
 				i++;
 			}
 
 			Tag greenTag = tag("green");
 			affectedElements.put("tagFamily.green", new ElementEntry(DELETE_ACTION, greenTag.getUuid()));
-			for (Node node : greenTag.getNodes()) {
-				affectedElements.put("green tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(), node.getAvailableLanguageNames()));
+			for (Node node : greenTag.getNodes(release)) {
+				affectedElements.put("green tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(),
+						project.getUuid(), release.getUuid(), Type.DRAFT, node.getAvailableLanguageNames()));
 				i++;
 			}
 
 			Tag blueTag = tag("blue");
 			affectedElements.put("tagFamily.blue", new ElementEntry(DELETE_ACTION, blueTag.getUuid()));
-			for (Node node : blueTag.getNodes()) {
-				affectedElements.put("blue tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(), node.getAvailableLanguageNames()));
+			for (Node node : blueTag.getNodes(release)) {
+				affectedElements.put("blue tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(),
+						project.getUuid(), release.getUuid(), Type.DRAFT, node.getAvailableLanguageNames()));
 				i++;
 			}
 

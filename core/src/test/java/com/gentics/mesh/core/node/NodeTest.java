@@ -113,10 +113,10 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Tag carTag = tag("car");
 		assertNotNull(carTag);
 
-		newsNode.addTag(carTag);
+		newsNode.addTag(carTag, project().getLatestRelease());
 
-		assertEquals(1, newsNode.getTags().size());
-		Tag firstTag = newsNode.getTags().iterator().next();
+		assertEquals(1, newsNode.getTags(project().getLatestRelease()).size());
+		Tag firstTag = newsNode.getTags(project().getLatestRelease()).iterator().next();
 		assertEquals(carTag.getUuid(), firstTag.getUuid());
 	}
 

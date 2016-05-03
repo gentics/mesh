@@ -35,11 +35,12 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	void removeNode(Node node);
 
 	/**
-	 * Return a list of nodes that were tagged by this tag.
+	 * Return a list of nodes that were tagged by this tag in the given release
+	 * @param release release
 	 * 
 	 * @return
 	 */
-	List<? extends Node> getNodes();
+	List<? extends Node> getNodes(Release release);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.

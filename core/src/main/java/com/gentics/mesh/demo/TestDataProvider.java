@@ -208,17 +208,17 @@ public class TestDataProvider {
 				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
 				"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
 				contentSchema);
-		concorde.addTag(tags.get("plane"));
-		concorde.addTag(tags.get("twinjet"));
-		concorde.addTag(tags.get("red"));
+		concorde.addTag(tags.get("plane"), project.getLatestRelease());
+		concorde.addTag(tags.get("twinjet"), project.getLatestRelease());
+		concorde.addTag(tags.get("red"), project.getLatestRelease());
 
 		Node hondaNR = addContent(folders.get("products"), "Honda NR",
 				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
 				"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.",
 				contentSchema);
-		hondaNR.addTag(tags.get("vehicle"));
-		hondaNR.addTag(tags.get("motorcycle"));
-		hondaNR.addTag(tags.get("green"));
+		hondaNR.addTag(tags.get("vehicle"), project.getLatestRelease());
+		hondaNR.addTag(tags.get("motorcycle"), project.getLatestRelease());
+		hondaNR.addTag(tags.get("green"), project.getLatestRelease());
 
 	}
 
@@ -229,10 +229,10 @@ public class TestDataProvider {
 
 		Node news = addFolder(baseNode, "News", "Neuigkeiten");
 		Node news2015 = addFolder(news, "2015", null);
-		news2015.addTag(tags.get("car"));
-		news2015.addTag(tags.get("bike"));
-		news2015.addTag(tags.get("plane"));
-		news2015.addTag(tags.get("jeep"));
+		news2015.addTag(tags.get("car"), project.getLatestRelease());
+		news2015.addTag(tags.get("bike"), project.getLatestRelease());
+		news2015.addTag(tags.get("plane"), project.getLatestRelease());
+		news2015.addTag(tags.get("jeep"), project.getLatestRelease());
 
 		Node news2014 = addFolder(news, "2014", null);
 		addFolder(news2014, "March", "März");

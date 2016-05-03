@@ -317,7 +317,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		map.put("edited", container.getLastEditedTimestamp());
 		addBasicReferences(map, node);
 		addProject(map, node.getProject());
-		addTags(map, node.getTags());
+		addTags(map, node.getTags(node.getProject().getLatestRelease()));
 
 		// The basenode has no parent.
 		if (node.getParentNode(releaseUuid) != null) {

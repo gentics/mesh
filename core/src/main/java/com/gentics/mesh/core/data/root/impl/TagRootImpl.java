@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -22,7 +23,7 @@ import rx.Observable;
 public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	public static void checkIndices(Database database) {
-		database.addEdgeIndex(HAS_TAG);
+		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.RELEASE_UUID_KEY);
 		database.addVertexType(TagRootImpl.class);
 	}
 
