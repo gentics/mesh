@@ -10,9 +10,6 @@ for (int i = 0; i < splits.size(); i++) {
       writeFile file: (split.includes ? 'exclusions.txt' : 'inclusions.txt'), text: ''
       sh 'cat inclusions.txt'
       sh 'cat exclusions.txt'
-      writeFile file: 'TEST-1.xml', text: '<testsuite name=\"one\"><testcase name=\"x\"/></testsuite>'
-      writeFile file: 'TEST-2.xml', text: '<testsuite name=\"two\"><testcase name=\"y\"/></testsuite>'
-      step([$class: 'JUnitResultArchiver', testResults: 'TEST-*.xml'])
     }
   }
 }
