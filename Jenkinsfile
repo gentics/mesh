@@ -6,12 +6,15 @@ for (int i = 0; i < splits.size(); i++) {
   branches["split${i}"] = {
     node('dockerSlave') {
       sh 'rm -rf *'
+      checkout scm
       writeFile file: (split.includes ? 'inclusions.txt' : 'exclusions.txt'), text: split.list.join("\n")
       writeFile file: (split.includes ? 'exclusions.txt' : 'inclusions.txt'), text: ''
-      sh 'cat inclusions.txt'
-      sh 'cat exclusions.txt'
+      def mvnHome = tool 'M3'
+      sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+        sh "${mvnHome}/bin/mvn -X -B clean test -Dmaven.test.failure.ignore"
+        step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+      }
     }
   }
 }
 parallel branches
-
