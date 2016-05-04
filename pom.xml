@@ -35,6 +35,7 @@
 
 	<scm>
 		<connection>scm:git:git@git.gentics.com:psc/mesh.git</connection>
+                <developerConnection>scm:git:git@git.gentics.com:psc/mesh.git</developerConnection>
 		<url>https://git.gentics.com/psc/mesh</url>
 	</scm>
 
