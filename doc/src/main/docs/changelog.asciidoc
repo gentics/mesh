@@ -87,14 +87,12 @@
 * Enhancement: The mesh-ui was updated.
 * Enhancement: OrientDB was updated to version 2.1.16
 
-=== 0.6.9 - 28.04.2016
+=== 0.6.9 - 04.05.2016
 
+* Enhancement: The mesh-ui was updated.
 * Enhancement: It is now possible to also include non-container nodes in a navigation response using the includeAll parameter. By default only container nodes will be included in the response.
 * Fix: A minor issue within the webroot path handling of node references was fixed. CL-425
 * Fix: Fix label and allow field property handling when updating schema fields. CL-357
-
-=== 0.6.10 - 29.04.2016
-
 * Fix: Various concurrency issues have been addressed.
 
 === Upcoming changes
