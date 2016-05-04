@@ -50,10 +50,12 @@ public abstract class AbstractActionContext implements ActionContext {
 	}
 
 	protected Map<String, String> splitQuery() {
-		data().computeIfAbsent(QUERY_MAP_DATA_KEY, map -> {
-			return HttpQueryUtils.splitQuery(query());
-		});
-		return (Map<String, String>) data().get(QUERY_MAP_DATA_KEY);
+		Map<String, String> ret = (Map<String, String>) data().get(QUERY_MAP_DATA_KEY);
+		if (ret == null) {
+			ret = HttpQueryUtils.splitQuery(query());
+			data().put(QUERY_MAP_DATA_KEY, ret);
+		}
+		return ret;
 	}
 
 	/**
@@ -63,8 +65,8 @@ public abstract class AbstractActionContext implements ActionContext {
 	 */
 	@Override
 	public List<String> getExpandedFieldnames() {
-		data().computeIfAbsent(EXPANDED_FIELDNAMED_DATA_KEY, map -> {
-			List<String> expandFieldnames = new ArrayList<>();
+		List<String> fieldList = (List<String>) data().get(EXPANDED_FIELDNAMED_DATA_KEY);
+		if (fieldList == null) {
 			Map<String, String> queryPairs = splitQuery();
 			if (queryPairs == null) {
 				return new ArrayList<>();
@@ -72,11 +74,13 @@ public abstract class AbstractActionContext implements ActionContext {
 
 			String value = queryPairs.get(EXPANDFIELDS_QUERY_PARAM_KEY);
 			if (value != null) {
-				expandFieldnames = new ArrayList<>(Arrays.asList(value.split(",")));
+				fieldList = new ArrayList<>(Arrays.asList(value.split(",")));
+			} else {
+				fieldList = new ArrayList<>();
 			}
-			return expandFieldnames;
-		});
-		List<String> fieldList = (List<String>) data().get(EXPANDED_FIELDNAMED_DATA_KEY);
+			data().put(EXPANDED_FIELDNAMED_DATA_KEY, fieldList);
+		}
+
 		return fieldList == null ? new ArrayList<>() : fieldList;
 	}
 
