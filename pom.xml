@@ -64,11 +64,6 @@
 		</developer>
 	</developers>
 
-	<issueManagement>
-		<system>github</system>
-		<url>https://github.com/gentics/mesh/issues</url>
-	</issueManagement>
-
 	<organization>
 		<name>Gentics Software</name>
 		<url>http://www.gentics.com</url>
