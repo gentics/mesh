@@ -50,7 +50,7 @@ public class WebRootService {
 		stack.addAll(list);
 
 		// Traverse the graph and buildup the result path while doing so
-		Observable<Path> obsNode = baseNode.resolvePath(nodePath, stack);
+		Observable<Path> obsNode = baseNode.resolvePath(ac.getRelease(null).getUuid(), nodePath, stack);
 		return obsNode;
 	}
 

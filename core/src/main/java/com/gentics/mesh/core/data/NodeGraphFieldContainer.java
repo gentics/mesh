@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.util.Tuple;
 
 /**
  * A node field container is a aggregation node that holds localized fields.
@@ -24,8 +25,18 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists.
+	 * If the container has a "next" container, that container will be deleted as well.
+	 * @param batch
 	 */
 	void delete(SearchQueueBatch batch);
+
+	/**
+	 * "Delete" the field container from the release. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
+	 *
+	 * @param release
+	 * @param batch
+	 */
+	void deleteFromRelease(Release release, SearchQueueBatch batch);
 
 	/**
 	 * Return the display field value for this container.
@@ -103,6 +114,13 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return true if it is published, false if not
 	 */
 	boolean isPublished(String releaseUuid);
+
+	/**
+	 * Get tuples of type and release Uuids specifying for which release the container is a container of a type
+	 *
+	 * @return set of tuples (may be empty, but never null)
+	 */
+	Set<Tuple<String, Type>> getReleaseTypes();
 
 	/**
 	 * Get the release Uuids for which this container is the container of given type

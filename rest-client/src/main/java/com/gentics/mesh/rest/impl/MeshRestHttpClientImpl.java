@@ -136,18 +136,18 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid) {
+	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(DELETE, "/" + projectName + "/nodes/" + uuid, GenericMessageResponse.class);
+		return handleRequest(DELETE, "/" + projectName + "/nodes/" + uuid + getQuery(parameters), GenericMessageResponse.class);
 	}
 
 	@Override
-	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag) {
+	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(languageTag, "languageTag must not be null");
-		return handleRequest(DELETE, "/" + projectName + "/nodes/" + uuid + "/languages/" + languageTag, GenericMessageResponse.class);
+		return handleRequest(DELETE, "/" + projectName + "/nodes/" + uuid + "/languages/" + languageTag + getQuery(parameters), GenericMessageResponse.class);
 	}
 
 	@Override

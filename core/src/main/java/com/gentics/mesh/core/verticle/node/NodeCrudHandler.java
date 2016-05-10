@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACT
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -16,9 +17,9 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -34,7 +35,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -50,7 +50,32 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "node_deleted");
+		validateParameter(uuid, "uuid");
+		db.asyncNoTrxExperimental(() -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(node -> {
+				if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
+					throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
+				}
+
+				// Create the batch first since we can't delete the container and access it later in batch creation
+				SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+
+				Release release = ac.getRelease(null);
+				node.getGraphFieldContainers(ac.getRelease(null), Type.DRAFT)
+						.forEach(container -> node.deleteLanguageContainer(release, container.getLanguage(), batch));
+
+				// if the node has no more field containers in any release, it will be deleted
+				if (node.getGraphFieldContainerCount() == 0) {
+					node.delete(batch);
+				}
+
+				return batch.process().map(sqb -> {
+					return message(ac, "node_deleted", uuid);
+				});
+
+			});
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	/**
@@ -75,11 +100,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				// Create the batch first since we can't delete the container and access it later in batch creation
 				SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 				SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-				node.deleteLanguageContainer(ac, language, batch);
-				// Check whether this is the last container and delete the node
-				if (node.getGraphFieldContainerCount() == 0) {
-					node.delete(batch);
-				}
+				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
 
 				return batch.process().map(sqb -> {
 					return message(ac, "node_deleted_language", uuid, languageTag);

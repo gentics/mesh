@@ -233,15 +233,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers() {
+		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.INITIAL.getCode()).inV()
+				.has(NodeGraphFieldContainerImpl.class).toListExplicit(NodeGraphFieldContainerImpl.class);
+	}
+
+	@Override
 	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, Type type) {
 		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().has(NodeGraphFieldContainerImpl.class)
 				.toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public long getGraphFieldContainerCount() {
-		return out(HAS_FIELD_CONTAINER).has(NodeGraphFieldContainerImpl.class).count();
+		return outE(HAS_FIELD_CONTAINER)
+				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.DRAFT.getCode()),
+						e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.PUBLISHED.getCode()))
+				.inV().has(NodeGraphFieldContainerImpl.class).count();
 	}
 
 	@Override
@@ -397,6 +407,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public List<? extends Node> getChildren(String releaseUuid) {
+		return inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).outV().has(NodeImpl.class)
+				.toListExplicit(NodeImpl.class);
+	}
+
+	@Override
 	public Node getParentNode(String releaseUuid) {
 		return outE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).inV().has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
@@ -481,7 +497,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			restNode.setAvailableLanguages(getAvailableLanguageNames(release, Type.forVersion(ac.getVersion())));
 
 			// Load the children information
-			for (Node child : getChildren()) {
+			for (Node child : getChildren(release.getUuid())) {
 				if (ac.getUser().hasPermissionSync(ac, child, READ_PERM)) {
 					String schemaName = child.getSchemaContainer().getName();
 					NodeChildrenInfo info = restNode.getChildrenInfo().get(schemaName);
@@ -972,7 +988,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		for (Node child : getChildren()) {
 			child.delete(batch);
 		}
-		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
+		// delete all initial containers (which will delete all containers)
+		for (NodeGraphFieldContainer container : getAllInitialGraphFieldContainers()) {
 			container.delete(batch);
 		}
 		getElement().remove();
@@ -982,6 +999,28 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		delete(false, batch);
+	}
+
+	@Override
+	public void deleteFromRelease(Release release, SearchQueueBatch batch) {
+		getGraphFieldContainers(release, Type.DRAFT)
+				.forEach(container -> deleteLanguageContainer(release, container.getLanguage(), batch));
+		String releaseUuid = release.getUuid();
+
+		for (Node child : getChildren(releaseUuid)) {
+			// remove the child from the release
+			child.deleteFromRelease(release, batch);
+		}
+
+		// if the node has no more field containers in any release, it will be deleted
+		if (getGraphFieldContainerCount() == 0) {
+			delete(batch);
+		} else {
+			// otherwise we need to remove the "parent" edge for the release
+			// first remove the "parent" edge (because the node itself will
+			// probably not be deleted, but just removed from the release)
+			outE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).removeAll();
+		}
 	}
 
 	/**
@@ -1037,6 +1076,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
+			// TODO for release?
 			for (Node child : getChildren()) {
 				child.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
@@ -1164,12 +1204,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteLanguageContainer(InternalActionContext ac, Language language, SearchQueueBatch batch) {
-		NodeGraphFieldContainer container = getGraphFieldContainer(language, null, Type.DRAFT);
+	public void deleteLanguageContainer(Release release, Language language, SearchQueueBatch batch) {
+		NodeGraphFieldContainer container = getGraphFieldContainer(language, release, Type.DRAFT);
 		if (container == null) {
 			throw error(NOT_FOUND, "node_no_language_found", language.getLanguageTag());
 		}
-		container.delete(batch);
+
+		container.deleteFromRelease(release, batch);
+
+		// if the published version is a different container, we remove this as well
+		container = getGraphFieldContainer(language, release, Type.PUBLISHED);
+		if (container != null) {
+			container.deleteFromRelease(release, batch);
+		}
 	}
 
 	@Override
@@ -1250,7 +1297,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<Path> resolvePath(Path path, Stack<String> pathStack) {
+	public Observable<Path> resolvePath(String releaseUuid, Path path, Stack<String> pathStack) {
 		if (pathStack.isEmpty()) {
 			return Observable.just(path);
 		}
@@ -1261,11 +1308,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// Check all childnodes
-		for (Node childNode : getChildren()) {
+		for (Node childNode : getChildren(releaseUuid)) {
 			PathSegment pathSegment = childNode.getSegment(segment);
 			if (pathSegment != null) {
 				path.addSegment(pathSegment);
-				return childNode.resolvePath(path, pathStack);
+				return childNode.resolvePath(releaseUuid, path, pathStack);
 			}
 		}
 		throw error(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());

@@ -138,6 +138,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 
 	/**
+	 * Return a list of all initial graph field containers for the node (in any release)
+	 *
+	 * @return
+	 */
+	List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
+
+	/**
 	 * Return a list of graph field containers of given type for the node in the given release
 	 *
 	 * @param release
@@ -147,8 +154,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, Type type);
 
 	/**
-	 * Return the amount of field containers of the node.
-	 * 
+	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any release
+	 *
 	 * @return
 	 */
 	long getGraphFieldContainerCount();
@@ -193,11 +200,19 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void setProject(Project project);
 
 	/**
-	 * Return the list of children for this node.
+	 * Return the list of children for this node for all releases
 	 * 
 	 * @return
 	 */
 	List<? extends Node> getChildren();
+
+	/**
+	 * Return the list of children for this node in the given release
+	 * 
+	 * @param releaseUuid
+	 * @return
+	 */
+	List<? extends Node> getChildren(String releaseUuid);
 
 	/**
 	 * Return the list of children for this node, that the given user has read permission for
@@ -363,14 +378,15 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	Observable<Void> takeOffline(InternalActionContext ac, String languageTag);
 
 	/**
-	 * Delete the language container for the given language.
+	 * Delete the language container for the given language from the release
+	 * This will not actually delete the container, but will remove the DRAFT and PUBLISHED edge to the container for the release
 	 * 
-	 * @param ac
+	 * @param release
 	 * @param language
 	 *            Language which will be used to find the field container which should be deleted
 	 * @param batch
 	 */
-	void deleteLanguageContainer(InternalActionContext ac, Language language, SearchQueueBatch batch);
+	void deleteLanguageContainer(Release release, Language language, SearchQueueBatch batch);
 
 	/**
 	 * Return the path segment of this node.
@@ -389,12 +405,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
-	 * 
+	 *
+	 * @param releaseUuid
 	 * @param nodePath
 	 * @param pathStack
 	 * @return
 	 */
-	Observable<Path> resolvePath(Path nodePath, Stack<String> pathStack);
+	Observable<Path> resolvePath(String releaseUuid, Path nodePath, Stack<String> pathStack);
 
 	/**
 	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
@@ -434,6 +451,17 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param batch
 	 */
 	void delete(boolean ignoreChecks, SearchQueueBatch batch);
+
+	/**
+	 * Delete the node from the given release.
+	 * This will also delete children from the release.
+	 * 
+	 * If the node is deleted from its last release, it is (permanently) deleted from the db
+	 *
+	 * @param release
+	 * @param batch
+	 */
+	void deleteFromRelease(Release release, SearchQueueBatch batch);
 
 	/**
 	 * Set the breadcrumb information to the given rest node.

@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -100,9 +101,36 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		// TODO delete linked aggregation nodes for node lists etc
-		// TODO CL-336 - Define which release and which type should be removed from the index?
-		addIndexBatchEntry(batch, DELETE_ACTION, null, Type.DRAFT);
+
+		NodeGraphFieldContainer next = getNextVersion();
+		if (next != null) {
+			next.delete(batch);
+		}
+
+		getReleaseTypes().forEach(tuple -> {
+			String releaseUuid = tuple.v1();
+			Type type = tuple.v2();
+			if (type != Type.INITIAL) {
+				addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, type);
+			}
+		});
+
 		getElement().remove();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void deleteFromRelease(Release release, SearchQueueBatch batch) {
+		String releaseUuid = release.getUuid();
+
+		addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, Type.DRAFT);
+		if (isPublished(releaseUuid)) {
+			addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, Type.PUBLISHED);
+		}
+		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
+				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.DRAFT.getCode()),
+						e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.PUBLISHED.getCode()))
+				.removeAll();
 	}
 
 	@Override
@@ -150,6 +178,17 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public Node getParentNode() {
 		Node parentNode = in(HAS_FIELD_CONTAINER).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 		if (parentNode == null) {
+			// the field container is not directly linked to its Node, get the initial field container
+			NodeGraphFieldContainer initial = null;
+			NodeGraphFieldContainer previous = getPreviousVersion();
+			while (previous != null) {
+				initial = previous;
+				previous = previous.getPreviousVersion();
+			}
+
+			if (initial != null) {
+				return initial.getParentNode();
+			}
 			throw error(BAD_REQUEST, "error_field_container_without_node");
 		}
 		return parentNode;
@@ -195,6 +234,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.PUBLISHED.getCode());
 		return traversal.hasNext();
+	}
+
+	@Override
+	public Set<Tuple<String, Type>> getReleaseTypes() {
+		Set<Tuple<String, Type>> typeSet = new HashSet<>();
+		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)
+				.forEach(edge -> typeSet.add(Tuple.tuple(edge.getReleaseUuid(), edge.getType())));
+		return typeSet;
 	}
 
 	@Override

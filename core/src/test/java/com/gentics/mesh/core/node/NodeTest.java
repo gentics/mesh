@@ -19,16 +19,20 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -46,6 +50,8 @@ import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
 
 public class NodeTest extends AbstractBasicObjectTest {
+	@Autowired
+	private NodeMigrationHandler nodeMigrationHandler;
 
 	@Test
 	@Override
@@ -349,4 +355,101 @@ public class NodeTest extends AbstractBasicObjectTest {
 		testPermission(GraphPermission.CREATE_PERM, content());
 	}
 
+	@Test
+	public void testDeleteWithChildren() {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
+
+		// 1. create folder with subfolder and subsubfolder
+		Node folder = project.getBaseNode().create(user(), folderSchema, project);
+		folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
+		String folderUuid = folder.getUuid();
+		Node subFolder = folder.create(user(), folderSchema, project);
+		subFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubFolder");
+		String subFolderUuid = subFolder.getUuid();
+		Node subSubFolder = subFolder.create(user(), folderSchema, project);
+		subSubFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubSubFolder");
+		String subSubFolderUuid = subSubFolder.getUuid();
+
+		// 2. delete folder for initial release
+		subFolder.deleteFromRelease(initialRelease, createBatch());
+		folder.reload();
+
+		// 3. assert for new release
+		assertThat(folder).as("folder").hasNoChildren(initialRelease);
+
+		// 4. assert for initial release
+		List<String> nodeUuids = new ArrayList<>();
+		project.getNodeRoot().findAll().forEach(node -> nodeUuids.add(node.getUuid()));
+		assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
+	}
+
+	@Test
+	public void testDeleteWithChildrenInRelease() throws InvalidArgumentException {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
+
+		// 1. create folder with subfolder and subsubfolder
+		Node folder = project.getBaseNode().create(user(), folderSchema, project);
+		folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
+		Node subFolder = folder.create(user(), folderSchema, project);
+		subFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubFolder");
+		Node subSubFolder = subFolder.create(user(), folderSchema, project);
+		subSubFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubSubFolder");
+
+		// 2. create a new release
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		// 3. migrate nodes
+		nodeMigrationHandler.migrateNodes(newRelease).toBlocking().single();
+		folder.reload();
+		subFolder.reload();
+		subSubFolder.reload();
+
+		// 4. assert nodes in new release
+		assertThat(folder).as("folder").hasOnlyChildren(newRelease, subFolder);
+		assertThat(subFolder).as("subFolder").hasOnlyChildren(newRelease, subSubFolder);
+		assertThat(subSubFolder).as("subSubFolder").hasNoChildren(newRelease);
+
+		// 5. reverse folders in new release
+		subSubFolder.moveTo(getMockedInternalActionContext(""), folder);
+		folder.reload();
+		subFolder.reload();
+		subSubFolder.reload();
+		subFolder.moveTo(getMockedInternalActionContext(""), subSubFolder);
+		folder.reload();
+		subFolder.reload();
+		subSubFolder.reload();
+
+		// 6. assert for new release
+		assertThat(folder).as("folder").hasChildren(newRelease, subSubFolder);
+		assertThat(subSubFolder).as("subSubFolder").hasChildren(newRelease, subFolder);
+		assertThat(subFolder).as("subFolder").hasNoChildren(newRelease);
+
+		// 7. assert for initial release
+		assertThat(folder).as("folder").hasChildren(initialRelease, subFolder);
+		assertThat(subFolder).as("subFolder").hasChildren(initialRelease, subSubFolder);
+		assertThat(subSubFolder).as("subSubFolder").hasNoChildren(initialRelease);
+
+		// 8. delete folder for initial release
+		subFolder.deleteFromRelease(initialRelease, createBatch());
+		folder.reload();
+		subFolder.reload();
+		subSubFolder.reload();
+
+		// 9. assert for new release
+		assertThat(folder).as("folder").hasChildren(newRelease, subSubFolder);
+		assertThat(subSubFolder).as("subSubFolder").hasChildren(newRelease, subFolder);
+		assertThat(subFolder).as("subFolder").hasNoChildren(newRelease);
+
+		// 10. assert for initial release
+		List<Node> nodes = new ArrayList<>();
+		project.getNodeRoot().findAll(getMockedInternalActionContext("release=" + initialRelease.getName()),
+				new PagingParameter(1, 10000, "name", SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
+		assertThat(nodes).as("Nodes in initial release").usingElementComparatorOnFields("uuid")
+				.doesNotContain(subFolder, subSubFolder);
+		assertThat(folder).as("folder").hasNoChildren(initialRelease);
+	}
 }

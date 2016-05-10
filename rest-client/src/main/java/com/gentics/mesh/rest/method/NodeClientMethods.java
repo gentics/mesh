@@ -54,9 +54,10 @@ public interface NodeClientMethods {
 	 * 
 	 * @param projectName
 	 * @param uuid
+	 * @param parameters
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteNode(String projectName, String uuid);
+	Future<GenericMessageResponse> deleteNode(String projectName, String uuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Delete the node with the given language.
@@ -64,9 +65,10 @@ public interface NodeClientMethods {
 	 * @param projectName
 	 * @param uuid
 	 * @param languageTag
+	 * @param parameters
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag);
+	Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag, QueryParameterProvider... parameters);
 
 	/**
 	 * Find all nodes within the project with the given name. The query parameters can be used to set paging and language settings.

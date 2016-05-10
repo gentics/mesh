@@ -46,6 +46,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -80,6 +81,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
 	private NodeVerticle verticle;
+
+	@Autowired
+	private NodeMigrationHandler nodeMigrationHandler;
 
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
@@ -1390,9 +1394,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Node node = project().getBaseNode();
 		String uuid = node.getUuid();
 
-		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
-		latchFor(future);
-		expectException(future, METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
+		call(() -> getClient().deleteNode(PROJECT_NAME, uuid), METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
 		Node foundNode = meshRoot().getNodeRoot().findByUuid(uuid).toBlocking().single();
 		assertNotNull("The node should still exist.", foundNode);
@@ -1403,11 +1405,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUID() throws Exception {
 		Node node = content("concorde");
 		String uuid = node.getUuid();
-		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
-		latchFor(future);
-		assertSuccess(future);
+		GenericMessageResponse response = call(() -> getClient().deleteNode(PROJECT_NAME, uuid));
+		expectResponseMessage(response, "node_deleted", uuid);
 
-		expectResponseMessage(future, "node_deleted", uuid);
 		assertElement(meshRoot().getNodeRoot(), uuid, false);
 		assertThat(searchProvider).recordedDeleteEvents(2);
 		SearchQueue searchQueue = meshRoot().getSearchQueue();
@@ -1418,6 +1418,77 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		// assertEquals(uuid, entry.getElementUuid());
 		// assertEquals(Node.TYPE, entry.getElementType());
 		// assertEquals(SearchQueueEntryAction.DELETE_ACTION, entry.getElementAction());
+	}
+
+	@Test
+	public void testDeleteForRelease() throws Exception {
+		// 1. get the node
+		Node node = content("concorde");
+		String uuid = node.getUuid();
+
+		// 2. create new release
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		// 3. migrate nodes
+		nodeMigrationHandler.migrateNodes(newRelease).toBlocking().single();
+		call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().draft().setRelease(initialRelease.getUuid())));
+		call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().draft().setRelease(newRelease.getUuid())));
+
+		// 4. delete node in new release
+		GenericMessageResponse response = call(() -> getClient().deleteNode(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setRelease(newRelease.getUuid())));
+		expectResponseMessage(response, "node_deleted", uuid);
+
+		// 5. Assert
+		assertElement(meshRoot().getNodeRoot(), uuid, true);
+		node.reload();
+		assertThat(node.getGraphFieldContainers(initialRelease, Type.DRAFT)).as("draft containers for initial release")
+				.isNotEmpty();
+		assertThat(node.getGraphFieldContainers(newRelease, Type.DRAFT)).as("draft containers for new release")
+				.isEmpty();
+	}
+
+	@Test
+	public void testDeletePublishedForRelease() throws Exception {
+		// 1. get the node
+		Node node = content("concorde");
+		String uuid = node.getUuid();
+
+		// 2. Publish the node
+		node.publish(getMockedInternalActionContext("")).toBlocking().single();
+
+		// 3. create new release
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		// 4. migrate nodes
+		nodeMigrationHandler.migrateNodes(newRelease).toBlocking().single();
+		call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().draft().setRelease(initialRelease.getUuid())));
+		call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().draft().setRelease(newRelease.getUuid())));
+
+		// 5. delete node in new release
+		GenericMessageResponse response = call(() -> getClient().deleteNode(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setRelease(newRelease.getUuid())));
+		expectResponseMessage(response, "node_deleted", uuid);
+
+		// 6. Assert
+		assertElement(meshRoot().getNodeRoot(), uuid, true);
+		node.reload();
+		assertThat(node.getGraphFieldContainers(initialRelease, Type.DRAFT)).as("draft containers for initial release")
+				.isNotEmpty();
+		assertThat(node.getGraphFieldContainers(initialRelease, Type.PUBLISHED))
+				.as("published containers for initial release").isNotEmpty();
+		assertThat(node.getGraphFieldContainers(newRelease, Type.DRAFT)).as("draft containers for new release")
+				.isEmpty();
+		assertThat(node.getGraphFieldContainers(newRelease, Type.PUBLISHED)).as("published containers for new release")
+				.isEmpty();
 	}
 
 	@Test

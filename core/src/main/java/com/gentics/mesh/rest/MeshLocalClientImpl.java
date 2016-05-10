@@ -191,16 +191,16 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid, QueryParameterProvider... parameters) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleDelete(ac, uuid);
 		return ac.getFuture();
 	}
 
 	@Override
-	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag, QueryParameterProvider... parameters) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
 		ac.setProject(projectName);
 		ac.setQuery("?lang=" + languageTag);
 		//TODO set project
