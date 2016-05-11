@@ -5,6 +5,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,7 +13,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -37,6 +41,7 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.Trx;
@@ -373,7 +378,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 		String subSubFolderUuid = subSubFolder.getUuid();
 
 		// 2. delete folder for initial release
-		subFolder.deleteFromRelease(initialRelease, createBatch());
+		SearchQueueBatch batch = createBatch();
+		subFolder.deleteFromRelease(initialRelease, batch);
 		folder.reload();
 
 		// 3. assert for new release
@@ -383,6 +389,14 @@ public class NodeTest extends AbstractBasicObjectTest {
 		List<String> nodeUuids = new ArrayList<>();
 		project.getNodeRoot().findAll().forEach(node -> nodeUuids.add(node.getUuid()));
 		assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
+
+		// 5. assert searchqueuebatch
+		Map<String, ElementEntry> affectedElements = new HashMap<>();
+		affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid,
+				project.getUuid(), initialRelease.getUuid(), Type.DRAFT, "en"));
+		affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid,
+				project.getUuid(), initialRelease.getUuid(), Type.DRAFT, "en"));
+		assertAffectedElements(affectedElements, batch);
 	}
 
 	@Test
@@ -394,10 +408,13 @@ public class NodeTest extends AbstractBasicObjectTest {
 		// 1. create folder with subfolder and subsubfolder
 		Node folder = project.getBaseNode().create(user(), folderSchema, project);
 		folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
+		String folderUuid = folder.getUuid();
 		Node subFolder = folder.create(user(), folderSchema, project);
 		subFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubFolder");
+		String subFolderUuid = subFolder.getUuid();
 		Node subSubFolder = subFolder.create(user(), folderSchema, project);
 		subSubFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubSubFolder");
+		String subSubFolderUuid = subSubFolder.getUuid();
 
 		// 2. create a new release
 		Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -434,7 +451,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertThat(subSubFolder).as("subSubFolder").hasNoChildren(initialRelease);
 
 		// 8. delete folder for initial release
-		subFolder.deleteFromRelease(initialRelease, createBatch());
+		SearchQueueBatch batch = createBatch();
+		subFolder.deleteFromRelease(initialRelease, batch);
 		folder.reload();
 		subFolder.reload();
 		subSubFolder.reload();
@@ -451,5 +469,165 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertThat(nodes).as("Nodes in initial release").usingElementComparatorOnFields("uuid")
 				.doesNotContain(subFolder, subSubFolder);
 		assertThat(folder).as("folder").hasNoChildren(initialRelease);
+
+		// 11. assert searchqueuebatch
+		Map<String, ElementEntry> affectedElements = new HashMap<>();
+		affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid,
+				project.getUuid(), initialRelease.getUuid(), Type.DRAFT, "en"));
+		affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid,
+				project.getUuid(), initialRelease.getUuid(), Type.DRAFT, "en"));
+		assertAffectedElements(affectedElements, batch);
+	}
+
+	@Test
+	public void testDeletePublished() throws InvalidArgumentException {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
+
+		// 1. create folder and publish
+		String folderUuid = db.noTrx(() -> {
+			Node folder = project.getBaseNode().create(user(), folderSchema, project);
+			folder.applyPermissions(role(), false,
+					new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
+					Collections.emptySet());
+			folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
+			folder.publish(getMockedInternalActionContext("")).toBlocking().single();
+			return folder.getUuid();
+		});
+
+		// 2. assert published and draft node
+		db.noTrx(() -> {
+			List<String> nodeUuids = new ArrayList<>();
+			project.getNodeRoot()
+					.findAll(getMockedInternalActionContext("version=draft"),
+							new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+					.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
+			nodeUuids.clear();
+			project.getNodeRoot()
+					.findAll(getMockedInternalActionContext("version=published"),
+							new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+					.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
+			return null;
+		});
+
+		// 3. delete
+		SearchQueueBatch batch = db.noTrx(() -> {
+			SearchQueueBatch innerBatch = createBatch();
+			meshRoot().getNodeRoot().findByUuidSync(folderUuid).deleteFromRelease(initialRelease, innerBatch);
+			return innerBatch;
+		});
+
+		// 4. assert published and draft gone
+		db.noTrx(() -> {
+			List<String> nodeUuids = new ArrayList<>();
+			project.getNodeRoot()
+					.findAll(getMockedInternalActionContext("version=draft"),
+							new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+					.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
+
+			nodeUuids.clear();
+			project.getNodeRoot()
+					.findAll(getMockedInternalActionContext("version=published"),
+							new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+					.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
+			return null;
+		});
+
+		// 5. assert searchqueuebatch
+		db.noTrx(() -> {
+			Map<String, ElementEntry> affectedElements = new HashMap<>();
+			affectedElements.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid,
+					project.getUuid(), initialRelease.getUuid(), Type.DRAFT, "en"));
+			affectedElements.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid,
+					project.getUuid(), initialRelease.getUuid(), Type.PUBLISHED, "en"));
+
+			assertAffectedElements(affectedElements, batch);
+			return null;
+		});
+	}
+
+	@Test
+	public void testDeletePublishedFromRelease() {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
+
+		// 1. create folder and publish
+		String folderUuid = db.noTrx(() -> {
+			Node folder = project.getBaseNode().create(user(), folderSchema, project);
+			folder.applyPermissions(role(), false,
+					new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
+					Collections.emptySet());
+			folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
+			folder.publish(getMockedInternalActionContext("")).toBlocking().single();
+			return folder.getUuid();
+		});
+
+		// 2. create new release and migrate nodes
+		db.noTrx(() -> {
+			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			nodeMigrationHandler.migrateNodes(newRelease).toBlocking().single();
+			return newRelease.getUuid();
+		});
+
+		// 3. delete from initial release
+		SearchQueueBatch batch = db.noTrx(() -> {
+			SearchQueueBatch innerBatch = createBatch();
+			meshRoot().getNodeRoot().findByUuidSync(folderUuid).deleteFromRelease(initialRelease, innerBatch);
+			return innerBatch;
+		});
+
+		// 4. assert published and draft gone from initial release
+		db.noTrx(() -> {
+			List<String> nodeUuids = new ArrayList<>();
+			project.getNodeRoot()
+					.findAll(getMockedInternalActionContext("version=draft&release=" + initialRelease.getUuid()),
+							new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+					.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
+
+			nodeUuids.clear();
+			project.getNodeRoot()
+					.findAll(getMockedInternalActionContext("version=published&release=" + initialRelease.getUuid()),
+							new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+					.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
+			return null;
+		});
+
+		// 5. assert published and draft still there for new release
+		db.noTrx(() -> {
+			List<String> nodeUuids = new ArrayList<>();
+			project.getNodeRoot()
+					.findAll(getMockedInternalActionContext("version=draft"),
+							new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+					.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
+
+			nodeUuids.clear();
+			project.getNodeRoot()
+					.findAll(getMockedInternalActionContext("version=published"),
+							new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+					.forEach(node -> nodeUuids.add(node.getUuid()));
+			assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
+			return null;
+		});
+
+		// 6. assert searchqueuebatch
+		db.noTrx(() -> {
+			Map<String, ElementEntry> affectedElements = new HashMap<>();
+			affectedElements.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid,
+					project.getUuid(), initialRelease.getUuid(), Type.DRAFT, "en"));
+			affectedElements.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid,
+					project.getUuid(), initialRelease.getUuid(), Type.PUBLISHED, "en"));
+
+			assertAffectedElements(affectedElements, batch);
+			return null;
+		});
 	}
 }

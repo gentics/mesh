@@ -100,7 +100,7 @@ public final class MeshAssert {
 		for (String key : affectedElements.keySet()) {
 			ElementEntry entry = affectedElements.get(key);
 			// 1. Check for deletion from graph
-			if (DELETE_ACTION.equals(entry.getAction())) {
+			if (DELETE_ACTION.equals(entry.getAction()) && entry.getType() == null) {
 				assertFalse("The element {" + key + "} vertex for uuid: {" + entry.getUuid() + "}",
 						Database.getThreadLocalGraph().v().has("uuid", entry.getUuid()).hasNext());
 			}
