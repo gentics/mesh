@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.AbstractRestException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
@@ -30,8 +31,8 @@ public class FailureHandler implements Handler<RoutingContext> {
 	}
 
 	private int getResponseStatusCode(Throwable failure) {
-		if (failure instanceof HttpStatusCodeErrorException) {
-			HttpStatusCodeErrorException error = (HttpStatusCodeErrorException) failure;
+		if (failure instanceof AbstractRestException) {
+			AbstractRestException error = (AbstractRestException) failure;
 			return error.getStatus().code();
 		}
 		return 500;
@@ -60,7 +61,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 			//TODO instead of unwrapping we should return all the exceptions we can and use ExceptionResponse to nest those exceptions
 			// Unwrap wrapped exceptions
 			while (failure != null && failure.getCause() != null) {
-				if (failure instanceof HttpStatusCodeErrorException || failure instanceof JsonMappingException) {
+				if (failure instanceof AbstractRestException || failure instanceof JsonMappingException) {
 					break;
 				}
 				failure = failure.getCause();
@@ -72,19 +73,13 @@ public class FailureHandler implements Handler<RoutingContext> {
 				rc.response().setStatusCode(400);
 				String msg = I18NUtil.get(InternalActionContext.create(rc), "error_parse_request_json_error");
 				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg, failure.getMessage())));
-			} else if (failure != null && failure instanceof HttpStatusCodeErrorException) {
-				HttpStatusCodeErrorException httpStatusError = (HttpStatusCodeErrorException) failure;
-				rc.response().setStatusCode(httpStatusError.getStatus().code());
-
-				String i18nMsg = httpStatusError.getMessage();
-				try {
-					i18nMsg = I18NUtil.get(InternalActionContext.create(rc), httpStatusError.getMessage(), httpStatusError.getI18nParameters());
-				} catch (MissingResourceException e) {
-					log.error("Did not find i18n message for key {" + httpStatusError.getMessage() + "}", e);
-				}
-
-				GenericMessageResponse msg = new GenericMessageResponse(i18nMsg, null, httpStatusError.getProperties());
-				rc.response().end(JsonUtil.toJson(msg));
+			}
+			if (failure != null && failure instanceof AbstractRestException) {
+				AbstractRestException error = (AbstractRestException) failure;
+				int code = getResponseStatusCode(failure);
+				rc.response().setStatusCode(code);
+				translateMessage(error, rc);
+				rc.response().end(JsonUtil.toJson(error));
 			} else if (failure != null) {
 				int code = getResponseStatusCode(failure);
 				rc.response().setStatusCode(code);
@@ -96,6 +91,21 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 		}
 
+	}
+
+	/**
+	 * Try to translate the nested i18n message key.
+	 * 
+	 * @param error
+	 */
+	private void translateMessage(AbstractRestException error, RoutingContext rc) {
+		String i18nMsg = error.getMessage();
+		try {
+			i18nMsg = I18NUtil.get(InternalActionContext.create(rc), error.getMessage(), error.getI18nParameters());
+			error.setMessage(i18nMsg);
+		} catch (MissingResourceException e) {
+			log.error("Did not find i18n message for key {" + error.getMessage() + "}", e);
+		}
 	}
 
 }

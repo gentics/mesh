@@ -22,9 +22,8 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapJsonImpl();
-			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
+			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertNoDiff(list);
 			return null;
 		});
@@ -36,9 +35,8 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapJsonImpl();
-			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue2"));
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
+			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
 			return null;
 		});
@@ -51,9 +49,8 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			FieldMap dummyMap = new FieldMapJsonImpl();
-			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", null);
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
+			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertNoDiff(list);
 			return null;
 		});
@@ -66,9 +63,8 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			FieldMap dummyMap = new FieldMapJsonImpl();
-			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue2"));
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
+			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
 			return null;
 		});
@@ -81,9 +77,8 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue2");
 			FieldMap dummyMap = new FieldMapJsonImpl();
-			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", null);
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
+			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
 			return null;
 		});
@@ -97,7 +92,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = new SchemaModel();
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
+			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.REMOVED);
 			return null;
 		});
@@ -111,7 +106,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
+			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.ADDED);
 			return null;
 		});
@@ -126,7 +121,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = createSchema(FieldUtil.createHtmlFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createHtmlField("someValue"));
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
+			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
 			return null;
 		});

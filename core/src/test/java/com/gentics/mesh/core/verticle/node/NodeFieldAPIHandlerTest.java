@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.UUIDUtil;
@@ -77,7 +77,7 @@ public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 		FileUtils.deleteDirectory(uploadFolder);
 	}
 
-	@Test(expected = HttpStatusCodeErrorException.class)
+	@Test(expected = GenericRestException.class)
 	public void testFileUploadWithNoUploadFile() throws IOException {
 		FileUpload fileUpload = mockUpload();
 		// Delete the file on purpose in order to invoke an error

@@ -247,8 +247,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public Set<String> getReleases(Type type) {
 		Set<String> releaseUuids = new HashSet<>();
-		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode())
-				.frameExplicit(GraphFieldContainerEdgeImpl.class)
+		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).frameExplicit(GraphFieldContainerEdgeImpl.class)
 				.forEach(edge -> releaseUuids.add(edge.getReleaseUuid()));
 		return releaseUuids;
 	}
@@ -281,66 +280,33 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public List<FieldContainerChange> compareTo(FieldMap fieldMap, Schema schema) {
+	public List<FieldContainerChange> compareTo(FieldMap fieldMap) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 
 		Schema schemaA = getSchemaContainerVersion().getSchema();
-		Map<String, FieldSchema> fieldMapA = schemaA.getFieldsAsMap();
+		Map<String, FieldSchema> fieldSchemaMap = schemaA.getFieldsAsMap();
 
-		Map<String, FieldSchema> fieldMapB = schema.getFieldsAsMap();
-		// Generate a structural diff first. This way it is easy to determine which fields have been added or removed.
-		MapDifference<String, FieldSchema> diff = Maps.difference(fieldMapA, fieldMapB, new Equivalence<FieldSchema>() {
-
-			@Override
-			protected boolean doEquivalent(FieldSchema a, FieldSchema b) {
-				return a.getName().equals(b.getName());
+		// Handle all fields
+		for (String fieldName : fieldSchemaMap.keySet()) {
+			FieldSchema fieldSchema = fieldSchemaMap.get(fieldName);
+			// Check content
+			GraphField fieldA = getField(fieldSchema);
+			Field fieldB = fieldMap.getField(fieldName, fieldSchema);
+			// Handle null cases. The field may not have been created yet.
+			if (fieldA != null && fieldB == null && fieldMap.hasField(fieldName)) {
+				// Field only exists in A
+				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+			} else if (fieldA == null && fieldB != null) {
+				// Field only exists in B
+				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+			} else if (fieldA != null && fieldB != null && !fieldA.equals(fieldB)) {
+				// Field exists in A and B and the fields are not equal to each other. 
+				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+			} else {
+				// Both fields are equal if those fields are both null
 			}
 
-			@Override
-			protected int doHash(FieldSchema t) {
-				// TODO Auto-generated method stub
-				return 0;
-			}
-
-		});
-
-		// Handle fields which exist only in A - They have been removed in B 
-		for (FieldSchema field : diff.entriesOnlyOnLeft().values()) {
-			changes.add(new FieldContainerChange(field.getName(), FieldChangeTypes.REMOVED));
 		}
-
-		// Handle fields which don't exist in A - They have been added in B 
-		for (FieldSchema field : diff.entriesOnlyOnRight().values()) {
-			changes.add(new FieldContainerChange(field.getName(), FieldChangeTypes.ADDED));
-		}
-
-		// Handle fields which are common in both schemas
-				for (String fieldName : diff.entriesInCommon().keySet()) {
-					FieldSchema fieldSchemaA = fieldMapA.get(fieldName);
-					FieldSchema fieldSchemaB = fieldMapB.get(fieldName);
-					// Check whether the field type is different in between both schemas
-					if (fieldSchemaA.getType().equals(fieldSchemaB.getType())) {
-						// Check content
-						GraphField fieldA = getField(fieldSchemaA);
-						Field fieldB =fieldMap.getField(fieldName, fieldSchemaB);
-						// Handle null cases. The field may not have been created yet.
-						if (fieldA != null && fieldB == null) {
-							// Field only exists in A
-							changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
-						} else if (fieldA == null && fieldB != null) {
-							// Field only exists in B
-							changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
-						} else if (fieldA != null && fieldB != null && !fieldA.equals(fieldB)) {
-							// Field exists in A and B and the fields are not equal to each other. 
-							changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
-						} else {
-							// Both fields are equal if those fields are both null
-						}
-					} else {
-						// The field type has changed
-						changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
-					}
-				}
 		return changes;
 	}
 
@@ -411,15 +377,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version) {
-		return outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).mark().inV().has(MicronodeImpl.class)
-				.out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class)
-				.has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
+		return outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER)
+				.has(MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
 	}
 
 	@Override
 	public List<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version) {
-		return out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class)
-				.out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class)
-				.has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldListImpl.class);
+		return out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER)
+				.has(MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldListImpl.class);
 	}
 }

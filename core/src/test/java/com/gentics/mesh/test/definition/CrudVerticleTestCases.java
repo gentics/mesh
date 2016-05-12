@@ -1,6 +1,6 @@
 package com.gentics.mesh.test.definition;
 
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 
 public interface CrudVerticleTestCases {
 
@@ -23,7 +23,7 @@ public interface CrudVerticleTestCases {
 
 	void testUpdateByUUIDWithoutPerm() throws Exception;
 
-	void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception;
+	void testUpdateWithBogusUuid() throws GenericRestException, Exception;
 
 	// Delete
 	void testDeleteByUUID() throws Exception;

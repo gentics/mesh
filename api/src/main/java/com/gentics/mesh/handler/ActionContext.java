@@ -3,7 +3,7 @@ package com.gentics.mesh.handler;
 import java.util.Locale;
 import java.util.Map;
 
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -108,9 +108,9 @@ public interface ActionContext {
 	 * @param classOfT
 	 *            Class to be used for deserialisation
 	 * @return Deserialized object
-	 * @throws HttpStatusCodeErrorException
+	 * @throws GenericRestException
 	 */
-	<T> T fromJson(Class<?> classOfT) throws HttpStatusCodeErrorException;
+	<T> T fromJson(Class<?> classOfT) throws GenericRestException;
 
 	/**
 	 * Return the body string of the request.

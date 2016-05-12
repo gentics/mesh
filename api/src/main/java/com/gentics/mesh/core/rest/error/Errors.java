@@ -1,12 +1,30 @@
 package com.gentics.mesh.core.rest.error;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-
-import java.util.HashMap;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-public final class Errors {
+public enum Errors {
+
+	NAME_CONFLICT(NameConflictException.TYPE, NameConflictException.class),
+
+	GENERAL_ERROR(GenericRestException.TYPE, GenericRestException.class),
+
+	NODE_VERSION_CONFLICT(NodeVersionConflictException.TYPE, NodeVersionConflictException.class);
+
+	private String type;
+	private Class<?> clazz;
+
+	private Errors(String type, Class<?> clazz) {
+		this.type = type;
+		this.clazz = clazz;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public Class<?> getClazz() {
+		return clazz;
+	}
 
 	/**
 	 * Create a new http conflict exception.
@@ -21,9 +39,8 @@ public final class Errors {
 	 *            I18n message parameters
 	 * @return
 	 */
-	public static HttpStatusCodeErrorException conflict(String conflictingUuid, String conflictingName, String i18nMessageKey, String... parameters) {
-		HttpStatusCodeErrorException error = new HttpStatusCodeErrorException(CONFLICT, i18nMessageKey, parameters);
-		error.setProperties(new HashMap<>());
+	public static NameConflictException conflict(String conflictingUuid, String conflictingName, String i18nMessageKey, String... parameters) {
+		NameConflictException error = new NameConflictException(i18nMessageKey, parameters);
 		error.setProperty("conflictingUuid", conflictingUuid);
 		error.setProperty("conflictingName", conflictingName);
 		return error;
@@ -40,8 +57,8 @@ public final class Errors {
 	 *            i18n parameters
 	 * @return
 	 */
-	public static HttpStatusCodeErrorException error(HttpResponseStatus status, String i18nMessageKey, String... parameters) {
-		return new HttpStatusCodeErrorException(status, i18nMessageKey, parameters);
+	public static GenericRestException error(HttpResponseStatus status, String i18nMessageKey, String... parameters) {
+		return new GenericRestException(status, i18nMessageKey, parameters);
 	}
 
 	/**
@@ -55,8 +72,23 @@ public final class Errors {
 	 *            Nested exception
 	 * @return
 	 */
-	public static HttpStatusCodeErrorException error(HttpResponseStatus status, String i18nMessageKey, Throwable t) {
-		return new HttpStatusCodeErrorException(status, i18nMessageKey, t);
+	public static GenericRestException error(HttpResponseStatus status, String i18nMessageKey, Throwable t) {
+		return new GenericRestException(status, i18nMessageKey, t);
+	}
+
+	/**
+	 * Resolve the given typeName to a registered type.
+	 * 
+	 * @param typeName
+	 * @return
+	 */
+	public static Errors valueByName(String typeName) {
+		for (Errors type : values()) {
+			if (type.getType().equals(typeName)) {
+				return type;
+			}
+		}
+		return null;
 	}
 
 }

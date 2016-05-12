@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -516,7 +516,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setFields(new TagFieldContainer().setName("newName"));
 		TagFamily parentTagFamily = tagFamily("colors");

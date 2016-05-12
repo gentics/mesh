@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
@@ -61,7 +61,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testCreate() throws HttpStatusCodeErrorException, Exception {
+	public void testCreate() throws GenericRestException, Exception {
 		Schema schema = FieldUtil.createMinimalValidSchema();
 
 		assertThat(searchProvider).recordedStoreEvents(0);
@@ -83,7 +83,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testCreateReadDelete() throws HttpStatusCodeErrorException, Exception {
+	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		assertThat(searchProvider).recordedStoreEvents(0);
 		Schema schema = FieldUtil.createMinimalValidSchema();
@@ -253,7 +253,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	@Ignore("Update tests are covered by dedicated test class")
-	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdate() throws GenericRestException, Exception {
 
 	}
 
@@ -272,7 +272,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		SchemaContainer schema = schemaContainer("content");
 		String oldName = schema.getName();
 		Schema request = new SchemaModel();

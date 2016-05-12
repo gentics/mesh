@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -117,7 +117,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		try {
 			updater.call(container);
 			fail("The update should have failed");
-		} catch (HttpStatusCodeErrorException e) {
+		} catch (GenericRestException e) {
 			assertEquals("node_error_required_field_not_deletable", e.getMessage());
 			assertThat(e.getI18nParameters()).containsExactly(fieldName, "dummySchema");
 		}
@@ -144,7 +144,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 			if (expectError) {
 				fail("The update should have failed but it did not.");
 			}
-		} catch (HttpStatusCodeErrorException e) {
+		} catch (GenericRestException e) {
 			assertEquals("node_error_missing_required_field_value", e.getMessage());
 			assertThat(e.getI18nParameters()).containsExactly(fieldName, "dummySchema");
 

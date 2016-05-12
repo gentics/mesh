@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -53,7 +53,7 @@ import io.vertx.core.json.JsonObject;
 public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 	@Test
-	public void testUpdateName() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateName() throws GenericRestException, Exception {
 		String name = "new-name";
 		SchemaContainer container = schemaContainer("content");
 		SchemaContainerVersion currentVersion = container.getLatestVersion();

@@ -51,7 +51,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -379,7 +379,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		if (type != null) {
 			return type.getField(this, fieldSchema);
 		} else {
-			throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Unknown list type {" + fieldSchema.getType() + "}");
+			throw new GenericRestException(INTERNAL_SERVER_ERROR, "Unknown list type {" + fieldSchema.getType() + "}");
 		}
 	}
 

@@ -149,14 +149,13 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	List<FieldContainerChange> compareTo(NodeGraphFieldContainer container);
 
 	/**
-	 * Compare the values of this container with the values of the given fieldmap. Use the provided schema to compare strutural differences in between both
+	 * Compare the values of this container with the values of the given fieldmap. Use the provided schema to compare structural differences in between both
 	 * schemas.
 	 * 
 	 * @param dummyMap
-	 * @param schema
 	 * @return
 	 */
-	List<FieldContainerChange> compareTo(FieldMap dummyMap, Schema schema);
+	List<FieldContainerChange> compareTo(FieldMap dummyMap);
 
 	@Override
 	SchemaContainerVersion getSchemaContainerVersion();

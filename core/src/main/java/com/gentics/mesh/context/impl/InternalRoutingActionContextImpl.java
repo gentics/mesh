@@ -11,7 +11,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -127,7 +127,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 			} else {
 				log.error("Could not load user from routing context.");
 				// TODO i18n
-				throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not load request user");
+				throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not load request user");
 			}
 		}
 		return user;

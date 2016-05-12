@@ -34,7 +34,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -312,7 +312,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdate() throws GenericRestException, Exception {
 		Group group = group();
 		final String name = "New Name";
 		GroupUpdateRequest request = new GroupUpdateRequest();
@@ -344,7 +344,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testUpdateGroupWithEmptyName() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateGroupWithEmptyName() throws GenericRestException, Exception {
 		Group group = group();
 
 		role().grantPermissions(group, UPDATE_PERM);
@@ -361,7 +361,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testUpdateGroupWithConflictingName() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateGroupWithConflictingName() throws GenericRestException, Exception {
 
 		final String alreadyUsedName = "extraGroup";
 		GroupRoot groupRoot = meshRoot().getGroupRoot();
@@ -381,7 +381,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		final String name = "New Name";
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);

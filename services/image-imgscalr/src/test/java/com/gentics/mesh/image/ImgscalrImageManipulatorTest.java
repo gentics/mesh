@@ -18,7 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
 
@@ -115,20 +115,20 @@ public class ImgscalrImageManipulatorTest {
 
 	}
 
-	@Test(expected = HttpStatusCodeErrorException.class)
+	@Test(expected = GenericRestException.class)
 	public void testIncompleteCropParameters() {
 		// Only one parameter
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
 		bi = manipulator.cropIfRequested(bi, new ImageManipulationParameter().setCroph(100));
 	}
 
-	@Test(expected = HttpStatusCodeErrorException.class)
+	@Test(expected = GenericRestException.class)
 	public void testCropStartOutOfBounds() throws Exception {
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
 		manipulator.cropIfRequested(bi, new ImageManipulationParameter().setStartx(500).setStarty(500).setCroph(20).setCropw(25));
 	}
 
-	@Test(expected = HttpStatusCodeErrorException.class)
+	@Test(expected = GenericRestException.class)
 	public void testCropAreaOutOfBounds() throws Exception {
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
 		manipulator.cropIfRequested(bi, new ImageManipulationParameter().setStartx(1).setStarty(1).setCroph(400).setCropw(400));

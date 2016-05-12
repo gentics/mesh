@@ -31,7 +31,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -120,7 +120,7 @@ public class SearchRestHandler {
 			builder = client.prepareSearch(indices.toArray(new String[indices.size()]))
 					.setSource(queryStringObject.toString());
 		} catch (Exception e) {
-			ac.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "search_query_not_parsable", e));
+			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
 		}
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);

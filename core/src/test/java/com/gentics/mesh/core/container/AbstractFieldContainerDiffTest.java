@@ -49,7 +49,7 @@ public class AbstractFieldContainerDiffTest extends AbstractDBTest {
 	protected void assertChanges(List<FieldContainerChange> list, FieldChangeTypes expectedType) {
 		assertNotNull("The list should never be null.", list);
 		assertThat(list).hasSize(1);
-		assertEquals("dummy", list.get(0).getFieldName());
+		assertEquals("dummy", list.get(0).getFieldKey());
 		assertEquals(expectedType, list.get(0).getType());
 	}
 

@@ -216,4 +216,12 @@ public interface FieldMap {
 	 */
 	<T extends Field> T getField(String fieldKey, FieldTypes type, String listType, boolean expand);
 
+	/**
+	 * Remove the a field with the given fieldKey from the fieldmap.
+	 * 
+	 * @param fieldKey
+	 * @return true if an element with the given key could be removed otherwise false
+	 */
+	boolean remove(String fieldKey);
+
 }

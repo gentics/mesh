@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
@@ -83,7 +83,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		return container;
 	}
 
-	private void validate(Schema schema) throws HttpStatusCodeErrorException {
+	private void validate(Schema schema) throws GenericRestException {
 		if (StringUtils.isEmpty(schema.getDisplayField())) {
 			throw error(BAD_REQUEST, "The displayField must not be empty");
 		}

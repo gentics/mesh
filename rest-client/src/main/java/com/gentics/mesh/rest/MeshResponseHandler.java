@@ -1,27 +1,12 @@
 package com.gentics.mesh.rest;
 
-import java.util.Arrays;
-
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
-import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.core.rest.user.UserCreateRequest;
-import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.json.JsonUtil;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClientResponse;
@@ -79,12 +64,6 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 						if (classOfT.equals(Object.class)) {
 							NodeResponse restObj = JsonUtil.readValue(json, NodeResponse.class);
 							future.complete((T) restObj);
-						} else if (isSchemaClass(classOfT)) {
-							T restObj = JsonUtil.readValue(json, classOfT);
-							future.complete(restObj);
-						} else if (isNodeClass(classOfT) || isUserListClass(classOfT) || isNodeListClass(classOfT) || isUserClass(classOfT)) {
-							T restObj = JsonUtil.readValue(json, classOfT);
-							future.complete(restObj);
 						} else {
 							T restObj = JsonUtil.readValue(json, classOfT);
 							future.complete(restObj);
@@ -121,87 +100,22 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 				log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {" + json
 						+ "} for method {" + this.method + "} and uri {" + this.uri + "}");
 
-				GenericMessageResponse responseMessage = null;
+				AbstractRestException responseMessage = null;
 				try {
-					responseMessage = JsonUtil.readValue(json, GenericMessageResponse.class);
+					responseMessage = JsonUtil.readValue(json, AbstractRestException.class);
+					responseMessage.setStatus(HttpResponseStatus.valueOf(response.statusCode()));
 				} catch (Exception e) {
 					if (log.isDebugEnabled()) {
 						log.debug("Could not deserialize response {" + json + "}.", e);
 					}
-					responseMessage = new GenericMessageResponse(json);
 				}
-				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage(), responseMessage));
+				future.fail(responseMessage);
 			});
 		}
 		if (handler != null) {
 			handler.handle(response);
 		}
 
-	}
-
-	/**
-	 * Check whether the given class is a user rest POJO class.
-	 * 
-	 * @param clazz
-	 * @return
-	 */
-	private boolean isUserClass(Class<? extends T> clazz) {
-		if (clazz.isAssignableFrom(UserResponse.class) || clazz.isAssignableFrom(UserCreateRequest.class)
-				|| clazz.isAssignableFrom(UserUpdateRequest.class)) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Check whether the given class is a user rest list POJO class.
-	 * 
-	 * @param clazz
-	 * @return
-	 */
-	private boolean isUserListClass(Class<?> clazz) {
-		if (clazz.isAssignableFrom(UserListResponse.class)) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Check whether the given class is a node rest list POJO class.
-	 * 
-	 * @param clazz
-	 * @return
-	 */
-	private boolean isNodeListClass(Class<?> clazz) {
-		if (clazz.isAssignableFrom(NodeListResponse.class)) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Check whether the given class is a schema rest POJO class.
-	 * 
-	 * @param clazz
-	 * @return
-	 */
-	private boolean isSchemaClass(Class<?> clazz) {
-		return Arrays.asList(Schema.class, SchemaModel.class, SchemaListResponse.class, Microschema.class, MicroschemaModel.class, Microschema.class,
-				MicroschemaListResponse.class).stream().anyMatch(c -> clazz.isAssignableFrom(c));
-	}
-
-	/**
-	 * Check whether the given class is a node rest POJO class.
-	 * 
-	 * @param clazz
-	 * @return
-	 */
-	private boolean isNodeClass(Class<?> clazz) {
-		if (clazz.isAssignableFrom(NodeUpdateRequest.class) || clazz.isAssignableFrom(NodeResponse.class)
-				|| clazz.isAssignableFrom(NodeCreateRequest.class) || clazz.isAssignableFrom(NavigationResponse.class)) {
-			return true;
-		}
-		return false;
 	}
 
 	public Future<T> getFuture() {

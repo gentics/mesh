@@ -53,7 +53,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -115,7 +115,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testCreateNodeWithBogusLanguageCode() throws HttpStatusCodeErrorException, Exception {
+	public void testCreateNodeWithBogusLanguageCode() throws GenericRestException, Exception {
 		NodeCreateRequest request = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
@@ -1202,7 +1202,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdate() throws GenericRestException, Exception {
 		final String newName = "english renamed name";
 		Node node = content("concorde");
 		String uuid = node.getUuid();
@@ -1270,7 +1270,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
@@ -1360,7 +1360,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testUpdateNodeWithExtraField2() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateNodeWithExtraField2() throws GenericRestException, Exception {
 		Node node = folder("2015");
 		String uuid = node.getUuid();
 		NodeUpdateRequest request = new NodeUpdateRequest();

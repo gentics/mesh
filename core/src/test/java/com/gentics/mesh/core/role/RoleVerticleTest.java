@@ -36,7 +36,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -379,7 +379,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
 

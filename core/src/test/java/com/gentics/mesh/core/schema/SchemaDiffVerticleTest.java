@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -77,7 +77,7 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testDiffDisplayField() throws HttpStatusCodeErrorException, Exception {
+	public void testDiffDisplayField() throws GenericRestException, Exception {
 		SchemaContainer container = schemaContainer("content");
 		Schema request = getSchema();
 		request.setDisplayField("name");

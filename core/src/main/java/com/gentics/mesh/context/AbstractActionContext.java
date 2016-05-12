@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.service.I18NUtil;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.HttpQueryUtils;
@@ -35,13 +35,13 @@ public abstract class AbstractActionContext implements ActionContext {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T fromJson(Class<?> classOfT) throws HttpStatusCodeErrorException {
+	public <T> T fromJson(Class<?> classOfT) throws GenericRestException {
 		try {
 			String body = getBodyAsString();
 			return (T) JsonUtil.getMapper().readValue(body, classOfT);
 		} catch (Exception e) {
 			// throw new HttpStatusCodeErrorException(400, new I18NService().get(rc, "error_parse_request_json_error"), e);
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "Error while parsing json.", e);
+			throw new GenericRestException(BAD_REQUEST, "Error while parsing json.", e);
 		}
 	}
 

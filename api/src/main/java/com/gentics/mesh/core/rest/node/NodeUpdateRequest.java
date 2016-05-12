@@ -15,6 +15,8 @@ public class NodeUpdateRequest implements RestModel, FieldContainer {
 
 	private FieldMap fields = new FieldMapJsonImpl();
 
+	private VersionReference version;
+
 	public NodeUpdateRequest() {
 	}
 
@@ -64,4 +66,21 @@ public class NodeUpdateRequest implements RestModel, FieldContainer {
 	public FieldMap getFields() {
 		return fields;
 	}
+
+	/**
+	 * Get the version of the fields
+	 * @return version number
+	 */
+	public VersionReference getVersion() {
+		return version;
+	}
+
+	/**
+	 * Set the version of the fields
+	 * @param version
+	 */
+	public void setVersion(VersionReference version) {
+		this.version = version;
+	}
+
 }

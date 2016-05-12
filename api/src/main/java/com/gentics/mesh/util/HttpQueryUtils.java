@@ -7,7 +7,7 @@ import java.net.URLDecoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 
 public final class HttpQueryUtils {
 
@@ -31,7 +31,7 @@ public final class HttpQueryUtils {
 			try {
 				queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
 			} catch (UnsupportedEncodingException e) {
-				throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not decode query string pair {" + pair + "}", e);
+				throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not decode query string pair {" + pair + "}", e);
 			}
 
 		}

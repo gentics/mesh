@@ -29,7 +29,7 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -341,7 +341,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							return message(ac, "node_binary_field_updated", updatedNodeUuid);
 						});
 					});
-				} catch (HttpStatusCodeErrorException e) {
+				} catch (GenericRestException e) {
 					throw e;
 				} catch (Exception e) {
 					log.error("Error while transforming image", e);

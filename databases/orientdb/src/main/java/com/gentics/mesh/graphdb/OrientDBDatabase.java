@@ -371,6 +371,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// Reset previous result
 				handlerFinished = false;
 				handlerResult = null;
+			} catch (RuntimeException e) {
+				log.error("Error handling transaction", e);
+				throw e;
 			} catch (Exception e) {
 				log.error("Error handling transaction", e);
 				throw new RuntimeException("Transaction error", e);

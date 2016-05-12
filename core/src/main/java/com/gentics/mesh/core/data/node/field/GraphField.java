@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
@@ -20,10 +20,10 @@ public interface GraphField {
 	 * @param fieldSchema
 	 * @param key
 	 * @param schema
-	 * @throws HttpStatusCodeErrorException
+	 * @throws GenericRestException
 	 */
 	public static void failOnMissingRequiredField(GraphField field, boolean isFieldNull, FieldSchema fieldSchema, String key,
-			FieldSchemaContainer schema) throws HttpStatusCodeErrorException {
+			FieldSchemaContainer schema) throws GenericRestException {
 		if (field == null && fieldSchema.isRequired() && isFieldNull) {
 			throw error(BAD_REQUEST, "node_error_missing_required_field_value", key, schema.getName());
 		}

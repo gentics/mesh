@@ -516,6 +516,13 @@ public class FieldMapJsonImpl implements FieldMap {
 	}
 
 	@Override
+	public boolean remove(String fieldKey) {
+		ObjectNode objectNode = ((ObjectNode) node);
+		JsonNode object = objectNode.remove(fieldKey);
+		return object != null;
+	}
+
+	@Override
 	public NodeResponse getNodeFieldExpanded(String key) {
 		return getField(key, FieldTypes.NODE, null, true);
 	}

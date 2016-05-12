@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -32,12 +33,12 @@ public class VersionNumberTest {
 		assertThat(new VersionNumber(47, 11).nextPublished()).as("Next Published after 47.11").hasToString("48.0");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testNegativMajor() {
 		new VersionNumber(-3, 18);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testNegativMinor() {
 		new VersionNumber(18, -3);
 	}
@@ -47,23 +48,46 @@ public class VersionNumberTest {
 		assertThat(new VersionNumber("47.11")).as("Version").hasToString("47.11");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testIllegalPattern() {
 		new VersionNumber("Bla");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testOnlyMajor() {
 		new VersionNumber("47");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testOnlyMinor() {
 		new VersionNumber(".11");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testNullVersion() {
 		new VersionNumber(null);
+	}
+
+	@Test
+	public void testEquals() {
+		VersionNumber versionA = new VersionNumber("47.11");
+		VersionNumber versionB = new VersionNumber("47.12");
+		assertTrue("VersionA should be equal to itself", versionA.equals(versionA));
+		assertTrue("VersionA should be equal to same value", versionA.equals(versionA.toString()));
+		assertFalse("VersionA should not be equal to versionB", versionA.equals(versionB));
+		assertFalse("VersionA should not be equal to versionB's value", versionA.equals(versionB.toString()));
+		VersionNumber versionC = new VersionNumber("47.12");
+		assertTrue("VersionB should be equal to versionC since both have the same value.", versionB.equals(versionC));
+	}
+
+	@Test
+	public void testCompareTo() {
+		VersionNumber versionA = new VersionNumber("47.11");
+		VersionNumber versionB = new VersionNumber("47.12");
+		VersionNumber versionC = new VersionNumber("47.12");
+		assertEquals("VersionA should be smaller than versionB", versionA.compareTo(versionB), -1);
+		assertEquals("VersionB should be greater than versionA", versionB.compareTo(versionA), 1);
+		assertEquals("VersionB should be equal to itself", versionB.compareTo(versionB), 0);
+		assertEquals("VersionB should be equal to versionC", versionB.compareTo(versionC), 0);
 	}
 }

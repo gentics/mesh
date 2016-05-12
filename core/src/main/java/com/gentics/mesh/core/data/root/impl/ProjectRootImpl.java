@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PE
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -36,6 +35,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
@@ -161,7 +161,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			// TODO instead of this check, a constraint in the db should be added
 			Project conflictingProject = boot.projectRoot().findByName(requestModel.getName()).toBlocking().single();
 			if (conflictingProject != null) {
-				throw conflict(conflictingProject.getUuid(), projectName, "project_conflicting_name");
+				throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 			}
 			Tuple<SearchQueueBatch, Project> tuple = db.trx(() -> {
 				requestUser.reload();

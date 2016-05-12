@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.test.junit.Assert;
 
 public class ImageRequestParameterTest {
@@ -59,7 +59,7 @@ public class ImageRequestParameterTest {
 			request.setWidth(0);
 			request.validate();
 			fail("The validation should fail but it did not.");
-		} catch (HttpStatusCodeErrorException e) {
+		} catch (GenericRestException e) {
 			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameter.WIDTH_QUERY_PARAM_KEY, "0");
 		}
 
@@ -68,7 +68,7 @@ public class ImageRequestParameterTest {
 			request.setHeight(0);
 			request.validate();
 			fail("The validation should fail but it did not.");
-		} catch (HttpStatusCodeErrorException e) {
+		} catch (GenericRestException e) {
 			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameter.HEIGHT_QUERY_PARAM_KEY, "0");
 		}
 
@@ -80,7 +80,7 @@ public class ImageRequestParameterTest {
 			request.setStarty(0);
 			request.validate();
 			fail("The validation should fail but it did not.");
-		} catch (HttpStatusCodeErrorException e) {
+		} catch (GenericRestException e) {
 			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameter.CROP_HEIGHT_QUERY_PARAM_KEY, "0");
 		}
 
@@ -92,7 +92,7 @@ public class ImageRequestParameterTest {
 			request.setStarty(0);
 			request.validate();
 			fail("The validation should fail but it did not.");
-		} catch (HttpStatusCodeErrorException e) {
+		} catch (GenericRestException e) {
 			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameter.CROP_WIDTH_QUERY_PARAM_KEY, "0");
 		}
 
@@ -104,7 +104,7 @@ public class ImageRequestParameterTest {
 			request.setStarty(0);
 			request.validate();
 			fail("The validation should fail but it did not.");
-		} catch (HttpStatusCodeErrorException e) {
+		} catch (GenericRestException e) {
 			Assert.assertException(e, BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameter.CROP_X_QUERY_PARAM_KEY, "-1");
 		}
 
@@ -116,7 +116,7 @@ public class ImageRequestParameterTest {
 			request.setStarty(-1);
 			request.validate();
 			fail("The validation should fail but it did not.");
-		} catch (HttpStatusCodeErrorException e) {
+		} catch (GenericRestException e) {
 			Assert.assertException(e, BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameter.CROP_Y_QUERY_PARAM_KEY, "-1");
 		}
 
@@ -139,7 +139,7 @@ public class ImageRequestParameterTest {
 			request.setCropw(1);
 			request.validateCropBounds(10, 10);
 			fail("The validation should fail but it did not.");
-		} catch (HttpStatusCodeErrorException e) {
+		} catch (GenericRestException e) {
 			Assert.assertException(e, BAD_REQUEST, "image_error_crop_out_of_bounds", "10", "10");
 		}
 

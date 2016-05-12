@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.syncleus.ferma.VertexFrame;
@@ -53,10 +53,10 @@ public final class TraversalHelper {
 					throws InvalidArgumentException {
 
 		if (page < 1) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
+			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
 		}
 		if (pageSize < 0) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(pageSize));
+			throw new GenericRestException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(pageSize));
 		}
 
 		// Internally we start with page 0

@@ -15,6 +15,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -30,8 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -50,6 +49,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -68,6 +68,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -1111,9 +1112,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		try {
 			NodeUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), NodeUpdateRequest.class);
-			if (StringUtils.isEmpty(requestModel.getLanguage())) {
+			if (isEmpty(requestModel.getLanguage())) {
 				throw error(BAD_REQUEST, "error_language_not_set");
 			}
+
 			return db.trx(() -> {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
@@ -1123,6 +1125,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				Release release = ac.getRelease(getProject());
 
 				NodeGraphFieldContainer container = getGraphFieldContainer(language, release, Type.DRAFT);
+
+				// No existing container was found. This means that no conflict check can be performed. Conflict checks only occur for updates.
 				if (container == null) {
 					// Create a new field container
 					container = createGraphFieldContainer(language, release, ac.getUser());
@@ -1144,16 +1148,50 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 						}
 					}
 				} else {
-					// TODO check for conflict
-					// when there already is a DRAFT version for the release,
-					// the request must contain a version reference, otherwise a
-					// conflict is detected
+					if (requestModel.getVersion() == null || isEmpty(requestModel.getVersion().getNumber())) {
+						throw error(BAD_REQUEST, "node_error_version_missing");
+					}
+
+					// Make sure the container was already migrated. Otherwise the update can't proceed.
+					SchemaContainerVersion schemaContainerVersion = container.getSchemaContainerVersion();
+					if (!container.getSchemaContainerVersion().equals(release.getVersion(schemaContainerVersion.getSchemaContainer()))) {
+						throw error(BAD_REQUEST, "node_error_migration_incomplete");
+					}
+
+					// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
+					if (!container.getVersion().equals(requestModel.getVersion().getNumber())) {
+
+						NodeGraphFieldContainer baseVersionContainer = findNextMatchingFieldContainer(Arrays.asList(requestModel.getLanguage()),
+								release.getUuid(), requestModel.getVersion().getNumber());
+						if (baseVersionContainer == null) {
+							throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion().getNumber(), requestModel.getLanguage());
+						}
+
+						List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(container);
+						List<FieldContainerChange> requestVersionDiff = container.compareTo(requestModel.getFields());
+
+						// Compare both sets of change sets 
+						List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains)
+								.collect(Collectors.toList());
+
+						// Check whether a conflict has been detected
+						if (intersect.size() > 0) {
+							NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
+							conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
+							conflictException.setNewVersion(container.getVersion().toString()); 
+							for (FieldContainerChange fcc : intersect) {
+								conflictException.addConflict(fcc.getFieldKey());
+							}
+							throw conflictException;
+						}
+					}
 
 					// create new field container as clone of the existing
 					container = createGraphFieldContainer(language, release, ac.getUser());
 
 					// Update the existing fields
 					container.updateFieldsFromRest(ac, requestModel.getFields());
+
 				}
 				return createIndexBatch(STORE_ACTION, Arrays.asList(container), release.getUuid(), Type.DRAFT);
 			}).process().map(i -> this);

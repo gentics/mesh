@@ -16,7 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.AbstractRestException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
@@ -65,6 +66,7 @@ public final class JsonUtil {
 		defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		SimpleModule module = new SimpleModule();
+		module.addDeserializer(AbstractRestException.class, new RestExceptionDeserializer());
 		module.addDeserializer(NodeFieldListItem.class, new NodeFieldListItemDeserializer());
 		module.addSerializer(NumberFieldImpl.class, new BasicFieldSerializer<NumberFieldImpl>());
 		module.addSerializer(HtmlFieldImpl.class, new BasicFieldSerializer<HtmlFieldImpl>());
@@ -99,7 +101,7 @@ public final class JsonUtil {
 
 	}
 
-	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
+	public static <T> String toJson(T obj) throws GenericRestException {
 		try {
 			if (debugMode) {
 				return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
@@ -110,7 +112,7 @@ public final class JsonUtil {
 			// TODO i18n
 			String message = "Could not generate json from object";
 			// TODO 500?
-			throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, message, e);
+			throw new GenericRestException(INTERNAL_SERVER_ERROR, message, e);
 		}
 	}
 
@@ -129,7 +131,7 @@ public final class JsonUtil {
 			if (e.getPath() != null && e.getPath().size() >= 1) {
 				field = e.getPath().get(0).getFieldName();
 			}
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_json_structure_invalid", line, column, field);
+			throw new GenericRestException(BAD_REQUEST, "error_json_structure_invalid", line, column, field);
 		} catch (JsonParseException e) {
 			String msg = e.getOriginalMessage();
 			String line = "unknown";
@@ -138,7 +140,7 @@ public final class JsonUtil {
 				line = String.valueOf(e.getLocation().getLineNr());
 				column = String.valueOf(e.getLocation().getColumnNr());
 			}
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_json_malformed", line, column, msg);
+			throw new GenericRestException(BAD_REQUEST, "error_json_malformed", line, column, msg);
 		}
 	}
 

@@ -55,7 +55,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -264,7 +264,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				query.put("query", queryObject);
 			} catch (Exception e) {
 				log.error("Error while building deletion query", e);
-				throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
+				throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
 			}
 			obs.add(searchProvider.deleteDocumentsViaQuery(indexName, query).flatMap(nDocumentsDeleted -> {
 				if (log.isDebugEnabled()) {

@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
@@ -211,7 +211,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		MicroschemaContainer microschema = microschemaContainers().get("vcard");
 		assertNotNull(microschema);
 		String oldName = microschema.getName();

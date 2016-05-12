@@ -14,7 +14,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.service.I18NUtil;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -34,7 +34,7 @@ public class SchemaTest {
 		try {
 			container.validate();
 			fail("No exception was thrown but we would expect a {" + bodyMessageI18nKey + "} error.");
-		} catch (HttpStatusCodeErrorException e) {
+		} catch (GenericRestException e) {
 			assertEquals("The exception did not contain the expected message.", bodyMessageI18nKey, e.getMessage());
 			assertArrayEquals(i18nParams, e.getI18nParameters());
 			// Lets check english translation

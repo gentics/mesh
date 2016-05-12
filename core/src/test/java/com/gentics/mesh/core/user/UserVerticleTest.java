@@ -43,7 +43,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -374,7 +374,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setUsername("New Name");
 

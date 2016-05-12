@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -306,7 +306,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("new Name");
 

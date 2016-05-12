@@ -25,7 +25,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
@@ -389,7 +389,7 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		Project project = project();
 
 		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
