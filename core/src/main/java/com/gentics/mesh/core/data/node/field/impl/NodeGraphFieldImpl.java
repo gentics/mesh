@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -49,7 +50,9 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			nodeField.setUuid(node.getUuid());
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
 				nodeField.setPath(WebRootLinkReplacer.getInstance()
-						.resolve(node, ac.getResolveLinksType(), languageTags.toArray(new String[languageTags.size()])).toBlocking().first());
+						.resolve(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersion()), node,
+								ac.getResolveLinksType(), languageTags.toArray(new String[languageTags.size()]))
+						.toBlocking().first());
 			}
 			return Observable.just(nodeField);
 		}

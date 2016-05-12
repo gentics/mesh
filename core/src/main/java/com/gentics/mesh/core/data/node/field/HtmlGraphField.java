@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field;
 
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
@@ -27,8 +28,9 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 					if (project == null) {
 						project = parentNode.getProject();
 					}
-					model.setHTML(
-							WebRootLinkReplacer.getInstance().replace(model.getHTML(), ac.getResolveLinksType(), project.getName(), languageTags));
+					model.setHTML(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(),
+							Type.forVersion(ac.getVersion()), model.getHTML(), ac.getResolveLinksType(),
+							project.getName(), languageTags));
 				}
 				return model;
 			});

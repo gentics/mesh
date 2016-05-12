@@ -1657,6 +1657,93 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		expectException(moveFuture, CONFLICT, "node_conflicting_segmentfield_move", "filename", conflictingName);
 	}
 
+	@Test
+	public void testDuplicateCrossReleases() {
+		String conflictingName = "filename.html";
+		String newReleaseName = "newrelease";
+		SchemaContainer contentSchema = schemaContainer("content");
+
+		// 1. Create new release and migrate nodes
+		db.noTrx(() -> {
+			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
+			nodeMigrationHandler.migrateNodes(newRelease);
+			return null;
+		});
+
+		// 2. Create content in new release
+		db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			call(() -> getClient().createNode(PROJECT_NAME, create));
+
+			return null;
+		});
+
+		// 3. Create "conflicting" content in initial release
+		db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			call(() -> getClient().createNode(PROJECT_NAME, create,
+					new NodeRequestParameter().setRelease(project().getInitialRelease().getUuid())));
+
+			return null;
+		});
+	}
+
+	@Test
+	public void testDuplicateWithOldVersion() {
+		String conflictingName = "filename.html";
+		String newName = "changed.html";
+		SchemaContainer contentSchema = schemaContainer("content");
+
+		// 1. Create initial content
+		String nodeUuid = db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+		});
+
+		// 2. Modify initial content
+		db.noTrx(() -> {
+			NodeUpdateRequest update = new NodeUpdateRequest();
+			update.setLanguage("en");
+			update.getFields().put("filename", FieldUtil.createStringField(newName));
+			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+			return null;
+		});
+
+		// 3. Create "conflicting" content
+		db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+		});
+	}
+
 	// Publish Tests
 
 	@Test

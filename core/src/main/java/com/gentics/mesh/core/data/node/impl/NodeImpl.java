@@ -241,7 +241,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, Type type) {
-		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
+		return getGraphFieldContainers(release.getUuid(), type);
+	}
+
+	@Override
+	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, Type type) {
+		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().has(NodeGraphFieldContainerImpl.class)
 				.toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
@@ -324,6 +329,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// remove existing draft edge
 		if (draftEdge != null) {
+			previous.setProperty(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY, null);
+			container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_update");
 			draftEdge.remove();
 		}
 
@@ -618,19 +625,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Add webroot url & lanuagePaths
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+				String releaseUuid = ac.getRelease(null).getUuid();
+				Type type = Type.forVersion(ac.getVersion());
 
 				// Url
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer.resolve(getUuid(), ac.getResolveLinksType(), getProject().getName(), restNode.getLanguage()).toBlocking()
-						.single();
+				String url = linkReplacer.resolve(releaseUuid, type, getUuid(), ac.getResolveLinksType(),
+						getProject().getName(), restNode.getLanguage()).toBlocking().single();
 				restNode.setPath(url);
 
 				// languagePaths
 				Map<String, String> languagePaths = new HashMap<>();
 				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release, Type.forVersion(ac.getVersion()))) {
 					Language currLanguage = currentFieldContainer.getLanguage();
-					languagePaths.put(currLanguage.getLanguageTag(),
-							linkReplacer.resolve(this, ac.getResolveLinksType(), currLanguage.getLanguageTag()).toBlocking().single());
+					languagePaths.put(currLanguage.getLanguageTag(), linkReplacer
+							.resolve(releaseUuid, type, this, ac.getResolveLinksType(), currLanguage.getLanguageTag())
+							.toBlocking().single());
 				}
 				restNode.setLanguagePaths(languagePaths);
 			}
@@ -1303,10 +1313,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public PathSegment getSegment(String segment) {
+	public PathSegment getSegment(String releaseUuid, Type type, String segment) {
 
 		// Check the different language versions
-		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
+		for (NodeGraphFieldContainer container : getGraphFieldContainers(releaseUuid, type)) {
 			Schema schema = container.getSchemaContainerVersion().getSchema();
 			String segmentFieldName = schema.getSegmentField();
 			// First check whether a string field exists for the given name
@@ -1335,7 +1345,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<Path> resolvePath(String releaseUuid, Path path, Stack<String> pathStack) {
+	public Observable<Path> resolvePath(String releaseUuid, Type type, Path path, Stack<String> pathStack) {
 		if (pathStack.isEmpty()) {
 			return Observable.just(path);
 		}
@@ -1347,10 +1357,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Check all childnodes
 		for (Node childNode : getChildren(releaseUuid)) {
-			PathSegment pathSegment = childNode.getSegment(segment);
+			PathSegment pathSegment = childNode.getSegment(releaseUuid, type, segment);
 			if (pathSegment != null) {
 				path.addSegment(pathSegment);
-				return childNode.resolvePath(releaseUuid, path, pathStack);
+				return childNode.resolvePath(releaseUuid, type, path, pathStack);
 			}
 		}
 		throw error(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());

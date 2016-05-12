@@ -27,9 +27,9 @@ public class UtilityHandler extends AbstractHandler {
 				projectName = "project";
 			}
 
-			return Observable.just(WebRootLinkReplacer.getInstance().replace(ac.getBodyAsString(), ac.getResolveLinksType(), projectName,
-					ac.getSelectedLanguageTags()));
-		}).subscribe(body -> rc.response().putHeader("Content-Type", "text/plain").setStatusCode(OK.code()).end(body));
+			return Observable.just(WebRootLinkReplacer.getInstance().replace(null, null, ac.getBodyAsString(),
+					ac.getResolveLinksType(), projectName, ac.getSelectedLanguageTags()));
+		}).subscribe(body -> rc.response().putHeader("Content-Type", "text/plain").setStatusCode(OK.code()).end(body), ac::fail);
 	}
 
 }

@@ -154,6 +154,15 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, Type type);
 
 	/**
+	 * Return a list of graph field containers of given type for the node in the given release
+	 *
+	 * @param releaseUuid
+	 * @param type
+	 * @return
+	 */
+	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, Type type);
+
+	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any release
 	 *
 	 * @return
@@ -407,19 +416,22 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Resolve the given path and return the path object that contains the resolved nodes.
 	 *
 	 * @param releaseUuid
+	 * @param type edge type
 	 * @param nodePath
 	 * @param pathStack
 	 * @return
 	 */
-	Observable<Path> resolvePath(String releaseUuid, Path nodePath, Stack<String> pathStack);
+	Observable<Path> resolvePath(String releaseUuid, Type type, Path nodePath, Stack<String> pathStack);
 
 	/**
 	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
-	 * 
+	 * @param releaseUuid release Uuid
+	 * @param type edge type
 	 * @param segment
+	 * 
 	 * @return Segment information or null if this node is not providing the given segment
 	 */
-	PathSegment getSegment(String segment);
+	PathSegment getSegment(String releaseUuid, Type type, String segment);
 
 	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
