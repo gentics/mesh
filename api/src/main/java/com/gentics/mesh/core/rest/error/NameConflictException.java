@@ -22,8 +22,8 @@ public class NameConflictException extends AbstractRestException {
 	 * @param i18nMessage
 	 * @param i18nProperties
 	 */
-	public NameConflictException(String i18nMessage, String... i18nParameters) {
-		super(CONFLICT, i18nMessage, i18nParameters);
+	public NameConflictException(String i18nMessage, String... i18nProperties) {
+		super(CONFLICT, i18nMessage, i18nProperties);
 	}
 
 	public void setProperty(String key, String value) {
