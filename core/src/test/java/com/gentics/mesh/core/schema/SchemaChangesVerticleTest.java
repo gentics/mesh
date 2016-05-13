@@ -20,6 +20,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.ivy.util.FileUtil;
+import org.junit.ComparisonFailure;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -107,10 +108,22 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		expectResponseMessage(statusFuture, "migration_status_running");
 		Thread.sleep(10000);
 
-		// Assert migration has finished
-		statusFuture = getClient().schemaMigrationStatus();
-		latchFor(statusFuture);
-		expectResponseMessage(statusFuture, "migration_status_idle");
+		// Check for 45 seconds whether the migration finishes
+		for (int i = 0; i < 45; i++) {
+			try {
+				Thread.sleep(1000);
+				// Assert migration has finished
+				statusFuture = getClient().schemaMigrationStatus();
+				latchFor(statusFuture);
+				expectResponseMessage(statusFuture, "migration_status_idle");
+				break;
+			} catch (ComparisonFailure e) {
+				System.out.println("Waiting " + i + " sec");
+				if (i == 30) {
+					throw e;
+				}
+			}
+		}
 
 	}
 
