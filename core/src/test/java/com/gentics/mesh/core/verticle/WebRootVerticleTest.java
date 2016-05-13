@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -85,7 +86,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 		// 3. Try to resolve the path
 		String path = "/News/2015/somefile.dat";
-		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(LinkType.FULL)));
+		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, path,
+				new NodeRequestParameter().draft().setResolveLinks(LinkType.FULL)));
 		NodeDownloadResponse downloadResponse = response.getDownloadResponse();
 		assertTrue(response.isBinary());
 		assertNotNull(downloadResponse);
@@ -249,7 +251,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		newsFolder = folder("2015");
 		role().revokePermissions(newsFolder, READ_PERM);
 
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, englishPath);
+		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, englishPath,
+				new NodeRequestParameter().draft());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", newsFolder.getUuid());
 	}
@@ -444,6 +447,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	protected void updateName(Node node, String language, String newName) {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
+		update.setVersion(new VersionReference(node.getGraphFieldContainer(language).getUuid(),
+				node.getGraphFieldContainer(language).getVersion().toString()));
 		update.getFields().put("name", FieldUtil.createStringField(newName));
 		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update));
 	}
