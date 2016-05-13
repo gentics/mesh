@@ -1,14 +1,16 @@
 package com.gentics.mesh.assertj.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.junit.Assert.*;
 
 public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeResponse> {
 
@@ -74,6 +76,17 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	 */
 	public NodeResponseAssert hasLanguage(String languageTag) {
 		assertThat(actual.getLanguage()).as(descriptionText() + " language").isEqualTo(languageTag);
+		return this;
+	}
+
+	/**
+	 * Assert that the response contains the given node
+	 *
+	 * @param node node
+	 * @return fluent API
+	 */
+	public NodeResponseAssert is(Node node) {
+		assertThat(actual.getUuid()).as("Uuid").isEqualTo(node.getUuid());
 		return this;
 	}
 }

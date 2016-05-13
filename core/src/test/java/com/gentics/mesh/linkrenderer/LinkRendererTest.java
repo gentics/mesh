@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.AbstractBasicDBTest;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -31,7 +32,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "{{mesh.link('" + uuid + "')}}";
-		String replacedContent = replacer.replace(content, Type.OFF, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.OFF, null, null);
 
 		assertEquals("Check rendered content", content, replacedContent);
 	}
@@ -41,7 +42,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "{{mesh.link('" + uuid + "')}}";
-		String replacedContent = replacer.replace(content, Type.SHORT, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.SHORT, null, null);
 
 		assertEquals("Check rendered content", "/News/News+Overview.en.html", replacedContent);
 	}
@@ -51,7 +52,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "{{mesh.link('" + uuid + "')}}";
-		String replacedContent = replacer.replace(content, Type.MEDIUM, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.MEDIUM, null, null);
 
 		assertEquals("Check rendered content", "/dummy/News/News+Overview.en.html", replacedContent);
 	}
@@ -61,7 +62,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "{{mesh.link('" + uuid + "')}}";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
 	}
@@ -71,7 +72,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "{{mesh.link('" + uuid + "')}} postfix";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html postfix", replacedContent);
 	}
@@ -81,7 +82,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "prefix {{mesh.link('" + uuid + "')}}";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
 	}
@@ -91,7 +92,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "prefix {{mesh.link('" + uuid + "')}} postfix";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix", replacedContent);
 	}
@@ -101,7 +102,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "{{mesh.link('" + uuid + "')}}{{mesh.link('" + uuid + "')}}";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html/api/v1/dummy/webroot/News/News+Overview.en.html",
 				replacedContent);
@@ -112,7 +113,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "{{mesh.link('" + uuid + "')}} in between {{mesh.link('" + uuid + "')}}";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content",
 				"/api/v1/dummy/webroot/News/News+Overview.en.html in between /api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
@@ -123,7 +124,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "{{mesh.link('" + uuid + "')}";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content", content, replacedContent);
 	}
@@ -133,7 +134,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "'\"{{mesh.link('" + uuid + "')}}\"'";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News+Overview.en.html\"'", replacedContent);
 	}
@@ -143,7 +144,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "'\"{{mesh.link(\"" + uuid + "\")}}\"'";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News+Overview.en.html\"'", replacedContent);
 	}
@@ -153,7 +154,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "{{mesh.link(\"" + uuid + "\", \"de\")}}";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content", "/api/v1/dummy/webroot/Neuigkeiten/News+Overview.de.html", replacedContent);
 	}
@@ -163,7 +164,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();
 		final String content = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
-		String replacedContent = replacer.replace(content, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
 	}
@@ -188,7 +189,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		englishContainer.createString("displayName").setString("content 2 english");
 		englishContainer.createString("name").setString("english.html");
 
-		String output = replacer.replace("dgasd", null, null, null);
+		String output = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, "dgasd", null, null, null);
 	}
 
 	@Test
@@ -206,7 +207,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 
 		// Render the link
 		final String meshLink = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
-		String replacedContent = replacer.replace(meshLink, Type.FULL, null, null);
+		String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, meshLink, Type.FULL, null, null);
 		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/somefile.dat", replacedContent);
 	}
 
@@ -217,7 +218,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "some bla START<a href=\"{{mesh.link('" + uuid + "','en')}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid
 				+ "\")}}\">Test</a>DEN";
 		System.out.println("From: " + content);
-		String output = replacer.replace(content, null, null, null);
+		String output = replacer.replace(project().getLatestRelease().getUuid(), GraphFieldContainerEdge.Type.DRAFT, content, null, null, null);
 		System.out.println("To:   " + output);
 	}
 

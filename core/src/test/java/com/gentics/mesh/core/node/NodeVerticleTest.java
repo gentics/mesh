@@ -60,6 +60,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -909,23 +910,29 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 		updateRequest.setLanguage("en");
 		// create version 0.2
+		updateRequest.setVersion(new VersionReference(null, "0.1"));
 		updateRequest.getFields().put("name", FieldUtil.createStringField("one"));
 		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
 		// create version 0.3
+		updateRequest.setVersion(new VersionReference(null, "0.2"));
 		updateRequest.getFields().put("name", FieldUtil.createStringField("two"));
 		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
 		// create version 0.4
+		updateRequest.setVersion(new VersionReference(null, "0.3"));
 		updateRequest.getFields().put("name", FieldUtil.createStringField("three"));
 		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 		updateRequest.setLanguage("de");
 		// create german version 0.1
+		updateRequest.setVersion(null);
 		updateRequest.getFields().put("name", FieldUtil.createStringField("eins"));
 		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
 		// create german version 0.2
+		updateRequest.setVersion(new VersionReference(null, "0.1"));
 		updateRequest.getFields().put("name", FieldUtil.createStringField("zwei"));
 		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
 		// create german version 0.3
+		updateRequest.setVersion(new VersionReference(null, "0.2"));
 		updateRequest.getFields().put("name", FieldUtil.createStringField("drei"));
 		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
 
@@ -1030,6 +1037,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		// create version 0.2 in initial release
 		updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.2 initial release"));
+		updateRequest.setVersion(new VersionReference(null, "0.1"));
 		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest,
 				new NodeRequestParameter().setRelease(initialRelease.getName())));
 
@@ -1217,6 +1225,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		schemaReference.setUuid(schemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
+		request.setVersion(new VersionReference(null, "0.1"));
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("en", "de");
@@ -1368,6 +1377,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		schemaReference.setName("content");
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
+		request.setVersion(new VersionReference(null, "0.1"));
 		final String newName = "english renamed name";
 		final String newDisplayName = "display name changed";
 
@@ -1577,6 +1587,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		// try to update with conflict
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage("en");
+		update.setVersion(new VersionReference(null, "0.1"));
 		update.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 		update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 		future = getClient().updateNode(PROJECT_NAME, uuid, update);
@@ -1655,6 +1666,94 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> moveFuture = getClient().moveNode(PROJECT_NAME, uuid, otherParent.getUuid());
 		latchFor(moveFuture);
 		expectException(moveFuture, CONFLICT, "node_conflicting_segmentfield_move", "filename", conflictingName);
+	}
+
+	@Test
+	public void testDuplicateCrossReleases() {
+		String conflictingName = "filename.html";
+		String newReleaseName = "newrelease";
+		SchemaContainer contentSchema = schemaContainer("content");
+
+		// 1. Create new release and migrate nodes
+		db.noTrx(() -> {
+			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
+			nodeMigrationHandler.migrateNodes(newRelease);
+			return null;
+		});
+
+		// 2. Create content in new release
+		db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			call(() -> getClient().createNode(PROJECT_NAME, create));
+
+			return null;
+		});
+
+		// 3. Create "conflicting" content in initial release
+		db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			call(() -> getClient().createNode(PROJECT_NAME, create,
+					new NodeRequestParameter().setRelease(project().getInitialRelease().getUuid())));
+
+			return null;
+		});
+	}
+
+	@Test
+	public void testDuplicateWithOldVersion() {
+		String conflictingName = "filename.html";
+		String newName = "changed.html";
+		SchemaContainer contentSchema = schemaContainer("content");
+
+		// 1. Create initial content
+		String nodeUuid = db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+		});
+
+		// 2. Modify initial content
+		db.noTrx(() -> {
+			NodeUpdateRequest update = new NodeUpdateRequest();
+			update.setLanguage("en");
+			update.setVersion(new VersionReference(null, "0.1"));
+			update.getFields().put("filename", FieldUtil.createStringField(newName));
+			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+			return null;
+		});
+
+		// 3. Create "conflicting" content
+		db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+		});
 	}
 
 	// Publish Tests

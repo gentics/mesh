@@ -131,6 +131,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.DRAFT.getCode()),
 						e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.PUBLISHED.getCode()))
 				.removeAll();
+		// remove webroot property
+		setProperty(WEBROOT_PROPERTY_KEY, null);
 	}
 
 	@Override
@@ -151,6 +153,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		String segment = node.getPathSegment(releaseUuid, Type.DRAFT, getLanguage().getLanguageTag()).toBlocking().last();
 		if (segment != null) {
 			StringBuilder webRootInfo = new StringBuilder(segment);
+			webRootInfo.append("-").append(releaseUuid);
 			Node parent = node.getParentNode(releaseUuid);
 			if (parent != null) {
 				webRootInfo.append("-").append(parent.getUuid());

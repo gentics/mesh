@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
@@ -69,13 +70,16 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
+			String releaseUuid = ac.getRelease(null).getUuid();
+			Type type = Type.forVersion(ac.getVersion());
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				// Create the rest field and populate the fields
 				NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(item.getNode().getUuid());
 
 				if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-					listItem.setUrl(
-							WebRootLinkReplacer.getInstance().resolve(item.getNode(), ac.getResolveLinksType(), lTagsArray).toBlocking().first());
+					listItem.setUrl(WebRootLinkReplacer.getInstance()
+							.resolve(releaseUuid, type, item.getNode(), ac.getResolveLinksType(), lTagsArray)
+							.toBlocking().first());
 				}
 
 				restModel.add(listItem);

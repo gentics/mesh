@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -50,7 +51,8 @@ public class WebRootService {
 		stack.addAll(list);
 
 		// Traverse the graph and buildup the result path while doing so
-		Observable<Path> obsNode = baseNode.resolvePath(ac.getRelease(null).getUuid(), nodePath, stack);
+		Observable<Path> obsNode = baseNode.resolvePath(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersion()),
+				nodePath, stack);
 		return obsNode;
 	}
 

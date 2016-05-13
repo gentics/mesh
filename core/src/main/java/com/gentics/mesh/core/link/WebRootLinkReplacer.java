@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.etc.RouterStorage;
@@ -43,13 +44,16 @@ public class WebRootLinkReplacer {
 
 	/**
 	 * Replace the links in the content.
+	 * @param releaseUuid release Uuid
+	 * @param edgeType edge type
 	 * @param content content containing links to replace
 	 * @param type replacing type
 	 * @param projectName project name (used for 404 links)
 	 * @param languageTags optional language tags
 	 * @return content with links (probably) replaced
 	 */
-	public String replace(String content, Type type, String projectName, List<String> languageTags) {
+	public String replace(String releaseUuid, GraphFieldContainerEdge.Type edgeType, String content, Type type,
+			String projectName, List<String> languageTags) {
 		if (isEmpty(content) || type == Type.OFF || type == null) {
 			return content;
 		}
@@ -92,11 +96,11 @@ public class WebRootLinkReplacer {
 			link = link.replaceAll("\"", "");
 			String[] linkArguments = link.split(",");
 			if (linkArguments.length == 2) {
-				segments.add(resolve(linkArguments[0], type, projectName, linkArguments[1].trim()));
+				segments.add(resolve(releaseUuid, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
 			} else if (languageTags != null) {
-				segments.add(resolve(linkArguments[0], type, projectName, languageTags.toArray(new String[languageTags.size()])));
+				segments.add(resolve(releaseUuid, edgeType, linkArguments[0], type, projectName, languageTags.toArray(new String[languageTags.size()])));
 			} else {
-				segments.add(resolve(linkArguments[0], type, projectName));
+				segments.add(resolve(releaseUuid, edgeType, linkArguments[0], type, projectName));
 			}
 
 			lastPos = endPos + END_TAG.length();
@@ -111,13 +115,16 @@ public class WebRootLinkReplacer {
 
 	/**
 	 * Resolve the link to the node with uuid (in the given language) into an observable
+	 * @param releaseUuid release Uuid
+	 * @param edgeType edge type
 	 * @param uuid target uuid
 	 * @param type link type
 	 * @param projectName project name (which is used for 404 links)
 	 * @param languageTags optional language tags
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(String uuid, Type type, String projectName, String... languageTags) {
+	public Observable<String> resolve(String releaseUuid, GraphFieldContainerEdge.Type edgeType, String uuid, Type type,
+			String projectName, String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().single();
@@ -138,12 +145,13 @@ public class WebRootLinkReplacer {
 				return Observable.error(new Exception("Cannot render link with type " + type));
 			}
 		}
-		return resolve(node, type, languageTags);
+		return resolve(releaseUuid, edgeType, node, type, languageTags);
 	}
 
 	/**
 	 * Resolve the link to the given node
-	 * 
+	 * @param releaseUuid release Uuid
+	 * @param edgeType edge type
 	 * @param node
 	 *            target node
 	 * @param type
@@ -152,7 +160,8 @@ public class WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(Node node, Type type, String... languageTag) {
+	public Observable<String> resolve(String releaseUuid, GraphFieldContainerEdge.Type edgeType, Node node, Type type,
+			String... languageTag) {
 		if (languageTag == null || languageTag.length == 0) {
 			String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
 			languageTag = new String[] { defaultLanguage };
@@ -161,17 +170,25 @@ public class WebRootLinkReplacer {
 				log.debug("Fallback to default language " + defaultLanguage);
 			}
 		}
+		// if no release given, take the latest release of the project
+		if (releaseUuid == null) {
+			releaseUuid = node.getProject().getLatestRelease().getUuid();
+		}
+		// edge type defaults to DRAFT
+		if (edgeType == null) {
+			edgeType = GraphFieldContainerEdge.Type.DRAFT;
+		}
 		try {
 			if (log.isDebugEnabled()) {
 				log.debug("Resolving link to " + node.getUuid() + " in language " + languageTag + " with type " + type);
 			}
 			switch (type) {
 			case SHORT:
-				return node.getPath(null, null, languageTag).onErrorReturn(e -> "/error/404");
+				return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404");
 			case MEDIUM:
-				return node.getPath(null, null, languageTag).onErrorReturn(e -> "/error/404").map(path -> "/" + node.getProject().getName() + path);
+				return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404").map(path -> "/" + node.getProject().getName() + path);
 			case FULL:
-				return node.getPath(null, null, languageTag).onErrorReturn(e -> "/error/404")
+				return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404")
 						.map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path);
 			default:
 				return Observable.error(new Exception("Cannot render link with type " + type));
