@@ -9,11 +9,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.test.AbstractIntegrationTest;
 
+@Ignore
 public class MeshIntegerationTest extends AbstractIntegrationTest {
 
 	@Before
