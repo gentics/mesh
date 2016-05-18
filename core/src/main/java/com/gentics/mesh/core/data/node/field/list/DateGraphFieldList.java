@@ -27,18 +27,29 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 		DateFieldListImpl dateList = fieldMap.getDateFieldList(fieldKey);
 		boolean isDateListFieldSetToNull = fieldMap.hasField(fieldKey) && (dateList == null);
 		GraphField.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(graphDateFieldList, dateList == null, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = dateList == null; //  dateList.getItems().isEmpty()
+		GraphField.failOnMissingRequiredField(graphDateFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
-		if (dateList == null || dateList.getItems().isEmpty()) {
-			if (graphDateFieldList != null) {
-				graphDateFieldList.removeField(container);
-			}
-		} else {
-			// Create new list if no existing one could be found
+		// Handle Deletion
+		if (isDateListFieldSetToNull && graphDateFieldList != null) {
+			graphDateFieldList.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Create
+		if (graphDateFieldList == null) {
 			graphDateFieldList = container.createDateList(fieldKey);
-			for (Long item : dateList.getItems()) {
-				graphDateFieldList.createDate(item);
-			}
+		}
+
+		// Handle Update
+		graphDateFieldList.removeAll();
+		for (Long item : dateList.getItems()) {
+			graphDateFieldList.createDate(item);
 		}
 
 	};

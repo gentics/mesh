@@ -27,21 +27,35 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 		BooleanFieldListImpl booleanList = fieldMap.getBooleanFieldList(fieldKey);
 		boolean isBooleanListFieldSetToNull = fieldMap.hasField(fieldKey) && booleanList == null;
 		GraphField.failOnDeletionOfRequiredField(graphBooleanFieldList, isBooleanListFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(graphBooleanFieldList, booleanList == null, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = booleanList == null;// booleanList.getItems().isEmpty()
+		GraphField.failOnMissingRequiredField(graphBooleanFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
-		if (booleanList == null || booleanList.getItems().isEmpty()) {
-			if (graphBooleanFieldList != null) {
-				graphBooleanFieldList.removeField(container);
-			}
-		} else {
-			graphBooleanFieldList = container.createBooleanList(fieldKey);
-			for (Boolean item : booleanList.getItems()) {
-				graphBooleanFieldList.createBoolean(item);
-			}
+		// Handle Deletion
+		if (isBooleanListFieldSetToNull && graphBooleanFieldList != null) {
+			graphBooleanFieldList.removeField(container);
+			return;
 		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Create 
+		if (graphBooleanFieldList == null) {
+			graphBooleanFieldList = container.createBooleanList(fieldKey);
+		}
+
+		// Handle Update
+		// Remove all and add the listed items
+		graphBooleanFieldList.removeAll();
+		for (Boolean item : booleanList.getItems()) {
+			graphBooleanFieldList.createBoolean(item);
+		}
+
 	};
 
-	FieldGetter  BOOLEAN_LIST_GETTER = (container, fieldSchema) -> {
+	FieldGetter BOOLEAN_LIST_GETTER = (container, fieldSchema) -> {
 		return container.getBooleanList(fieldSchema.getName());
 	};
 

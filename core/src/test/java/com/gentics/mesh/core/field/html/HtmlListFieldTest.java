@@ -160,21 +160,19 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Test
 	@Override
-	public void testRemoveFieldViaNullValue() {
+	public void testRemoveFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(HTML_LIST, FETCH, FILLTEXT, (node) -> {
-			HtmlFieldListImpl field = null;
-			updateContainer(ac, node, HTML_LIST, field);
+		invokeRemoveFieldViaNullTestcase(HTML_LIST, FETCH, FILLTEXT, (node) -> {
+			updateContainer(ac, node, HTML_LIST, null);
 		});
 	}
 
 	@Test
 	@Override
-	public void testRemoveRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveRequiredFieldViaNullValueTestcase(HTML_LIST, FETCH, FILLTEXT, (container) -> {
-			HtmlFieldListImpl field = null;
-			updateContainer(ac, container, HTML_LIST, field);
+		invokeRemoveRequiredFieldViaNullTestcase(HTML_LIST, FETCH, FILLTEXT, (container) -> {
+			updateContainer(ac, container, HTML_LIST, null);
 		});
 	}
 

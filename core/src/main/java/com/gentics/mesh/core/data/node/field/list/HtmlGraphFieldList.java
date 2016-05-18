@@ -26,17 +26,29 @@ public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlF
 		HtmlFieldListImpl htmlList = fieldMap.getHtmlFieldList(fieldKey);
 		boolean isHtmlListFieldSetToNull = fieldMap.hasField(fieldKey) && htmlList == null;
 		GraphField.failOnDeletionOfRequiredField(graphHtmlFieldList, isHtmlListFieldSetToNull, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = htmlList == null; //  htmlList.getItems().isEmpty()
 		GraphField.failOnMissingRequiredField(graphHtmlFieldList, htmlList == null, fieldSchema, fieldKey, schema);
 
-		if (htmlList == null || htmlList.getItems().isEmpty()) {
-			if (graphHtmlFieldList != null) {
-				graphHtmlFieldList.removeField(container);
-			}
-		} else {
+		// Handle Deletion
+		if (isHtmlListFieldSetToNull && graphHtmlFieldList != null) {
+			graphHtmlFieldList.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Create
+		if (graphHtmlFieldList == null) {
 			graphHtmlFieldList = container.createHTMLList(fieldKey);
-			for (String item : htmlList.getItems()) {
-				graphHtmlFieldList.createHTML(item);
-			}
+		}
+
+		// Handle Update
+		graphHtmlFieldList.removeAll();
+		for (String item : htmlList.getItems()) {
+			graphHtmlFieldList.createHTML(item);
 		}
 	};
 

@@ -33,9 +33,8 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 					if (project == null) {
 						project = parentNode.getProject();
 					}
-					stringField.setString(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(),
-							Type.forVersion(ac.getVersion()), stringField.getString(), ac.getResolveLinksType(),
-							project.getName(), languageTags));
+					stringField.setString(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersion()),
+							stringField.getString(), ac.getResolveLinksType(), project.getName(), languageTags));
 				}
 				return stringField;
 			});
@@ -47,11 +46,8 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 		StringGraphField graphStringField = container.getString(fieldKey);
 		boolean isStringFieldSetToNull = fieldMap.hasField(fieldKey) && (stringField == null || stringField.getString() == null);
 		GraphField.failOnDeletionOfRequiredField(graphStringField, isStringFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(graphStringField, stringField == null || stringField.getString() == null, fieldSchema, fieldKey,
-				schema);
-		if (stringField == null) {
-			return;
-		}
+		boolean restIsNullOrEmpty = stringField == null || stringField.getString() == null;
+		GraphField.failOnMissingRequiredField(graphStringField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
 		// check value restrictions
 		StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
@@ -61,7 +57,18 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 			}
 		}
 
-		// Create new graph field if no existing one could be found
+		// Handle Deletion
+		if (isStringFieldSetToNull && graphStringField != null) {
+			graphStringField.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Update / Create
 		if (graphStringField == null) {
 			graphStringField = container.createString(fieldKey);
 		}

@@ -144,33 +144,29 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
 		invokeUpdateFromRestTestcase(DATE_LIST, FETCH, CREATE_EMPTY);
-
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
 		invokeUpdateFromRestNullOnCreateRequiredTestcase(DATE_LIST, FETCH);
-
 	}
 
 	@Test
 	@Override
-	public void testRemoveFieldViaNullValue() {
+	public void testRemoveFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(DATE_LIST, FETCH, FILL, (node) -> {
-			DateFieldListImpl field = null;
-			updateContainer(ac, node, DATE_LIST, field);
+		invokeRemoveFieldViaNullTestcase(DATE_LIST, FETCH, FILL, (node) -> {
+			updateContainer(ac, node, DATE_LIST, null);
 		});
 	}
 
 	@Test
 	@Override
-	public void testRemoveRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveRequiredFieldViaNullValueTestcase(DATE_LIST, FETCH, FILL, (container) -> {
-			DateFieldListImpl field = null;
-			updateContainer(ac, container, DATE_LIST, field);
+		invokeRemoveRequiredFieldViaNullTestcase(DATE_LIST, FETCH, FILL, (container) -> {
+			updateContainer(ac, container, DATE_LIST, null);
 		});
 	}
 

@@ -18,8 +18,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.field.AbstractFieldTest;
-import com.gentics.mesh.core.field.DataProvider;
-import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -29,8 +27,6 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
-
-import rx.functions.Action1;
 
 public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
@@ -198,21 +194,19 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 	@Test
 	@Override
-	public void testRemoveFieldViaNullValue() {
+	public void testRemoveFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (node) -> {
-			BinaryField field = null;
-			updateContainer(ac, node, BINARY_FIELD, field);
+		invokeRemoveFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (node) -> {
+			updateContainer(ac, node, BINARY_FIELD, null);
 		});
 	}
 
 	@Test
 	@Override
-	public void testRemoveRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveRequiredFieldViaNullValueTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (container) -> {
-			BinaryField field = null;
-			updateContainer(ac, container, BINARY_FIELD, field);
+		invokeRemoveRequiredFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (container) -> {
+			updateContainer(ac, container, BINARY_FIELD, null);
 		});
 	}
 

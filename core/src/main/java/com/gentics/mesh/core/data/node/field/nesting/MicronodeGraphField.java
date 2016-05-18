@@ -43,18 +43,21 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 		MicronodeField micronodeRestField = fieldMap.getMicronodeField(fieldKey);
 		boolean isMicronodeFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeRestField == null;
 		GraphField.failOnDeletionOfRequiredField(micronodeGraphField, isMicronodeFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(container.getMicronode(fieldKey), micronodeRestField == null, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = micronodeRestField == null;
+		GraphField.failOnMissingRequiredField(container.getMicronode(fieldKey), restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
-		// Remove the field if the field has been explicitly set to null
+		// Handle Deletion - Remove the field if the field has been explicitly set to null
 		if (isMicronodeFieldSetToNull && micronodeGraphField != null) {
 			micronodeGraphField.removeField(container);
 			return;
 		}
+
+		// Rest model is empty or null - Abort
 		if (micronodeRestField == null) {
 			return;
 		}
-		MicroschemaReference microschemaReference = micronodeRestField.getMicroschema();
 
+		MicroschemaReference microschemaReference = micronodeRestField.getMicroschema();
 		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot()
 				.fromReference(microschemaReference, ac.getRelease(null)).toBlocking().single();
 
@@ -64,8 +67,8 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 		//TODO should we allow all microschemas if the list is empty?
 		if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
 				|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainerVersion.getName())) {
-			log.error("Node update not allowed since the microschema {" + microschemaContainerVersion.getName() + "} is now allowed. Allowed microschemas {"
-					+ microschemaFieldSchema.getAllowedMicroSchemas() + "}");
+			log.error("Node update not allowed since the microschema {" + microschemaContainerVersion.getName()
+					+ "} is now allowed. Allowed microschemas {" + microschemaFieldSchema.getAllowedMicroSchemas() + "}");
 			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaContainerVersion.getName());
 		}
 

@@ -230,16 +230,19 @@ public abstract class AbstractDBTest {
 	protected String getJson(Node node) throws Exception {
 		RoutingContext rc = getMockedRoutingContext("lang=en&version=draft");
 		InternalActionContext ac = InternalActionContext.create(rc);
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().single());
 	}
 
 	protected InternalActionContext getMockedVoidInternalActionContext(String query) {
 		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query, true));
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return ac;
 	}
 
 	protected InternalActionContext getMockedInternalActionContext(String query) {
 		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query, false));
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return ac;
 	}
 

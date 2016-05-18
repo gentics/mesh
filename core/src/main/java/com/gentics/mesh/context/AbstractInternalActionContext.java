@@ -177,6 +177,7 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 			project = getProject();
 		}
 		if (project == null) {
+			//TODO i18n
 			throw error(INTERNAL_SERVER_ERROR, "Cannot get release without a project");
 		}
 
