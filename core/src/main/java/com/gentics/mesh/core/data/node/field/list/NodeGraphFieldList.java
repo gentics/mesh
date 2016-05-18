@@ -5,8 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.collections.bag.SynchronizedSortedBag;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;

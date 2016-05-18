@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
-import com.gentics.mesh.core.schema.field.StringListFieldMigrationTest;
 
 import rx.Observable;
 

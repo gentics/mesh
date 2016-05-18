@@ -84,7 +84,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 			assertThat(list).hasSize(1);
 			FieldContainerChange change = list.get(0);
 			assertEquals(FieldChangeTypes.UPDATED, change.getType());
-			assertEquals("micronode.lastName", change.getFieldKey());
+			assertEquals("micronodeField.lastName", change.getFieldKey());
 			return null;
 		});
 	}
