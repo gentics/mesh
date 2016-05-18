@@ -6,6 +6,7 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.core.schema.field.StringListFieldMigrationTest;
 
 import rx.Observable;
 
@@ -25,16 +26,28 @@ public interface StringGraphFieldList extends ListGraphField<StringGraphField, S
 	FieldUpdater STRING_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		StringGraphFieldList graphStringList = container.getStringList(fieldKey);
 		StringFieldListImpl stringList = fieldMap.getStringFieldList(fieldKey);
-		boolean isStringListFieldSetToNull = fieldMap.hasField(fieldKey) && stringList == null;
+		boolean isStringListFieldSetToNull = fieldMap.hasField(fieldKey) && (stringList == null || stringList.getItems() == null);
 		GraphField.failOnDeletionOfRequiredField(graphStringList, isStringListFieldSetToNull, fieldSchema, fieldKey, schema);
 		GraphField.failOnMissingRequiredField(graphStringList, stringList == null, fieldSchema, fieldKey, schema);
 
-		if (stringList == null || stringList.getItems().isEmpty()) {
-			if (graphStringList != null) {
-				graphStringList.removeField(container);
-			}
-		} else {
+		// Handle Deletion
+		if (isStringListFieldSetToNull && graphStringList != null) {
+			graphStringList.removeField(container);
+			return;
+		}
+
+		// Handle Create
+		if (graphStringList == null) {
 			graphStringList = container.createStringList(fieldKey);
+			for (String item : stringList.getItems()) {
+				graphStringList.createString(item);
+			}
+			return;
+		}
+
+		// Handle update
+		if (graphStringList != null && stringList != null) {
+			graphStringList.removeAll();
 			for (String item : stringList.getItems()) {
 				graphStringList.createString(item);
 			}

@@ -49,21 +49,19 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	 */
 	@Override
 	public List<String> getExpandedFieldnames() {
-		data().computeIfAbsent(EXPANDED_FIELDNAMED_DATA_KEY, map -> {
-			List<String> expandFieldnames = new ArrayList<>();
-			Map<String, String> queryPairs = splitQuery();
-			if (queryPairs == null) {
-				return new ArrayList<>();
-			}
-
-			String value = queryPairs.get(EXPANDFIELDS_QUERY_PARAM_KEY);
-			if (value != null) {
-				expandFieldnames = new ArrayList<>(Arrays.asList(value.split(",")));
-			}
-			return expandFieldnames;
-		});
 		List<String> fieldList = (List<String>) data().get(EXPANDED_FIELDNAMED_DATA_KEY);
-		return fieldList == null ? new ArrayList<>() : fieldList;
+		if (fieldList == null) {
+			fieldList = new ArrayList<>();
+			Map<String, String> queryPairs = splitQuery();
+			if (queryPairs != null) {
+				String value = queryPairs.get(EXPANDFIELDS_QUERY_PARAM_KEY);
+				if (value != null) {
+					fieldList.addAll(Arrays.asList(value.split(",")));
+				}
+			}
+			data().put(EXPANDED_FIELDNAMED_DATA_KEY, fieldList);
+		}
+		return fieldList;
 	}
 
 	@Override

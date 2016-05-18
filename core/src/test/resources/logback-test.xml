@@ -23,7 +23,6 @@
 			</pattern>
 		</encoder>
 	</appender>
-
 <!-- 
 	<logger name="io.vertx" level="INFO"/>
 	<logger name="com.gentics.mesh" level="INFO"/>

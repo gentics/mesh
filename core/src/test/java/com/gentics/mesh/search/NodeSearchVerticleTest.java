@@ -333,7 +333,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	/**
-	 * Searhc in only german language versions of nodes
+	 * Search in only German language versions of nodes
 	 *
 	 * @throws InterruptedException
 	 * @throws JSONException
@@ -356,7 +356,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	/**
-	 * Do the search with the given set of expected languages and assert correctness of the result
+	 * Do the search with the given set of expected languages and assert correctness of the result.
 	 *
 	 * @param expectedLanguages
 	 * @throws InterruptedException

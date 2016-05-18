@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.query.QueryParameterProvider;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -377,6 +378,36 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Group reloadedGroup = groupRoot.findByUuid(group().getUuid()).toBlocking().single();
 		assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
+	}
+
+	/**
+	 * Tests getting all groups with permissions of a role and checks if every group has the rolePerms set.
+	 */
+	@Test
+	public void testReadWithRolePermsSync() throws Exception {
+		// Create a lot of groups
+		int groupCount = 100;
+		GroupCreateRequest createReq = new GroupCreateRequest();
+		for (int i = 0; i < groupCount; i++) {
+			createReq.setName("testGroup" + i);
+			Future<GroupResponse> future = getClient().createGroup(createReq);
+			latchFor(future);
+		}
+
+		QueryParameterProvider[] params = new QueryParameterProvider[] { new PagingParameter().setPerPage(10000),
+				new RolePermissionParameter().setRoleUuid(role().getUuid()) };
+
+		int readCount = 100;
+		for (int i = 0; i < readCount; i++) {
+			Future<GroupListResponse> fut = getClient().findGroups(params);
+			latchFor(fut);
+			GroupListResponse res = fut.result();
+
+			for (GroupResponse grp : res.getData()) {
+				String msg = String.format("Role perms was null after try %d at %s (%s)", i + 1, grp.getName(), grp.getUuid());
+				assertNotNull(msg, grp.getRolePerms());
+			}
+		}
 	}
 
 	@Test

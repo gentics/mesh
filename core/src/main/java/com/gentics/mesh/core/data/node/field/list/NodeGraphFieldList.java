@@ -32,17 +32,19 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 	};
 
 	FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
+		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
 		GraphField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(graphNodeFieldList, nodeList == null, fieldSchema, fieldKey, schema);
+		boolean isNodeListNull = nodeList == null;
+		GraphField.failOnMissingRequiredField(graphNodeFieldList, isNodeListNull, fieldSchema, fieldKey, schema);
 
-		
-		if (nodeList == null || nodeList.getItems().isEmpty()) {
-			if (graphNodeFieldList != null) {
-				graphNodeFieldList.removeField(container);
-			}
+		if (isNodeListNull) {
+			return;
+		}
+
+		if (isNodeListFieldSetToNull && graphNodeFieldList != null) {
+			graphNodeFieldList.removeField(container);
 		} else {
 			graphNodeFieldList = container.createNodeList(fieldKey);
 			BootstrapInitializer boot = BootstrapInitializer.getBoot();

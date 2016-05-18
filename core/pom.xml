@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.6.9-SNAPSHOT</version>
+		<version>0.6.10-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -17,6 +17,47 @@
 		<mesh.version>${project.version}</mesh.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 	</properties>
+
+	<profiles>
+		<profile>
+			<!-- if ./exclusions.txt is present, use that as the exclusion list. Useful when skipping tests. -->
+			<id>exclusions</id>
+			<activation>
+				<file>
+					<exists>../exclusions.txt</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<excludesFile>../exclusions.txt</excludesFile>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- if ./inclusions.txt is present, use that as the inclusion list. Useful when skipping tests. -->
+			<id>inclusions</id>
+			<activation>
+				<file>
+					<exists>../inclusions.txt</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<includesFile>../inclusions.txt</includesFile>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<dependencies>
 		<!-- Internal dependencies -->
@@ -287,78 +328,32 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-pmd-plugin</artifactId> </plugin> <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-checkstyle-plugin</artifactId> 
-				</plugin> <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>findbugs-maven-plugin</artifactId> </plugin> -->
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>pre-unit-test</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-						<configuration>
-							<destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
-							<propertyName>surefireArgLine</propertyName>
-						</configuration>
-					</execution>
-					<execution>
-						<id>post-unit-test</id>
-						<phase>test</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-						<configuration>
-							<dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<argLine>${surefireArgLine}</argLine>
+					<!-- <argLine>${surefireArgLine}</argLine> -->
 					<skip>${skip.unit.tests}</skip>
 					<forkCount>${surefire.forkcount}</forkCount>
 					<reuseForks>false</reuseForks>
 					<!-- Don't execute more than one test per jvm fork! -->
 					<threadCount>1</threadCount>
 					<threadCountClasses>1</threadCountClasses>
+					<!-- 
 					<rerunFailingTestsCount>2</rerunFailingTestsCount>
+					 -->
 					<testFailureIgnore>true</testFailureIgnore>
 					<trimStackTrace>false</trimStackTrace>
 					<!-- // Kill the forked test if it takes more than 3h for execution. Nope, currently disabled -->
 					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
 					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
-					<includes>
-						<include>**/*Test.java</include>
-						<include>**/*TestSuite.java</include>
-					</includes>
+					<!-- <includes> <include>**/*Test.java</include> <include>**/*TestSuite.java</include> </includes> -->
 					<excludes>
 						<exclude>**/*AbstractTest.java</exclude>
 						<exclude>**/*Abstract*.java</exclude>
 						<exclude>**/Abstract*.java</exclude>
 					</excludes>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-				<!-- <executions> <execution> <phase>package</phase> <goals> <goal>javadoc</goal> </goals> </execution> <execution> <id>generate-cypher-images</id> <phase>package</phase> <goals> 
-					<goal>javadoc</goal> </goals> <configuration> <outputDirectory>${project.basedir}/target/apidocs</outputDirectory> <reportOutputDirectory>${project.basedir}/target/apidocs</reportOutputDirectory> 
-					<useStandardDocletOptions>false</useStandardDocletOptions> <doclet>de.jotschi.javadoc.cypher.CypherDoclet</doclet> <docletArtifact> <groupId>de.jotschi</groupId> <artifactId>javadoc-cypher-doclet</artifactId> 
-					<version>0.0.1-SNAPSHOT</version> </docletArtifact> </configuration> </execution> <execution> <id>generate-javadoc-jar</id> <phase>package</phase> <goals> <goal>jar</goal> </goals> 
-					</execution> </executions> -->
 			</plugin>
 		</plugins>
 		<pluginManagement>

@@ -132,7 +132,6 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param vertex
 	 * @param permission
 	 * @return
-	 * @deprecated use {@link #hasPermissionAsync(InternalActionContext, MeshVertex, GraphPermission)} instead.
 	 */
 	boolean hasPermissionSync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
 

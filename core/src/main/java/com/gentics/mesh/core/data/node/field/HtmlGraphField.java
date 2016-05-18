@@ -42,13 +42,12 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 		HtmlGraphField htmlGraphField = container.getHtml(fieldKey);
 		boolean isHtmlFieldSetToNull = fieldMap.hasField(fieldKey) && (htmlField == null || htmlField.getHTML() == null);
 		GraphField.failOnDeletionOfRequiredField(htmlGraphField, isHtmlFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean isHtmlFieldNull = htmlField ==null || htmlField.getHTML()==null;
+		boolean isHtmlFieldNull = htmlField == null || htmlField.getHTML() == null;
 		GraphField.failOnMissingRequiredField(htmlGraphField, isHtmlFieldNull, fieldSchema, fieldKey, schema);
 
 		if (htmlField == null) {
 			return;
 		}
-
 
 		// Create new graph field if no existing one could be found
 		if (htmlGraphField == null) {
