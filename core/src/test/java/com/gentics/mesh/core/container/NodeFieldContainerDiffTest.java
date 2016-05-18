@@ -2,6 +2,7 @@ package com.gentics.mesh.core.container;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
+import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -51,15 +53,55 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	}
 
 	@Test
+	public void testDiffMicronodeFieldList() {
+		fail("implement me");
+	}
+
+	@Test
+	public void testNoDiffStringFieldList() { 
+		db.trx(() -> {
+			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
+			StringGraphFieldList listA = containerA.createStringList("dummy");
+			listA.addItem(listA.createString("test123"));
+
+			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
+			StringGraphFieldList listB = containerB.createStringList("dummy");
+			listB.addItem(listB.createString("test123"));
+			
+			List<FieldContainerChange> list = containerA.compareTo(containerB);
+			assertNoDiff(list);
+			return null;
+		});
+	}
+	@Test
+	public void testDiffStringFieldList() {
+		db.trx(() -> {
+			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
+			StringGraphFieldList listA = containerA.createStringList("dummy");
+			listA.addItem(listA.createString("test123"));
+
+			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
+			StringGraphFieldList listB = containerB.createStringList("dummy");
+			listB.addItem(listB.createString("test1234"));
+			
+			List<FieldContainerChange> list = containerA.compareTo(containerB);
+			assertThat(list).hasSize(1);
+			assertChanges(list, FieldChangeTypes.UPDATED);
+			FieldContainerChange change = list.get(0);
+			assertEquals("dummy", change.getFieldKey());
+			assertEquals("dummy[0]", change.getFieldKey());
+			return null;
+		});
+	}
+
+	@Test
 	public void testDiffMicronodeField() {
 		db.trx(() -> {
 			NodeGraphFieldContainer containerA = createContainer(
 					FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
 
 			// Create microschema vcard 
-
 			FramedGraph graph = Database.getThreadLocalGraph();
-			// 1. Setup schema
 			MicroschemaContainer schemaContainer = graph.addFramedVertex(MicroschemaContainerImpl.class);
 			MicroschemaContainerVersionImpl version = graph.addFramedVertex(MicroschemaContainerVersionImpl.class);
 			schemaContainer.setLatestVersion(version);

@@ -4,10 +4,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -83,6 +85,26 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		getMicronode().validate();
 	}
 
+	/**
+	 * Override the default implementation since micronode graph fields are container for other fields. We also want to catch the nested fields.
+	 * 
+	 * @param field
+	 * @return
+	 */
+	@Override
+	public List<FieldContainerChange> compareTo(GraphField field) {
+		if (field instanceof MicronodeGraphField) {
+			Micronode micronodeA = getMicronode();
+			Micronode micronodeB = ((MicronodeGraphField) field).getMicronode();
+			//TODO DANGER! Handle null cases! - Both are edges and must have always a micronode?
+			List<FieldContainerChange> changes = micronodeA.compareTo(micronodeB);
+			// Update the detected changes and prepend the fieldkey of the micronode in order to be able to identify nested changes more easy.
+			changes.stream().forEach(c -> c.setFieldKey(getFieldKey() + "." + c.getFieldKey()));
+			return changes;
+		} else {
+			return Collections.emptyList();
+		}
+	}
 
 	@Override
 	public boolean equals(Object obj) {

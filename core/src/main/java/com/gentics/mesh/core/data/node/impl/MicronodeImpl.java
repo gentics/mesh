@@ -20,6 +20,8 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.diff.FieldChangeTypes;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -197,8 +199,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	@Override
 	public void validate() {
 		Microschema microschema = getSchemaContainerVersion().getSchema();
-		Map<String, GraphField> fieldsMap = getFields().stream()
-				.collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
+		Map<String, GraphField> fieldsMap = getFields().stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
 
 		microschema.getFields().stream().forEach(fieldSchema -> {
 			GraphField field = fieldsMap.get(fieldSchema.getName());
@@ -233,5 +234,18 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public List<FieldContainerChange> compareTo(Micronode micronode) {
+		List<FieldContainerChange> changes = new ArrayList<>();
+		for (FieldSchema fieldSchema : getSchemaContainerVersion().getSchema().getFields()) {
+			GraphField fieldA = getField(fieldSchema);
+			GraphField fieldB = micronode.getField(fieldSchema);
+			if (!CompareUtils.equals(fieldA, fieldB)) {
+				changes.add(new FieldContainerChange(fieldSchema.getName(), FieldChangeTypes.UPDATED));
+			}
+		}
+		return changes;
 	}
 }

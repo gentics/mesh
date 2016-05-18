@@ -34,4 +34,13 @@ public class FieldContainerChange {
 		}
 		return super.equals(obj);
 	}
+
+	/**
+	 * Set the fieldkey for this change.
+	 * 
+	 * @param fieldKey
+	 */
+	public void setFieldKey(String fieldKey) {
+		this.fieldKey = fieldKey;
+	}
 }
