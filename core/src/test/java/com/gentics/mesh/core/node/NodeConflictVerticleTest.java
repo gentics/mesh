@@ -285,7 +285,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 					"0.5");
 			assertNotNull("The graph field container for version 0.5 could not be found.", createdVersion);
 			assertNull("The micronode should not exist in this version since we explicitly removed it.", createdVersion.getMicronode("micronode"));
-			assertNull("The string list should not exist in this version since we explicitly removed it.",
+			assertNull("The string list should not exist in this version since we explicitly removed it via a null update request.",
 					createdVersion.getStringList("stringList"));
 		}
 	}
@@ -313,7 +313,66 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	 */
 	@Test
 	public void testConflictInMicronode() {
-		fail("implement me");
+		try (Trx trx = db.trx()) {
+			updateSchema();
+			NodeGraphFieldContainer origContainer = getTestNode().getGraphFieldContainer(english());
+			assertEquals("Concorde_english_name", origContainer.getString("name").getString());
+			assertEquals("Concorde english title", origContainer.getString("title").getString());
+			trx.success();
+		}
+
+		// First request - Update 0.1 and add basic fields and complex fields
+		initialRequest();
+
+		// Modify 0.2 and update micronode
+		try (Trx trx = db.trx()) {
+			Node node = getTestNode();
+			NodeRequestParameter parameters = new NodeRequestParameter();
+			parameters.setLanguages("en", "de");
+			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "0.2");
+
+			//Add micronode / string list - This time only change the order
+			request.getFields().put("stringList", FieldUtil.createStringListField("b", "c", "d"));
+			request.getFields().put("micronode",
+					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),
+							Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname"))));
+
+			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
+			assertThat(restNode).hasVersion("0.3");
+
+			node.reload();
+			NodeGraphFieldContainer createdVersion = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
+					"0.3");
+			assertNotNull("The graph field container for version 0.3 could not be found.", createdVersion);
+		}
+
+		// Another update request based on 0.2 which also updates the micronode - A conflict should be detected
+		try (Trx trx = db.trx()) {
+			Node node = getTestNode();
+			NodeRequestParameter parameters = new NodeRequestParameter();
+			parameters.setLanguages("en", "de");
+			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "0.2");
+
+			//Add micronode / string list - This time only change the order
+			request.getFields().put("stringList", FieldUtil.createStringListField("b", "c", "d"));
+			request.getFields().put("micronode",
+					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),
+							Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname-also-modified"))));
+
+			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters);
+			latchFor(future);
+			assertTrue("The node update should fail with a conflict error", future.failed());
+			Throwable error = future.cause();
+			assertThat(error).isNotNull().isInstanceOf(NodeVersionConflictException.class);
+			NodeVersionConflictException conflictException = ((NodeVersionConflictException) error);
+
+			assertThat(conflictException.getConflicts()).hasSize(1).containsExactly("micronode.lastName");
+			assertThat(conflictException.getStatus()).isEqualTo(CONFLICT);
+			assertThat(conflictException.getMessage()).isEqualTo(I18NUtil.get(Locale.ENGLISH, "node_error_conflict_detected"));
+			assertThat(conflictException.getOldVersion()).isEqualTo("0.2");
+			assertThat(conflictException.getNewVersion()).isEqualTo("0.3");
+		}
+
 	}
 
 	@Test

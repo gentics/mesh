@@ -1133,8 +1133,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * 
 	 * 
 	 * <p>
-	 * Deduplication: Field values that have not been changed in between versions will not cause new fields to be created in new version graph field containers.
-	 * The new version graph field container will instead reference those fields from the previous graph field container version.
+	 * Deduplication: Field values that have not been changed in between the request data and the last version will not cause new fields to be created in new
+	 * version graph field containers. The new version graph field container will instead reference those fields from the previous graph field container
+	 * version. Please note that this deduplication only applies to complex fields (e.g.: Lists, Micronode)
 	 *
 	 */
 	@Override
@@ -1226,7 +1227,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					if (fieldsToKeepForUpdate.contains(fieldKey)) {
 						continue;
 					}
-					System.out.println("Removing field from request " + fieldKey);
+					if (log.isDebugEnabled()) {
+						log.debug("Removing field from request {" + fieldKey + "} in order to handle deduplication.");
+					}
 					requestModel.getFields().remove(fieldKey);
 				}
 

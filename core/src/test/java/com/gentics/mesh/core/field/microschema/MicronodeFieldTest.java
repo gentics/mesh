@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.microschema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+
 import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FILL;
@@ -40,7 +41,6 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;

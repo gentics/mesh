@@ -60,16 +60,20 @@ public class FieldMapTest {
 		FieldMap fieldMap = new FieldMapJsonImpl();
 
 		fieldMap.put("stringField", new StringFieldImpl().setString("text"));
-		fieldMap.put("stringFieldNull", new StringFieldImpl().setString(null));
+		fieldMap.put("stringFieldNull", null);
+		fieldMap.put("stringFieldNullValue", new StringFieldImpl().setString(null));
 
 		fieldMap.put("dateField", new DateFieldImpl().setDate(100L));
-		fieldMap.put("dateFieldNull", new DateFieldImpl().setDate(null));
+		fieldMap.put("dateFieldNull", null);
+		fieldMap.put("dateFieldNullValue", new DateFieldImpl().setDate(null));
 
 		fieldMap.put("htmlField", new HtmlFieldImpl().setHTML("someHtml"));
-		fieldMap.put("htmlFieldNull", new HtmlFieldImpl().setHTML(null));
+		fieldMap.put("htmlFieldNull", null);
+		fieldMap.put("htmlFieldNullValue", new HtmlFieldImpl().setHTML(null));
 
 		fieldMap.put("numberField", new NumberFieldImpl().setNumber(42));
-		fieldMap.put("numberFieldNull", new NumberFieldImpl().setNumber(null));
+		fieldMap.put("numberFieldNull", null);
+		fieldMap.put("numberFieldNullValue", new NumberFieldImpl().setNumber(null));
 
 		BinaryFieldImpl field = new BinaryFieldImpl();
 		field.setFileName("name");
@@ -79,7 +83,8 @@ public class FieldMapTest {
 		fieldMap.put("binaryFieldNull", null);
 
 		fieldMap.put("booleanField", new BooleanFieldImpl().setValue(true));
-		fieldMap.put("booleanFieldNull", new BooleanFieldImpl().setValue(null));
+		fieldMap.put("booleanFieldNull", null);
+		fieldMap.put("booleanFieldNullValue", new BooleanFieldImpl().setValue(null));
 
 		fieldMap.put("micronodeField", new MicronodeResponse());
 		fieldMap.put("micronodeFieldNull", null);
@@ -181,40 +186,37 @@ public class FieldMapTest {
 		assertNotNull(stringField);
 		assertNotNull(fieldMap.getStringField("stringField"));
 
-		StringField stringFieldNull = fieldMap.getField("stringFieldNull", FieldTypes.STRING, null, false);
-		assertNotNull(stringFieldNull);
-		assertNull("The string value of the field should be null", stringFieldNull.getString());
+		assertNull("The field value was set to null and thus the field should be null.",
+				fieldMap.getField("stringFieldNullValue", FieldTypes.STRING, null, false));
+		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getStringField("stringFieldNull"));
 
 		HtmlField htmlField = fieldMap.getField("htmlField", FieldTypes.HTML, null, false);
 		assertNotNull(htmlField);
 		assertNotNull(fieldMap.getHtmlField("htmlField"));
 
-		HtmlField htmlFieldNull = fieldMap.getField("htmlFieldNull", FieldTypes.HTML, null, false);
-		assertNotNull(htmlFieldNull);
-		assertNull("The html value of the field should be null", htmlFieldNull.getHTML());
+		assertNull(fieldMap.getField("htmlFieldNullValue", FieldTypes.HTML, null, false));
+		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getHtmlField("htmlFieldNull"));
 
 		BooleanField booleanField = fieldMap.getField("booleanField", FieldTypes.BOOLEAN, null, false);
 		assertNotNull(booleanField);
 		assertNotNull(fieldMap.getBooleanField("booleanField"));
 
-		BooleanField booleanFieldNull = fieldMap.getField("booleanFieldNull", FieldTypes.BOOLEAN, null, false);
-		assertNotNull(booleanFieldNull);
-		assertNull("The boolean value of the field should be null", booleanFieldNull.getValue());
+		assertNull(fieldMap.getField("booleanFieldNullValue", FieldTypes.BOOLEAN, null, false));
+		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getBooleanField("booleanFieldNull"));
 
 		DateField dateField = fieldMap.getField("dateField", FieldTypes.DATE, null, false);
 		assertNotNull(dateField);
 		assertNotNull(fieldMap.getDateField("dateField"));
 
-		NumberField numberFieldNull = fieldMap.getField("numberFieldNull", FieldTypes.NUMBER, null, false);
-		assertNotNull(numberFieldNull);
-		assertNull("The Number value of the field should be null", numberFieldNull.getNumber());
+		assertNull(fieldMap.getField("numberFieldNullValue", FieldTypes.NUMBER, null, false));
+		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getNumberField("numberFieldNull"));
 
 		NodeField nodeField = fieldMap.getField("nodeField", FieldTypes.NODE, null, false);
 		assertNotNull(nodeField);
 		assertNotNull(fieldMap.getNodeField("nodeField"));
 
-		NodeField nodeFieldNull = fieldMap.getField("nodeFieldNull", FieldTypes.NODE, null, false);
-		assertNull(nodeFieldNull);
+		assertNull("The field was explicitly set to null and should be null but it was not.",
+				fieldMap.getField("nodeFieldNullValue", FieldTypes.NODE, null, false));
 
 		MicronodeField micronodeField = fieldMap.getField("micronodeField", FieldTypes.MICRONODE, null, false);
 		assertNotNull(micronodeField);
@@ -226,6 +228,9 @@ public class FieldMapTest {
 		NumberField numberField = fieldMap.getField("numberField", FieldTypes.NUMBER, null, false);
 		assertNotNull(numberField);
 		assertNotNull(fieldMap.getNumberField("numberField"));
+
+		assertNull(fieldMap.getField("numberFieldNull", FieldTypes.NUMBER, null, false));
+		assertNull(fieldMap.getField("numberFieldNullValue", FieldTypes.NUMBER, null, false));
 
 		BinaryField binaryField = fieldMap.getField("binaryField", FieldTypes.BINARY, null, false);
 		assertNotNull(fieldMap.getBinaryField("binaryField"));
@@ -260,7 +265,7 @@ public class FieldMapTest {
 		assertNotNull(micronodeList);
 		assertEquals(3, micronodeList.getItems().size());
 
-		assertEquals("The map did not contain the expected amount of fields.", 24, fieldMap.size());
+		assertEquals("The map did not contain the expected amount of fields.", 29, fieldMap.size());
 		assertFalse("The map should not be empty.", fieldMap.isEmpty());
 		assertTrue("The string field should be within the map.", fieldMap.hasField("stringField"));
 
