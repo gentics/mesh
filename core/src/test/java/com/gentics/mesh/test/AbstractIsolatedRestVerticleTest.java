@@ -68,11 +68,7 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 
-/**
- * @deprecated Use {@link AbstractIsolatedRestVerticleTest} instead.
- */
-@Deprecated
-public abstract class AbstractRestVerticleTest extends AbstractDBTest {
+public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	protected Vertx vertx;
 
@@ -88,8 +84,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@Autowired
 	protected AuthenticationVerticle authenticationVerticle;
-
-	protected NoTrx trx;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -118,10 +112,12 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		failingLatch(latch);
 
-		client = MeshRestClient.create("localhost", getPort(), vertx, Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
-		trx = db.noTrx();
-		client.setLogin(user().getUsername(), getUserInfo().getPassword());
-		client.login();
+		try (NoTrx trx = db.noTrx()) {
+			client = MeshRestClient.create("localhost", getPort(), vertx,
+					Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
+			client.setLogin(user().getUsername(), getUserInfo().getPassword());
+			client.login();
+		}
 	}
 
 	public HttpClient createHttpClient() {
@@ -134,9 +130,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() throws Exception {
-		if (trx != null) {
-			trx.close();
-		}
 		searchProvider.reset();
 		for (AbstractSpringVerticle verticle : getVertices()) {
 			verticle.stop();

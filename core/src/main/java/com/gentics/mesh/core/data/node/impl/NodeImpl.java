@@ -17,7 +17,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -395,8 +394,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void removeTag(Tag tag, Release release) {
-		outE(HAS_TAG).has(TagEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).mark().inV().retain(tag.getImpl()).back()
-				.removeAll();
+		outE(HAS_TAG).has(TagEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).mark().inV().retain(tag.getImpl()).back().removeAll();
 	}
 
 	@Override
@@ -416,8 +414,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public List<? extends Node> getChildren(String releaseUuid) {
-		return inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).outV().has(NodeImpl.class)
-				.toListExplicit(NodeImpl.class);
+		return inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).outV().has(NodeImpl.class).toListExplicit(NodeImpl.class);
 	}
 
 	@Override
@@ -630,8 +627,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// Url
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer.resolve(releaseUuid, type, getUuid(), ac.getResolveLinksType(),
-						getProject().getName(), restNode.getLanguage()).toBlocking().single();
+				String url = linkReplacer
+						.resolve(releaseUuid, type, getUuid(), ac.getResolveLinksType(), getProject().getName(), restNode.getLanguage()).toBlocking()
+						.single();
 				restNode.setPath(url);
 
 				// languagePaths
@@ -639,8 +637,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release, Type.forVersion(ac.getVersion()))) {
 					Language currLanguage = currentFieldContainer.getLanguage();
 					languagePaths.put(currLanguage.getLanguageTag(), linkReplacer
-							.resolve(releaseUuid, type, this, ac.getResolveLinksType(), currLanguage.getLanguageTag())
-							.toBlocking().single());
+							.resolve(releaseUuid, type, this, ac.getResolveLinksType(), currLanguage.getLanguageTag()).toBlocking().single());
 				}
 				restNode.setLanguagePaths(languagePaths);
 			}
@@ -1014,8 +1011,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void deleteFromRelease(Release release, SearchQueueBatch batch) {
-		getGraphFieldContainers(release, Type.DRAFT)
-				.forEach(container -> deleteLanguageContainer(release, container.getLanguage(), batch));
+		getGraphFieldContainers(release, Type.DRAFT).forEach(container -> deleteLanguageContainer(release, container.getLanguage(), batch));
 		String releaseUuid = release.getUuid();
 
 		for (Node child : getChildren(releaseUuid)) {
@@ -1117,99 +1113,130 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 	}
 
+	/**
+	 * Update the node language or create a new draft for the specific language. This method will also apply conflict detection and take care of deduplication.
+	 * 
+	 * 
+	 * <p>
+	 * Conflict detection: Conflict detection only occurs during update requests. Two diffs are created. The update request will be compared against base
+	 * version graph field container (version which is referenced by the request). The second diff is being created in-between the base version graph field
+	 * container and the latest version of the graph field container. This diff identifies previous changes in between those version. These both diffs are
+	 * compared in order to determine their intersection. The intersection identifies those fields which have been altered in between both versions and which
+	 * would now also be touched by the current request. This situation causes a conflict and the update would abort.
+	 * 
+	 * <p>
+	 * Conflict cases
+	 * <ul>
+	 * <li>Initial creates - No conflict handling needs to be performed</li>
+	 * <li>Migration check - Nodes which have not yet migrated can't be updated</i>
+	 * </ul>
+	 * 
+	 * 
+	 * <p>
+	 * Deduplication: Field values that have not been changed in between versions will not cause new fields to be created in new version graph field containers.
+	 * The new version graph field container will instead reference those fields from the previous graph field container version.
+	 *
+	 */
 	@Override
 	public Observable<? extends Node> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		try {
+
+		return db.trx(() -> {
 			NodeUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), NodeUpdateRequest.class);
 			if (isEmpty(requestModel.getLanguage())) {
 				throw error(BAD_REQUEST, "error_language_not_set");
 			}
+			Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
+			if (language == null) {
+				throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+			}
 
-			return db.trx(() -> {
-				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
-				if (language == null) {
-					throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+			Release release = ac.getRelease(getProject());
+
+			NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(language, release, Type.DRAFT);
+
+			// No existing container was found. This means that no conflict check can be performed. Conflict checks only occur for updates.
+			if (latestDraftVersion == null) {
+				// Create a new field container
+				latestDraftVersion = createGraphFieldContainer(language, release, ac.getUser());
+				latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
+
+				// check whether the node has a parent node in this
+				// release, if not, we set the parent node from the previous
+				// release (if any)
+				if (getParentNode(release.getUuid()) == null) {
+					Node previousParent = null;
+					Release previousRelease = release.getPreviousRelease();
+					while (previousParent == null && previousRelease != null) {
+						previousParent = getParentNode(previousRelease.getUuid());
+						previousRelease = previousRelease.getPreviousRelease();
+					}
+
+					if (previousParent != null) {
+						setParentNode(release.getUuid(), previousParent);
+					}
+				}
+			} else {
+				if (requestModel.getVersion() == null || isEmpty(requestModel.getVersion().getNumber())) {
+					throw error(BAD_REQUEST, "node_error_version_missing");
 				}
 
-				Release release = ac.getRelease(getProject());
-
-				NodeGraphFieldContainer container = getGraphFieldContainer(language, release, Type.DRAFT);
-
-				// No existing container was found. This means that no conflict check can be performed. Conflict checks only occur for updates.
-				if (container == null) {
-					// Create a new field container
-					container = createGraphFieldContainer(language, release, ac.getUser());
-					container.updateFieldsFromRest(ac, requestModel.getFields());
-
-					// check whether the node has a parent node in this
-					// release, if not, we set the parent node from the previous
-					// release (if any)
-					if (getParentNode(release.getUuid()) == null) {
-						Node previousParent = null;
-						Release previousRelease = release.getPreviousRelease();
-						while (previousParent == null && previousRelease != null) {
-							previousParent = getParentNode(previousRelease.getUuid());
-							previousRelease = previousRelease.getPreviousRelease();
-						}
-
-						if (previousParent != null) {
-							setParentNode(release.getUuid(), previousParent);
-						}
-					}
-				} else {
-					if (requestModel.getVersion() == null || isEmpty(requestModel.getVersion().getNumber())) {
-						throw error(BAD_REQUEST, "node_error_version_missing");
-					}
-
-					// Make sure the container was already migrated. Otherwise the update can't proceed.
-					SchemaContainerVersion schemaContainerVersion = container.getSchemaContainerVersion();
-					if (!container.getSchemaContainerVersion().equals(release.getVersion(schemaContainerVersion.getSchemaContainer()))) {
-						throw error(BAD_REQUEST, "node_error_migration_incomplete");
-					}
-
-					// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
-					if (!container.getVersion().equals(requestModel.getVersion().getNumber())) {
-
-						NodeGraphFieldContainer baseVersionContainer = findNextMatchingFieldContainer(Arrays.asList(requestModel.getLanguage()),
-								release.getUuid(), requestModel.getVersion().getNumber());
-						if (baseVersionContainer == null) {
-							throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion().getNumber(), requestModel.getLanguage());
-						}
-
-						List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(container);
-						List<FieldContainerChange> requestVersionDiff = container.compareTo(requestModel.getFields());
-
-						// Compare both sets of change sets 
-						List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains)
-								.collect(Collectors.toList());
-
-						// Check whether a conflict has been detected
-						if (intersect.size() > 0) {
-							NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
-							conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
-							conflictException.setNewVersion(container.getVersion().toString()); 
-							for (FieldContainerChange fcc : intersect) {
-								conflictException.addConflict(fcc.getFieldKey());
-							}
-							throw conflictException;
-						}
-					}
-
-					// create new field container as clone of the existing
-					container = createGraphFieldContainer(language, release, ac.getUser());
-
-					// Update the existing fields
-					container.updateFieldsFromRest(ac, requestModel.getFields());
-
+				// Make sure the container was already migrated. Otherwise the update can't proceed.
+				SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
+				if (!latestDraftVersion.getSchemaContainerVersion().equals(release.getVersion(schemaContainerVersion.getSchemaContainer()))) {
+					throw error(BAD_REQUEST, "node_error_migration_incomplete");
 				}
-				return createIndexBatch(STORE_ACTION, Arrays.asList(container), release.getUuid(), Type.DRAFT);
-			}).process().map(i -> this);
 
-		} catch (IOException e1) {
-			log.error(e1);
-			return Observable.error(error(BAD_REQUEST, e1.getMessage(), e1));
-		}
+				// Load the base version field container in order to create the diff
+				NodeGraphFieldContainer baseVersionContainer = findNextMatchingFieldContainer(Arrays.asList(requestModel.getLanguage()),
+						release.getUuid(), requestModel.getVersion().getNumber());
+				if (baseVersionContainer == null) {
+					throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion().getNumber(), requestModel.getLanguage());
+				}
+				// TODO handle simplified case in which baseContainerVersion and latestDraftVersion are equal
+
+				List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
+				List<FieldContainerChange> requestVersionDiff = latestDraftVersion.compareTo(requestModel.getFields());
+
+				// Compare both sets of change sets
+				List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
+
+				// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
+				if (!latestDraftVersion.getVersion().equals(requestModel.getVersion().getNumber())) {
+
+					// Check whether a conflict has been detected
+					if (intersect.size() > 0) {
+						NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
+						conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
+						conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
+						for (FieldContainerChange fcc : intersect) {
+							conflictException.addConflict(fcc.getFieldKey());
+						}
+						throw conflictException;
+					}
+				}
+
+				// create new field container as clone of the existing
+				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+
+				// Make sure to only update those fields which have been altered in between the latest version and the current request. Remove unaffected fields from the rest request in order to prevent duplicate references.
+				// We don't want to touch field that have not been changed. Otherwise the graph field references would no longer point to older revisions of the same field.
+				Set<String> fieldsToKeepForUpdate = requestVersionDiff.stream().map(e -> e.getFieldKey()).collect(Collectors.toSet());
+				for (String fieldKey : requestModel.getFields().keySet()) {
+					if (fieldsToKeepForUpdate.contains(fieldKey)) {
+						continue;
+					}
+					System.out.println("Removing field from request " + fieldKey);
+					requestModel.getFields().remove(fieldKey);
+				}
+
+				// Update the existing fields
+				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
+				latestDraftVersion = newDraftVersion;
+			}
+			return createIndexBatch(STORE_ACTION, Arrays.asList(latestDraftVersion), release.getUuid(), Type.DRAFT);
+		}).process().map(i -> this);
+
 	}
 
 	@Override
