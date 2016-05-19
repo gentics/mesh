@@ -53,12 +53,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	}
 
 	@Test
-	public void testDiffMicronodeFieldList() {
-		fail("implement me");
-	}
-
-	@Test
-	public void testNoDiffStringFieldList() { 
+	public void testNoDiffStringFieldList() {
 		db.trx(() -> {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listA = containerA.createStringList("dummy");
@@ -67,12 +62,13 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listB = containerB.createStringList("dummy");
 			listB.addItem(listB.createString("test123"));
-			
+
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertNoDiff(list);
 			return null;
 		});
 	}
+
 	@Test
 	public void testDiffStringFieldList() {
 		db.trx(() -> {
@@ -83,13 +79,12 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listB = containerB.createStringList("dummy");
 			listB.addItem(listB.createString("test1234"));
-			
+
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertThat(list).hasSize(1);
 			assertChanges(list, FieldChangeTypes.UPDATED);
 			FieldContainerChange change = list.get(0);
 			assertEquals("dummy", change.getFieldKey());
-			assertEquals("dummy[0]", change.getFieldKey());
 			return null;
 		});
 	}
@@ -126,7 +121,8 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 			assertThat(list).hasSize(1);
 			FieldContainerChange change = list.get(0);
 			assertEquals(FieldChangeTypes.UPDATED, change.getType());
-			assertEquals("micronodeField.lastName", change.getFieldKey());
+			assertEquals("micronodeField", change.getFieldKey());
+			assertEquals("micronodeField.lastName", change.getFieldCoordinates());
 			return null;
 		});
 	}

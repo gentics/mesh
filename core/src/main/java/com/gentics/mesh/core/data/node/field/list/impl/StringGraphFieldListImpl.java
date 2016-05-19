@@ -77,4 +77,5 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		}
 		return super.equals(obj);
 	}
+
 }

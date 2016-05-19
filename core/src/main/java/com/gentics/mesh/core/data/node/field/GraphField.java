@@ -106,9 +106,9 @@ public interface GraphField {
 	 * @param field
 	 * @return List of detected changes or empty list if no change has been detected
 	 */
-	default List<FieldContainerChange> compareTo(GraphField field) {
+	default List<FieldContainerChange> compareTo(Object field) {
 		if (!equals(field)) {
-			return Arrays.asList(new FieldContainerChange(field.getFieldKey(), FieldChangeTypes.UPDATED));
+			return Arrays.asList(new FieldContainerChange(getFieldKey(), FieldChangeTypes.UPDATED));
 		}
 		return Collections.emptyList();
 	}

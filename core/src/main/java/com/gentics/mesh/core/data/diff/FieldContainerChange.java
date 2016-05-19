@@ -7,13 +7,16 @@ import java.util.Objects;
  */
 public class FieldContainerChange {
 
-	String fieldKey;
+	private String fieldKey;
 
-	FieldChangeTypes type;
+	private String fieldCoordinates;
+
+	private FieldChangeTypes type;
 
 	public FieldContainerChange(String fieldKey, FieldChangeTypes type) {
 		this.fieldKey = fieldKey;
 		this.type = type;
+		this.fieldCoordinates = fieldKey;
 	}
 
 	public String getFieldKey() {
@@ -42,5 +45,24 @@ public class FieldContainerChange {
 	 */
 	public void setFieldKey(String fieldKey) {
 		this.fieldKey = fieldKey;
+	}
+
+	/**
+	 * Return the field coordinates of the conflict. Micronodes are currently the only field which have dedicated field coordinates in the form of
+	 * "[micronodeFieldKey].[nestedFieldKey]".
+	 * 
+	 * @return
+	 */
+	public String getFieldCoordinates() {
+		return fieldCoordinates;
+	}
+
+	/**
+	 * Set the field corrdinates.
+	 * 
+	 * @param fieldCoordinates
+	 */
+	public void setFieldCoordinates(String fieldCoordinates) {
+		this.fieldCoordinates = fieldCoordinates;
 	}
 }

@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
@@ -102,10 +101,5 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 	 *            Level of transformation
 	 */
 	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
-	
-	@Override
-	default List<FieldContainerChange> compareTo(GraphField field) {
-		// TODO Auto-generated method stub
-		return ListableReferencingGraphField.super.compareTo(field);
-	}
+
 }

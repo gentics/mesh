@@ -1211,13 +1211,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 						conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
 						conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
 						for (FieldContainerChange fcc : intersect) {
-							conflictException.addConflict(fcc.getFieldKey());
+							conflictException.addConflict(fcc.getFieldCoordinates());
 						}
 						throw conflictException;
 					}
 				}
 
-				// create new field container as clone of the existing
+				// Create new field container as clone of the existing
 				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
 
 				// Make sure to only update those fields which have been altered in between the latest version and the current request. Remove unaffected fields from the rest request in order to prevent duplicate references.

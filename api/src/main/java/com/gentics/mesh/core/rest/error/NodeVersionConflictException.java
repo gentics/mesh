@@ -51,18 +51,38 @@ public class NodeVersionConflictException extends AbstractRestException {
 		return TYPE;
 	}
 
+	/**
+	 * Return the old node version which was involved in the conflict.
+	 * 
+	 * @return
+	 */
 	public String getOldVersion() {
 		return oldVersion;
 	}
 
+	/**
+	 * Set the old node version which was involved in the conflict.
+	 * 
+	 * @param oldVersion
+	 */
 	public void setOldVersion(String oldVersion) {
 		this.oldVersion = oldVersion;
 	}
 
+	/**
+	 * Return the new version which was involved in the conflict.
+	 * 
+	 * @return
+	 */
 	public String getNewVersion() {
 		return newVersion;
 	}
 
+	/**
+	 * Set the new version which was involved in the conflict.
+	 * 
+	 * @param newVersion
+	 */
 	public void setNewVersion(String newVersion) {
 		this.newVersion = newVersion;
 	}

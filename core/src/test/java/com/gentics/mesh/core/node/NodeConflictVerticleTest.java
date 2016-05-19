@@ -10,7 +10,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -366,7 +365,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertThat(error).isNotNull().isInstanceOf(NodeVersionConflictException.class);
 			NodeVersionConflictException conflictException = ((NodeVersionConflictException) error);
 
-			assertThat(conflictException.getConflicts()).hasSize(1).containsExactly("micronode.lastName");
+			assertThat(conflictException.getConflicts()).hasSize(2).containsExactly("micronode.firstName", "micronode.lastName");
 			assertThat(conflictException.getStatus()).isEqualTo(CONFLICT);
 			assertThat(conflictException.getMessage()).isEqualTo(I18NUtil.get(Locale.ENGLISH, "node_error_conflict_detected"));
 			assertThat(conflictException.getOldVersion()).isEqualTo("0.2");
