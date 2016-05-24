@@ -176,7 +176,7 @@ public class BootstrapInitializer {
 			joinCluster();
 		}
 		initMandatoryData();
-		initPermissions();
+		//initPermissions();
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
