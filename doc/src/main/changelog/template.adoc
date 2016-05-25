@@ -1,17 +1,11 @@
 = Changelog
 
 {% for versionTag, version in versions %}
-=== {{versionTag}}
+== {{versionTag|replace('mesh-','')}}
 {% for change in version %}
 * {{change.type}}: {{change.content|safe}}
-{% endfor %}
-{% endfor %}
-
-=== 0.6.10
-
-* Enhancement: The mesh-ui was updated.
-
-=== 0.6.9 - 04.05.2016
+{% endfor %}{% endfor %}
+== 0.6.9 - 04.05.2016
 
 * Enhancement: The mesh-ui was updated.
 * Enhancement: It is now possible to also include non-container nodes in a navigation response using the includeAll parameter. By default only container nodes will be included in the response.
@@ -19,22 +13,30 @@
 * Fix: Fix label and allow field property handling when updating schema fields. CL-357
 * Fix: Various concurrency issues have been addressed.
 
-=== 0.6.8 - 26.04.2016
+== 0.6.8
+
+26.04.2016
 
 * Enhancement: The mesh-ui was updated.
 * Enhancement: OrientDB was updated to version 2.1.16
 
-=== 0.6.7 - 25.04.2016
+== 0.6.7
+
+25.04.2016
 
 * Fix: Update checker. A bug that prevented the update checker from working correctly was fixed.
 
-=== 0.6.6 - 06.04.2016
+== 0.6.6 
+
+06.04.2016
 
 * Public open beta release
 * Fix: A bug within the reindex changelog entry was fixed. The bug prevented the node index to be recreated.
 * Fix: The mesh-ui-config.js default apiUrl parameter was changed to /api/v1 in order to allow access from hosts other than localhost.
 
-=== 0.6.5 - 05.04.2016
+=== 0.6.5
+
+05.04.2016
 
 * Fix: The displayField value was missing within the node search document. The value was added.
 * Fix: The changelog execution information was added to the demo data dump and thus no further changelog execution will happen during mesh demo startup.
@@ -44,11 +46,15 @@
 * Fix: Various search index related bugs have been fixed.
 * Enhancement: The mesh-ui configuration file was renamed to mesh-ui.config.js 
 
-=== 0.6.4 - 24.03.2016
+=== 0.6.4
+
+24.03.2016
 
 * Enhancement: The mesh ui was updated.
 
-=== 0.6.3 - 22.03.2016
+=== 0.6.3
+
+22.03.2016
 
 * Enhancement: Database migration/changelog system.
        A changelog system was added to mesh. The system is used to upgrade mesh data from one mesh version to another.
@@ -62,15 +68,21 @@
 * Fix: A typo within the search model document for users was fixed.
        The property emailadress was renamed to emailaddress. 
 
-=== 0.6.2 - 15.03.2016
+=== 0.6.2
+
+15.03.2016
 
 * Fix: The microschema and schema permission field was always empty for newly created elements.
 
-=== 0.6.1 - 14.03.2016
+=== 0.6.1
+
+14.03.2016
 
 * Enhancement: Add mesh-ui to gentics/mesh docker image
 
-=== 0.6.0 - 14.03.2016
+=== 0.6.0
+
+14.03.2016
 
 * Enhancement: Added image API endpoint
   Images can now be resized and cropped using the image endpoint.
@@ -101,7 +113,9 @@
 * Enhancement: Vertx update
   The Vertx dependency was updated to version 3.2.1
 
-=== 0.5.0 - 17.11.2015
+=== 0.5.0
+
+17.11.2015
 
 * Closed beta release
 
