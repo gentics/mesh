@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -48,8 +49,25 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.3.2</version>
+				<version>1.5.0</version>
 				<executions>
+					<execution>
+						<id>changelog-generation</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<executable>changelog2html</executable>
+							<arguments>
+								<argument>-t</argument>
+								<argument>${project.basedir}/src/main/changelog/template.adoc</argument>
+								<argument>-o</argument>
+								<argument>${project.basedir}/src/main/docs/changelog.asciidoc</argument>
+								<argument>${project.basedir}/src/main/changelog/changes</argument>
+							</arguments>
+						</configuration>
+					</execution>
 					<execution>
 						<id>Generate RestModel JSON files</id>
 						<goals>
@@ -135,7 +153,8 @@
 
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>

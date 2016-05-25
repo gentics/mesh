@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
@@ -44,7 +45,8 @@ public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
-		Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(),
+				"projects/" + project().getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "role_updated_permission", role().getName());
@@ -73,6 +75,33 @@ public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testAddPermissionToMicroschema() {
+		// Add permission on own role
+		role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+		MicroschemaContainer vcard = microschemaContainer("vcard");
+		// Revoke all permissions to vcard microschema
+		role().revokePermissions(vcard, GraphPermission.values());
+		// Validate revocation
+		assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
+
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(false);
+		request.getPermissions().add("read");
+		request.getPermissions().add("update");
+		request.getPermissions().add("create");
+		Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(),
+				"microschemas/" + vcard.getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
+		expectResponseMessage(future, "role_updated_permission", role().getName());
+
+		assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
+		assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, vcard));
+		assertTrue(role().hasPermission(GraphPermission.CREATE_PERM, vcard));
+		assertTrue(role().hasPermission(GraphPermission.READ_PERM, vcard));
+	}
+
+	@Test
 	public void testAddPermissionsOnGroup() {
 		String pathToElement = "groups";
 
@@ -81,13 +110,16 @@ public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 		request.getPermissions().add("read");
 		request.getPermissions().add("update");
 		request.getPermissions().add("create");
-		assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
+		assertTrue("The role should have delete permission on the group.",
+				role().hasPermission(GraphPermission.DELETE_PERM, group()));
 
-		Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), pathToElement, request);
+		Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), pathToElement,
+				request);
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "role_updated_permission", role().getName());
-		assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
+		assertFalse("The role should no longer have delete permission on the group.",
+				role().hasPermission(GraphPermission.DELETE_PERM, group()));
 
 	}
 

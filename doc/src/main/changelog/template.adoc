@@ -1,5 +1,12 @@
 = Changelog
 
+{% for versionTag, version in versions %}
+=== {{versionTag}}
+{% for change in version %}
+* {{change.type}}: {{change.content|safe}}
+{% endfor %}
+{% endfor %}
+
 === 0.6.10
 
 * Enhancement: The mesh-ui was updated.
