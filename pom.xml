@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.6.10-SNAPSHOT</version>
+	<version>0.6.10</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -38,7 +37,7 @@
 		<connection>scm:git:git@git.gentics.com:psc/mesh.git</connection>
 		<developerConnection>scm:git:git@git.gentics.com:psc/mesh.git</developerConnection>
 		<url>https://git.gentics.com/psc/mesh</url>
-		<tag>HEAD</tag>
+		<tag>mesh-0.6.10</tag>
 	</scm>
 
 	<parent>
