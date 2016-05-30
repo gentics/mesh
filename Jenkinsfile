@@ -18,3 +18,38 @@ for (int i = 0; i < splits.size(); i++) {
   }
 }
 parallel branches
+
+node('dockerSlave') {
+   stage 'Checkout'
+   checkout scm
+   def mvnHome = tool 'M3'
+
+   stage 'VersionSet'
+   def originalV = version();
+   def major = originalV[0];
+   def minor = originalV[1];
+   def v = "${major}.${minor}-${env.BUILD_NUMBER}"
+   if (v) {
+     echo "Building version ${v}"
+   }
+   sh "${mvnHome}/bin/mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${v}"
+   //TODO only add pom.xml files
+   sh 'git add .'
+   sh "git commit -m 'Raise version'"
+   sh "git tag v${v}"
+   
+   stage 'Changelog'
+   
+
+   stage 'Release Build'
+   sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+     sh "${mvnHome}/bin/mvn -B -DskipTests -Dskip.docker=false clean deploy"
+     sh "git push origin master"
+     sh "git push origin v${v}"
+   }
+}
+
+def version() {
+  def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+  matcher ? matcher[0][1] : null
+}

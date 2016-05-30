@@ -20,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.ivy.util.FileUtil;
+import org.apache.commons.io.IOUtils;
 import org.junit.ComparisonFailure;
 import org.junit.Test;
 
@@ -88,7 +88,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// Update a single node field in order to trigger a single blocking migration script
 		content().getGraphFieldContainer(english()).getHtml("content").setHtml("triggerWait");
 
-		String blockingScript = FileUtil.readEntirely(getClass().getResourceAsStream("/testscripts/longMigrate.js"));
+		String blockingScript = IOUtils.toString(getClass().getResourceAsStream("/testscripts/longMigrate.js"));
 		change.setMigrationScript(blockingScript);
 		listOfChanges.getChanges().add(change);
 

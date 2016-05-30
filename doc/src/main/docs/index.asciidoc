@@ -767,6 +767,7 @@ Recursive permission changes on ```/roles/:uuid``` have no effect.
 | ```/api/v1/roles/:uuid``` | Delete      | Role can be deleted.
 |======
 
+
 ==== Schemas
 
 Recursive permission changes on ```/schemas``` will also affect schemas.
@@ -789,6 +790,30 @@ Recursive permission changes on ```/schemas/:uuid``` have no effect on reference
 | ```/api/v1/schemas/:uuid``` | Read        | The schema can be read. Read permission on the schema is also needed to be able to create new nodes that are based upon the schema.
 | ```/api/v1/schemas/:uuid``` | Update      | The schema can be updated.
 | ```/api/v1/schemas/:uuid``` | Delete      | The schema can be deleted.
+|======
+
+==== Microschemas
+
+Recursive permission changes on ```/schemas``` will also affect schemas.
+
+[options="header"]
+|======
+| Element                    | Permission  | Description
+| ```/api/v1/microschemas``` | Create      | New microschemas can be created.
+| ```/api/v1/microschemas``` | Read        | _Not used_
+| ```/api/v1/microschemas``` | Update      | _Not used_
+| ```/api/v1/microschemas``` | Delete      | _Not used_
+|======
+
+Recursive permission changes on ```/microschemas/:uuid``` have no effect on referenced elements.
+
+[options="header"]
+|======
+| Element                          | Permission  | Description
+| ```/api/v1/microschemas/:uuid``` | Create      | _Not used_
+| ```/api/v1/microschemas/:uuid``` | Read        | The microschema can be read.
+| ```/api/v1/microschemas/:uuid``` | Update      | The microschema can be updated.
+| ```/api/v1/microschemas/:uuid``` | Delete      | The microschema can be deleted.
 |======
 
 ==== Projects

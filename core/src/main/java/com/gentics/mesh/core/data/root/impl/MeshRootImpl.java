@@ -343,6 +343,9 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		case RoleRoot.TYPE:
 			root.getRoleRoot().reload();
 			return root.getRoleRoot().resolveToElement(stack);
+		case MicroschemaContainerRoot.TYPE:
+			root.getMicroschemaContainerRoot().reload();
+			return root.getMicroschemaContainerRoot().resolveToElement(stack);
 		case SchemaContainerRoot.TYPE:
 			root.getSchemaContainerRoot().reload();
 			return root.getSchemaContainerRoot().resolveToElement(stack);
