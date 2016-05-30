@@ -49,8 +49,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNodeAndCheck("numberField", (Field) null);
 		NumberFieldImpl field = response.getFields().getNumberField("numberField");
-		assertNotNull(field);
-		assertNull(field.getNumber());
+		assertNull(field);
 	}
 
 	@Test

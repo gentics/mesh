@@ -186,8 +186,9 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	public void testRemoveAddFieldTypeWithSameKey() throws Exception {
 
 		Node content = content();
+		content.getGraphFieldContainer(english()).getHtml("content").setHtml("42.1");
 
-		// 1. Create update request by removing the title field from schema and adding a new title with different type
+		// 1. Create update request: Remove the content field from schema and add a new title with different type
 		SchemaContainer container = schemaContainer("content");
 		Schema schema = container.getLatestVersion().getSchema();
 		schema.removeField("content");

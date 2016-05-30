@@ -37,8 +37,7 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNodeAndCheck("dateField", (Field) null);
 		DateFieldImpl field = response.getFields().getDateField("dateField");
-		assertNotNull(field);
-		assertNull(field.getDate());
+		assertNull(field);
 	}
 
 	@Test

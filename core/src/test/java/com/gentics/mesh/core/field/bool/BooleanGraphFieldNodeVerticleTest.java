@@ -65,8 +65,7 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNodeAndCheck(FIELD_NAME, (Field) null);
 		BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
-		assertNotNull(field);
-		assertNull(field.getValue());
+		assertNull(field);
 	}
 
 	@Test
