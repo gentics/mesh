@@ -6,19 +6,17 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -38,59 +36,146 @@ public interface FieldMap {
 	Field put(String fieldKey, Field field);
 
 	/**
-	 * Return the field with the given key.
-	 * 
-	 * @param key
-	 *            Field key
-	 * @param classOfT
-	 * @return
-	 */
-	<T extends Field> T get(String key, Class<T> classOfT);
-
-	/**
 	 * Return the size of the field map.
 	 * 
 	 * @return
 	 */
 	int size();
 
+	/**
+	 * Return a collection containing all field keys.
+	 * 
+	 * @return
+	 */
 	Collection<String> keySet();
 
-	boolean containsKey(String key);
+	/**
+	 * Return the string field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	StringFieldImpl getStringField(String fieldKey);
 
-	StringFieldImpl getStringField(String key);
+	/**
+	 * Return the number field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	NumberFieldImpl getNumberField(String fieldKey);
 
-	NumberFieldImpl getNumberField(String key);
+	/**
+	 * Return the number list field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	NumberFieldListImpl getNumberFieldList(String fieldKey);
 
-	NumberFieldListImpl getNumberFieldList(String key);
+	/**
+	 * Return the html field with the given key
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HtmlFieldImpl getHtmlField(String fieldKey);
 
-	HtmlFieldImpl getHtmlField(String key);
+	/**
+	 * Return the html list field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HtmlFieldListImpl getHtmlFieldList(String fieldKey);
 
-	HtmlFieldListImpl getHtmlFieldList(String key);
+	/**
+	 * Return the binary field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	BinaryField getBinaryField(String fieldKey);
 
-	BinaryField getBinaryField(String key);
+	/**
+	 * Return the boolean field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	BooleanFieldImpl getBooleanField(String fieldKey);
 
-	BooleanFieldImpl getBooleanField(String key);
+	/**
+	 * Return the boolean list field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	BooleanFieldListImpl getBooleanFieldList(String fieldKey);
 
-	BooleanFieldListImpl getBooleanListField(String key);
+	/**
+	 * Return the date list field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	DateFieldListImpl getDateFieldList(String fieldKey);
 
-	DateFieldListImpl getDateFieldList(String key);
+	/**
+	 * Return the date field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	DateFieldImpl getDateField(String fieldKey);
 
-	DateFieldImpl getDateField(String key);
+	/**
+	 * Return the node field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	NodeField getNodeField(String fieldKey);
 
-	NodeField getNodeField(String key);
+	/**
+	 * Return the node field with the given key in expanded form.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	NodeResponse getNodeFieldExpanded(String fieldKey);
 
-	NodeResponse getNodeFieldExpanded(String key);
+	/**
+	 * Return the micronode field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	MicronodeResponse getMicronodeField(String fieldKey);
 
-	NodeFieldListImpl getNodeListField(String key);
+	/**
+	 * Return the string list field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	StringFieldListImpl getStringFieldList(String fieldKey);
 
-	MicronodeResponse getMicronodeField(String key);
+	/**
+	 * Return the micronode list field with the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	MicronodeFieldList getMicronodeFieldList(String fieldKey);
 
-	StringFieldListImpl getStringFieldList(String key);
-
-	FieldList<MicronodeField> getMicronodeFieldList(String key);
-
-	NodeFieldList getNodeFieldList(String key);
+	/**
+	 * Return the node list field for the given key.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	NodeFieldList getNodeFieldList(String fieldKey);
 
 	/**
 	 * Check whether the field map is empty.
@@ -102,24 +187,25 @@ public interface FieldMap {
 	/**
 	 * Check whether a field which uses the given key is stored in the map.
 	 * 
-	 * @param key
+	 * @param fieldKey
 	 * @return
 	 */
-	boolean hasField(String key);
+	boolean hasField(String fieldKey);
 
 	/**
 	 * Return the field with the given key.
 	 * 
-	 * @param key
+	 * @param fieldKey
 	 * @param fieldSchema
 	 * @return
 	 */
-	Field getField(String key, FieldSchema fieldSchema);
+	//TODO why do we need to specifiy the field key? the field schema contains the key (name)
+	Field getField(String fieldKey, FieldSchema fieldSchema);
 
 	/**
 	 * Return the deserialize field.
 	 * 
-	 * @param key
+	 * @param fieldKey
 	 *            Key of the current field
 	 * @param type
 	 *            Expected field
@@ -128,6 +214,14 @@ public interface FieldMap {
 	 * @param expand
 	 *            The field will be expanded (if possible) when set to true
 	 */
-	<T extends Field> T getField(String key, FieldTypes type, String listType, boolean expand);
+	<T extends Field> T getField(String fieldKey, FieldTypes type, String listType, boolean expand);
+
+	/**
+	 * Remove the a field with the given fieldKey from the fieldmap.
+	 * 
+	 * @param fieldKey
+	 * @return true if an element with the given key could be removed otherwise false
+	 */
+	boolean remove(String fieldKey);
 
 }

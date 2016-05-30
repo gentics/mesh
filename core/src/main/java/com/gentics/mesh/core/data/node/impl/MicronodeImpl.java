@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -162,7 +163,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	protected void updateField(InternalActionContext ac, String key, Field restField, FieldSchema fieldSchema, FieldSchemaContainer schema) {
+	protected void updateField(InternalActionContext ac, String key, FieldMap fieldMap, Field restField, FieldSchema fieldSchema, FieldSchemaContainer schema) {
 
 		// Filter out unsupported field types
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
@@ -176,10 +177,10 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			case MicronodeGraphFieldList.TYPE:
 				throw error(BAD_REQUEST, "error_unsupported_fieldtype", type + ":" + listFieldSchema.getListType());
 			default:
-				super.updateField(ac, key, restField, fieldSchema, schema);
+				super.updateField(ac, key, fieldMap, restField, fieldSchema, schema);
 			}
 		default:
-			super.updateField(ac, key, restField, fieldSchema, schema);
+			super.updateField(ac, key, fieldMap, restField, fieldSchema, schema);
 		}
 
 	}

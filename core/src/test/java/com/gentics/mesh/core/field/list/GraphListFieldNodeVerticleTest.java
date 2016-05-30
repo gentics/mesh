@@ -55,7 +55,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Override
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNodeAndCheck(null, (Field) null);
-		NodeFieldListImpl nodeField = response.getFields().getNodeListField("listField");
+		NodeFieldList nodeField = response.getFields().getNodeFieldList("listField");
 		assertNotNull(nodeField);
 		assertEquals(0, nodeField.getItems().size());
 	}
@@ -178,7 +178,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		listField.add(null);
 
 		NodeResponse response = createNodeAndCheck("listField", listField);
-		BooleanFieldListImpl listFromResponse = response.getFields().getBooleanListField("listField");
+		BooleanFieldListImpl listFromResponse = response.getFields().getBooleanFieldList("listField");
 		assertEquals("Only valid values (true,false) should be stored.", 2, listFromResponse.getItems().size());
 	}
 
@@ -217,13 +217,13 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		NodeFieldListImpl list = new NodeFieldListImpl();
 		list.add(new NodeFieldListItemImpl(node.getUuid()));
 		NodeResponse response = updateNode("listField", list);
-		NodeFieldListImpl field = response.getFields().getNodeListField("listField");
+		NodeFieldList field = response.getFields().getNodeFieldList("listField");
 		assertEquals(1, field.getItems().size());
 
 		/// Add another item to the list and update the node
 		list.add(new NodeFieldListItemImpl(node2.getUuid()));
 		response = updateNode("listField", list);
-		field = response.getFields().getNodeListField("listField");
+		field = response.getFields().getNodeFieldList("listField");
 		assertEquals(2, field.getItems().size());
 	}
 
@@ -317,7 +317,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folder("news").getUuid());
 		listField.add(item);
 		NodeResponse response = createNodeAndCheck("listField", listField);
-		NodeFieldListImpl listFromResponse = response.getFields().getNodeListField("listField");
+		NodeFieldList listFromResponse = response.getFields().getNodeFieldList("listField");
 		assertEquals(1, listFromResponse.getItems().size());
 	}
 
@@ -330,7 +330,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		NodeGraphFieldList nodeList = container.createNodeList("listField");
 		nodeList.createNode("1", folder("news"));
 		NodeResponse response = readNode(node);
-		NodeFieldListImpl deserializedListField = response.getFields().getNodeListField("listField");
+		NodeFieldList deserializedListField = response.getFields().getNodeFieldList("listField");
 		assertNotNull(deserializedListField);
 		assertEquals(1, deserializedListField.getItems().size());
 	}
@@ -359,7 +359,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		NodeResponse responseExpanded = readNode(node, "listField", "bogus");
 
 		// Check collapsed node field
-		deserializedNodeListField = responseExpanded.getFields().getNodeListField("listField");
+		deserializedNodeListField = responseExpanded.getFields().getNodeFieldList("listField");
 		assertNotNull(deserializedNodeListField);
 		assertEquals(newsNode.getUuid(), deserializedNodeListField.getItems().get(0).getUuid());
 

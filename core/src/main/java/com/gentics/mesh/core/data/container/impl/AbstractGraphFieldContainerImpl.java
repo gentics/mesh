@@ -388,7 +388,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		case NODE:
 			NodeGraphField graphNodeField = getNode(fieldKey);
 			if (graphNodeField == null) {
-				return Observable.just(new NodeFieldImpl());
+				return Observable.just(null);
 			} else {
 				return graphNodeField.transformToRest(ac, fieldKey, languageTags, level);
 			}
@@ -486,13 +486,15 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 *            Context of the request
 	 * @param key
 	 *            Key of the field
+	 * @param fieldMap FieldMap which may or may not contain the field
+	 *            
 	 * @param restField
 	 *            Rest model with data to be stored
 	 * @param fieldSchema
 	 *            Field schema of the field
 	 * @param schema
 	 */
-	protected void updateField(InternalActionContext ac, String key, Field restField, FieldSchema fieldSchema, FieldSchemaContainer schema) {
+	protected void updateField(InternalActionContext ac, String key, FieldMap fieldMap, Field restField, FieldSchema fieldSchema, FieldSchemaContainer schema) {
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
@@ -598,6 +600,14 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			NodeGraphField graphNodeField = getNode(key);
 			failOnMissingMandatoryField(ac, graphNodeField, restField, fieldSchema, key, schema);
 			NodeField nodeField = (NodeField) restField;
+			boolean isNodeFieldSetToNull = fieldMap.hasField(key) && (nodeField == null);
+
+			// Handle Deletion - Remove the field if the field has been explicitly set to null
+			if (graphNodeField != null && isNodeFieldSetToNull) {
+				graphNodeField.removeField();
+				return;
+			}
+			
 			if (restField == null) {
 				return;
 			}
@@ -854,7 +864,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			String key = entry.getName();
 			Field restField = restFields.getField(key, entry);
 			unhandledFieldKeys.remove(key);
-			updateField(ac, key, restField, entry, schema);
+			updateField(ac, key, restFields, restField, entry, schema);
 		}
 
 		// Some fields were specified within the JSON but were not specified in the schema. Those fields can't be handled. We throw an error to inform the user

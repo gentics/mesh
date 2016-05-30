@@ -30,7 +30,7 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -203,7 +203,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		InternalActionContext ac = getMockedInternalActionContext("");
 		ServerSchemaStorage.getInstance().clear();
 
-		FieldMap restFields = new FieldMapImpl();
+		FieldMap restFields = new FieldMapJsonImpl();
 		restFields.put("stringfield", new StringFieldImpl().setString("test"));
 		field.getMicronode().updateFieldsFromRest(ac, restFields, schema);
 
