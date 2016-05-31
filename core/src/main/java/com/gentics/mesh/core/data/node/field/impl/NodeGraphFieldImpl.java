@@ -61,6 +61,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	@Override
 	public void removeField(GraphFieldContainer container) {
+		//TODO BUG We must only remove one edge to the given container!
 		remove();
 	}
 

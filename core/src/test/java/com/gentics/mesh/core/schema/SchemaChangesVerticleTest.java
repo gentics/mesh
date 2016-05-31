@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -197,6 +198,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	public void testRemoveAddFieldTypeWithSameKey() throws Exception {
 
 		Node content = content();
+		content.getGraphFieldContainer(english()).getHtml("content").setHtml("42.1");
 
 		// 1. Create update request by removing the content field from schema and adding a new content with different type
 		SchemaContainer container = schemaContainer("content");
@@ -234,6 +236,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
 		nodeUpdateRequest.getFields().put("content", new NumberFieldImpl().setNumber(42.01));
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber("1"));
 		response = call(() -> getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));
 		assertNotNull(response);
 		assertNotNull(response.getFields().hasField("content"));
