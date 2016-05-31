@@ -55,7 +55,7 @@ node('dockerSlave') {
    stage 'Release Build'
    sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
      sh "${mvnHome}/bin/mvn -B -DskipTests -Dskip.docker=false clean deploy"
-     sh "git push origin master"
+     sh "git push origin " + env.BRANCH_NAME
      sh "git push origin v${v}"
    }
    stage 'Docker Build'
@@ -63,10 +63,10 @@ node('dockerSlave') {
      echo "Skipped"
    } else {
    /*
-	   withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
-	       sh "captain build"
-	       sh "captain push"
-	   }
+	withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
+	  sh "captain build"
+	  sh "captain push"
+	}
     */
    }
    
