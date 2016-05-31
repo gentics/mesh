@@ -34,20 +34,27 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 
 	@Before
 	public void updateSchema() throws IOException {
+		addNumberFieldSchema(true);
+	}
+
+	private void addNumberFieldSchema(boolean required) {
 		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 		numberFieldSchema.setName("numberField");
 		// numberFieldSchema.setMin(10);
 		// numberFieldSchema.setMax(1000);
-		numberFieldSchema.setRequired(true);
+		numberFieldSchema.setRequired(required);
+		schema.removeField("numberField");
 		schema.addField(numberFieldSchema);
 		schemaContainer("folder").getLatestVersion().setSchema(schema);
+		
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNodeAndCheck("numberField", (Field) null);
+		addNumberFieldSchema(false);
+		NodeResponse response = createNodeAndCheck("numberField", null);
 		NumberFieldImpl field = response.getFields().getNumberField("numberField");
 		assertNull(field);
 	}

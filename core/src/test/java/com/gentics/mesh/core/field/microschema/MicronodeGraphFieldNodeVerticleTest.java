@@ -56,8 +56,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNodeAndCheck(FIELDNAME, (Field) null);
 		MicronodeField field = response.getFields().getMicronodeField(FIELDNAME);
-		assertNotNull(field);
-		assertNull(field.getFields());
+		assertNull(field);
 	}
 
 	@Test
