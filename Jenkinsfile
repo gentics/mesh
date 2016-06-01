@@ -8,8 +8,11 @@ if (!Boolean.valueOf(release)) {
 	node('dockerSlave') {
 		def mvnHome = tool 'M3'
 		checkout scm
-		sh "${mvnHome}/bin/mvn -B clean test"
-		step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+		try {
+		  sh "${mvnHome}/bin/mvn -B clean test"
+		} finally {
+		  step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+		}
 	}
 } else {
 	node('dockerSlave') {
