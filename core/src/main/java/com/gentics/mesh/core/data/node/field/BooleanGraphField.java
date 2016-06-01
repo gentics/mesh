@@ -27,10 +27,21 @@ public interface BooleanGraphField extends ListableGraphField, BasicGraphField<B
 		BooleanField booleanField = fieldMap.getBooleanField(fieldKey);
 		boolean isBooleanFieldSetToNull = fieldMap.hasField(fieldKey) && (booleanField == null || booleanField.getValue() == null);
 		GraphField.failOnDeletionOfRequiredField(booleanGraphField, isBooleanFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(booleanGraphField, booleanField == null || booleanField.getValue() == null, fieldSchema, fieldKey, schema);
-		if (booleanField == null) {
+		boolean restIsNullOrEmpty = booleanField == null || booleanField.getValue() == null;
+		GraphField.failOnMissingRequiredField(booleanGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+
+		// Handle deletion
+		if (isBooleanFieldSetToNull && booleanGraphField != null) {
+			booleanGraphField.removeField(container);
 			return;
 		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Update / Create
 		if (booleanGraphField == null) {
 			container.createBoolean(fieldKey).setBoolean(booleanField.getValue());
 		} else {

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.microschema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+
 import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FILL;
@@ -40,7 +41,6 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -372,21 +372,19 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 	@Test
 	@Override
-	public void testRemoveFieldViaNullValue() {
+	public void testRemoveFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(MICRONODE_FIELD, FETCH, FILL, (node) -> {
-			MicronodeField field = null;
-			updateContainer(ac, node, MICRONODE_FIELD, field);
+		invokeRemoveFieldViaNullTestcase(MICRONODE_FIELD, FETCH, FILL, (node) -> {
+			updateContainer(ac, node, MICRONODE_FIELD, null);
 		});
 	}
 
 	@Test
 	@Override
-	public void testRemoveRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveRequiredFieldViaNullValueTestcase(MICRONODE_FIELD, FETCH, FILL, (container) -> {
-			MicronodeField field = null;
-			updateContainer(ac, container, MICRONODE_FIELD, field);
+		invokeRemoveRequiredFieldViaNullTestcase(MICRONODE_FIELD, FETCH, FILL, (container) -> {
+			updateContainer(ac, container, MICRONODE_FIELD, null);
 		});
 	}
 

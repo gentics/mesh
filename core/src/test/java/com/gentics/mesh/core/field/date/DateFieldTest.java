@@ -176,23 +176,19 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
 	@Test
 	@Override
-	public void testRemoveFieldViaNullValue() {
+	public void testRemoveFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(DATE_FIELD, FETCH, FILL, (node) -> {
-			DateField field = new DateFieldImpl();
-			field.setDate(null);
-			updateContainer(ac, node, DATE_FIELD, field);
+		invokeRemoveFieldViaNullTestcase(DATE_FIELD, FETCH, FILL, (node) -> {
+			updateContainer(ac, node, DATE_FIELD, null);
 		});
 	}
 
 	@Test
 	@Override
-	public void testRemoveRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveRequiredFieldViaNullValueTestcase(DATE_FIELD, FETCH, FILL, (container) -> {
-			DateField field = new DateFieldImpl();
-			field.setDate(null);
-			updateContainer(ac, container, DATE_FIELD, field);
+		invokeRemoveRequiredFieldViaNullTestcase(DATE_FIELD, FETCH, FILL, (container) -> {
+			updateContainer(ac, container, DATE_FIELD, null);
 		});
 	}
 

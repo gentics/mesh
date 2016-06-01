@@ -25,22 +25,34 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 	FieldUpdater NUMBER_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		NumberFieldListImpl numberList = fieldMap.getNumberFieldList(fieldKey);
 
-
 		NumberGraphFieldList graphNumberFieldList = container.getNumberList(fieldKey);
 		boolean isNumberListFieldSetToNull = fieldMap.hasField(fieldKey) && numberList == null;
 		GraphField.failOnDeletionOfRequiredField(graphNumberFieldList, isNumberListFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(graphNumberFieldList, numberList == null, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = numberList == null; //  numberList.getItems().isEmpty()
+		GraphField.failOnMissingRequiredField(graphNumberFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
-		if (numberList == null || numberList.getItems().isEmpty()) {
-			if (graphNumberFieldList != null) {
-				graphNumberFieldList.removeField(container);
-			}
-		} else {
-			graphNumberFieldList = container.createNumberList(fieldKey);
-			for (Number item : numberList.getItems()) {
-				graphNumberFieldList.createNumber(item);
-			}
+		// Handle Deletion
+		if (isNumberListFieldSetToNull && graphNumberFieldList != null) {
+			graphNumberFieldList.removeField(container);
+			return;
 		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Create
+		if (graphNumberFieldList == null) {
+			graphNumberFieldList = container.createNumberList(fieldKey);
+		}
+
+		// Handle Update
+		graphNumberFieldList.removeAll();
+		for (Number item : numberList.getItems()) {
+			graphNumberFieldList.createNumber(item);
+		}
+
 	};
 
 	FieldGetter NUMBER_LIST_GETTER = (container, fieldSchema) -> {

@@ -28,29 +28,34 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 					if (project == null) {
 						project = parentNode.getProject();
 					}
-					model.setHTML(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(),
-							Type.forVersion(ac.getVersion()), model.getHTML(), ac.getResolveLinksType(),
-							project.getName(), languageTags));
+					model.setHTML(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersion()),
+							model.getHTML(), ac.getResolveLinksType(), project.getName(), languageTags));
 				}
 				return model;
 			});
 		}
 	};
 
-	FieldUpdater  HTML_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	FieldUpdater HTML_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		HtmlField htmlField = fieldMap.getHtmlField(fieldKey);
 		HtmlGraphField htmlGraphField = container.getHtml(fieldKey);
 		boolean isHtmlFieldSetToNull = fieldMap.hasField(fieldKey) && (htmlField == null || htmlField.getHTML() == null);
 		GraphField.failOnDeletionOfRequiredField(htmlGraphField, isHtmlFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean isHtmlFieldNull = htmlField ==null || htmlField.getHTML()==null;
+		boolean isHtmlFieldNull = htmlField == null || htmlField.getHTML() == null;
 		GraphField.failOnMissingRequiredField(htmlGraphField, isHtmlFieldNull, fieldSchema, fieldKey, schema);
 
-		if (htmlField == null) {
+		// Handle Deletion
+		if (isHtmlFieldSetToNull && htmlGraphField != null) {
+			htmlGraphField.removeField(container);
 			return;
 		}
 
+		// Rest model is empty or null - Abort
+		if (isHtmlFieldNull) {
+			return;
+		}
 
-		// Create new graph field if no existing one could be found
+		// Handle Update / Create - Create new graph field if no existing one could be found
 		if (htmlGraphField == null) {
 			container.createHTML(fieldKey).setHtml(htmlField.getHTML());
 		} else {
@@ -58,7 +63,7 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 		}
 	};
 
-	FieldGetter  HTML_GETTER = (container, fieldSchema) -> {
+	FieldGetter HTML_GETTER = (container, fieldSchema) -> {
 		return container.getHtml(fieldSchema.getName());
 	};
 

@@ -223,7 +223,11 @@ public class BootstrapInitializer {
 		initPermissions();
 		invokeChangelog();
 		initSearchIndex();
-		invokeSearchQueueProcessing();
+		try {
+			invokeSearchQueueProcessing();
+		} catch (Exception e) {
+			log.error("Could not handle existing search queue entries", e);
+		}
 
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {

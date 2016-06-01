@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.util.CompareUtils;
 
@@ -60,6 +61,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	@Override
 	public void removeField(GraphFieldContainer container) {
+		//TODO BUG We must only remove one edge to the given container!
 		remove();
 	}
 
@@ -80,6 +82,12 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			Node nodeA = getNode();
 			Node nodeB = ((NodeGraphField) obj).getNode();
 			return CompareUtils.equals(nodeA, nodeB);
+		}
+		if (obj instanceof NodeFieldListItem) {
+			NodeFieldListItem restItem = (NodeFieldListItem)obj;
+			//TODO assert key as well?
+			// getNode can't be null since this is in fact an graph edge
+			return CompareUtils.equals(restItem.getUuid(), getNode().getUuid());
 		}
 		if (obj instanceof NodeField) {
 			NodeField nodeRestField = ((NodeField) obj);

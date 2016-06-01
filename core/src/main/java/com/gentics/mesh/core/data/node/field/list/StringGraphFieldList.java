@@ -25,19 +25,31 @@ public interface StringGraphFieldList extends ListGraphField<StringGraphField, S
 	FieldUpdater STRING_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		StringGraphFieldList graphStringList = container.getStringList(fieldKey);
 		StringFieldListImpl stringList = fieldMap.getStringFieldList(fieldKey);
-		boolean isStringListFieldSetToNull = fieldMap.hasField(fieldKey) && stringList == null;
+		boolean isStringListFieldSetToNull = fieldMap.hasField(fieldKey) && (stringList == null || stringList.getItems() == null);
 		GraphField.failOnDeletionOfRequiredField(graphStringList, isStringListFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(graphStringList, stringList == null, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = stringList == null;
+		GraphField.failOnMissingRequiredField(graphStringList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
-		if (stringList == null || stringList.getItems().isEmpty()) {
-			if (graphStringList != null) {
-				graphStringList.removeField(container);
-			}
-		} else {
+		// Handle Deletion
+		if (isStringListFieldSetToNull && graphStringList != null) {
+			graphStringList.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Create
+		if (graphStringList == null) {
 			graphStringList = container.createStringList(fieldKey);
-			for (String item : stringList.getItems()) {
-				graphStringList.createString(item);
-			}
+		}
+
+		// Handle Update
+		graphStringList.removeAll();
+		for (String item : stringList.getItems()) {
+			graphStringList.createString(item);
 		}
 	};
 

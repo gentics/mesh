@@ -28,20 +28,26 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
 		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
 		GraphField.failOnDeletionOfRequiredField(graphBinaryField, isBinaryFieldSetToNull, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = binaryField == null;
 		// The required check for binary fields is not enabled since binary fields can only be created using the field api
 
-		if (graphBinaryField != null && isBinaryFieldSetToNull) {
+		// Handle Deletion
+		if (isBinaryFieldSetToNull && graphBinaryField != null) {
 			graphBinaryField.removeField(container);
 			return;
 		}
 
-		if (binaryField == null) {
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
 			return;
 		}
-		// Create new graph field if no existing one could be found
+
+		// Handle Create - Create new graph field if no existing one could be found
 		if (graphBinaryField == null) {
 			graphBinaryField = container.createBinary(fieldKey);
 		}
+
+		// Handle Update
 		graphBinaryField.setImageDPI(binaryField.getDpi());
 		graphBinaryField.setFileName(binaryField.getFileName());
 		graphBinaryField.setMimeType(binaryField.getMimeType());

@@ -20,7 +20,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.ivy.util.FileUtil;
+import org.apache.commons.io.IOUtils;
+import org.junit.ComparisonFailure;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -36,8 +37,10 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -84,10 +87,11 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = SchemaChangeModel.createChangeFieldTypeChange("content", "boolean");
 
-		// Update a single node field in order to trigger a single blocking migration script
+		// Update a single node field in order to trigger a single blocking
+		// migration script
 		content().getGraphFieldContainer(english()).getHtml("content").setHtml("triggerWait");
 
-		String blockingScript = FileUtil.readEntirely(getClass().getResourceAsStream("/testscripts/longMigrate.js"));
+		String blockingScript = IOUtils.toString(getClass().getResourceAsStream("/testscripts/longMigrate.js"));
 		change.setMigrationScript(blockingScript);
 		listOfChanges.getChanges().add(change);
 
@@ -115,10 +119,22 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		expectResponseMessage(statusFuture, "migration_status_running");
 		Thread.sleep(10000);
 
-		// Assert migration has finished
-		statusFuture = getClient().schemaMigrationStatus();
-		latchFor(statusFuture);
-		expectResponseMessage(statusFuture, "migration_status_idle");
+		// Check for 45 seconds whether the migration finishes
+		for (int i = 0; i < 45; i++) {
+			try {
+				Thread.sleep(1000);
+				// Assert migration has finished
+				statusFuture = getClient().schemaMigrationStatus();
+				latchFor(statusFuture);
+				expectResponseMessage(statusFuture, "migration_status_idle");
+				break;
+			} catch (ComparisonFailure e) {
+				System.out.println("Waiting " + i + " sec");
+				if (i == 30) {
+					throw e;
+				}
+			}
+		}
 
 	}
 
@@ -174,9 +190,12 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
 		container.reload();
-		assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-				currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
-		assertNull("There should no longer be a content field of type html", node.getGraphFieldContainer("en").getHtml("content"));
+		assertTrue(
+				"The version of the original schema and the schema that is now linked to the node should be different.",
+				currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion()
+						.getVersion());
+		assertNull("There should no longer be a content field of type html",
+				node.getGraphFieldContainer("en").getHtml("content"));
 
 	}
 
@@ -184,6 +203,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	public void testRemoveAddFieldTypeWithSameKey() throws Exception {
 
 		Node content = content();
+		content.getGraphFieldContainer(english()).getHtml("content").setHtml("42.1");
 
 		// 1. Create update request by removing the content field from schema and adding a new content with different type
 		SchemaContainer container = schemaContainer("content");
@@ -221,6 +241,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
 		nodeUpdateRequest.getFields().put("content", new NumberFieldImpl().setNumber(42.01));
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber("1"));
 		response = call(() -> getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));
 		assertNotNull(response);
 		assertNotNull(response.getFields().hasField("content"));
@@ -257,13 +278,15 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// 3. Assert updated schema
 		container.reload();
 		currentVersion.reload();
-		assertNull("The segment field reference should have been set to null", currentVersion.getNextVersion().getSchema().getSegmentField());
+		assertNull("The segment field reference should have been set to null",
+				currentVersion.getNextVersion().getSchema().getSegmentField());
 	}
 
 	@Test
 	public void testRemoveSegmentField() throws Exception {
 		Node node = content();
-		assertNotNull("The node should have a filename string graph field", node.getGraphFieldContainer("en").getString("filename"));
+		assertNotNull("The node should have a filename string graph field",
+				node.getGraphFieldContainer("en").getString("filename"));
 
 		// 1. Create changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
@@ -331,7 +354,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaContainerVersion currentVersion = container.getLatestVersion();
 		assertNull("The schema should not yet have any changes", currentVersion.getNextChange());
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html");
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "label1234");
 		listOfChanges.getChanges().add(change);
 
 		// 2. Setup eventbus bridged latch
@@ -352,15 +375,20 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		container.getLatestVersion().reload();
 		currentVersion.reload();
 		assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-		assertNotEquals("The container should now have a new version", currentVersion.getUuid(), container.getLatestVersion().getUuid());
+		assertNotEquals("The container should now have a new version", currentVersion.getUuid(),
+				container.getLatestVersion().getUuid());
 
 		// Assert that migration worked
 		Node node = content();
 		node.reload();
 		assertNotNull("The schema of the node should contain the new field schema",
 				node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField"));
-		assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-				currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
+		assertTrue(
+				"The version of the original schema and the schema that is now linked to the node should be different.",
+				currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion()
+						.getVersion());
+		assertEquals("label1234", node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema()
+				.getField("newField").getLabel());
 
 	}
 
@@ -370,7 +398,8 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	 * @return
 	 */
 	public static CyclicBarrier waitForMigration(MeshRestClient client) {
-		// Construct latch in order to wait until the migration completed event was received 
+		// Construct latch in order to wait until the migration completed event
+		// was received
 		CyclicBarrier barrier = new CyclicBarrier(2);
 		client.eventbus(ws -> {
 			// Register to migration events
@@ -410,11 +439,12 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 			// 1. Setup changes
 			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html");
+			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html", null);
 			listOfChanges.getChanges().add(change);
 
 			// 3. Invoke migration
-			Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+			Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(),
+					listOfChanges);
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "migration_invoked", "content");
@@ -428,7 +458,8 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 			container.getLatestVersion().reload();
 			currentVersion.reload();
 			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), container.getLatestVersion().getUuid());
+			assertNotEquals("The container should now have a new version", currentVersion.getUuid(),
+					container.getLatestVersion().getUuid());
 
 			// Assert that migration worked
 			Node node = content();
@@ -436,10 +467,12 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 			node.getGraphFieldContainer("en").reload();
 			node.getGraphFieldContainer("en").getSchemaContainerVersion().reload();
 
-			assertNotNull("The schema of the node should contain the new field schema",
-					node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField_" + i));
-			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-					currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
+			assertNotNull("The schema of the node should contain the new field schema", node
+					.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField_" + i));
+			assertTrue(
+					"The version of the original schema and the schema that is now linked to the node should be different.",
+					currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion()
+							.getVersion());
 
 		}
 
@@ -447,7 +480,8 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		container.reload();
 		assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, container.findAll().size());
 		assertNull("The last version should not have any changes", container.getLatestVersion().getNextChange());
-		assertNull("The last version should not have any futher versions", container.getLatestVersion().getNextVersion());
+		assertNull("The last version should not have any futher versions",
+				container.getLatestVersion().getNextVersion());
 
 		SchemaContainerVersion version = container.getLatestVersion();
 		int nVersions = 0;
@@ -457,14 +491,16 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 				break;
 			}
 			version.reload();
-			assertNotNull("The schema version {" + version.getUuid() + "-" + version.getVersion() + "} should have a next change",
-					version.getNextChange());
-			assertEquals("The version is not referencing the correct parent container.", container.getUuid(), version.getSchemaContainer().getUuid());
+			assertNotNull("The schema version {" + version.getUuid() + "-" + version.getVersion()
+					+ "} should have a next change", version.getNextChange());
+			assertEquals("The version is not referencing the correct parent container.", container.getUuid(),
+					version.getSchemaContainer().getUuid());
 			nVersions++;
 		}
 
 		assertEquals("The latest version should have exactly 10 previous versions.", nVersions, 10);
-		assertTrue("The user should still have update permissions on the schema", user().hasPermission(container, UPDATE_PERM));
+		assertTrue("The user should still have update permissions on the schema",
+				user().hasPermission(container, UPDATE_PERM));
 
 	}
 
@@ -490,7 +526,8 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Node content = content();
 		SchemaContainer container = schemaContainer("content");
 		Schema schema = container.getLatestVersion().getSchema();
-		schema.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
+		assertEquals("The segment field name should be set", "filename", schema.getSegmentField());
+		schema.getFields().add(FieldUtil.createStringFieldSchema("extraname").setLabel("someLabel"));
 		ServerSchemaStorage.getInstance().clear();
 
 		// Update the schema client side
@@ -507,6 +544,12 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
 				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 		failingLatch(latch);
+
+		Future<Schema> schemaFuture = getClient().findSchemaByUuid(container.getUuid());
+		latchFor(schemaFuture);
+		assertSuccess(schemaFuture);
+		assertEquals("The segment field name should be set", "filename", schemaFuture.result().getSegmentField());
+		assertEquals("someLabel", schemaFuture.result().getField("extraname").getLabel());
 
 		schema.setVersion(schema.getVersion() + 1);
 

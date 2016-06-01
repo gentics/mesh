@@ -68,14 +68,14 @@ public interface FieldTestcases {
 	 * 
 	 * We expect the value to be removed.
 	 */
-	void testRemoveFieldViaNullValue();
+	void testRemoveFieldViaNull();
 
 	/**
 	 * Invoke an update on a graph field container and update the required field using a null value.
 	 * 
 	 * We expect the update to fail since it is not allowed to remove required fields.
 	 */
-	void testRemoveRequiredFieldViaNullValue();
+	void testRemoveRequiredFieldViaNull();
 
 	/**
 	 * Invoke an update on a graph field container using valid data. Assert that the node was correctly updated.

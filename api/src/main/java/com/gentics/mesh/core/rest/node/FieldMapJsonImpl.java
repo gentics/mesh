@@ -74,7 +74,7 @@ public class FieldMapJsonImpl implements FieldMap {
 			if (!node.has(key)) {
 				return null;
 			}
-			if (jsonNode == null) {
+			if (jsonNode == null || jsonNode.isNull()) {
 				return null;
 			}
 			// Handle each field type
@@ -209,7 +209,12 @@ public class FieldMapJsonImpl implements FieldMap {
 	private HtmlField transformHtmlFieldJsonNode(JsonNode jsonNode, String key) {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			return pojoNodeToValue(jsonNode, HtmlField.class, key);
+			HtmlField field = pojoNodeToValue(jsonNode, HtmlField.class, key);
+			if (field == null || field.getHTML() == null) {
+				return null;
+			} else {
+				return field;
+			}
 		}
 		HtmlField htmlField = new HtmlFieldImpl();
 		if (!jsonNode.isNull() && jsonNode.isTextual()) {
@@ -257,7 +262,12 @@ public class FieldMapJsonImpl implements FieldMap {
 	private DateField transformDateFieldJsonNode(JsonNode jsonNode, String key) {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			return pojoNodeToValue(jsonNode, DateField.class, key);
+			DateField field = pojoNodeToValue(jsonNode, DateField.class, key);
+			if (field == null || field.getDate() == null) {
+				return null;
+			} else {
+				return field;
+			}
 		}
 
 		DateField dateField = new DateFieldImpl();
@@ -320,7 +330,12 @@ public class FieldMapJsonImpl implements FieldMap {
 	private BooleanField transformBooleanFieldJsonNode(JsonNode jsonNode, String key) {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			return pojoNodeToValue(jsonNode, BooleanField.class, key);
+			BooleanField field = pojoNodeToValue(jsonNode, BooleanField.class, key);
+			if (field == null || field.getValue() == null) {
+				return null;
+			} else {
+				return field;
+			}
 		}
 
 		BooleanField booleanField = new BooleanFieldImpl();
@@ -336,7 +351,12 @@ public class FieldMapJsonImpl implements FieldMap {
 	private NumberField transformNumberFieldJsonNode(JsonNode jsonNode, String key) {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			return pojoNodeToValue(jsonNode, NumberField.class, key);
+			NumberField field = pojoNodeToValue(jsonNode, NumberField.class, key);
+			if (field == null || field.getNumber() == null) {
+				return null;
+			} else {
+				return field;
+			}
 		}
 		NumberField numberField = new NumberFieldImpl();
 		if (!jsonNode.isNull() && jsonNode.isNumber()) {
@@ -360,7 +380,12 @@ public class FieldMapJsonImpl implements FieldMap {
 	private StringField transformStringFieldJsonNode(JsonNode jsonNode, String key) throws JsonProcessingException {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			return pojoNodeToValue(jsonNode, StringField.class, key);
+			StringField field = pojoNodeToValue(jsonNode, StringField.class, key);
+			if (field == null || field.getString() == null) {
+				return null;
+			} else {
+				return field;
+			}
 		}
 		StringField stringField = new StringFieldImpl();
 		if (!jsonNode.isNull() && jsonNode.isTextual()) {

@@ -272,9 +272,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public boolean hasPermission(MeshVertex vertex, GraphPermission permission) {
 		FramedGraph graph = Database.getThreadLocalGraph();
+		// Find all roles that are assigned to the user by checking the shortcut edge from the index
 		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.getVertex(Direction.IN);
+			// Find all permission edges between the found role and target vertex with the specified label
 			Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
 					MeshSpringConfiguration.getInstance().database().createComposedIndexKey(role.getId(), vertex.getImpl().getId()));
 			boolean foundPermEdge = edges.iterator().hasNext();

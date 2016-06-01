@@ -203,13 +203,15 @@ public class SchemaChangeModel implements RestModel {
 	/**
 	 * Create a add field change.
 	 * 
-	 * @param fieldName
-	 * @param type
+	 * @param fieldName Field key
+	 * @param type  Field type
+	 * @param label Field label
 	 * @return
 	 */
-	public static SchemaChangeModel createAddFieldChange(String fieldName, String type) {
+	public static SchemaChangeModel createAddFieldChange(String fieldName, String type, String label) {
 		SchemaChangeModel change = new SchemaChangeModel(ADDFIELD, fieldName);
 		change.getProperties().put(SchemaChangeModel.TYPE_KEY, type);
+		change.getProperties().put(SchemaChangeModel.LABEL_KEY, label);
 		return change;
 	}
 

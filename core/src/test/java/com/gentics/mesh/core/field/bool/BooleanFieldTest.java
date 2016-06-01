@@ -166,7 +166,8 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 
 		// graph set - rest set - same value - different type
 		fieldA.setBoolean(true);
-		assertFalse("The field should not be equal to the rest field since the types do not match.", fieldA.equals(new HtmlFieldImpl().setHTML("true")));
+		assertFalse("The field should not be equal to the rest field since the types do not match.",
+				fieldA.equals(new HtmlFieldImpl().setHTML("true")));
 
 		// graph set - rest set - different value
 		assertFalse("The field should not be equal to the rest field since the rest field has a different value.",
@@ -190,23 +191,19 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 
 	@Test
 	@Override
-	public void testRemoveFieldViaNullValue() {
+	public void testRemoveFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (node) -> {
-			BooleanField field = new BooleanFieldImpl();
-			field.setValue(null);
-			updateContainer(ac, node, BOOLEAN_FIELD, field);
+		invokeRemoveFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (node) -> {
+			updateContainer(ac, node, BOOLEAN_FIELD, null);
 		});
 	}
 
 	@Test
 	@Override
-	public void testRemoveRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveRequiredFieldViaNullValueTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (container) -> {
-			BooleanField field = new BooleanFieldImpl();
-			field.setValue(null);
-			updateContainer(ac, container, BOOLEAN_FIELD, field);
+		invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (container) -> {
+			updateContainer(ac, container, BOOLEAN_FIELD, null);
 		});
 	}
 

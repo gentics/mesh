@@ -3,11 +3,16 @@ package com.gentics.mesh.core.data.node.field.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.diff.FieldChangeTypes;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -83,6 +88,59 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		getMicronode().validate();
 	}
 
+	/**
+	 * Override the default implementation since micronode graph fields are container for other fields. We also want to catch the nested fields.
+	 * 
+	 * @param field
+	 * @return
+	 */
+	@Override
+	public List<FieldContainerChange> compareTo(Object field) {
+		if (field instanceof MicronodeGraphField) {
+			Micronode micronodeA = getMicronode();
+			Micronode micronodeB = ((MicronodeGraphField) field).getMicronode();
+			List<FieldContainerChange> changes = micronodeA.compareTo(micronodeB);
+			// Update the detected changes and prepend the fieldkey of the micronode in order to be able to identify nested changes more easy.
+			changes.stream().forEach(c -> {
+				c.setFieldCoordinates(getFieldKey() + "." + c.getFieldKey());
+				// Reset the field key
+				c.setFieldKey(getFieldKey());
+			});
+			return changes;
+		}
+		if (field instanceof MicronodeField) {
+			List<FieldContainerChange> changes = new ArrayList<>();
+			Micronode micronodeA = getMicronode();
+			MicronodeField micronodeB = ((MicronodeField) field);
+			// Load each field using the field schema 
+			Microschema schema = micronodeA.getSchemaContainerVersion().getSchema();
+			for (FieldSchema fieldSchema : schema.getFields()) {
+				GraphField graphField = micronodeA.getField(fieldSchema);
+				try {
+					Field nestedRestField = micronodeB.getFields().getField(fieldSchema.getName(), fieldSchema);
+					// If possible compare the graph field with the rest field 
+					if (graphField != null && graphField.equals(nestedRestField)) {
+						continue;
+					}
+					if (!CompareUtils.equals(graphField, nestedRestField)) {
+						FieldContainerChange change = new FieldContainerChange(getFieldKey(), FieldChangeTypes.UPDATED);
+						// Set the micronode specific field coordinates
+						change.setFieldCoordinates(getFieldKey() + "." + fieldSchema.getName());
+						changes.add(change);
+
+					}
+				} catch (Exception e) {
+					//TODO i18n
+					throw error(INTERNAL_SERVER_ERROR, "Can't load rest field {" + fieldSchema.getName() + "} from micronode {" + getFieldKey() + "}",
+							e);
+				}
+			}
+			return changes;
+
+		}
+		return Collections.emptyList();
+
+	}
 
 	@Override
 	public boolean equals(Object obj) {

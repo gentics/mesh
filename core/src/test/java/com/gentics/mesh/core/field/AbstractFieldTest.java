@@ -84,7 +84,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		assertEquals("The list of type {" + listType + "} did not contain the expected amount of items.", expectedItems, listField.getItems().size());
 	}
 
-	protected void invokeRemoveFieldViaNullValueTestcase(String fieldName, FieldFetcher fetcher, DataProvider dummyFieldCreator,
+	protected void invokeRemoveFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider dummyFieldCreator,
 			Action1<NodeGraphFieldContainer> updater) {
 		NodeGraphFieldContainer container = createNode(false).v2();
 		dummyFieldCreator.set(container, fieldName);
@@ -110,7 +110,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 * @param updater
 	 *            Action which updates the given node using a null value
 	 */
-	protected void invokeRemoveRequiredFieldViaNullValueTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
+	protected void invokeRemoveRequiredFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
 			Action1<NodeGraphFieldContainer> updater) {
 		NodeGraphFieldContainer container = createNode(true).v2();
 		createDummyData.set(container, fieldName);

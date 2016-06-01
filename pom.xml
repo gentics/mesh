@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.6.9-SNAPSHOT</version>
+	<version>0.6.11</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -12,7 +12,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<mesh.admin-ui.version>0.6.6</mesh.admin-ui.version>
+		<mesh.admin-ui.version>0.6.9</mesh.admin-ui.version>
 
 		<dockerHost>cetus.office</dockerHost>
 		<dockerHostProtocol>http</dockerHostProtocol>
@@ -22,9 +22,9 @@
 		<ferma.version>2.2.0-SNAPSHOT</ferma.version>
 		<spring.version>4.1.6.RELEASE</spring.version>
 		<elasticsearch.version>1.7.2</elasticsearch.version>
-		<orientdb.version>2.1.16</orientdb.version>
+		<orientdb.version>2.1.18</orientdb.version>
 
-		<surefire.forkcount>4</surefire.forkcount>
+		<surefire.forkcount>3</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 		<dockerHost>cetus.office</dockerHost>
@@ -37,13 +37,13 @@
 		<connection>scm:git:git@git.gentics.com:psc/mesh.git</connection>
 		<developerConnection>scm:git:git@git.gentics.com:psc/mesh.git</developerConnection>
 		<url>https://git.gentics.com/psc/mesh</url>
-		<tag>mesh-0.1.0-rc6</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.2.1</version>
+		<version>3.2.5</version>
 	</parent>
 
 	<developers>
@@ -65,11 +65,6 @@
 			</roles>
 		</developer>
 	</developers>
-
-	<issueManagement>
-		<system>github</system>
-		<url>https://github.com/gentics/mesh/issues</url>
-	</issueManagement>
 
 	<organization>
 		<name>Gentics Software</name>
@@ -172,6 +167,18 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.1</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-scm-plugin</artifactId>
+				<version>1.8.1</version>
+				<configuration>
+					<tag>${project.artifactId}-${project.version}</tag>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<executions>
@@ -197,18 +204,12 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<argLine>${surefireArgLine}</argLine>
 					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
 					<runOrder>random</runOrder>
 					<reuseForks>false</reuseForks>
 					<forkCount>${surefire.forkcount}</forkCount>
 					<trimStackTrace>false</trimStackTrace>
-					<includes>
-						<include>**/*Test.java</include>
-						<include>**/*TestSuite.java</include>
-						<include>**/*IntegrationTest.java</include>
-					</includes>
 					<excludes>
 						<include>**/*AbstractTest.java</include>
 						<include>**/*Abstract*Test.java</include>

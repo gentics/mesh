@@ -16,10 +16,14 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
 public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeFieldList, Node> {
 
+	final Logger log = LoggerFactory.getLogger(NodeGraphFieldList.class);
+	
 	String TYPE = "node";
 
 	FieldTransformator NODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
@@ -32,30 +36,46 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 	};
 
 	FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
+		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
 		GraphField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(graphNodeFieldList, nodeList == null, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = nodeList == null;// || nodeList.getItems() == null;
+		GraphField.failOnMissingRequiredField(graphNodeFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
-		
-		if (nodeList == null || nodeList.getItems().isEmpty()) {
-			if (graphNodeFieldList != null) {
-				graphNodeFieldList.removeField(container);
-			}
-		} else {
-			graphNodeFieldList = container.createNodeList(fieldKey);
-			BootstrapInitializer boot = BootstrapInitializer.getBoot();
-			// Add the listed items
-			AtomicInteger integer = new AtomicInteger();
-			for (NodeFieldListItem item : nodeList.getItems()) {
-				Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().first();
-				if (node == null) {
-					throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
-				}
-				graphNodeFieldList.createNode(String.valueOf(integer.incrementAndGet()), node);
-			}
+		// Handle Deletion
+		if (isNodeListFieldSetToNull && graphNodeFieldList != null) {
+			graphNodeFieldList.removeField(container);
+			return;
 		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Create
+		if (graphNodeFieldList == null) {
+			graphNodeFieldList = container.createNodeList(fieldKey);
+		}
+
+		// Handle Update
+		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		// Remove all and add the listed items
+		graphNodeFieldList.removeAll();
+		AtomicInteger integer = new AtomicInteger();
+		for (NodeFieldListItem item : nodeList.getItems()) {
+			Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().first();
+			if (node == null) {
+				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
+			}
+			int pos = integer.getAndIncrement();
+			if (log.isDebugEnabled()) {
+				log.debug("Adding item {" + item.getUuid() + "} at position {" + pos + "}");
+			}
+			graphNodeFieldList.addItem(graphNodeFieldList.createNode(String.valueOf(pos), node));
+		}
+
 	};
 
 	FieldGetter NODE_LIST_GETTER = (container, fieldSchema) -> {

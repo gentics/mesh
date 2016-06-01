@@ -352,9 +352,9 @@ System.out.println("Check uniqueness of " + webRootInfo.toString() + " in index 
 			} else if (fieldA == null && fieldB != null) {
 				// Field only exists in B
 				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
-			} else if (fieldA != null && fieldB != null && !fieldA.equals(fieldB)) {
+			} else if (fieldA != null && fieldB != null) {
 				// Field exists in A and B and the fields are not equal to each other. 
-				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+				changes.addAll(fieldA.compareTo(fieldB)); 
 			} else {
 				// Both fields are equal if those fields are both null
 			}
@@ -413,9 +413,8 @@ System.out.println("Check uniqueness of " + webRootInfo.toString() + " in index 
 				} else if (fieldA == null && fieldB != null) {
 					// Field only exists in B
 					changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
-				} else if (fieldA != null && fieldB != null && !fieldA.equals(fieldB)) {
-					// Field exists in A and B and the fields are not equal to each other. 
-					changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+				} else if (fieldA != null && fieldB != null) {
+					changes.addAll(fieldA.compareTo(fieldB));
 				} else {
 					// Both fields are equal if those fields are both null
 				}

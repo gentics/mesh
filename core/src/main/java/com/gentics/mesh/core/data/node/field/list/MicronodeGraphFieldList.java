@@ -30,18 +30,28 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 		MicronodeFieldList micronodeList = fieldMap.getMicronodeFieldList(fieldKey);
 		boolean isMicronodeListFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeList == null;
 		GraphField.failOnDeletionOfRequiredField(micronodeGraphFieldList, isMicronodeListFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(micronodeGraphFieldList, micronodeList == null, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = micronodeList == null; //  micronodeList.getItems().isEmpty()
+		GraphField.failOnMissingRequiredField(micronodeGraphFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
-		if (micronodeList == null || micronodeList.getItems().isEmpty()) {
-			if (micronodeGraphFieldList != null) {
-				micronodeGraphFieldList.removeField(container);
-			}
-		} else {
-			micronodeGraphFieldList = container.createMicronodeFieldList(fieldKey);
-			//TODO instead this method should also return an observable 
-			micronodeGraphFieldList.update(ac, micronodeList).toBlocking().last();
+		// Handle Deletion
+		if (isMicronodeListFieldSetToNull && micronodeGraphFieldList != null) {
+			micronodeGraphFieldList.removeField(container);
+			return;
 		}
 
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Create
+		if (micronodeGraphFieldList == null) {
+			micronodeGraphFieldList = container.createMicronodeFieldList(fieldKey);
+		}
+
+		// Handle Update
+		//TODO instead this method should also return an observable 
+		micronodeGraphFieldList.update(ac, micronodeList).toBlocking().last();
 	};
 
 	FieldGetter MICRONODE_LIST_GETTER = (container, fieldSchema) -> {

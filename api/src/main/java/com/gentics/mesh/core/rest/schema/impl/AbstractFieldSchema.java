@@ -17,6 +17,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -131,6 +132,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	}
 
 	@Override
+	@JsonIgnore
 	public Map<String, Object> getAllChangeProperties() {
 		Map<String, Object> map = new HashMap<>();
 		map.put(LABEL_KEY, getLabel());

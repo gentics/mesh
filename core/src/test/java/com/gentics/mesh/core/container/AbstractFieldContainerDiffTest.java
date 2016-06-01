@@ -32,7 +32,7 @@ public class AbstractFieldContainerDiffTest extends AbstractDBTest {
 		Schema schema = createSchema(field);
 		version.setSchema(schema);
 
-		NodeGraphFieldContainerImpl container = Database.getThreadLocalGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		NodeGraphFieldContainerImpl container = graph.addFramedVertex(NodeGraphFieldContainerImpl.class);
 		container.setSchemaContainerVersion(version);
 		return container;
 	}

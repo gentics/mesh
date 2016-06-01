@@ -180,6 +180,34 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testCreateMultiple() {
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
+
+		long start = System.currentTimeMillis();
+		for (int i = 1; i < 500; i++) {
+			searchProvider.reset();
+			NodeCreateRequest request = new NodeCreateRequest();
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+			request.setLanguage("en");
+			request.getFields().put("title", FieldUtil.createStringField("some title " + i));
+			request.getFields().put("name", FieldUtil.createStringField("some name " + i));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page_" + i + ".html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.setParentNodeUuid(uuid);
+
+			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+			latchFor(future);
+			assertSuccess(future);
+			long duration = System.currentTimeMillis() - start;
+			System.out.println("Duration:" + i + " " + (duration / i));
+		}
+
+	}
+
+	@Test
 	@Override
 	public void testCreate() throws Exception {
 		Node parentNode = folder("news");

@@ -36,8 +36,10 @@ public class VersionReference extends AbstractResponse {
 	/**
 	 * Set the version number
 	 * @param number version number
+	 * @return Fluent API
 	 */
-	public void setNumber(String number) {
+	public VersionReference setNumber(String number) {
 		this.number = number;
+		return this;
 	}
 }

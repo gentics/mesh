@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -36,6 +37,8 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 
 	private Project project;
 
+	private Map<String, Object> data = new ConcurrentHashMap<>();
+
 	public static final String LOCALE_MAP_DATA_KEY = "locale";
 
 	/**
@@ -45,6 +48,9 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	 */
 	public InternalRoutingActionContextImpl(RoutingContext rc) {
 		this.rc = rc;
+		if (rc.data() != null) {
+			this.data.putAll(rc.data());
+		}
 	}
 
 	@Override
@@ -61,7 +67,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 
 	@Override
 	public Map<String, Object> data() {
-		return rc.data();
+		return data;
 	}
 
 	@Override
@@ -141,15 +147,10 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	@Override
 	public Project getProject() {
 		if (project == null) {
-			String projectName = rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
-			if (projectName != null) {
-				project = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(projectName).toBlocking().single();
-			}
+			String projectName = get(RouterStorage.PROJECT_CONTEXT_KEY);
+			project = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(projectName).toBlocking().single();
 		}
 		return project;
 	}
-	
-
-
 
 }

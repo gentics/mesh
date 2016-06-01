@@ -165,21 +165,19 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Test
 	@Override
-	public void testRemoveFieldViaNullValue() {
+	public void testRemoveFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(STRING_LIST, FETCH, FILLTEXT, (node) -> {
-			StringFieldListImpl field = null;
-			updateContainer(ac, node, STRING_LIST, field);
+		invokeRemoveFieldViaNullTestcase(STRING_LIST, FETCH, FILLTEXT, (node) -> {
+			updateContainer(ac, node, STRING_LIST, null);
 		});
 	}
 
 	@Test
 	@Override
-	public void testRemoveRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveRequiredFieldViaNullValueTestcase(STRING_LIST, FETCH, FILLTEXT, (container) -> {
-			StringFieldListImpl field = null;
-			updateContainer(ac, container, STRING_LIST, field);
+		invokeRemoveRequiredFieldViaNullTestcase(STRING_LIST, FETCH, FILLTEXT, (container) -> {
+			updateContainer(ac, container, STRING_LIST, null);
 		});
 	}
 

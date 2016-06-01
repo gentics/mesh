@@ -70,7 +70,7 @@ public interface Database {
 	void clear();
 
 	/**
-	 * Return a new autoclosable transaction handler. This object should be used within a try-with-resource block.
+	 * Return a new autocloseable transaction handler. This object should be used within a try-with-resource block.
 	 * 
 	 * <pre>
 	 * {
@@ -83,7 +83,6 @@ public interface Database {
 	 * 
 	 * @return
 	 */
-	@Deprecated
 	Trx trx();
 
 	/**
@@ -96,7 +95,7 @@ public interface Database {
 	<T> T trx(TrxHandler<T> trxHandler);
 
 	/**
-	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
+	 * Return a autocloseable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
 	 * and no rollback can be performed. This object should be used within a try-with-resource block.
 	 * 
 	 * <pre>

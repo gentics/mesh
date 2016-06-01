@@ -211,21 +211,19 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Test
 	@Override
-	public void testRemoveFieldViaNullValue() {
+	public void testRemoveFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(MICRONODE_LIST, FETCH, FILL, (node) -> {
-			MicronodeFieldListImpl field = null;
-			updateContainer(ac, node, MICRONODE_LIST, field);
+		invokeRemoveFieldViaNullTestcase(MICRONODE_LIST, FETCH, FILL, (node) -> {
+			updateContainer(ac, node, MICRONODE_LIST, null);
 		});
 	}
 
 	@Test
 	@Override
-	public void testRemoveRequiredFieldViaNullValue() {
+	public void testRemoveRequiredFieldViaNull() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveRequiredFieldViaNullValueTestcase(MICRONODE_LIST, FETCH, FILL, (container) -> {
-			MicronodeFieldListImpl field = null;
-			updateContainer(ac, container, MICRONODE_LIST, field);
+		invokeRemoveRequiredFieldViaNullTestcase(MICRONODE_LIST, FETCH, FILL, (container) -> {
+			updateContainer(ac, container, MICRONODE_LIST, null);
 		});
 	}
 

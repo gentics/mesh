@@ -68,6 +68,10 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * @deprecated Use {@link AbstractIsolatedRestVerticleTest} instead.
+ */
+@Deprecated
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected Vertx vertx;
@@ -379,16 +383,21 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	/**
 	 * Migrate the node from one release to another
-	 * @param projectName project name
-	 * @param uuid node Uuid
-	 * @param sourceReleaseName source release name
-	 * @param targetReleaseName target release name
+	 * 
+	 * @param projectName
+	 *            project name
+	 * @param uuid
+	 *            node Uuid
+	 * @param sourceReleaseName
+	 *            source release name
+	 * @param targetReleaseName
+	 *            target release name
 	 * @return migrated node
 	 */
 	protected NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
 		// read node from source release
-		NodeResponse nodeResponse = call(() -> getClient().findNodeByUuid(projectName, uuid,
-				new NodeRequestParameter().setRelease(sourceReleaseName).draft()));
+		NodeResponse nodeResponse = call(
+				() -> getClient().findNodeByUuid(projectName, uuid, new NodeRequestParameter().setRelease(sourceReleaseName).draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
@@ -396,10 +405,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(nodeResponse.getLanguage());
 
-		nodeResponse.getFields().keySet().forEach(
-				key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> getClient().updateNode(projectName, uuid, update,
-				new NodeRequestParameter().setRelease(targetReleaseName)));
+		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
+		return call(() -> getClient().updateNode(projectName, uuid, update, new NodeRequestParameter().setRelease(targetReleaseName)));
 	}
 
 	// Project
@@ -520,8 +527,10 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	/**
 	 * Call the given handler, latch for the future and assert success. Then return the result.
 	 * 
-	 * @param handler handler
-	 * @param <T> type of the returned object
+	 * @param handler
+	 *            handler
+	 * @param <T>
+	 *            type of the returned object
 	 * @return result of the future
 	 */
 	protected <T> T call(ClientHandler<T> handler) {
@@ -539,10 +548,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	/**
 	 * Call the given handler, latch for the future and expect the given failure in the future
 	 *
-	 * @param handler handler
-	 * @param status expected response status
-	 * @param bodyMessageI18nKey i18n of the expected response message
-	 * @param i18nParams parameters of the expected response message
+	 * @param handler
+	 *            handler
+	 * @param status
+	 *            expected response status
+	 * @param bodyMessageI18nKey
+	 *            i18n of the expected response message
+	 * @param i18nParams
+	 *            parameters of the expected response message
 	 */
 	protected <T> void call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		Future<T> future;

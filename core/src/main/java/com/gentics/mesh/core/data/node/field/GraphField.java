@@ -3,7 +3,13 @@ package com.gentics.mesh.core.data.node.field;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.diff.FieldChangeTypes;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -93,4 +99,17 @@ public interface GraphField {
 	 *         is equivalent to this field value, {@code false} otherwise
 	 */
 	boolean equals(Object obj);
+
+	/**
+	 * Compare both fields by using the equals implementation and return a field container change list that contains the detected changes.
+	 * 
+	 * @param field
+	 * @return List of detected changes or empty list if no change has been detected
+	 */
+	default List<FieldContainerChange> compareTo(Object field) {
+		if (!equals(field)) {
+			return Arrays.asList(new FieldContainerChange(getFieldKey(), FieldChangeTypes.UPDATED));
+		}
+		return Collections.emptyList();
+	}
 }

@@ -33,17 +33,21 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 		NodeField nodeField = fieldMap.getNodeField(fieldKey);
 		boolean isNodeFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeField == null);
 		GraphField.failOnDeletionOfRequiredField(graphNodeField, isNodeFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(graphNodeField, nodeField == null, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = nodeField == null;
+		GraphField.failOnMissingRequiredField(graphNodeField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
-		// Remove the field if the field has been explicitly set to null
+		// Handle Deletion - Remove the field if the field has been explicitly set to null
 		if (graphNodeField != null && isNodeFieldSetToNull) {
 			graphNodeField.removeField(container);
 			return;
 		}
 
-		if (nodeField == null) {
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
 			return;
 		}
+
+		// Handle Update / Create 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		Observable<Node> obsNode = boot.nodeRoot().findByUuid(nodeField.getUuid());
 		obsNode.map(node -> {

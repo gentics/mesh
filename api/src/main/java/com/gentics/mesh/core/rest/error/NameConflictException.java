@@ -20,10 +20,10 @@ public class NameConflictException extends AbstractRestException {
 	 * Create a new name conflict using the provided i18n message and i18n properties.
 	 * 
 	 * @param i18nMessage
-	 * @param i18nProperties
+	 * @param i18nProperties	
 	 */
-	public NameConflictException(String i18nMessage, String... i18nParameters) {
-		super(CONFLICT, i18nMessage, i18nParameters);
+	public NameConflictException(String i18nMessage, String... i18nProperties) {
+		super(CONFLICT, i18nMessage, i18nProperties);
 	}
 
 	public void setProperty(String key, String value) {

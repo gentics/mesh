@@ -27,10 +27,21 @@ public interface DateGraphField extends ListableGraphField, BasicGraphField<Date
 		DateField dateField = fieldMap.getDateField(fieldKey);
 		boolean isDateFieldSetToNull = fieldMap.hasField(fieldKey) && (dateField == null || dateField.getDate() == null);
 		GraphField.failOnDeletionOfRequiredField(dateGraphField, isDateFieldSetToNull, fieldSchema, fieldKey, schema);
-		GraphField.failOnMissingRequiredField(dateGraphField, dateField == null || dateField.getDate() == null, fieldSchema, fieldKey, schema);
-		if (dateField == null) {
+		boolean restIsNullOrEmpty = dateField == null || dateField.getDate() == null;
+		GraphField.failOnMissingRequiredField(dateGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+
+		// Handle Deletion
+		if (isDateFieldSetToNull && dateGraphField != null) {
+			dateGraphField.removeField(container);
 			return;
 		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Update / Create
 		if (dateGraphField == null) {
 			container.createDate(fieldKey).setDate(dateField.getDate());
 		} else {
