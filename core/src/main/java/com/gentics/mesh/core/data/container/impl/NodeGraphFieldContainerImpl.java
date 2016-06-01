@@ -67,6 +67,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public static final String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
 
+	public static final String PUBLISHED_WEBROOT_PROPERTY_KEY = "publishedWebrootPathInfo";
+
+	public static final String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
+
 	public static final String VERSION_PROPERTY_KEY = "version";
 
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
@@ -74,6 +78,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public static void checkIndices(Database database) {
 		database.addVertexType(NodeGraphFieldContainerImpl.class);
 		database.addVertexIndex(WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, WEBROOT_PROPERTY_KEY);
+		database.addVertexIndex(PUBLISHED_WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, PUBLISHED_WEBROOT_PROPERTY_KEY);
 	}
 
 	@Override
@@ -136,6 +141,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
+	public void setProperty(String name, Object value) {
+if (value == null) {
+	System.out.println("Remove property " + name + " from " + getUuid());
+} else {
+	System.out.println("Set property " + name + " to '" + value + "' for " + getUuid());
+}
+		super.setProperty(name, value);
+	}
+
+	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
 		super.updateFieldsFromRest(ac, restFields);
 
@@ -147,10 +162,35 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void updateWebrootPathInfo(String releaseUuid, String conflictI18n) {
+		if (isDraft(releaseUuid)) {
+			updateWebrootPathInfo(releaseUuid, conflictI18n, Type.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME,
+					PUBLISHED_WEBROOT_PROPERTY_KEY);
+		} else {
+			setProperty(WEBROOT_PROPERTY_KEY, null);
+		}
+		if (isPublished(releaseUuid)) {
+			updateWebrootPathInfo(releaseUuid, conflictI18n, Type.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY,
+					PUBLISHED_WEBROOT_INDEX_NAME);
+		} else {
+			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
+		}
+	}
+
+	/**
+	 * Udpdate the webroot path info (checking for uniqueness before)
+	 *
+	 * @param releaseUuid release Uuid
+	 * @param conflictI18n i18n for the message in case of conflict
+	 * @param type edge type
+	 * @param propertyName name of the property
+	 * @param indexNames names of indices to check for uniqueness
+	 */
+	protected void updateWebrootPathInfo(String releaseUuid, String conflictI18n, Type type, String propertyName,
+			String...indexNames) {
 		Node node = getParentNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		// Determine the webroot path of the container parent node
-		String segment = node.getPathSegment(releaseUuid, Type.DRAFT, getLanguage().getLanguageTag()).toBlocking().last();
+		String segment = node.getPathSegment(releaseUuid, type, getLanguage().getLanguageTag()).toBlocking().last();
 		if (segment != null) {
 			StringBuilder webRootInfo = new StringBuilder(segment);
 			webRootInfo.append("-").append(releaseUuid);
@@ -160,16 +200,19 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 
 			// check for uniqueness of webroot path
-			NodeGraphFieldContainerImpl conflictingContainer = MeshSpringConfiguration.getInstance().database()
-					.checkIndexUniqueness(WEBROOT_INDEX_NAME, this, webRootInfo.toString());
-			if (conflictingContainer != null) {
-				Node conflictingNode = conflictingContainer.getParentNode();
-				throw conflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictI18n, segmentFieldName, segment);
+			for (String indexName : indexNames) {
+System.out.println("Check uniqueness of " + webRootInfo.toString() + " in index " + indexName);
+				NodeGraphFieldContainerImpl conflictingContainer = MeshSpringConfiguration.getInstance().database()
+						.checkIndexUniqueness(indexName, this, webRootInfo.toString());
+				if (conflictingContainer != null) {
+					Node conflictingNode = conflictingContainer.getParentNode();
+					throw conflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictI18n, segmentFieldName, segment);
+				}
 			}
 
-			setProperty(WEBROOT_PROPERTY_KEY, webRootInfo.toString());
+			setProperty(propertyName, webRootInfo.toString());
 		} else {
-			setProperty(WEBROOT_PROPERTY_KEY, null);
+			setProperty(propertyName, null);
 		}
 	}
 
@@ -230,6 +273,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		for (GraphField graphField : otherFields) {
 			graphField.cloneTo(this);
 		}
+	}
+
+	@Override
+	public boolean isDraft(String releaseUuid) {
+		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.DRAFT.getCode());
+		return traversal.hasNext();
 	}
 
 	@Override
