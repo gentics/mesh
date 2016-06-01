@@ -35,7 +35,7 @@ public class MeshExampleGenerator {
 	 * @throws IOException
 	 */
 	private static void writeChangeExamples() throws JsonProcessingException, IOException {
-		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("fieldToBeAdded", "list");
+		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("fieldToBeAdded", "list", "Field Label Value");
 		addFieldChange.setProperty(ADD_FIELD_AFTER_KEY, "firstField");
 		addFieldChange.setProperty(LIST_TYPE_KEY, "html");
 		writeJson(addFieldChange, "addfield.json");

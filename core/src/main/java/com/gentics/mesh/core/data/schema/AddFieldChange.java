@@ -52,4 +52,18 @@ public interface AddFieldChange extends SchemaFieldChange {
 	 */
 	String getInsertAfterPosition();
 
+	/**
+	 * Return the field label.
+	 * 
+	 * @return
+	 */
+	String getLabel();
+
+	/**
+	 * Set the field label.
+	 * 
+	 * @param label
+	 */
+	void setLabel(String label);
+
 }
