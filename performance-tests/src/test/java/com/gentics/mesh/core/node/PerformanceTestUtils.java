@@ -1,4 +1,4 @@
-package com.gentics.mesh.test;
+package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 
@@ -13,6 +13,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.data.Percentage;
+
+import com.gentics.mesh.test.BenchmarkJob;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -31,9 +33,10 @@ public final class PerformanceTestUtils {
 		long duration = System.currentTimeMillis() - currentMark;
 		// System.out.println(duration);
 		float perRun = (duration / (float) nRuns);
+		log.info("Average time per run: {" + perRun + "} ms");
 		// System.out.println(perRun);
 		float factor = perRun / computeBaseline();
-		assertThat(factor).isCloseTo(expectedFactor, Percentage.withPercentage(allowedVariation));
+		assertThat(expectedFactor).isCloseTo(factor, Percentage.withPercentage(allowedVariation));
 		// System.out.println(factor);
 	}
 

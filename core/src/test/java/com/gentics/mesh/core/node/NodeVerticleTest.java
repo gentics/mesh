@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.test.PerformanceTestUtils.*;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
@@ -205,32 +204,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			System.out.println("Duration:" + i + " " + (duration / i));
 		}
 
-	}
-
-	@Test
-	public void testCreateBenchmark() throws Exception {
-		Node parentNode = folder("news");
-		String uuid = parentNode.getUuid();
-		assertNotNull(parentNode);
-		assertNotNull(parentNode.getUuid());
-
-		int nRuns = 10;
-		mark();
-		for (int i = 0; i < nRuns; i++) {
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.getFields().put("title", FieldUtil.createStringField("some title"));
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page_" + i + ".html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setParentNodeUuid(uuid);
-
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
-			latchFor(future);
-			assertSuccess(future);
-		}
-		measureAndAssert(nRuns, 0.069f, 2.0f);
 	}
 
 	@Test
