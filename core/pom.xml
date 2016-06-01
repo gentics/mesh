@@ -342,7 +342,6 @@
 					<!-- 
 					<rerunFailingTestsCount>2</rerunFailingTestsCount>
 					 -->
-					<testFailureIgnore>true</testFailureIgnore>
 					<trimStackTrace>false</trimStackTrace>
 					<!-- // Kill the forked test if it takes more than 3h for execution. Nope, currently disabled -->
 					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
