@@ -27,7 +27,7 @@ public abstract class AbstractBasicObjectTest extends AbstractBasicDBTest implem
 			assertTrue("The user has no {" + perm.getSimpleName() + "} permission on node {" + node.getUuid() + "/" + node.getType() + "}",
 					getRequestUser().hasPermission(ac, node, perm));
 			role().revokePermissions(node, perm);
-			rc.data().clear();
+			ac.data().clear();
 			assertFalse("The user still got {" + perm.getSimpleName() + "} permission on node {" + node.getUuid() + "/" + node.getType() + "} although we revoked it.",role().hasPermission(perm, node));
 			assertFalse(getRequestUser().hasPermission(ac, node, perm));
 		}

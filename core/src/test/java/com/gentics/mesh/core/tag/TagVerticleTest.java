@@ -28,6 +28,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -409,6 +410,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@JsonIgnore
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 200;
 

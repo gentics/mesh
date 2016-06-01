@@ -22,8 +22,8 @@ public class NumberGraphFieldTest extends AbstractEmptyDBTest {
 		assertNull(container.getProperty("test-number"));
 		assertEquals(2, container.getPropertyKeys().size());
 		field.setNumber(42);
-		assertEquals(42, field.getNumber());
-		assertEquals(Integer.valueOf(42), container.getProperty("test-number"));
+		assertEquals(42L, field.getNumber());
+		assertEquals("42", container.getProperty("test-number"));
 		assertEquals(3, container.getPropertyKeys().size());
 		field.setNumber(null);
 		assertNull(field.getNumber());
@@ -36,7 +36,7 @@ public class NumberGraphFieldTest extends AbstractEmptyDBTest {
 		NumberGraphField numberField = container.createNumber("numberField");
 		assertEquals("numberField", numberField.getFieldKey());
 		numberField.setNumber(42);
-		assertEquals(42, numberField.getNumber());
+		assertEquals(42L, numberField.getNumber());
 		StringGraphField bogusField1 = container.getString("bogus");
 		assertNull(bogusField1);
 		NumberGraphField reloadedNumberField = container.getNumber("numberField");

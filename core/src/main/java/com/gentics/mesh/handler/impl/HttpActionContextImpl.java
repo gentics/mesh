@@ -23,11 +23,13 @@ public class HttpActionContextImpl extends AbstractActionContext implements Http
 
 	private RoutingContext rc;
 
-	private final Map<String, Object> data;
+	private final Map<String, Object> data = new ConcurrentHashMap<>();
 
 	public HttpActionContextImpl(RoutingContext rc) {
 		this.rc = rc;
-		data = new ConcurrentHashMap<>(rc.data());
+		if (rc.data() != null) {
+			this.data.putAll(rc.data());
+		}
 	}
 
 	protected RoutingContext getRoutingContext() {
