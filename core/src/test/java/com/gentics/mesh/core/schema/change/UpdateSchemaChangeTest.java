@@ -52,7 +52,8 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApply() {
-		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph()
+				.addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 		change.setName("updated");
@@ -72,9 +73,11 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testFieldOrderChange() {
 		// 1. Create the schema container
-		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph()
+				.addFramedVertex(SchemaContainerVersionImpl.class);
 
 		Schema schema = new SchemaModel();
+		schema.setSegmentField("someField");
 		schema.addField(FieldUtil.createHtmlFieldSchema("first"));
 		schema.addField(FieldUtil.createHtmlFieldSchema("second"));
 		version.setSchema(schema);
@@ -87,15 +90,40 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 		// 3. Apply the change
 		Schema updatedSchema = mutator.apply(version);
 		assertNotNull("The updated schema was not generated.", updatedSchema);
+		assertEquals("The segment field value should not have changed", "someField", updatedSchema.getSegmentField());
 		assertEquals("The updated schema should contain two fields.", 2, updatedSchema.getFields().size());
-		assertEquals("The first field should now be the field with name \"second\".", "second", updatedSchema.getFields().get(0).getName());
-		assertEquals("The second field should now be the field with the name \"first\".", "first", updatedSchema.getFields().get(1).getName());
+		assertEquals("The first field should now be the field with name \"second\".", "second",
+				updatedSchema.getFields().get(0).getName());
+		assertEquals("The second field should now be the field with the name \"first\".", "first",
+				updatedSchema.getFields().get(1).getName());
 
 	}
 
 	@Test
+	public void testUpdateSchemaSegmentFieldToNull() {
+		SchemaContainerVersion version = Database.getThreadLocalGraph()
+				.addFramedVertex(SchemaContainerVersionImpl.class);
+
+		// 1. Create schema
+		Schema schema = new SchemaModel();
+		schema.setSegmentField("someField");
+
+		// 2. Create schema update change
+		UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+		change.setSegmentField("");
+
+		version.setSchema(schema);
+		version.setNextChange(change);
+
+		// 3. Apply the change
+		Schema updatedSchema = mutator.apply(version);
+		assertNull("The segment field name was not set to null", updatedSchema.getSegmentField());
+	}
+
+	@Test
 	public void testUpdateSchema() {
-		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph()
+				.addFramedVertex(SchemaContainerVersionImpl.class);
 
 		// 1. Create schema
 		Schema schema = new SchemaModel();

@@ -19,13 +19,21 @@ if (Boolean.valueOf(skipTests)) {
 	      writeFile file: (split.includes ? 'exclusions.txt' : 'inclusions.txt'), text: ''
 	      def mvnHome = tool 'M3'
 	      sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-	        sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server' -B clean test -Dmaven.test.failure.ignore"
-	        step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+	        try {
+	      		sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server' -B clean test"
+		    } finally {
+		        step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])		    
+		    }
 	      }
 	    }
 	  }
 	}
-	parallel branches
+	try {
+		parallel branches
+	} catch (err) {
+		echo "Failed " + err.getMessage()
+		error err.getMessage()
+	}
 }
 
 node('dockerSlave') {
@@ -54,8 +62,8 @@ node('dockerSlave') {
 
    stage 'Release Build'
    sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-     sh "${mvnHome}/bin/mvn -B -DskipTests -Dskip.docker=false clean deploy"
-     sh "git push origin master"
+     sh "${mvnHome}/bin/mvn -B -DskipTests -Ddocker.skip=false -Ddocker.tag=latest clean deploy"
+     sh "git push origin " + env.BRANCH_NAME
      sh "git push origin v${v}"
    }
    stage 'Docker Build'
@@ -63,10 +71,10 @@ node('dockerSlave') {
      echo "Skipped"
    } else {
    /*
-	   withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
-	       sh "captain build"
-	       sh "captain push"
-	   }
+	withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
+	  sh "captain build"
+	  sh "captain push"
+	}
     */
    }
    

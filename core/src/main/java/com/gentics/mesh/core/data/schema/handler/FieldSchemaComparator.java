@@ -35,7 +35,7 @@ public class FieldSchemaComparator {
 			change.loadMigrationScript();
 			return change;
 		} else if (fieldSchemaA == null && fieldSchemaB != null) {
-			return SchemaChangeModel.createAddFieldChange(fieldSchemaB.getName(), fieldSchemaB.getType());
+			return SchemaChangeModel.createAddFieldChange(fieldSchemaB.getName(), fieldSchemaB.getType(), fieldSchemaB.getLabel());
 		}
 
 		return null;

@@ -17,7 +17,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 /**
  * @see UpdateSchemaChange
  */
-public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Schema> implements UpdateSchemaChange {
+public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Schema>
+		implements UpdateSchemaChange {
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(UpdateSchemaChangeImpl.class);
@@ -31,7 +32,8 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	@Override
 	public <R extends FieldSchemaContainer> R apply(R container) {
 		if (!(container instanceof Schema)) {
-			throw error(BAD_REQUEST, "The provided container was no " + Schema.class.getName() + " got {" + container.getClass().getName() + "}");
+			throw error(BAD_REQUEST, "The provided container was no " + Schema.class.getName() + " got {"
+					+ container.getClass().getName() + "}");
 		}
 
 		Schema schema = (Schema) super.apply(container);
@@ -42,7 +44,13 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 		}
 
 		String segmentFieldname = getSegmentField();
-		schema.setSegmentField(segmentFieldname);
+		if (segmentFieldname != null) {
+			schema.setSegmentField(segmentFieldname);
+		}
+		// We handle empty string as null
+		if (segmentFieldname != null && isEmpty(segmentFieldname)) {
+			schema.setSegmentField(null);
+		}
 
 		Boolean containerFlag = getContainerFlag();
 		if (containerFlag != null) {
@@ -79,21 +87,20 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 
 	@Override
 	public String getSegmentField() {
-		String value = getRestProperty(SEGMENT_FIELD_KEY);
-		// We need to handle empty string as null.
-		if (isEmpty(value)) {
-			return null;
-		}
-		return value;
+		return getRestProperty(SEGMENT_FIELD_KEY);
 	}
 
 	@Override
 	public void updateFromRest(SchemaChangeModel restChange) {
 		/***
-		 * Many graph databases can't handle null values. Tinkerpop blueprint contains constrains which avoid setting null values. We store empty string for the
-		 * segment field name instead. It is possible to set setStandardElementConstraints for each tx to false in order to avoid such checks.
+		 * Many graph databases can't handle null values. Tinkerpop blueprint
+		 * contains constrains which avoid setting null values. We store empty
+		 * string for the segment field name instead. It is possible to set
+		 * setStandardElementConstraints for each tx to false in order to avoid
+		 * such checks.
 		 */
-		if (restChange.getProperties().containsKey(SEGMENT_FIELD_KEY) && restChange.getProperty(SEGMENT_FIELD_KEY) == null) {
+		if (restChange.getProperties().containsKey(SEGMENT_FIELD_KEY)
+				&& restChange.getProperty(SEGMENT_FIELD_KEY) == null) {
 			restChange.setProperty(SEGMENT_FIELD_KEY, "");
 		}
 		super.updateFromRest(restChange);

@@ -76,7 +76,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				if (log.isDebugEnabled()) {
 					log.debug("Field " + fieldInB.getName() + " was added.");
 				}
-				SchemaChangeModel change = SchemaChangeModel.createAddFieldChange(fieldInB.getName(), fieldInB.getType());
+				SchemaChangeModel change = SchemaChangeModel.createAddFieldChange(fieldInB.getName(), fieldInB.getType(), fieldInB.getLabel());
 				if (fieldInB instanceof ListFieldSchema) {
 					change.setProperty(SchemaChangeModel.LIST_TYPE_KEY, ((ListFieldSchema) fieldInB).getListType());
 				}

@@ -509,7 +509,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	private SchemaChangesListModel getSchemaChangesListModel() {
 		SchemaChangesListModel model = new SchemaChangesListModel();
 		// Add field
-		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("listFieldToBeAddedField", "list");
+		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("listFieldToBeAddedField", "list", "Field Label Value");
 		addFieldChange.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
 		model.getChanges().add(addFieldChange);
 

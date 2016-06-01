@@ -103,7 +103,7 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		MicroschemaContainerVersion currentVersion = container.getLatestVersion();
 		assertNull("The microschema should not yet have any changes", currentVersion.getNextChange());
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html");
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "fieldLabel");
 		listOfChanges.getChanges().add(change);
 
 		// 2. Setup eventbus bridged latch
