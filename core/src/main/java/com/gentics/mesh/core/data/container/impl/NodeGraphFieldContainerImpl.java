@@ -141,16 +141,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void setProperty(String name, Object value) {
-if (value == null) {
-	System.out.println("Remove property " + name + " from " + getUuid());
-} else {
-	System.out.println("Set property " + name + " to '" + value + "' for " + getUuid());
-}
-		super.setProperty(name, value);
-	}
-
-	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
 		super.updateFieldsFromRest(ac, restFields);
 
@@ -163,30 +153,32 @@ if (value == null) {
 	@Override
 	public void updateWebrootPathInfo(String releaseUuid, String conflictI18n) {
 		if (isDraft(releaseUuid)) {
-			updateWebrootPathInfo(releaseUuid, conflictI18n, Type.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME,
-					PUBLISHED_WEBROOT_PROPERTY_KEY);
+			updateWebrootPathInfo(releaseUuid, conflictI18n, Type.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
 		} else {
 			setProperty(WEBROOT_PROPERTY_KEY, null);
 		}
 		if (isPublished(releaseUuid)) {
-			updateWebrootPathInfo(releaseUuid, conflictI18n, Type.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY,
-					PUBLISHED_WEBROOT_INDEX_NAME);
+			updateWebrootPathInfo(releaseUuid, conflictI18n, Type.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_INDEX_NAME);
 		} else {
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
 	}
 
 	/**
-	 * Udpdate the webroot path info (checking for uniqueness before)
+	 * Update the webroot path info (checking for uniqueness before)
 	 *
-	 * @param releaseUuid release Uuid
-	 * @param conflictI18n i18n for the message in case of conflict
-	 * @param type edge type
-	 * @param propertyName name of the property
-	 * @param indexNames names of indices to check for uniqueness
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param conflictI18n
+	 *            i18n for the message in case of conflict
+	 * @param type
+	 *            edge type
+	 * @param propertyName
+	 *            name of the property
+	 * @param indexName
+	 *            name of the index to check for uniqueness
 	 */
-	protected void updateWebrootPathInfo(String releaseUuid, String conflictI18n, Type type, String propertyName,
-			String...indexNames) {
+	protected void updateWebrootPathInfo(String releaseUuid, String conflictI18n, Type type, String propertyName, String indexName) {
 		Node node = getParentNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		// Determine the webroot path of the container parent node
@@ -200,14 +192,11 @@ if (value == null) {
 			}
 
 			// check for uniqueness of webroot path
-			for (String indexName : indexNames) {
-System.out.println("Check uniqueness of " + webRootInfo.toString() + " in index " + indexName);
-				NodeGraphFieldContainerImpl conflictingContainer = MeshSpringConfiguration.getInstance().database()
-						.checkIndexUniqueness(indexName, this, webRootInfo.toString());
-				if (conflictingContainer != null) {
-					Node conflictingNode = conflictingContainer.getParentNode();
-					throw conflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictI18n, segmentFieldName, segment);
-				}
+			NodeGraphFieldContainerImpl conflictingContainer = MeshSpringConfiguration.getInstance().database().checkIndexUniqueness(indexName, this,
+					webRootInfo.toString());
+			if (conflictingContainer != null) {
+				Node conflictingNode = conflictingContainer.getParentNode();
+				throw conflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictI18n, segmentFieldName, segment);
 			}
 
 			setProperty(propertyName, webRootInfo.toString());
@@ -354,7 +343,7 @@ System.out.println("Check uniqueness of " + webRootInfo.toString() + " in index 
 				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
 			} else if (fieldA != null && fieldB != null) {
 				// Field exists in A and B and the fields are not equal to each other. 
-				changes.addAll(fieldA.compareTo(fieldB)); 
+				changes.addAll(fieldA.compareTo(fieldB));
 			} else {
 				// Both fields are equal if those fields are both null
 			}

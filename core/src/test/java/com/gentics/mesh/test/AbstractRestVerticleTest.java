@@ -505,7 +505,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected void expectFailureMessage(Future<?> future, HttpResponseStatus status, String message) {
 		assertTrue("We expected the future to have failed but it succeeded.", future.failed());
-		assertNotNull(future.cause());
+		assertNotNull("No failure cause could be found within the provided future.", future.cause());
 
 		if (future.cause() instanceof AbstractRestException) {
 			AbstractRestException exception = ((AbstractRestException) future.cause());
