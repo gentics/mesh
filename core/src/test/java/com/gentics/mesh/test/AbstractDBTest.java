@@ -256,7 +256,6 @@ public abstract class AbstractDBTest {
 		Session session = mock(Session.class);
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
-		when(request.query()).thenReturn(query);
 		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
 		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
 		MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
