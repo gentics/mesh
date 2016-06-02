@@ -410,7 +410,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@JsonIgnore
+	@Ignore
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 200;
 
