@@ -2,7 +2,9 @@
 
 {% for versionTag, version in versions %}
 == {{versionTag|replace('mesh-','')}}
-{% for change in version %}
+
+{{version.date|date('d.m.Y') }}
+{% for change in version.changes %}
 * {{change.type}}: {{change.content|safe}}
 {% endfor %}{% endfor %}
 == 0.6.9 - 04.05.2016
