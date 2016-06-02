@@ -424,6 +424,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Takes too long")
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 100;
 		int nProjectsBefore = meshRoot().getProjectRoot().findAll().size();
@@ -450,6 +451,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Takes too long")
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
 		Set<Future<ProjectResponse>> set = new HashSet<>();

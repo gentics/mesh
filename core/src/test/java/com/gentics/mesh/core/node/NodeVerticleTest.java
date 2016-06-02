@@ -598,6 +598,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Takes too long")
 	public void testUpdateMultithreaded() throws InterruptedException {
 
 		final String newName = "english renamed name";
@@ -638,6 +639,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Takes too long")
 	public void testDeleteByUUIDMultithreaded() {
 
 		int nJobs = 3;
@@ -676,6 +678,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Takes too long")
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
 		Set<Future<NodeResponse>> set = new HashSet<>();
@@ -765,7 +768,10 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		parameters.setLanguages("en");
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
 		latchFor(future);
-		expectException(future, NOT_FOUND, "node_no_language_found", "en");
+		assertSuccess(future);
+		assertThat(future.result().getLanguage()).as("Node language").isNull();
+		assertThat(future.result().getAvailableLanguages()).as("Available languages").containsOnly("nl");
+		assertThat(future.result().getFields()).as("Node Fields").isEmpty();
 	}
 
 	@Test

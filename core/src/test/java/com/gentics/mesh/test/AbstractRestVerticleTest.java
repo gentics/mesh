@@ -432,7 +432,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected void expectMessageResponse(String i18nKey, Future<GenericMessageResponse> responseFuture, String... i18nParams) {
 		assertTrue("The given future has not yet completed.", responseFuture.isComplete());
-		Locale en = Locale.ENGLISH;
+		Locale en = Locale.US;
 		String message = I18NUtil.get(en, i18nKey, i18nParams);
 		assertEquals("The response message does not match.", message, responseFuture.result().getMessage());
 	}
@@ -454,7 +454,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void expectException(Future<?> future, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
-		Locale en = Locale.ENGLISH;
+		Locale en = Locale.US;
 		String message = I18NUtil.get(en, bodyMessageI18nKey, i18nParams);
 		expectMessage(future, status, message);
 	}

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -158,12 +159,6 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, "");
 		latchFor(future);
 		expectException(future, NOT_FOUND, "node_not_found_for_path", "");
-	}
-
-	@Test
-	public void testReadFolderWithLanguageFallbackInPath() {
-		// Test requesting a path that contains of mixed language segments: e.g: /Fahrzeuge/Cars/auto.html
-		fail("Not yet tested");
 	}
 
 	@Test

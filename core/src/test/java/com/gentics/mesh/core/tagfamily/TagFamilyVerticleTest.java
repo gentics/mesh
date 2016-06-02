@@ -439,6 +439,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Takes too long")
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
 		Set<Future<?>> set = new HashSet<>();
