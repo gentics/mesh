@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -1637,28 +1638,23 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		create.getFields().put("name", FieldUtil.createStringField("some name"));
 		create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create);
-		latchFor(future);
-		assertSuccess(future);
-		String uuid = future.result().getUuid();
+		NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, create));
+		String uuid = response.getUuid();
 
 		// create a "conflicting" content in another folder
-		create = new NodeCreateRequest();
-		create.setParentNodeUuid(otherParent.getUuid());
-		create.setLanguage("en");
-		create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-		create.getFields().put("title", FieldUtil.createStringField("some other title"));
-		create.getFields().put("name", FieldUtil.createStringField("some other name"));
-		create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
-		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		future = getClient().createNode(PROJECT_NAME, create);
-		latchFor(future);
-		assertSuccess(future);
+		NodeCreateRequest create2 = new NodeCreateRequest();
+		create2.setParentNodeUuid(otherParent.getUuid());
+		create2.setLanguage("en");
+		create2.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+		create2.getFields().put("title", FieldUtil.createStringField("some other title"));
+		create2.getFields().put("name", FieldUtil.createStringField("some other name"));
+		create2.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+		create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		call(() -> getClient().createNode(PROJECT_NAME, create2));
 
 		// try to move the original node
-		Future<GenericMessageResponse> moveFuture = getClient().moveNode(PROJECT_NAME, uuid, otherParent.getUuid());
-		latchFor(moveFuture);
-		expectException(moveFuture, CONFLICT, "node_conflicting_segmentfield_move", "filename", conflictingName);
+		call(() -> getClient().moveNode(PROJECT_NAME, uuid, otherParent.getUuid()), CONFLICT, "node_conflicting_segmentfield_move", "filename",
+				conflictingName);
 	}
 
 	@Test
@@ -1745,6 +1741,116 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+		});
+	}
+
+	@Test
+	public void testDuplicateWithDrafts() {
+		String initialName = "filename.html";
+		String conflictingName = "changed.html";
+		SchemaContainer contentSchema = schemaContainer("content");
+
+		// 1. Create and publish initial content
+		String nodeUuid = db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(initialName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			String createdUuid = call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+			return createdUuid;
+		});
+
+		// 2. Modify initial content
+		db.noTrx(() -> {
+			NodeUpdateRequest update = new NodeUpdateRequest();
+			update.setLanguage("en");
+			update.setVersion(new VersionReference(null, "0.1"));
+			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+			return null;
+		});
+
+		// 3. Create content. The filename should not cause a conflict since the other node was just updated.
+		String otherNodeUuid = db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(initialName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+		});
+
+		// 4. Modify the second node in order to cause a conflict
+		db.noTrx(() -> {
+			NodeUpdateRequest update = new NodeUpdateRequest();
+			update.setLanguage("en");
+			update.setVersion(new VersionReference(null, "0.1"));
+			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			call(() -> getClient().updateNode(PROJECT_NAME, otherNodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
+			return null;
+		});
+
+	}
+
+	@Test
+	public void testDuplicateWithPublished() {
+		String conflictingName = "filename.html";
+		String newName = "changed.html";
+		SchemaContainer contentSchema = schemaContainer("content");
+
+		// 1. Create and publish initial content
+		String nodeUuid = db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			String createdUuid = call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+
+			call(() -> getClient().publishNode(PROJECT_NAME, createdUuid));
+
+			return createdUuid;
+		});
+
+		// 2. Modify initial content
+		db.noTrx(() -> {
+			NodeUpdateRequest update = new NodeUpdateRequest();
+			update.setLanguage("en");
+			update.setVersion(new VersionReference(null, "0.1"));
+			update.getFields().put("filename", FieldUtil.createStringField(newName));
+			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+			return null;
+		});
+
+		// 3. Create conflicting content
+		String otherNodeUuid = db.noTrx(() -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(folder("2015").getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", FieldUtil.createStringField("some title"));
+			create.getFields().put("name", FieldUtil.createStringField("some name"));
+			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+		});
+
+		// 4. Publish conflicting content
+		db.noTrx(() -> {
+			call(() -> getClient().publishNode(PROJECT_NAME, otherNodeUuid), CONFLICT, "node_conflicting_segmentfield_publish", "filename",
+					conflictingName);
+
+			return null;
 		});
 	}
 
@@ -1953,8 +2059,36 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
+		// assert that the containers have both webrootpath properties set
+		db.noTrx(() -> {
+			for (String language : Arrays.asList("en", "de")) {
+				for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
+						NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
+					assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
+							.as("Property " + property + " for " + language).isNotNull();
+				}
+			}
+			return null;
+		});
+
 		assertThat(call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid))).as("Publish Status after take offline").isNotPublished("en")
 				.isNotPublished("de");
+
+		// assert that the containers have only the draft webrootpath properties set
+		db.noTrx(() -> {
+			for (String language : Arrays.asList("en", "de")) {
+				String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
+				assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
+						.as("Property " + property + " for " + language).isNotNull();
+
+				property = NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY;
+				assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
+						.as("Property " + property + " for " + language).isNull();
+
+			}
+			return null;
+		});
+
 	}
 
 	@Test

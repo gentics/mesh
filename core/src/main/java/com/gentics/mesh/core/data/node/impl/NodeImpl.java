@@ -819,6 +819,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return db.trx(() -> {
 			List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, Type.PUBLISHED);
 			getGraphFieldContainerEdges(releaseUuid, Type.PUBLISHED).stream().forEach(EdgeFrame::remove);
+			published.forEach(c -> c.getImpl().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null));
 
 			// reindex
 			return createIndexBatch(DELETE_ACTION, published, releaseUuid, Type.PUBLISHED);
@@ -893,6 +894,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			// remove the "published" edge
 			getGraphFieldContainerEdge(languageTag, releaseUuid, Type.PUBLISHED).remove();
+			published.getImpl().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 
 			// reindex
 			return createIndexBatch(DELETE_ACTION, Arrays.asList(published), releaseUuid, Type.PUBLISHED);
@@ -908,6 +910,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// remove an existing published edge
 		EdgeFrame currentPublished = getGraphFieldContainerEdge(languageTag, releaseUuid, Type.PUBLISHED);
 		if (currentPublished != null) {
+			currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null)
+					.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_publish");
 			currentPublished.remove();
 		}
 
@@ -916,6 +920,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		edge.setLanguageTag(languageTag);
 		edge.setReleaseUuid(releaseUuid);
 		edge.setType(Type.PUBLISHED);
+		container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_publish");
 	}
 
 	/**

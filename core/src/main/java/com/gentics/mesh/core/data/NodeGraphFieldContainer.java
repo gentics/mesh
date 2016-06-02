@@ -107,6 +107,14 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	void clone(NodeGraphFieldContainer container);
 
 	/**
+	 * Check whether this field container is the draft version for the given release
+	 * 
+	 * @param releaseUuid release Uuid
+	 * @return true if it is the draft, false if not
+	 */
+	boolean isDraft(String releaseUuid);
+
+	/**
 	 * Check whether this field container is the published version for the given release
 	 * 
 	 * @param releaseUuid
