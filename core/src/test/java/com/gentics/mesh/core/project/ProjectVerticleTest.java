@@ -41,18 +41,19 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
-import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
+import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 
-public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
+public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Autowired
 	private ProjectVerticle verticle;
@@ -78,53 +79,58 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		ProjectResponse restProject = future.result();
 
-		test.assertProject(request, restProject);
-		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().single());
+		try (NoTrx noTx = db.noTrx()) {
+			test.assertProject(request, restProject);
+			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().single());
 
-		RoutingContext rc = getMockedRoutingContext("");
-		InternalActionContext ac = InternalActionContext.create(rc);
-		Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid()).toBlocking().first();
-		assertNotNull(project);
-		assertTrue(user().hasPermissionAsync(ac, project, CREATE_PERM).toBlocking().first());
-		assertTrue(user().hasPermissionAsync(ac, project.getBaseNode(), CREATE_PERM).toBlocking().first());
-		assertTrue(user().hasPermissionAsync(ac, project.getTagFamilyRoot(), CREATE_PERM).toBlocking().first());
-		assertTrue(user().hasPermissionAsync(ac, project.getNodeRoot(), CREATE_PERM).toBlocking().first());
+			RoutingContext rc = getMockedRoutingContext("");
+			InternalActionContext ac = InternalActionContext.create(rc);
+			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid()).toBlocking().first();
+			assertNotNull(project);
+			assertTrue(user().hasPermissionAsync(ac, project, CREATE_PERM).toBlocking().first());
+			assertTrue(user().hasPermissionAsync(ac, project.getBaseNode(), CREATE_PERM).toBlocking().first());
+			assertTrue(user().hasPermissionAsync(ac, project.getTagFamilyRoot(), CREATE_PERM).toBlocking().first());
+			assertTrue(user().hasPermissionAsync(ac, project.getNodeRoot(), CREATE_PERM).toBlocking().first());
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
+		try (NoTrx noTx = db.noTrx()) {
+			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
+			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
+			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
+			role().revokePermissions(meshRoot(), CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PERM);
+		}
 
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
-		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
-		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
-		role().revokePermissions(meshRoot(), CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PERM);
 
-		// Create a new project
-		Future<ProjectResponse> createFuture = getClient().createProject(request);
-		latchFor(createFuture);
-		assertSuccess(createFuture);
-		ProjectResponse restProject = createFuture.result();
-		test.assertProject(request, restProject);
-		assertEquals(4, restProject.getPermissions().length);
+		try (NoTrx noTx = db.noTrx()) {
+			// Create a new project
+			Future<ProjectResponse> createFuture = getClient().createProject(request);
+			latchFor(createFuture);
+			assertSuccess(createFuture);
+			ProjectResponse restProject = createFuture.result();
+			test.assertProject(request, restProject);
+			assertEquals(4, restProject.getPermissions().length);
 
-		meshRoot().getProjectRoot().reload();
-		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().single());
+			meshRoot().getProjectRoot().reload();
+			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().single());
 
-		// Read the project
-		Future<ProjectResponse> readFuture = getClient().findProjectByUuid(restProject.getUuid());
-		latchFor(readFuture);
-		assertSuccess(readFuture);
+			// Read the project
+			Future<ProjectResponse> readFuture = getClient().findProjectByUuid(restProject.getUuid());
+			latchFor(readFuture);
+			assertSuccess(readFuture);
 
-		// Now delete the project
-		Future<GenericMessageResponse> deleteFuture = getClient().deleteProject(restProject.getUuid());
-		latchFor(deleteFuture);
-		assertSuccess(deleteFuture);
-		expectResponseMessage(deleteFuture, "project_deleted", restProject.getUuid() + "/" + restProject.getName());
-
+			// Now delete the project
+			Future<GenericMessageResponse> deleteFuture = getClient().deleteProject(restProject.getUuid());
+			latchFor(deleteFuture);
+			assertSuccess(deleteFuture);
+			expectResponseMessage(deleteFuture, "project_deleted", restProject.getUuid() + "/" + restProject.getName());
+		}
 	}
 
 	// Read Tests
@@ -132,82 +138,84 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-
-		role().grantPermissions(project(), READ_PERM);
-
-		final int nProjects = 142;
-		String noPermProjectName;
-		for (int i = 0; i < nProjects; i++) {
-			Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, user());
-			extraProject.setBaseNode(project().getBaseNode());
-			role().grantPermissions(extraProject, READ_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			role().grantPermissions(project(), READ_PERM);
 		}
-		Project noPermProject = meshRoot().getProjectRoot().create("no_perm_project", user());
-		noPermProjectName = noPermProject.getName();
+		try (NoTrx noTx = db.noTrx()) {
+			final int nProjects = 142;
+			String noPermProjectName;
+			for (int i = 0; i < nProjects; i++) {
+				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, user());
+				extraProject.setBaseNode(project().getBaseNode());
+				role().grantPermissions(extraProject, READ_PERM);
+			}
+			Project noPermProject = meshRoot().getProjectRoot().create("no_perm_project", user());
+			noPermProjectName = noPermProject.getName();
 
-		// Don't grant permissions to no perm project
+			// Don't grant permissions to no perm project
 
-		// Test default paging parameters
-		Future<ProjectListResponse> future = getClient().findProjects(new PagingParameter());
-		latchFor(future);
-		assertSuccess(future);
-		ProjectListResponse restResponse = future.result();
-		assertEquals(25, restResponse.getMetainfo().getPerPage());
-		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(25, restResponse.getData().size());
+			// Test default paging parameters
+			Future<ProjectListResponse> future = getClient().findProjects(new PagingParameter());
+			latchFor(future);
+			assertSuccess(future);
+			ProjectListResponse restResponse = future.result();
+			assertEquals(25, restResponse.getMetainfo().getPerPage());
+			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+			assertEquals(25, restResponse.getData().size());
 
-		int perPage = 11;
-		future = getClient().findProjects(new PagingParameter(3, perPage));
-		latchFor(future);
-		assertSuccess(future);
-		restResponse = future.result();
-		assertEquals(perPage, restResponse.getData().size());
+			int perPage = 11;
+			future = getClient().findProjects(new PagingParameter(3, perPage));
+			latchFor(future);
+			assertSuccess(future);
+			restResponse = future.result();
+			assertEquals(perPage, restResponse.getData().size());
 
-		// Extra projects + dummy project
-		int totalProjects = nProjects + 1;
-		int totalPages = (int) Math.ceil(totalProjects / (double) perPage);
-		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
-		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-		assertEquals(totalProjects, restResponse.getMetainfo().getTotalCount());
+			// Extra projects + dummy project
+			int totalProjects = nProjects + 1;
+			int totalPages = (int) Math.ceil(totalProjects / (double) perPage);
+			assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+			assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+			assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+			assertEquals(totalProjects, restResponse.getMetainfo().getTotalCount());
 
-		List<ProjectResponse> allProjects = new ArrayList<>();
-		for (int page = 1; page <= totalPages; page++) {
-			Future<ProjectListResponse> pageFuture = getClient().findProjects(new PagingParameter(page, perPage));
-			latchFor(pageFuture);
-			assertSuccess(pageFuture);
-			restResponse = pageFuture.result();
-			allProjects.addAll(restResponse.getData());
+			List<ProjectResponse> allProjects = new ArrayList<>();
+			for (int page = 1; page <= totalPages; page++) {
+				Future<ProjectListResponse> pageFuture = getClient().findProjects(new PagingParameter(page, perPage));
+				latchFor(pageFuture);
+				assertSuccess(pageFuture);
+				restResponse = pageFuture.result();
+				allProjects.addAll(restResponse.getData());
+			}
+			assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
+
+			// Verify that the no perm project is not part of the response
+			List<ProjectResponse> filteredProjectList = allProjects.parallelStream()
+					.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
+			assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
+
+			future = getClient().findProjects(new PagingParameter(-1, perPage));
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+
+			future = getClient().findProjects(new PagingParameter(1, -1));
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
+
+			future = getClient().findProjects(new PagingParameter(4242, 25));
+			latchFor(future);
+			assertSuccess(future);
+
+			String response = JsonUtil.toJson(future.result());
+			assertNotNull(response);
+
+			ProjectListResponse listResponse = future.result();
+			assertEquals(4242, listResponse.getMetainfo().getCurrentPage());
+			assertEquals(25, listResponse.getMetainfo().getPerPage());
+			assertEquals(143, listResponse.getMetainfo().getTotalCount());
+			assertEquals(6, listResponse.getMetainfo().getPageCount());
+			assertEquals(0, listResponse.getData().size());
 		}
-		assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
-
-		// Verify that the no perm project is not part of the response
-		List<ProjectResponse> filteredProjectList = allProjects.parallelStream()
-				.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
-		assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
-
-		future = getClient().findProjects(new PagingParameter(-1, perPage));
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
-
-		future = getClient().findProjects(new PagingParameter(1, -1));
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
-
-		future = getClient().findProjects(new PagingParameter(4242, 25));
-		latchFor(future);
-		assertSuccess(future);
-
-		String response = JsonUtil.toJson(future.result());
-		assertNotNull(response);
-
-		ProjectListResponse listResponse = future.result();
-		assertEquals(4242, listResponse.getMetainfo().getCurrentPage());
-		assertEquals(25, listResponse.getMetainfo().getPerPage());
-		assertEquals(143, listResponse.getMetainfo().getTotalCount());
-		assertEquals(6, listResponse.getMetainfo().getPageCount());
-		assertEquals(0, listResponse.getData().size());
 	}
 
 	@Test
@@ -221,87 +229,97 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		Project project = project();
-		String uuid = project.getUuid();
-		assertNotNull("The UUID of the project must not be null.", project.getUuid());
-		role().grantPermissions(project, READ_PERM, UPDATE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			String uuid = project.getUuid();
+			assertNotNull("The UUID of the project must not be null.", project.getUuid());
+			role().grantPermissions(project, READ_PERM, UPDATE_PERM);
 
-		Future<ProjectResponse> future = getClient().findProjectByUuid(uuid);
-		latchFor(future);
-		assertSuccess(future);
-		ProjectResponse restProject = future.result();
-		assertThat(restProject).matches(project());
+			Future<ProjectResponse> future = getClient().findProjectByUuid(uuid);
+			latchFor(future);
+			assertSuccess(future);
+			ProjectResponse restProject = future.result();
+			assertThat(restProject).matches(project());
 
-		List<String> permissions = Arrays.asList(restProject.getPermissions());
-		assertTrue(permissions.contains("create"));
-		assertTrue(permissions.contains("read"));
-		assertTrue(permissions.contains("update"));
-		assertTrue(permissions.contains("delete"));
+			List<String> permissions = Arrays.asList(restProject.getPermissions());
+			assertTrue(permissions.contains("create"));
+			assertTrue(permissions.contains("read"));
+			assertTrue(permissions.contains("update"));
+			assertTrue(permissions.contains("delete"));
+		}
 	}
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		Project project = project();
-		String uuid = project.getUuid();
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			String uuid = project.getUuid();
 
-		Future<ProjectResponse> future = getClient().findProjectByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
-		latchFor(future);
-		assertSuccess(future);
-		assertNotNull(future.result().getRolePerms());
-		assertEquals(4, future.result().getRolePerms().length);
+			Future<ProjectResponse> future = getClient().findProjectByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+			latchFor(future);
+			assertSuccess(future);
+			assertNotNull(future.result().getRolePerms());
+			assertEquals(4, future.result().getRolePerms().length);
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		Project project = project();
-		String uuid = project.getUuid();
-		assertNotNull("The UUID of the project must not be null.", project.getUuid());
-		role().revokePermissions(project, READ_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			String uuid = project.getUuid();
+			assertNotNull("The UUID of the project must not be null.", project.getUuid());
+			role().revokePermissions(project, READ_PERM);
 
-		Future<ProjectResponse> future = getClient().findProjectByUuid(uuid);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			Future<ProjectResponse> future = getClient().findProjectByUuid(uuid);
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+		}
 	}
 
 	// Update Tests
 
 	@Test
 	public void testUpdateWithConflicitingName() {
-		MeshRoot.getInstance().getProjectRoot().create("Test234", user());
+		try (NoTrx noTx = db.noTrx()) {
+			MeshRoot.getInstance().getProjectRoot().create("Test234", user());
 
-		Project project = project();
-		String uuid = project.getUuid();
-		role().grantPermissions(project, UPDATE_PERM);
-		ProjectUpdateRequest request = new ProjectUpdateRequest();
-		request.setName("Test234");
-		Future<ProjectResponse> future = getClient().updateProject(uuid, request);
-		latchFor(future);
-		expectException(future, CONFLICT, "project_conflicting_name");
+			Project project = project();
+			String uuid = project.getUuid();
+			role().grantPermissions(project, UPDATE_PERM);
+			ProjectUpdateRequest request = new ProjectUpdateRequest();
+			request.setName("Test234");
+			Future<ProjectResponse> future = getClient().updateProject(uuid, request);
+			latchFor(future);
+			expectException(future, CONFLICT, "project_conflicting_name");
+		}
 
 	}
 
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		Project project = project();
-		String uuid = project.getUuid();
-		role().grantPermissions(project, UPDATE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			String uuid = project.getUuid();
+			role().grantPermissions(project, UPDATE_PERM);
 
-		ProjectUpdateRequest request = new ProjectUpdateRequest();
-		request.setName("New Name");
+			ProjectUpdateRequest request = new ProjectUpdateRequest();
+			request.setName("New Name");
 
-		assertEquals(0, searchProvider.getStoreEvents().size());
-		Future<ProjectResponse> future = getClient().updateProject(uuid, request);
-		latchFor(future);
-		assertSuccess(future);
-		ProjectResponse restProject = future.result();
-		test.assertProject(request, restProject);
-		assertTrue(searchProvider.getStoreEvents().size() != 0);
+			assertEquals(0, searchProvider.getStoreEvents().size());
+			Future<ProjectResponse> future = getClient().updateProject(uuid, request);
+			latchFor(future);
+			assertSuccess(future);
+			ProjectResponse restProject = future.result();
+			test.assertProject(request, restProject);
+			assertTrue(searchProvider.getStoreEvents().size() != 0);
 
-		Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
-		reloadedProject.reload();
-		assertEquals("New Name", reloadedProject.getName());
+			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
+			reloadedProject.reload();
+			assertEquals("New Name", reloadedProject.getName());
+		}
 	}
 
 	@Test
@@ -319,21 +337,23 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws JsonProcessingException, Exception {
-		Project project = project();
-		String uuid = project.getUuid();
-		String name = project.getName();
-		role().grantPermissions(project, READ_PERM);
-		role().revokePermissions(project, UPDATE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			String uuid = project.getUuid();
+			String name = project.getName();
+			role().grantPermissions(project, READ_PERM);
+			role().revokePermissions(project, UPDATE_PERM);
 
-		ProjectUpdateRequest request = new ProjectUpdateRequest();
-		request.setName("New Name");
+			ProjectUpdateRequest request = new ProjectUpdateRequest();
+			request.setName("New Name");
 
-		Future<ProjectResponse> future = getClient().updateProject(uuid, request);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			Future<ProjectResponse> future = getClient().updateProject(uuid, request);
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
-		assertEquals("The name should not have been changed", name, reloadedProject.getName());
+			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+			assertEquals("The name should not have been changed", name, reloadedProject.getName());
+		}
 	}
 
 	// Delete Tests
@@ -341,63 +361,73 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		Project project = project();
-		String uuid = project.getUuid();
-		String name = project.getName();
-		assertNotNull(uuid);
-		assertNotNull(name);
-		role().grantPermissions(project, DELETE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			role().grantPermissions(project(), DELETE_PERM);
+		}
 
-		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "project_deleted", uuid + "/" + name);
-		assertElement(meshRoot().getProjectRoot(), uuid, false);
-		// TODO check for removed routers?
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			String uuid = project.getUuid();
+			String name = project.getName();
+			assertNotNull(uuid);
+			assertNotNull(name);
+			Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
+			latchFor(future);
+			assertSuccess(future);
+			expectResponseMessage(future, "project_deleted", uuid + "/" + name);
+			assertElement(meshRoot().getProjectRoot(), uuid, false);
+			// TODO check for removed routers?
+		}
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		Project project = project();
-		String uuid = project.getUuid();
-		role().revokePermissions(project, DELETE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			String uuid = project.getUuid();
+			role().revokePermissions(project, DELETE_PERM);
 
-		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
-		assertNotNull("The project should not have been deleted", project);
+			project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
+			assertNotNull("The project should not have been deleted", project);
+		}
 	}
 
 	@Test
 	@Override
 	@Ignore("not yet enabled")
 	public void testUpdateMultithreaded() throws Exception {
-		int nJobs = 5;
-		ProjectUpdateRequest request = new ProjectUpdateRequest();
-		request.setName("New Name");
+		try (NoTrx noTx = db.noTrx()) {
+			int nJobs = 5;
+			ProjectUpdateRequest request = new ProjectUpdateRequest();
+			request.setName("New Name");
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().updateProject(project().getUuid(), request));
+			CyclicBarrier barrier = prepareBarrier(nJobs);
+			Set<Future<?>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				set.add(getClient().updateProject(project().getUuid(), request));
+			}
+			validateSet(set, barrier);
 		}
-		validateSet(set, barrier);
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		String uuid = project().getUuid();
-		// CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findProjectByUuid(uuid));
+		try (NoTrx noTx = db.noTrx()) {
+			String uuid = project().getUuid();
+			// CyclicBarrier barrier = prepareBarrier(nJobs);
+			Set<Future<?>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				set.add(getClient().findProjectByUuid(uuid));
+			}
+			validateSet(set, null);
 		}
-		validateSet(set, null);
 	}
 
 	@Test
@@ -443,14 +473,16 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		int nJobs = 200;
-		Set<Future<ProjectResponse>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findProjectByUuid(project().getUuid()));
-		}
-		for (Future<ProjectResponse> future : set) {
-			latchFor(future);
-			assertSuccess(future);
+		try (NoTrx noTx = db.noTrx()) {
+			int nJobs = 200;
+			Set<Future<ProjectResponse>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				set.add(getClient().findProjectByUuid(project().getUuid()));
+			}
+			for (Future<ProjectResponse> future : set) {
+				latchFor(future);
+				assertSuccess(future);
+			}
 		}
 	}
 

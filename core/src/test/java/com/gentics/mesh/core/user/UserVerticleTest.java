@@ -52,15 +52,16 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
-import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
+import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 import io.vertx.core.Future;
 
-public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
+public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Autowired
 	private UserVerticle userVerticle;
@@ -77,203 +78,224 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		User user = user();
-		assertNotNull("The UUID of the user must not be null.", user.getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			User user = user();
+			assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
-		Future<UserResponse> future = getClient().findUserByUuid(user.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse restUser = future.result();
+			Future<UserResponse> future = getClient().findUserByUuid(user.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			UserResponse restUser = future.result();
 
-		assertThat(restUser).matches(user);
-		// TODO assert groups
-		// TODO assert perms
+			assertThat(restUser).matches(user);
+			// TODO assert groups
+			// TODO assert perms
+		}
 	}
 
 	@Test
 	public void testReadPermissions() {
-		User user = user();
-		TagFamily tagFamily = tagFamily("colors");
+		TagFamily tagFamily;
+		User user;
+		String pathToElement;
+		try (NoTrx noTx = db.noTrx()) {
+			user = user();
+			tagFamily = tagFamily("colors");
 
-		// Add permission on own role
-		role().grantPermissions(tagFamily, GraphPermission.UPDATE_PERM);
-		assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
+			// Add permission on own role
+			role().grantPermissions(tagFamily, GraphPermission.UPDATE_PERM);
+			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
+			pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily.getUuid();
+		}
 
-		String pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily.getUuid();
-		Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement);
-		latchFor(future);
-		assertSuccess(future);
-		UserPermissionResponse response = future.result();
-		assertNotNull(response);
-		assertEquals(4, response.getPermissions().size());
+		try (NoTrx noTx = db.noTrx()) {
+			Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement);
+			latchFor(future);
+			assertSuccess(future);
+			UserPermissionResponse response = future.result();
+			assertNotNull(response);
+			assertEquals(4, response.getPermissions().size());
+		}
 
-		// Revoke single permission and check again
-		role().revokePermissions(tagFamily, GraphPermission.UPDATE_PERM);
-		assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
-
-		future = getClient().readUserPermissions(user.getUuid(), pathToElement);
-		latchFor(future);
-		assertSuccess(future);
-		response = future.result();
-		assertNotNull(response);
-		assertEquals(3, response.getPermissions().size());
-
+		try (NoTrx noTx = db.noTrx()) {
+			// Revoke single permission and check again
+			role().revokePermissions(tagFamily, GraphPermission.UPDATE_PERM);
+			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
+		}
+		try (NoTrx noTx = db.noTrx()) {
+			Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement);
+			latchFor(future);
+			assertSuccess(future);
+			UserPermissionResponse response = future.result();
+			assertNotNull(response);
+			assertEquals(3, response.getPermissions().size());
+		}
 	}
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
+		try (NoTrx noTx = db.noTrx()) {
+			User user = user();
+			String uuid = user.getUuid();
 
-		User user = user();
-		String uuid = user.getUuid();
-
-		Future<UserResponse> future = getClient().findUserByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
-		latchFor(future);
-		assertSuccess(future);
-		assertNotNull(future.result().getRolePerms());
-		assertEquals(4, future.result().getRolePerms().length);
+			Future<UserResponse> future = getClient().findUserByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+			latchFor(future);
+			assertSuccess(future);
+			assertNotNull(future.result().getRolePerms());
+			assertEquals(4, future.result().getRolePerms().length);
+		}
 	}
 
 	@Test
 	public void testReadUserWithMultipleGroups() {
-		User user = user();
-		assertEquals(1, user.getGroups().size());
+		try (NoTrx noTx = db.noTrx()) {
+			User user = user();
+			assertEquals(1, user.getGroups().size());
 
-		for (int i = 0; i < 10; i++) {
-			Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
-			extraGroup.addUser(user());
+			for (int i = 0; i < 10; i++) {
+				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
+				extraGroup.addUser(user());
+			}
+
+			assertEquals(11, user().getGroups().size());
+			Future<UserResponse> future = getClient().findUserByUuid(user().getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			UserResponse response = future.result();
+			assertEquals(11, response.getGroups().size());
 		}
-
-		assertEquals(11, user().getGroups().size());
-		Future<UserResponse> future = getClient().findUserByUuid(user().getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse response = future.result();
-		assertEquals(11, response.getGroups().size());
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidMultithreaded() throws InterruptedException {
-		int nJobs = 10;
-		String uuid = user().getUuid();
-		// CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findUserByUuid(uuid));
+		try (NoTrx noTx = db.noTrx()) {
+			int nJobs = 10;
+			String uuid = user().getUuid();
+			// CyclicBarrier barrier = prepareBarrier(nJobs);
+			Set<Future<?>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				set.add(getClient().findUserByUuid(uuid));
+			}
+			validateSet(set, null);
 		}
-		validateSet(set, null);
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
-		int nJobs = 200;
-		Set<Future<UserResponse>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findUserByUuid(user().getUuid()));
-		}
-		for (Future<UserResponse> future : set) {
-			latchFor(future);
-			assertSuccess(future);
+		try (NoTrx noTx = db.noTrx()) {
+			int nJobs = 200;
+			Set<Future<UserResponse>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				set.add(getClient().findUserByUuid(user().getUuid()));
+			}
+			for (Future<UserResponse> future : set) {
+				latchFor(future);
+				assertSuccess(future);
+			}
 		}
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		String uuid;
-		User user = user();
-		uuid = user.getUuid();
-		assertNotNull("The username of the user must not be null.", user.getUsername());
-		role().revokePermissions(user, READ_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			User user = user();
+			String uuid = user.getUuid();
+			assertNotNull("The username of the user must not be null.", user.getUsername());
+			role().revokePermissions(user, READ_PERM);
 
-		Future<UserResponse> future = getClient().findUserByUuid(uuid);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			Future<UserResponse> future = getClient().findUserByUuid(uuid);
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		UserRoot root = meshRoot().getUserRoot();
+		try (NoTrx noTx = db.noTrx()) {
+			UserRoot root = meshRoot().getUserRoot();
 
-		int nUsers = 20;
-		for (int i = 0; i < nUsers; i++) {
-			String username = "testuser_" + i;
-			User user = root.create(username, user());
-			group().addUser(user);
-			user.setLastname("should_be_listed");
-			user.setFirstname("should_be_listed");
-			user.setEmailAddress("should_be_listed");
-			role().grantPermissions(user, READ_PERM);
+			int nUsers = 20;
+			for (int i = 0; i < nUsers; i++) {
+				String username = "testuser_" + i;
+				User user = root.create(username, user());
+				group().addUser(user);
+				user.setLastname("should_be_listed");
+				user.setFirstname("should_be_listed");
+				user.setEmailAddress("should_be_listed");
+				role().grantPermissions(user, READ_PERM);
+			}
+
+			User invisibleUser = root.create("should_not_be_listed", user());
+			invisibleUser.setLastname("should_not_be_listed");
+			invisibleUser.setFirstname("should_not_be_listed");
+			invisibleUser.setEmailAddress("should_not_be_listed");
+			invisibleUser.addGroup(group());
+
+			assertEquals("We did not find the expected count of users attached to the user root vertex.", 3 + nUsers + 1, root.findAll().size());
+
+			// Test default paging parameters
+			Future<UserListResponse> future = getClient().findUsers();
+			latchFor(future);
+			assertSuccess(future);
+			ListResponse<UserResponse> restResponse = future.result();
+			assertEquals(25, restResponse.getMetainfo().getPerPage());
+			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+			// Admin User + Guest User + Dummy User = 3
+			assertEquals(3 + nUsers, restResponse.getMetainfo().getTotalCount());
+			assertEquals(3 + nUsers, restResponse.getData().size());
+
+			int perPage = 2;
+			int totalUsers = 3 + nUsers;
+			int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
+			future = getClient().findUsers(new PagingParameter(3, perPage));
+			latchFor(future);
+			assertSuccess(future);
+			restResponse = future.result();
+
+			assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
+			assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
+			assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + perPage + "}",
+					totalPages, restResponse.getMetainfo().getPageCount());
+			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+			assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
+
+			perPage = 11;
+
+			List<UserResponse> allUsers = new ArrayList<>();
+			for (int page = 1; page < totalPages; page++) {
+				Future<UserListResponse> pageFuture = getClient().findUsers(new PagingParameter(page, perPage));
+				latchFor(pageFuture);
+				assertSuccess(pageFuture);
+				restResponse = pageFuture.result();
+				allUsers.addAll(restResponse.getData());
+			}
+			assertEquals("Somehow not all users were loaded when loading all pages.", totalUsers, allUsers.size());
+
+			// Verify that the invisible is not part of the response
+			final String extra3Username = "should_not_be_listed";
+			List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username))
+					.collect(Collectors.toList());
+			assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+
+			future = getClient().findUsers(new PagingParameter(1, -1));
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
+
+			future = getClient().findUsers(new PagingParameter(4242, 25));
+			latchFor(future);
+			assertSuccess(future);
+
+			assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0,
+					future.result().getData().size());
+			assertEquals("The requested page should be set in the response but it was not", 4242, future.result().getMetainfo().getCurrentPage());
+			assertEquals("The page count value was not correct.", 1, future.result().getMetainfo().getPageCount());
+			assertEquals("We did not find the correct total count value in the response", nUsers + 3, future.result().getMetainfo().getTotalCount());
+			assertEquals(25, future.result().getMetainfo().getPerPage());
 		}
-
-		User invisibleUser = root.create("should_not_be_listed", user());
-		invisibleUser.setLastname("should_not_be_listed");
-		invisibleUser.setFirstname("should_not_be_listed");
-		invisibleUser.setEmailAddress("should_not_be_listed");
-		invisibleUser.addGroup(group());
-
-		assertEquals("We did not find the expected count of users attached to the user root vertex.", 3 + nUsers + 1, root.findAll().size());
-
-		// Test default paging parameters
-		Future<UserListResponse> future = getClient().findUsers();
-		latchFor(future);
-		assertSuccess(future);
-		ListResponse<UserResponse> restResponse = future.result();
-		assertEquals(25, restResponse.getMetainfo().getPerPage());
-		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		// Admin User + Guest User + Dummy User = 3
-		assertEquals(3 + nUsers, restResponse.getMetainfo().getTotalCount());
-		assertEquals(3 + nUsers, restResponse.getData().size());
-
-		int perPage = 2;
-		int totalUsers = 3 + nUsers;
-		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
-		future = getClient().findUsers(new PagingParameter(3, perPage));
-		latchFor(future);
-		assertSuccess(future);
-		restResponse = future.result();
-
-		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
-		assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + perPage + "}",
-				totalPages, restResponse.getMetainfo().getPageCount());
-		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-		assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
-
-		perPage = 11;
-
-		List<UserResponse> allUsers = new ArrayList<>();
-		for (int page = 1; page < totalPages; page++) {
-			Future<UserListResponse> pageFuture = getClient().findUsers(new PagingParameter(page, perPage));
-			latchFor(pageFuture);
-			assertSuccess(pageFuture);
-			restResponse = pageFuture.result();
-			allUsers.addAll(restResponse.getData());
-		}
-		assertEquals("Somehow not all users were loaded when loading all pages.", totalUsers, allUsers.size());
-
-		// Verify that the invisible is not part of the response
-		final String extra3Username = "should_not_be_listed";
-		List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username))
-				.collect(Collectors.toList());
-		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
-
-		future = getClient().findUsers(new PagingParameter(1, -1));
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
-
-		future = getClient().findUsers(new PagingParameter(4242, 25));
-		latchFor(future);
-		assertSuccess(future);
-
-		assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0, future.result().getData().size());
-		assertEquals("The requested page should be set in the response but it was not", 4242, future.result().getMetainfo().getCurrentPage());
-		assertEquals("The page count value was not correct.", 1, future.result().getMetainfo().getPageCount());
-		assertEquals("We did not find the correct total count value in the response", nUsers + 3, future.result().getMetainfo().getTotalCount());
-		assertEquals(25, future.result().getMetainfo().getPerPage());
-
 	}
 
 	@Test
@@ -317,21 +339,24 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		User user = user();
-		String username = user.getUsername();
+		String oldName = db.trx(() -> user().getUsername());
+
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
 		updateRequest.setFirstname("Tony Awesome");
 		updateRequest.setLastname("Epic Stark");
 		updateRequest.setUsername("dummy_user_changed");
 
-		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse restUser = future.result();
-		test.assertUser(updateRequest, restUser);
-		try (Trx tx = db.trx()) {
-			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
+		UserResponse restUser = db.trx(() -> {
+			User user = user();
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
+			latchFor(future);
+			assertSuccess(future);
+			return future.result();
+		});
+		try (NoTrx noTx = db.noTrx()) {
+			test.assertUser(updateRequest, restUser);
+			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldName));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
@@ -343,32 +368,34 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testUpdateWithSpecialCharacters() throws Exception {
-		User user = user();
-		String oldUsername = user.getUsername();
-		final char c = '\u2665';
-		String email = "t.stark@stärk-industries.com" + c;
-		String firstname = "Töny Awesöme" + c;
-		String lastname = "Epic Stärk" + c;
-		String username = "dummy_usär_chänged" + c;
-		UserUpdateRequest updateRequest = new UserUpdateRequest();
-		updateRequest.setEmailAddress(email);
-		updateRequest.setFirstname(firstname);
-		updateRequest.setLastname(lastname);
-		updateRequest.setUsername(username);
+		try (NoTrx noTx = db.noTrx()) {
+			User user = user();
+			String oldUsername = user.getUsername();
+			final char c = '\u2665';
+			String email = "t.stark@stärk-industries.com" + c;
+			String firstname = "Töny Awesöme" + c;
+			String lastname = "Epic Stärk" + c;
+			String username = "dummy_usär_chänged" + c;
+			UserUpdateRequest updateRequest = new UserUpdateRequest();
+			updateRequest.setEmailAddress(email);
+			updateRequest.setFirstname(firstname);
+			updateRequest.setLastname(lastname);
+			updateRequest.setUsername(username);
 
-		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse restUser = future.result();
-		test.assertUser(updateRequest, restUser);
-		try (Trx tx = db.trx()) {
-			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldUsername));
-			User reloadedUser = boot.userRoot().findByUsername(username);
-			assertNotNull(reloadedUser);
-			assertEquals(lastname, reloadedUser.getLastname());
-			assertEquals(firstname, reloadedUser.getFirstname());
-			assertEquals(email, reloadedUser.getEmailAddress());
-			assertEquals(username, reloadedUser.getUsername());
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
+			latchFor(future);
+			assertSuccess(future);
+			UserResponse restUser = future.result();
+			test.assertUser(updateRequest, restUser);
+			try (Trx tx = db.trx()) {
+				assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldUsername));
+				User reloadedUser = boot.userRoot().findByUsername(username);
+				assertNotNull(reloadedUser);
+				assertEquals(lastname, reloadedUser.getLastname());
+				assertEquals(firstname, reloadedUser.getFirstname());
+				assertEquals(email, reloadedUser.getEmailAddress());
+				assertEquals(username, reloadedUser.getUsername());
+			}
 		}
 	}
 
@@ -385,337 +412,375 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testUpdateUserAndSetNodeReference() throws Exception {
-		String nodeUuid = folder("2015").getUuid();
-		User user = user();
-		String username = user.getUsername();
-		UserUpdateRequest updateRequest = new UserUpdateRequest();
-		updateRequest.setEmailAddress("t.stark@stark-industries.com");
-		updateRequest.setFirstname("Tony Awesome");
-		updateRequest.setLastname("Epic Stark");
-		updateRequest.setUsername("dummy_user_changed");
+		try (NoTrx noTx = db.noTrx()) {
+			String nodeUuid = folder("2015").getUuid();
+			User user = user();
+			String username = user.getUsername();
+			UserUpdateRequest updateRequest = new UserUpdateRequest();
+			updateRequest.setEmailAddress("t.stark@stark-industries.com");
+			updateRequest.setFirstname("Tony Awesome");
+			updateRequest.setLastname("Epic Stark");
+			updateRequest.setUsername("dummy_user_changed");
 
-		NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
-		userNodeReference.setProjectName(PROJECT_NAME);
-		userNodeReference.setUuid(nodeUuid);
-		updateRequest.setNodeReference(userNodeReference);
+			NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
+			userNodeReference.setProjectName(PROJECT_NAME);
+			userNodeReference.setUuid(nodeUuid);
+			updateRequest.setNodeReference(userNodeReference);
 
-		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse restUser = future.result();
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
+			latchFor(future);
+			assertSuccess(future);
+			UserResponse restUser = future.result();
 
-		assertNotNull(user().getReferencedNode());
-		assertNotNull(restUser.getNodeReference());
-		assertEquals(PROJECT_NAME, ((NodeReferenceImpl) restUser.getNodeReference()).getProjectName());
-		assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
+			assertNotNull(user().getReferencedNode());
+			assertNotNull(restUser.getNodeReference());
+			assertEquals(PROJECT_NAME, ((NodeReferenceImpl) restUser.getNodeReference()).getProjectName());
+			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 
-		test.assertUser(updateRequest, restUser);
-		assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
-		User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
-		assertNotNull(reloadedUser);
-		assertEquals("Epic Stark", reloadedUser.getLastname());
-		assertEquals("Tony Awesome", reloadedUser.getFirstname());
-		assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
-		assertEquals("dummy_user_changed", reloadedUser.getUsername());
-		assertEquals(nodeUuid, reloadedUser.getReferencedNode().getUuid());
+			test.assertUser(updateRequest, restUser);
+			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
+			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
+			assertNotNull(reloadedUser);
+			assertEquals("Epic Stark", reloadedUser.getLastname());
+			assertEquals("Tony Awesome", reloadedUser.getFirstname());
+			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
+			assertEquals("dummy_user_changed", reloadedUser.getUsername());
+			assertEquals(nodeUuid, reloadedUser.getReferencedNode().getUuid());
+		}
 	}
 
 	@Test
 	public void testCreateUserWithNodeReference() {
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			InternalActionContext ac = getMockedInternalActionContext("");
+			assertTrue(user().hasPermissionAsync(ac, node, READ_PERM).toBlocking().first());
 
-		Node node = folder("2015");
-		InternalActionContext ac = getMockedInternalActionContext("");
-		assertTrue(user().hasPermissionAsync(ac, node, READ_PERM).toBlocking().first());
+			NodeReferenceImpl reference = new NodeReferenceImpl();
+			reference.setProjectName(PROJECT_NAME);
+			reference.setUuid(node.getUuid());
 
-		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setProjectName(PROJECT_NAME);
-		reference.setUuid(node.getUuid());
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setUsername("new_user");
+			newUser.setGroupUuid(group().getUuid());
+			newUser.setPassword("test1234");
+			newUser.setNodeReference(reference);
 
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setUsername("new_user");
-		newUser.setGroupUuid(group().getUuid());
-		newUser.setPassword("test1234");
-		newUser.setNodeReference(reference);
-
-		Future<UserResponse> future = getClient().createUser(newUser);
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse response = future.result();
-		assertNotNull(response.getNodeReference());
-		assertNotNull(((NodeReferenceImpl) response.getNodeReference()).getProjectName());
-		assertNotNull(response.getNodeReference().getUuid());
-
+			Future<UserResponse> future = getClient().createUser(newUser);
+			latchFor(future);
+			assertSuccess(future);
+			UserResponse response = future.result();
+			assertNotNull(response.getNodeReference());
+			assertNotNull(((NodeReferenceImpl) response.getNodeReference()).getProjectName());
+			assertNotNull(response.getNodeReference().getUuid());
+		}
 	}
 
 	@Test
 	public void testReadUserListWithExpandedNodeReference() {
-		Node node = folder("2015");
+		UserResponse userCreateResponse = db.noTrx(() -> {
+			Node node = folder("2015");
 
-		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setUuid(node.getUuid());
-		reference.setProjectName(PROJECT_NAME);
+			NodeReferenceImpl reference = new NodeReferenceImpl();
+			reference.setUuid(node.getUuid());
+			reference.setProjectName(PROJECT_NAME);
 
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setUsername("new_user");
-		newUser.setGroupUuid(group().getUuid());
-		newUser.setPassword("test1234");
-		newUser.setNodeReference(reference);
-		Future<UserResponse> future = getClient().createUser(newUser);
-		latchFor(future);
-		assertSuccess(future);
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setUsername("new_user");
+			newUser.setGroupUuid(group().getUuid());
+			newUser.setPassword("test1234");
+			newUser.setNodeReference(reference);
+			Future<UserResponse> future = getClient().createUser(newUser);
+			latchFor(future);
+			assertSuccess(future);
+			return future.result();
+		});
 
-		Future<UserListResponse> userListResponseFuture = getClient().findUsers(new PagingParameter().setPerPage(100),
-				new NodeRequestParameter().setExpandedFieldNames("nodeReference").setLanguages("en"));
-		latchFor(userListResponseFuture);
-		assertSuccess(userListResponseFuture);
-		UserListResponse userResponse = userListResponseFuture.result();
-		assertNotNull(userResponse);
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			Future<UserListResponse> userListResponseFuture = getClient().findUsers(new PagingParameter().setPerPage(100),
+					new NodeRequestParameter().setExpandedFieldNames("nodeReference").setLanguages("en"));
+			latchFor(userListResponseFuture);
+			assertSuccess(userListResponseFuture);
+			UserListResponse userResponse = userListResponseFuture.result();
+			assertNotNull(userResponse);
 
-		UserResponse foundUser = userResponse.getData().parallelStream().filter(u -> u.getUuid().equals(future.result().getUuid())).findFirst().get();
+			UserResponse foundUser = userResponse.getData().parallelStream().filter(u -> u.getUuid().equals(userCreateResponse.getUuid())).findFirst()
+					.get();
 
-		assertNotNull(foundUser.getNodeReference());
-		assertEquals(node.getUuid(), foundUser.getNodeReference().getUuid());
-		assertEquals(NodeResponse.class, foundUser.getNodeReference().getClass());
+			assertNotNull(foundUser.getNodeReference());
+			assertEquals(node.getUuid(), foundUser.getNodeReference().getUuid());
+			assertEquals(NodeResponse.class, foundUser.getNodeReference().getClass());
+		}
 	}
 
 	@Test
+	// test fails since user node references are not yet release aware
 	public void testReadUserWithExpandedNodeReference() {
-		Node node = folder("2015");
+		String folderUuid;
+		UserCreateRequest newUser;
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			folderUuid = node.getUuid();
 
-		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setUuid(node.getUuid());
-		reference.setProjectName(PROJECT_NAME);
+			NodeReferenceImpl reference = new NodeReferenceImpl();
+			reference.setUuid(node.getUuid());
+			reference.setProjectName(PROJECT_NAME);
 
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setUsername("new_user");
-		newUser.setGroupUuid(group().getUuid());
-		newUser.setPassword("test1234");
-		newUser.setNodeReference(reference);
+			UserCreateRequest request = new UserCreateRequest();
+			request.setUsername("new_user");
+			request.setGroupUuid(group().getUuid());
+			request.setPassword("test1234");
+			request.setNodeReference(reference);
+			newUser = request;
+		}
+
 		Future<UserResponse> future = getClient().createUser(newUser);
 		latchFor(future);
 		assertSuccess(future);
+		UserResponse userResponse = future.result();
 
-		Future<UserResponse> userResponseFuture = getClient().findUserByUuid(future.result().getUuid(),
+		Future<UserResponse> userResponseFuture = getClient().findUserByUuid(userResponse.getUuid(),
 				new NodeRequestParameter().setExpandedFieldNames("nodeReference").setLanguages("en"));
 		latchFor(userResponseFuture);
 		assertSuccess(userResponseFuture);
-		UserResponse userResponse = userResponseFuture.result();
-		assertNotNull(userResponse);
-		assertNotNull(userResponse.getNodeReference());
-		assertEquals(node.getUuid(), userResponse.getNodeReference().getUuid());
-		assertEquals(NodeResponse.class, userResponse.getNodeReference().getClass());
+		UserResponse userResponse2 = userResponseFuture.result();
+		assertNotNull(userResponse2);
+		assertNotNull(userResponse2.getNodeReference());
+		assertEquals(folderUuid, userResponse2.getNodeReference().getUuid());
+		assertEquals(NodeResponse.class, userResponse2.getNodeReference().getClass());
+
 	}
 
 	@Test
 	public void testCreateUserWithBogusProjectNameInNodeReference() {
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
 
-		Node node = folder("2015");
+			NodeReferenceImpl reference = new NodeReferenceImpl();
+			reference.setProjectName("bogus_name");
+			reference.setUuid(node.getUuid());
 
-		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setProjectName("bogus_name");
-		reference.setUuid(node.getUuid());
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setUsername("new_user");
+			newUser.setGroupUuid(group().getUuid());
+			newUser.setPassword("test1234");
+			newUser.setNodeReference(reference);
 
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setUsername("new_user");
-		newUser.setGroupUuid(group().getUuid());
-		newUser.setPassword("test1234");
-		newUser.setNodeReference(reference);
-
-		Future<UserResponse> future = getClient().createUser(newUser);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "project_not_found", "bogus_name");
+			Future<UserResponse> future = getClient().createUser(newUser);
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "project_not_found", "bogus_name");
+		}
 	}
 
 	@Test
 	public void testCreateUserWithBogusUuidInNodeReference() {
+		try (NoTrx noTx = db.noTrx()) {
+			NodeReferenceImpl reference = new NodeReferenceImpl();
+			reference.setProjectName(PROJECT_NAME);
+			reference.setUuid("bogus_uuid");
 
-		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setProjectName(PROJECT_NAME);
-		reference.setUuid("bogus_uuid");
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setUsername("new_user");
+			newUser.setGroupUuid(group().getUuid());
+			newUser.setPassword("test1234");
+			newUser.setNodeReference(reference);
 
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setUsername("new_user");
-		newUser.setGroupUuid(group().getUuid());
-		newUser.setPassword("test1234");
-		newUser.setNodeReference(reference);
-
-		Future<UserResponse> future = getClient().createUser(newUser);
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus_uuid");
+			Future<UserResponse> future = getClient().createUser(newUser);
+			latchFor(future);
+			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus_uuid");
+		}
 	}
 
 	@Test
 	public void testCreateUserWithMissingProjectNameInNodeReference() {
+		try (NoTrx noTx = db.noTrx()) {
+			NodeReferenceImpl reference = new NodeReferenceImpl();
+			reference.setUuid("bogus_uuid");
 
-		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setUuid("bogus_uuid");
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setUsername("new_user");
+			newUser.setGroupUuid(group().getUuid());
+			newUser.setPassword("test1234");
+			newUser.setNodeReference(reference);
 
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setUsername("new_user");
-		newUser.setGroupUuid(group().getUuid());
-		newUser.setPassword("test1234");
-		newUser.setNodeReference(reference);
-
-		Future<UserResponse> future = getClient().createUser(newUser);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
+			Future<UserResponse> future = getClient().createUser(newUser);
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
+		}
 	}
 
 	@Test
 	public void testCreateUserWithMissingUuidNameInNodeReference() {
 
-		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setProjectName(PROJECT_NAME);
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setUsername("new_user");
-		newUser.setGroupUuid(group().getUuid());
-		newUser.setPassword("test1234");
-		newUser.setNodeReference(reference);
+		try (NoTrx noTx = db.noTrx()) {
+			NodeReferenceImpl reference = new NodeReferenceImpl();
+			reference.setProjectName(PROJECT_NAME);
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setUsername("new_user");
+			newUser.setGroupUuid(group().getUuid());
+			newUser.setPassword("test1234");
+			newUser.setNodeReference(reference);
 
-		Future<UserResponse> future = getClient().createUser(newUser);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "user_incomplete_node_reference");
+			Future<UserResponse> future = getClient().createUser(newUser);
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "user_incomplete_node_reference");
+		}
 	}
 
 	@Test
 	public void testUpdatePassword() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		User user = user();
-		String oldHash = user.getPasswordHash();
-		UserUpdateRequest updateRequest = new UserUpdateRequest();
-		updateRequest.setPassword("new_password");
+		try (NoTrx noTx = db.noTrx()) {
+			User user = user();
+			String oldHash = user.getPasswordHash();
+			UserUpdateRequest updateRequest = new UserUpdateRequest();
+			updateRequest.setPassword("new_password");
 
-		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse restUser = future.result();
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
+			latchFor(future);
+			assertSuccess(future);
+			UserResponse restUser = future.result();
 
-		test.assertUser(updateRequest, restUser);
+			test.assertUser(updateRequest, restUser);
 
-		try (Trx tx = db.trx()) {
-			User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
-			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
-			assertEquals(user.getUsername(), reloadedUser.getUsername());
-			assertEquals(user.getFirstname(), reloadedUser.getFirstname());
-			assertEquals(user.getLastname(), reloadedUser.getLastname());
-			assertEquals(user.getEmailAddress(), reloadedUser.getEmailAddress());
+			try (Trx tx = db.trx()) {
+				User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
+				assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
+				assertEquals(user.getUsername(), reloadedUser.getUsername());
+				assertEquals(user.getFirstname(), reloadedUser.getFirstname());
+				assertEquals(user.getLastname(), reloadedUser.getLastname());
+				assertEquals(user.getEmailAddress(), reloadedUser.getEmailAddress());
+			}
 		}
 	}
 
 	@Test
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		User user = user();
-		String oldHash = user.getPasswordHash();
-		role().revokePermissions(user, UPDATE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			User user = user();
+			String oldHash = user.getPasswordHash();
+			role().revokePermissions(user, UPDATE_PERM);
 
-		UserUpdateRequest request = new UserUpdateRequest();
-		request.setPassword("new_password");
-		Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
+			UserUpdateRequest request = new UserUpdateRequest();
+			request.setPassword("new_password");
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
-		User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().first();
-		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
+			User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().first();
+			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		User user = user();
-		String oldHash = user.getPasswordHash();
-		role().revokePermissions(user, UPDATE_PERM);
-		UserUpdateRequest updatedUser = new UserUpdateRequest();
-		updatedUser.setEmailAddress("n.user@spam.gentics.com");
-		updatedUser.setFirstname("Joe");
-		updatedUser.setLastname("Doe");
-		updatedUser.setUsername("new_user");
-		// updatedUser.addGroup(group().getName());
+		try (NoTrx noTx = db.noTrx()) {
+			User user = user();
+			String oldHash = user.getPasswordHash();
+			role().revokePermissions(user, UPDATE_PERM);
+			UserUpdateRequest updatedUser = new UserUpdateRequest();
+			updatedUser.setEmailAddress("n.user@spam.gentics.com");
+			updatedUser.setFirstname("Joe");
+			updatedUser.setLastname("Doe");
+			updatedUser.setUsername("new_user");
+			// updatedUser.addGroup(group().getName());
 
-		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
-		User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().first();
-		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
-		assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
-		assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser);
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
+			User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().first();
+			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
+			assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
+			assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
+		}
 	}
 
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
+		try (NoTrx noTx = db.noTrx()) {
+			// Create an user with a conflicting username
+			UserRoot userRoot = meshRoot().getUserRoot();
+			User user = userRoot.create("existing_username", user());
+			user.addGroup(group());
 
-		// Create an user with a conflicting username
-		UserRoot userRoot = meshRoot().getUserRoot();
-		User user = userRoot.create("existing_username", user());
-		user.addGroup(group());
+			UserUpdateRequest request = new UserUpdateRequest();
+			request.setUsername("existing_username");
 
-		UserUpdateRequest request = new UserUpdateRequest();
-		request.setUsername("existing_username");
-
-		Future<UserResponse> future = getClient().updateUser(user().getUuid(), request);
-		latchFor(future);
-		expectException(future, CONFLICT, "user_conflicting_username");
+			Future<UserResponse> future = getClient().updateUser(user().getUuid(), request);
+			latchFor(future);
+			expectException(future, CONFLICT, "user_conflicting_username");
+		}
 
 	}
 
 	@Test
 	public void testUpdateUserWithSameUsername() throws Exception {
-		User user = user();
+		try (NoTrx noTx = db.noTrx()) {
+			User user = user();
 
-		UserUpdateRequest request = new UserUpdateRequest();
-		request.setUsername(user.getUsername());
+			UserUpdateRequest request = new UserUpdateRequest();
+			request.setUsername(user.getUsername());
 
-		Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
+			latchFor(future);
+			assertSuccess(future);
+		}
 	}
 
 	// Create tests
 
 	@Test
 	public void testCreateUserWithConflictingUsername() throws Exception {
+		try (NoTrx noTx = db.noTrx()) {
+			// Create an user with a conflicting username
+			UserRoot userRoot = meshRoot().getUserRoot();
+			User user = userRoot.create("existing_username", user());
+			user.addGroup(group());
 
-		// Create an user with a conflicting username
-		UserRoot userRoot = meshRoot().getUserRoot();
-		User user = userRoot.create("existing_username", user());
-		user.addGroup(group());
+			// Add update permission to group in order to create the user in that group
+			role().grantPermissions(group(), CREATE_PERM);
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setUsername("existing_username");
+			newUser.setGroupUuid(group().getUuid());
+			newUser.setPassword("test1234");
 
-		// Add update permission to group in order to create the user in that group
-		role().grantPermissions(group(), CREATE_PERM);
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setUsername("existing_username");
-		newUser.setGroupUuid(group().getUuid());
-		newUser.setPassword("test1234");
-
-		Future<UserResponse> future = getClient().createUser(newUser);
-		latchFor(future);
-		expectException(future, CONFLICT, "user_conflicting_username");
+			Future<UserResponse> future = getClient().createUser(newUser);
+			latchFor(future);
+			expectException(future, CONFLICT, "user_conflicting_username");
+		}
 
 	}
 
 	@Test
 	public void testCreateUserWithNoPassword() throws Exception {
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setEmailAddress("n.user@spam.gentics.com");
-		newUser.setFirstname("Joe");
-		newUser.setLastname("Doe");
-		newUser.setUsername("new_user_test123");
-		newUser.setGroupUuid(group().getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setEmailAddress("n.user@spam.gentics.com");
+			newUser.setFirstname("Joe");
+			newUser.setLastname("Doe");
+			newUser.setUsername("new_user_test123");
+			newUser.setGroupUuid(group().getUuid());
 
-		Future<UserResponse> future = getClient().createUser(newUser);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "user_missing_password");
+			Future<UserResponse> future = getClient().createUser(newUser);
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "user_missing_password");
+		}
 	}
 
 	@Test
 	public void testCreateUserWithNoUsername() throws Exception {
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setEmailAddress("n.user@spam.gentics.com");
-		newUser.setFirstname("Joe");
-		newUser.setLastname("Doe");
-		newUser.setPassword("test123456");
+		try (NoTrx noTx = db.noTrx()) {
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setEmailAddress("n.user@spam.gentics.com");
+			newUser.setFirstname("Joe");
+			newUser.setLastname("Doe");
+			newUser.setPassword("test123456");
 
-		Future<UserResponse> future = getClient().createUser(newUser);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "user_missing_username");
+			Future<UserResponse> future = getClient().createUser(newUser);
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "user_missing_username");
+		}
 	}
 
 	@Test
@@ -750,59 +815,65 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateUpdate() {
-		// Create a user with minimal properties
-		UserCreateRequest request = new UserCreateRequest();
-		request.setEmailAddress("n.user@spam.gentics.com");
-		request.setUsername("new_user");
-		request.setPassword("test123456");
-		request.setGroupUuid(group().getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			// Create a user with minimal properties
+			UserCreateRequest request = new UserCreateRequest();
+			request.setEmailAddress("n.user@spam.gentics.com");
+			request.setUsername("new_user");
+			request.setPassword("test123456");
+			request.setGroupUuid(group().getUuid());
 
-		Future<UserResponse> future = getClient().createUser(request);
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse restUser = future.result();
-		test.assertUser(request, restUser);
+			Future<UserResponse> future = getClient().createUser(request);
+			latchFor(future);
+			assertSuccess(future);
+			UserResponse restUser = future.result();
+			test.assertUser(request, restUser);
 
-		UserUpdateRequest updateRequest = new UserUpdateRequest();
-		final String LASTNAME = "Epic Stark";
-		final String FIRSTNAME = "Tony Awesome";
-		final String USERNAME = "dummy_user_changed";
-		final String EMAIL = "t.stark@stark-industries.com";
+			UserUpdateRequest updateRequest = new UserUpdateRequest();
+			final String LASTNAME = "Epic Stark";
+			final String FIRSTNAME = "Tony Awesome";
+			final String USERNAME = "dummy_user_changed";
+			final String EMAIL = "t.stark@stark-industries.com";
 
-		updateRequest.setEmailAddress(EMAIL);
-		updateRequest.setFirstname(FIRSTNAME);
-		updateRequest.setLastname(LASTNAME);
-		updateRequest.setUsername(USERNAME);
-		updateRequest.setPassword("newPassword");
-		future = getClient().updateUser(restUser.getUuid(), updateRequest);
-		latchFor(future);
-		assertSuccess(future);
-		restUser = future.result();
-		assertEquals(LASTNAME, restUser.getLastname());
-		assertEquals(FIRSTNAME, restUser.getFirstname());
-		assertEquals(EMAIL, restUser.getEmailAddress());
-		assertEquals(USERNAME, restUser.getUsername());
+			updateRequest.setEmailAddress(EMAIL);
+			updateRequest.setFirstname(FIRSTNAME);
+			updateRequest.setLastname(LASTNAME);
+			updateRequest.setUsername(USERNAME);
+			updateRequest.setPassword("newPassword");
+			future = getClient().updateUser(restUser.getUuid(), updateRequest);
+			latchFor(future);
+			assertSuccess(future);
+			restUser = future.result();
+			assertEquals(LASTNAME, restUser.getLastname());
+			assertEquals(FIRSTNAME, restUser.getFirstname());
+			assertEquals(EMAIL, restUser.getEmailAddress());
+			assertEquals(USERNAME, restUser.getUsername());
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		UserCreateRequest request = new UserCreateRequest();
-		request.setEmailAddress("n.user@spam.gentics.com");
-		request.setFirstname("Joe");
-		request.setLastname("Doe");
-		request.setUsername("new_user");
-		request.setPassword("test123456");
-		request.setGroupUuid(group().getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			UserCreateRequest request = new UserCreateRequest();
+			request.setEmailAddress("n.user@spam.gentics.com");
+			request.setFirstname("Joe");
+			request.setLastname("Doe");
+			request.setUsername("new_user");
+			request.setPassword("test123456");
+			request.setGroupUuid(group().getUuid());
 
-		Future<UserResponse> future = getClient().createUser(request);
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse restUser = future.result();
-		test.assertUser(request, restUser);
+			Future<UserResponse> future = getClient().createUser(request);
+			latchFor(future);
+			assertSuccess(future);
+			UserResponse restUser = future.result();
+			try (NoTrx noTx2 = db.noTrx()) {
+				test.assertUser(request, restUser);
 
-		User user = boot.userRoot().findByUuid(restUser.getUuid()).toBlocking().single();
-		assertThat(restUser).matches(user);
+				User user = boot.userRoot().findByUuid(restUser.getUuid()).toBlocking().single();
+				assertThat(restUser).matches(user);
+			}
+		}
 	}
 
 	@Test
@@ -834,29 +905,31 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setEmailAddress("n.user@spam.gentics.com");
-		newUser.setFirstname("Joe");
-		newUser.setLastname("Doe");
-		newUser.setUsername("new_user");
-		newUser.setPassword("test123456");
-		newUser.setGroupUuid(group().getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setEmailAddress("n.user@spam.gentics.com");
+			newUser.setFirstname("Joe");
+			newUser.setLastname("Doe");
+			newUser.setUsername("new_user");
+			newUser.setPassword("test123456");
+			newUser.setGroupUuid(group().getUuid());
 
-		Future<UserResponse> createFuture = getClient().createUser(newUser);
-		latchFor(createFuture);
-		assertSuccess(createFuture);
-		UserResponse restUser = createFuture.result();
+			Future<UserResponse> createFuture = getClient().createUser(newUser);
+			latchFor(createFuture);
+			assertSuccess(createFuture);
+			UserResponse restUser = createFuture.result();
 
-		test.assertUser(newUser, restUser);
+			test.assertUser(newUser, restUser);
 
-		Future<UserResponse> readFuture = getClient().findUserByUuid(restUser.getUuid());
-		latchFor(readFuture);
-		assertSuccess(readFuture);
+			Future<UserResponse> readFuture = getClient().findUserByUuid(restUser.getUuid());
+			latchFor(readFuture);
+			assertSuccess(readFuture);
 
-		Future<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid());
-		latchFor(deleteFuture);
-		assertSuccess(deleteFuture);
-		expectResponseMessage(deleteFuture, "user_deleted", restUser.getUuid() + "/" + restUser.getUsername());
+			Future<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid());
+			latchFor(deleteFuture);
+			assertSuccess(deleteFuture);
+			expectResponseMessage(deleteFuture, "user_deleted", restUser.getUuid() + "/" + restUser.getUsername());
+		}
 	}
 
 	@Test
@@ -874,39 +947,40 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
+		try (NoTrx noTx = db.noTrx()) {
+			UserCreateRequest newUser = new UserCreateRequest();
+			newUser.setEmailAddress("n.user@spam.gentics.com");
+			newUser.setFirstname("Joe");
+			newUser.setLastname("Doe");
+			newUser.setUsername("new_user");
+			newUser.setPassword("test123456");
+			newUser.setGroupUuid(group().getUuid());
 
-		UserCreateRequest newUser = new UserCreateRequest();
-		newUser.setEmailAddress("n.user@spam.gentics.com");
-		newUser.setFirstname("Joe");
-		newUser.setLastname("Doe");
-		newUser.setUsername("new_user");
-		newUser.setPassword("test123456");
-		newUser.setGroupUuid(group().getUuid());
+			Future<UserResponse> createFuture = getClient().createUser(newUser);
+			latchFor(createFuture);
+			assertSuccess(createFuture);
+			UserResponse restUser = createFuture.result();
 
-		Future<UserResponse> createFuture = getClient().createUser(newUser);
-		latchFor(createFuture);
-		assertSuccess(createFuture);
-		UserResponse restUser = createFuture.result();
+			assertTrue(restUser.getEnabled());
+			String uuid = restUser.getUuid();
+			String name = restUser.getUsername();
 
-		assertTrue(restUser.getEnabled());
-		String uuid = restUser.getUuid();
-		String name = restUser.getUsername();
+			Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
+			latchFor(future);
+			assertSuccess(future);
+			expectResponseMessage(future, "user_deleted", uuid + "/" + name);
 
-		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "user_deleted", uuid + "/" + name);
+			try (Trx tx = db.trx()) {
+				User loadedUser = boot.userRoot().findByUuid(uuid).toBlocking().first();
+				assertNull("The user should have been deleted.", loadedUser);
+			}
 
-		try (Trx tx = db.trx()) {
-			User loadedUser = boot.userRoot().findByUuid(uuid).toBlocking().first();
-			assertNull("The user should have been deleted.", loadedUser);
+			// Load the user again and check whether it is disabled
+			Future<UserResponse> userFuture = getClient().findUserByUuid(uuid);
+			latchFor(future);
+			assertSuccess(future);
+			assertNull(userFuture.result());
 		}
-
-		// Load the user again and check whether it is disabled
-		Future<UserResponse> userFuture = getClient().findUserByUuid(uuid);
-		latchFor(future);
-		assertSuccess(future);
-		assertNull(userFuture.result());
 
 	}
 
@@ -927,21 +1001,22 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
+		try (NoTrx noTx = db.noTrx()) {
+			UserRoot userRoot = meshRoot().getUserRoot();
+			User user = userRoot.create("extraUser", user());
+			user.addGroup(group());
+			String uuid = user.getUuid();
+			assertNotNull(uuid);
+			role().grantPermissions(user, UPDATE_PERM);
+			role().grantPermissions(user, CREATE_PERM);
+			role().grantPermissions(user, READ_PERM);
 
-		UserRoot userRoot = meshRoot().getUserRoot();
-		User user = userRoot.create("extraUser", user());
-		user.addGroup(group());
-		String uuid = user.getUuid();
-		assertNotNull(uuid);
-		role().grantPermissions(user, UPDATE_PERM);
-		role().grantPermissions(user, CREATE_PERM);
-		role().grantPermissions(user, READ_PERM);
-
-		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		userRoot = meshRoot().getUserRoot();
-		assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid).toBlocking().first());
+			Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			userRoot = meshRoot().getUserRoot();
+			assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid).toBlocking().first());
+		}
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -959,34 +1034,36 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testDeleteByUUID2() throws Exception {
-		String name = "extraUser";
-		UserRoot userRoot = meshRoot().getUserRoot();
-		User extraUser = userRoot.create(name, user());
-		extraUser.addGroup(group());
-		String uuid = extraUser.getUuid();
-		role().grantPermissions(extraUser, DELETE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			String name = "extraUser";
+			UserRoot userRoot = meshRoot().getUserRoot();
+			User extraUser = userRoot.create(name, user());
+			extraUser.addGroup(group());
+			String uuid = extraUser.getUuid();
+			role().grantPermissions(extraUser, DELETE_PERM);
 
-		assertTrue(role().hasPermission(DELETE_PERM, extraUser));
+			assertTrue(role().hasPermission(DELETE_PERM, extraUser));
 
-		User user = userRoot.findByUuid(uuid).toBlocking().first();
-		assertEquals(1, user.getGroups().size());
-		assertTrue("The user should be enabled", user.isEnabled());
+			User user = userRoot.findByUuid(uuid).toBlocking().first();
+			assertEquals(1, user.getGroups().size());
+			assertTrue("The user should be enabled", user.isEnabled());
 
-		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "user_deleted", uuid + "/" + name);
-		userRoot.reload();
-		assertNull("The user was not deleted.", userRoot.findByUuid(uuid).toBlocking().first());
+			Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
+			latchFor(future);
+			assertSuccess(future);
+			expectResponseMessage(future, "user_deleted", uuid + "/" + name);
+			userRoot.reload();
+			assertNull("The user was not deleted.", userRoot.findByUuid(uuid).toBlocking().first());
 
-		// // Check whether the user was correctly disabled
-		// try (NoTrx noTx = db.noTrx()) {
-		// User user2 = userRoot.findByUuidBlocking(uuid);
-		// user2.reload();
-		// assertNotNull(user2);
-		// assertFalse("The user should have been disabled", user2.isEnabled());
-		// assertEquals(0, user2.getGroups().size());
-		// }
+			// // Check whether the user was correctly disabled
+			// try (NoTrx noTx = db.noTrx()) {
+			// User user2 = userRoot.findByUuidBlocking(uuid);
+			// user2.reload();
+			// assertNotNull(user2);
+			// assertFalse("The user should have been disabled", user2.isEnabled());
+			// assertEquals(0, user2.getGroups().size());
+			// }
+		}
 	}
 
 	@Test

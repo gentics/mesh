@@ -17,7 +17,7 @@ import com.gentics.mesh.test.definition.MultithreadingTestCases;
 
 import io.vertx.core.Future;
 
-public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticleTest implements MultithreadingTestCases, CrudVerticleTestCases {
+public abstract class AbstractBasicIsolatedCrudVerticleTest extends AbstractIsolatedRestVerticleTest implements MultithreadingTestCases, CrudVerticleTestCases {
 
 	protected void validateDeletion(Set<Future<GenericMessageResponse>> set, CyclicBarrier barrier) {
 		boolean foundDelete = false;

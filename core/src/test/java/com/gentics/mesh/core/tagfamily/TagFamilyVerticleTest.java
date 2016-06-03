@@ -40,13 +40,14 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
-import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
+import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 import io.vertx.core.Future;
 
-public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
+public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Autowired
 	private TagFamilyVerticle verticle;
@@ -61,130 +62,140 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws UnknownHostException, InterruptedException {
-		TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
-		assertNotNull(tagFamily);
+		try (NoTrx noTx = db.noTrx()) {
+			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
+			assertNotNull(tagFamily);
 
-		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		TagFamilyResponse response = future.result();
+			Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			TagFamilyResponse response = future.result();
 
-		assertNotNull(response);
-		assertEquals(tagFamily.getUuid(), response.getUuid());
+			assertNotNull(response);
+			assertEquals(tagFamily.getUuid(), response.getUuid());
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
-		String uuid = tagFamily.getUuid();
+		try (NoTrx noTx = db.noTrx()) {
+			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
+			String uuid = tagFamily.getUuid();
 
-		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid,
-				new RolePermissionParameter().setRoleUuid(role().getUuid()));
-		latchFor(future);
-		assertSuccess(future);
-		assertNotNull("The response did not contain the expected role permission field value", future.result().getRolePerms());
-		assertEquals("The response did not contain the expected amount of role permissions.", 4, future.result().getRolePerms().length);
+			Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid,
+					new RolePermissionParameter().setRoleUuid(role().getUuid()));
+			latchFor(future);
+			assertSuccess(future);
+			assertNotNull("The response did not contain the expected role permission field value", future.result().getRolePerms());
+			assertEquals("The response did not contain the expected amount of role permissions.", 4, future.result().getRolePerms().length);
+		}
 
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		Role role = role();
-		TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
-		String uuid = tagFamily.getUuid();
-		assertNotNull(tagFamily);
-		role.revokePermissions(tagFamily, READ_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			Role role = role();
+			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
+			String uuid = tagFamily.getUuid();
+			assertNotNull(tagFamily);
+			role.revokePermissions(tagFamily, READ_PERM);
 
-		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+		}
 	}
 
 	@Test
 	public void testReadMultiple2() {
-		TagFamily tagFamily = tagFamily("colors");
-		String uuid = tagFamily.getUuid();
-		Future<TagListResponse> future = getClient().findTags(PROJECT_NAME, uuid);
-		latchFor(future);
-		assertSuccess(future);
+		try (NoTrx noTx = db.noTrx()) {
+			TagFamily tagFamily = tagFamily("colors");
+			String uuid = tagFamily.getUuid();
+			Future<TagListResponse> future = getClient().findTags(PROJECT_NAME, uuid);
+			latchFor(future);
+			assertSuccess(future);
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadMultiple() throws UnknownHostException, InterruptedException {
-		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-		TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
-		String noPermTagUUID = noPermTagFamily.getUuid();
-		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-		// noPermTag.addProject(project());
-		assertNotNull(noPermTagFamily.getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
+			TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
+			String noPermTagUUID = noPermTagFamily.getUuid();
+			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
+			// noPermTag.addProject(project());
+			assertNotNull(noPermTagFamily.getUuid());
 
-		// Test default paging parameters
-		Future<TagFamilyListResponse> future = getClient().findTagFamilies(PROJECT_NAME);
-		latchFor(future);
-		assertSuccess(future);
-
-		TagFamilyListResponse restResponse = future.result();
-		assertEquals(25, restResponse.getMetainfo().getPerPage());
-		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The response did not contain the correct amount of items", tagFamilies().size(), restResponse.getData().size());
-
-		int perPage = 4;
-		// Extra Tags + permitted tag
-		int totalTagFamilies = tagFamilies().size();
-		int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
-		List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
-		for (int page = 1; page <= totalPages; page++) {
-			Future<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(page, perPage));
-			latchFor(tagPageFut);
+			// Test default paging parameters
+			Future<TagFamilyListResponse> future = getClient().findTagFamilies(PROJECT_NAME);
+			latchFor(future);
 			assertSuccess(future);
-			restResponse = tagPageFut.result();
-			int expectedItemsCount = perPage;
-			// Check the last page
-			if (page == 1) {
-				expectedItemsCount = 2;
+
+			TagFamilyListResponse restResponse = future.result();
+			assertEquals(25, restResponse.getMetainfo().getPerPage());
+			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+			assertEquals("The response did not contain the correct amount of items", tagFamilies().size(), restResponse.getData().size());
+
+			int perPage = 4;
+			// Extra Tags + permitted tag
+			int totalTagFamilies = tagFamilies().size();
+			int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
+			List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
+			for (int page = 1; page <= totalPages; page++) {
+				Future<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(page, perPage));
+				latchFor(tagPageFut);
+				assertSuccess(future);
+				restResponse = tagPageFut.result();
+				int expectedItemsCount = perPage;
+				// Check the last page
+				if (page == 1) {
+					expectedItemsCount = 2;
+				}
+				assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
+				assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+				assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page,
+						restResponse.getMetainfo().getCurrentPage());
+				assertEquals("The amount of total pages did not match the expected value. There are {" + totalTagFamilies + "} tags and {" + perPage
+						+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
+				assertEquals("The total tag count does not match.", totalTagFamilies, restResponse.getMetainfo().getTotalCount());
+
+				allTagFamilies.addAll(restResponse.getData());
 			}
-			assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
-			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-			assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page,
-					restResponse.getMetainfo().getCurrentPage());
-			assertEquals("The amount of total pages did not match the expected value. There are {" + totalTagFamilies + "} tags and {" + perPage
-					+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals("The total tag count does not match.", totalTagFamilies, restResponse.getMetainfo().getTotalCount());
+			assertEquals("Somehow not all users were loaded when loading all pages.", totalTagFamilies, allTagFamilies.size());
 
-			allTagFamilies.addAll(restResponse.getData());
+			// Verify that the no_perm_tag is not part of the response
+			List<TagFamilyResponse> filteredUserList = allTagFamilies.parallelStream().filter(restTag -> restTag.getUuid().equals(noPermTagUUID))
+					.collect(Collectors.toList());
+			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+
+			Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(-1, perPage));
+			latchFor(pageFuture);
+			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+
+			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(0, perPage));
+			latchFor(pageFuture);
+			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
+
+			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(1, -1));
+			latchFor(pageFuture);
+			expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
+
+			perPage = 25;
+			totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
+			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(4242, perPage));
+			latchFor(pageFuture);
+			TagFamilyListResponse tagList = pageFuture.result();
+			assertEquals(0, tagList.getData().size());
+			assertEquals(4242, tagList.getMetainfo().getCurrentPage());
+			assertEquals(25, tagList.getMetainfo().getPerPage());
+			assertEquals(totalTagFamilies, tagList.getMetainfo().getTotalCount());
+			assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 		}
-		assertEquals("Somehow not all users were loaded when loading all pages.", totalTagFamilies, allTagFamilies.size());
-
-		// Verify that the no_perm_tag is not part of the response
-		List<TagFamilyResponse> filteredUserList = allTagFamilies.parallelStream().filter(restTag -> restTag.getUuid().equals(noPermTagUUID))
-				.collect(Collectors.toList());
-		assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
-
-		Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(-1, perPage));
-		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
-
-		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(0, perPage));
-		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
-
-		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(1, -1));
-		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
-
-		perPage = 25;
-		totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
-		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(4242, perPage));
-		latchFor(pageFuture);
-		TagFamilyListResponse tagList = pageFuture.result();
-		assertEquals(0, tagList.getData().size());
-		assertEquals(4242, tagList.getMetainfo().getCurrentPage());
-		assertEquals(25, tagList.getMetainfo().getPerPage());
-		assertEquals(totalTagFamilies, tagList.getMetainfo().getTotalCount());
-		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 
 	}
 
@@ -238,13 +249,15 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateWithoutPerm() {
-		role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
-		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
-		request.setName("SuperDoll");
-		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
-		latchFor(future);
+		try (NoTrx noTx = db.noTrx()) {
+			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
+			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
+			request.setName("SuperDoll");
+			Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
+			latchFor(future);
 
-		expectException(future, FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
+			expectException(future, FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
+		}
 	}
 
 	@Test
@@ -259,86 +272,91 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String uuid;
-		TagFamily basicTagFamily = tagFamily("basic");
-		uuid = basicTagFamily.getUuid();
-		assertNotNull(project().getTagFamilyRoot().findByUuid(uuid).toBlocking().single());
+		try (NoTrx noTx = db.noTrx()) {
+			TagFamily basicTagFamily = tagFamily("basic");
+			String uuid = basicTagFamily.getUuid();
+			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid).toBlocking().single());
 
-		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
-		latchFor(future);
-		assertSuccess(future);
-		assertElement(project().getTagFamilyRoot(), uuid, false);
+			Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
+			latchFor(future);
+			assertSuccess(future);
+			assertElement(project().getTagFamilyRoot(), uuid, false);
+		}
 
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		TagFamily basicTagFamily = tagFamily("basic");
-		Role role = role();
-		role.revokePermissions(basicTagFamily, DELETE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			TagFamily basicTagFamily = tagFamily("basic");
+			Role role = role();
+			role.revokePermissions(basicTagFamily, DELETE_PERM);
 
-		assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
+			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
-		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid());
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
+			Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
 
-		assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
+			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
+		}
 
 	}
 
 	@Test
 	public void testUpdateWithConflictingName() {
-		String newName = "colors";
-		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
-		request.setName(newName);
+		try (NoTrx noTx = db.noTrx()) {
+			String newName = "colors";
+			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+			request.setName(newName);
 
-		Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request);
-		latchFor(future);
-		expectException(future, CONFLICT, "tagfamily_conflicting_name", newName);
+			Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request);
+			latchFor(future);
+			expectException(future, CONFLICT, "tagfamily_conflicting_name", newName);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdate() throws UnknownHostException, InterruptedException {
+		try (NoTrx noTx = db.noTrx()) {
+			TagFamily tagFamily = tagFamily("basic");
+			String uuid = tagFamily.getUuid();
+			String name = tagFamily.getName();
 
-		TagFamily tagFamily = tagFamily("basic");
-		String uuid = tagFamily.getUuid();
-		String name = tagFamily.getName();
+			// 1. Read the current tagfamily
+			Future<TagFamilyResponse> readTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
+			latchFor(readTagFut);
+			assertSuccess(readTagFut);
+			assertNotNull("The name of the tag should be loaded.", name);
+			String restName = readTagFut.result().getName();
+			assertNotNull("The tag name must be set.", restName);
+			assertEquals(name, restName);
 
-		// 1. Read the current tagfamily
-		Future<TagFamilyResponse> readTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
-		latchFor(readTagFut);
-		assertSuccess(readTagFut);
-		assertNotNull("The name of the tag should be loaded.", name);
-		String restName = readTagFut.result().getName();
-		assertNotNull("The tag name must be set.", restName);
-		assertEquals(name, restName);
+			// 2. Update the tagfamily
+			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+			request.setName("new Name");
+			TagFamilyUpdateRequest tagUpdateRequest = new TagFamilyUpdateRequest();
+			final String newName = "new Name";
+			tagUpdateRequest.setName(newName);
+			assertEquals(newName, tagUpdateRequest.getName());
 
-		// 2. Update the tagfamily
-		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
-		request.setName("new Name");
-		TagFamilyUpdateRequest tagUpdateRequest = new TagFamilyUpdateRequest();
-		final String newName = "new Name";
-		tagUpdateRequest.setName(newName);
-		assertEquals(newName, tagUpdateRequest.getName());
+			// 3. Send the request to the server
+			Future<TagFamilyResponse> updatedTagFut = getClient().updateTagFamily(PROJECT_NAME, uuid, tagUpdateRequest);
+			latchFor(updatedTagFut);
+			assertSuccess(updatedTagFut);
+			TagFamilyResponse tagFamily2 = updatedTagFut.result();
+			assertThat(tagFamily2).matches(tagFamily("basic"));
 
-		// 3. Send the request to the server
-		Future<TagFamilyResponse> updatedTagFut = getClient().updateTagFamily(PROJECT_NAME, uuid, tagUpdateRequest);
-		latchFor(updatedTagFut);
-		assertSuccess(updatedTagFut);
-		TagFamilyResponse tagFamily2 = updatedTagFut.result();
-		assertThat(tagFamily2).matches(tagFamily("basic"));
-
-		// 4. read the tag again and verify that it was changed
-		Future<TagFamilyResponse> reloadedTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
-		latchFor(reloadedTagFut);
-		assertSuccess(reloadedTagFut);
-		TagFamilyResponse reloadedTagFamily = reloadedTagFut.result();
-		assertEquals(request.getName(), reloadedTagFamily.getName());
-		assertThat(reloadedTagFamily).matches(tagFamily("basic"));
-
+			// 4. read the tag again and verify that it was changed
+			Future<TagFamilyResponse> reloadedTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
+			latchFor(reloadedTagFut);
+			assertSuccess(reloadedTagFut);
+			TagFamilyResponse reloadedTagFamily = reloadedTagFut.result();
+			assertEquals(request.getName(), reloadedTagFamily.getName());
+			assertThat(reloadedTagFamily).matches(tagFamily("basic"));
+		}
 	}
 
 	@Test
@@ -355,20 +373,22 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() {
-		TagFamily tagFamily = tagFamily("basic");
-		String uuid = tagFamily.getUuid();
-		String name = tagFamily.getName();
-		role().revokePermissions(tagFamily, UPDATE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			TagFamily tagFamily = tagFamily("basic");
+			String uuid = tagFamily.getUuid();
+			String name = tagFamily.getName();
+			role().revokePermissions(tagFamily, UPDATE_PERM);
 
-		// Update the tagfamily
-		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
-		request.setName("new Name");
+			// Update the tagfamily
+			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+			request.setName("new Name");
 
-		Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, uuid, request);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, uuid, request);
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		assertEquals(name, tagFamily.getName());
+			assertEquals(name, tagFamily.getName());
+		}
 	}
 
 	@Test
@@ -379,12 +399,14 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("New Name");
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().updateTagFamily(PROJECT_NAME, tagFamily("colors").getUuid(), request));
+		try (NoTrx noTx = db.noTrx()) {
+			CyclicBarrier barrier = prepareBarrier(nJobs);
+			Set<Future<?>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				set.add(getClient().updateTagFamily(PROJECT_NAME, tagFamily("colors").getUuid(), request));
+			}
+			validateSet(set, barrier);
 		}
-		validateSet(set, barrier);
 	}
 
 	@Test
@@ -392,13 +414,15 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Ignore("Not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		String uuid = tagFamily("colors").getUuid();
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findTagFamilyByUuid(PROJECT_NAME, uuid));
+		try (NoTrx noTx = db.noTrx()) {
+			String uuid = tagFamily("colors").getUuid();
+			CyclicBarrier barrier = prepareBarrier(nJobs);
+			Set<Future<?>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				set.add(getClient().findTagFamilyByUuid(PROJECT_NAME, uuid));
+			}
+			validateSet(set, barrier);
 		}
-		validateSet(set, barrier);
 	}
 
 	@Test
@@ -406,13 +430,15 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Ignore("Not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
-		String uuid = project().getUuid();
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<GenericMessageResponse>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().deleteTagFamily(PROJECT_NAME, uuid));
+		try (NoTrx noTx = db.noTrx()) {
+			String uuid = project().getUuid();
+			CyclicBarrier barrier = prepareBarrier(nJobs);
+			Set<Future<GenericMessageResponse>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				set.add(getClient().deleteTagFamily(PROJECT_NAME, uuid));
+			}
+			validateDeletion(set, barrier);
 		}
-		validateDeletion(set, barrier);
 	}
 
 	@Test
@@ -434,14 +460,16 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		int nJobs = 200;
-		Set<Future<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily("colors").getUuid()));
-		}
-		for (Future<?> future : set) {
-			latchFor(future);
-			assertSuccess(future);
+		try (NoTrx noTx = db.noTrx()) {
+			int nJobs = 200;
+			Set<Future<?>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				set.add(getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily("colors").getUuid()));
+			}
+			for (Future<?> future : set) {
+				latchFor(future);
+				assertSuccess(future);
+			}
 		}
 	}
 
