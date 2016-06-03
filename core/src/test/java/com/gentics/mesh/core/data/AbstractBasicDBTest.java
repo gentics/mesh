@@ -6,6 +6,11 @@ import org.junit.Before;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.test.AbstractDBTest;
 
+/**
+ * @deprecated Use {@link AbstractIsolatedBasicDBTest} instead.
+ *
+ */
+@Deprecated
 public class AbstractBasicDBTest extends AbstractDBTest {
 
 	protected NoTrx tx;
