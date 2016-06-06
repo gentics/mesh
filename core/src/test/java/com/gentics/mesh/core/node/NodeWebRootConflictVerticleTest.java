@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -47,7 +48,55 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		return list;
 	}
 
-	// Webroot Path Uniqueness Tests
+	/**
+	 * Create two published nodes and move the second node into the folder of the first node. A conflict should occur since the node published segment path
+	 * conflict with each other.
+	 */
+	@Test
+	public void testDuplicateDueMove() {
+
+		String conflictingName = "conflictName";
+		try (Trx trx = db.trx()) {
+			Node folderA = folder("2014");
+
+			// 1. Create nodeA
+			NodeCreateRequest requestA = new NodeCreateRequest();
+			requestA.setLanguage("en");
+			requestA.setParentNodeUuid(folderA.getUuid());
+			requestA.setSchema(new SchemaReference().setName("content"));
+			requestA.getFields().put("name", FieldUtil.createStringField("nodeA"));
+			requestA.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			NodeResponse nodeA = call(() -> getClient().createNode(PROJECT_NAME, requestA));
+
+			// 2. Publish nodeA
+			call(() -> getClient().publishNode(PROJECT_NAME, nodeA.getUuid()));
+
+			// 3. Create nodeB
+			Node folderB = folder("2015");
+			NodeCreateRequest requestB = new NodeCreateRequest();
+			requestB.setLanguage("en");
+			requestB.setParentNodeUuid(folderB.getUuid());
+			requestB.setSchema(new SchemaReference().setName("content"));
+			requestB.getFields().put("name", FieldUtil.createStringField("nodeB"));
+			requestB.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+			NodeResponse nodeB = call(() -> getClient().createNode(PROJECT_NAME, requestB));
+
+			// 4. Publish nodeB
+			call(() -> getClient().publishNode(PROJECT_NAME, nodeB.getUuid()));
+
+			// 5. Update node b to create a draft which would not conflict with node a
+			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+			nodeUpdateRequest.setVersion(nodeB.getVersion());
+			nodeUpdateRequest.getFields().put("filename", FieldUtil.createStringField("nodeB"));
+			nodeUpdateRequest.setLanguage("en");
+			call(() -> getClient().updateNode(PROJECT_NAME, nodeB.getUuid(), nodeUpdateRequest));
+
+			// 6. Move Node B into FolderA
+			call(() -> getClient().moveNode(PROJECT_NAME, nodeB.getUuid(), folderA.getUuid()), CONFLICT, "node_conflicting_segmentfield_move",
+					"filename", conflictingName);
+
+		}
+	}
 
 	@Test
 	public void testCreateDuplicateWebrootPath() {

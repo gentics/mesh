@@ -910,8 +910,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// remove an existing published edge
 		EdgeFrame currentPublished = getGraphFieldContainerEdge(languageTag, releaseUuid, Type.PUBLISHED);
 		if (currentPublished != null) {
-			currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null)
-					.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_publish");
+			currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null).updateWebrootPathInfo(releaseUuid,
+					"node_conflicting_segmentfield_publish");
 			currentPublished.remove();
 		}
 
@@ -1272,13 +1272,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			throw error(BAD_REQUEST, "node_move_error_same_nodes");
 		}
 
-		// TODO check whether there is a node in the target node that has the
-		// same name. We do this to prevent issues for the webroot api
 		return db.trx(() -> {
 			setParentNode(releaseUuid, targetNode);
-			// update the webroot path info for every field container.
-			getGraphFieldContainers().stream()
+			// update the webroot path info for every field container to ensure
+
+			// Update published graph field containers
+			getGraphFieldContainers(releaseUuid, Type.PUBLISHED).stream()
 					.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
+
+			// Update draft graph field containers
+			getGraphFieldContainers(releaseUuid, Type.DRAFT).stream()
+					.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
+
 			SearchQueueBatch batch = createIndexBatch(STORE_ACTION);
 			return batch;
 		}).process().map(i -> {
