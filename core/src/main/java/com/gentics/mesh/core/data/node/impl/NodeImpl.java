@@ -203,6 +203,41 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public void assertPublishConsistency(InternalActionContext ac) {
+		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		boolean isPublished = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), releaseUuid, "published") != null;
+
+		// A published node must have also a published parent node. 
+		if (isPublished) {
+			Node parentNode = getParentNode(releaseUuid);
+
+			//TODO parent nodes can be null if this is the project base node
+
+			// Check whether the parent node has a published field container for the given release and language
+			NodeGraphFieldContainer fieldContainer = parentNode.findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), releaseUuid,
+					"published");
+			if (fieldContainer == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Could not find published field container for node {" + parentNode.getUuid() + "}");
+				}
+				throw error(BAD_REQUEST, "node_error_parent_containers_not_published", parentNode.getUuid());
+			}
+		}
+
+		// A draft node can't have any published child nodes.
+		if (!isPublished) {
+
+			for (Node node : getChildren()) {
+				NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), releaseUuid, "published");
+				if (fieldContainer != null) {
+					//TODO correct i18n
+					throw error(BAD_REQUEST, "node_error_parent_containers_not_published", node.getUuid());
+				}
+			}
+		}
+	}
+
+	@Override
 	public Observable<String> getPath(InternalActionContext ac) {
 		List<Observable<String>> segments = new ArrayList<>();
 		segments.add(getPathSegment(ac));
@@ -803,6 +838,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			List<NodeGraphFieldContainer> published = unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser()))
 					.collect(Collectors.toList());
 
+			assertPublishConsistency(ac);
 			// reindex
 			return createIndexBatch(STORE_ACTION, published, releaseUuid, Type.PUBLISHED);
 		}).process().map(i -> {

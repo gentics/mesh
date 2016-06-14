@@ -81,7 +81,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param language
 	 * @param release
-	 * @param type type
+	 * @param type
+	 *            type
 	 * @return
 	 */
 	NodeGraphFieldContainer getGraphFieldContainer(Language language, Release release, Type type);
@@ -105,22 +106,21 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, String releaseUuid, Type type);
 
 	/**
-	 * Create a new graph field container for the given language and assign the schema version of the release to the container.
-	 * The graph field container will be the (only) DRAFT version for the language/release. If this is the first container for the
-	 * language, it will also be the INITIAL version. Otherwise the container will be a clone of the last draft and will have the next version
-	 * number
+	 * Create a new graph field container for the given language and assign the schema version of the release to the container. The graph field container will
+	 * be the (only) DRAFT version for the language/release. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
+	 * container will be a clone of the last draft and will have the next version number
 	 * 
 	 * @param language
-	 * @param release release
-	 * @param user user
+	 * @param release
+	 *            release
+	 * @param user
+	 *            user
 	 * @return
 	 */
 	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user);
 
 	/**
-	 * Like {@link #createGraphFieldContainer(Language, Release, User)}, but let
-	 * the new graph field container be a clone of the given original (if not
-	 * null)
+	 * Like {@link #createGraphFieldContainer(Language, Release, User)}, but let the new graph field container be a clone of the given original (if not null)
 	 * 
 	 * @param language
 	 * @param release
@@ -171,7 +171,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return a page of tags that are assigned to the node.
-	 * @param release release
+	 * 
+	 * @param release
+	 *            release
 	 * @param params
 	 * 
 	 * @return
@@ -188,8 +190,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return a list of language names for versions of given type in the given release
-	 * @param release release
-	 * @param type container version type
+	 * 
+	 * @param release
+	 *            release
+	 * @param type
+	 *            container version type
 	 * @return
 	 */
 	List<String> getAvailableLanguageNames(Release release, Type type);
@@ -228,21 +233,26 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @param requestUser
 	 *            user
-	 * @param releaseUuid release Uuid
-	 * @param type edge type
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param type
+	 *            edge type
 	 * @return
 	 */
 	List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, Type type);
 
 	/**
 	 * Returns the parent node of this node.
-	 * @param releaseUuid release Uuid
+	 * 
+	 * @param releaseUuid
+	 *            release Uuid
 	 * @return
 	 */
 	Node getParentNode(String releaseUuid);
 
 	/**
 	 * Set the parent node of this node
+	 * 
 	 * @param releaseUuid
 	 * @param parentNode
 	 */
@@ -264,7 +274,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param creator
 	 * @param schemaVersion
 	 * @param project
-	 * qparam release
+	 *            qparam release
 	 * @return
 	 */
 	Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release);
@@ -274,14 +284,16 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param requestUser
 	 * @param languageTags
-	 * @param releaseUuid release Uuid
-	 * @param type edge type
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param type
+	 *            edge type
 	 * @param pagingParameter
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, Type type, PagingParameter pagingParameter)
-			throws InvalidArgumentException;
+	PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, Type type,
+			PagingParameter pagingParameter) throws InvalidArgumentException;
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
@@ -297,8 +309,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * there is no de version the en version will be selected and returned.
 	 * 
 	 * @param languageTags
-	 * @param releaseUuid release Uuid
-	 * @param version requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param version
+	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
 	 * @return Next matching field container or null when no language matched
 	 */
 	NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags, String releaseUuid, String version);
@@ -387,8 +401,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	Observable<Void> takeOffline(InternalActionContext ac, String languageTag);
 
 	/**
-	 * Delete the language container for the given language from the release
-	 * This will not actually delete the container, but will remove the DRAFT and PUBLISHED edge to the container for the release
+	 * Delete the language container for the given language from the release This will not actually delete the container, but will remove the DRAFT and
+	 * PUBLISHED edge to the container for the release
 	 * 
 	 * @param release
 	 * @param language
@@ -416,7 +430,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Resolve the given path and return the path object that contains the resolved nodes.
 	 *
 	 * @param releaseUuid
-	 * @param type edge type
+	 * @param type
+	 *            edge type
 	 * @param nodePath
 	 * @param pathStack
 	 * @return
@@ -425,8 +440,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
-	 * @param releaseUuid release Uuid
-	 * @param type edge type
+	 * 
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param type
+	 *            edge type
 	 * @param segment
 	 * 
 	 * @return Segment information or null if this node is not providing the given segment
@@ -436,8 +454,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
 	 * node.
-	 * @param releaseUuid release Uuid
-	 * @param type edge type
+	 * 
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param type
+	 *            edge type
 	 * @param languageTag
 	 * 
 	 * @return
@@ -448,8 +469,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
 	 * of the node.
-	 * @param releaseUuid release Uuid
-	 * @param type edge type
+	 * 
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param type
+	 *            edge type
 	 * @param languageTag
 	 *
 	 * @return
@@ -465,8 +489,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void delete(boolean ignoreChecks, SearchQueueBatch batch);
 
 	/**
-	 * Delete the node from the given release.
-	 * This will also delete children from the release.
+	 * Delete the node from the given release. This will also delete children from the release.
 	 * 
 	 * If the node is deleted from its last release, it is (permanently) deleted from the db
 	 *
@@ -497,5 +520,18 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param container
 	 */
 	void setSchemaContainer(SchemaContainer container);
+
+	/**
+	 * Check the publish consistency by validating the following constraints:
+	 * 
+	 * <ul>
+	 * <li>A node can only be published if all parent nodes are also published (within the scope of the release)
+	 * <li>A published node can only be moved if the target node is also a published node.
+	 * <li>A node can only be taken offline if the node has no children which are still published.
+	 * </ul>
+	 * 
+	 * @param ac Current action context
+	 */
+	void assertPublishConsistency(InternalActionContext ac);
 
 }
