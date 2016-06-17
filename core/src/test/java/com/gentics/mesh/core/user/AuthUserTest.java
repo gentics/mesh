@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.user;
 
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -17,7 +18,7 @@ public class AuthUserTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testAuthorization() throws Exception {
-		RoutingContext rc = getMockedRoutingContext("");
+		RoutingContext rc = getMockedRoutingContext();
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 		Language targetNode = english();

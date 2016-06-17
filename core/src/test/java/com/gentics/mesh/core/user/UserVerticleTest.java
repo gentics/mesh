@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -54,9 +55,9 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -138,7 +139,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			User user = user();
 			String uuid = user.getUuid();
 
-			Future<UserResponse> future = getClient().findUserByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+			Future<UserResponse> future = getClient().findUserByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()));
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
@@ -251,7 +252,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			int perPage = 2;
 			int totalUsers = 3 + nUsers;
 			int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
-			future = getClient().findUsers(new PagingParameter(3, perPage));
+			future = getClient().findUsers(new PagingParameters(3, perPage));
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -267,7 +268,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<UserResponse> allUsers = new ArrayList<>();
 			for (int page = 1; page < totalPages; page++) {
-				Future<UserListResponse> pageFuture = getClient().findUsers(new PagingParameter(page, perPage));
+				Future<UserListResponse> pageFuture = getClient().findUsers(new PagingParameters(page, perPage));
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -281,11 +282,11 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			future = getClient().findUsers(new PagingParameter(1, -1));
+			future = getClient().findUsers(new PagingParameters(1, -1));
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findUsers(new PagingParameter(4242, 25));
+			future = getClient().findUsers(new PagingParameters(4242, 25));
 			latchFor(future);
 			assertSuccess(future);
 
@@ -300,7 +301,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testInvalidPageParameter() {
-		Future<UserListResponse> future = getClient().findUsers(new PagingParameter(1, 0));
+		Future<UserListResponse> future = getClient().findUsers(new PagingParameters(1, 0));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -309,7 +310,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testInvalidPageParameter2() {
-		Future<UserListResponse> future = getClient().findUsers(new PagingParameter(-1, 25));
+		Future<UserListResponse> future = getClient().findUsers(new PagingParameters(-1, 25));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 	}
@@ -453,7 +454,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testCreateUserWithNodeReference() {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = folder("2015");
-			InternalActionContext ac = getMockedInternalActionContext("");
+			InternalActionContext ac = getMockedInternalActionContext(user());
 			assertTrue(user().hasPermissionAsync(ac, node, READ_PERM).toBlocking().first());
 
 			NodeReferenceImpl reference = new NodeReferenceImpl();
@@ -498,8 +499,8 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = folder("2015");
-			Future<UserListResponse> userListResponseFuture = getClient().findUsers(new PagingParameter().setPerPage(100),
-					new NodeRequestParameter().setExpandedFieldNames("nodeReference").setLanguages("en"));
+			Future<UserListResponse> userListResponseFuture = getClient().findUsers(new PagingParameters().setPerPage(100),
+					new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en"));
 			latchFor(userListResponseFuture);
 			assertSuccess(userListResponseFuture);
 			UserListResponse userResponse = userListResponseFuture.result();
@@ -541,7 +542,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		UserResponse userResponse = future.result();
 
 		Future<UserResponse> userResponseFuture = getClient().findUserByUuid(userResponse.getUuid(),
-				new NodeRequestParameter().setExpandedFieldNames("nodeReference").setLanguages("en"));
+				new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en"));
 		latchFor(userResponseFuture);
 		assertSuccess(userResponseFuture);
 		UserResponse userResponse2 = userResponseFuture.result();

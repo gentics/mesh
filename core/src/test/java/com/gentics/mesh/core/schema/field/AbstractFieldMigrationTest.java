@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.field;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -19,7 +20,6 @@ import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -51,6 +51,7 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.VersionNumber;
 
 /**
  * Base class for all field migration tests

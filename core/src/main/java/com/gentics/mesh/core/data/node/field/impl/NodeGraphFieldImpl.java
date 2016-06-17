@@ -17,6 +17,8 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
 
 import rx.Observable;
@@ -42,17 +44,18 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	public Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		// TODO handle null across all types
 		//if (getNode() != null) {
-		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey) || ac.getExpandAllFlag();
+		NodeParameters parameters = new NodeParameters(ac);
+		boolean expandField = ac.getNodeParameters().getExpandedFieldnames().contains(fieldKey) || parameters.getExpandAll();
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			return getNode().transformToRestSync(ac, level, languageTags.toArray(new String[languageTags.size()]));
 		} else {
 			NodeFieldImpl nodeField = new NodeFieldImpl();
 			Node node = getNode();
 			nodeField.setUuid(node.getUuid());
-			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 				nodeField.setPath(WebRootLinkReplacer.getInstance()
-						.resolve(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersion()), node,
-								ac.getResolveLinksType(), languageTags.toArray(new String[languageTags.size()]))
+						.resolve(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersioningParameters().getVersion()), node,
+								ac.getNodeParameters().getResolveLinks(), languageTags.toArray(new String[languageTags.size()]))
 						.toBlocking().first());
 			}
 			return Observable.just(nodeField);

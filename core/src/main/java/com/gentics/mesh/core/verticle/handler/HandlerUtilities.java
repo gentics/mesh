@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.UUIDUtil;
 
 import rx.Observable;
@@ -166,7 +166,7 @@ public final class HandlerUtilities {
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();
 
-			PagingParameter pagingInfo = ac.getPagingParameter();
+			PagingParameters pagingInfo = new PagingParameters(ac);
 			PageImpl<? extends T> page = root.findAll(ac, pagingInfo);
 			return page.transformToRest(ac, 0);
 

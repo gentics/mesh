@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.fail;
 
@@ -18,7 +19,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.query.impl.TakeOfflineParameter;
+import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -99,9 +100,9 @@ public class NodePublishVerticleTests extends AbstractIsolatedRestVerticleTest {
 
 		//3. Take sub nodes offline
 		db.noTrx(() -> {
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new TakeOfflineParameter().setRecursive(false)));
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new TakeOfflineParameter().setRecursive(true)));
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, folder("2014").getUuid(), new TakeOfflineParameter().setRecursive(true)));
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new TakeOfflineParameters().setRecursive(false)));
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new TakeOfflineParameters().setRecursive(true)));
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, folder("2014").getUuid(), new TakeOfflineParameters().setRecursive(true)));
 			return null;
 		});
 

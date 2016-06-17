@@ -1,19 +1,19 @@
-package com.gentics.mesh.query.impl;
+package com.gentics.mesh.parameter.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.NumberUtils.toInteger;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.query.QueryParameterProvider;
-import com.gentics.mesh.util.HttpQueryUtils;
+import com.gentics.mesh.handler.ActionContext;
 
 /**
  * Crop and resize parameters for image manipulation.
  */
-public class ImageManipulationParameter implements QueryParameterProvider {
+public class ImageManipulationParameters extends AbstractParameters {
 
 	public static final String WIDTH_QUERY_PARAM_KEY = "width";
 	public static final String HEIGHT_QUERY_PARAM_KEY = "height";
@@ -31,6 +31,23 @@ public class ImageManipulationParameter implements QueryParameterProvider {
 	private Integer cropw;
 	private Integer croph;
 
+	public ImageManipulationParameters(ActionContext ac) {
+		super(ac);
+	}
+
+	public ImageManipulationParameters() {
+	}
+
+	@Override
+	protected void constructFrom(ActionContext ac) {
+		setHeight(toInteger(ac.getParameter(HEIGHT_QUERY_PARAM_KEY), null));
+		setWidth(toInteger(ac.getParameter(WIDTH_QUERY_PARAM_KEY), null));
+		setCroph(toInteger(ac.getParameter(CROP_HEIGHT_QUERY_PARAM_KEY), null));
+		setCropw(toInteger(ac.getParameter(CROP_WIDTH_QUERY_PARAM_KEY), null));
+		setStartx(toInteger(ac.getParameter(CROP_X_QUERY_PARAM_KEY), null));
+		setStarty(toInteger(ac.getParameter(CROP_Y_QUERY_PARAM_KEY), null));
+	}
+
 	/**
 	 * Return the image width.
 	 * 
@@ -46,7 +63,7 @@ public class ImageManipulationParameter implements QueryParameterProvider {
 	 * @param width
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameter setWidth(Integer width) {
+	public ImageManipulationParameters setWidth(Integer width) {
 		this.width = width;
 		return this;
 	}
@@ -66,7 +83,7 @@ public class ImageManipulationParameter implements QueryParameterProvider {
 	 * @param height
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameter setHeight(Integer height) {
+	public ImageManipulationParameters setHeight(Integer height) {
 		this.height = height;
 		return this;
 	}
@@ -86,7 +103,7 @@ public class ImageManipulationParameter implements QueryParameterProvider {
 	 * @param startx
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameter setStartx(Integer startx) {
+	public ImageManipulationParameters setStartx(Integer startx) {
 		this.startx = startx;
 		return this;
 	}
@@ -106,7 +123,7 @@ public class ImageManipulationParameter implements QueryParameterProvider {
 	 * @param starty
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameter setStarty(Integer starty) {
+	public ImageManipulationParameters setStarty(Integer starty) {
 		this.starty = starty;
 		return this;
 	}
@@ -126,7 +143,7 @@ public class ImageManipulationParameter implements QueryParameterProvider {
 	 * @param croph
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameter setCroph(Integer croph) {
+	public ImageManipulationParameters setCroph(Integer croph) {
 		this.croph = croph;
 		return this;
 	}
@@ -146,72 +163,21 @@ public class ImageManipulationParameter implements QueryParameterProvider {
 	 * @param cropw
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameter setCropw(Integer cropw) {
+	public ImageManipulationParameters setCropw(Integer cropw) {
 		this.cropw = cropw;
 		return this;
 	}
 
-	/**
-	 * Parse the query string and set the image manipulation parameters.
-	 * 
-	 * @param query
-	 * @return
-	 */
-	public static ImageManipulationParameter fromQuery(String query) {
-		ImageManipulationParameter parameter = new ImageManipulationParameter();
-		Map<String, String> parameters = HttpQueryUtils.splitQuery(query);
-		parameter.setHeight(toInteger(parameters.get(HEIGHT_QUERY_PARAM_KEY), null));
-		parameter.setWidth(toInteger(parameters.get(WIDTH_QUERY_PARAM_KEY), null));
-		parameter.setCroph(toInteger(parameters.get(CROP_HEIGHT_QUERY_PARAM_KEY), null));
-		parameter.setCropw(toInteger(parameters.get(CROP_WIDTH_QUERY_PARAM_KEY), null));
-		parameter.setStartx(toInteger(parameters.get(CROP_X_QUERY_PARAM_KEY), null));
-		parameter.setStarty(toInteger(parameters.get(CROP_Y_QUERY_PARAM_KEY), null));
-		return parameter;
-	}
-
 	@Override
-	public String getQueryParameters() {
-		StringBuilder query = new StringBuilder();
-		if (width != null) {
-			if (query.length() != 0) {
-				query.append("&");
-			}
-			query.append(WIDTH_QUERY_PARAM_KEY + "=" + width);
-		}
-		if (height != null) {
-			if (query.length() != 0) {
-				query.append("&");
-			}
-			query.append(HEIGHT_QUERY_PARAM_KEY + "=" + height);
-		}
-
-		// crop
-		if (startx != null) {
-			if (query.length() != 0) {
-				query.append("&");
-			}
-			query.append(CROP_X_QUERY_PARAM_KEY + "=" + startx);
-		}
-		if (starty != null) {
-			if (query.length() != 0) {
-				query.append("&");
-			}
-			query.append(CROP_Y_QUERY_PARAM_KEY + "=" + starty);
-		}
-		if (croph != null) {
-			if (query.length() != 0) {
-				query.append("&");
-			}
-			query.append(CROP_HEIGHT_QUERY_PARAM_KEY + "=" + croph);
-		}
-		if (cropw != null) {
-			if (query.length() != 0) {
-				query.append("&");
-			}
-			query.append(CROP_WIDTH_QUERY_PARAM_KEY + "=" + cropw);
-		}
-
-		return query.toString();
+	protected Map<String, Object> getParameters() {
+		Map<String, Object> map = new HashMap<>();
+		map.put(WIDTH_QUERY_PARAM_KEY, width);
+		map.put(HEIGHT_QUERY_PARAM_KEY, height);
+		map.put(CROP_X_QUERY_PARAM_KEY, startx);
+		map.put(CROP_Y_QUERY_PARAM_KEY, starty);
+		map.put(CROP_HEIGHT_QUERY_PARAM_KEY, croph);
+		map.put(CROP_WIDTH_QUERY_PARAM_KEY, cropw);
+		return map;
 	}
 
 	/**
@@ -223,21 +189,16 @@ public class ImageManipulationParameter implements QueryParameterProvider {
 		return width != null || height != null || croph != null || cropw != null || startx != null || starty != null;
 	}
 
-	@Override
-	public String toString() {
-		return getQueryParameters();
-	}
-
 	/**
 	 * * Validate the set parameters and throw an exception when an invalid set of parameters has been detected.
 	 */
 	public void validate() {
 		if (width != null && width < 1) {
-			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameter.WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
+			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		}
 
 		if (height != null && height < 1) {
-			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameter.HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
+			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		}
 
 		// Check whether all required crop parameters have been set when at least one crop parameter has been set.
@@ -249,22 +210,22 @@ public class ImageManipulationParameter implements QueryParameterProvider {
 			}
 
 			if (croph != null && croph <= 0) {
-				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameter.CROP_HEIGHT_QUERY_PARAM_KEY,
+				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.CROP_HEIGHT_QUERY_PARAM_KEY,
 						String.valueOf(croph));
 			}
 
 			if (cropw != null && cropw <= 0) {
-				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameter.CROP_WIDTH_QUERY_PARAM_KEY,
+				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.CROP_WIDTH_QUERY_PARAM_KEY,
 						String.valueOf(cropw));
 			}
 
 			if (startx != null && startx <= -1) {
-				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameter.CROP_X_QUERY_PARAM_KEY,
+				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameters.CROP_X_QUERY_PARAM_KEY,
 						String.valueOf(startx));
 			}
 
 			if (starty != null && starty <= -1) {
-				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameter.CROP_Y_QUERY_PARAM_KEY,
+				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameters.CROP_Y_QUERY_PARAM_KEY,
 						String.valueOf(starty));
 			}
 

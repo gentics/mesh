@@ -23,7 +23,7 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 
 import io.vertx.core.Future;
 
@@ -287,7 +287,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		createUser(username);
 
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()),
-				new PagingParameter().setPerPage(0));
+				new PagingParameters().setPerPage(0));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

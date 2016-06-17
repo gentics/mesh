@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -24,7 +24,8 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -125,7 +126,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 		// get original parent uuid
 		String oldParentUuid = call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new NodeRequestParameter().draft()))
+				() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft()))
 						.getParentNode().getUuid();
 
 		Release initialRelease = project.getInitialRelease();
@@ -137,16 +138,16 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 		// move in initial release
 		call(() -> getClient().moveNode(PROJECT_NAME, movedNode.getUuid(), targetNode.getUuid(),
-				new NodeRequestParameter().setRelease(initialRelease.getName())));
+				new VersioningParameters().setRelease(initialRelease.getName())));
 
 		// old parent for new release
 		assertThat(call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new NodeRequestParameter().draft()))
+				() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft()))
 						.getParentNode().getUuid()).as("Parent Uuid in new release").isEqualTo(oldParentUuid);
 
 		// new parent for initial release
 		assertThat(call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new NodeRequestParameter().setRelease(initialRelease.getName()).draft()))
+				() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().setRelease(initialRelease.getName()).draft()))
 						.getParentNode().getUuid()).as("Parent Uuid in initial release").isEqualTo(targetNode.getUuid());
 	}
 }

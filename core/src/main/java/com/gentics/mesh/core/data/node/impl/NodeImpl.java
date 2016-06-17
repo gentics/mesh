@@ -46,7 +46,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
@@ -84,14 +83,19 @@ import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.impl.NavigationParameters;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.query.impl.TakeOfflineParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -120,8 +124,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<String> getPathSegment(InternalActionContext ac) {
-		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), ac.getRelease(getProject()).getUuid(),
-				ac.getVersion());
+		NodeParameters parameters = ac.getNodeParameters();
+		VersioningParameters versioningParameters = ac.getVersioningParameters();
+		NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(),
+				ac.getRelease(getProject()).getUuid(), versioningParameters.getVersion());
 		if (container != null) {
 			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
@@ -205,18 +211,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void assertPublishConsistency(InternalActionContext ac) {
-		String releaseUuid = ac.getRelease(getProject()).getUuid();
-		boolean isPublished = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), releaseUuid, "published") != null;
 
-		// A published node must have also a published parent node. 
+		NodeParameters parameters = new NodeParameters(ac);
+
+		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		boolean isPublished = findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid, "published") != null;
+
+		// A published node must have also a published parent node.
 		if (isPublished) {
 			Node parentNode = getParentNode(releaseUuid);
 
-			//Only assert consistency of parent nodes which are not project base nodes.
+			// Only assert consistency of parent nodes which are not project base nodes.
 			if (!parentNode.getUuid().equals(getProject().getBaseNode().getUuid())) {
 
 				// Check whether the parent node has a published field container for the given release and language
-				NodeGraphFieldContainer fieldContainer = parentNode.findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), releaseUuid,
+				NodeGraphFieldContainer fieldContainer = parentNode.findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid,
 						"published");
 				if (fieldContainer == null) {
 					log.error("Could not find published field container for node {" + parentNode.getUuid() + "} in release {" + releaseUuid + "}");
@@ -229,7 +238,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (!isPublished) {
 
 			for (Node node : getChildren()) {
-				NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), releaseUuid, "published");
+				NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid,
+						"published");
 				if (fieldContainer != null) {
 					log.error("Found published field container for node {" + node.getUuid() + "} in release {" + releaseUuid + "}. Node is child of {"
 							+ getUuid() + "}");
@@ -509,6 +519,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		NodeParameters nodeParameters = new NodeParameters(ac);
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
 		try {
@@ -536,7 +549,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			obs.add(setRolePermissions(ac, restNode));
 
 			// Languages
-			restNode.setAvailableLanguages(getAvailableLanguageNames(release, Type.forVersion(ac.getVersion())));
+			restNode.setAvailableLanguages(getAvailableLanguageNames(release, Type.forVersion(versioiningParameters.getVersion())));
 
 			// Load the children information
 			for (Node child : getChildren(release.getUuid())) {
@@ -561,18 +574,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (languageTags != null && languageTags.length > 0) {
 				requestedLanguageTags = Arrays.asList(languageTags);
 			} else {
-				requestedLanguageTags = ac.getSelectedLanguageTags();
+				requestedLanguageTags = nodeParameters.getLanguageList();
 			}
-			fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(), ac.getVersion());
+			fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(), versioiningParameters.getVersion());
 			if (fieldContainer == null) {
 				// if a published version was requested, we check whether any published language variant exists for the node, if not, response with NOT_FOUND
-				if (Type.forVersion(ac.getVersion()) == Type.PUBLISHED && getGraphFieldContainers(release, Type.PUBLISHED).isEmpty()) {
+				if (Type.forVersion(versioiningParameters.getVersion()) == Type.PUBLISHED
+						&& getGraphFieldContainers(release, Type.PUBLISHED).isEmpty()) {
+					//TODO the response should be specific.. add publish and release info
 					throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 				}
 
 				// if a specific version was requested, that does not exist, we also return NOT_FOUND
-				if (Type.forVersion(ac.getVersion()) == Type.INITIAL) {
-					throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersion());
+				if (Type.forVersion(versioiningParameters.getVersion()) == Type.INITIAL) {
+					throw error(NOT_FOUND, "object_not_found_for_version", versioiningParameters.getVersion());
 				}
 
 				String langInfo = getLanguageInfo(requestedLanguageTags);
@@ -582,7 +597,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 				// No field container was found so we can only set the schema reference that points to the container (no version information will be included)
 				restNode.setSchema(getSchemaContainer().transformToReference());
-				//TODO return a 404 and adapt mesh rest client in order to return a mesh response
+				// TODO return a 404 and adapt mesh rest client in order to return a mesh response
 				// ac.data().put("statuscode", NOT_FOUND.code());
 			} else {
 				Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
@@ -615,7 +630,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// Fields
 				for (FieldSchema fieldEntry : schema.getFields()) {
-					//					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
+					// boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
 					Observable<NodeResponse> obsFields = fieldContainer
 							.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level).map(restField -> {
 								if (fieldEntry.isRequired() && restField == null) {
@@ -658,23 +673,24 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			obs.add(setBreadcrumbToRest(ac, restNode));
 
 			// Add webroot url & lanuagePaths
-			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 				String releaseUuid = ac.getRelease(null).getUuid();
-				Type type = Type.forVersion(ac.getVersion());
+				Type type = Type.forVersion(versioiningParameters.getVersion());
 
 				// Url
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
 				String url = linkReplacer
-						.resolve(releaseUuid, type, getUuid(), ac.getResolveLinksType(), getProject().getName(), restNode.getLanguage()).toBlocking()
+						.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(), restNode.getLanguage()).toBlocking()
 						.single();
 				restNode.setPath(url);
 
 				// languagePaths
 				Map<String, String> languagePaths = new HashMap<>();
-				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release, Type.forVersion(ac.getVersion()))) {
+				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release,
+						Type.forVersion(versioiningParameters.getVersion()))) {
 					Language currLanguage = currentFieldContainer.getLanguage();
 					languagePaths.put(currLanguage.getLanguageTag(), linkReplacer
-							.resolve(releaseUuid, type, this, ac.getResolveLinksType(), currLanguage.getLanguageTag()).toBlocking().single());
+							.resolve(releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(), currLanguage.getLanguageTag()).toBlocking().single());
 				}
 				restNode.setLanguagePaths(languagePaths);
 			}
@@ -714,7 +730,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<NavigationResponse> transformToNavigation(InternalActionContext ac) {
-		if (ac.getNavigationRequestParameter().getMaxDepth() < 0) {
+		NavigationParameters parameters = new NavigationParameters(ac);
+		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -724,8 +741,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(BAD_REQUEST, "navigation_error_no_container");
 			}
 			NavigationResponse response = new NavigationResponse();
-			return buildNavigationResponse(ac, this, ac.getNavigationRequestParameter().getMaxDepth(), 0, response, response.getRoot(),
-					ac.getRelease(getProject()).getUuid(), Type.forVersion(ac.getVersion()));
+			return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response.getRoot(), ac.getRelease(getProject()).getUuid(),
+					Type.forVersion(ac.getVersioningParameters().getVersion()));
 		});
 	}
 
@@ -766,7 +783,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (level == maxDepth || nodes.isEmpty()) {
 			return Observable.merge(obsResponses).last();
 		}
-
+		NavigationParameters parameters = new NavigationParameters(ac);
 		// Add children
 		for (Node child : nodes) {
 			// TODO assure that the schema version is correct?
@@ -779,7 +796,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 				currentElement.getChildren().add(childElement);
 				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement, releaseUuid, type));
-			} else if (ac.getNavigationRequestParameter().isIncludeAll()) {
+			} else if (parameters.isIncludeAll()) {
 				// We found at least one child so lets create the array
 				if (currentElement.getChildren() == null) {
 					currentElement.setChildren(new ArrayList<>());
@@ -853,7 +870,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
-		TakeOfflineParameter parameters = TakeOfflineParameter.createFrom(ac);
+		TakeOfflineParameters parameters = ac.getTakeOfflineParameters();
 
 		return db.trx(() -> {
 			List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, Type.PUBLISHED);
@@ -1108,14 +1125,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, Type type,
-			PagingParameter pagingInfo) throws InvalidArgumentException {
+			PagingParameters pagingInfo) throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = getChildrenTraversal(requestUser, releaseUuid, type);
 		VertexTraversal<?, ?, ?> countTraversal = getChildrenTraversal(requestUser, releaseUuid, type);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
 	}
 
 	@Override
-	public PageImpl<? extends Tag> getTags(Release release, PagingParameter params) throws InvalidArgumentException {
+	public PageImpl<? extends Tag> getTags(Release release, PagingParameters params) throws InvalidArgumentException {
 		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, release);
 		VertexTraversal<?, ?, ?> countTraversal = TagEdgeImpl.getTagTraversal(this, release);
@@ -1135,10 +1152,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getDisplayName(InternalActionContext ac) {
+		NodeParameters parameters = ac.getNodeParameters();
+		VersioningParameters versioningParameters = ac.getVersioningParameters();
 		String displayFieldName = null;
 		try {
-			NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), ac.getRelease(getProject()).getUuid(),
-					ac.getVersion());
+			NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(),
+					ac.getRelease(getProject()).getUuid(), versioningParameters.getVersion());
 			if (container == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
@@ -1262,8 +1281,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// Create new field container as clone of the existing
 				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
 
-				// Make sure to only update those fields which have been altered in between the latest version and the current request. Remove unaffected fields from the rest request in order to prevent duplicate references.
-				// We don't want to touch field that have not been changed. Otherwise the graph field references would no longer point to older revisions of the same field.
+				// Make sure to only update those fields which have been altered in between the latest version and the current request. Remove unaffected fields
+				// from the rest request in order to prevent duplicate references.
+				// We don't want to touch field that have not been changed. Otherwise the graph field references would no longer point to older revisions of the
+				// same field.
 				Set<String> fieldsToKeepForUpdate = requestVersionDiff.stream().map(e -> e.getFieldKey()).collect(Collectors.toSet());
 				for (String fieldKey : requestModel.getFields().keySet()) {
 					if (fieldsToKeepForUpdate.contains(fieldKey)) {

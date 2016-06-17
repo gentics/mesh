@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.field.microschema;
 
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,25 +31,28 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.json.MeshJsonException;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.test.AbstractBasicObjectTest;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.FieldUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.RoutingContext;
 
-public class MicroschemaContainerTest extends AbstractBasicObjectTest {
+public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		MicroschemaContainer vcard = microschemaContainer("vcard");
-		MicroschemaReference reference = vcard.transformToReference();
-		assertNotNull(reference);
-		assertEquals("vcard", reference.getName());
-		assertEquals(vcard.getUuid(), reference.getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			MicroschemaContainer vcard = microschemaContainer("vcard");
+			MicroschemaReference reference = vcard.transformToReference();
+			assertNotNull(reference);
+			assertEquals("vcard", reference.getName());
+			assertEquals(vcard.getUuid(), reference.getUuid());
+		}
 	}
 
 	@Ignore("Not yet implemented")
@@ -60,16 +65,18 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		RoutingContext rc = getMockedRoutingContext("");
-		InternalActionContext ac = InternalActionContext.create(rc);
+		try (NoTrx noTx = db.noTrx()) {
+			RoutingContext rc = getMockedRoutingContext(user());
+			InternalActionContext ac = InternalActionContext.create(rc);
 
-		int expectedMicroschemaContainers = microschemaContainers().size();
+			int expectedMicroschemaContainers = microschemaContainers().size();
 
-		for (int i = 1; i <= expectedMicroschemaContainers + 1; i++) {
-			PageImpl<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(ac, new PagingParameter(1, i));
+			for (int i = 1; i <= expectedMicroschemaContainers + 1; i++) {
+				PageImpl<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(ac, new PagingParameters(1, i));
 
-			assertEquals(microschemaContainers().size(), page.getTotalElements());
-			assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());
+				assertEquals(microschemaContainers().size(), page.getTotalElements());
+				assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());
+			}
 		}
 	}
 
@@ -83,32 +90,36 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		String invalidName = "thereIsNoMicroschemaWithThisName";
+		try (NoTrx noTx = db.noTrx()) {
+			String invalidName = "thereIsNoMicroschemaWithThisName";
 
-		for (String name : microschemaContainers().keySet()) {
-			MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name).toBlocking().single();
-			assertNotNull("Could not find microschema container for name " + name, container);
-			Microschema microschema = container.getLatestVersion().getSchema();
-			assertNotNull("Container for microschema " + name + " did not contain a microschema", microschema);
-			assertEquals("Check microschema name", name, microschema.getName());
+			for (String name : microschemaContainers().keySet()) {
+				MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name).toBlocking().single();
+				assertNotNull("Could not find microschema container for name " + name, container);
+				Microschema microschema = container.getLatestVersion().getSchema();
+				assertNotNull("Container for microschema " + name + " did not contain a microschema", microschema);
+				assertEquals("Check microschema name", name, microschema.getName());
+			}
+
+			assertNull("Must not find microschema with name " + invalidName,
+					boot.microschemaContainerRoot().findByName(invalidName).toBlocking().single());
 		}
-
-		assertNull("Must not find microschema with name " + invalidName,
-				boot.microschemaContainerRoot().findByName(invalidName).toBlocking().single());
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		String invalidUUID = UUIDUtil.randomUUID();
+		try (NoTrx noTx = db.noTrx()) {
+			String invalidUUID = UUIDUtil.randomUUID();
 
-		MicroschemaContainerRoot root = boot.microschemaContainerRoot();
-		for (MicroschemaContainer container : microschemaContainers().values()) {
-			String uuid = container.getUuid();
-			assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid).toBlocking().single());
+			MicroschemaContainerRoot root = boot.microschemaContainerRoot();
+			for (MicroschemaContainer container : microschemaContainers().values()) {
+				String uuid = container.getUuid();
+				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid).toBlocking().single());
+			}
+
+			assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID).toBlocking().single());
 		}
-
-		assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID).toBlocking().single());
 	}
 
 	@Ignore("Not yet implemented")
@@ -120,19 +131,23 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testRoot() {
-		MicroschemaContainer vcard = microschemaContainer("vcard");
-		assertNotNull(vcard.getRoot());
+		try (NoTrx noTx = db.noTrx()) {
+			MicroschemaContainer vcard = microschemaContainer("vcard");
+			assertNotNull(vcard.getRoot());
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		Microschema schema = new MicroschemaModel();
-		schema.setName("test");
-		MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
-		assertNotNull("The container was not created.", container);
-		assertNotNull("The container schema was not set", container.getLatestVersion().getSchema());
-		assertEquals("The creator was not set.", user().getUuid(), container.getCreator().getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			Microschema schema = new MicroschemaModel();
+			schema.setName("test");
+			MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
+			assertNotNull("The container was not created.", container);
+			assertNotNull("The container schema was not set", container.getLatestVersion().getSchema());
+			assertEquals("The creator was not set.", user().getUuid(), container.getCreator().getUuid());
+		}
 	}
 
 	/**
@@ -140,23 +155,27 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	 */
 	@Test
 	public void testVersionSync() {
-		assertNotNull(microschemaContainer("vcard"));
-		assertEquals("The microschema container and schema rest model version must always be in sync",
-				microschemaContainer("vcard").getLatestVersion().getVersion(),
-				microschemaContainer("vcard").getLatestVersion().getSchema().getVersion());
+		try (NoTrx noTx = db.noTrx()) {
+			assertNotNull(microschemaContainer("vcard"));
+			assertEquals("The microschema container and schema rest model version must always be in sync",
+					microschemaContainer("vcard").getLatestVersion().getVersion(),
+					microschemaContainer("vcard").getLatestVersion().getSchema().getVersion());
+		}
 
 	}
 
 	@Test
 	@Override
 	public void testDelete() throws MeshJsonException {
-		Microschema schema = new MicroschemaModel();
-		schema.setName("test");
-		MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
-		assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
-		SearchQueueBatch batch = createBatch();
-		container.delete(batch);
-		assertNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
+		try (NoTrx noTx = db.noTrx()) {
+			Microschema schema = new MicroschemaModel();
+			schema.setName("test");
+			MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
+			assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
+			SearchQueueBatch batch = createBatch();
+			container.delete(batch);
+			assertNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
+		}
 	}
 
 	@Ignore("Not yet implemented")
@@ -169,48 +188,58 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() throws MeshJsonException {
-		Microschema microschema = new MicroschemaModel();
-		microschema.setName("someNewMicroschema");
-		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
-		testPermission(GraphPermission.READ_PERM, microschemaContainer);
+		try (NoTrx noTx = db.noTrx()) {
+			Microschema microschema = new MicroschemaModel();
+			microschema.setName("someNewMicroschema");
+			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
+			testPermission(GraphPermission.READ_PERM, microschemaContainer);
+		}
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() throws MeshJsonException {
-		Microschema microschema = new MicroschemaModel();
-		microschema.setName("someNewMicroschema");
-		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
-		testPermission(GraphPermission.DELETE_PERM, microschemaContainer);
+		try (NoTrx noTx = db.noTrx()) {
+			Microschema microschema = new MicroschemaModel();
+			microschema.setName("someNewMicroschema");
+			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
+			testPermission(GraphPermission.DELETE_PERM, microschemaContainer);
+		}
 
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() throws MeshJsonException {
-		Microschema microschema = new MicroschemaModel();
-		microschema.setName("someNewMicroschema");
-		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
-		testPermission(GraphPermission.UPDATE_PERM, microschemaContainer);
+		try (NoTrx noTx = db.noTrx()) {
+			Microschema microschema = new MicroschemaModel();
+			microschema.setName("someNewMicroschema");
+			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
+			testPermission(GraphPermission.UPDATE_PERM, microschemaContainer);
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() throws MeshJsonException {
-		Microschema microschema = new MicroschemaModel();
-		microschema.setName("someNewMicroschema");
-		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
-		testPermission(GraphPermission.CREATE_PERM, microschemaContainer);
+		try (NoTrx noTx = db.noTrx()) {
+			Microschema microschema = new MicroschemaModel();
+			microschema.setName("someNewMicroschema");
+			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
+			testPermission(GraphPermission.CREATE_PERM, microschemaContainer);
+		}
 	}
 
 	@Test
 	@Override
 	public void testTransformation() throws IOException {
-		RoutingContext rc = getMockedRoutingContext("");
-		InternalActionContext ac = InternalActionContext.create(rc);
-		MicroschemaContainer vcard = microschemaContainer("vcard");
-		Microschema schema = vcard.transformToRest(ac, 0, "en").toBlocking().single();
-		assertEquals(vcard.getUuid(), schema.getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			RoutingContext rc = getMockedRoutingContext(user());
+			InternalActionContext ac = InternalActionContext.create(rc);
+			MicroschemaContainer vcard = microschemaContainer("vcard");
+			Microschema schema = vcard.transformToRest(ac, 0, "en").toBlocking().single();
+			assertEquals(vcard.getUuid(), schema.getUuid());
+		}
 	}
 
 	@Ignore("Not yet implemented")
@@ -224,53 +253,58 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() throws MeshJsonException {
-		MicroschemaContainerRoot root = meshRoot().getMicroschemaContainerRoot();
+		try (NoTrx noTx = db.noTrx()) {
+			MicroschemaContainerRoot root = meshRoot().getMicroschemaContainerRoot();
 
-		Microschema microschema = new MicroschemaModel();
-		microschema.setName("someNewMicroschema");
-		MicroschemaContainer container = root.create(microschema, user());
+			Microschema microschema = new MicroschemaModel();
+			microschema.setName("someNewMicroschema");
+			MicroschemaContainer container = root.create(microschema, user());
 
-		assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, container));
-		getRequestUser().addCRUDPermissionOnRole(meshRoot().getMicroschemaContainerRoot(), GraphPermission.CREATE_PERM, container);
-		assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new microschema container.",
-				role().hasPermission(GraphPermission.CREATE_PERM, container));
+			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, container));
+			getRequestUser().addCRUDPermissionOnRole(meshRoot().getMicroschemaContainerRoot(), GraphPermission.CREATE_PERM, container);
+			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new microschema container.",
+					role().hasPermission(GraphPermission.CREATE_PERM, container));
+		}
 	}
 
 	/**
 	 * Test getting NodeGraphFieldContainers that container Micronodes using a specific microschema container version
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	@Test
 	public void testGetContainerUsingMicroschemaVersion() throws IOException {
-		MicroschemaContainerVersion vcard = microschemaContainer("vcard").getLatestVersion();
+		try (NoTrx noTx = db.noTrx()) {
+			MicroschemaContainerVersion vcard = microschemaContainer("vcard").getLatestVersion();
 
-		Microschema microschema = vcard.getSchema();
-		Microschema updatedMicroschema = new MicroschemaModel();
-		updatedMicroschema.setName(microschema.getName());
-		updatedMicroschema.getFields().addAll(microschema.getFields());
-		updatedMicroschema.addField(FieldUtil.createStringFieldSchema("newfield"));
+			Microschema microschema = vcard.getSchema();
+			Microschema updatedMicroschema = new MicroschemaModel();
+			updatedMicroschema.setName(microschema.getName());
+			updatedMicroschema.getFields().addAll(microschema.getFields());
+			updatedMicroschema.addField(FieldUtil.createStringFieldSchema("newfield"));
 
-		SchemaChangesListModel model = new SchemaChangesListModel();
-		model.getChanges().addAll(MicroschemaComparator.getIntance().diff(microschema, updatedMicroschema));
+			SchemaChangesListModel model = new SchemaChangesListModel();
+			model.getChanges().addAll(MicroschemaComparator.getIntance().diff(microschema, updatedMicroschema));
 
-		InternalActionContext ac = getMockedInternalActionContext("");
-		vcard.applyChanges(ac, model).toBlocking().last();
-		MicroschemaContainerVersion newVCard = microschemaContainer("vcard").getLatestVersion();
+			InternalActionContext ac = getMockedInternalActionContext();
+			vcard.applyChanges(ac, model).toBlocking().last();
+			MicroschemaContainerVersion newVCard = microschemaContainer("vcard").getLatestVersion();
 
-		NodeGraphFieldContainer containerWithBoth = folder("2015").getGraphFieldContainer("en");
-		containerWithBoth.createMicronode("single", vcard);
-		containerWithBoth.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
+			NodeGraphFieldContainer containerWithBoth = folder("2015").getGraphFieldContainer("en");
+			containerWithBoth.createMicronode("single", vcard);
+			containerWithBoth.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
 
-		NodeGraphFieldContainer containerWithField = folder("news").getGraphFieldContainer("en");
-		containerWithField.createMicronode("single", vcard);
+			NodeGraphFieldContainer containerWithField = folder("news").getGraphFieldContainer("en");
+			containerWithField.createMicronode("single", vcard);
 
-		NodeGraphFieldContainer containerWithList = folder("products").getGraphFieldContainer("en");
-		containerWithList.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
+			NodeGraphFieldContainer containerWithList = folder("products").getGraphFieldContainer("en");
+			containerWithList.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
 
-		NodeGraphFieldContainer containerWithOtherVersion = folder("deals").getGraphFieldContainer("en");
-		containerWithOtherVersion.createMicronode("single", newVCard);
+			NodeGraphFieldContainer containerWithOtherVersion = folder("deals").getGraphFieldContainer("en");
+			containerWithOtherVersion.createMicronode("single", newVCard);
 
-		List<NodeGraphFieldContainer> containers = new ArrayList<>(vcard.getFieldContainers(project().getLatestRelease().getUuid()));
-		assertThat(containers).containsOnly(containerWithBoth, containerWithField, containerWithList).hasSize(3);
+			List<NodeGraphFieldContainer> containers = new ArrayList<>(vcard.getFieldContainers(project().getLatestRelease().getUuid()));
+			assertThat(containers).containsOnly(containerWithBoth, containerWithField, containerWithList).hasSize(3);
+		}
 	}
 }

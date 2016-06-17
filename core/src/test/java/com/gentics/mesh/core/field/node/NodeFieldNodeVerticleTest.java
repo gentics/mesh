@@ -30,7 +30,8 @@ import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
@@ -99,8 +100,11 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 
 	/**
 	 * Get the node value
-	 * @param container container
-	 * @param fieldName field name
+	 * 
+	 * @param container
+	 *            container
+	 * @param fieldName
+	 *            field name
 	 * @return node value (may be null)
 	 */
 	protected Node getNodeValue(NodeGraphFieldContainer container, String fieldName) {
@@ -115,15 +119,15 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 
 		Node updatedNode = folder("2015");
 		// Load the node so that we can use it to prepare the update request
-		NodeResponse loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeRequestParameter().draft()));
+		NodeResponse loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 
 		// Update the field to point to node
 		NodeResponse response = updateNode(NODE_FIELD_NAME, loadedNode);
 		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(node.getUuid(), field.getUuid());
 
-		loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(),
-				new NodeRequestParameter().setLanguages("en").draft()));
+		loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParameters().setLanguages("en"),
+				new VersioningParameters().draft()));
 		field = loadedNode.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(node.getUuid(), field.getUuid());
 
@@ -132,8 +136,8 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(node2.getUuid(), field.getUuid());
 
-		loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(),
-				new NodeRequestParameter().setLanguages("en").draft()));
+		loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParameters().setLanguages("en"),
+				new VersioningParameters().draft()));
 		field = loadedNode.getFields().getNodeFieldExpanded("nodeField");
 		assertEquals(node2.getUuid(), field.getUuid());
 
@@ -153,7 +157,7 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		nodeUpdateRequest.getFields().put(NODE_FIELD_NAME, null);
 
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest,
-				new NodeRequestParameter().setLanguages("en"));
+				new NodeParameters().setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -201,8 +205,8 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		container.createNode(NODE_FIELD_NAME, newsNode);
 
-		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new NodeRequestParameter().setExpandAll(true).draft()));
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
+				new VersioningParameters().draft()));
 
 		// Check expanded node field
 		NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
@@ -287,10 +291,9 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeResponse source = createSourceFuture.result();
 
 		// read source node with expanded field
-		for (String[] requestedLangs : Arrays.asList(new String[] { "de" }, new String[] { "de", "en" },
-				new String[] { "en", "de" })) {
+		for (String[] requestedLangs : Arrays.asList(new String[] { "de" }, new String[] { "de", "en" }, new String[] { "en", "de" })) {
 			Future<NodeResponse> resultFuture = getClient().findNodeByUuid(PROJECT_NAME, source.getUuid(),
-					new NodeRequestParameter().setLanguages(requestedLangs).setExpandAll(true).draft());
+					new NodeParameters().setLanguages(requestedLangs).setExpandAll(true), new VersioningParameters().draft());
 			latchFor(resultFuture);
 			assertSuccess(resultFuture);
 			NodeResponse response = resultFuture.result();

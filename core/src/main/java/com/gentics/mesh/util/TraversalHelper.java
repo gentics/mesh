@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -111,7 +111,7 @@ public final class TraversalHelper {
 	 * @throws InvalidArgumentException
 	 */
 	public static <T extends TransformableElement<? extends RestModel>> PageImpl<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
-			VertexTraversal<?, ?, ?> countTraversal, PagingParameter pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
+			VertexTraversal<?, ?, ?> countTraversal, PagingParameters pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
 		return getPagedResult(traversal, countTraversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
 				pagingInfo.getPerPage(), classOfT);
 	}

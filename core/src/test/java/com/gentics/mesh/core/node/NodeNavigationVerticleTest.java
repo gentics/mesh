@@ -23,8 +23,8 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.query.impl.NavigationRequestParameter;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.NavigationParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -52,7 +52,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, uuid,
-				new NavigationRequestParameter().setMaxDepth(0), new NodeRequestParameter().draft()));
+				new NavigationParameters().setMaxDepth(0), new VersioningParameters().draft()));
 		assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
 		assertThat(response).hasDepth(0).isValid(1);
 	}
@@ -68,7 +68,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, uuid,
-				new NavigationRequestParameter().setMaxDepth(42), new NodeRequestParameter().draft()));
+				new NavigationParameters().setMaxDepth(42), new VersioningParameters().draft()));
 		assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
 		assertThat(response).hasDepth(0).isValid(1);
 	}
@@ -80,7 +80,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	public void testReadNavigationWithNoParameters() {
 		Node node = project().getBaseNode();
 		NavigationResponse response = call(
-				() -> getClient().loadNavigation(PROJECT_NAME, node.getUuid(), new NodeRequestParameter().draft()));
+				() -> getClient().loadNavigation(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 		assertThat(response).hasDepth(3).isValid(7);
 	}
 
@@ -91,7 +91,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	public void testReadNavigationWithNegativeDepth() {
 		Node node = folder("2015");
 		call(() -> getClient().loadNavigation(PROJECT_NAME, node.getUuid(),
-				new NavigationRequestParameter().setMaxDepth(-10), new NodeRequestParameter().draft()), BAD_REQUEST,
+				new NavigationParameters().setMaxDepth(-10), new VersioningParameters().draft()), BAD_REQUEST,
 				"navigation_error_invalid_max_depth");
 	}
 
@@ -105,7 +105,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 
 		assertFalse("The node must not be a container.", node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
 		call(() -> getClient().loadNavigation(PROJECT_NAME, node.getUuid(),
-				new NavigationRequestParameter().setMaxDepth(1), new NodeRequestParameter().draft()), BAD_REQUEST,
+				new NavigationParameters().setMaxDepth(1), new VersioningParameters().draft()), BAD_REQUEST,
 				"navigation_error_no_container");
 	}
 
@@ -120,7 +120,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, uuid,
-				new NavigationRequestParameter().setMaxDepth(1), new NodeRequestParameter().draft()));
+				new NavigationParameters().setMaxDepth(1), new VersioningParameters().draft()));
 
 		assertThat(response).hasDepth(1).isValid(4);
 		assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
@@ -138,7 +138,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, uuid,
-				new NavigationRequestParameter().setMaxDepth(2), new NodeRequestParameter().draft()));
+				new NavigationParameters().setMaxDepth(2), new VersioningParameters().draft()));
 		assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
 		assertThat(response).hasDepth(2).isValid(6);
 	}
@@ -156,7 +156,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		Future<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, uuid,
-				new NavigationRequestParameter().setMaxDepth(2).setIncludeAll(true));
+				new NavigationParameters().setMaxDepth(2).setIncludeAll(true));
 		latchFor(future);
 		assertSuccess(future);
 		NavigationResponse response = future.result();
@@ -182,7 +182,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		Future<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, uuid,
-				new NavigationRequestParameter().setMaxDepth(2).setIncludeAll(false));
+				new NavigationParameters().setMaxDepth(2).setIncludeAll(false));
 		latchFor(future);
 		assertSuccess(future);
 		NavigationResponse response = future.result();
@@ -206,7 +206,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, uuid,
-				new NavigationRequestParameter().setMaxDepth(42), new NodeRequestParameter().draft()));
+				new NavigationParameters().setMaxDepth(42), new VersioningParameters().draft()));
 		assertEquals(uuid, response.getRoot().getUuid());
 		assertNotNull("root was null", response.getRoot());
 	}
@@ -219,7 +219,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 
 		// latest release
 		NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, baseNodeUuid,
-				new NavigationRequestParameter().setMaxDepth(1), new NodeRequestParameter().draft()));
+				new NavigationParameters().setMaxDepth(1), new VersioningParameters().draft()));
 		assertThat(response).hasDepth(1).isValid(4);
 
 		Release initialRelease = project.getInitialRelease();
@@ -227,19 +227,19 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 
 		// latest release (again)
 		response = call(() -> getClient().loadNavigation(PROJECT_NAME, baseNodeUuid,
-				new NavigationRequestParameter().setMaxDepth(1), new NodeRequestParameter().draft()));
+				new NavigationParameters().setMaxDepth(1), new VersioningParameters().draft()));
 		assertThat(response).hasDepth(0);
 
 		// latest release by name
 		response = call(() -> getClient().loadNavigation(PROJECT_NAME, baseNodeUuid,
-				new NavigationRequestParameter().setMaxDepth(1),
-				new NodeRequestParameter().draft().setRelease(newRelease.getName())));
+				new NavigationParameters().setMaxDepth(1),
+				new VersioningParameters().draft().setRelease(newRelease.getName())));
 		assertThat(response).hasDepth(0);
 
 		// initial release by name
 		response = call(() -> getClient().loadNavigation(PROJECT_NAME, baseNodeUuid,
-				new NavigationRequestParameter().setMaxDepth(1),
-				new NodeRequestParameter().draft().setRelease(initialRelease.getName())));
+				new NavigationParameters().setMaxDepth(1),
+				new VersioningParameters().draft().setRelease(initialRelease.getName())));
 		assertThat(response).hasDepth(1).isValid(4);
 	}
 

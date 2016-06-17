@@ -45,10 +45,10 @@ public class BinaryFieldResponseHandler implements Handler<BinaryGraphField> {
 			String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
 			if (requestETag != null && requestETag.equals(sha512sum)) {
 				rc.response().setStatusCode(NOT_MODIFIED.code()).end();
-			} else if (binaryField.hasImage() && ac.getImageRequestParameter().isSet()) {
+			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
 				// Resize the image if needed
 				Observable<io.vertx.rxjava.core.buffer.Buffer> buffer = imageManipulator.handleResize(binaryField.getFile(),
-						binaryField.getSHA512Sum(), ac.getImageRequestParameter());
+						binaryField.getSHA512Sum(), ac.getImageParameters());
 				buffer.subscribe(imageBuffer -> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(imageBuffer.length()));
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");

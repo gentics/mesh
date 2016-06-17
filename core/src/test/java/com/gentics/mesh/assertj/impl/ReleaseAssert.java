@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.hazelcast.instance.Node;
 
 public class ReleaseAssert extends AbstractAssert<ReleaseAssert, Release> {

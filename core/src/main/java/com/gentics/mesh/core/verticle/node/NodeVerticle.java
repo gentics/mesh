@@ -207,7 +207,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			ac.setVersion("draft");
+			ac.getVersioningParameters().setVersion("draft");
 			crudHandler.handleCreate(ac);
 		});
 	}
@@ -254,7 +254,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		route.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
-			ac.setVersion("draft");
+			ac.getVersioningParameters().setVersion("draft");
 			crudHandler.handleUpdate(ac, uuid);
 		});
 	}

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field.date;
 import static com.gentics.mesh.core.field.date.DateListFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.date.DateListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.date.DateListFieldHelper.FILL;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -155,7 +156,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveFieldViaNullTestcase(DATE_LIST, FETCH, FILL, (node) -> {
 			updateContainer(ac, node, DATE_LIST, null);
 		});
@@ -164,7 +165,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveRequiredFieldViaNullTestcase(DATE_LIST, FETCH, FILL, (container) -> {
 			updateContainer(ac, container, DATE_LIST, null);
 		});
@@ -173,7 +174,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeUpdateFromRestValidSimpleValueTestcase(DATE_LIST, FILL, (container) -> {
 			DateFieldListImpl field = new DateFieldListImpl();
 			field.getItems().add(42L);

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field.binary;
 import static com.gentics.mesh.core.field.binary.BinaryFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.binary.BinaryFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.binary.BinaryFieldTestHelper.FILL_BASIC;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -195,7 +196,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (node) -> {
 			updateContainer(ac, node, BINARY_FIELD, null);
 		});
@@ -204,7 +205,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveRequiredFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (container) -> {
 			updateContainer(ac, container, BINARY_FIELD, null);
 		});
@@ -213,7 +214,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeUpdateFromRestValidSimpleValueTestcase(BINARY_FIELD, FILL_BASIC, (container) -> {
 			BinaryField field = new BinaryFieldImpl();
 			field.setFileName("someFile.txt");

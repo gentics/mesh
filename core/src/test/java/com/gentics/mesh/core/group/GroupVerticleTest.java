@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -42,9 +43,9 @@ import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.query.QueryParameterProvider;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -173,7 +174,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTrx noTx = db.noTrx()) {
 			final String name = "test12345";
 			GroupCreateRequest request = new GroupCreateRequest();
-			InternalActionContext ac = getMockedInternalActionContext("");
+			InternalActionContext ac = getMockedInternalActionContext();
 			request.setName(name);
 			String rootUuid;
 			GroupRoot root = meshRoot().getGroupRoot();
@@ -218,7 +219,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 6;
-			future = getClient().findGroups(new PagingParameter(3, perPage));
+			future = getClient().findGroups(new PagingParameters(3, perPage));
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -236,7 +237,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<GroupResponse> allGroups = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<GroupListResponse> pageFuture = getClient().findGroups(new PagingParameter(page, perPage));
+				Future<GroupListResponse> pageFuture = getClient().findGroups(new PagingParameters(page, perPage));
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -249,15 +250,15 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("Extra group should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			future = getClient().findGroups(new PagingParameter(-1, perPage));
+			future = getClient().findGroups(new PagingParameters(-1, perPage));
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findGroups(new PagingParameter(1, -1));
+			future = getClient().findGroups(new PagingParameters(1, -1));
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findGroups(new PagingParameter(4242, 1));
+			future = getClient().findGroups(new PagingParameters(4242, 1));
 			latchFor(future);
 			assertSuccess(future);
 
@@ -271,7 +272,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<GroupListResponse> future = getClient().findGroups(new PagingParameter(1, 0));
+		Future<GroupListResponse> future = getClient().findGroups(new PagingParameters(1, 0));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -298,7 +299,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Group group = group();
 			String uuid = group.getUuid();
 
-			Future<GroupResponse> future = getClient().findGroupByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+			Future<GroupResponse> future = getClient().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()));
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
@@ -422,8 +423,8 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				latchFor(future);
 			}
 
-			QueryParameterProvider[] params = new QueryParameterProvider[] { new PagingParameter().setPerPage(10000),
-					new RolePermissionParameter().setRoleUuid(role().getUuid()) };
+			ParameterProvider[] params = new ParameterProvider[] { new PagingParameters().setPerPage(10000),
+					new RolePermissionParameters().setRoleUuid(role().getUuid()) };
 
 			int readCount = 100;
 			for (int i = 0; i < readCount; i++) {

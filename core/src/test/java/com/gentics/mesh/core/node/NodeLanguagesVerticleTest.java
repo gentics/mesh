@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -53,13 +53,13 @@ public class NodeLanguagesVerticleTest extends AbstractRestVerticleTest {
 		expectResponseMessage(future, "node_deleted_language", node.getUuid(), "en");
 
 		// Loading is still be possible but the node will contain no fields
-		Future<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setLanguages("en"));
+		Future<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en"));
 		latchFor(response);
 		assertSuccess(response);
 		assertThat(response.result().getAvailableLanguages()).contains("de");
 		assertThat(response.result().getFields()).isEmpty();
 
-		response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setLanguages("de"));
+		response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"));
 		latchFor(response);
 		assertSuccess(future);
 

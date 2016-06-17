@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.Future;
 
@@ -24,7 +24,7 @@ public interface ReleaseClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest, QueryParameterProvider... parameters);
+	Future<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest, ParameterProvider... parameters);
 
 	/**
 	 * Find the release with the given uuid in the project with the given name.
@@ -34,7 +34,7 @@ public interface ReleaseClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid, QueryParameterProvider... parameters);
+	Future<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid, ParameterProvider... parameters);
 
 	/**
 	 * Find all releases within the project with the given name. The query parameters can be used to set paging.
@@ -43,7 +43,7 @@ public interface ReleaseClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ReleaseListResponse> findReleases(String projectName, QueryParameterProvider... parameters);
+	Future<ReleaseListResponse> findReleases(String projectName, ParameterProvider... parameters);
 
 	/**
 	 * Update the release.

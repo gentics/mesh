@@ -2,6 +2,8 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +48,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.MeshAssert;
@@ -148,12 +150,12 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			RoutingContext rc = getMockedRoutingContext("version=draft");
 			InternalActionContext ac = InternalActionContext.create(rc);
-			PageImpl<? extends Node> page = boot.nodeRoot().findAll(ac, new PagingParameter(1, 10));
+			PageImpl<? extends Node> page = boot.nodeRoot().findAll(ac, new PagingParameters(1, 10));
 
 			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(10, page.getSize());
 
-			page = boot.nodeRoot().findAll(ac, new PagingParameter(1, 15));
+			page = boot.nodeRoot().findAll(ac, new PagingParameters(1, 15));
 			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(15, page.getSize());
 		}
@@ -180,7 +182,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			List<String> languageTags = new ArrayList<>();
 			languageTags.add("de");
 			languageTags.add("en");
-			PageImpl<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), languageTags, new PagingParameter(1, 25));
+			PageImpl<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), languageTags, new PagingParameters(1, 25));
 			assertNotNull(page);
 		}
 	}
@@ -477,11 +479,11 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(newRelease);
 
 			// 5. reverse folders in new release
-			subSubFolder.moveTo(getMockedInternalActionContext(""), folder);
+			subSubFolder.moveTo(getMockedInternalActionContext(), folder);
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
-			subFolder.moveTo(getMockedInternalActionContext(""), subSubFolder);
+			subFolder.moveTo(getMockedInternalActionContext(), subSubFolder);
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
@@ -511,7 +513,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 10. assert for initial release
 			List<Node> nodes = new ArrayList<>();
 			project.getNodeRoot().findAll(getMockedInternalActionContext("release=" + initialRelease.getName()),
-					new PagingParameter(1, 10000, "name", SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
+					new PagingParameters(1, 10000, "name", SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
 			assertThat(nodes).as("Nodes in initial release").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
 			assertThat(folder).as("folder").hasNoChildren(initialRelease);
 
@@ -546,12 +548,12 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			db.noTrx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot()
-						.findAll(getMockedInternalActionContext("version=draft"), new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+						.findAll(getMockedInternalActionContext("version=draft"), new PagingParameters(1, 10000, null, SortOrder.UNSORTED))
 						.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 				nodeUuids.clear();
 				project.getNodeRoot()
-						.findAll(getMockedInternalActionContext("version=published"), new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+						.findAll(getMockedInternalActionContext("version=published"), new PagingParameters(1, 10000, null, SortOrder.UNSORTED))
 						.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 				return null;
@@ -568,13 +570,13 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			db.noTrx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot()
-						.findAll(getMockedInternalActionContext("version=draft"), new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+						.findAll(getMockedInternalActionContext("version=draft"), new PagingParameters(1, 10000, null, SortOrder.UNSORTED))
 						.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
 				project.getNodeRoot()
-						.findAll(getMockedInternalActionContext("version=published"), new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+						.findAll(getMockedInternalActionContext("version=published"), new PagingParameters(1, 10000, null, SortOrder.UNSORTED))
 						.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 				return null;
@@ -629,12 +631,12 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			db.noTrx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot().findAll(getMockedInternalActionContext("version=draft&release=" + initialRelease.getUuid()),
-						new PagingParameter(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+						new PagingParameters(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
 				project.getNodeRoot().findAll(getMockedInternalActionContext("version=published&release=" + initialRelease.getUuid()),
-						new PagingParameter(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+						new PagingParameters(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 				return null;
 			});
@@ -643,13 +645,13 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			db.noTrx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot()
-						.findAll(getMockedInternalActionContext("version=draft"), new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+						.findAll(getMockedInternalActionContext("version=draft"), new PagingParameters(1, 10000, null, SortOrder.UNSORTED))
 						.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 
 				nodeUuids.clear();
 				project.getNodeRoot()
-						.findAll(getMockedInternalActionContext("version=published"), new PagingParameter(1, 10000, null, SortOrder.UNSORTED))
+						.findAll(getMockedInternalActionContext("version=published"), new PagingParameters(1, 10000, null, SortOrder.UNSORTED))
 						.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 				return null;

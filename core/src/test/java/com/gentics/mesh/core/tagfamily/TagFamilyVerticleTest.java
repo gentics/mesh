@@ -41,8 +41,8 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -84,7 +84,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			String uuid = tagFamily.getUuid();
 
 			Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid,
-					new RolePermissionParameter().setRoleUuid(role().getUuid()));
+					new RolePermissionParameters().setRoleUuid(role().getUuid()));
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull("The response did not contain the expected role permission field value", future.result().getRolePerms());
@@ -147,7 +147,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 			List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(page, perPage));
+				Future<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(page, perPage));
 				latchFor(tagPageFut);
 				assertSuccess(future);
 				restResponse = tagPageFut.result();
@@ -173,21 +173,21 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 					.collect(Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(-1, perPage));
+			Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(-1, perPage));
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(0, perPage));
+			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(0, perPage));
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
-			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(1, -1));
+			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(1, -1));
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 			perPage = 25;
 			totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
-			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(4242, perPage));
+			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(4242, perPage));
 			latchFor(pageFuture);
 			TagFamilyListResponse tagList = pageFuture.result();
 			assertEquals(0, tagList.getData().size());
@@ -201,7 +201,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(1, 0));
+		Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(1, 0));
 		latchFor(pageFuture);
 		assertSuccess(pageFuture);
 		assertEquals(0, pageFuture.result().getData().size());

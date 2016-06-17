@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
 
 import io.vertx.core.logging.Logger;
@@ -54,6 +55,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Observable<MicronodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		
+		NodeParameters parameters = new NodeParameters(ac);
 		List<Observable<MicronodeResponse>> obs = new ArrayList<>();
 		MicronodeResponse restMicronode = new MicronodeResponse();
 		MicroschemaContainerVersion microschemaContainer = getSchemaContainerVersion();
@@ -74,7 +77,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		List<String> requestedLanguageTags = new ArrayList<>();
 		if (languageTags.length == 0) {
-			requestedLanguageTags.addAll(ac.getSelectedLanguageTags());
+			requestedLanguageTags.addAll(parameters.getLanguageList());
 		} else {
 			requestedLanguageTags.addAll(Arrays.asList(languageTags));
 		}

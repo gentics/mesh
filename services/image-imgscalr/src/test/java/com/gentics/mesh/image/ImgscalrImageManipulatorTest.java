@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.query.impl.ImageManipulationParameter;
+import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
@@ -50,7 +50,7 @@ public class ImgscalrImageManipulatorTest {
 		for (String imageName : imageNames) {
 			System.out.println("Handling " + imageName);
 			InputStream ins = getClass().getResourceAsStream("/pictures/" + imageName);
-			Observable<Buffer> obs = manipulator.handleResize(ins, imageName, new ImageManipulationParameter().setWidth(150).setHeight(180));
+			Observable<Buffer> obs = manipulator.handleResize(ins, imageName, new ImageManipulationParameters().setWidth(150).setHeight(180));
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				assertNotNull(buffer);
@@ -66,13 +66,13 @@ public class ImgscalrImageManipulatorTest {
 	public void testResizeImage() {
 		// Width only
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParameter().setWidth(200));
+		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParameters().setWidth(200));
 		assertEquals(200, bi.getWidth());
 		assertEquals(400, bi.getHeight());
 
 		// Same width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParameter().setWidth(100));
+		BufferedImage outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParameters().setWidth(100));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(),
@@ -80,13 +80,13 @@ public class ImgscalrImageManipulatorTest {
 
 		// Height only
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParameter().setHeight(50));
+		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParameters().setHeight(50));
 		assertEquals(25, bi.getWidth());
 		assertEquals(50, bi.getHeight());
 
 		// Same height
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParameter().setHeight(200));
+		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParameters().setHeight(200));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(),
@@ -94,20 +94,20 @@ public class ImgscalrImageManipulatorTest {
 
 		// Height and Width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParameter().setWidth(200).setHeight(300));
+		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParameters().setWidth(200).setHeight(300));
 		assertEquals(200, bi.getWidth());
 		assertEquals(300, bi.getHeight());
 
 		// No parameters
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParameter());
+		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParameters());
 		assertEquals(100, outputImage.getWidth());
 		assertEquals(200, outputImage.getHeight());
 		assertEquals("The image should not have been resized since no parameters were set.", bi.hashCode(), outputImage.hashCode());
 
 		// Same height / width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParameter().setWidth(100).setHeight(200));
+		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParameters().setWidth(100).setHeight(200));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(),
@@ -119,19 +119,19 @@ public class ImgscalrImageManipulatorTest {
 	public void testIncompleteCropParameters() {
 		// Only one parameter
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		bi = manipulator.cropIfRequested(bi, new ImageManipulationParameter().setCroph(100));
+		bi = manipulator.cropIfRequested(bi, new ImageManipulationParameters().setCroph(100));
 	}
 
 	@Test(expected = GenericRestException.class)
 	public void testCropStartOutOfBounds() throws Exception {
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		manipulator.cropIfRequested(bi, new ImageManipulationParameter().setStartx(500).setStarty(500).setCroph(20).setCropw(25));
+		manipulator.cropIfRequested(bi, new ImageManipulationParameters().setStartx(500).setStarty(500).setCroph(20).setCropw(25));
 	}
 
 	@Test(expected = GenericRestException.class)
 	public void testCropAreaOutOfBounds() throws Exception {
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		manipulator.cropIfRequested(bi, new ImageManipulationParameter().setStartx(1).setStarty(1).setCroph(400).setCropw(400));
+		manipulator.cropIfRequested(bi, new ImageManipulationParameters().setStartx(1).setStarty(1).setCroph(400).setCropw(400));
 	}
 
 	@Test
@@ -139,14 +139,14 @@ public class ImgscalrImageManipulatorTest {
 
 		// No parameters
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParameter());
+		BufferedImage outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParameters());
 		assertEquals(100, outputImage.getWidth());
 		assertEquals(200, outputImage.getHeight());
 		assertEquals("No cropping operation should have occured", bi.hashCode(), outputImage.hashCode());
 
 		// Valid cropping
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParameter().setStartx(1).setStarty(1).setCroph(20).setCropw(25));
+		outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParameters().setStartx(1).setStarty(1).setCroph(20).setCropw(25));
 		assertEquals(25, outputImage.getWidth());
 		assertEquals(20, outputImage.getHeight());
 

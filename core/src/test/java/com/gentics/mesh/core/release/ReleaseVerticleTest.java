@@ -3,6 +3,7 @@ package com.gentics.mesh.core.release;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -43,7 +44,7 @@ import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -292,7 +293,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = project.getInitialRelease().getUuid();
 
 			ReleaseResponse response = call(
-					() -> getClient().findReleaseByUuid(projectName, uuid, new RolePermissionParameter().setRoleUuid(role().getUuid())));
+					() -> getClient().findReleaseByUuid(projectName, uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
 			assertThat(response.getRolePerms()).isNotNull().contains("read", "create", "update", "delete");
 		}
 	}
@@ -322,7 +323,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			ListResponse<ReleaseResponse> responseList = call(() -> getClient().findReleases(project.getName()));
 
-			RoutingContext rc = getMockedRoutingContext("");
+			RoutingContext rc = getMockedRoutingContext();
 			InternalActionContext ac = InternalActionContext.create(rc);
 
 			assertThat(responseList).isNotNull();
@@ -346,7 +347,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			ListResponse<ReleaseResponse> responseList = call(() -> getClient().findReleases(project.getName()));
 
-			RoutingContext rc = getMockedRoutingContext("");
+			RoutingContext rc = getMockedRoutingContext();
 			InternalActionContext ac = InternalActionContext.create(rc);
 
 			assertThat(responseList).isNotNull();

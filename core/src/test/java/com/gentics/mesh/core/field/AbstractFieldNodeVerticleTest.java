@@ -19,7 +19,8 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -37,11 +38,10 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 	}
 
 	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
-		NodeRequestParameter parameters = new NodeRequestParameter();
+		NodeParameters parameters = new NodeParameters();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
-		parameters.draft();
-		return call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters));
+		return call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParameters().draft()));
 	}
 
 	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
@@ -56,7 +56,7 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 		}
 
 		call(() -> getClient().createNode(PROJECT_NAME, nodeCreateRequest,
-				new NodeRequestParameter().setLanguages("en")), status, bodyMessageI18nKey, i18nParams);
+				new NodeParameters().setLanguages("en")), status, bodyMessageI18nKey, i18nParams);
 	}
 
 	/**
@@ -86,7 +86,7 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 
 		NodeResponse response = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
-				new NodeRequestParameter().setLanguages("en")));
+				new NodeParameters().setLanguages("en")));
 		assertNotNull("The response could not be found in the result of the future.", response);
 		assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));
 		return response;
@@ -100,7 +100,7 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 
 		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
-				new NodeRequestParameter().setLanguages("en")), status, bodyMessageI18nKey, i18nParams);
+				new NodeParameters().setLanguages("en")), status, bodyMessageI18nKey, i18nParams);
 	}
 
 

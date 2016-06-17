@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field.microschema;
 import static com.gentics.mesh.core.field.microschema.MicronodeListFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.microschema.MicronodeListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.microschema.MicronodeListFieldHelper.FILL;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -212,7 +213,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveFieldViaNullTestcase(MICRONODE_LIST, FETCH, FILL, (node) -> {
 			updateContainer(ac, node, MICRONODE_LIST, null);
 		});
@@ -221,7 +222,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveRequiredFieldViaNullTestcase(MICRONODE_LIST, FETCH, FILL, (container) -> {
 			updateContainer(ac, container, MICRONODE_LIST, null);
 		});
@@ -230,7 +231,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_LIST, FILL, (container) -> {
 			MicronodeFieldListImpl field = new MicronodeFieldListImpl();
 			MicronodeResponse micronodeA = new MicronodeResponse();

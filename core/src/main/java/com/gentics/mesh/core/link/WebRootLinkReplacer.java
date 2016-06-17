@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.parameter.impl.LinkType;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -52,9 +53,9 @@ public class WebRootLinkReplacer {
 	 * @param languageTags optional language tags
 	 * @return content with links (probably) replaced
 	 */
-	public String replace(String releaseUuid, GraphFieldContainerEdge.Type edgeType, String content, Type type,
+	public String replace(String releaseUuid, GraphFieldContainerEdge.Type edgeType, String content, LinkType type,
 			String projectName, List<String> languageTags) {
-		if (isEmpty(content) || type == Type.OFF || type == null) {
+		if (isEmpty(content) || type == LinkType.OFF || type == null) {
 			return content;
 		}
 
@@ -123,7 +124,7 @@ public class WebRootLinkReplacer {
 	 * @param languageTags optional language tags
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(String releaseUuid, GraphFieldContainerEdge.Type edgeType, String uuid, Type type,
+	public Observable<String> resolve(String releaseUuid, GraphFieldContainerEdge.Type edgeType, String uuid, LinkType type,
 			String projectName, String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
@@ -160,7 +161,7 @@ public class WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(String releaseUuid, GraphFieldContainerEdge.Type edgeType, Node node, Type type,
+	public Observable<String> resolve(String releaseUuid, GraphFieldContainerEdge.Type edgeType, Node node, LinkType type,
 			String... languageTag) {
 		if (languageTag == null || languageTag.length == 0) {
 			String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
@@ -198,28 +199,4 @@ public class WebRootLinkReplacer {
 		}
 	}
 
-	/**
-	 * Link Replacing type
-	 */
-	public static enum Type {
-		/**
-		 * No link replacing
-		 */
-		OFF,
-
-		/**
-		 * Link replacing without the API prefix and without the project name
-		 */
-		SHORT,
-
-		/**
-		 * Link replacing without the API prefix, but with the project name
-		 */
-		MEDIUM,
-
-		/**
-		 * Link replacing with API prefix and project name
-		 */
-		FULL
-	}
 }

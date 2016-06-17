@@ -44,7 +44,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -181,7 +181,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, Type type, PagingParameter pagingInfo)
+	public PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, Type type, PagingParameters pagingInfo)
 			throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(requestUser, release, languageTags, type);

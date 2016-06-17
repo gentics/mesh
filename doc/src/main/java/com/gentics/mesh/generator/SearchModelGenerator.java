@@ -1,16 +1,16 @@
 package com.gentics.mesh.generator;
 
-import static com.gentics.mesh.mock.MockingUtils.mockGroup;
-import static com.gentics.mesh.mock.MockingUtils.mockLanguage;
-import static com.gentics.mesh.mock.MockingUtils.mockMicroschemaContainer;
-import static com.gentics.mesh.mock.MockingUtils.mockNode;
-import static com.gentics.mesh.mock.MockingUtils.mockNodeBasic;
-import static com.gentics.mesh.mock.MockingUtils.mockProject;
-import static com.gentics.mesh.mock.MockingUtils.mockRole;
-import static com.gentics.mesh.mock.MockingUtils.mockSchemaContainer;
-import static com.gentics.mesh.mock.MockingUtils.mockTag;
-import static com.gentics.mesh.mock.MockingUtils.mockTagFamily;
-import static com.gentics.mesh.mock.MockingUtils.mockUser;
+import static com.gentics.mesh.mock.Mocks.mockGroup;
+import static com.gentics.mesh.mock.Mocks.mockLanguage;
+import static com.gentics.mesh.mock.Mocks.mockMicroschemaContainer;
+import static com.gentics.mesh.mock.Mocks.mockNode;
+import static com.gentics.mesh.mock.Mocks.mockNodeBasic;
+import static com.gentics.mesh.mock.Mocks.mockProject;
+import static com.gentics.mesh.mock.Mocks.mockRole;
+import static com.gentics.mesh.mock.Mocks.mockSchemaContainer;
+import static com.gentics.mesh.mock.Mocks.mockTag;
+import static com.gentics.mesh.mock.Mocks.mockTagFamily;
+import static com.gentics.mesh.mock.Mocks.mockUser;
 import static org.mockito.Mockito.when;
 
 import java.io.File;

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -44,8 +45,8 @@ import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
@@ -83,7 +84,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			test.assertProject(request, restProject);
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().single());
 
-			RoutingContext rc = getMockedRoutingContext("");
+			RoutingContext rc = getMockedRoutingContext();
 			InternalActionContext ac = InternalActionContext.create(rc);
 			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid()).toBlocking().first();
 			assertNotNull(project);
@@ -155,7 +156,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// Don't grant permissions to no perm project
 
 			// Test default paging parameters
-			Future<ProjectListResponse> future = getClient().findProjects(new PagingParameter());
+			Future<ProjectListResponse> future = getClient().findProjects(new PagingParameters());
 			latchFor(future);
 			assertSuccess(future);
 			ProjectListResponse restResponse = future.result();
@@ -164,7 +165,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 11;
-			future = getClient().findProjects(new PagingParameter(3, perPage));
+			future = getClient().findProjects(new PagingParameters(3, perPage));
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -181,7 +182,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<ProjectResponse> allProjects = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<ProjectListResponse> pageFuture = getClient().findProjects(new PagingParameter(page, perPage));
+				Future<ProjectListResponse> pageFuture = getClient().findProjects(new PagingParameters(page, perPage));
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -194,15 +195,15 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
 			assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
-			future = getClient().findProjects(new PagingParameter(-1, perPage));
+			future = getClient().findProjects(new PagingParameters(-1, perPage));
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findProjects(new PagingParameter(1, -1));
+			future = getClient().findProjects(new PagingParameters(1, -1));
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findProjects(new PagingParameter(4242, 25));
+			future = getClient().findProjects(new PagingParameters(4242, 25));
 			latchFor(future);
 			assertSuccess(future);
 
@@ -220,7 +221,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadProjectCountInfoOnly() {
-		Future<ProjectListResponse> future = getClient().findProjects(new PagingParameter(1, 0));
+		Future<ProjectListResponse> future = getClient().findProjects(new PagingParameters(1, 0));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -255,7 +256,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Project project = project();
 			String uuid = project.getUuid();
 
-			Future<ProjectResponse> future = getClient().findProjectByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+			Future<ProjectResponse> future = getClient().findProjectByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()));
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());

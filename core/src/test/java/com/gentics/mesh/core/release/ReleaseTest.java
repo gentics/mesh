@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -29,88 +31,101 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.test.AbstractBasicObjectTest;
+import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.ext.web.RoutingContext;
 
-public class ReleaseTest extends AbstractBasicObjectTest {
+public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		Release release = project().getInitialRelease();
-		ReleaseReference reference = release.transformToReference();
-		assertThat(reference).isNotNull();
-		assertThat(reference.getName()).as("Reference name").isEqualTo(release.getName());
-		assertThat(reference.getUuid()).as("Reference uuid").isEqualTo(release.getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			Release release = project().getInitialRelease();
+			ReleaseReference reference = release.transformToReference();
+			assertThat(reference).isNotNull();
+			assertThat(reference.getName()).as("Reference name").isEqualTo(release.getName());
+			assertThat(reference.getUuid()).as("Reference uuid").isEqualTo(release.getUuid());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindAllVisible() throws Exception {
-		Project project = project();
-		ReleaseRoot releaseRoot = project.getReleaseRoot();
-		Release initialRelease = releaseRoot.getInitialRelease();
-		Release releaseOne = releaseRoot.create("One", user());
-		Release releaseTwo = releaseRoot.create("Two", user());
-		Release releaseThree = releaseRoot.create("Three", user());
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			ReleaseRoot releaseRoot = project.getReleaseRoot();
+			Release initialRelease = releaseRoot.getInitialRelease();
+			Release releaseOne = releaseRoot.create("One", user());
+			Release releaseTwo = releaseRoot.create("Two", user());
+			Release releaseThree = releaseRoot.create("Three", user());
 
-		PageImpl<? extends Release> page = releaseRoot.findAll(getMockedInternalActionContext(""), new PagingParameter(1, 25));
-		assertThat(page).isNotNull();
-		ArrayList<Release> arrayList = new ArrayList<Release>();
-		page.iterator().forEachRemaining(r -> arrayList.add(r));
-		assertThat(arrayList).usingElementComparatorOnFields("uuid").containsExactly(initialRelease, releaseOne,
-				releaseTwo, releaseThree);
+			PageImpl<? extends Release> page = releaseRoot.findAll(getMockedInternalActionContext(user()), new PagingParameters(1, 25));
+			assertThat(page).isNotNull();
+			ArrayList<Release> arrayList = new ArrayList<Release>();
+			page.iterator().forEachRemaining(r -> arrayList.add(r));
+			assertThat(arrayList).usingElementComparatorOnFields("uuid").containsExactly(initialRelease, releaseOne, releaseTwo, releaseThree);
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindAll() throws Exception {
-		Project project = project();
-		ReleaseRoot releaseRoot = project.getReleaseRoot();
-		Release initialRelease = releaseRoot.getInitialRelease();
-		Release releaseOne = releaseRoot.create("One", user());
-		Release releaseTwo = releaseRoot.create("Two", user());
-		Release releaseThree = releaseRoot.create("Three", user());
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			ReleaseRoot releaseRoot = project.getReleaseRoot();
+			Release initialRelease = releaseRoot.getInitialRelease();
+			Release releaseOne = releaseRoot.create("One", user());
+			Release releaseTwo = releaseRoot.create("Two", user());
+			Release releaseThree = releaseRoot.create("Three", user());
 
-		assertThat(new ArrayList<Release>(releaseRoot.findAll())).usingElementComparatorOnFields("uuid")
-				.containsExactly(initialRelease, releaseOne, releaseTwo, releaseThree);
+			assertThat(new ArrayList<Release>(releaseRoot.findAll())).usingElementComparatorOnFields("uuid").containsExactly(initialRelease,
+					releaseOne, releaseTwo, releaseThree);
+		}
 	}
 
 	@Test
 	@Override
 	public void testRootNode() throws Exception {
-		Project project = project();
-		ReleaseRoot releaseRoot = project.getReleaseRoot();
-		assertThat(releaseRoot).as("Release Root of Project").isNotNull();
-		Release initialRelease = project.getInitialRelease();
-		assertThat(initialRelease).as("Initial Release of Project").isNotNull().isActive().isNamed(project.getName())
-				.hasUuid().hasNext(null).hasPrevious(null);
-		Release latestRelease = project.getLatestRelease();
-		assertThat(latestRelease).as("Latest Release of Project").matches(initialRelease);
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			ReleaseRoot releaseRoot = project.getReleaseRoot();
+			assertThat(releaseRoot).as("Release Root of Project").isNotNull();
+			Release initialRelease = project.getInitialRelease();
+			assertThat(initialRelease).as("Initial Release of Project").isNotNull().isActive().isNamed(project.getName()).hasUuid().hasNext(null)
+					.hasPrevious(null);
+			Release latestRelease = project.getLatestRelease();
+			assertThat(latestRelease).as("Latest Release of Project").matches(initialRelease);
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindByName() throws Exception {
-		Project project = project();
-		ReleaseRoot releaseRoot = project.getReleaseRoot();
-		Release foundRelease = releaseRoot.findByName(project.getName()).toBlocking().single();
-		assertThat(foundRelease).as("Release with name " + project.getName()).isNotNull().matches(project.getInitialRelease());
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			ReleaseRoot releaseRoot = project.getReleaseRoot();
+			Release foundRelease = releaseRoot.findByName(project.getName()).toBlocking().single();
+			assertThat(foundRelease).as("Release with name " + project.getName()).isNotNull().matches(project.getInitialRelease());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		Project project = project();
-		ReleaseRoot releaseRoot = project.getReleaseRoot();
-		Release initialRelease = project.getInitialRelease();
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			ReleaseRoot releaseRoot = project.getReleaseRoot();
+			Release initialRelease = project.getInitialRelease();
 
-		Release foundRelease = releaseRoot.findByUuid(initialRelease.getUuid()).toBlocking().single();
-		assertThat(foundRelease).as("Release with uuid " + initialRelease.getUuid()).isNotNull().matches(initialRelease);
+			Release foundRelease = releaseRoot.findByUuid(initialRelease.getUuid()).toBlocking().single();
+			assertThat(foundRelease).as("Release with uuid " + initialRelease.getUuid()).isNotNull().matches(initialRelease);
+		}
 	}
 
+	@Test
 	@Override
 	public void testRead() throws Exception {
 	}
@@ -118,29 +133,27 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		Project project = project();
-		ReleaseRoot releaseRoot = project.getReleaseRoot();
-		Release initialRelease = releaseRoot.getInitialRelease();
-		Release firstNewRelease = releaseRoot.create("First new Release", user());
-		Release secondNewRelease = releaseRoot.create("Second new Release", user());
-		Release thirdNewRelease = releaseRoot.create("Third new Release", user());
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			ReleaseRoot releaseRoot = project.getReleaseRoot();
+			Release initialRelease = releaseRoot.getInitialRelease();
+			Release firstNewRelease = releaseRoot.create("First new Release", user());
+			Release secondNewRelease = releaseRoot.create("Second new Release", user());
+			Release thirdNewRelease = releaseRoot.create("Third new Release", user());
 
-		assertThat(project.getInitialRelease()).as("Initial Release").matches(initialRelease).hasNext(firstNewRelease)
-				.hasPrevious(null);
-		assertThat(firstNewRelease).as("First new Release").isNamed("First new Release").hasNext(secondNewRelease)
-				.hasPrevious(initialRelease);
-		assertThat(secondNewRelease).as("Second new Release").isNamed("Second new Release").hasNext(thirdNewRelease)
-				.hasPrevious(firstNewRelease);
-		assertThat(project.getLatestRelease()).as("Latest Release").isNamed("Third new Release")
-				.matches(thirdNewRelease).hasNext(null).hasPrevious(secondNewRelease);
+			assertThat(project.getInitialRelease()).as("Initial Release").matches(initialRelease).hasNext(firstNewRelease).hasPrevious(null);
+			assertThat(firstNewRelease).as("First new Release").isNamed("First new Release").hasNext(secondNewRelease).hasPrevious(initialRelease);
+			assertThat(secondNewRelease).as("Second new Release").isNamed("Second new Release").hasNext(thirdNewRelease).hasPrevious(firstNewRelease);
+			assertThat(project.getLatestRelease()).as("Latest Release").isNamed("Third new Release").matches(thirdNewRelease).hasNext(null)
+					.hasPrevious(secondNewRelease);
 
-		assertThat(new ArrayList<Release>(releaseRoot.findAll())).usingElementComparatorOnFields("uuid")
-				.containsExactly(initialRelease, firstNewRelease, secondNewRelease, thirdNewRelease);
+			assertThat(new ArrayList<Release>(releaseRoot.findAll())).usingElementComparatorOnFields("uuid").containsExactly(initialRelease,
+					firstNewRelease, secondNewRelease, thirdNewRelease);
 
-		for (SchemaContainer schema : project.getSchemaContainerRoot().findAll()) {
-			for (Release release : Arrays.asList(initialRelease, firstNewRelease, secondNewRelease, thirdNewRelease)) {
-				assertThat(release).as(release.getName()).hasSchema(schema)
-						.hasSchemaVersion(schema.getLatestVersion());
+			for (SchemaContainer schema : project.getSchemaContainerRoot().findAll()) {
+				for (Release release : Arrays.asList(initialRelease, firstNewRelease, secondNewRelease, thirdNewRelease)) {
+					assertThat(release).as(release.getName()).hasSchema(schema).hasSchemaVersion(schema.getLatestVersion());
+				}
 			}
 		}
 	}
@@ -154,59 +167,65 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		Project project = project();
-		Release initialRelease = project.getInitialRelease();
-		initialRelease.setName("New Release Name");
-		initialRelease.setActive(false);
-		initialRelease.reload();
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			Release initialRelease = project.getInitialRelease();
+			initialRelease.setName("New Release Name");
+			initialRelease.setActive(false);
+			initialRelease.reload();
 
-		assertThat(initialRelease).as("Release").isNamed("New Release Name").isInactive();
+			assertThat(initialRelease).as("Release").isNamed("New Release Name").isInactive();
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() throws Exception {
-		Project project = project();
-		Release newRelease = project.getReleaseRoot().create("New Release", user());
-		testPermission(GraphPermission.READ_PERM, newRelease);
+		try (NoTrx noTx = db.noTrx()) {
+			Release newRelease = project().getReleaseRoot().create("New Release", user());
+			testPermission(GraphPermission.READ_PERM, newRelease);
+		}
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() throws Exception {
-		Project project = project();
-		Release newRelease = project.getReleaseRoot().create("New Release", user());
-		testPermission(GraphPermission.DELETE_PERM, newRelease);
+		try (NoTrx noTx = db.noTrx()) {
+			Release newRelease = project().getReleaseRoot().create("New Release", user());
+			testPermission(GraphPermission.DELETE_PERM, newRelease);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() throws Exception {
-		Project project = project();
-		Release newRelease = project.getReleaseRoot().create("New Release", user());
-		testPermission(GraphPermission.UPDATE_PERM, newRelease);
+		try (NoTrx noTx = db.noTrx()) {
+			Release newRelease = project().getReleaseRoot().create("New Release", user());
+			testPermission(GraphPermission.UPDATE_PERM, newRelease);
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() throws Exception {
-		Project project = project();
-		Release newRelease = project.getReleaseRoot().create("New Release", user());
-		testPermission(GraphPermission.CREATE_PERM, newRelease);
+		try (NoTrx noTx = db.noTrx()) {
+			Release newRelease = project().getReleaseRoot().create("New Release", user());
+			testPermission(GraphPermission.CREATE_PERM, newRelease);
+		}
 	}
 
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		Project project = project();
-		Release release = project.getInitialRelease();
+		try (NoTrx noTx = db.noTrx()) {
+			Release release = project().getInitialRelease();
 
-		RoutingContext rc = getMockedRoutingContext("");
-		InternalActionContext ac = InternalActionContext.create(rc);
+			RoutingContext rc = getMockedRoutingContext(user());
+			InternalActionContext ac = InternalActionContext.create(rc);
 
-		ReleaseResponse releaseResponse = release.transformToRestSync(ac, 0).toBlocking().first();
-		assertThat(releaseResponse).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive()
-				.isMigrated();
+			ReleaseResponse releaseResponse = release.transformToRestSync(ac, 0).toBlocking().first();
+			assertThat(releaseResponse).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive().isMigrated();
+		}
 	}
 
 	@Override
@@ -223,195 +242,216 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testReadSchemaVersions() throws Exception {
-		Project project = project();
-		List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream()
-				.map(SchemaContainer::getLatestVersion).collect(Collectors.toList());
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().map(SchemaContainer::getLatestVersion)
+					.collect(Collectors.toList());
 
-		List<SchemaContainerVersion> found = new ArrayList<>();
-		for (SchemaContainerVersion version : project.getInitialRelease().findAllSchemaVersions()) {
-			found.add(version);
+			List<SchemaContainerVersion> found = new ArrayList<>();
+			for (SchemaContainerVersion version : project.getInitialRelease().findAllSchemaVersions()) {
+				found.add(version);
+			}
+			assertThat(found).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
 		}
-		assertThat(found).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
 	}
 
 	/**
 	 * Test assigning a schema to a project
+	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testAssignSchema() throws Exception {
-		SchemaContainer schemaContainer = createSchema("bla");
-		updateSchema(schemaContainer, "newfield");
-		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
+		try (NoTrx noTx = db.noTrx()) {
+			SchemaContainer schemaContainer = createSchema("bla");
+			updateSchema(schemaContainer, "newfield");
+			SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 
-		assertThat(latestVersion).as("latest version").isNotNull();
-		SchemaContainerVersion previousVersion = latestVersion.getPreviousVersion();
-		assertThat(previousVersion).as("Previous version").isNotNull();
+			assertThat(latestVersion).as("latest version").isNotNull();
+			SchemaContainerVersion previousVersion = latestVersion.getPreviousVersion();
+			assertThat(previousVersion).as("Previous version").isNotNull();
 
-		Project project = project();
-		Release initialRelease = project.getInitialRelease();
-		Release newRelease = project.getReleaseRoot().create("New Release", user());
+			Project project = project();
+			Release initialRelease = project.getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("New Release", user());
 
-		for (Release release : Arrays.asList(initialRelease, newRelease)) {
-			assertThat(release).as(release.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(latestVersion)
-					.hasNotSchemaVersion(previousVersion);
-		}
+			for (Release release : Arrays.asList(initialRelease, newRelease)) {
+				assertThat(release).as(release.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(latestVersion)
+						.hasNotSchemaVersion(previousVersion);
+			}
 
-		// assign the schema to the project
-		project.getSchemaContainerRoot().addSchemaContainer(schemaContainer);
+			// assign the schema to the project
+			project.getSchemaContainerRoot().addSchemaContainer(schemaContainer);
 
-		initialRelease.reload();
-		newRelease.reload();
+			initialRelease.reload();
+			newRelease.reload();
 
-		for (Release release : Arrays.asList(initialRelease, newRelease)) {
-			assertThat(release).as(release.getName()).hasSchema(schemaContainer).hasSchemaVersion(latestVersion)
-					.hasNotSchemaVersion(previousVersion);
+			for (Release release : Arrays.asList(initialRelease, newRelease)) {
+				assertThat(release).as(release.getName()).hasSchema(schemaContainer).hasSchemaVersion(latestVersion)
+						.hasNotSchemaVersion(previousVersion);
+			}
 		}
 	}
 
 	/**
 	 * Test unassigning a schema from a project
+	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testUnassignSchema() throws Exception {
-		Project project = project();
-		List<? extends SchemaContainer> schemas = project.getSchemaContainerRoot().findAll();
-		SchemaContainer schemaContainer = schemas.get(0);
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			List<? extends SchemaContainer> schemas = project.getSchemaContainerRoot().findAll();
+			SchemaContainer schemaContainer = schemas.get(0);
 
-		Release initialRelease = project.getInitialRelease();
-		Release newRelease = project.getReleaseRoot().create("New Release", user());
+			Release initialRelease = project.getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("New Release", user());
 
-		project.getSchemaContainerRoot().removeSchemaContainer(schemaContainer);
-		initialRelease.reload();
-		newRelease.reload();
+			project.getSchemaContainerRoot().removeSchemaContainer(schemaContainer);
+			initialRelease.reload();
+			newRelease.reload();
 
-		for (Release release : Arrays.asList(initialRelease, newRelease)) {
-			assertThat(release).as(release.getName()).hasNotSchema(schemaContainer)
-					.hasNotSchemaVersion(schemaContainer.getLatestVersion());
+			for (Release release : Arrays.asList(initialRelease, newRelease)) {
+				assertThat(release).as(release.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(schemaContainer.getLatestVersion());
+			}
 		}
 	}
 
 	@Test
 	public void testReleaseSchemaVersion() throws Exception {
-		Project project = project();
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
 
-		SchemaContainer schemaContainer = createSchema("bla");
-		SchemaContainerVersion firstVersion = schemaContainer.getLatestVersion();
+			SchemaContainer schemaContainer = createSchema("bla");
+			SchemaContainerVersion firstVersion = schemaContainer.getLatestVersion();
 
-		// assign the schema to the project
-		project.getSchemaContainerRoot().addSchemaContainer(schemaContainer);
+			// assign the schema to the project
+			project.getSchemaContainerRoot().addSchemaContainer(schemaContainer);
 
-		// update schema
-		updateSchema(schemaContainer, "newfield");
-		SchemaContainerVersion secondVersion = schemaContainer.getLatestVersion();
+			// update schema
+			updateSchema(schemaContainer, "newfield");
+			SchemaContainerVersion secondVersion = schemaContainer.getLatestVersion();
 
-		Release initialRelease = project.getInitialRelease();
-		Release newRelease = project.getReleaseRoot().create("New Release", user());
+			Release initialRelease = project.getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("New Release", user());
 
-		assertThat(initialRelease).as(initialRelease.getName()).hasSchema(schemaContainer)
-				.hasSchemaVersion(firstVersion).hasNotSchemaVersion(secondVersion);
-		assertThat(newRelease).as(newRelease.getName()).hasSchema(schemaContainer).hasNotSchemaVersion(firstVersion)
-				.hasSchemaVersion(secondVersion);
+			assertThat(initialRelease).as(initialRelease.getName()).hasSchema(schemaContainer).hasSchemaVersion(firstVersion)
+					.hasNotSchemaVersion(secondVersion);
+			assertThat(newRelease).as(newRelease.getName()).hasSchema(schemaContainer).hasNotSchemaVersion(firstVersion)
+					.hasSchemaVersion(secondVersion);
+		}
 	}
 
 	@Test
 	public void testReadMicroschemaVersions() throws Exception {
-		Project project = project();
-		List<MicroschemaContainerVersion> versions = project.getMicroschemaContainerRoot().findAll().stream()
-				.map(MicroschemaContainer::getLatestVersion).collect(Collectors.toList());
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			List<MicroschemaContainerVersion> versions = project.getMicroschemaContainerRoot().findAll().stream()
+					.map(MicroschemaContainer::getLatestVersion).collect(Collectors.toList());
 
-		List<MicroschemaContainerVersion> found = new ArrayList<>();
-		for (MicroschemaContainerVersion version : project.getInitialRelease().findAllMicroschemaVersions()) {
-			found.add(version);
+			List<MicroschemaContainerVersion> found = new ArrayList<>();
+			for (MicroschemaContainerVersion version : project.getInitialRelease().findAllMicroschemaVersions()) {
+				found.add(version);
+			}
+			assertThat(found).as("List of microschema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
 		}
-		assertThat(found).as("List of microschema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
 	}
 
 	/**
 	 * Test assigning a microschema to a project
+	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testAssignMicroschema() throws Exception {
-		MicroschemaContainer microschemaContainer = createMicroschema("bla");
-		updateMicroschema(microschemaContainer, "newfield");
-		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
+		try (NoTrx noTx = db.noTrx()) {
+			MicroschemaContainer microschemaContainer = createMicroschema("bla");
+			updateMicroschema(microschemaContainer, "newfield");
+			MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 
-		assertThat(latestVersion).as("latest version").isNotNull();
-		MicroschemaContainerVersion previousVersion = latestVersion.getPreviousVersion();
-		assertThat(previousVersion).as("Previous version").isNotNull();
+			assertThat(latestVersion).as("latest version").isNotNull();
+			MicroschemaContainerVersion previousVersion = latestVersion.getPreviousVersion();
+			assertThat(previousVersion).as("Previous version").isNotNull();
 
-		Project project = project();
-		Release initialRelease = project.getInitialRelease();
-		Release newRelease = project.getReleaseRoot().create("New Release", user());
+			Project project = project();
+			Release initialRelease = project.getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("New Release", user());
 
-		for (Release release : Arrays.asList(initialRelease, newRelease)) {
-			assertThat(release).as(release.getName()).hasNotMicroschema(microschemaContainer).hasNotMicroschemaVersion(latestVersion)
-					.hasNotMicroschemaVersion(previousVersion);
-		}
+			for (Release release : Arrays.asList(initialRelease, newRelease)) {
+				assertThat(release).as(release.getName()).hasNotMicroschema(microschemaContainer).hasNotMicroschemaVersion(latestVersion)
+						.hasNotMicroschemaVersion(previousVersion);
+			}
 
-		// assign the schema to the project
-		project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
+			// assign the schema to the project
+			project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
 
-		initialRelease.reload();
-		newRelease.reload();
+			initialRelease.reload();
+			newRelease.reload();
 
-		for (Release release : Arrays.asList(initialRelease, newRelease)) {
-			assertThat(release).as(release.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(latestVersion)
-					.hasNotMicroschemaVersion(previousVersion);
+			for (Release release : Arrays.asList(initialRelease, newRelease)) {
+				assertThat(release).as(release.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(latestVersion)
+						.hasNotMicroschemaVersion(previousVersion);
+			}
 		}
 	}
 
 	/**
 	 * Test unassigning a microschema from a project
+	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testUnassignMicroschema() throws Exception {
-		Project project = project();
-		List<? extends MicroschemaContainer> microschemas = project.getMicroschemaContainerRoot().findAll();
-		MicroschemaContainer microschemaContainer = microschemas.get(0);
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
+			List<? extends MicroschemaContainer> microschemas = project.getMicroschemaContainerRoot().findAll();
+			MicroschemaContainer microschemaContainer = microschemas.get(0);
 
-		Release initialRelease = project.getInitialRelease();
-		Release newRelease = project.getReleaseRoot().create("New Release", user());
+			Release initialRelease = project.getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("New Release", user());
 
-		project.getMicroschemaContainerRoot().removeMicroschema(microschemaContainer);
-		initialRelease.reload();
-		newRelease.reload();
+			project.getMicroschemaContainerRoot().removeMicroschema(microschemaContainer);
+			initialRelease.reload();
+			newRelease.reload();
 
-		for (Release release : Arrays.asList(initialRelease, newRelease)) {
-			assertThat(release).as(release.getName()).hasNotMicroschema(microschemaContainer)
-					.hasNotMicroschemaVersion(microschemaContainer.getLatestVersion());
+			for (Release release : Arrays.asList(initialRelease, newRelease)) {
+				assertThat(release).as(release.getName()).hasNotMicroschema(microschemaContainer)
+						.hasNotMicroschemaVersion(microschemaContainer.getLatestVersion());
+			}
 		}
 	}
 
 	@Test
 	public void testReleaseMicroschemaVersion() throws Exception {
-		Project project = project();
+		try (NoTrx noTx = db.noTrx()) {
+			Project project = project();
 
-		MicroschemaContainer microschemaContainer = createMicroschema("bla");
-		MicroschemaContainerVersion firstVersion = microschemaContainer.getLatestVersion();
+			MicroschemaContainer microschemaContainer = createMicroschema("bla");
+			MicroschemaContainerVersion firstVersion = microschemaContainer.getLatestVersion();
 
-		// assign the microschema to the project
-		project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
+			// assign the microschema to the project
+			project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
 
-		// update microschema
-		updateMicroschema(microschemaContainer, "newfield");
-		MicroschemaContainerVersion secondVersion = microschemaContainer.getLatestVersion();
+			// update microschema
+			updateMicroschema(microschemaContainer, "newfield");
+			MicroschemaContainerVersion secondVersion = microschemaContainer.getLatestVersion();
 
-		Release initialRelease = project.getInitialRelease();
-		Release newRelease = project.getReleaseRoot().create("New Release", user());
+			Release initialRelease = project.getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("New Release", user());
 
-		assertThat(initialRelease).as(initialRelease.getName()).hasMicroschema(microschemaContainer)
-				.hasMicroschemaVersion(firstVersion).hasNotMicroschemaVersion(secondVersion);
-		assertThat(newRelease).as(newRelease.getName()).hasMicroschema(microschemaContainer).hasNotMicroschemaVersion(firstVersion)
-				.hasMicroschemaVersion(secondVersion);
+			assertThat(initialRelease).as(initialRelease.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(firstVersion)
+					.hasNotMicroschemaVersion(secondVersion);
+			assertThat(newRelease).as(newRelease.getName()).hasMicroschema(microschemaContainer).hasNotMicroschemaVersion(firstVersion)
+					.hasMicroschemaVersion(secondVersion);
+		}
 	}
 
 	/**
 	 * Create a new schema with a single string field "name"
-	 * @param name schema name
+	 * 
+	 * @param name
+	 *            schema name
 	 * @return schema container
 	 * @throws Exception
 	 */
@@ -425,8 +465,11 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 
 	/**
 	 * Update the schema container by adding a new string field with given name and reload the schema container
-	 * @param schemaContainer schema container
-	 * @param newName new name
+	 * 
+	 * @param schemaContainer
+	 *            schema container
+	 * @param newName
+	 *            new name
 	 * @throws Exception
 	 */
 	protected void updateSchema(SchemaContainer schemaContainer, String newName) throws Exception {
@@ -441,14 +484,16 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 		SchemaChangesListModel model = new SchemaChangesListModel();
 		model.getChanges().addAll(SchemaComparator.getIntance().diff(schema, updatedSchema));
 
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		schemaContainer.getLatestVersion().applyChanges(ac, model).toBlocking().last();
 		schemaContainer.reload();
 	}
 
 	/**
 	 * Create a new microschema with a single string field "name"
-	 * @param name microschema name
+	 * 
+	 * @param name
+	 *            microschema name
 	 * @return microschema container
 	 * @throws Exception
 	 */
@@ -461,8 +506,11 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 
 	/**
 	 * Update the microschema container by adding a new string field with given name and reload the microschema container
-	 * @param microschemaContainer microschema container
-	 * @param newName new name
+	 * 
+	 * @param microschemaContainer
+	 *            microschema container
+	 * @param newName
+	 *            new name
 	 * @throws Exception
 	 */
 	protected void updateMicroschema(MicroschemaContainer microschemaContainer, String newName) throws Exception {
@@ -476,7 +524,7 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 		SchemaChangesListModel model = new SchemaChangesListModel();
 		model.getChanges().addAll(MicroschemaComparator.getIntance().diff(microschema, updatedMicroschema));
 
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		microschemaContainer.getLatestVersion().applyChanges(ac, model).toBlocking().last();
 		microschemaContainer.reload();
 	}

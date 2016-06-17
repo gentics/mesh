@@ -6,13 +6,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.HashSet;
 import java.util.Set;
 
-
 import com.gentics.mesh.context.InternalActionContext;
-
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
-
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
@@ -32,10 +29,10 @@ public final class RestModelHelper {
 	 */
 	public static void setRolePermissions(InternalActionContext ac, GraphFieldSchemaContainer<?, ?, ?, ?> sourceElement,
 			FieldSchemaContainer restModel) {
-		String rolePermissionParameter = ac.getRolePermissionParameter();
+		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 
-		if (!isEmpty(rolePermissionParameter)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, rolePermissionParameter, READ_PERM).toBlocking().first();
+		if (!isEmpty(roleUuid)) {
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).toBlocking().first();
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(sourceElement);
 				Set<String> humanNames = new HashSet<>();

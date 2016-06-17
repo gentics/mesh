@@ -44,8 +44,8 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -207,7 +207,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Role role = role();
 			String uuid = role.getUuid();
 
-			Future<RoleResponse> future = getClient().findRoleByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+			Future<RoleResponse> future = getClient().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()));
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
@@ -280,7 +280,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			int perPage = 11;
 			int page = 1;
-			future = getClient().findRoles(new PagingParameter(page, perPage));
+			future = getClient().findRoles(new PagingParameters(page, perPage));
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -302,7 +302,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<RoleResponse> allRoles = new ArrayList<>();
 			for (page = 1; page <= totalPages; page++) {
-				Future<RoleListResponse> pageFuture = getClient().findRoles(new PagingParameter(page, perPage));
+				Future<RoleListResponse> pageFuture = getClient().findRoles(new PagingParameters(page, perPage));
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -315,15 +315,15 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			future = getClient().findRoles(new PagingParameter(-1, perPage));
+			future = getClient().findRoles(new PagingParameters(-1, perPage));
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findRoles(new PagingParameter(1, -1));
+			future = getClient().findRoles(new PagingParameters(1, -1));
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findRoles(new PagingParameter(4242, 25));
+			future = getClient().findRoles(new PagingParameters(4242, 25));
 			latchFor(future);
 			assertSuccess(future);
 
@@ -337,7 +337,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<RoleListResponse> future = getClient().findRoles(new PagingParameter(1, 0));
+		Future<RoleListResponse> future = getClient().findRoles(new PagingParameters(1, 0));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());

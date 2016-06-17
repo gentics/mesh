@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -73,7 +73,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameter pagingInfo) throws InvalidArgumentException {
+	public PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
 		MeshAuthUser requestUser = ac.getUser();
 		VertexTraversal<?, ?, ?> traversal = out(getRootLabel()).has(getPersistanceClass()).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
 				.retain(requestUser.getImpl()).back();

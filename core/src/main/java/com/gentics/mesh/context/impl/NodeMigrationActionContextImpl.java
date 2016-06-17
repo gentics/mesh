@@ -1,7 +1,6 @@
 package com.gentics.mesh.context.impl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -10,8 +9,7 @@ import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.link.WebRootLinkReplacer.Type;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.LinkType;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.MultiMap;
@@ -28,8 +26,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	private String body;
 
 	private String query;
-
-	private List<String> languageTags;
 
 	private Project project;
 
@@ -53,15 +49,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		this.query = query;
 	}
 
-	/**
-	 * Set the language tags.
-	 *
-	 * @param languageTags
-	 */
-	public void setLanguageTags(List<String> languageTags) {
-		this.languageTags = languageTags;
-	}
-
 	@Override
 	public Map<String, Object> data() {
 		if (data == null) {
@@ -81,27 +68,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public List<String> getSelectedLanguageTags() {
-		return languageTags;
-	}
-
-	@Override
-	public PagingParameter getPagingParameter() {
-		return PagingParameter.fromQuery(query());
-	}
-
-	@Override
-	public boolean getExpandAllFlag() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public Type getResolveLinksType() {
-		return Type.OFF;
-	}
-
-	@Override
 	public void setUser(MeshAuthUser user) {
 		// TODO Auto-generated method stub
 
@@ -109,6 +75,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	/**
 	 * Set the project
+	 * 
 	 * @param project
 	 */
 	public void setProject(Project project) {

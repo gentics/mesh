@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field.string;
 import static com.gentics.mesh.core.field.string.StringFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.string.StringFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.string.StringFieldTestHelper.FILLTEXT;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -168,7 +169,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (node) -> {
 			updateContainer(ac, node, STRING_FIELD, null);
 		});
@@ -177,7 +178,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveRequiredFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
 			updateContainer(ac, container, STRING_FIELD, null);
 		});
@@ -186,7 +187,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeUpdateFromRestValidSimpleValueTestcase(STRING_FIELD, FILLTEXT, (container) -> {
 			StringField field = new StringFieldImpl();
 			field.setString("someValue");

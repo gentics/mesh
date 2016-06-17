@@ -26,9 +26,9 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -40,12 +40,11 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
@@ -231,7 +230,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		schema.setVersion(schema.getVersion() + 1);
 
 		// 6. Read node and check additional field
-		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new NodeRequestParameter().draft()));
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParameters().draft()));
 		assertNotNull("The response should contain the content field.", response.getFields().hasField("content"));
 		assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
 				response.getFields().getNumberField("content").getClass());
@@ -555,7 +554,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 		// Read node and check additional field
 		NodeResponse response = call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new NodeRequestParameter().draft()));
+				() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParameters().draft()));
 		assertNotNull(response);
 
 		// Update the node and set the new field
@@ -570,7 +569,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 		// Read node and check additional field
 		response = call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new NodeRequestParameter().draft()));
+				() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParameters().draft()));
 		assertNotNull(response);
 		assertNotNull(response.getFields().hasField("extraname"));
 
@@ -603,7 +602,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		failingLatch(latch);
 
 		// Read node and check additional field
-		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new NodeRequestParameter().draft()));
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParameters().draft()));
 		assertNotNull(response);
 		assertNull(response.getFields().getStringField("content"));
 

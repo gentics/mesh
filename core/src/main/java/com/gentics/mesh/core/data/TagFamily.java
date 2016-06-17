@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import rx.Observable;
@@ -58,7 +58,7 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
+	PageImpl<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Return the tag family to which this tag belongs.

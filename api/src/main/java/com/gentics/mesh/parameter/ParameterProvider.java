@@ -1,6 +1,6 @@
-package com.gentics.mesh.query;
+package com.gentics.mesh.parameter;
 
-public interface QueryParameterProvider {
+public interface ParameterProvider {
 
 	/**
 	 * Return the query parameters which do not include the the first &amp; or ? character.

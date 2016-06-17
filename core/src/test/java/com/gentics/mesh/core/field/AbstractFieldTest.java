@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field;
 
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -94,7 +95,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected void invokeUpdateFromRestTestcase(String fieldName, FieldFetcher fetcher, DataProvider createEmpty) {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		NodeGraphFieldContainer container = createNode(false).v2();
 		updateContainer(ac, container, fieldName, null);
 		container.reload();
@@ -139,7 +140,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 			boolean expectError) {
 		NodeGraphFieldContainer container = createNode(true).v2();
 		try {
-			InternalActionContext ac = getMockedInternalActionContext("");
+			InternalActionContext ac = getMockedInternalActionContext();
 			updateContainer(ac, container, fieldName, null);
 			if (expectError) {
 				fail("The update should have failed but it did not.");

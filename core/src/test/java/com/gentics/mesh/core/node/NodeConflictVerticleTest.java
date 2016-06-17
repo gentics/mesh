@@ -38,7 +38,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 import com.gentics.mesh.util.Tuple;
@@ -84,7 +84,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "0.1");
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 
 			// Invoke an initial update on the node
@@ -106,7 +106,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			// Invoke an initial update on the node - Update Version 0.1 Name  -> 0.2
 			Node node = getTestNode();
 			NodeUpdateRequest request1 = prepareNameFieldUpdateRequest("1234", "0.1");
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request1, parameters));
 			assertThat(restNode).hasVersion("0.2");
@@ -177,7 +177,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-firstname")),
 							Tuple.tuple("lastName", FieldUtil.createStringField("test-lastname"))));
 
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("0.2");
@@ -201,7 +201,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	private NodeUpdateRequest modifingRequest() {
 		try (Trx trx = db.trx()) {
 			Node node = getTestNode();
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "0.2");
 
@@ -233,7 +233,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 		System.out.println("Dedup request");
 		try (Trx trx = db.trx()) {
 			Node node = getTestNode();
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("0.4");
@@ -270,7 +270,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	private void deletingRequest() {
 		try (Trx trx = db.trx()) {
 			Node node = getTestNode();
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request4 = prepareNameFieldUpdateRequest("1234", "0.3");
 			request4.getFields().put("micronode", null);
@@ -326,7 +326,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 		// Modify 0.2 and update micronode
 		try (Trx trx = db.trx()) {
 			Node node = getTestNode();
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "0.2");
 
@@ -348,7 +348,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 		// Another update request based on 0.2 which also updates the micronode - A conflict should be detected
 		try (Trx trx = db.trx()) {
 			Node node = getTestNode();
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "0.2");
 
@@ -380,7 +380,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "42.1");
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 
 			call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters), BAD_REQUEST, "node_error_draft_not_found", "42.1",

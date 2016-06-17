@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Future;
@@ -202,7 +202,7 @@ public class BinaryNodeVerticleTest extends AbstractBinaryVerticleTest {
 		node.reload();
 
 		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new NodeRequestParameter().draft()));
+				new VersioningParameters().draft()));
 
 		BinaryField binaryField = response.getFields().getBinaryField("binary");
 		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
@@ -268,7 +268,7 @@ public class BinaryNodeVerticleTest extends AbstractBinaryVerticleTest {
 		node.reload();
 
 		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new NodeRequestParameter().draft()));
+				new VersioningParameters().draft()));
 
 		BinaryField binaryField = response.getFields().getBinaryField(fieldName);
 		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());

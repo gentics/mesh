@@ -14,8 +14,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.VersionNumber;
 
 /**
  * A node field container is a aggregation node that holds localized fields.

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field.bool;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.FILL;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -159,7 +160,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext("", user());
 		invokeRemoveFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (node) -> {
 			updateContainer(ac, node, BOOLEAN_LIST, null);
 		});
@@ -168,7 +169,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext("", user());
 		invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (container) -> {
 			updateContainer(ac, container, BOOLEAN_LIST, null);
 		});
@@ -177,7 +178,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext("", user());
 		invokeUpdateFromRestValidSimpleValueTestcase(BOOLEAN_LIST, FILL, (container) -> {
 			BooleanFieldListImpl field = new BooleanFieldListImpl();
 			field.getItems().add(true);

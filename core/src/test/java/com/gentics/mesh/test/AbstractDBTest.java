@@ -1,13 +1,8 @@
 package com.gentics.mesh.test;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -37,17 +32,13 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.HttpQueryUtils;
+import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.util.RestAssert;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.MultiMap;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.Session;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -229,57 +220,12 @@ public abstract class AbstractDBTest {
 	}
 
 	protected String getJson(Node node) throws Exception {
-		RoutingContext rc = getMockedRoutingContext("lang=en&version=draft");
+		RoutingContext rc = Mocks.getMockedRoutingContext("lang=en&version=draft", user());
 		InternalActionContext ac = InternalActionContext.create(rc);
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().single());
 	}
 
-	protected InternalActionContext getMockedVoidInternalActionContext(String query) {
-		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query, true));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return ac;
-	}
 
-	protected InternalActionContext getMockedInternalActionContext(String query) {
-		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query, false));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return ac;
-	}
-
-	protected RoutingContext getMockedRoutingContext(String query) {
-		return getMockedRoutingContext(query, false);
-	}
-
-	protected RoutingContext getMockedRoutingContext(String query, boolean noInternalMap) {
-		User user = dataProvider.getUserInfo().getUser();
-		Map<String, Object> map = new HashMap<>();
-		if (noInternalMap) {
-			map = null;
-		}
-		RoutingContext rc = mock(RoutingContext.class);
-		Session session = mock(Session.class);
-		HttpServerRequest request = mock(HttpServerRequest.class);
-		when(request.query()).thenReturn(query);
-		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
-		when(request.getParam(Mockito.anyString())).thenAnswer(in -> {
-			String key = (String) in.getArguments()[0];
-			return paramMap.get(key);
-		});
-		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
-		MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
-		when(rc.data()).thenReturn(map);
-		MultiMap headerMap = mock(MultiMap.class);
-		when(headerMap.get("Accept-Language")).thenReturn("en, en-gb;q=0.8, en;q=0.72");
-		when(request.headers()).thenReturn(headerMap);
-		when(rc.request()).thenReturn(request);
-		when(rc.session()).thenReturn(session);
-		JsonObject principal = new JsonObject();
-		principal.put("uuid", user.getUuid());
-		when(rc.user()).thenReturn(requestUser);
-		when(rc.get(RouterStorage.PROJECT_CONTEXT_KEY)).thenReturn(project().getName());
-		return rc;
-
-	}
 
 }

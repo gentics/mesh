@@ -47,7 +47,7 @@ public interface ActionContext {
 	 * @return value of the request parameter or null if the parameter was not found
 	 */
 	String getParameter(String name);
-
+	
 	/**
 	 * Send the body string and complete the action.
 	 * 

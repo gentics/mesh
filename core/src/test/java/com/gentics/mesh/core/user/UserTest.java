@@ -4,6 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
+import static com.gentics.mesh.mock.Mocks.getMockedVoidInternalActionContext;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -39,7 +42,7 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -83,7 +86,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testHasPermission() {
 		try (NoTrx noTx = db.noTrx()) {
-			InternalActionContext ac = getMockedVoidInternalActionContext("");
+			InternalActionContext ac = getMockedVoidInternalActionContext(user());
 			User user = user();
 			Language language = english();
 			for (int e = 0; e < 10; e++) {
@@ -103,7 +106,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Ignore
 	public void testHasPermissionAsync() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
-			InternalActionContext ac = getMockedVoidInternalActionContext("");
+			InternalActionContext ac = getMockedVoidInternalActionContext(user());
 			User user = user();
 			Language language = english();
 			Set<Observable<Boolean>> obs = new HashSet<>();
@@ -133,14 +136,14 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTrx noTx = db.noTrx()) {
-			RoutingContext rc = getMockedRoutingContext("");
+			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
-			PageImpl<? extends User> page = boot.userRoot().findAll(ac, new PagingParameter(1, 6));
+			PageImpl<? extends User> page = boot.userRoot().findAll(ac, new PagingParameters(1, 6));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(3, page.getSize());
 
-			page = boot.userRoot().findAll(ac, new PagingParameter(1, 15));
+			page = boot.userRoot().findAll(ac, new PagingParameters(1, 15));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(users().size(), page.getSize());
 		}
@@ -150,7 +153,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTrx noTx = db.noTrx()) {
-			PageImpl<? extends User> page = boot.userRoot().findAll(getMockedInternalActionContext(""), new PagingParameter(1, 25));
+			PageImpl<? extends User> page = boot.userRoot().findAll(getMockedInternalActionContext(null, user()), new PagingParameters(1, 25));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
 		}
@@ -159,7 +162,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testGetPrincipal() {
 		try (NoTrx noTx = db.noTrx()) {
-			RoutingContext rc = getMockedRoutingContext("");
+			RoutingContext rc = getMockedRoutingContext(user());
 			io.vertx.ext.auth.User user = rc.user();
 			assertNotNull(user);
 			JsonObject json = user.principal();
@@ -226,7 +229,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Language language = english();
 			String[] perms = { "create", "update", "delete", "read" };
-			RoutingContext rc = getMockedRoutingContext("");
+			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
@@ -252,7 +255,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Language language = english();
 			String[] perms = { "create", "update", "delete", "read" };
-			RoutingContext rc = getMockedRoutingContext("");
+			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
@@ -275,10 +278,10 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			User extraUser = userRoot.create("extraUser", user());
 			group().addUser(extraUser);
 			role().grantPermissions(extraUser, READ_PERM);
-			RoutingContext rc = getMockedRoutingContext("");
+			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			PageImpl<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParameter(1, 10));
+			PageImpl<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParameters(1, 10));
 
 			assertEquals(2, userPage.getTotalElements());
 		}
@@ -308,7 +311,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testTransformation() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
-			RoutingContext rc = getMockedRoutingContext("");
+			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
 			UserResponse restUser = user().transformToRest(ac, 0).toBlocking().single();
@@ -368,7 +371,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			Role roleWithNoPerm;
 			Role roleWithCreatePerm;
 
-			InternalActionContext ac = getMockedInternalActionContext("");
+			InternalActionContext ac = getMockedInternalActionContext(null, user());
 
 			Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
 			newUser = meshRoot().getUserRoot().create("Anton", user());

@@ -1,5 +1,6 @@
 package com.gentics.mesh.test;
 
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -15,7 +16,7 @@ import io.vertx.ext.web.RoutingContext;
 public abstract class AbstractBasicIsolatedObjectTest extends AbstractIsolatedBasicDBTest implements BasicObjectTestcases {
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
-		RoutingContext rc = getMockedRoutingContext("");
+		RoutingContext rc = getMockedRoutingContext();
 		InternalActionContext ac = InternalActionContext.create(rc);
 
 		try (Trx tx = db.trx()) {

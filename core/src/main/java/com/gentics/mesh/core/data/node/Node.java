@@ -24,9 +24,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
-import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import rx.Observable;
@@ -179,7 +179,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Tag> getTags(Release release, PagingParameter params) throws InvalidArgumentException;
+	PageImpl<? extends Tag> getTags(Release release, PagingParameters params) throws InvalidArgumentException;
 
 	/**
 	 * Return a list of language names for draft versions in the latest release
@@ -293,7 +293,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @throws InvalidArgumentException
 	 */
 	PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, Type type,
-			PagingParameter pagingParameter) throws InvalidArgumentException;
+			PagingParameters pagingParameter) throws InvalidArgumentException;
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the

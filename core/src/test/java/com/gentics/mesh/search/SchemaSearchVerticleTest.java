@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
 
@@ -67,19 +67,19 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	public void testSearchSchema() throws InterruptedException, JSONException {
 		fullIndex();
 
-		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleQuery("folder"), new PagingParameter().setPage(1).setPerPage(2));
+		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleQuery("folder"), new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
 		assertEquals(1, response.getData().size());
 
-		future = getClient().searchSchemas(getSimpleQuery("blub"), new PagingParameter().setPage(1).setPerPage(2));
+		future = getClient().searchSchemas(getSimpleQuery("blub"), new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
 		assertEquals(0, response.getData().size());
 
-		future = getClient().searchSchemas(getSimpleTermQuery("name", "folder"), new PagingParameter().setPage(1).setPerPage(2));
+		future = getClient().searchSchemas(getSimpleTermQuery("name", "folder"), new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -93,7 +93,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		Schema schema = createSchema(newName);
 		MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName),
-				new PagingParameter().setPage(1).setPerPage(2));
+				new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
@@ -107,13 +107,13 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		Schema schema = createSchema(schemaName);
 
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
-				new PagingParameter().setPage(1).setPerPage(2));
+				new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(1, future.result().getData().size());
 
 		deleteSchema(schema.getUuid());
-		future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParameter().setPage(1).setPerPage(2));
+		future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -138,14 +138,14 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 
 		// 4. Search for the original schema
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
-				new PagingParameter().setPage(1).setPerPage(2));
+				new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals("The schema with the old name {" + schemaName + "} was found but it should not have been since we updated it.", 0,
 				future.result().getData().size());
 
 		// 5. Search for the updated schema
-		future = getClient().searchSchemas(getSimpleTermQuery("name", newSchemaName), new PagingParameter().setPage(1).setPerPage(2));
+		future = getClient().searchSchemas(getSimpleTermQuery("name", newSchemaName), new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals("The schema with the updated name was not found.", 1, future.result().getData().size());

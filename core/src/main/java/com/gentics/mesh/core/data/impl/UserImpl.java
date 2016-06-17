@@ -49,6 +49,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -370,11 +371,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 * @return
 	 */
 	private Observable<UserResponse> setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
+		NodeParameters parameters = new NodeParameters(ac);
 		Node node = getReferencedNode();
 		if (node == null) {
 			return Observable.empty();
 		} else {
-			boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference") || ac.getExpandAllFlag();
+			boolean expandReference = parameters.getExpandedFieldnames().contains("nodeReference") || parameters.getExpandAll();
 			if (expandReference) {
 				return node.transformToRest(ac, level).map(transformedNode -> {
 					restUser.setNodeReference(transformedNode);

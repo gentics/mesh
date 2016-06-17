@@ -83,7 +83,7 @@ public class WebRootHandler {
 						// Use the language for which the node was resolved
 						List<String> languageTags = new ArrayList<>();
 						languageTags.add(lastSegment.getLanguageTag());
-						languageTags.addAll(ac.getSelectedLanguageTags());
+						languageTags.addAll(ac.getNodeParameters().getLanguageList());
 						return node.transformToRest(ac, 0, languageTags.toArray(new String[0]));
 					}
 

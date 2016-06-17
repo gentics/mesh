@@ -11,7 +11,7 @@ import org.mockito.Mockito;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 
 public class RestModelPagingHelperTest {
 
@@ -26,7 +26,7 @@ public class RestModelPagingHelperTest {
 		int nElements = 200;
 		long nPageSize = 21;
 
-		PagingParameter info = new PagingParameter(nCurrentPage + 1, (int) nPageSize);
+		PagingParameters info = new PagingParameters(nCurrentPage + 1, (int) nPageSize);
 
 		when(page.getNumber()).thenReturn(nCurrentPage);
 		when(page.getTotalPages()).thenReturn(nPages);

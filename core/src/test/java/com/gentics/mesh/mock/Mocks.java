@@ -1,16 +1,19 @@
 package com.gentics.mesh.mock;
 
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.mockito.Mockito;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -25,6 +28,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
+import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
@@ -80,10 +84,19 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.demo.TestDataProvider;
+import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.HttpQueryUtils;
 
-public final class MockingUtils {
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
 
-	private MockingUtils() {
+public final class Mocks {
+
+	private Mocks() {
 
 	}
 
@@ -338,7 +351,7 @@ public final class MockingUtils {
 		when(micronodeField.getMicronode()).thenReturn(micronode);
 		when(container.getMicronode("micronode")).thenReturn(micronodeField);
 
-		//Node List Field
+		// Node List Field
 		NodeGraphFieldList nodeListField = mock(NodeGraphFieldListImpl.class);
 		Mockito.<List<? extends NodeGraphField>> when(nodeListField.getList()).thenReturn(Arrays.asList(nodeField, nodeField, nodeField));
 		when(container.getNodeList("nodeList")).thenReturn(nodeListField);
@@ -372,13 +385,93 @@ public final class MockingUtils {
 		// TODO currently, this mock is only used for the search document example, where we want to omit
 		// fields of type "list of micronodes". We should better add an argument to the method to specify,
 		// which types of fields should be added
-		//		// Micronode List Field
-		//		MicronodeGraphFieldList micronodeListField = mock(MicronodeGraphFieldListImpl.class);
-		//		Mockito.<List<? extends MicronodeGraphField>> when(micronodeListField.getList()).thenReturn(Arrays.asList(micronodeField, micronodeField, micronodeField));
-		//		when(container.getMicronodeList("micronodeList")).thenReturn(micronodeListField);
+		// // Micronode List Field
+		// MicronodeGraphFieldList micronodeListField = mock(MicronodeGraphFieldListImpl.class);
+		// Mockito.<List<? extends MicronodeGraphField>> when(micronodeListField.getList()).thenReturn(Arrays.asList(micronodeField, micronodeField,
+		// micronodeField));
+		// when(container.getMicronodeList("micronodeList")).thenReturn(micronodeListField);
 
-		//TODO add select fields
+		// TODO add select fields
 
 		return container;
+	}
+
+	public static InternalActionContext getMockedVoidInternalActionContext(User user) {
+		return getMockedVoidInternalActionContext(null, user);
+	}
+
+	public static InternalActionContext getMockedVoidInternalActionContext(String query, User user) {
+		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query, true, user, null));
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		return ac;
+	}
+
+	public static InternalActionContext getMockedInternalActionContext() {
+		return getMockedInternalActionContext("", null);
+	}
+
+	public static InternalActionContext getMockedInternalActionContext(String query) {
+		return getMockedInternalActionContext(query, null);
+	}
+
+	public static InternalActionContext getMockedInternalActionContext(User user) {
+		return getMockedInternalActionContext("", user);
+	}
+
+	public static InternalActionContext getMockedInternalActionContext(String query, User user) {
+		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query, false, user, null));
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		return ac;
+	}
+
+	public static RoutingContext getMockedRoutingContext() {
+		return getMockedRoutingContext("", null);
+	}
+
+	public static RoutingContext getMockedRoutingContext(User user) {
+		return getMockedRoutingContext("", user);
+	}
+
+	public static RoutingContext getMockedRoutingContext(String query) {
+		return getMockedRoutingContext(query, null);
+	}
+
+	public static RoutingContext getMockedRoutingContext(String query, User user) {
+		return getMockedRoutingContext(query, false, user, null);
+	}
+
+	public static RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, User user, Project project) {
+		Map<String, Object> map = new HashMap<>();
+		if (noInternalMap) {
+			map = null;
+		}
+		RoutingContext rc = mock(RoutingContext.class);
+		Session session = mock(Session.class);
+		HttpServerRequest request = mock(HttpServerRequest.class);
+		when(request.query()).thenReturn(query);
+		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
+		when(request.getParam(Mockito.anyString())).thenAnswer(in -> {
+			String key = (String) in.getArguments()[0];
+			return paramMap.get(key);
+		});
+		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
+		if (user != null) {
+			MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
+			when(rc.user()).thenReturn(requestUser);
+			// JsonObject principal = new JsonObject();
+			// principal.put("uuid", user.getUuid());
+		}
+		when(rc.data()).thenReturn(map);
+		MultiMap headerMap = mock(MultiMap.class);
+		when(headerMap.get("Accept-Language")).thenReturn("en, en-gb;q=0.8, en;q=0.72");
+		when(request.headers()).thenReturn(headerMap);
+		when(rc.request()).thenReturn(request);
+		when(rc.session()).thenReturn(session);
+
+		if (project != null) {
+			when(rc.get(RouterStorage.PROJECT_CONTEXT_KEY)).thenReturn(project.getName());
+		}
+		return rc;
+
 	}
 }

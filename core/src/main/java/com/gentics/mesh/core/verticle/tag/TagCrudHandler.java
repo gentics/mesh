@@ -13,6 +13,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 
 import rx.Observable;
 
@@ -36,11 +38,14 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
+		PagingParameters pagingParams = ac.getPagingParameters();
+		NodeParameters nodeParams = ac.getNodeParameters();
+
 		db.asyncNoTrxExperimental(() -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM).flatMap(tag -> {
 				try {
-					PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null),
-							ac.getSelectedLanguageTags(), Type.forVersion(ac.getVersion()), ac.getPagingParameter());
+					PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null), nodeParams.getLanguageList(),
+							Type.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 					return page.transformToRest(ac, 0);
 				} catch (Exception e) {
 					return Observable.error(e);
@@ -135,7 +140,7 @@ public class TagCrudHandler extends AbstractHandler {
 
 		HandlerUtilities.deleteElement(ac, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
-		} , tagUuid, "tag_deleted");
+		}, tagUuid, "tag_deleted");
 
 	}
 

@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 
 import rx.Observable;
 
@@ -41,7 +41,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Observable<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
-			PagingParameter pagingInfo = ac.getPagingParameter();
+			PagingParameters pagingInfo = new PagingParameters(ac);
 			MeshAuthUser requestUser = ac.getUser();
 			Observable<RestModel> obs = obsGroup.flatMap(group -> {
 				try {
@@ -127,7 +127,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		db.asyncNoTrxExperimental(() -> {
 			MeshAuthUser requestUser = ac.getUser();
-			PagingParameter pagingInfo = ac.getPagingParameter();
+			PagingParameters pagingInfo = new PagingParameters(ac);
 			Observable<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
 			return obsGroup.flatMap(group -> {
 				try {

@@ -27,8 +27,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -58,8 +59,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		String parentNodeUuid;
 		Node baseNode = project().getBaseNode();
 		parentNodeUuid = baseNode.getUuid();
-		NodeListResponse nodeList = call(
-				() -> getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid, new NodeRequestParameter().draft()));
+		NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParameters().draft()));
 		assertEquals(3, nodeList.getData().size());
 
 		NodeCreateRequest create1 = new NodeCreateRequest();
@@ -71,7 +71,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse createdNode = call(() -> getClient().createNode(PROJECT_NAME, create1));
 
 		String uuid = createdNode.getUuid();
-		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, uuid, new NodeRequestParameter().draft()));
+		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, uuid, new VersioningParameters().draft()));
 		assertEquals(0, nodeList.getData().size());
 
 		NodeCreateRequest create2 = new NodeCreateRequest();
@@ -80,10 +80,10 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		create2.setParentNodeUuid(uuid);
 		createdNode = call(() -> getClient().createNode(PROJECT_NAME, create2));
 
-		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, uuid, new NodeRequestParameter().draft()));
+		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, uuid, new VersioningParameters().draft()));
 		assertEquals("The subnode did not contain the created node", 1, nodeList.getData().size());
 
-		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid, new NodeRequestParameter().draft()));
+		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParameters().draft()));
 		assertEquals("The basenode should still contain four nodes.", 4, nodeList.getData().size());
 
 	}
@@ -93,8 +93,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		Node node = folder("news");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
-		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new NodeRequestParameter().draft()));
+		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 		test.assertMeshNode(node, restNode);
 		assertTrue(restNode.isContainer());
 
@@ -113,8 +112,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		role().revokePermissions(folder("2015"), READ_PERM);
 
-		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new NodeRequestParameter().draft()));
+		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 		test.assertMeshNode(node, restNode);
 		assertTrue(restNode.isContainer());
 
@@ -131,8 +129,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new NodeRequestParameter().draft()));
+		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 
 		test.assertMeshNode(node, restNode);
 		assertFalse("The node should not be a container", restNode.isContainer());
@@ -147,8 +144,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
 
-		NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
-				new NodeRequestParameter().draft()));
+		NodeListResponse nodeList = call(
+				() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(), new VersioningParameters().draft()));
 
 		assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
 		assertEquals(expectedItemsInPage, nodeList.getData().size());
@@ -162,8 +159,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		Node nodeWithNoPerm = folder("2015");
 		role().revokePermissions(nodeWithNoPerm, READ_PERM);
 
-		NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter().setPerPage(20000),
-				new NodeRequestParameter().draft()));
+		NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters().setPerPage(20000),
+				new VersioningParameters().draft()));
 
 		assertEquals(node.getChildren().size() - 1, nodeList.getMetainfo().getTotalCount());
 		assertEquals(0, nodeList.getData().stream().filter(p -> nodeWithNoPerm.getUuid().equals(p.getUuid())).count());
@@ -178,8 +175,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		role().revokePermissions(node, READ_PERM);
 
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
-				new NodeRequestParameter());
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
+				new NodeParameters());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 
@@ -196,13 +193,13 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		Release initialRelease = project.getInitialRelease();
 		Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
-		NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
-				new NodeRequestParameter().setRelease(initialRelease.getName()).draft()));
+		NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
+				new VersioningParameters().setRelease(initialRelease.getName()).draft()));
 		assertEquals("Total children in initial release", childrenSize, nodeList.getMetainfo().getTotalCount());
 		assertEquals("Returned children in initial release", expectedItemsInPage, nodeList.getData().size());
 
-		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
-				new NodeRequestParameter().setRelease(newRelease.getName()).draft()));
+		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
+				new VersioningParameters().setRelease(newRelease.getName()).draft()));
 		assertEquals("Total children in initial release", 0, nodeList.getMetainfo().getTotalCount());
 		assertEquals("Returned children in initial release", 0, nodeList.getData().size());
 
@@ -211,8 +208,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		update.getFields().put("name", FieldUtil.createStringField("new"));
 		call(() -> getClient().updateNode(PROJECT_NAME, firstChild.getUuid(), update));
 
-		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
-				new NodeRequestParameter().setRelease(newRelease.getName()).draft()));
+		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
+				new VersioningParameters().setRelease(newRelease.getName()).draft()));
 		assertEquals("Total children in new release", 1, nodeList.getMetainfo().getTotalCount());
 		assertEquals("Returned children in new release", 1, nodeList.getData().size());
 	}

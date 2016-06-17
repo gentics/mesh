@@ -3,7 +3,7 @@ package com.gentics.mesh.rest.method;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.Future;
 
@@ -24,7 +24,7 @@ public interface MicroschemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<Microschema> findMicroschemaByUuid(String uuid, QueryParameterProvider... parameters);
+	Future<Microschema> findMicroschemaByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Update the microschema with the given request.

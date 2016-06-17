@@ -5,12 +5,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Arrays;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.parameter.impl.LinkType;
 
 import rx.Observable;
 
@@ -28,13 +29,13 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 			return Observable.just(null);
 		} else {
 			return graphStringField.transformToRest(ac).map(stringField -> {
-				if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 					Project project = ac.getProject();
 					if (project == null) {
 						project = parentNode.getProject();
 					}
-					stringField.setString(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersion()),
-							stringField.getString(), ac.getResolveLinksType(), project.getName(), languageTags));
+					stringField.setString(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersioningParameters().getVersion()),
+							stringField.getString(), ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
 				}
 				return stringField;
 			});

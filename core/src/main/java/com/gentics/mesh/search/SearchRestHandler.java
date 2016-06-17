@@ -36,7 +36,7 @@ import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
@@ -88,7 +88,7 @@ public class SearchRestHandler {
 			RootVertex<T> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
 					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
-		PagingParameter pagingInfo = ac.getPagingParameter();
+		PagingParameters pagingInfo = ac.getPagingParameters();
 		if (pagingInfo.getPage() < 1) {
 			throw new InvalidArgumentException("The page must always be positive");
 		}
@@ -132,7 +132,7 @@ public class SearchRestHandler {
 					rootVertex.reload();
 
 					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
-					List<String> requestedLanguageTags = ac.getSelectedLanguageTags();
+					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 
 					for (SearchHit hit : response.getHits()) {
 

@@ -2,8 +2,8 @@ package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.query.QueryParameterProvider;
-import com.gentics.mesh.query.impl.ImageManipulationParameter;
+import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
@@ -44,7 +44,7 @@ public interface NodeFieldAPIClientMethods {
 	 * @return Future with a download response that contains a reference to the byte buffer with the binary data
 	 */
 	Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-			QueryParameterProvider... parameters);
+			ParameterProvider... parameters);
 
 	/**
 	 * Transform the binary field of the given node in the given project
@@ -57,5 +57,5 @@ public interface NodeFieldAPIClientMethods {
 	 * @return future with the generic message from the response
 	 */
 	Future<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag,
-			String fieldKey, ImageManipulationParameter imageManipulationParameter);
+			String fieldKey, ImageManipulationParameters imageManipulationParameter);
 }

@@ -158,11 +158,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Project project = ac.getProject();
 			if (project != null) {
 				return Collections
-						.singleton(getIndexName(project.getUuid(), ac.getRelease(null).getUuid(), ac.getVersion()));
+						.singleton(getIndexName(project.getUuid(), ac.getRelease(null).getUuid(), ac.getVersioningParameters().getVersion()));
 			} else {
 				List<? extends Project> projects = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findAll();
 				return projects.stream()
-						.map(p -> getIndexName(p.getUuid(), p.getLatestRelease().getUuid(), ac.getVersion()))
+						.map(p -> getIndexName(p.getUuid(), p.getLatestRelease().getUuid(), ac.getVersioningParameters().getVersion()))
 						.collect(Collectors.toSet());
 			}
 		});
@@ -676,7 +676,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public GraphPermission getReadPermission(InternalActionContext ac) {
-		switch (Type.forVersion(ac.getVersion())) {
+		switch (Type.forVersion(ac.getVersioningParameters().getVersion())) {
 		case PUBLISHED:
 			return GraphPermission.READ_PUBLISHED_PERM;
 		default:

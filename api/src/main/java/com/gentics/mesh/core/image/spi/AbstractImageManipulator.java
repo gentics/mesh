@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.query.impl.ImageManipulationParameter;
+import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -31,7 +31,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	
 	@Override
-	public Observable<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameter parameters) {
+	public Observable<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters parameters) {
 		try {
 		parameters.validate();
 		parameters.validateLimits(options);
@@ -47,7 +47,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public File getCacheFile(String sha512sum, ImageManipulationParameter parameters) {
+	public File getCacheFile(String sha512sum, ImageManipulationParameters parameters) {
 
 		String[] parts = sha512sum.split("(?<=\\G.{8})");
 		StringBuffer buffer = new StringBuffer();

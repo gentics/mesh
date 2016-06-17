@@ -2,7 +2,7 @@ package com.gentics.mesh.rest;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
@@ -95,10 +95,10 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @param parameters
 	 * @return
 	 */
-	public static String getQuery(QueryParameterProvider... parameters) {
+	public static String getQuery(ParameterProvider... parameters) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < parameters.length; i++) {
-			QueryParameterProvider provider = parameters[i];
+			ParameterProvider provider = parameters[i];
 			builder.append(provider.getQueryParameters());
 			if (i != parameters.length - 1) {
 				builder.append("&");

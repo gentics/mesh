@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -123,7 +123,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	/**
 	 * Get all users within this group that are visible for the given user.
 	 */
-	public PageImpl<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException {
+	public PageImpl<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
 				.retain(requestUser.getImpl()).back().has(UserImpl.class);
@@ -133,7 +133,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public PageImpl<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException {
+	public PageImpl<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
 		VertexTraversal<?, ?, ?> countTraversal = in(HAS_ROLE);

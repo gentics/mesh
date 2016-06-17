@@ -1,7 +1,7 @@
 package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.Future;
 
@@ -18,6 +18,6 @@ public interface NavigationClientMethods {
 	 *            Additional query parameters
 	 * @return
 	 */
-	Future<NavigationResponse> loadNavigation(String projectName, String uuid, QueryParameterProvider... parameters);
+	Future<NavigationResponse> loadNavigation(String projectName, String uuid, ParameterProvider... parameters);
 
 }

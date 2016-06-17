@@ -127,8 +127,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 				try {
 					Node node = container.getParentNode();
 					String languageTag = container.getLanguage().getLanguageTag();
-					ac.setLanguageTags(Arrays.asList(languageTag));
-					ac.setVersion("draft");
+					ac.getNodeParameters().setLanguages(languageTag);
+					ac.getVersioningParameters().setVersion("draft");
 
 					boolean publish = false;
 					if (container.isPublished(releaseUuid)) {
@@ -137,7 +137,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						// check whether there is another published version
 						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, Type.PUBLISHED);
 						if (oldPublished != null) {
-							ac.setVersion("published");
+							ac.getVersioningParameters().setVersion("published");
 							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().last();
 							restModel.getSchema().setVersion(newSchema.getVersion());
 
@@ -149,7 +149,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
 
-							ac.setVersion("draft");
+							ac.getVersioningParameters().setVersion("draft");
 						}
 					}
 
@@ -242,8 +242,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 				try {
 					Node node = container.getParentNode();
 					String languageTag = container.getLanguage().getLanguageTag();
-					ac.setLanguageTags(Arrays.asList(languageTag));
-					ac.setVersion("draft");
+					ac.getNodeParameters().setLanguages(languageTag);
+					ac.getVersioningParameters().setVersion("draft");
 
 					boolean publish = false;
 					if (container.isPublished(releaseUuid)) {
@@ -252,7 +252,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						// check whether there is another published version
 						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, Type.PUBLISHED);
 						if (oldPublished != null) {
-							ac.setVersion("published");
+							ac.getVersioningParameters().setVersion("published");
 
 							// clone the field container
 							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(
@@ -267,7 +267,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
 
-							ac.setVersion("draft");
+							ac.getVersioningParameters().setVersion("draft");
 						}
 					}
 

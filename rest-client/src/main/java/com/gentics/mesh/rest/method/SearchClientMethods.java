@@ -11,7 +11,7 @@ import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.Future;
 
@@ -25,7 +25,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeListResponse> searchNodes(String json, QueryParameterProvider... parameters);
+	Future<NodeListResponse> searchNodes(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search nodes in project
@@ -36,7 +36,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeListResponse> searchNodes(String projectName, String json, QueryParameterProvider... parameters);
+	Future<NodeListResponse> searchNodes(String projectName, String json, ParameterProvider... parameters);
 
 	/**
 	 * Search users.
@@ -46,7 +46,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserListResponse> searchUsers(String json, QueryParameterProvider... parameters);
+	Future<UserListResponse> searchUsers(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search groups.
@@ -56,7 +56,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<GroupListResponse> searchGroups(String json, QueryParameterProvider... parameters);
+	Future<GroupListResponse> searchGroups(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search roles.
@@ -66,7 +66,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<RoleListResponse> searchRoles(String json, QueryParameterProvider... parameters);
+	Future<RoleListResponse> searchRoles(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search projects.
@@ -76,7 +76,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ProjectListResponse> searchProjects(String json, QueryParameterProvider... parameters);
+	Future<ProjectListResponse> searchProjects(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tags.
@@ -86,7 +86,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagListResponse> searchTags(String json, QueryParameterProvider... parameters);
+	Future<TagListResponse> searchTags(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tags in project
@@ -97,7 +97,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagListResponse> searchTags(String projectName, String json, QueryParameterProvider... parameters);
+	Future<TagListResponse> searchTags(String projectName, String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tag families.
@@ -106,7 +106,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagFamilyListResponse> searchTagFamilies(String json, QueryParameterProvider... parameters);
+	Future<TagFamilyListResponse> searchTagFamilies(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tag families in project
@@ -116,7 +116,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagFamilyListResponse> searchTagFamilies(String projectName, String json, QueryParameterProvider... parameters);
+	Future<TagFamilyListResponse> searchTagFamilies(String projectName, String json, ParameterProvider... parameters);
 
 	/**
 	 * Search schemas.
@@ -126,7 +126,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<SchemaListResponse> searchSchemas(String json, QueryParameterProvider... parameters);
+	Future<SchemaListResponse> searchSchemas(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search microschemas.
@@ -136,7 +136,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<MicroschemaListResponse> searchMicroschemas(String json, QueryParameterProvider... parameters);
+	Future<MicroschemaListResponse> searchMicroschemas(String json, ParameterProvider... parameters);
 
 	/**
 	 * Load the search queue status.

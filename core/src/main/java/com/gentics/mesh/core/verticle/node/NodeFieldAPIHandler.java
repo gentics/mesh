@@ -36,7 +36,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.query.impl.ImageManipulationParameter;
+import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.util.FileUtils;
 
 import io.vertx.core.logging.Logger;
@@ -302,7 +302,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 				try {
 					BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
-					ImageManipulationParameter imageManipulationParameter = new ImageManipulationParameter().setWidth(transformation.getWidth())
+					ImageManipulationParameters imageManipulationParameter = new ImageManipulationParameters().setWidth(transformation.getWidth())
 							.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
 							.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
 					if (!imageManipulationParameter.isSet()) {

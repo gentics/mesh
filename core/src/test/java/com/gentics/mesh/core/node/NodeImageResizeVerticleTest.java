@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.query.impl.ImageManipulationParameter;
+import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
@@ -62,7 +62,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		uploadImage(node, "en", "image");
 
 		// 2. Resize image
-		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(100).setHeight(102);
+		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
 		Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
 		latchFor(downloadFuture);
 		assertSuccess(downloadFuture);
@@ -79,7 +79,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		uploadImage(node, "en", "image");
 
 		// 2. Resize image
-		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(options.getMaxWidth() + 1).setHeight(102);
+		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth() + 1).setHeight(102);
 		Future<NodeDownloadResponse> download = resizeImage(node, params);
 		latchFor(download);
 		expectException(download, BAD_REQUEST, "image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()),
@@ -95,7 +95,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		uploadImage(node, "en", "image");
 
 		// 2. Resize image
-		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(options.getMaxWidth()).setHeight(102);
+		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth()).setHeight(102);
 		Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
 		latchFor(downloadFuture);
 		assertSuccess(downloadFuture);
@@ -110,7 +110,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		uploadImage(node, "en", "image");
 
 		// 2. Transform the image
-		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(100);
+		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
 		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME,
 				node.getUuid(), "en", "image", params);
 		latchFor(transformFuture);
@@ -132,7 +132,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		uploadImage(node, "en", "image");
 
 		// 2. Transform the image
-		ImageManipulationParameter params = new ImageManipulationParameter();
+		ImageManipulationParameters params = new ImageManipulationParameters();
 		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME,
 				node.getUuid(), "en", "image", params);
 		latchFor(transformFuture);
@@ -144,7 +144,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = folder("news");
 
 		// try to transform the "name"
-		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(100);
+		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
 		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME,
 				node.getUuid(), "en", "name", params);
 		latchFor(transformFuture);
@@ -164,7 +164,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		assertSuccess(uploadFuture);
 
 		// Transform
-		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(100);
+		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
 		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME,
 				node.getUuid(), "en", "image", params);
 		latchFor(transformFuture);
@@ -178,20 +178,20 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		prepareSchema(node, "image/.*", "image");
 
 		// 2. Transform the image
-		ImageManipulationParameter params = new ImageManipulationParameter();
+		ImageManipulationParameters params = new ImageManipulationParameters();
 		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME,
 				node.getUuid(), "en", "image", params);
 		latchFor(transformFuture);
 		expectException(transformFuture, NOT_FOUND, "error_binaryfield_not_found_with_name", "image");
 	}
 
-	private Future<NodeDownloadResponse> resizeImage(Node node, ImageManipulationParameter params) {
+	private Future<NodeDownloadResponse> resizeImage(Node node, ImageManipulationParameters params) {
 		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params);
 		latchFor(downloadFuture);
 		return downloadFuture;
 	}
 
-	private void validateResizeImage(NodeDownloadResponse download, BinaryGraphField binaryField, ImageManipulationParameter params,
+	private void validateResizeImage(NodeDownloadResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,
 			int expectedWidth, int expectedHeight) throws Exception {
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
 		CountDownLatch latch = new CountDownLatch(1);

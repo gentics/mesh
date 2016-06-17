@@ -45,7 +45,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -84,7 +84,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public PageImpl<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo)
+	public PageImpl<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameters pagingInfo)
 			throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(NodeImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(NodeImpl.class);
@@ -93,11 +93,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public PageImpl<? extends Node> findAll(InternalActionContext ac, PagingParameter pagingInfo)
+	public PageImpl<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo)
 			throws InvalidArgumentException {
 		MeshAuthUser requestUser = ac.getUser();
 		Release release = ac.getRelease(null);
-		Type type = Type.forVersion(ac.getVersion());
+		Type type = Type.forVersion(ac.getVersioningParameters().getVersion());
 		String permLabel = type == Type.PUBLISHED ? READ_PUBLISHED_PERM.label() : READ_PERM.label();
 
 		VertexTraversal<?, ?, ?> traversal = getAllTraversal(requestUser, release, type, permLabel);

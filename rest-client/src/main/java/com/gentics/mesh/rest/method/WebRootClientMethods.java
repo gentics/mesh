@@ -1,7 +1,7 @@
 package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.node.WebRootResponse;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.Future;
 
@@ -15,7 +15,7 @@ public interface WebRootClientMethods {
 	 * @param parameters optional request parameters
 	 * @return future for the WebRootResponse
 	 */
-	Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters);
+	Future<WebRootResponse> webroot(String projectName, String path, ParameterProvider... parameters);
 
 	/**
 	 * Return the node that was found within the given path of the project.
@@ -25,5 +25,5 @@ public interface WebRootClientMethods {
 	 * @param parameters optional request parameters
 	 * @return future for the WebRootResponse
 	 */
-	Future<WebRootResponse> webroot(String projectName, String[] pathSegments, QueryParameterProvider...parameters);
+	Future<WebRootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider...parameters);
 }

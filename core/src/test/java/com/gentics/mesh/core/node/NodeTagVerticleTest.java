@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -143,7 +143,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 		role().revokePermissions(node, UPDATE_PERM);
 
-		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameter());
+		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 
@@ -156,7 +156,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = tag("bike");
 		assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 		role().revokePermissions(tag, READ_PERM);
-		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameter());
+		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -197,7 +198,7 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(),
 				project().getLatestRelease(), user());
 		englishContainer.createString(fieldName).setString("content");
-		node.publish(InternalActionContext.create(getMockedRoutingContext("")), "en").toBlocking().single();
+		node.publish(InternalActionContext.create(getMockedRoutingContext()), "en").toBlocking().single();
 
 		doSchemaMigration(container, versionA, versionB);
 
@@ -222,7 +223,7 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(),
 				project().getLatestRelease(), user());
 		englishContainer.createString(fieldName).setString("content");
-		node.publish(InternalActionContext.create(getMockedRoutingContext("")), "en").toBlocking().single();
+		node.publish(InternalActionContext.create(getMockedRoutingContext()), "en").toBlocking().single();
 
 		node.reload();
 		NodeGraphFieldContainer updatedEnglishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());

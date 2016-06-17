@@ -23,7 +23,7 @@ import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -296,7 +296,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			call(() -> getClient().createNode(PROJECT_NAME, create, new NodeRequestParameter().setRelease(project().getInitialRelease().getUuid())));
+			call(() -> getClient().createNode(PROJECT_NAME, create, new VersioningParameters().setRelease(project().getInitialRelease().getUuid())));
 
 			return null;
 		});

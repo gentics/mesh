@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field.number;
 import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.FILLNUMBERS;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -153,7 +154,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveFieldViaNullTestcase(NUMBER_LIST, FETCH, FILLNUMBERS, (node) -> {
 			updateContainer(ac, node, NUMBER_LIST, null);
 		});
@@ -162,7 +163,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveRequiredFieldViaNullTestcase(NUMBER_LIST, FETCH, FILLNUMBERS, (container) -> {
 			updateContainer(ac, container, NUMBER_LIST, null);
 		});
@@ -171,7 +172,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeUpdateFromRestValidSimpleValueTestcase(NUMBER_LIST, FILLNUMBERS, (container) -> {
 			NumberFieldListImpl field = new NumberFieldListImpl();
 			field.getItems().add(42L);

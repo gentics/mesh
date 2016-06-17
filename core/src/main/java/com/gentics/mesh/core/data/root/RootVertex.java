@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import rx.Observable;
@@ -62,7 +62,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @throws InvalidArgumentException
 	 *             if the paging options are malformed.
 	 */
-	PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameter pagingInfo) throws InvalidArgumentException;
+	PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Resolve the given stack to the vertex.

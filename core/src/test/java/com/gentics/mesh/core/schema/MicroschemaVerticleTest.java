@@ -34,7 +34,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -166,7 +166,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
-			Future<Microschema> future = getClient().findMicroschemaByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+			Future<Microschema> future = getClient().findMicroschemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()));
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());

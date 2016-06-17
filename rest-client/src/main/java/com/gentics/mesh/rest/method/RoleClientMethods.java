@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.Future;
 
@@ -20,7 +20,7 @@ public interface RoleClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<RoleResponse> findRoleByUuid(String uuid, QueryParameterProvider... parameters);
+	Future<RoleResponse> findRoleByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Load multiple roles.
@@ -28,7 +28,7 @@ public interface RoleClientMethods {
 	 * @param parameter
 	 * @return
 	 */
-	Future<RoleListResponse> findRoles(QueryParameterProvider... parameter);
+	Future<RoleListResponse> findRoles(ParameterProvider... parameter);
 
 	/**
 	 * Create a new role.
@@ -53,7 +53,7 @@ public interface RoleClientMethods {
 	 * @param parameter
 	 * @return
 	 */
-	Future<RoleListResponse> findRolesForGroup(String groupUuid, QueryParameterProvider... parameter);
+	Future<RoleListResponse> findRolesForGroup(String groupUuid, ParameterProvider... parameter);
 
 	/**
 	 * Update the role permissions for the the given path.

@@ -6,7 +6,8 @@ import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
+
 import io.vertx.core.Future;
 
 public interface SchemaClientMethods {
@@ -26,7 +27,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<Schema> findSchemaByUuid(String uuid, QueryParameterProvider... parameters);
+	Future<Schema> findSchemaByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Update the schema with the given request.
@@ -62,7 +63,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<SchemaListResponse> findSchemas(QueryParameterProvider... parameters);
+	Future<SchemaListResponse> findSchemas(ParameterProvider... parameters);
 
 	/**
 	 * Load multiple microschemas.
@@ -70,7 +71,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<MicroschemaListResponse> findMicroschemas(QueryParameterProvider... parameters);
+	Future<MicroschemaListResponse> findMicroschemas(ParameterProvider... parameters);
 
 	/**
 	 * Apply the given list of changes to the schema which is identified by the given uuid.
@@ -109,7 +110,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters);
+	Future<SchemaListResponse> findSchemas(String projectName, ParameterProvider... parameters);
 
 	/**
 	 * Assign a microschema to the project
@@ -135,5 +136,5 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<MicroschemaListResponse> findMicroschemas(String projectName, QueryParameterProvider... parameters);
+	Future<MicroschemaListResponse> findMicroschemas(String projectName, ParameterProvider... parameters);
 }

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.group;
 
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -23,197 +25,230 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.test.AbstractBasicObjectTest;
+import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.ext.web.RoutingContext;
 
-public class GroupTest extends AbstractBasicObjectTest {
+public class GroupTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		InternalActionContext ac = getMockedInternalActionContext("");
-		GroupReference reference = group().transformToReference();
-		assertNotNull(reference);
-		assertEquals(group().getUuid(), reference.getUuid());
-		assertEquals(group().getName(), reference.getName());
+		try (NoTrx noTx = db.noTrx()) {
+			GroupReference reference = group().transformToReference();
+			assertNotNull(reference);
+			assertEquals(group().getUuid(), reference.getUuid());
+			assertEquals(group().getName(), reference.getName());
+		}
 	}
 
 	@Test
 	public void testUserGroup() {
-		UserRoot userRoot = meshRoot().getUserRoot();
-		GroupRoot groupRoot = meshRoot().getGroupRoot();
+		try (NoTrx noTx = db.noTrx()) {
+			UserRoot userRoot = meshRoot().getUserRoot();
+			GroupRoot groupRoot = meshRoot().getGroupRoot();
 
-		Group group = groupRoot.create("test group", user());
-		User user = userRoot.create("testuser", user());
-		group.addUser(user);
-		group.addUser(user);
-		group.addUser(user);
+			Group group = groupRoot.create("test group", user());
+			User user = userRoot.create("testuser", user());
+			group.addUser(user);
+			group.addUser(user);
+			group.addUser(user);
 
-		assertEquals("The group should contain one member.", 1, group.getUsers().size());
+			assertEquals("The group should contain one member.", 1, group.getUsers().size());
 
-		User userOfGroup = group.getUsers().iterator().next();
-		assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
+			User userOfGroup = group.getUsers().iterator().next();
+			assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		RoutingContext rc = getMockedRoutingContext("");
-		InternalActionContext ac = InternalActionContext.create(rc);
-		PageImpl<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParameter(1, 19));
+		try (NoTrx noTx = db.noTrx()) {
+			RoutingContext rc = getMockedRoutingContext(user());
+			InternalActionContext ac = InternalActionContext.create(rc);
+			PageImpl<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParameters(1, 19));
 
-		assertEquals(groups().size(), page.getTotalElements());
-		assertEquals(groups().size(), page.getSize());
+			assertEquals(groups().size(), page.getTotalElements());
+			assertEquals(groups().size(), page.getSize());
 
-		page = boot.groupRoot().findAll(ac, new PagingParameter(1, 3));
-		assertEquals(groups().size(), page.getTotalElements());
-		assertEquals(3, page.getSize());
+			page = boot.groupRoot().findAll(ac, new PagingParameters(1, 3));
+			assertEquals(groups().size(), page.getTotalElements());
+			assertEquals(3, page.getSize());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindAll() {
-		List<? extends Group> groups = boot.groupRoot().findAll();
-		for (Group group : groups) {
-			System.out.println("G: " + group.getName());
+		try (NoTrx noTx = db.noTrx()) {
+			List<? extends Group> groups = boot.groupRoot().findAll();
+			assertEquals(groups().size(), groups.size());
 		}
-		assertEquals(groups().size(), groups.size());
 	}
 
 	@Test
 	@Override
 	public void testRootNode() {
-		GroupRoot root = meshRoot().getGroupRoot();
-		int nGroupsBefore = root.findAll().size();
-		GroupRoot groupRoot = meshRoot().getGroupRoot();
-		assertNotNull(groupRoot.create("test group2", user()));
+		try (NoTrx noTx = db.noTrx()) {
+			GroupRoot root = meshRoot().getGroupRoot();
+			int nGroupsBefore = root.findAll().size();
+			GroupRoot groupRoot = meshRoot().getGroupRoot();
+			assertNotNull(groupRoot.create("test group2", user()));
 
-		int nGroupsAfter = root.findAll().size();
-		assertEquals(nGroupsBefore + 1, nGroupsAfter);
+			int nGroupsAfter = root.findAll().size();
+			assertEquals(nGroupsBefore + 1, nGroupsAfter);
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
-		assertNotNull(boot.groupRoot().findByName("guests").toBlocking().single());
+		try (NoTrx noTx = db.noTrx()) {
+			assertNotNull(boot.groupRoot().findByName("guests").toBlocking().single());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		Group group = boot.groupRoot().findByUuid(group().getUuid()).toBlocking().single();
-		assertNotNull(group);
+		try (NoTrx noTx = db.noTrx()) {
+			Group group = boot.groupRoot().findByUuid(group().getUuid()).toBlocking().single();
+			assertNotNull(group);
+		}
 	}
 
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		RoutingContext rc = getMockedRoutingContext("");
-		InternalActionContext ac = InternalActionContext.create(rc);
+		try (NoTrx noTx = db.noTrx()) {
+			RoutingContext rc = getMockedRoutingContext(user());
+			InternalActionContext ac = InternalActionContext.create(rc);
 
-		GroupResponse response = group().transformToRest(ac, 0).toBlocking().first();
+			GroupResponse response = group().transformToRest(ac, 0).toBlocking().first();
 
-		assertNotNull(response);
-		assertEquals(group().getUuid(), response.getUuid());
-		assertEquals(group().getName(), response.getName());
+			assertNotNull(response);
+			assertEquals(group().getUuid(), response.getUuid());
+			assertEquals(group().getName(), response.getName());
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		Group group = meshRoot().getGroupRoot().create("newGroup", user());
-		SearchQueueBatch batch = createBatch();
-		assertNotNull(group);
-		String uuid = group.getUuid();
-		group.delete(batch);
-		group = meshRoot().getGroupRoot().findByUuid(uuid).toBlocking().single();
-		assertNull(group);
+		try (NoTrx noTx = db.noTrx()) {
+			Group group = meshRoot().getGroupRoot().create("newGroup", user());
+			SearchQueueBatch batch = createBatch();
+			assertNotNull(group);
+			String uuid = group.getUuid();
+			group.delete(batch);
+			group = meshRoot().getGroupRoot().findByUuid(uuid).toBlocking().single();
+			assertNull(group);
+		}
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		MeshRoot root = meshRoot();
-		User user = user();
-		InternalActionContext ac = getMockedInternalActionContext("");
-		Group group = root.getGroupRoot().create("newGroup", user);
-		assertFalse(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().single());
-		user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
-		ac.data().clear();
-		assertTrue(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().single());
+		try (NoTrx noTx = db.noTrx()) {
+			MeshRoot root = meshRoot();
+			User user = user();
+			InternalActionContext ac = getMockedInternalActionContext();
+			Group group = root.getGroupRoot().create("newGroup", user);
+			assertFalse(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().single());
+			user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
+			ac.data().clear();
+			assertTrue(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().single());
+		}
 	}
 
 	@Test
 	@Override
 	public void testRead() {
-		Group group = group();
-		assertEquals("joe1_group", group.getName());
-		assertNotNull(group.getUsers());
-		assertEquals(1, group.getUsers().size());
-		assertNotNull(group.getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			Group group = group();
+			assertEquals("joe1_group", group.getName());
+			assertNotNull(group.getUsers());
+			assertEquals(1, group.getUsers().size());
+			assertNotNull(group.getUuid());
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreate() {
-		Group group = meshRoot().getGroupRoot().create("newGroup", user());
-		assertNotNull(group);
-		assertEquals("newGroup", group.getName());
+		try (NoTrx noTx = db.noTrx()) {
+			Group group = meshRoot().getGroupRoot().create("newGroup", user());
+			assertNotNull(group);
+			assertEquals("newGroup", group.getName());
+		}
 	}
 
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		Group group = meshRoot().getGroupRoot().create("newGroup", user());
+		try (NoTrx noTx = db.noTrx()) {
+			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 
-		assertNotNull(group);
-		assertEquals("newGroup", group.getName());
-		String uuid = group.getUuid();
-		String userUuid = user().getUuid();
-		group().addUser(user());
+			assertNotNull(group);
+			assertEquals("newGroup", group.getName());
+			String uuid = group.getUuid();
+			String userUuid = user().getUuid();
+			group().addUser(user());
 
-		// TODO add users to group?
-		SearchQueueBatch batch = createBatch();
-		group.delete(batch);
-		assertElement(meshRoot().getGroupRoot(), uuid, false);
-		assertElement(meshRoot().getUserRoot(), userUuid, true);
-		assertThat(batch.findEntryByUuid(uuid)).isPresent();
-		assertEquals(1, batch.getEntries().size());
+			// TODO add users to group?
+			SearchQueueBatch batch = createBatch();
+			group.delete(batch);
+			assertElement(meshRoot().getGroupRoot(), uuid, false);
+			assertElement(meshRoot().getUserRoot(), userUuid, true);
+			assertThat(batch.findEntryByUuid(uuid)).isPresent();
+			assertEquals(1, batch.getEntries().size());
+		}
 
 	}
 
 	@Test
 	@Override
 	public void testUpdate() {
-		group().setName("changed");
-		assertEquals("changed", group().getName());
+		try (NoTrx noTx = db.noTrx()) {
+			group().setName("changed");
+			assertEquals("changed", group().getName());
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadPermission() {
-		testPermission(GraphPermission.READ_PERM, group());
+		try (NoTrx noTx = db.noTrx()) {
+			testPermission(GraphPermission.READ_PERM, group());
+		}
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		testPermission(GraphPermission.DELETE_PERM, group());
+		try (NoTrx noTx = db.noTrx()) {
+			testPermission(GraphPermission.DELETE_PERM, group());
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		testPermission(GraphPermission.UPDATE_PERM, group());
+		try (NoTrx noTx = db.noTrx()) {
+			testPermission(GraphPermission.UPDATE_PERM, group());
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		testPermission(GraphPermission.CREATE_PERM, group());
+		try (NoTrx noTx = db.noTrx()) {
+			testPermission(GraphPermission.CREATE_PERM, group());
+		}
 	}
 
 }

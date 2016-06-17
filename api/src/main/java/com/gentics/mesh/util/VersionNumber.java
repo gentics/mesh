@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data;
+package com.gentics.mesh.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

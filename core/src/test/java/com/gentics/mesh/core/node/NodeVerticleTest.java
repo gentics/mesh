@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
@@ -66,10 +67,11 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
-import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -272,7 +274,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(uuid);
 
 			NodeResponse nodeResponse = call(
-					() -> getClient().createNode(project.getName(), request, new NodeRequestParameter().setRelease(initialRelease.getName())));
+					() -> getClient().createNode(project.getName(), request, new VersioningParameters().setRelease(initialRelease.getName())));
 
 			meshRoot().getNodeRoot().reload();
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().single();
@@ -303,7 +305,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(uuid);
 
 			NodeResponse nodeResponse = call(
-					() -> getClient().createNode(project.getName(), request, new NodeRequestParameter().setRelease(initialRelease.getUuid())));
+					() -> getClient().createNode(project.getName(), request, new VersioningParameters().setRelease(initialRelease.getUuid())));
 
 			meshRoot().getNodeRoot().reload();
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().single();
@@ -364,7 +366,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
-			call(() -> getClient().createNode(project.getName(), request, new NodeRequestParameter().setRelease("bogusrelease")), BAD_REQUEST,
+			call(() -> getClient().createNode(project.getName(), request, new VersioningParameters().setRelease("bogusrelease")), BAD_REQUEST,
 					"error_release_not_found", "bogusrelease");
 		}
 	}
@@ -394,11 +396,9 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(folder("news").getUuid());
 
-			NodeRequestParameter parameters = new NodeRequestParameter();
-			parameters.setLanguages("de").draft();
-
 			assertThat(searchProvider).recordedStoreEvents(0);
-			NodeResponse restNode = call(() -> getClient().createNode(PROJECT_NAME, request, parameters));
+			NodeResponse restNode = call(() -> getClient().createNode(PROJECT_NAME, request, new NodeParameters().setLanguages("de"),
+					new VersioningParameters().draft()));
 			assertThat(searchProvider).recordedStoreEvents(1);
 			test.assertMeshNode(request, restNode);
 
@@ -407,7 +407,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			test.assertMeshNode(request, node);
 
 			// Load the node again
-			restNode2 = call(() -> getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters));
+			restNode2 = call(() -> getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), new NodeParameters().setLanguages("de"),
+					new VersioningParameters().draft()));
 
 			// Delete the node
 			Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
@@ -500,7 +501,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	 */
 	@Test
 	public void testReadNodesDefaultPaging() throws Exception {
-		NodeListResponse restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new NodeRequestParameter().draft()));
+		NodeListResponse restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new VersioningParameters().draft()));
 
 		assertNotNull(restResponse);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
@@ -522,7 +523,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String firstUuid = null;
 			for (int i = 0; i < 10; i++) {
 				NodeListResponse response = call(
-						() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 100), new NodeRequestParameter().draft()));
+						() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 100), new VersioningParameters().draft()));
 				if (firstUuid == null) {
 					firstUuid = response.getData().get(0).getUuid();
 				}
@@ -553,7 +554,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull(noPermNode.getUuid());
 			int perPage = 11;
 			NodeListResponse restResponse = call(
-					() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(3, perPage), new NodeRequestParameter().draft()));
+					() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(3, perPage), new VersioningParameters().draft()));
 			assertEquals(perPage, restResponse.getData().size());
 
 			// Extra Nodes + permitted nodes
@@ -567,8 +568,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<NodeResponse> allNodes = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(page, perPage),
-						new NodeRequestParameter().draft());
+				Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(page, perPage),
+						new VersioningParameters().draft());
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -581,20 +582,20 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(-1, 25));
+			Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(-1, 25));
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(0, 25));
+			pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(0, 25));
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
-			pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(1, -1));
+			pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(1, -1));
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 			NodeListResponse list = call(
-					() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(4242, 25), new NodeRequestParameter().draft()));
+					() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(4242, 25), new VersioningParameters().draft()));
 			assertEquals(4242, list.getMetainfo().getCurrentPage());
 			assertEquals(0, list.getData().size());
 			assertEquals(25, list.getMetainfo().getPerPage());
@@ -606,7 +607,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testReadMultipleOnlyMetadata() {
 		NodeListResponse listResponse = call(
-				() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 0), new NodeRequestParameter().draft()));
+				() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 0), new VersioningParameters().draft()));
 		assertEquals(0, listResponse.getData().size());
 	}
 
@@ -615,7 +616,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		// TODO add node that has no perms and check the response
 		NodeListResponse restResponse = call(
-				() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 10), new NodeRequestParameter().draft()));
+				() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 10), new VersioningParameters().draft()));
 
 		int nElements = restResponse.getData().size();
 		assertEquals("The amount of elements in the list did not match the expected count", 10, nElements);
@@ -633,11 +634,11 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			NodeListResponse restResponse = call(
-					() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000), new NodeRequestParameter().draft()));
+					() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000), new VersioningParameters().draft()));
 			assertThat(restResponse.getData()).as("Node List for latest release").isEmpty();
 
-			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000),
-					new NodeRequestParameter().setRelease(initialRelease.getName()).draft()));
+			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000),
+					new VersioningParameters().setRelease(initialRelease.getName()).draft()));
 			assertThat(restResponse.getData()).as("Node List for initial release").hasSize(getNodeCount());
 
 			// update a single node in the new release
@@ -648,11 +649,11 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update));
 
 			// check whether there is one node in the new release now
-			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000), new NodeRequestParameter().draft()));
+			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000), new VersioningParameters().draft()));
 			assertThat(restResponse.getData()).as("Node List for latest release").hasSize(1);
 
-			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000),
-					new NodeRequestParameter().draft().setRelease(newRelease.getName())));
+			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000),
+					new VersioningParameters().draft().setRelease(newRelease.getName())));
 			assertThat(restResponse.getData()).as("Node List for latest release").hasSize(1);
 		}
 	}
@@ -660,7 +661,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testReadPublishedNodes() {
 		try (NoTrx noTx = db.noTrx()) {
-			NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000)));
+			NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 			List<Node> nodes = Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015"));
@@ -670,7 +671,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertThat(publishedNodes).hasSize(nodes.size());
 
-			listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000)));
+			listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid")
 					.containsOnlyElementsOf(publishedNodes);
 		}
@@ -679,7 +680,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testReadPublishedNodesNoPermission() {
 		try (NoTrx noTx = db.noTrx()) {
-			NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000)));
+			NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 			List<Node> nodes = new ArrayList<>(Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015")));
@@ -697,7 +698,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 						.collect(Collectors.toList());
 				assertThat(publishedNodes).hasSize(nodes.size());
 
-				listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000)));
+				listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000)));
 				assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid")
 						.containsOnlyElementsOf(publishedNodes);
 			}
@@ -760,7 +761,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 							} else {
 								log.info("Updated {" + uh.result().getUuid() + "}");
 								Future<NodeResponse> readFuture = getClient().findNodeByUuid(PROJECT_NAME, uh.result().getUuid(),
-										new NodeRequestParameter().draft());
+										new VersioningParameters().draft());
 								readFuture.setHandler(rf -> {
 									if (rh.failed()) {
 										fail(rh.cause().getMessage());
@@ -860,7 +861,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		request.setLanguage("en");
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 
-		NodeRequestParameter parameters = new NodeRequestParameter();
+		NodeParameters parameters = new NodeParameters();
 		parameters.setLanguages("en", "de");
 
 		int nJobs = 115;
@@ -911,7 +912,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Set<Future<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking findNodeByUuid REST call");
-				set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new NodeRequestParameter().draft()));
+				set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParameters().draft()));
 			}
 			for (Future<NodeResponse> future : set) {
 				latchFor(future);
@@ -928,7 +929,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Set<Future<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking findNodeByUuid REST call");
-				set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new NodeRequestParameter().draft()));
+				set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParameters().draft()));
 			}
 			for (Future<NodeResponse> future : set) {
 				latchFor(future);
@@ -945,7 +946,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = node.getUuid();
 
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
-					new RolePermissionParameter().setRoleUuid(role().getUuid()), new NodeRequestParameter().draft()));
+					new RolePermissionParameters().setRoleUuid(role().getUuid()), new VersioningParameters().draft()));
 			assertNotNull(response.getRolePerms());
 			assertEquals(6, response.getRolePerms().length);
 		}
@@ -960,7 +961,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft()));
+			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
 			test.assertMeshNode(folder("2015"), response);
 
 			assertNotNull(response.getParentNode());
@@ -975,7 +976,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
-			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft()));
+			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
 			assertThat(response).hasVersion("0.1").hasLanguage("en").hasStringField("name", "2015");
 
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
@@ -1008,26 +1009,29 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// test english versions
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft()))).as("Draft").hasVersion("0.4")
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()))).as("Draft").hasVersion("0.4")
 					.hasLanguage("en").hasStringField("name", "three");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("0.1")))).as("Version 0.1")
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("0.1")))).as("Version 0.1")
 					.hasVersion("0.1").hasLanguage("en").hasStringField("name", "2015");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("0.2")))).as("Version 0.2")
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("0.2")))).as("Version 0.2")
 					.hasVersion("0.2").hasLanguage("en").hasStringField("name", "one");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("0.3")))).as("Version 0.3")
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("0.3")))).as("Version 0.3")
 					.hasVersion("0.3").hasLanguage("en").hasStringField("name", "two");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("0.4")))).as("Version 0.4")
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("0.4")))).as("Version 0.4")
 					.hasVersion("0.4").hasLanguage("en").hasStringField("name", "three");
 
 			// test german versions
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setLanguages("de").draft())))
-					.as("German draft").hasVersion("0.3").hasLanguage("de").hasStringField("name", "drei");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setLanguages("de").setVersion("0.1"))))
-					.as("German version 0.1").hasVersion("0.1").hasLanguage("de").hasStringField("name", "eins");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setLanguages("de").setVersion("0.2"))))
-					.as("German version 0.2").hasVersion("0.2").hasLanguage("de").hasStringField("name", "zwei");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setLanguages("de").setVersion("0.3"))))
-					.as("German version 0.3").hasVersion("0.3").hasLanguage("de").hasStringField("name", "drei");
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"),
+					new VersioningParameters().draft()))).as("German draft").hasVersion("0.3").hasLanguage("de").hasStringField("name", "drei");
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"),
+					new VersioningParameters().setVersion("0.1")))).as("German version 0.1").hasVersion("0.1").hasLanguage("de")
+							.hasStringField("name", "eins");
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"),
+					new VersioningParameters().setVersion("0.2")))).as("German version 0.2").hasVersion("0.2").hasLanguage("de")
+							.hasStringField("name", "zwei");
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"),
+					new VersioningParameters().setVersion("0.3")))).as("German version 0.3").hasVersion("0.3").hasLanguage("de")
+							.hasStringField("name", "drei");
 		}
 	}
 
@@ -1037,7 +1041,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
-			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("bogus")), BAD_REQUEST,
+			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("bogus")), BAD_REQUEST,
 					"error_illegal_version", "bogus");
 		}
 	}
@@ -1048,7 +1052,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
-			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("47.11")), NOT_FOUND,
+			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("47.11")), NOT_FOUND,
 					"object_not_found_for_version", "47.11");
 		}
 	}
@@ -1079,13 +1083,13 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 in new release"));
-			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest, new NodeRequestParameter().setRelease(newRelease.getName())));
+			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParameters().setRelease(newRelease.getName())));
 
 			assertThat(call(
-					() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setRelease(initialRelease.getName()).draft())))
+					() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setRelease(initialRelease.getName()).draft())))
 							.as("Initial Release Version").hasVersion("0.1").hasStringField("name", "2015");
 			assertThat(
-					call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setRelease(newRelease.getName()).draft())))
+					call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getName()).draft())))
 							.as("New Release Version").hasVersion("0.1").hasStringField("name", "2015 in new release");
 		}
 	}
@@ -1104,28 +1108,28 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			// create version 0.1 in new release
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.1 new release"));
-			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest, new NodeRequestParameter().setRelease(newRelease.getName())));
+			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParameters().setRelease(newRelease.getName())));
 
 			// create version 0.2 in initial release
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.2 initial release"));
 			updateRequest.setVersion(new VersionReference(null, "0.1"));
-			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest, new NodeRequestParameter().setRelease(initialRelease.getName())));
+			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParameters().setRelease(initialRelease.getName())));
 
 			// create version 0.2 in new release
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.2 new release"));
-			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest, new NodeRequestParameter().setRelease(newRelease.getName())));
+			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParameters().setRelease(newRelease.getName())));
 
 			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
-					new NodeRequestParameter().setRelease(initialRelease.getName()).setVersion("0.1")))).as("Initial Release Version")
+					new VersioningParameters().setRelease(initialRelease.getName()).setVersion("0.1")))).as("Initial Release Version")
 							.hasVersion("0.1").hasStringField("name", "2015");
 			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
-					new NodeRequestParameter().setRelease(newRelease.getName()).setVersion("0.1")))).as("New Release Version").hasVersion("0.1")
+					new VersioningParameters().setRelease(newRelease.getName()).setVersion("0.1")))).as("New Release Version").hasVersion("0.1")
 							.hasStringField("name", "2015 v0.1 new release");
 			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
-					new NodeRequestParameter().setRelease(initialRelease.getName()).setVersion("0.2")))).as("Initial Release Version")
+					new VersioningParameters().setRelease(initialRelease.getName()).setVersion("0.2")))).as("Initial Release Version")
 							.hasVersion("0.2").hasStringField("name", "2015 v0.2 initial release");
 			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
-					new NodeRequestParameter().setRelease(newRelease.getName()).setVersion("0.2")))).as("New Release Version").hasVersion("0.2")
+					new VersioningParameters().setRelease(newRelease.getName()).setVersion("0.2")))).as("New Release Version").hasVersion("0.2")
 							.hasStringField("name", "2015 v0.2 new release");
 		}
 	}
@@ -1144,7 +1148,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			ServerSchemaStorage.getInstance().clear();
 
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-					new NodeRequestParameter().setResolveLinks(LinkType.FULL).draft()));
+					new NodeParameters().setResolveLinks(LinkType.FULL), new VersioningParameters().draft()));
 			assertEquals("/api/v1/dummy/webroot/error/404", response.getPath());
 			assertThat(response.getLanguagePaths()).containsEntry("en", "/api/v1/dummy/webroot/error/404");
 			assertThat(response.getLanguagePaths()).containsEntry("de", "/api/v1/dummy/webroot/error/404");
@@ -1155,8 +1159,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadByUUIDWithLinkPaths() {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = folder("news");
-			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-					new NodeRequestParameter().draft().setResolveLinks(LinkType.FULL)));
+			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft(),
+					new NodeParameters().setResolveLinks(LinkType.FULL)));
 			assertThat(response.getAvailableLanguages()).containsExactly("de", "en");
 			assertThat(response.getLanguagePaths()).containsEntry("en", "/api/v1/dummy/webroot/News");
 			assertThat(response.getLanguagePaths()).containsEntry("de", "/api/v1/dummy/webroot/Neuigkeiten");
@@ -1168,7 +1172,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = content("news_2014");
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-					new NodeRequestParameter().setResolveLinks(LinkType.FULL).draft()));
+					new NodeParameters().setResolveLinks(LinkType.FULL), new VersioningParameters().draft()));
 			assertTrue(response.getBreadcrumb().get(0).getUuid().equals(folder("2014").getUuid()));
 			assertTrue(response.getBreadcrumb().get(0).getDisplayName().equals("2014"));
 			assertTrue(response.getBreadcrumb().get(1).getUuid().equals(folder("news").getUuid()));
@@ -1186,9 +1190,10 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = node.getUuid();
 
 			// Request the node with various language parameter values. Fallback to "de"
-			NodeRequestParameter parameters = new NodeRequestParameter();
-			parameters.setLanguages("dv,nl,de,en").draft();
-			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters));
+			NodeParameters parameters = new NodeParameters();
+			parameters.setLanguages("dv,nl,de,en");
+			VersioningParameters versionParams = new VersioningParameters().draft();
+			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams));
 			test.assertMeshNode(folder("products"), restNode);
 
 			// Ensure "de" version was returned
@@ -1205,9 +1210,10 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
-			NodeRequestParameter parameters = new NodeRequestParameter();
-			parameters.setLanguages("de").draft();
-			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters));
+			NodeParameters parameters = new NodeParameters();
+			parameters.setLanguages("de");
+			VersioningParameters versionParams = new VersioningParameters().draft();
+			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams));
 			test.assertMeshNode(folder("products"), restNode);
 
 			StringField field = restNode.getFields().getStringField("name");
@@ -1233,9 +1239,10 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().grantPermissions(node, READ_PERM);
 
 			// Request the node in english en
-			NodeRequestParameter parameters = new NodeRequestParameter();
-			parameters.setLanguages("en").draft();
-			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters));
+			NodeParameters parameters = new NodeParameters();
+			parameters.setLanguages("en");
+			VersioningParameters versionParams = new VersioningParameters().draft();
+			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, versionParams));
 			assertThat(response.getLanguage()).as("Node language").isNull();
 			assertThat(response.getAvailableLanguages()).as("Available languages").containsOnly("nl");
 			assertThat(response.getFields()).as("Node Fields").isEmpty();
@@ -1251,11 +1258,12 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NodeRequestParameter parameters = new NodeRequestParameter();
-			parameters.setLanguages("blabla", "edgsdg").draft();
+			NodeParameters parameters = new NodeParameters();
+			parameters.setLanguages("blabla", "edgsdg");
+			VersioningParameters versionParams = new VersioningParameters().draft();
 
 			assertThat(searchProvider).recordedStoreEvents(0);
-			Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
+			Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams);
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
 			assertThat(searchProvider).recordedStoreEvents(0);
@@ -1269,7 +1277,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
-			Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft());
+			Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -1312,7 +1320,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setLanguage("en");
 			request.setVersion(new VersionReference(null, "0.1"));
 			request.getFields().put("name", FieldUtil.createStringField(newName));
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 
 			// Update the node
@@ -1375,7 +1383,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setSchema(schemaReference);
 			request.setLanguage("en");
 
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 
 			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, "bogus", request, parameters);
@@ -1478,7 +1486,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.getFields().put("name", FieldUtil.createStringField(newName));
 			request.getFields().put("displayName", FieldUtil.createStringField(newDisplayName));
 
-			NodeRequestParameter parameters = new NodeRequestParameter();
+			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("de", "en");
 			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
 			latchFor(future);
@@ -1542,12 +1550,12 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			// 3. migrate nodes
 			nodeMigrationHandler.migrateNodes(newRelease).toBlocking().single();
-			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft().setRelease(initialRelease.getUuid())));
-			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft().setRelease(newRelease.getUuid())));
+			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(initialRelease.getUuid())));
+			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(newRelease.getUuid())));
 
 			// 4. delete node in new release
 			GenericMessageResponse response = call(
-					() -> getClient().deleteNode(PROJECT_NAME, uuid, new NodeRequestParameter().setRelease(newRelease.getUuid())));
+					() -> getClient().deleteNode(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getUuid())));
 			expectResponseMessage(response, "node_deleted", uuid);
 
 			// 5. Assert
@@ -1566,7 +1574,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = node.getUuid();
 
 			// 2. Publish the node
-			node.publish(getMockedInternalActionContext("")).toBlocking().single();
+			node.publish(getMockedInternalActionContext()).toBlocking().single();
 
 			// 3. create new release
 			Project project = project();
@@ -1575,12 +1583,12 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			// 4. migrate nodes
 			nodeMigrationHandler.migrateNodes(newRelease).toBlocking().single();
-			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft().setRelease(initialRelease.getUuid())));
-			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft().setRelease(newRelease.getUuid())));
+			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(initialRelease.getUuid())));
+			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(newRelease.getUuid())));
 
 			// 5. delete node in new release
 			GenericMessageResponse response = call(
-					() -> getClient().deleteNode(PROJECT_NAME, uuid, new NodeRequestParameter().setRelease(newRelease.getUuid())));
+					() -> getClient().deleteNode(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getUuid())));
 			expectResponseMessage(response, "node_deleted", uuid);
 
 			// 6. Assert
@@ -1644,15 +1652,15 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
 
 			PublishStatusResponse publishStatus = call(
-					() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new NodeRequestParameter().setRelease(initialRelease.getName())));
+					() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(initialRelease.getName())));
 			assertThat(publishStatus).as("Initial release publish status").isNotNull().isNotPublished("en").hasVersion("en", "0.1")
 					.doesNotContain("de");
 
 			publishStatus = call(
-					() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new NodeRequestParameter().setRelease(newRelease.getName())));
+					() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(newRelease.getName())));
 			assertThat(publishStatus).as("New release publish status").isNotNull().isPublished("de").hasVersion("de", "1.0").doesNotContain("en");
 
-			publishStatus = call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new NodeRequestParameter()));
+			publishStatus = call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new NodeParameters()));
 			assertThat(publishStatus).as("New release publish status").isNotNull().isPublished("de").hasVersion("de", "1.0").doesNotContain("en");
 		}
 	}
@@ -1721,7 +1729,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			// publish for the initial release
 			PublishStatusResponse publishStatus = call(
-					() -> getClient().publishNode(PROJECT_NAME, nodeUuid, new NodeRequestParameter().setRelease(initialRelease.getName())));
+					() -> getClient().publishNode(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(initialRelease.getName())));
 			assertThat(publishStatus).as("Initial publish status").isPublished("en").hasVersion("en", "1.0").doesNotContain("de");
 		}
 	}
@@ -1745,7 +1753,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testRepublishUnchanged() {
-		String nodeUuid =  db.noTrx(() -> folder("2015").getUuid());
+		String nodeUuid = db.noTrx(() -> folder("2015").getUuid());
 		PublishStatusResponse statusResponse = call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
 
@@ -1793,23 +1801,23 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
 			update.getFields().put("name", FieldUtil.createStringField("2015 de"));
-			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update, new NodeRequestParameter().setRelease(initialRelease.getName())));
+			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParameters().setRelease(initialRelease.getName())));
 
 			update.getFields().put("name", FieldUtil.createStringField("2015 new de"));
-			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update, new NodeRequestParameter().setRelease(newRelease.getName())));
+			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParameters().setRelease(newRelease.getName())));
 			update.setLanguage("en");
 			update.getFields().put("name", FieldUtil.createStringField("2015 new en"));
-			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update, new NodeRequestParameter().setRelease(newRelease.getName())));
+			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParameters().setRelease(newRelease.getName())));
 
 			PublishStatusModel publishStatus = call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de",
-					new NodeRequestParameter().setRelease(initialRelease.getName())));
+					new VersioningParameters().setRelease(initialRelease.getName())));
 			assertThat(publishStatus).isPublished();
 
 			assertThat(call(
-					() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new NodeRequestParameter().setRelease(initialRelease.getName()))))
+					() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(initialRelease.getName()))))
 							.as("Initial Release Publish Status").isPublished("de").isNotPublished("en");
 			assertThat(
-					call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new NodeRequestParameter().setRelease(newRelease.getName()))))
+					call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(newRelease.getName()))))
 							.as("New Release Publish Status").isNotPublished("de").isNotPublished("en");
 		}
 	}
@@ -2003,21 +2011,21 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.getFields().put("name", FieldUtil.createStringField("News"));
-			call(() -> getClient().updateNode(PROJECT_NAME, news.getUuid(), update, new NodeRequestParameter().setRelease(newRelease.getName())));
+			call(() -> getClient().updateNode(PROJECT_NAME, news.getUuid(), update, new VersioningParameters().setRelease(newRelease.getName())));
 
 			// publish in initial and new release
-			call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid(), new NodeRequestParameter().setRelease(initialRelease.getName())));
-			call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid(), new NodeRequestParameter().setRelease(newRelease.getName())));
+			call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(initialRelease.getName())));
+			call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(newRelease.getName())));
 
 			// take offline in initial release
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, news.getUuid(), new NodeRequestParameter().setRelease(initialRelease.getName())));
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(initialRelease.getName())));
 
 			// check publish status
 			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-					new NodeRequestParameter().setRelease(initialRelease.getName())))).as("Initial release publish status").isNotPublished("en")
+					new VersioningParameters().setRelease(initialRelease.getName())))).as("Initial release publish status").isNotPublished("en")
 							.isNotPublished("de");
 			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-					new NodeRequestParameter().setRelease(newRelease.getName())))).as("New release publish status").isPublished("en")
+					new VersioningParameters().setRelease(newRelease.getName())))).as("New release publish status").isPublished("en")
 							.doesNotContain("de");
 
 		}

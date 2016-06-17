@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -55,7 +55,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param parameters
 	 *            Query parameters which will form the complete query string
 	 */
-	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse, QueryParameterProvider... parameters) {
+	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse, ParameterProvider... parameters) {
 		this.query = getQuery(parameters);
 		this.user = user;
 		this.classOfResponse = classOfResponse;

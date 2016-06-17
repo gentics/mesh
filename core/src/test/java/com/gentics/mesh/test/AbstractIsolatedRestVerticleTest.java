@@ -54,7 +54,8 @@ import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.util.FieldUtil;
@@ -313,7 +314,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
-		return getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeRequestParameter().setLanguages("en"));
+		return getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"));
 	}
 
 	protected NodeResponse createNode(String fieldKey, Field field) {
@@ -326,7 +327,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected NodeResponse readNode(String projectName, String uuid) {
-		return call(() -> getClient().findNodeByUuid(projectName, uuid, new NodeRequestParameter().draft()));
+		return call(() -> getClient().findNodeByUuid(projectName, uuid, new VersioningParameters().draft()));
 	}
 
 	protected void deleteNode(String projectName, String uuid) {
@@ -390,7 +391,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 	protected NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
 		// read node from source release
 		NodeResponse nodeResponse = call(
-				() -> getClient().findNodeByUuid(projectName, uuid, new NodeRequestParameter().setRelease(sourceReleaseName).draft()));
+				() -> getClient().findNodeByUuid(projectName, uuid, new VersioningParameters().setRelease(sourceReleaseName).draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
@@ -399,7 +400,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		update.setLanguage(nodeResponse.getLanguage());
 
 		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> getClient().updateNode(projectName, uuid, update, new NodeRequestParameter().setRelease(targetReleaseName)));
+		return call(() -> getClient().updateNode(projectName, uuid, update, new VersioningParameters().setRelease(targetReleaseName)));
 	}
 
 	// Project

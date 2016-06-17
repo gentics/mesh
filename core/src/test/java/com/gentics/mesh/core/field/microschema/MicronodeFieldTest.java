@@ -5,6 +5,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FILL;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -245,7 +246,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		Microschema schema = micronode.getSchemaContainerVersion().getSchema();
 		schema.addField(FieldUtil.createStringFieldSchema("stringfield"));
 		micronode.getSchemaContainerVersion().setSchema(schema);
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		ServerSchemaStorage.getInstance().clear();
 
 		FieldMap restFields = new FieldMapJsonImpl();
@@ -373,7 +374,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveFieldViaNullTestcase(MICRONODE_FIELD, FETCH, FILL, (node) -> {
 			updateContainer(ac, node, MICRONODE_FIELD, null);
 		});
@@ -382,7 +383,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeRemoveRequiredFieldViaNullTestcase(MICRONODE_FIELD, FETCH, FILL, (container) -> {
 			updateContainer(ac, container, MICRONODE_FIELD, null);
 		});
@@ -391,7 +392,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext();
 		invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_FIELD, FILL, (container) -> {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReference().setName("vcard"));

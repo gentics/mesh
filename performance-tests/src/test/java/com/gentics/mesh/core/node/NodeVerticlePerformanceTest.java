@@ -15,12 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 

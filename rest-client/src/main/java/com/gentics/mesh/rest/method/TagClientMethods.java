@@ -5,7 +5,7 @@ import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.Future;
 
@@ -33,7 +33,7 @@ public interface TagClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, QueryParameterProvider... parameters);
+	Future<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, ParameterProvider... parameters);
 
 	//
 	/**
@@ -75,7 +75,7 @@ public interface TagClientMethods {
 	 *            Additional query parameters
 	 * @return
 	 */
-	Future<TagListResponse> findTags(String projectName, String tagFamilyUuid, QueryParameterProvider... parameters);
+	Future<TagListResponse> findTags(String projectName, String tagFamilyUuid, ParameterProvider... parameters);
 
 	//
 	//	//TODO keep this?

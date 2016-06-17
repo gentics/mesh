@@ -5,7 +5,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.Future;
 
@@ -18,7 +18,7 @@ public interface ProjectClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ProjectResponse> findProjectByUuid(String uuid, QueryParameterProvider... parameters);
+	Future<ProjectResponse> findProjectByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Load multiple projects.
@@ -26,7 +26,7 @@ public interface ProjectClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ProjectListResponse> findProjects(QueryParameterProvider... parameters);
+	Future<ProjectListResponse> findProjects(ParameterProvider... parameters);
 
 	// TODO use language tag instead?
 	/**

@@ -40,12 +40,10 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
@@ -64,9 +62,10 @@ import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
-import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
@@ -145,8 +144,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		json += "			}";
 
 		String search = json;
-		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, search, new NodeRequestParameter().draft()));
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
@@ -168,12 +166,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"),
-				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+				new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 		assertEquals(1, response.getData().size());
 		deleteNode(PROJECT_NAME, content("concorde").getUuid());
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"),
-				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new PagingParameters().setPage(1).setPerPage(2),
+				new VersioningParameters().draft()));
 		assertEquals("We added the delete action and therefore the document should no longer be part of the index.", 0, response.getData().size());
 
 	}
@@ -188,8 +186,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		fullIndex();
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME,
-				getSimpleTermQuery("schema.name", "content"), new NodeRequestParameter().draft()));
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name", "content"), new VersioningParameters().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
@@ -201,8 +199,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		Node parentNode = folder("news");
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME,
-				getSimpleTermQuery("parentNode.uuid", parentNode.getUuid()), new NodeRequestParameter().draft()));
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("parentNode.uuid", parentNode.getUuid()),
+				new VersioningParameters().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 		// TODO verify the found nodes are correct
@@ -232,8 +230,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		json += "			}";
 
 		String search = json;
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, search,
-				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, search, new PagingParameters().setPage(1).setPerPage(2),
+				new VersioningParameters().draft()));
 		assertEquals(0, response.getData().size());
 
 		// create a new folder named "bla"
@@ -246,8 +244,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		call(() -> getClient().createNode(PROJECT_NAME, create));
 
 		// Search again and make sure we found our document
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, search,
-				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, search, new PagingParameters().setPage(1).setPerPage(2),
+				new VersioningParameters().draft()));
 		assertEquals("Check search result after document creation", 1, response.getData().size());
 	}
 
@@ -260,7 +258,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		Node node = content("concorde");
 
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+				new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 
 		NodeUpdateRequest update = new NodeUpdateRequest();
@@ -268,12 +266,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		update.getFields().put("content", FieldUtil.createHtmlField(newString));
 		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update));
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new PagingParameters().setPage(1).setPerPage(2),
+				new VersioningParameters().draft()));
 		assertEquals("Check hits for 'supersonic' after update", 0, response.getData().size());
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newString),
-				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newString), new PagingParameters().setPage(1).setPerPage(2),
+				new VersioningParameters().draft()));
 		assertEquals("Check hits for '" + newString + "' after update", 1, response.getData().size());
 	}
 
@@ -282,7 +280,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("the"),
-				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+				new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -296,8 +294,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSearchContentResolveLinksAndLangFallback() throws InterruptedException, JSONException {
 		fullIndex();
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2),
-				new NodeRequestParameter().setResolveLinks(LinkType.FULL).setLanguages("de", "en").draft()));
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("the"), new PagingParameters().setPage(1).setPerPage(2),
+						new NodeParameters().setResolveLinks(LinkType.FULL).setLanguages("de", "en"), new VersioningParameters().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -310,8 +309,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSearchContentResolveLinks() throws InterruptedException, JSONException {
 		fullIndex();
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2),
-				new NodeRequestParameter().setResolveLinks(LinkType.FULL).draft()));
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("the"),
+				new PagingParameters().setPage(1).setPerPage(2), new NodeParameters().setResolveLinks(LinkType.FULL), new VersioningParameters().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -367,8 +366,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		Node node = content("concorde");
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParameter().setPage(1).setPerPage(100),
-				new NodeRequestParameter().setLanguages(expectedLanguages).draft()));
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParameters().setPage(1).setPerPage(100),
+						new NodeParameters().setLanguages(expectedLanguages), new VersioningParameters().draft()));
 		assertEquals("Check # of returned nodes", expectedLanguages.length, response.getData().size());
 		assertEquals("Check total count", expectedLanguages.length, response.getMetainfo().getTotalCount());
 
@@ -394,8 +394,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		// from 1 to 9
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 100, 9000),
-				new NodeRequestParameter().draft()));
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 100, 9000), new VersioningParameters().draft()));
 		assertEquals(1, response.getData().size());
 	}
 
@@ -406,8 +406,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		// from 9 to 1
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 900, 1500),
-				new NodeRequestParameter().draft()));
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 900, 1500), new VersioningParameters().draft()));
 		assertEquals("We could expect to find the node with the given seed number field since the value {" + numberValue
 				+ "} is between the search range.", 1, response.getData().size());
 	}
@@ -419,8 +419,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		// out of bounds
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 1000, 90),
-				new NodeRequestParameter().draft()));
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 1000, 90), new VersioningParameters().draft()));
 		assertEquals("No node should be found since the range is invalid.", 0, response.getData().size());
 	}
 
@@ -430,7 +430,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
-				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+				new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
@@ -445,8 +445,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		addMicronodeField();
 		fullIndex();
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"), new PagingParameter().setPage(1).setPerPage(2),
-				new NodeRequestParameter().setResolveLinks(LinkType.FULL).draft()));
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"), new PagingParameters().setPage(1).setPerPage(2),
+						new NodeParameters().setResolveLinks(LinkType.FULL), new VersioningParameters().draft()));
 
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
@@ -467,7 +468,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
 				NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
-						new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+						new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 
 				if (expectResult) {
 					assertEquals("Check returned search results", 1, response.getData().size());
@@ -495,7 +496,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
 				NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
-						new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().setResolveLinks(LinkType.FULL).draft()));
+						new PagingParameters().setPage(1).setPerPage(2), new NodeParameters().setResolveLinks(LinkType.FULL),
+						new VersioningParameters().draft()));
 
 				if (expectResult) {
 					assertEquals("Check returned search results", 1, response.getData().size());
@@ -520,7 +522,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", concorde.getUuid()),
-				new PagingParameter().setPage(1).setPerPage(10), new NodeRequestParameter().setLanguages("en", "de").draft()));
+				new PagingParameters().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"),
+				new VersioningParameters().draft()));
 		assertEquals("We expect to find the two language versions.", 2, response.getData().size());
 
 		SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
@@ -544,8 +547,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		// Wait for migration to complete
 		failingLatch(latch);
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", concorde.getUuid()), new PagingParameter().setPage(1).setPerPage(10),
-				new NodeRequestParameter().setLanguages("en", "de").draft()));
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", concorde.getUuid()),
+				new PagingParameters().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"),
+				new VersioningParameters().draft()));
 
 		assertEquals("We only expect to find the two language versions.", 2, response.getData().size());
 	}
@@ -565,8 +569,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		for (int i = 0; i < numAdditionalNodes; i++) {
 			Node node = parentNode.create(user, schemaVersion, project);
-			MicronodeGraphField vcardField = node
-					.createGraphFieldContainer(english, node.getProject().getLatestRelease(), user)
+			MicronodeGraphField vcardField = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), user)
 					.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
 			vcardField.getMicronode().createString("firstName").setString("Mickey");
 			vcardField.getMicronode().createString("lastName").setString("Mouse");
@@ -576,7 +579,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
-				new PagingParameter().setPage(1).setPerPage(numAdditionalNodes + 1), new NodeRequestParameter().draft()));
+				new PagingParameters().setPage(1).setPerPage(numAdditionalNodes + 1), new VersioningParameters().draft()));
 
 		assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());
 	}
@@ -592,18 +595,18 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 		Node node = content("concorde");
 		int previousTagCount = node.getTags(project().getLatestRelease()).size();
-		//Create tags:
+		// Create tags:
 		int tagCount = 20;
 		for (int i = 0; i < tagCount; i++) {
 			TagResponse tagResponse = createTag(PROJECT_NAME, tagFamily("colors").getUuid(), "tag" + i);
-			//Add tags to node:
-			call(() -> getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid(), new NodeRequestParameter().draft()));
+			// Add tags to node:
+			call(() -> getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid(), new VersioningParameters().draft()));
 		}
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new NodeRequestParameter().draft()));
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new VersioningParameters().draft()));
 		assertEquals("Expect to only get one search result", 1, response.getMetainfo().getTotalCount());
 
-		//assert tag count
+		// assert tag count
 		int nColorTags = response.getData().get(0).getTags().get("colors").getItems().size();
 		int nBasicTags = response.getData().get(0).getTags().get("basic").getItems().size();
 		assertEquals("Expect correct tag count", previousTagCount + tagCount, nColorTags + nBasicTags);
@@ -613,8 +616,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testGlobalNodeSearch() throws Exception {
 		fullIndex();
 
-		NodeResponse oldNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(),
-				new NodeRequestParameter().draft()));
+		NodeResponse oldNode = call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
 
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName("mynewproject");
@@ -629,15 +632,15 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		NodeResponse newNode = call(() -> getClient().createNode("mynewproject", createNode));
 
 		// search in old project
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new NodeRequestParameter().draft()));
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result in " + PROJECT_NAME).usingElementComparatorOnFields("uuid").containsOnly(oldNode);
 
 		// search in new project
-		response = call(() -> getClient().searchNodes("mynewproject", getSimpleQuery("Concorde"), new NodeRequestParameter().draft()));
+		response = call(() -> getClient().searchNodes("mynewproject", getSimpleQuery("Concorde"), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result in mynewproject").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 		// search globally
-		response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde"), new NodeRequestParameter().draft()));
+		response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde"), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Global search result").usingElementComparatorOnFields("uuid").containsOnly(newNode, oldNode);
 	}
 
@@ -680,7 +683,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		// publish the Concorde
-		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new NodeRequestParameter().draft()));
+		NodeResponse concorde = call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
 		call(() -> getClient().publishNode(PROJECT_NAME, content("concorde").getUuid()));
 
 		// "urschnell" found in published nodes
@@ -715,12 +719,14 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		String newContent = "urschnell";
 		fullIndex();
 
-		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new NodeRequestParameter().draft()));
+		NodeResponse concorde = call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new NodeRequestParameter().draft()));
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new NodeRequestParameter().draft()));
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		// change draft version of content
@@ -729,10 +735,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		update.getFields().put("content", FieldUtil.createHtmlField(newContent));
 		call(() -> getClient().updateNode(PROJECT_NAME, concorde.getUuid(), update));
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new NodeRequestParameter().draft()));
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new NodeRequestParameter().draft()));
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
@@ -740,8 +746,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSearchPublishedInRelease() throws Exception {
 		fullIndex();
 
-		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(),
-				new NodeRequestParameter().draft()));
+		NodeResponse concorde = call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
 		call(() -> getClient().publishNode(PROJECT_NAME, concorde.getUuid()));
 
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
@@ -752,7 +758,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new NodeRequestParameter().setRelease(project().getInitialRelease().getName())));
+				new VersioningParameters().setRelease(project().getInitialRelease().getName())));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
@@ -760,18 +766,19 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSearchDraftInRelease() throws Exception {
 		fullIndex();
 
-		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(),
-				new NodeRequestParameter().draft()));
+		NodeResponse concorde = call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
 
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
 		createRelease.setName("newrelease");
 		call(() -> getClient().createRelease(PROJECT_NAME, createRelease));
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new NodeRequestParameter().draft()));
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new NodeRequestParameter().setRelease(project().getInitialRelease().getName()).draft()));
+				new VersioningParameters().setRelease(project().getInitialRelease().getName()).draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

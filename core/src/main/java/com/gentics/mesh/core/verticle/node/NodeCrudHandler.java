@@ -35,6 +35,9 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -91,7 +94,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(node -> {
-				//TODO Don't we need a trx here?!
+				// TODO Don't we need a trx here?!
 
 				Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
@@ -154,11 +157,15 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	public void handleReadChildren(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
+		NodeParameters nodeParams = new NodeParameters(ac);
+		PagingParameters pagingParams = new PagingParameters(ac);
+		VersioningParameters versionParams = new VersioningParameters(ac);
+
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
-					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(),
-							ac.getRelease(node.getProject()).getUuid(), Type.forVersion(ac.getVersion()), ac.getPagingParameter());
+					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(),
+							ac.getRelease(node.getProject()).getUuid(), Type.forVersion(versionParams.getVersion()), pagingParams);
 					return page.transformToRest(ac, 0);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
@@ -169,10 +176,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
+
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
-					PageImpl<? extends Tag> tagPage = node.getTags(ac.getRelease(null), ac.getPagingParameter());
+					PageImpl<? extends Tag> tagPage = node.getTags(ac.getRelease(null), ac.getPagingParameters());
 					return tagPage.transformToRest(ac, 0);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
@@ -254,7 +262,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * Handle getting the publish status for the requested node.
 	 * 
 	 * @param ac
-	 * @param uuid Uuid of the node which will be queried
+	 * @param uuid
+	 *            Uuid of the node which will be queried
 	 */
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
@@ -269,7 +278,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * Handle publishing a node.
 	 * 
 	 * @param ac
-	 * @param uuid UUid of the node which should be published
+	 * @param uuid
+	 *            UUid of the node which should be published
 	 */
 	public void handlePublish(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
@@ -289,7 +299,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * Handle taking a node offline.
 	 * 
 	 * @param ac
-	 * @param uuid Uuid of node which should be taken offline
+	 * @param uuid
+	 *            Uuid of node which should be taken offline
 	 */
 	public void handleTakeOffline(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
@@ -313,6 +324,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * @param languageTag
 	 */
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid, String languageTag) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToPublishStatus(ac, languageTag);
@@ -366,7 +378,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<?> root = handler.call();
-			GraphPermission requiredPermission = "published".equals(ac.getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			return root.loadObjectByUuid(ac, uuid, requiredPermission).flatMap(node -> {
 				return node.transformToRest(ac, 0);
 			});
@@ -374,7 +386,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> {
 			HttpResponseStatus code = HttpResponseStatus.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
 			ac.respond(model, code);
-		} , ac::fail);
+		}, ac::fail);
 
 	}
 }

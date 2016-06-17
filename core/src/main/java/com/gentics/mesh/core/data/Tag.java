@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 /**
@@ -54,7 +54,7 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, Type type, PagingParameter pagingInfo)
+	PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, Type type, PagingParameters pagingInfo)
 			throws InvalidArgumentException;
 
 	/**

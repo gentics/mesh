@@ -39,8 +39,8 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -151,7 +151,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 11;
-			future = getClient().findSchemas(new PagingParameter(2, perPage));
+			future = getClient().findSchemas(new PagingParameters(2, perPage));
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -167,7 +167,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<Schema> allSchemas = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<SchemaListResponse> pageFuture = getClient().findSchemas(new PagingParameter(page, perPage));
+				Future<SchemaListResponse> pageFuture = getClient().findSchemas(new PagingParameters(page, perPage));
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 
@@ -182,15 +182,15 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// .collect(Collectors.toList());
 			// assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
 
-			future = getClient().findSchemas(new PagingParameter(-1, perPage));
+			future = getClient().findSchemas(new PagingParameters(-1, perPage));
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findSchemas(new PagingParameter(1, -1));
+			future = getClient().findSchemas(new PagingParameters(1, -1));
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findSchemas(new PagingParameter(4242, 25));
+			future = getClient().findSchemas(new PagingParameters(4242, 25));
 			latchFor(future);
 			assertSuccess(future);
 
@@ -202,7 +202,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<SchemaListResponse> future = getClient().findSchemas(new PagingParameter(1, 0));
+		Future<SchemaListResponse> future = getClient().findSchemas(new PagingParameters(1, 0));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -226,7 +226,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadByUuidWithRolePerms() {
 		String uuid = db.noTrx(() -> schemaContainer("content").getUuid());
 
-		Future<Schema> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameter().setRoleUuid(db.noTrx(() -> role().getUuid())));
+		Future<Schema> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTrx(() -> role().getUuid())));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull(future.result().getRolePerms());

@@ -19,6 +19,9 @@ import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.RxUtil;
 
@@ -49,7 +52,8 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	public Observable<NodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 
 		// Check whether the list should be returned in a collapsed or expanded format
-		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey) || ac.getExpandAllFlag();
+		NodeParameters parameters = ac.getNodeParameters();
+		boolean expandField = parameters.getExpandedFieldnames().contains(fieldKey) || parameters.getExpandAll();
 		String[] lTagsArray = languageTags.toArray(new String[languageTags.size()]);
 
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
@@ -62,7 +66,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 			return RxUtil.concatList(futures).collect(() -> {
 				return restModel.getItems();
-			} , (x, y) -> {
+			}, (x, y) -> {
 				x.add(y);
 			}).map(i -> {
 				return restModel;
@@ -71,14 +75,13 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
 			String releaseUuid = ac.getRelease(null).getUuid();
-			Type type = Type.forVersion(ac.getVersion());
+			Type type = Type.forVersion(new VersioningParameters(ac).getVersion());
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				// Create the rest field and populate the fields
 				NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(item.getNode().getUuid());
 
-				if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-					listItem.setUrl(WebRootLinkReplacer.getInstance()
-							.resolve(releaseUuid, type, item.getNode(), ac.getResolveLinksType(), lTagsArray)
+				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
+					listItem.setUrl(WebRootLinkReplacer.getInstance().resolve(releaseUuid, type, item.getNode(), ac.getNodeParameters().getResolveLinks(), lTagsArray)
 							.toBlocking().first());
 				}
 

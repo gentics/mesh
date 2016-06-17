@@ -3,7 +3,7 @@ package com.gentics.mesh.core.image.spi;
 import java.io.File;
 import java.io.InputStream;
 
-import com.gentics.mesh.query.impl.ImageManipulationParameter;
+import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Observable;
@@ -21,7 +21,7 @@ public interface ImageManipulator {
 	 * @param imageRequestParameter
 	 * @return
 	 */
-	Observable<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameter imageRequestParameter);
+	Observable<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters imageRequestParameter);
 
 	/**
 	 * Read the inputstream and resize the image data.
@@ -31,7 +31,7 @@ public interface ImageManipulator {
 	 * @param parameters
 	 * @return
 	 */
-	Observable<Buffer> handleResize(InputStream ins, String sha512sum, ImageManipulationParameter parameters);
+	Observable<Buffer> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters);
 
 	/**
 	 * Return the cache file for the given sha512 checksum and image manipulation parameters.
@@ -40,6 +40,6 @@ public interface ImageManipulator {
 	 * @param parameters
 	 * @return
 	 */
-	File getCacheFile(String sha512sum, ImageManipulationParameter parameters);
+	File getCacheFile(String sha512sum, ImageManipulationParameters parameters);
 
 }

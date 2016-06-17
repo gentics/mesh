@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.Future;
 
@@ -19,7 +19,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserResponse> findUserByUuid(String uuid, QueryParameterProvider... parameters);
+	Future<UserResponse> findUserByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Load a specific user by username.
@@ -28,7 +28,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserResponse> findUserByUsername(String username, QueryParameterProvider... parameters);
+	Future<UserResponse> findUserByUsername(String username, ParameterProvider... parameters);
 
 	/**
 	 * Load multiple users.
@@ -36,7 +36,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserListResponse> findUsers(QueryParameterProvider... parameters);
+	Future<UserListResponse> findUsers(ParameterProvider... parameters);
 
 	/**
 	 * Create a new user.
@@ -45,7 +45,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserResponse> createUser(UserCreateRequest request, QueryParameterProvider... parameters);
+	Future<UserResponse> createUser(UserCreateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Update the user.
@@ -56,7 +56,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserResponse> updateUser(String uuid, UserUpdateRequest request, QueryParameterProvider... parameters);
+	Future<UserResponse> updateUser(String uuid, UserUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Delete the user.
@@ -74,7 +74,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserListResponse> findUsersOfGroup(String groupUuid, QueryParameterProvider... parameters);
+	Future<UserListResponse> findUsersOfGroup(String groupUuid, ParameterProvider... parameters);
 
 	/**
 	 * Read the user permissions for the given path.

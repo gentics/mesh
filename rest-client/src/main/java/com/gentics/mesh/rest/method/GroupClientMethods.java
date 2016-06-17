@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.parameter.ParameterProvider;
 
 public interface GroupClientMethods {
 
@@ -18,7 +18,7 @@ public interface GroupClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<GroupResponse> findGroupByUuid(String uuid, QueryParameterProvider... parameters);
+	Future<GroupResponse> findGroupByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Load multiple groups.
@@ -26,7 +26,7 @@ public interface GroupClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<GroupListResponse> findGroups(QueryParameterProvider... parameters);
+	Future<GroupListResponse> findGroups(ParameterProvider... parameters);
 
 	/**
 	 * Create the group.

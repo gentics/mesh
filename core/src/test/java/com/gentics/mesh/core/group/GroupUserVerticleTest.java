@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -60,7 +60,7 @@ public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 		role().grantPermissions(extraUser, READ_PERM);
 		String groupUuid = group().getUuid();
 
-		Future<UserListResponse> future = getClient().findUsersOfGroup(groupUuid, new PagingParameter());
+		Future<UserListResponse> future = getClient().findUsersOfGroup(groupUuid, new PagingParameters());
 		latchFor(future);
 		assertSuccess(future);
 

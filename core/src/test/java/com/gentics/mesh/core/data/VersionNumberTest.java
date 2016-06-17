@@ -1,9 +1,13 @@
 package com.gentics.mesh.core.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+
+import com.gentics.mesh.util.VersionNumber;
 
 /**
  * Test cases for VersionNumber

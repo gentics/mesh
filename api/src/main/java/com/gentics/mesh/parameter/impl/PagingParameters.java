@@ -1,20 +1,20 @@
-package com.gentics.mesh.query.impl;
+package com.gentics.mesh.parameter.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.query.QueryParameterProvider;
-import com.gentics.mesh.util.HttpQueryUtils;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NumberUtils;
 
 /**
- * A {@link PagingParameter} can be used to add additional paging parameters to the rest requests.
+ * A {@link PagingParameters} can be used to add additional paging parameters to the rest requests.
  */
-public class PagingParameter implements QueryParameterProvider {
+public class PagingParameters extends AbstractParameters {
 
 	public static final String PAGE_PARAMETER_KEY = "page";
 	public static final String PER_PAGE_PARAMETER_KEY = "perPage";
@@ -24,7 +24,7 @@ public class PagingParameter implements QueryParameterProvider {
 	private String sortBy;
 	private SortOrder order;
 
-	public PagingParameter(int page, int perPage, String sortBy, SortOrder order) {
+	public PagingParameters(int page, int perPage, String sortBy, SortOrder order) {
 		this.page = page;
 		this.perPage = perPage;
 		this.sortBy = sortBy;
@@ -34,7 +34,7 @@ public class PagingParameter implements QueryParameterProvider {
 	/**
 	 * Create a new paging info for page one.
 	 */
-	public PagingParameter() {
+	public PagingParameters() {
 		this(1);
 	}
 
@@ -44,8 +44,8 @@ public class PagingParameter implements QueryParameterProvider {
 	 * @param page
 	 *            Page number
 	 */
-	public PagingParameter(int page) {
-		//TODO use reference for default page size
+	public PagingParameters(int page) {
+		// TODO use reference for default page size
 		this(page, 25);
 	}
 
@@ -57,8 +57,12 @@ public class PagingParameter implements QueryParameterProvider {
 	 * @param perPage
 	 *            Per page count
 	 */
-	public PagingParameter(int page, int perPage) {
+	public PagingParameters(int page, int perPage) {
 		this(page, perPage, "uuid", SortOrder.ASCENDING);
+	}
+
+	public PagingParameters(ActionContext ac) {
+		super(ac);
 	}
 
 	/**
@@ -86,7 +90,7 @@ public class PagingParameter implements QueryParameterProvider {
 	 *            Current page number
 	 * @return Fluent API
 	 */
-	public PagingParameter setPage(int page) {
+	public PagingParameters setPage(int page) {
 		this.page = page;
 		return this;
 	}
@@ -98,7 +102,7 @@ public class PagingParameter implements QueryParameterProvider {
 	 *            Per page count
 	 * @return Fluent API
 	 */
-	public PagingParameter setPerPage(int perPage) {
+	public PagingParameters setPerPage(int perPage) {
 		this.perPage = perPage;
 		return this;
 
@@ -114,7 +118,7 @@ public class PagingParameter implements QueryParameterProvider {
 	 * 
 	 */
 	@Deprecated
-	public PagingParameter setSortOrder(String sortBy) {
+	public PagingParameters setSortOrder(String sortBy) {
 		this.sortBy = sortBy;
 		return this;
 	}
@@ -142,25 +146,17 @@ public class PagingParameter implements QueryParameterProvider {
 	}
 
 	@Override
-	public String getQueryParameters() {
-		//TODO add the other parameters as well
-		return PAGE_PARAMETER_KEY + "=" + page + "&" + PER_PAGE_PARAMETER_KEY + "=" + perPage;
+	protected Map<String, Object> getParameters() {
+		Map<String, Object> map = new HashMap<>();
+		map.put(PAGE_PARAMETER_KEY, page);
+		map.put(PER_PAGE_PARAMETER_KEY, perPage);
+		return map;
 	}
 
 	@Override
-	public String toString() {
-		return getQueryParameters();
-	}
-
-	/**
-	 * Transform the query string into a {@link PagingParameter} object.
-	 * @param query
-	 * @return
-	 */
-	public static PagingParameter fromQuery(String query) {
-		Map<String, String> queryParameters = HttpQueryUtils.splitQuery(query);
-		String page = queryParameters.get(PAGE_PARAMETER_KEY);
-		String perPage = queryParameters.get(PER_PAGE_PARAMETER_KEY);
+	protected void constructFrom(ActionContext ac) {
+		String page = ac.getParameter(PAGE_PARAMETER_KEY);
+		String perPage = ac.getParameter(PER_PAGE_PARAMETER_KEY);
 		int pageInt = 1;
 		int perPageInt = MeshOptions.DEFAULT_PAGE_SIZE;
 		if (page != null) {
@@ -175,7 +171,8 @@ public class PagingParameter implements QueryParameterProvider {
 		if (perPageInt < 0) {
 			error(BAD_REQUEST, "error_invalid_paging_parameters");
 		}
-		return new PagingParameter(pageInt, perPageInt);
+		setPage(pageInt);
+		setPerPage(perPageInt);
 	}
 
 }

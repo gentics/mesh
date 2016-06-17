@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.tag;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
@@ -32,7 +33,7 @@ public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
 	public void testReadNodesForTag() {
 		try (NoTrx noTx = db.noTrx()) {
 			NodeListResponse nodeList = call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new NodeRequestParameter().draft()));
+					new VersioningParameters().draft()));
 			NodeResponse concorde = new NodeResponse();
 			concorde.setUuid(content("concorde").getUuid());
 			assertThat(nodeList.getData()).as("Tagged nodes").isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
@@ -46,7 +47,7 @@ public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertThat(nodeList.getData()).as("Published tagged nodes").isNotNull().isEmpty();
 
 			// publish the node
-			content("concorde").publish(getMockedInternalActionContext(""));
+			content("concorde").publish(getMockedInternalActionContext());
 
 			nodeList = call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
 			NodeResponse concorde = new NodeResponse();
@@ -67,16 +68,16 @@ public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 			// get for latest release (must be empty)
 			assertThat(call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new NodeRequestParameter().draft())).getData()).as("Nodes tagged in latest release").isNotNull().isEmpty();
+					new VersioningParameters().draft())).getData()).as("Nodes tagged in latest release").isNotNull().isEmpty();
 
 			// get for new release (must be empty)
 			assertThat(call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new NodeRequestParameter().draft().setRelease(newRelease.getUuid()))).getData()).as("Nodes tagged in new release").isNotNull()
+					new VersioningParameters().draft().setRelease(newRelease.getUuid()))).getData()).as("Nodes tagged in new release").isNotNull()
 							.isEmpty();
 
 			// get for initial release
 			assertThat(call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new NodeRequestParameter().draft().setRelease(initialRelease.getUuid()))).getData()).as("Nodes tagged in initial release")
+					new VersioningParameters().draft().setRelease(initialRelease.getUuid()))).getData()).as("Nodes tagged in initial release")
 							.isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
 		}
 	}

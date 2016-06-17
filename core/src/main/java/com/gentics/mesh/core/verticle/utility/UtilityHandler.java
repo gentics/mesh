@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 
 import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
@@ -28,7 +29,7 @@ public class UtilityHandler extends AbstractHandler {
 			}
 
 			return Observable.just(WebRootLinkReplacer.getInstance().replace(null, null, ac.getBodyAsString(),
-					ac.getResolveLinksType(), projectName, ac.getSelectedLanguageTags()));
+					ac.getNodeParameters().getResolveLinks(), projectName, new NodeParameters(ac).getLanguageList()));
 		}).subscribe(body -> rc.response().putHeader("Content-Type", "text/plain").setStatusCode(OK.code()).end(body), ac::fail);
 	}
 

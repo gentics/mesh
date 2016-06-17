@@ -39,11 +39,11 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @return
 	 */
 	protected <R extends AbstractGenericRestResponse> Observable<R> setRolePermissions(InternalActionContext ac, R model) {
-		String rolePermissionParameter = ac.getRolePermissionParameter();
-		if (isEmpty(rolePermissionParameter)) {
+		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
+		if (isEmpty(roleUuid)) {
 			return Observable.empty();
 		} else
-			return MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, rolePermissionParameter, READ_PERM).map(role -> {
+			return MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).map(role -> {
 				if (role != null) {
 					Set<GraphPermission> permSet = role.getPermissions(this);
 					Set<String> humanNames = new HashSet<>();

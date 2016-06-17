@@ -1,11 +1,12 @@
 package com.gentics.mesh.core.data.node.field;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.parameter.impl.LinkType;
 
 import rx.Observable;
 
@@ -23,13 +24,13 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 		} else {
 			return graphHtmlField.transformToRest(ac).map(model -> {
 				// If needed resolve links within the html
-				if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 					Project project = ac.getProject();
 					if (project == null) {
 						project = parentNode.getProject();
 					}
-					model.setHTML(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersion()),
-							model.getHTML(), ac.getResolveLinksType(), project.getName(), languageTags));
+					model.setHTML(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersioningParameters().getVersion()),
+							model.getHTML(), ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
 				}
 				return model;
 			});
