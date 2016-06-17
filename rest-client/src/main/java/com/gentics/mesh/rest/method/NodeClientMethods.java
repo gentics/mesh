@@ -186,7 +186,7 @@ public interface NodeClientMethods {
 			QueryParameterProvider... parameters);
 
 	/**
-	 * Publish a node language
+	 * Publish a node language.
 	 *
 	 * @param projectName
 	 * @param nodeUuid
@@ -198,7 +198,7 @@ public interface NodeClientMethods {
 			QueryParameterProvider... parameters);
 
 	/**
-	 * Take a node offline
+	 * Take a node and all node languages offline.
 	 *
 	 * @param projectName
 	 * @param nodeUuid
@@ -209,7 +209,7 @@ public interface NodeClientMethods {
 			QueryParameterProvider... parameters);
 
 	/**
-	 * Take a node offline
+	 * Take a node language offline.
 	 *
 	 * @param projectName
 	 * @param nodeUuid

@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.query.impl.TakeOfflineParameter;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -38,12 +39,16 @@ public class NodePublishVerticleTests extends AbstractIsolatedRestVerticleTest {
 		return list;
 	}
 
+	/**
+	 * Folder /news/2015 is not published. A new node will be created in folder 2015. Publishing the created folder should fail since the parent folder
+	 * (/news/2015) is not yet published. This test will also assert that publishing works fine as soon as the parent node is published.
+	 */
 	@Test
 	public void testPublishNodeInUnpublishedContainer() {
 
+		// 1. Take the parent folder offline
 		String folderUuid = db.noTrx(() -> {
-			// 1. Take the parent folder offline
-			InternalActionContext ac = getMockedInternalActionContext("");
+			InternalActionContext ac = getMockedInternalActionContext("recursive=true");
 			Node folder = folder("2015");
 			folder.takeOffline(ac);
 			folder("news").publish(ac);
@@ -59,9 +64,10 @@ public class NodePublishVerticleTests extends AbstractIsolatedRestVerticleTest {
 		requestA.getFields().put("filename", FieldUtil.createStringField("nodeA"));
 		NodeResponse nodeA = call(() -> getClient().createNode(PROJECT_NAME, requestA));
 
-		call(() -> getClient().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published");
+		// 3. Publish nodeA - It should fail since the parentfolder is not published
+		call(() -> getClient().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published", folderUuid);
 
-		// 3. Publish the folder
+		// 4. Publish the parent folder
 		call(() -> getClient().publishNode(PROJECT_NAME, folderUuid));
 
 		// 4. Verify that publishing now works
@@ -73,8 +79,40 @@ public class NodePublishVerticleTests extends AbstractIsolatedRestVerticleTest {
 	 * Verify that the takeOffline action fails if the node still has published children.
 	 */
 	@Test
-	public void testTakeOfflineConsistency() {
-		fail("implement me");
+	public void testTakeNodeOfflineConsistency() {
+
+		//1. Publish /news  & /news/2015
+		db.noTrx(() -> {
+			System.out.println(project().getBaseNode().getUuid());
+			System.out.println(folder("news").getUuid());
+			System.out.println(folder("2015").getUuid());
+			return null;
+		});
+
+		// 2. Take folder /news offline - This should fail since folder /news/2015 is still published
+		db.noTrx(() -> {
+			// 1. Take folder offline
+			Node node = folder("news");
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, node.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published");
+			return null;
+		});
+
+		//3. Take sub nodes offline
+		db.noTrx(() -> {
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new TakeOfflineParameter().setRecursive(false)));
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new TakeOfflineParameter().setRecursive(true)));
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, folder("2014").getUuid(), new TakeOfflineParameter().setRecursive(true)));
+			return null;
+		});
+
+		// 4. Take folder /news offline - It should work since all child nodes have been taken offline
+		db.noTrx(() -> {
+			// 1. Take folder offline
+			Node node = folder("news");
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, node.getUuid()));
+			return null;
+		});
+
 	}
 
 	/**

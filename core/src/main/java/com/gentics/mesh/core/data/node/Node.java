@@ -530,8 +530,22 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * <li>A node can only be taken offline if the node has no children which are still published.
 	 * </ul>
 	 * 
-	 * @param ac Current action context
+	 * @param ac
+	 *            Current action context
 	 */
 	void assertPublishConsistency(InternalActionContext ac);
+
+	/**
+	 * Create a new published version of the given language in the release
+	 * 
+	 * @param language
+	 *            language
+	 * @param release
+	 *            release
+	 * @param user
+	 *            user
+	 * @return published field container
+	 */
+	NodeGraphFieldContainer publish(Language language, Release release, User user);
 
 }

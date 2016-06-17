@@ -87,6 +87,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.query.impl.TakeOfflineParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.TraversalHelper;
@@ -211,16 +212,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (isPublished) {
 			Node parentNode = getParentNode(releaseUuid);
 
-			//TODO parent nodes can be null if this is the project base node
+			//Only assert consistency of parent nodes which are not project base nodes.
+			if (!parentNode.getUuid().equals(getProject().getBaseNode().getUuid())) {
 
-			// Check whether the parent node has a published field container for the given release and language
-			NodeGraphFieldContainer fieldContainer = parentNode.findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), releaseUuid,
-					"published");
-			if (fieldContainer == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Could not find published field container for node {" + parentNode.getUuid() + "}");
+				// Check whether the parent node has a published field container for the given release and language
+				NodeGraphFieldContainer fieldContainer = parentNode.findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), releaseUuid,
+						"published");
+				if (fieldContainer == null) {
+					log.error("Could not find published field container for node {" + parentNode.getUuid() + "} in release {" + releaseUuid + "}");
+					throw error(BAD_REQUEST, "node_error_parent_containers_not_published", parentNode.getUuid());
 				}
-				throw error(BAD_REQUEST, "node_error_parent_containers_not_published", parentNode.getUuid());
 			}
 		}
 
@@ -230,8 +231,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			for (Node node : getChildren()) {
 				NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(ac.getSelectedLanguageTags(), releaseUuid, "published");
 				if (fieldContainer != null) {
-					//TODO correct i18n
-					throw error(BAD_REQUEST, "node_error_parent_containers_not_published", node.getUuid());
+					log.error("Found published field container for node {" + node.getUuid() + "} in release {" + releaseUuid + "}. Node is child of {"
+							+ getUuid() + "}");
+					throw error(BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid());
 				}
 			}
 		}
@@ -839,7 +841,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					.collect(Collectors.toList());
 
 			assertPublishConsistency(ac);
-			// reindex
 			return createIndexBatch(STORE_ACTION, published, releaseUuid, Type.PUBLISHED);
 		}).process().map(i -> {
 			return null;
@@ -852,10 +853,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
+		TakeOfflineParameter parameters = TakeOfflineParameter.createFrom(ac);
+
 		return db.trx(() -> {
 			List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, Type.PUBLISHED);
 			getGraphFieldContainerEdges(releaseUuid, Type.PUBLISHED).stream().forEach(EdgeFrame::remove);
 			published.forEach(c -> c.getImpl().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null));
+
+			if (parameters.isRecursive()) {
+				for (Node node : getChildren()) {
+					node.takeOffline(ac);
+				}
+			}
+
+			assertPublishConsistency(ac);
 
 			// reindex
 			return createIndexBatch(DELETE_ACTION, published, releaseUuid, Type.PUBLISHED);
@@ -959,18 +970,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_publish");
 	}
 
-	/**
-	 * Create a new published version of the given language in the release
-	 * 
-	 * @param language
-	 *            language
-	 * @param release
-	 *            release
-	 * @param user
-	 *            user
-	 * @return published field container
-	 */
-	protected NodeGraphFieldContainer publish(Language language, Release release, User user) {
+	@Override
+	public NodeGraphFieldContainer publish(Language language, Release release, User user) {
 		String releaseUuid = release.getUuid();
 
 		// create published version

@@ -458,11 +458,13 @@ public class TestDataProvider {
 			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, project.getLatestRelease(), userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("name").setString(germanName);
+			folderNode.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
 		if (englishName != null) {
 			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, project.getLatestRelease(), userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
+			folderNode.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
 
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
@@ -498,6 +500,7 @@ public class TestDataProvider {
 			englishContainer.createString("displayName").setString(name + " english displayName");
 			englishContainer.createString("filename").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
+			node.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
 
 		if (germanContent != null) {
@@ -507,11 +510,13 @@ public class TestDataProvider {
 			germanContainer.createString("displayName").setString(name + " german");
 			germanContainer.createString("filename").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
+			node.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
 
 		if (contents.containsKey(name.toLowerCase())) {
 			throw new RuntimeException("Collision of contents detected for key " + name.toLowerCase());
 		}
+
 		contents.put(name.toLowerCase(), node);
 		return node;
 	}

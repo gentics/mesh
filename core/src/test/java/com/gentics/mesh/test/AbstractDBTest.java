@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -261,6 +262,10 @@ public abstract class AbstractDBTest {
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
 		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
+		when(request.getParam(Mockito.anyString())).thenAnswer(in -> {
+			String key = (String) in.getArguments()[0];
+			return paramMap.get(key);
+		});
 		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
 		MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
 		when(rc.data()).thenReturn(map);
