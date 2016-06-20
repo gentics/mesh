@@ -42,11 +42,6 @@ public final class JsonUtil {
 
 	protected static ObjectMapper defaultMapper;
 
-	/**
-	 * When enabled indented JSON will be produced.
-	 */
-	public static boolean debugMode = false;
-
 	static {
 		initDefaultMapper();
 	}
@@ -104,11 +99,7 @@ public final class JsonUtil {
 
 	public static <T> String toJson(T obj) throws HttpStatusCodeErrorException {
 		try {
-			if (debugMode) {
-				return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
-			} else {
-				return defaultMapper.writeValueAsString(obj);
-			}
+			return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
 		} catch (IOException e) {
 			// TODO i18n
 			String message = "Could not generate json from object";

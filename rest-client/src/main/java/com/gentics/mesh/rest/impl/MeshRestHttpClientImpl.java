@@ -89,6 +89,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	public MeshRestHttpClientImpl(String host, int port, Vertx vertx, AuthenticationMethod authenticationMethod) {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);
+		options.setTryUseCompression(true);
 		options.setDefaultPort(port);
 		this.client = vertx.createHttpClient(options);
 		switch (authenticationMethod) {
