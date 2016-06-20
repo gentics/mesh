@@ -13,6 +13,10 @@
 	<packaging>pom</packaging>
 	<name>Mesh Integration Tests</name>
 
+	<properties>
+		<dockerHostname>satan3.office</dockerHostname>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -38,7 +42,7 @@
 				</executions>
 				<configuration>
 					<skip>false</skip>
-					<dockerHost>${dockerHostProtocol}://satan3.office:2375</dockerHost>
+					<dockerHost>${dockerHostProtocol}://${dockerHostname}:2375</dockerHost>
 					<verbose>true</verbose>
 					<autoPull>always</autoPull>
 					<images>
@@ -46,19 +50,36 @@
 							<name>gentics/mesh-demo:latest</name>
 							<run>
 								<ports>
-									<port>jolokia.port:8080</port>
+									<port>mesh.port:8080</port>
 								</ports>
 								<wait>
 									<!-- The plugin waits until this URL is reachable via HTTP ... -->
 									<log>Sending startup completed event to</log>
 									<!-- <http> <url>http://satan3.office:${jolokia.port}/api/v1/admin/status</url> 
 										<method>GET</method> <status>200</status> </http> -->
-									<time>20000</time>
+									<time>30000</time>
 									<shutdown>500</shutdown>
 								</wait>
 								<log>
 									<enabled>true</enabled>
 									<color>red</color>
+								</log>
+							</run>
+						</image>
+						<image>
+							<name>selenium/standalone-firefox</name>
+							<run>
+								<ports>
+									<port>selenium.port:4444</port>
+								</ports>
+								<wait>
+									<log>Selenium Server is up and running</log>
+									<time>30000</time>
+									<shutdown>500</shutdown>
+								</wait>
+								<log>
+									<enabled>true</enabled>
+									<color>green</color>
 								</log>
 							</run>
 						</image>
@@ -81,9 +102,11 @@
 							<arguments>
 								<argument>conf.js</argument>
 								<argument>--params.dockerHost</argument>
-								<argument>satan3.office</argument>
+								<argument>${dockerHostname}</argument>
 								<argument>--params.dockerPort</argument>
-								<argument>${jolokia.port}</argument>
+								<argument>${mesh.port}</argument>
+								<argument>--seleniumAddress</argument>
+								<argument>http://satan3.office:${selenium.port}/wd/hub</argument>
 							</arguments>
 						</configuration>
 					</execution>
