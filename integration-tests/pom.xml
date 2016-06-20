@@ -88,8 +88,7 @@
 									<color>yellow</color>
 								</log>
 								<cmd>
-									<shell>protractor --seleniumAddress http://selenium:4444/wd/hub
-										/maven/protractor.conf.js</shell>
+									<shell>protractor --seleniumAddress http://selenium:4444/wd/hub /maven/protractor.conf.js</shell>
 								</cmd>
 							</run>
 						</image>
