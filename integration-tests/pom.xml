@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>mesh</artifactId>
+		<version>0.6.14</version>
+	</parent>
+	<artifactId>mesh-integration-tests</artifactId>
+
+	<packaging>pom</packaging>
+	<name>Mesh Integration Tests</name>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.15.7</version>
+				<executions>
+					<execution>
+						<id>docker-run</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>docker-stop</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+							<goal>remove</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<skip>false</skip>
+					<dockerHost>${dockerHostProtocol}://satan3.office:2375</dockerHost>
+					<verbose>true</verbose>
+					<autoPull>always</autoPull>
+					<images>
+						<image>
+							<name>gentics/mesh-demo:latest</name>
+							<run>
+								<ports>
+									<port>jolokia.port:8080</port>
+								</ports>
+								<wait>
+									<!-- The plugin waits until this URL is reachable via HTTP ... -->
+									<log>Sending startup completed event to</log>
+									<!-- <http> <url>http://satan3.office:${jolokia.port}/api/v1/admin/status</url> 
+										<method>GET</method> <status>200</status> </http> -->
+									<time>20000</time>
+									<shutdown>500</shutdown>
+								</wait>
+								<log>
+									<enabled>true</enabled>
+									<color>red</color>
+								</log>
+							</run>
+						</image>
+					</images>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.5.0</version>
+				<executions>
+					<execution>
+						<id>run-tests</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>integration-test</phase>
+						<configuration>
+							<executable>protractor</executable>
+							<arguments>
+								<argument>conf.js</argument>
+								<argument>--params.dockerHost</argument>
+								<argument>satan3.office</argument>
+								<argument>--params.dockerPort</argument>
+								<argument>${jolokia.port}</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
