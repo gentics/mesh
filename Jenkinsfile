@@ -1,6 +1,7 @@
 properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
 [$class: 'BooleanParameterDefinition', name: 'skipTests', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'skipDocker', defaultValue: false]
+[$class: 'BooleanParameterDefinition', name: 'skipDocker', defaultValue: false],
+[$class: 'BooleanParameterDefinition', name: 'skipRelease', defaultValue: false]
 ]]])
 
 stage 'Test'
@@ -61,23 +62,30 @@ node('dockerSlave') {
 	sh "git tag ${v}"
 
 	stage 'Release Build'
-	sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-		sh "${mvnHome}/bin/mvn -B -DskipTests -Ddocker.skip=false -Ddocker.tag=latest clean deploy"
-		sh "git push origin " + env.BRANCH_NAME
-		sh "git push origin ${v}"
-	}
-	stage 'Docker Build'
-	if (Boolean.valueOf(skipDocker)) {
-		 echo "Skipped"
-	} else {
-		/*
-		withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
-			sh "captain build"
-			sh "captain push"
+	if (Boolean.valueOf(skipRelease)) {
+		echo "Skipped - Only invoking mvn package instead of deploy"
+		sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+			sh "${mvnHome}/bin/mvn -B -DskipTests -Ddocker.skip=true clean package"
 		}
-		*/
+	} else {
+		sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+			sh "${mvnHome}/bin/mvn -B -DskipTests -Ddocker.skip=false -Ddocker.tag=latest clean deploy"
+			sh "git push origin " + env.BRANCH_NAME
+			sh "git push origin ${v}"
+		}
+		stage 'Docker Build'
+		if (Boolean.valueOf(skipDocker)) {
+			 echo "Skipped"
+		} else {
+			/*
+			withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
+				sh "captain build"
+				sh "captain push"
+			}
+			*/
+		}
 	}
-	
+
 }
 
 def version() {
