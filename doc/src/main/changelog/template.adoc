@@ -1,13 +1,16 @@
 = Changelog
 
-{% for versionTag, version in versions %}
-== {{versionTag|replace('mesh-','')}}
+{% for versionKey in versions.keys %}
+== {{versionKey}}
 
-{{version.date|date('d.m.Y') }}
-{% for change in version.changes %}
+{{versions[versionKey].date|date('d.m.Y') }}
+{% for change in versions[versionKey].changes %}
 * {{change.type}}: {{change.content|safe}}
 {% endfor %}{% endfor %}
-== 0.6.9 - 04.05.2016
+
+== 0.6.9
+
+04.05.2016
 
 * Enhancement: The mesh-ui was updated.
 * Enhancement: It is now possible to also include non-container nodes in a navigation response using the includeAll parameter. By default only container nodes will be included in the response.
