@@ -85,15 +85,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 	}
 
-	@Override
-	public void clear() {
-		OrientGraphNoTx noTx = factory.getNoTx();
-		try {
-			noTx.drop();
-		} finally {
-			noTx.shutdown();
-		}
-	}
+	// Code is broken and cause NPE and stuck tests:
+	// https://github.com/orientechnologies/orientdb/issues/6336
+	// @Override
+	// public void clear() {
+	// OrientGraphNoTx noTx = factory.getNoTx();
+	// try {
+	// noTx.drop();
+	// } finally {
+	// noTx.shutdown();
+	// }
+	// }
 
 	@Override
 	public TransactionalGraph rawTx() {
@@ -105,7 +107,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		Orient.instance().startup();
 		if (options == null || options.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
-			factory = new OrientGraphFactory("memory:tinkerpop");
+			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(5, 100);
 		} else {
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
@@ -287,7 +289,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 			if (v.getClassIndex(indexName) == null) {
-				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(), null, new ODocument().fields("ignoreNullValues", true), fields);
+				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(),
+						null, new ODocument().fields("ignoreNullValues", true), fields);
 			}
 		} finally {
 			tx.shutdown();
@@ -329,7 +332,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			if (index != null) {
 				Object recordId = index.get(key);
 				if (recordId != null) {
-					return (T)graph.getFramedVertexExplicit(classOfT, recordId);
+					return (T) graph.getFramedVertexExplicit(classOfT, recordId);
 				}
 			}
 		}
