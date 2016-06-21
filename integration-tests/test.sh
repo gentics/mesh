@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # define some colors to use for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -18,7 +20,7 @@ fi
 # wait for the test service to complete and grab the exit code
 TEST_EXIT_CODE=`docker wait integrationtests_tester_1`
 # output the logs for the test (for clarity)
-docker logs integrationtests_integration-tester_1
+docker logs --tail=all integrationtests_tester_1
 # inspect the output of the test and display respective message
 if [ -z ${TEST_EXIT_CODE+x} ] || [ "$TEST_EXIT_CODE" -ne 0 ] ; then
   printf "${RED}Tests Failed${NC} - Exit Code: $TEST_EXIT_CODE\n"

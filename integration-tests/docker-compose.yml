@@ -3,7 +3,7 @@ version: '2'
 services:
   tester:
     build: .
-    entrypoint: bash -c "while ! timeout 1 wget -qO- http://selenium:4444/wd/hub > /dev/null ; do sleep 1; done; protractor --seleniumAddress http://selenium:4444/wd/hub /app/protractor.conf.js"
+    entrypoint: bash -c "while ! timeout 1 wget -qO- http://selenium:4444/wd/hub > /dev/null ; do sleep 1; done; protractor --seleniumAddress http://selenium:4444/wd/hub /app/protractor.conf.js --params.meshHost mesh --params.meshPort 8080"
     links:
       - selenium:selenium
   selenium:

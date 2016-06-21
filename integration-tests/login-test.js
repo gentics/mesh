@@ -1,7 +1,6 @@
 describe('mesh login test', function() {
 	it('should be able to login', function() {
-		browser.get('http://mesh:8080/mesh-ui');
-		//browser.get('http://' + browser.params.meshHost + ':'	+ browser.params.meshPort + '/mesh-ui');
+		browser.get('http://' + browser.params.meshHost + ':'	+ browser.params.meshPort + '/mesh-ui');
 
 		element(by.model('vm.userName')).sendKeys('admin');
 		element(by.model('vm.password')).sendKeys('admin');
