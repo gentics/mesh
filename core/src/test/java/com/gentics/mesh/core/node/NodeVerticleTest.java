@@ -796,7 +796,22 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertTrue(response.getBreadcrumb().get(0).getDisplayName().equals("2014"));
 		assertTrue(response.getBreadcrumb().get(1).getUuid().equals(folder("news").getUuid()));
 		assertTrue(response.getBreadcrumb().get(1).getDisplayName().equals("News"));
+		assertEquals("/api/v1/dummy/webroot/News/2014", response.getBreadcrumb().get(0).getPath());
+		assertEquals("/api/v1/dummy/webroot/News", response.getBreadcrumb().get(1).getPath());
 		assertEquals("Only two items should be listed in the breadcrumb", 2, response.getBreadcrumb().size());
+
+		future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		response = future.result();
+		assertTrue(response.getBreadcrumb().get(0).getUuid().equals(folder("2014").getUuid()));
+		assertTrue(response.getBreadcrumb().get(0).getDisplayName().equals("2014"));
+		assertTrue(response.getBreadcrumb().get(1).getUuid().equals(folder("news").getUuid()));
+		assertTrue(response.getBreadcrumb().get(1).getDisplayName().equals("News"));
+		assertNull("No path should be rendered since by default the linkType is OFF", response.getBreadcrumb().get(0).getPath());
+		assertNull("No path should be rendered since by default the linkType is OFF", response.getBreadcrumb().get(1).getPath());
+		assertEquals("Only two items should be listed in the breadcrumb", 2, response.getBreadcrumb().size());
+
 	}
 
 	@Test
