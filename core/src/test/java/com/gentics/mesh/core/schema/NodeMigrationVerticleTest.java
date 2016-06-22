@@ -198,7 +198,7 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(),
 				project().getLatestRelease(), user());
 		englishContainer.createString(fieldName).setString("content");
-		node.publish(InternalActionContext.create(getMockedRoutingContext()), "en").toBlocking().single();
+		node.publish(InternalActionContext.create(getMockedRoutingContext(user())), "en").toBlocking().single();
 
 		doSchemaMigration(container, versionA, versionB);
 

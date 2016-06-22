@@ -23,6 +23,8 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	private Map<String, Object> data;
 
+	private MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
+
 	private String body;
 
 	private String query;
@@ -122,19 +124,17 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	@Override
 	public String getParameter(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		return parameters.get(name);
 	}
-	
+
 	@Override
 	public MultiMap getParameters() {
-		// TODO Auto-generated method stub
-		return null;
+		return parameters;
 	}
 
 	@Override
 	public void setParameter(String name, String value) {
-		// TODO Auto-generated method stub
+		parameters.add(name, value);
 	}
 
 	@Override

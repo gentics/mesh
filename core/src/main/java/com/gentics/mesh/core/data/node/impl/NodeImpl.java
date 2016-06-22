@@ -162,6 +162,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 			}
 		}
+		//TODO add release uuid, type, langugage Tags
 		return Observable.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid()));
 	}
 
