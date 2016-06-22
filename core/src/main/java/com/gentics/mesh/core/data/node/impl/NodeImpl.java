@@ -126,8 +126,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Observable<String> getPathSegment(InternalActionContext ac) {
 		NodeParameters parameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
-		NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(),
-				ac.getRelease(getProject()).getUuid(), versioningParameters.getVersion());
+		NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
+				versioningParameters.getVersion());
 		if (container != null) {
 			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
@@ -238,8 +238,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (!isPublished) {
 
 			for (Node node : getChildren()) {
-				NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid,
-						"published");
+				NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid, "published");
 				if (fieldContainer != null) {
 					log.error("Found published field container for node {" + node.getUuid() + "} in release {" + releaseUuid + "}. Node is child of {"
 							+ getUuid() + "}");
@@ -581,6 +580,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// if a published version was requested, we check whether any published language variant exists for the node, if not, response with NOT_FOUND
 				if (Type.forVersion(versioiningParameters.getVersion()) == Type.PUBLISHED
 						&& getGraphFieldContainers(release, Type.PUBLISHED).isEmpty()) {
+					log.error("Could not find field container for languages {" + requestedLanguageTags + "} and release {" + release.getUuid()
+							+ "} and version params version {" + versioiningParameters.getVersion() + "}, release {"
+							+ versioiningParameters.getRelease() + "}");
 					//TODO the response should be specific.. add publish and release info
 					throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 				}
@@ -679,9 +681,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// Url
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer
-						.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(), restNode.getLanguage()).toBlocking()
-						.single();
+				String url = linkReplacer.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
+						restNode.getLanguage()).toBlocking().single();
 				restNode.setPath(url);
 
 				// languagePaths
@@ -689,8 +690,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release,
 						Type.forVersion(versioiningParameters.getVersion()))) {
 					Language currLanguage = currentFieldContainer.getLanguage();
-					languagePaths.put(currLanguage.getLanguageTag(), linkReplacer
-							.resolve(releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(), currLanguage.getLanguageTag()).toBlocking().single());
+					languagePaths.put(currLanguage.getLanguageTag(),
+							linkReplacer.resolve(releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(), currLanguage.getLanguageTag())
+									.toBlocking().single());
 				}
 				restNode.setLanguagePaths(languagePaths);
 			}
@@ -1156,8 +1158,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 		String displayFieldName = null;
 		try {
-			NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(),
-					ac.getRelease(getProject()).getUuid(), versioningParameters.getVersion());
+			NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
+					versioningParameters.getVersion());
 			if (container == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");

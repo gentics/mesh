@@ -209,6 +209,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Observable<Node> create(InternalActionContext ac) {
 
+		// Override any given version parameter. Creation is always scoped to drafts
+		ac.getVersioningParameters().setVersion("draft");
+
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		return db.noTrx(() -> {
@@ -218,7 +221,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 			String body = ac.getBodyAsString();
 
-			// 1. Extract the schema information from the given json
+			// 1. Extract the schema information from the given JSON
 			SchemaReferenceInfo schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
 			boolean missingSchemaInfo = schemaInfo.getSchema() == null
 					|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));

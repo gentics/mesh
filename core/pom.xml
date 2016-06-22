@@ -339,9 +339,7 @@
 					<!-- Don't execute more than one test per jvm fork! -->
 					<threadCount>1</threadCount>
 					<threadCountClasses>1</threadCountClasses>
-					<!-- 
-					<rerunFailingTestsCount>2</rerunFailingTestsCount>
-					 -->
+					<!-- <rerunFailingTestsCount>2</rerunFailingTestsCount> -->
 					<trimStackTrace>false</trimStackTrace>
 					<!-- // Kill the forked test if it takes more than 3h for execution. Nope, currently disabled -->
 					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
@@ -379,7 +377,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

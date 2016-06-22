@@ -36,7 +36,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private RestModel payloadObject;
 	private MeshAuthUser user;
 	private Map<String, Object> data = new HashMap<>();
-	private Map<String, String> parameters = new HashMap<>();
+	private MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
 	private String query;
 	private Project project;
 	private String responseBody;
@@ -109,14 +109,14 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		return parameters.get(name);
 	}
 
-	/**
-	 * Set request context specific path parameters.
-	 * 
-	 * @param name
-	 * @param value
-	 */
+	@Override
+	public MultiMap getParameters() {
+		return parameters;
+	}
+
+	@Override
 	public void setParameter(String name, String value) {
-		this.parameters.put(name, value);
+		this.parameters.add(name, value);
 	}
 
 	@Override

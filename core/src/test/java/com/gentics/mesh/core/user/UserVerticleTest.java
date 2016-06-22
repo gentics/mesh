@@ -115,7 +115,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(future);
 			UserPermissionResponse response = future.result();
 			assertNotNull(response);
-			assertEquals(4, response.getPermissions().size());
+			assertThat(response.getPermissions()).containsOnly("read", "readpublished", "publish", "update", "create", "delete");
 		}
 
 		try (NoTrx noTx = db.noTrx()) {
@@ -129,7 +129,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(future);
 			UserPermissionResponse response = future.result();
 			assertNotNull(response);
-			assertEquals(3, response.getPermissions().size());
+			assertThat(response.getPermissions()).containsOnly("read", "readpublished", "publish", "create", "delete");
 		}
 	}
 
@@ -143,7 +143,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
-			assertEquals(4, future.result().getRolePerms().length);
+			assertThat(future.result().getRolePerms()).containsOnly("read", "readpublished", "publish", "create", "update", "delete");
 		}
 	}
 
@@ -369,35 +369,39 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateWithSpecialCharacters() throws Exception {
+		String uuid;
+		String oldUsername;
 		try (NoTrx noTx = db.noTrx()) {
 			User user = user();
-			String oldUsername = user.getUsername();
-			final char c = '\u2665';
-			String email = "t.stark@stärk-industries.com" + c;
-			String firstname = "Töny Awesöme" + c;
-			String lastname = "Epic Stärk" + c;
-			String username = "dummy_usär_chänged" + c;
-			UserUpdateRequest updateRequest = new UserUpdateRequest();
-			updateRequest.setEmailAddress(email);
-			updateRequest.setFirstname(firstname);
-			updateRequest.setLastname(lastname);
-			updateRequest.setUsername(username);
-
-			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
-			latchFor(future);
-			assertSuccess(future);
-			UserResponse restUser = future.result();
-			test.assertUser(updateRequest, restUser);
-			try (Trx tx = db.trx()) {
-				assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldUsername));
-				User reloadedUser = boot.userRoot().findByUsername(username);
-				assertNotNull(reloadedUser);
-				assertEquals(lastname, reloadedUser.getLastname());
-				assertEquals(firstname, reloadedUser.getFirstname());
-				assertEquals(email, reloadedUser.getEmailAddress());
-				assertEquals(username, reloadedUser.getUsername());
-			}
+			uuid = user.getUuid();
+			oldUsername = user.getUsername();
 		}
+		final char c = '\u2665';
+		String email = "t.stark@stärk-industries.com" + c;
+		String firstname = "Töny Awesöme" + c;
+		String lastname = "Epic Stärk" + c;
+		String username = "dummy_usär_chänged" + c;
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setEmailAddress(email);
+		updateRequest.setFirstname(firstname);
+		updateRequest.setLastname(lastname);
+		updateRequest.setUsername(username);
+
+		Future<UserResponse> future = getClient().updateUser(uuid, updateRequest);
+		latchFor(future);
+		assertSuccess(future);
+		UserResponse restUser = future.result();
+		test.assertUser(updateRequest, restUser);
+		try (Trx tx = db.trx()) {
+			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldUsername));
+			User reloadedUser = boot.userRoot().findByUsername(username);
+			assertNotNull(reloadedUser);
+			assertEquals(lastname, reloadedUser.getLastname());
+			assertEquals(firstname, reloadedUser.getFirstname());
+			assertEquals(email, reloadedUser.getEmailAddress());
+			assertEquals(username, reloadedUser.getUsername());
+		}
+
 	}
 
 	@Test
@@ -631,27 +635,28 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdatePassword() throws JsonGenerationException, JsonMappingException, IOException, Exception {
+		String username;
+		String uuid;
+		String oldHash;
 		try (NoTrx noTx = db.noTrx()) {
 			User user = user();
-			String oldHash = user.getPasswordHash();
-			UserUpdateRequest updateRequest = new UserUpdateRequest();
-			updateRequest.setPassword("new_password");
+			username = user.getUsername();
+			uuid = user.getUuid();
+			oldHash = user.getPasswordHash();
+		}
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setPassword("new_password");
 
-			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
-			latchFor(future);
-			assertSuccess(future);
-			UserResponse restUser = future.result();
+		Future<UserResponse> future = getClient().updateUser(uuid, updateRequest);
+		latchFor(future);
+		assertSuccess(future);
+		UserResponse restUser = future.result();
 
-			test.assertUser(updateRequest, restUser);
+		test.assertUser(updateRequest, restUser);
 
-			try (Trx tx = db.trx()) {
-				User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
-				assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
-				assertEquals(user.getUsername(), reloadedUser.getUsername());
-				assertEquals(user.getFirstname(), reloadedUser.getFirstname());
-				assertEquals(user.getLastname(), reloadedUser.getLastname());
-				assertEquals(user.getEmailAddress(), reloadedUser.getEmailAddress());
-			}
+		try (Trx tx = db.trx()) {
+			User reloadedUser = boot.userRoot().findByUsername(username);
+			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 	}
 

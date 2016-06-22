@@ -9,6 +9,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.graphdb.OrientDBDatabase;
@@ -29,27 +30,28 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 		db.init(null, Vertx.vertx());
 	}
 
-//	@Test
-//	public void testAsyncTrxRetryHandling() throws Exception {
-//
-//		AtomicInteger e = new AtomicInteger(0);
-//		String result = db.asyncTrx(() -> {
-//			e.incrementAndGet();
-//			if (e.get() == 1) {
-//				String msg = "Cannot UPDATE the record #13:8 because the version is not the latest. Probably you are updating an old record or it has been modified by another user (db=v7 your=v6)";
-//				// "test #9:1 blub adsd"
-//				throw new OConcurrentModificationException(msg);
-//			} else {
-//				return "OK";
-//			}
-//		}).toBlocking().single();
-//
-//		assertEquals(2, e.get());
-//		assertEquals("OK", result);
-//
-//	}
+	//	@Test
+	//	public void testAsyncTrxRetryHandling() throws Exception {
+	//
+	//		AtomicInteger e = new AtomicInteger(0);
+	//		String result = db.asyncTrx(() -> {
+	//			e.incrementAndGet();
+	//			if (e.get() == 1) {
+	//				String msg = "Cannot UPDATE the record #13:8 because the version is not the latest. Probably you are updating an old record or it has been modified by another user (db=v7 your=v6)";
+	//				// "test #9:1 blub adsd"
+	//				throw new OConcurrentModificationException(msg);
+	//			} else {
+	//				return "OK";
+	//			}
+	//		}).toBlocking().single();
+	//
+	//		assertEquals(2, e.get());
+	//		assertEquals("OK", result);
+	//
+	//	}
 
 	@Test
+	@Ignore
 	public void testAsyncTrxRetryHandling2() throws Exception {
 		// Test creation of user in current thread
 		int nFriendsBefore;
@@ -101,6 +103,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 	}
 
 	@Test
+	@Ignore
 	public void testTrxConflictHandling() throws InterruptedException, BrokenBarrierException, TimeoutException {
 		// Test creation of user in current thread
 		int nFriendsBefore;

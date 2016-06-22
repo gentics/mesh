@@ -1,8 +1,5 @@
 package com.gentics.mesh.parameter.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.gentics.mesh.handler.ActionContext;
 
 /**
@@ -12,8 +9,6 @@ import com.gentics.mesh.handler.ActionContext;
 public class RolePermissionParameters extends AbstractParameters {
 
 	public static final String ROLE_PERMISSION_QUERY_PARAM_KEY = "role";
-
-	private String roleUuid;
 
 	public RolePermissionParameters(ActionContext ac) {
 		super(ac);
@@ -29,7 +24,7 @@ public class RolePermissionParameters extends AbstractParameters {
 	 * @return Fluent API
 	 */
 	public RolePermissionParameters setRoleUuid(String roleUuid) {
-		this.roleUuid = roleUuid;
+		setParameter(ROLE_PERMISSION_QUERY_PARAM_KEY, roleUuid);
 		return this;
 	}
 
@@ -39,19 +34,7 @@ public class RolePermissionParameters extends AbstractParameters {
 	 * @return
 	 */
 	public String getRoleUuid() {
-		return roleUuid;
-	}
-
-	@Override
-	protected Map<String, Object> getParameters() {
-		Map<String, Object> map = new HashMap<>();
-		map.put(ROLE_PERMISSION_QUERY_PARAM_KEY, roleUuid);
-		return map;
-	}
-
-	@Override
-	protected void constructFrom(ActionContext ac) {
-		this.roleUuid = ac.getParameter(ROLE_PERMISSION_QUERY_PARAM_KEY);
+		return getParameter(ROLE_PERMISSION_QUERY_PARAM_KEY);
 	}
 
 }

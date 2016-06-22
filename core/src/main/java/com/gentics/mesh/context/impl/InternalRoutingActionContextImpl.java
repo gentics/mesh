@@ -59,6 +59,16 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	}
 
 	@Override
+	public MultiMap getParameters() {
+		return rc.request().params();
+	}
+
+	@Override
+	public void setParameter(String name, String value) {
+		rc.request().params().set(name, value);
+	}
+
+	@Override
 	public void send(String body, HttpResponseStatus statusCode) {
 		rc.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
 		rc.response().putHeader("Cache-Control", "no-cache");

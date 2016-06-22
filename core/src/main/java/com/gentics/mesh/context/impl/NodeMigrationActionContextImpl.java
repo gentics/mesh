@@ -125,6 +125,17 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public MultiMap getParameters() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setParameter(String name, String value) {
+		// TODO Auto-generated method stub
+	}
 
 	@Override
 	public void send(String body, HttpResponseStatus statusCode) {

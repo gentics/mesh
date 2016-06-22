@@ -303,7 +303,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
-			assertEquals(4, future.result().getRolePerms().length);
+			assertThat(future.result().getRolePerms()).containsOnly("read", "readpublished", "publish", "update", "delete", "create");
 		}
 	}
 

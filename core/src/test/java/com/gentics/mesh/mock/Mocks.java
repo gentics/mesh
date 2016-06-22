@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.mockito.Mockito;
 
@@ -450,6 +451,11 @@ public final class Mocks {
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
 		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
+		MultiMap paramMultiMap = MultiMap.caseInsensitiveMultiMap();
+		for (Entry<String, String> entry : paramMap.entrySet()) {
+			paramMap.put(entry.getKey(), entry.getValue());
+		}
+		when(request.params()).thenReturn(paramMultiMap);
 		when(request.getParam(Mockito.anyString())).thenAnswer(in -> {
 			String key = (String) in.getArguments()[0];
 			return paramMap.get(key);

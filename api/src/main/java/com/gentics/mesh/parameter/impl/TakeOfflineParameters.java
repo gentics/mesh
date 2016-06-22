@@ -1,8 +1,5 @@
 package com.gentics.mesh.parameter.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.lang.BooleanUtils;
 
 import com.gentics.mesh.handler.ActionContext;
@@ -12,8 +9,6 @@ public class TakeOfflineParameters extends AbstractParameters {
 
 	public static final String RECURSIVE_PARAMETER_KEY = "recursive";
 
-	private Boolean recursive;
-
 	public TakeOfflineParameters(ActionContext ac) {
 		super(ac);
 	}
@@ -22,24 +17,12 @@ public class TakeOfflineParameters extends AbstractParameters {
 	}
 
 	public ParameterProvider setRecursive(boolean flag) {
-		this.recursive = flag;
+		setParameter(RECURSIVE_PARAMETER_KEY, String.valueOf(flag));
 		return this;
 	}
 
 	public boolean isRecursive() {
-		return BooleanUtils.toBooleanDefaultIfNull(recursive, false);
-	}
-
-	@Override
-	protected void constructFrom(ActionContext ac) {
-		setRecursive(Boolean.valueOf(ac.getParameter(TakeOfflineParameters.RECURSIVE_PARAMETER_KEY)));
-	}
-
-	@Override
-	protected Map<String, Object> getParameters() {
-		Map<String, Object> map = new HashMap<>();
-		map.put(RECURSIVE_PARAMETER_KEY, recursive);
-		return map;
+		return BooleanUtils.toBooleanDefaultIfNull(Boolean.valueOf(getParameter(RECURSIVE_PARAMETER_KEY)), false);
 	}
 
 }

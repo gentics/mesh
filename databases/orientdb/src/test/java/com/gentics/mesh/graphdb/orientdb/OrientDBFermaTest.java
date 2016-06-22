@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.graphdb.NoTrx;
@@ -81,6 +82,7 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 	}
 
 	@Test
+	@Ignore
 	public void testFermaIndexUsage() {
 
 		setupTypesAndIndices();

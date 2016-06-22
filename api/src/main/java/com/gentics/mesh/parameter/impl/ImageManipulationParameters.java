@@ -4,9 +4,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.NumberUtils.toInteger;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.handler.ActionContext;
 
@@ -24,28 +21,12 @@ public class ImageManipulationParameters extends AbstractParameters {
 	public static final String CROP_HEIGHT_QUERY_PARAM_KEY = "croph";
 	public static final String CROP_WIDTH_QUERY_PARAM_KEY = "cropw";
 
-	private Integer width;
-	private Integer height;
-	private Integer startx;
-	private Integer starty;
-	private Integer cropw;
-	private Integer croph;
-
 	public ImageManipulationParameters(ActionContext ac) {
 		super(ac);
+		//TODO validate parameters
 	}
 
 	public ImageManipulationParameters() {
-	}
-
-	@Override
-	protected void constructFrom(ActionContext ac) {
-		setHeight(toInteger(ac.getParameter(HEIGHT_QUERY_PARAM_KEY), null));
-		setWidth(toInteger(ac.getParameter(WIDTH_QUERY_PARAM_KEY), null));
-		setCroph(toInteger(ac.getParameter(CROP_HEIGHT_QUERY_PARAM_KEY), null));
-		setCropw(toInteger(ac.getParameter(CROP_WIDTH_QUERY_PARAM_KEY), null));
-		setStartx(toInteger(ac.getParameter(CROP_X_QUERY_PARAM_KEY), null));
-		setStarty(toInteger(ac.getParameter(CROP_Y_QUERY_PARAM_KEY), null));
 	}
 
 	/**
@@ -54,7 +35,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public Integer getWidth() {
-		return width;
+		return toInteger(getParameter(WIDTH_QUERY_PARAM_KEY), null);
 	}
 
 	/**
@@ -64,7 +45,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return Fluent API
 	 */
 	public ImageManipulationParameters setWidth(Integer width) {
-		this.width = width;
+		setParameter(WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		return this;
 	}
 
@@ -74,7 +55,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public Integer getHeight() {
-		return height;
+		return toInteger(getParameter(HEIGHT_QUERY_PARAM_KEY), null);
 	}
 
 	/**
@@ -84,7 +65,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return Fluent API
 	 */
 	public ImageManipulationParameters setHeight(Integer height) {
-		this.height = height;
+		setParameter(HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		return this;
 	}
 
@@ -94,7 +75,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public Integer getStartx() {
-		return startx;
+		return toInteger(getParameter(CROP_X_QUERY_PARAM_KEY), null);
 	}
 
 	/**
@@ -104,7 +85,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return Fluent API
 	 */
 	public ImageManipulationParameters setStartx(Integer startx) {
-		this.startx = startx;
+		setParameter(CROP_X_QUERY_PARAM_KEY, String.valueOf(startx));
 		return this;
 	}
 
@@ -114,7 +95,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public Integer getStarty() {
-		return starty;
+		return toInteger(getParameter(CROP_Y_QUERY_PARAM_KEY), null);
 	}
 
 	/**
@@ -124,7 +105,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return Fluent API
 	 */
 	public ImageManipulationParameters setStarty(Integer starty) {
-		this.starty = starty;
+		setParameter(CROP_Y_QUERY_PARAM_KEY, String.valueOf(starty));
 		return this;
 	}
 
@@ -134,7 +115,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public Integer getCroph() {
-		return croph;
+		return toInteger(getParameter(CROP_HEIGHT_QUERY_PARAM_KEY), null);
 	}
 
 	/**
@@ -144,7 +125,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return Fluent API
 	 */
 	public ImageManipulationParameters setCroph(Integer croph) {
-		this.croph = croph;
+		setParameter(CROP_HEIGHT_QUERY_PARAM_KEY, String.valueOf(croph));
 		return this;
 	}
 
@@ -154,7 +135,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public Integer getCropw() {
-		return cropw;
+		return toInteger(getParameter(CROP_WIDTH_QUERY_PARAM_KEY), null);
 	}
 
 	/**
@@ -164,20 +145,8 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return Fluent API
 	 */
 	public ImageManipulationParameters setCropw(Integer cropw) {
-		this.cropw = cropw;
+		setParameter(CROP_WIDTH_QUERY_PARAM_KEY, String.valueOf(cropw));
 		return this;
-	}
-
-	@Override
-	protected Map<String, Object> getParameters() {
-		Map<String, Object> map = new HashMap<>();
-		map.put(WIDTH_QUERY_PARAM_KEY, width);
-		map.put(HEIGHT_QUERY_PARAM_KEY, height);
-		map.put(CROP_X_QUERY_PARAM_KEY, startx);
-		map.put(CROP_Y_QUERY_PARAM_KEY, starty);
-		map.put(CROP_HEIGHT_QUERY_PARAM_KEY, croph);
-		map.put(CROP_WIDTH_QUERY_PARAM_KEY, cropw);
-		return map;
 	}
 
 	/**
@@ -186,21 +155,26 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public boolean isSet() {
-		return width != null || height != null || croph != null || cropw != null || startx != null || starty != null;
+		return getWidth() != null || getHeight() != null || getCroph() != null || getCropw() != null || getStartx() != null || getStarty() != null;
 	}
 
 	/**
 	 * * Validate the set parameters and throw an exception when an invalid set of parameters has been detected.
 	 */
 	public void validate() {
+		Integer width = getWidth();
 		if (width != null && width < 1) {
 			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		}
-
+		Integer height = getHeight();
 		if (height != null && height < 1) {
 			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		}
 
+		Integer croph = getCroph();
+		Integer cropw = getCropw();
+		Integer startx = getStartx();
+		Integer starty = getStarty();
 		// Check whether all required crop parameters have been set when at least one crop parameter has been set.
 		boolean hasOneCropParameter = croph != null || cropw != null || startx != null || starty != null;
 		if (hasOneCropParameter) {
@@ -239,7 +213,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public boolean hasAllCropParameters() {
-		return croph != null && cropw != null && startx != null && starty != null;
+		return getCroph() != null && getCropw() != null && getStartx() != null && getStarty() != null;
 	}
 
 	/**
@@ -249,7 +223,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @param imageHeight
 	 */
 	public void validateCropBounds(int imageWidth, int imageHeight) {
-		if (startx + cropw > imageWidth || starty + croph > imageHeight) {
+		if (getStartx() + getCropw() > imageWidth || getStarty() + getCroph() > imageHeight) {
 			throw error(BAD_REQUEST, "image_error_crop_out_of_bounds", String.valueOf(imageWidth), String.valueOf(imageHeight));
 		}
 	}

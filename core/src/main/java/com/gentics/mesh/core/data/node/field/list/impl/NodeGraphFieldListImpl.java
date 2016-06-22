@@ -53,7 +53,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 		// Check whether the list should be returned in a collapsed or expanded format
 		NodeParameters parameters = ac.getNodeParameters();
-		boolean expandField = parameters.getExpandedFieldnames().contains(fieldKey) || parameters.getExpandAll();
+		boolean expandField = parameters.getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		String[] lTagsArray = languageTags.toArray(new String[languageTags.size()]);
 
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {

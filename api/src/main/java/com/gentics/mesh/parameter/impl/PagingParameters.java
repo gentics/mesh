@@ -3,9 +3,6 @@ package com.gentics.mesh.parameter.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.ActionContext;
@@ -18,17 +15,29 @@ public class PagingParameters extends AbstractParameters {
 
 	public static final String PAGE_PARAMETER_KEY = "page";
 	public static final String PER_PAGE_PARAMETER_KEY = "perPage";
+	public static final String SORT_BY_PARAMETER_KEY = "sortBy";
+	public static final String SORT_ORDER_PARAMETER_KEY = "order";
 
-	private int page;
-	private int perPage;
-	private String sortBy;
-	private SortOrder order;
+	public PagingParameters(ActionContext ac) {
+		super(ac);
+
+		// Validate settings
+		int page = getPage();
+		if (page < 1) {
+			error(BAD_REQUEST, "error_invalid_paging_parameters");
+		}
+		int perPage = getPerPage();
+		if (perPage < 0) {
+			error(BAD_REQUEST, "error_invalid_paging_parameters");
+		}
+	}
 
 	public PagingParameters(int page, int perPage, String sortBy, SortOrder order) {
-		this.page = page;
-		this.perPage = perPage;
-		this.sortBy = sortBy;
-		this.order = order;
+		super();
+		setPage(page);
+		setPerPage(perPage);
+		setSortOrder(order.toString());
+		setOrderBy(sortBy);
 	}
 
 	/**
@@ -61,17 +70,13 @@ public class PagingParameters extends AbstractParameters {
 		this(page, perPage, "uuid", SortOrder.ASCENDING);
 	}
 
-	public PagingParameters(ActionContext ac) {
-		super(ac);
-	}
-
 	/**
 	 * Return the current page.
 	 * 
 	 * @return Current page number
 	 */
 	public int getPage() {
-		return page;
+		return NumberUtils.toInt(getParameter(PAGE_PARAMETER_KEY), 1);
 	}
 
 	/**
@@ -80,7 +85,7 @@ public class PagingParameters extends AbstractParameters {
 	 * @return Per page count
 	 */
 	public int getPerPage() {
-		return perPage;
+		return NumberUtils.toInt(getParameter(PER_PAGE_PARAMETER_KEY), MeshOptions.DEFAULT_PAGE_SIZE);
 	}
 
 	/**
@@ -91,7 +96,7 @@ public class PagingParameters extends AbstractParameters {
 	 * @return Fluent API
 	 */
 	public PagingParameters setPage(int page) {
-		this.page = page;
+		setParameter(PAGE_PARAMETER_KEY, String.valueOf(page));
 		return this;
 	}
 
@@ -103,9 +108,8 @@ public class PagingParameters extends AbstractParameters {
 	 * @return Fluent API
 	 */
 	public PagingParameters setPerPage(int perPage) {
-		this.perPage = perPage;
+		setParameter(PER_PAGE_PARAMETER_KEY, String.valueOf(perPage));
 		return this;
-
 	}
 
 	/**
@@ -119,7 +123,20 @@ public class PagingParameters extends AbstractParameters {
 	 */
 	@Deprecated
 	public PagingParameters setSortOrder(String sortBy) {
-		this.sortBy = sortBy;
+		setParameter(SORT_BY_PARAMETER_KEY, sortBy);
+		return this;
+	}
+
+	/**
+	 * Set the order by parameter.
+	 * 
+	 * @param orderBy
+	 * @return
+	 * @deprecated not yet implemented
+	 */
+	@Deprecated
+	PagingParameters setOrderBy(String orderBy) {
+		setParameter(SORT_BY_PARAMETER_KEY, orderBy);
 		return this;
 	}
 
@@ -131,7 +148,7 @@ public class PagingParameters extends AbstractParameters {
 	 */
 	@Deprecated
 	public String getSortBy() {
-		return sortBy;
+		return getParameter(SORT_BY_PARAMETER_KEY);
 	}
 
 	/**
@@ -142,37 +159,7 @@ public class PagingParameters extends AbstractParameters {
 	 */
 	@Deprecated
 	public SortOrder getOrder() {
-		return order;
-	}
-
-	@Override
-	protected Map<String, Object> getParameters() {
-		Map<String, Object> map = new HashMap<>();
-		map.put(PAGE_PARAMETER_KEY, page);
-		map.put(PER_PAGE_PARAMETER_KEY, perPage);
-		return map;
-	}
-
-	@Override
-	protected void constructFrom(ActionContext ac) {
-		String page = ac.getParameter(PAGE_PARAMETER_KEY);
-		String perPage = ac.getParameter(PER_PAGE_PARAMETER_KEY);
-		int pageInt = 1;
-		int perPageInt = MeshOptions.DEFAULT_PAGE_SIZE;
-		if (page != null) {
-			pageInt = NumberUtils.toInt(page, 1);
-		}
-		if (perPage != null) {
-			perPageInt = NumberUtils.toInt(perPage, MeshOptions.DEFAULT_PAGE_SIZE);
-		}
-		if (pageInt < 1) {
-			error(BAD_REQUEST, "error_invalid_paging_parameters");
-		}
-		if (perPageInt < 0) {
-			error(BAD_REQUEST, "error_invalid_paging_parameters");
-		}
-		setPage(pageInt);
-		setPerPage(perPageInt);
+		return SortOrder.valueOfName(getParameter(SORT_ORDER_PARAMETER_KEY));
 	}
 
 }

@@ -58,7 +58,6 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		String conflictingName = "conflictName";
 		try (Trx trx = db.trx()) {
 			Node folderA = folder("2014");
-
 			// 1. Create nodeA
 			NodeCreateRequest requestA = new NodeCreateRequest();
 			requestA.setLanguage("en");

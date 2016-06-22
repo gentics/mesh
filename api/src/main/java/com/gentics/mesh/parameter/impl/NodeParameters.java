@@ -1,10 +1,7 @@
 package com.gentics.mesh.parameter.impl;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.handler.ActionContext;
@@ -19,53 +16,17 @@ public class NodeParameters extends AbstractParameters {
 
 	public static final String RESOLVE_LINKS_QUERY_PARAM_KEY = "resolveLinks";
 
-	private String[] languages;
-	private String[] expandedFieldNames;
-	private Boolean expandAll;
-	private LinkType resolveLinks;
-
 	public NodeParameters(ActionContext ac) {
 		super(ac);
 	}
 
 	public NodeParameters() {
+		super();
 	}
 
-	@Override
-	protected void constructFrom(ActionContext ac) {
-		String value = ac.getParameter(EXPANDALL_QUERY_PARAM_KEY);
-		if (value != null) {
-			expandAll = Boolean.valueOf(value);
-		}
+	//	@Override
+	protected void constructFrom() {
 
-		value = ac.getParameter(LANGUAGES_QUERY_PARAM_KEY);
-		if (value != null) {
-			languages = value.split(",");
-		}
-		if (languages == null) {
-			languages = new String[] { Mesh.mesh().getOptions().getDefaultLanguage() };
-		}
-
-		resolveLinks = LinkType.OFF;
-
-		value = ac.getParameter(RESOLVE_LINKS_QUERY_PARAM_KEY);
-		if (value != null) {
-			resolveLinks = LinkType.valueOf(value.toUpperCase());
-		}
-
-		// List<String> fieldList = (List<String>) data().get(EXPANDED_FIELDNAMED_DATA_KEY);
-		// if (fieldList == null) {
-		// fieldList = new ArrayList<>();
-		// Map<String, String> queryPairs = splitQuery();
-		// if (queryPairs != null) {
-		// String value = queryPairs.get(EXPANDFIELDS_QUERY_PARAM_KEY);
-		// if (value != null) {
-		// fieldList.addAll(Arrays.asList(value.split(",")));
-		// }
-		// }
-		// data().put(EXPANDED_FIELDNAMED_DATA_KEY, fieldList);
-		// }
-		//
 		// // check whether given language tags exist
 		// Database db = MeshSpringConfiguration.getInstance().database();
 		// try (NoTrx noTrx = db.noTrx()) {
@@ -89,16 +50,24 @@ public class NodeParameters extends AbstractParameters {
 	 * @return Fluent API
 	 */
 	public NodeParameters setLanguages(String... languages) {
-		this.languages = languages;
+		setParameter(LANGUAGES_QUERY_PARAM_KEY, convertToStr(languages));
 		return this;
 	}
 
 	public String[] getLanguages() {
+		String value = getParameter(LANGUAGES_QUERY_PARAM_KEY);
+		String[] languages = null;
+		if (value != null) {
+			languages = value.split(",");
+		}
+		if (languages == null) {
+			languages = new String[] { Mesh.mesh().getOptions().getDefaultLanguage() };
+		}
 		return languages;
 	}
 
 	public List<String> getLanguageList() {
-		return Arrays.asList(languages);
+		return Arrays.asList(getLanguages());
 	}
 
 	/**
@@ -108,20 +77,21 @@ public class NodeParameters extends AbstractParameters {
 	 * @return
 	 */
 	public NodeParameters setExpandedFieldNames(String... fieldNames) {
-		this.expandedFieldNames = fieldNames;
+		setParameter(EXPANDFIELDS_QUERY_PARAM_KEY, convertToStr(fieldNames));
 		return this;
 	}
 
 	public String[] getExpandedFieldNames() {
-		return expandedFieldNames;
+		String fieldNames = getParameter(EXPANDFIELDS_QUERY_PARAM_KEY);
+		if (fieldNames != null) {
+			return fieldNames.split(",");
+		} else {
+			return new String[0];
+		}
 	}
 
-	public List<String> getExpandedFieldnames() {
-		if (expandedFieldNames != null) {
-			return Arrays.asList(expandedFieldNames);
-		} else {
-			return Collections.emptyList();
-		}
+	public List<String> getExpandedFieldnameList() {
+		return Arrays.asList(getExpandedFieldNames());
 	}
 
 	/**
@@ -131,7 +101,7 @@ public class NodeParameters extends AbstractParameters {
 	 * @return
 	 */
 	public NodeParameters setExpandAll(boolean flag) {
-		this.expandAll = flag;
+		setParameter(EXPANDALL_QUERY_PARAM_KEY, String.valueOf(flag));
 		return this;
 	}
 
@@ -141,14 +111,19 @@ public class NodeParameters extends AbstractParameters {
 	 * @return
 	 */
 	public boolean getExpandAll() {
-		if (this.expandAll == null) {
-			return false;
+		String value = getParameter(EXPANDALL_QUERY_PARAM_KEY);
+		if (value != null) {
+			return Boolean.valueOf(value);
 		}
-		return this.expandAll;
+		return false;
 	}
 
 	public LinkType getResolveLinks() {
-		return resolveLinks;
+		String value = getParameter(RESOLVE_LINKS_QUERY_PARAM_KEY);
+		if (value != null) {
+			return LinkType.valueOf(value.toUpperCase());
+		}
+		return LinkType.OFF;
 	}
 
 	/**
@@ -157,18 +132,8 @@ public class NodeParameters extends AbstractParameters {
 	 * @param type
 	 */
 	public NodeParameters setResolveLinks(LinkType type) {
-		this.resolveLinks = type;
+		setParameter(RESOLVE_LINKS_QUERY_PARAM_KEY, type.name().toLowerCase());
 		return this;
-	}
-
-	@Override
-	protected Map<String, Object> getParameters() {
-		Map<String, Object> map = new HashMap<>();
-		map.put(LANGUAGES_QUERY_PARAM_KEY, languages);
-		map.put(EXPANDALL_QUERY_PARAM_KEY, expandAll);
-		map.put(EXPANDFIELDS_QUERY_PARAM_KEY, expandedFieldNames);
-		map.put(RESOLVE_LINKS_QUERY_PARAM_KEY, resolveLinks);
-		return map;
 	}
 
 }

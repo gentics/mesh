@@ -8,7 +8,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -19,11 +19,19 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.test.junit.Assert;
 import com.gentics.mesh.util.HttpQueryUtils;
 
-public class ImageRequestParameterTest {
+import io.vertx.core.MultiMap;
+
+public class ImageManipulationParametersTest {
 
 	public ActionContext getActionContext(String query) {
-		Map<String, String> params = HttpQueryUtils.splitQuery(query);
+		MultiMap params = MultiMap.caseInsensitiveMultiMap();
+
+		for (Entry<String, String> entry : HttpQueryUtils.splitQuery(query).entrySet()) {
+			params.add(entry.getKey(), entry.getValue());
+		}
 		ActionContext mock = Mockito.mock(ActionContext.class);
+		Mockito.when(mock.getParameters()).thenReturn(params);
+
 		Mockito.when(mock.getParameter(Mockito.anyString())).thenAnswer(answer -> {
 			String key = (String) answer.getArguments()[0];
 			return params.get(key);

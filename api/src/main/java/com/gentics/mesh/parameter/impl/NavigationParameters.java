@@ -1,8 +1,5 @@
 package com.gentics.mesh.parameter.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NumberUtils;
@@ -13,16 +10,13 @@ public class NavigationParameters extends AbstractParameters {
 
 	public static final String INCLUDE_ALL_QUERY_PARAM_KEY = "includeAll";
 
-	private Integer maxDepth;
-
-	private Boolean includeAll;
-
 	public NavigationParameters(ActionContext ac) {
 		super(ac);
+		// TODO assert values (depth must not be negative etc)
 	}
 
 	public NavigationParameters() {
-
+		super();
 	}
 
 	/**
@@ -31,7 +25,7 @@ public class NavigationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public Integer getMaxDepth() {
-		return maxDepth;
+		return NumberUtils.toInteger(getParameter(MAX_DEPTH_QUERY_PARAM_KEY), Mesh.mesh().getOptions().getDefaultMaxDepth());
 	}
 
 	/**
@@ -41,7 +35,7 @@ public class NavigationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public NavigationParameters setMaxDepth(Integer maxDepth) {
-		this.maxDepth = maxDepth;
+		setParameter(MAX_DEPTH_QUERY_PARAM_KEY, String.valueOf(maxDepth));
 		return this;
 	}
 
@@ -51,7 +45,7 @@ public class NavigationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public boolean isIncludeAll() {
-		return includeAll;
+		return Boolean.parseBoolean(getParameter(INCLUDE_ALL_QUERY_PARAM_KEY));
 	}
 
 	/**
@@ -62,22 +56,8 @@ public class NavigationParameters extends AbstractParameters {
 	 * @return
 	 */
 	public NavigationParameters setIncludeAll(boolean flag) {
-		this.includeAll = flag;
+		setParameter(INCLUDE_ALL_QUERY_PARAM_KEY, String.valueOf(flag));
 		return this;
-	}
-
-	@Override
-	protected Map<String, Object> getParameters() {
-		Map<String, Object> map = new HashMap<>();
-		map.put(MAX_DEPTH_QUERY_PARAM_KEY, maxDepth);
-		map.put(INCLUDE_ALL_QUERY_PARAM_KEY, includeAll);
-		return map;
-	}
-
-	@Override
-	protected void constructFrom(ActionContext ac) {
-		setMaxDepth(NumberUtils.toInteger(ac.getParameter(MAX_DEPTH_QUERY_PARAM_KEY), Mesh.mesh().getOptions().getDefaultMaxDepth()));
-		setIncludeAll(Boolean.parseBoolean(ac.getParameter(INCLUDE_ALL_QUERY_PARAM_KEY)));
 	}
 
 }

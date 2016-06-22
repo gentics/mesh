@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.mock.Mocks.getMockedVoidInternalActionContext;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -261,9 +262,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			int nChecks = 10000;
 			for (int i = 0; i < nChecks; i++) {
 				String[] loadedPerms = user().getPermissionNames(ac, language);
-				Arrays.sort(perms);
-				Arrays.sort(loadedPerms);
-				assertArrayEquals("Permissions do not match", perms, loadedPerms);
+				assertThat(loadedPerms).containsOnly(perms);
 				// assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 			}
 			System.out.println("Duration: " + (System.currentTimeMillis() - start));

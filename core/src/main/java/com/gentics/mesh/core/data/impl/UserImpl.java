@@ -376,7 +376,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (node == null) {
 			return Observable.empty();
 		} else {
-			boolean expandReference = parameters.getExpandedFieldnames().contains("nodeReference") || parameters.getExpandAll();
+			boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
 			if (expandReference) {
 				return node.transformToRest(ac, level).map(transformedNode -> {
 					restUser.setNodeReference(transformedNode);

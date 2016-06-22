@@ -45,7 +45,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		// TODO handle null across all types
 		//if (getNode() != null) {
 		NodeParameters parameters = new NodeParameters(ac);
-		boolean expandField = ac.getNodeParameters().getExpandedFieldnames().contains(fieldKey) || parameters.getExpandAll();
+		boolean expandField = ac.getNodeParameters().getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			return getNode().transformToRestSync(ac, level, languageTags.toArray(new String[languageTags.size()]));
 		} else {

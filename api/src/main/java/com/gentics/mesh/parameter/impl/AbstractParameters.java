@@ -1,55 +1,64 @@
 package com.gentics.mesh.parameter.impl;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang.BooleanUtils;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.ParameterProvider;
 
+import io.vertx.core.MultiMap;
+
 public abstract class AbstractParameters implements ParameterProvider {
 
-	/**
-	 * Read the {@link ActionContext} parameters and set the needed values within the parameter object.
-	 * 
-	 * @param ac
-	 */
-	protected abstract void constructFrom(ActionContext ac);
+	protected MultiMap parameters;
 
 	public AbstractParameters(ActionContext ac) {
-		constructFrom(ac);
+		this(ac.getParameters());
+	}
+
+	public AbstractParameters(MultiMap parameters) {
+		this.parameters = parameters;
 	}
 
 	public AbstractParameters() {
+		this(MultiMap.caseInsensitiveMultiMap());
 	}
 
-	protected abstract Map<String, Object> getParameters();
+	protected String getParameter(String name) {
+		return parameters.get(name);
+	}
+
+	protected MultiMap getParameters() {
+		return parameters;
+	}
+
+	protected void setParameter(String name, String value) {
+		parameters.set(name, value);
+	}
 
 	@Override
 	public String getQueryParameters() {
 		StringBuilder query = new StringBuilder();
-		Map<String, Object> params = getParameters();
-		for (String key : params.keySet()) {
-			Object value = params.get(key);
+		MultiMap params = getParameters();
+		for (Entry<String, String> entry : params.entries()) {
+			String value = entry.getValue();
 			if (value != null) {
 				if (query.length() != 0) {
 					query.append("&");
 				}
-				String valueStr = convertToStr(value);
-				try {
-					query.append(key + "=" + URLEncoder.encode(valueStr, "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-				}
+				//				try {
+				query.append(entry.getKey() + "=" + value);//URLEncoder.encode(value, "UTF-8"));
+				//				} catch (UnsupportedEncodingException e) {
+				//				}
 			}
 		}
 		return query.toString();
 	}
 
-	private String convertToStr(Object value) {
+	protected String convertToStr(Object value) {
 		if (value instanceof String[]) {
-			String stringVal = null;
+			String stringVal = "";
 			String[] values = (String[]) value;
 			for (int i = 0; i < values.length; i++) {
 				stringVal += values[i];

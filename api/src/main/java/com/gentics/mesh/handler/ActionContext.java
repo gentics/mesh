@@ -6,6 +6,7 @@ import java.util.Map;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.MultiMap;
 
 /**
  * Abstraction of the vertx-web routing context.
@@ -47,7 +48,17 @@ public interface ActionContext {
 	 * @return value of the request parameter or null if the parameter was not found
 	 */
 	String getParameter(String name);
-	
+
+	MultiMap getParameters();
+
+	/**
+	 * Set request context specific path parameters.
+	 * 
+	 * @param name
+	 * @param value
+	 */
+	void setParameter(String name, String value);
+
 	/**
 	 * Send the body string and complete the action.
 	 * 
@@ -130,5 +141,7 @@ public interface ActionContext {
 	 * Perform a logout.
 	 */
 	void logout();
+
+
 
 }
