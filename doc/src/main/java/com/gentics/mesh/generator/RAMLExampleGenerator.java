@@ -137,18 +137,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 		createJson();
 
-		// Raml raml = new Raml();
-		// Resource r = new Resource();
-		// r.setDescription("jow");
-		// raml.getResources().put("test", r);
-		//
-		// raml.setTitle("test1234");
-		//
-		// // modify the raml object
-		//
-		// RamlEmitter emitter = new RamlEmitter();
-		// String dumpFromRaml = emitter.dump(raml);
-		// System.out.println(dumpFromRaml);
+
 
 	}
 

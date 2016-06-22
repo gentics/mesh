@@ -118,7 +118,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	 * @return
 	 */
 	protected Route route(String path) {
-		Route route = localRouter.route(path);
+		Route route = getRouter().route(path);
 		return route;
 	}
 
@@ -126,7 +126,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	 * Wrapper for getRouter().route()
 	 */
 	protected Route route() {
-		Route route = localRouter.route();
+		Route route = getRouter().route();
 		return route;
 	}
 

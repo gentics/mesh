@@ -33,4 +33,8 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 		this.springConfiguration = config;
 	}
 
+	public MeshSpringConfiguration getSpringConfiguration() {
+		return springConfiguration;
+	}
+
 }
