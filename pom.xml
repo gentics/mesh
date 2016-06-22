@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.6.11</version>
+	<version>0.6.17</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -12,7 +12,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<mesh.admin-ui.version>0.6.9</mesh.admin-ui.version>
+		<mesh.admin-ui.version>0.6.12</mesh.admin-ui.version>
 
 		<dockerHost>cetus.office</dockerHost>
 		<dockerHostProtocol>http</dockerHostProtocol>
@@ -179,6 +179,7 @@
 					<tag>${project.artifactId}-${project.version}</tag>
 				</configuration>
 			</plugin>
+			<!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
@@ -192,6 +193,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
@@ -297,14 +299,14 @@
 
 	<distributionManagement>
 		<repository>
-			<id>lan.releases.staging.mesh</id>
+			<id>lan.releases</id>
 			<name>Gentics Releases Repository</name>
-			<url>http://artifactory.office/repository/lan.releases.staging.mesh</url>
+			<url>http://artifactory.office/repository/lan.releases</url>
 		</repository>
 		<snapshotRepository>
 			<id>lan.snapshots</id>
 			<name>Gentics Snapshots Repository</name>
-			<url>http://artifactory.office/repository/lan.snapshots.mesh</url>
+			<url>http://artifactory.office/repository/lan.snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>

@@ -7,7 +7,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * A mesh project rest verticle is a verticle that provides rest endpoints for all registered projects. The router for this verticle will automatically be
+ * A verticle which provides REST endpoints for all registered projects. The router for this verticle will automatically be
  * mounted for all registered projects. E.g: /api/v1/yourproject/verticle_basePath
  */
 public abstract class AbstractProjectRestVerticle extends AbstractWebVerticle {

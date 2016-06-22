@@ -49,7 +49,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		}
 		HttpServerOptions options = new HttpServerOptions();
 		options.setPort(config().getInteger("port"));
-
+		options.setCompressionSupported(true);
 		MeshOptions meshOptions = Mesh.mesh().getOptions();
 		HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
 		if (httpServerOptions.isSsl()) {

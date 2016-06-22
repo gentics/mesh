@@ -549,6 +549,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("disabled due to instability")
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
 			Observable<GenericMessageResponse> observable = getClient().login();

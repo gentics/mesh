@@ -1,11 +1,16 @@
 = Changelog
 
-{% for versionTag, version in versions %}
-== {{versionTag|replace('mesh-','')}}
-{% for change in version %}
+{% for versionKey in versions.keys %}
+== {{versionKey}}
+
+{{versions[versionKey].date|date('d.m.Y') }}
+{% for change in versions[versionKey].changes %}
 * {{change.type}}: {{change.content|safe}}
 {% endfor %}{% endfor %}
-== 0.6.9 - 04.05.2016
+
+== 0.6.9
+
+04.05.2016
 
 * Enhancement: The mesh-ui was updated.
 * Enhancement: It is now possible to also include non-container nodes in a navigation response using the includeAll parameter. By default only container nodes will be included in the response.
@@ -34,7 +39,7 @@
 * Fix: A bug within the reindex changelog entry was fixed. The bug prevented the node index to be recreated.
 * Fix: The mesh-ui-config.js default apiUrl parameter was changed to /api/v1 in order to allow access from hosts other than localhost.
 
-=== 0.6.5
+== 0.6.5
 
 05.04.2016
 
@@ -46,13 +51,13 @@
 * Fix: Various search index related bugs have been fixed.
 * Enhancement: The mesh-ui configuration file was renamed to mesh-ui.config.js 
 
-=== 0.6.4
+== 0.6.4
 
 24.03.2016
 
 * Enhancement: The mesh ui was updated.
 
-=== 0.6.3
+== 0.6.3
 
 22.03.2016
 
@@ -68,19 +73,19 @@
 * Fix: A typo within the search model document for users was fixed.
        The property emailadress was renamed to emailaddress. 
 
-=== 0.6.2
+== 0.6.2
 
 15.03.2016
 
 * Fix: The microschema and schema permission field was always empty for newly created elements.
 
-=== 0.6.1
+== 0.6.1
 
 14.03.2016
 
 * Enhancement: Add mesh-ui to gentics/mesh docker image
 
-=== 0.6.0
+== 0.6.0
 
 14.03.2016
 
@@ -113,13 +118,13 @@
 * Enhancement: Vertx update
   The Vertx dependency was updated to version 3.2.1
 
-=== 0.5.0
+== 0.5.0
 
 17.11.2015
 
 * Closed beta release
 
-=== Upcoming changes
+== Upcoming changes
 
 * Versioning for nodes
   A future mesh version will also support versioning of nodes.

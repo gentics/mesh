@@ -50,11 +50,6 @@ import io.vertx.core.json.JsonObject;
 
 public class FieldMapTest {
 
-	@BeforeClass
-	public static void setupOnce() {
-		JsonUtil.debugMode = true;
-	}
-
 	@Test
 	public void testJsonMapNullHandling() throws JsonParseException, JsonMappingException, IOException {
 		FieldMap fieldMap = new FieldMapJsonImpl();

@@ -674,16 +674,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// breadcrumb
 			obs.add(setBreadcrumbToRest(ac, restNode));
 
-			// Add webroot url & lanuagePaths
+			// Add webroot path & lanuagePaths
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 				String releaseUuid = ac.getRelease(null).getUuid();
 				Type type = Type.forVersion(versioiningParameters.getVersion());
 
-				// Url
+				// Path
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
+				String path = linkReplacer.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
 						restNode.getLanguage()).toBlocking().single();
-				restNode.setPath(url);
+				restNode.setPath(path);
 
 				// languagePaths
 				Map<String, String> languagePaths = new HashMap<>();
@@ -723,6 +723,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeReferenceImpl reference = new NodeReferenceImpl();
 			reference.setUuid(current.getUuid());
 			reference.setDisplayName(current.getDisplayName(ac));
+
+			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
+				Type type = Type.forVersion(ac.getVersioningParameters().getVersion());
+				String url = linkReplacer
+						.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(), restNode.getLanguage())
+						.toBlocking().single();
+				reference.setPath(url);
+			}
 			breadcrumb.add(reference);
 			current = current.getParentNode(releaseUuid);
 		}
