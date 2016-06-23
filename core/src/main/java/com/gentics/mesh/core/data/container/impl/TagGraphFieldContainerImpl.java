@@ -1,13 +1,14 @@
 package com.gentics.mesh.core.data.container.impl;
 
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
 public class TagGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements TagGraphFieldContainer {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(TagGraphFieldContainerImpl.class);
+		database.addVertexType(TagGraphFieldContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	public String getName() {

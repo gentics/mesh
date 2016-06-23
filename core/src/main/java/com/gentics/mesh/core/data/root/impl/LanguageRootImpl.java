@@ -10,6 +10,7 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -24,8 +25,8 @@ import rx.Observable;
 public class LanguageRootImpl extends AbstractRootVertex<Language>implements LanguageRoot {
 
 	public static void checkIndices(Database database) {
+		database.addVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_LANGUAGE);
-		database.addVertexType(LanguageRootImpl.class);
 		// TODO add unique index
 	}
 

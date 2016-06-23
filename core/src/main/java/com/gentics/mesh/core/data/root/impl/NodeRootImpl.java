@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -53,8 +54,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	private static final Logger log = LoggerFactory.getLogger(NodeRootImpl.class);
 
 	public static void checkIndices(Database database) {
+		database.addVertexType(NodeRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_NODE);
-		database.addVertexType(NodeRootImpl.class);
 	}
 
 	@Override

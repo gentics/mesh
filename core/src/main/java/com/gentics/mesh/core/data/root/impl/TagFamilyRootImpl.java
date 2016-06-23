@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -40,7 +41,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_TAG_FAMILY);
-		database.addVertexType(TagFamilyRootImpl.class);
+		database.addVertexType(TagFamilyRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

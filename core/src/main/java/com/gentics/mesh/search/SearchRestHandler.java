@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.codehaus.jettison.json.JSONObject;
@@ -40,6 +41,8 @@ import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
+import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -83,7 +86,7 @@ public class SearchRestHandler {
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
 			RootVertex<T> rootVertex, Class<RL> classOfRL)
-					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
+			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
 		PagingParameter pagingInfo = ac.getPagingParameter();
 		if (pagingInfo.getPage() < 1) {
@@ -110,7 +113,8 @@ public class SearchRestHandler {
 		try {
 			JSONObject queryStringObject = new JSONObject(searchQuery);
 			/**
-			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more efficient ways to do deep scrolling.
+			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
+			 * efficient ways to do deep scrolling.
 			 */
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
@@ -126,8 +130,6 @@ public class SearchRestHandler {
 			@Override
 			public void onResponse(SearchResponse response) {
 				db.noTrx(() -> {
-					rootVertex.reload();
-
 					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
 					List<String> requestedLanguageTags = ac.getSelectedLanguageTags();
 
@@ -142,23 +144,23 @@ public class SearchRestHandler {
 						ObservableFuture<Tuple<T, String>> obsResult = RxHelper.observableFuture();
 						obs.add(obsResult);
 
-						// Locate the node
-						rootVertex.findByUuid(uuid).subscribe(element -> {
-							if (element == null) {
-								log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.getImpl().getFermaType()
-										+ "}");
-								obsResult.toHandler().handle(Future.succeededFuture());
-							} else {
-								obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
-							}
-						} , error -> {
-							obsResult.toHandler().handle(Future.failedFuture(error));
-						});
+						FramedGraph graph = Database.getThreadLocalGraph();
+						Iterator<Vertex> it = graph.getVertices("MeshVertexImpl.uuid", uuid).iterator();
+						if(it.hasNext()) {
+							Vertex elementVertex = it.next();
+							//TODO maybe we should also check whether this element is indeed part of the root vertex?
+							T element = graph.frameElementExplicit(elementVertex, rootVertex.getPersistanceClass());
+							obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
+						} else {
+							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.getImpl().getFermaType()
+									+ "}");
+							obsResult.toHandler().handle(Future.succeededFuture());
+						}
 					}
 
 					Observable.merge(obs).collect(() -> {
 						return new ArrayList<Tuple<T, String>>();
-					} , (x, y) -> {
+					}, (x, y) -> {
 						// Check permissions and language
 						if (y != null && requestUser.hasPermissionSync(ac, y.v1(), GraphPermission.READ_PERM)
 								&& (y.v2() == null || requestedLanguageTags.contains(y.v2()))) {
@@ -197,15 +199,15 @@ public class SearchRestHandler {
 						// Populate the response data with the transformed elements and send the response
 						RxUtil.concatList(transformedElements).collect(() -> {
 							return listResponse.getData();
-						} , (x, y) -> {
+						}, (x, y) -> {
 							x.add(y);
 						}).subscribe(itemList -> {
 							ac.send(JsonUtil.toJson(listResponse), OK);
-						} , error -> {
+						}, error -> {
 							ac.fail(error);
 						});
 
-					} , error -> {
+					}, error -> {
 						log.error("Error while processing search response items", error);
 						ac.fail(error);
 					});

@@ -17,6 +17,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -30,8 +31,8 @@ import rx.Observable;
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
 	public static void checkIndices(Database database) {
+		database.addVertexType(GroupRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_GROUP);
-		database.addVertexType(GroupRootImpl.class);
 	}
 
 	@Override

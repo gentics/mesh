@@ -13,6 +13,7 @@ import org.elasticsearch.common.collect.Tuple;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -38,7 +39,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerRootImpl.class);
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(SchemaContainerRootImpl.class);
+		database.addVertexType(SchemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

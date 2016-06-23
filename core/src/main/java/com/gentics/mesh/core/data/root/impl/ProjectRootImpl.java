@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -46,7 +47,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	private static final Logger log = LoggerFactory.getLogger(ProjectRootImpl.class);
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(ProjectRootImpl.class);
+		database.addVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

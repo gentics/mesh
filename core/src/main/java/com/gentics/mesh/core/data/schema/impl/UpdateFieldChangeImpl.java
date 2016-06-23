@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -19,7 +20,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements UpdateFieldChange {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(UpdateFieldChangeImpl.class);
+		database.addVertexType(UpdateFieldChangeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

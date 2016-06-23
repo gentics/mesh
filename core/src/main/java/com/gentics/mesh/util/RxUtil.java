@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javafx.beans.value.ObservableValue;
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.Subscription;
@@ -18,8 +17,7 @@ public final class RxUtil {
 	}
 
 	/**
-	 * Concat the given list of observables and return a single observable that emits the listed elements.
-	 * Subscribes to the given observables eagerly.
+	 * Concat the given list of observables and return a single observable that emits the listed elements. Subscribes to the given observables eagerly.
 	 * 
 	 * @param list
 	 * @return
@@ -35,7 +33,7 @@ public final class RxUtil {
 			Object[] listLocks = new Object[size];
 			boolean[] completed = new boolean[size];
 
-			// stop all actions when subscriber unsubs
+			// Stop all actions when subscriber unsubs
 			sub.add(Subscriptions.create(() -> {
 				done.set(true);
 				for (Subscription s : subscriptions) {
@@ -43,19 +41,21 @@ public final class RxUtil {
 				}
 			}));
 
-			// fill listLocks. We need to synchronize on these because it can happen that
+			// Fill listLocks. We need to synchronize on these because it can happen that
 			// an observable emits an item while we are fast forwarding (simultaneous access to same list)
 			for (int i = 0; i < size; i++) {
 				listLocks[i] = new Object();
 			}
 
-			//subscribe to all observables
+			// Subscribe to all observables
 			for (Observable<T> obs : list) {
 				// we need to capture the current index in lambdas
 				final int currentIndex = subscriptionIndex;
 				subscriptions[subscriptionIndex] = obs.subscribe(element -> {
 					// do nothing when done
-					if (done.get()) return;
+					if (done.get()) {
+						return;
+					}
 
 					if (nextToEmit.get() == currentIndex) {
 						// It's this observable's turn. Just emit the element
@@ -82,10 +82,12 @@ public final class RxUtil {
 					sub.onError(error);
 				}, () -> {
 					// do nothing when done
-					if (done.get()) return;
+					if (done.get()) {
+						return;
+					}
 
 					nextToEmit.getAndUpdate(i -> {
-						if (i+1 == size) {
+						if (i + 1 == size) {
 							// last observable completed
 							sub.onCompleted();
 							return i;

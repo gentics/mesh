@@ -74,7 +74,7 @@ public class BitsyDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void addVertexType(Class<?> clazzOfVertex) {
+	public void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex) {
 
 	}
 

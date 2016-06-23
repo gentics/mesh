@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -35,7 +36,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(NodeGraphFieldContainerImpl.class);
+		database.addVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, WEBROOT_PROPERTY_KEY);
 	}
 

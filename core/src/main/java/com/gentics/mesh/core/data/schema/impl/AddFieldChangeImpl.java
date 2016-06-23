@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LI
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -29,7 +30,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements AddFieldChange {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(AddFieldChangeImpl.class);
+		database.addVertexType(AddFieldChangeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
