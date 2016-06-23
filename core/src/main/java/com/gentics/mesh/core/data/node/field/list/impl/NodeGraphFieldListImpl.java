@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
@@ -24,7 +25,7 @@ import rx.Observable;
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(NodeGraphFieldListImpl.class);
+		database.addVertexType(NodeGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

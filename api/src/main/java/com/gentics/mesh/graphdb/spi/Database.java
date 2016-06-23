@@ -262,8 +262,9 @@ public interface Database {
 	 * Create a new vertex type for the given vertex class type.
 	 * 
 	 * @param clazzOfVertex
+	 * @param superClazzOfVertex Super vertex type. If null "V" will be used.
 	 */
-	void addVertexType(Class<?> clazzOfVertex);
+	void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex);
 
 	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues);
 

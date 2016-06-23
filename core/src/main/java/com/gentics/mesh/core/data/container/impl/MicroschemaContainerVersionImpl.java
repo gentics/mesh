@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -27,7 +28,7 @@ public class MicroschemaContainerVersionImpl
 		implements MicroschemaContainerVersion {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(MicroschemaContainerVersionImpl.class);
+		database.addVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

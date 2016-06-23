@@ -30,7 +30,7 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueImpl.class);
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(SearchQueueImpl.class);
+		database.addVertexType(SearchQueueImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

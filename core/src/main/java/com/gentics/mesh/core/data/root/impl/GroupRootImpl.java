@@ -8,6 +8,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
+import java.util.Set;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
@@ -16,7 +18,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -30,13 +34,18 @@ import rx.Observable;
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
 	public static void checkIndices(Database database) {
+		database.addVertexType(GroupRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_GROUP);
-		database.addVertexType(GroupRootImpl.class);
 	}
 
 	@Override
 	public Class<? extends Group> getPersistanceClass() {
 		return GroupImpl.class;
+	}
+
+	@Override
+	public String getSearchIndexName() {
+		return Group.TYPE;
 	}
 
 	@Override

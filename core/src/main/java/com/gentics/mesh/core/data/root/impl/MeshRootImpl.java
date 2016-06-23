@@ -71,7 +71,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(MeshRootImpl.class);
+		database.addVertexType(MeshRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

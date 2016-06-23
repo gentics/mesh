@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -30,7 +31,7 @@ import rx.Observable;
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(MicroschemaContainerRootImpl.class);
+		database.addVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -41,6 +42,11 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	@Override
 	public String getRootLabel() {
 		return HAS_SCHEMA_CONTAINER_ITEM;
+	}
+	
+	@Override
+	public String getSearchIndexName() {
+		return MicroschemaContainer.TYPE;
 	}
 
 	@Override

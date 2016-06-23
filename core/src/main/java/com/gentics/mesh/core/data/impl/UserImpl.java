@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -79,7 +80,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public static final String ENABLED_FLAG_PROPERTY_KEY = "enabledFlag";
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(UserImpl.class);
+		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

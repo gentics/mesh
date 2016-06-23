@@ -16,6 +16,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -35,8 +36,13 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	private static final Logger log = LoggerFactory.getLogger(RoleRootImpl.class);
 
 	public static void checkIndices(Database database) {
+		database.addVertexType(RoleRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_ROLE);
-		database.addVertexType(RoleRootImpl.class);
+	}
+
+	@Override
+	public String getSearchIndexName() {
+		return Role.TYPE;
 	}
 
 	@Override

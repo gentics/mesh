@@ -20,7 +20,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -41,13 +43,18 @@ import rx.Observable;
 public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	public static void checkIndices(Database database) {
+		database.addVertexType(UserRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_USER);
-		database.addVertexType(UserRootImpl.class);
 	}
 
 	@Override
 	public Class<? extends User> getPersistanceClass() {
 		return UserImpl.class;
+	}
+
+	@Override
+	public String getSearchIndexName() {
+		return User.TYPE;
 	}
 
 	@Override

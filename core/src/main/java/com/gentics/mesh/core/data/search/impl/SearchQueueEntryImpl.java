@@ -43,7 +43,7 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	private static final String ELEMENT_INDEX_TYPE = "element_index_type";
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(SearchQueueEntryImpl.class);
+		database.addVertexType(SearchQueueEntryImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

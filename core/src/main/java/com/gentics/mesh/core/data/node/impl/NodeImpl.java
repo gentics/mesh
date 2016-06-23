@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -58,6 +59,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.link.WebRootLinkReplacer.Type;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -94,7 +96,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(NodeImpl.class);
+		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -436,14 +438,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// breadcrumb
 			obs.add(setBreadcrumbToRest(ac, restNode));
 
-			// Add webroot url & lanuagePaths
+			// Add webroot path & lanuagePaths
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
 
-				// Url
+				// Path
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer.resolve(getUuid(), ac.getResolveLinksType(), getProject().getName(), restNode.getLanguage()).toBlocking()
-						.single();
-				restNode.setPath(url);
+				String path = linkReplacer
+						.resolve(getUuid(), ac.getResolveLinksType(), getProject().getName(), restNode.getLanguage())
+						.toBlocking().single();
+				restNode.setPath(path);
 
 				// languagePaths
 				Map<String, String> languagePaths = new HashMap<>();
@@ -480,6 +483,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeReferenceImpl reference = new NodeReferenceImpl();
 			reference.setUuid(current.getUuid());
 			reference.setDisplayName(current.getDisplayName(ac));
+
+			if (!ac.getResolveLinksType().equals(Type.OFF)) {
+				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
+				String url = linkReplacer.resolve(current.getUuid(), ac.getResolveLinksType(), getProject().getName(),
+						restNode.getLanguage()).toBlocking().single();
+				reference.setPath(url);
+			}
 			breadcrumb.add(reference);
 			current = current.getParentNode();
 		}

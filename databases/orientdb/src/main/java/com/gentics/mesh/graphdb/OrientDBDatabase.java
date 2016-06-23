@@ -218,7 +218,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void addVertexType(Class<?> clazzOfVertex) {
+	public void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex) {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex type for class {" + clazzOfVertex.getName() + "}");
 		}
@@ -226,7 +226,20 @@ public class OrientDBDatabase extends AbstractDatabase {
 		try {
 			OrientVertexType e = tx.getVertexType(clazzOfVertex.getSimpleName());
 			if (e == null) {
-				e = tx.createVertexType(clazzOfVertex.getSimpleName(), "V");
+				String superClazz = "V";
+				if (superClazzOfVertex != null) {
+					superClazz = superClazzOfVertex.getSimpleName();
+				}
+				e = tx.createVertexType(clazzOfVertex.getSimpleName(), superClazz);
+			} else {
+				if (superClazzOfVertex != null) {
+					OrientVertexType superType = tx.getVertexType(superClazzOfVertex.getSimpleName());
+					if (superType == null) {
+						throw new RuntimeException("The supertype for vertices of type {" + clazzOfVertex + "} can't be set since the supertype {"
+								+ superClazzOfVertex.getSimpleName() + "} was not yet added to orientdb.");
+					}
+					e.setSuperClass(superType);
+				}
 			}
 		} finally {
 			tx.shutdown();
@@ -267,7 +280,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			String name = clazzOfVertices.getSimpleName();
 			OrientVertexType v = tx.getVertexType(name);
 			if (v == null) {
-				v = tx.createVertexType(name, "V");
+				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName + "}");
 			}
 			for (String field : fields) {
 				if (v.getProperty(field) == null) {
@@ -275,7 +288,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 			if (v.getClassIndex(indexName) == null) {
-				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(), null, new ODocument().fields("ignoreNullValues", true), fields);
+				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(),
+						null, new ODocument().fields("ignoreNullValues", true), fields);
 			}
 		} finally {
 			tx.shutdown();

@@ -30,6 +30,11 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	private Object id;
 	// public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedVertex) getGraph().getVertex(id)).getBaseElement());
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(MeshVertexImpl.class, null);
+		database.addVertexIndex(MeshVertexImpl.class, true, "uuid");
+	}
+
 	@Override
 	protected void init() {
 		super.init();

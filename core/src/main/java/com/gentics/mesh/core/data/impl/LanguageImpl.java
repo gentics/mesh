@@ -5,6 +5,7 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
@@ -22,6 +23,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public static final String LANGUAGE_NAME_PROPERTY_KEY = "name";
 
 	public static void checkIndices(Database database) {
+		database.addVertexType(LanguageImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(LanguageImpl.class, true, LANGUAGE_TAG_PROPERTY_KEY);
 	}
 
@@ -62,7 +64,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public Observable<LanguageResponse> transformToRestSync(InternalActionContext ac, int level, String...languageTags) {
+	public Observable<LanguageResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		LanguageResponse model = new LanguageResponse();
 		model.setUuid(getUuid());
 		model.setLanguageTag(getLanguageTag());

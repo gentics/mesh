@@ -4,6 +4,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
@@ -57,7 +58,9 @@ public class DatabaseHelper {
 	public void init() {
 
 		log.info("Creating database indices. This may take a few seconds...");
-		database.addVertexType(MeshRootImpl.class);
+		
+		// Base type for most vertices
+		MeshVertexImpl.checkIndices(database);
 
 		// Edges
 		GraphRelationships.checkIndices(database);
@@ -89,6 +92,7 @@ public class DatabaseHelper {
 		TagGraphFieldContainerImpl.checkIndices(database);
 		MicronodeGraphFieldListImpl.checkIndices(database);
 
+		
 		LanguageImpl.checkIndices(database);
 		GroupImpl.checkIndices(database);
 		RoleImpl.checkIndices(database);
@@ -101,7 +105,7 @@ public class DatabaseHelper {
 		MicroschemaContainerImpl.checkIndices(database);
 		SchemaContainerVersionImpl.checkIndices(database);
 		MicroschemaContainerVersionImpl.checkIndices(database);
-		
+
 		// Field changes
 		FieldTypeChangeImpl.checkIndices(database);
 		UpdateSchemaChangeImpl.checkIndices(database);

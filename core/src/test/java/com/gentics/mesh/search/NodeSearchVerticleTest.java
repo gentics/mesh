@@ -622,7 +622,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
-		int numAdditionalNodes = 99;
+		int numAdditionalNodes = 150;
 		addMicronodeField();
 		User user = user();
 		Language english = english();
@@ -643,10 +643,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		MeshRoot.getInstance().getNodeRoot().reload();
 		fullIndex();
 
+		long start = System.currentTimeMillis();
 		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Mickey"),
 				new PagingParameter().setPage(1).setPerPage(numAdditionalNodes + 1));
 		latchFor(future);
 		assertSuccess(future);
+		System.out.println("Duration : " + (System.currentTimeMillis() - start));
 
 		NodeListResponse response = future.result();
 		assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());

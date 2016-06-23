@@ -172,7 +172,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void addVertexType(Class<?> clazzOfVertex) {
+	public void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex) {
 		// TODO Auto-generated method stub
 	}
 
