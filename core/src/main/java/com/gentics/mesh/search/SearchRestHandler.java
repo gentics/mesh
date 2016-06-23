@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
@@ -42,6 +43,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Future;
@@ -79,13 +81,16 @@ public class SearchRestHandler {
 	 *            Root Vertex of the elements that should be searched
 	 * @param classOfRL
 	 *            Class of the rest model list that should be used when creating the response
+	 * @param index
+	 *            index name to search
+	 * 
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 * @throws InvalidArgumentException
 	 * @throws MeshJsonException
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
-			RootVertex<T> rootVertex, Class<RL> classOfRL)
+			RootVertex<T> rootVertex, Class<RL> classOfRL, String index)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
 		PagingParameter pagingInfo = ac.getPagingParameter();
@@ -118,8 +123,7 @@ public class SearchRestHandler {
 			 */
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
-			//TODO BUG we need to filter by one index only
-			builder = client.prepareSearch().setSource(queryStringObject.toString());
+			builder = client.prepareSearch(index).setSource(queryStringObject.toString());
 		} catch (Exception e) {
 			ac.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
@@ -145,15 +149,18 @@ public class SearchRestHandler {
 						obs.add(obsResult);
 
 						FramedGraph graph = Database.getThreadLocalGraph();
+						// TODO maybe we should also check whether this element is indeed part of the root vertex?
+						// The current index access is the fastest option but it would also be possible to utilize an 
+						// edge index and only retrieve elements that are part of the provided root vertex. 
 						Iterator<Vertex> it = graph.getVertices("MeshVertexImpl.uuid", uuid).iterator();
-						if(it.hasNext()) {
+						if (it.hasNext()) {
 							Vertex elementVertex = it.next();
-							//TODO maybe we should also check whether this element is indeed part of the root vertex?
+							
 							T element = graph.frameElementExplicit(elementVertex, rootVertex.getPersistanceClass());
 							obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
 						} else {
-							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.getImpl().getFermaType()
-									+ "}");
+							log.error(
+									"Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.getImpl().getFermaType() + "}");
 							obsResult.toHandler().handle(Future.succeededFuture());
 						}
 					}

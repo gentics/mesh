@@ -622,7 +622,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
-		int numAdditionalNodes = 2000;
+		int numAdditionalNodes = 150;
 		addMicronodeField();
 		User user = user();
 		Language english = english();

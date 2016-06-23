@@ -45,10 +45,13 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public
-
-	Class<? extends TagFamily> getPersistanceClass() {
+	public Class<? extends TagFamily> getPersistanceClass() {
 		return TagFamilyImpl.class;
+	}
+
+	@Override
+	public String getSearchIndexNames() {
+		return TagFamily.TYPE;
 	}
 
 	@Override

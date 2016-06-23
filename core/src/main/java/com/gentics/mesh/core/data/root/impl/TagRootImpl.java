@@ -31,6 +31,11 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	private static final Logger log = LoggerFactory.getLogger(TagRootImpl.class);
 
 	@Override
+	public String getSearchIndexNames() {
+		return Tag.TYPE;
+	}
+
+	@Override
 	public Class<? extends Tag> getPersistanceClass() {
 		return TagImpl.class;
 	}
@@ -98,6 +103,5 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	public Observable<Tag> create(InternalActionContext ac) {
 		throw new NotImplementedException("The tag family is the root element thus should be used for creation of tags.");
 	}
-
 
 }

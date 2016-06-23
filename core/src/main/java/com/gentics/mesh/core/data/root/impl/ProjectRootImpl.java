@@ -56,6 +56,11 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
+	public String getSearchIndexNames() {
+		return Project.TYPE;
+	}
+
+	@Override
 	public String getRootLabel() {
 		return HAS_PROJECT;
 	}

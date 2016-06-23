@@ -59,6 +59,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
+	public String getSearchIndexNames() {
+		return Node.TYPE;
+	}
+
+	@Override
 	public Class<? extends Node> getPersistanceClass() {
 		return NodeImpl.class;
 	}
