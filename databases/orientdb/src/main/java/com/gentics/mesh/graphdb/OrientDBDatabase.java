@@ -231,6 +231,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 					superClazz = superClazzOfVertex.getSimpleName();
 				}
 				e = tx.createVertexType(clazzOfVertex.getSimpleName(), superClazz);
+			} else {
+				if (superClazzOfVertex != null) {
+					OrientVertexType superType = tx.getVertexType(superClazzOfVertex.getSimpleName());
+					if (superType == null) {
+						throw new RuntimeException("The supertype for vertices of type {" + clazzOfVertex + "} can't be set since the supertype {"
+								+ superClazzOfVertex.getSimpleName() + "} was not yet added to orientdb.");
+					}
+					e.setSuperClass(superType);
+				}
 			}
 		} finally {
 			tx.shutdown();
@@ -271,7 +280,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			String name = clazzOfVertices.getSimpleName();
 			OrientVertexType v = tx.getVertexType(name);
 			if (v == null) {
-				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName +"}");
+				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName + "}");
 			}
 			for (String field : fields) {
 				if (v.getProperty(field) == null) {
