@@ -44,7 +44,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public String getSearchIndexNames() {
+	public String getSearchIndexName() {
 		return Group.TYPE;
 	}
 

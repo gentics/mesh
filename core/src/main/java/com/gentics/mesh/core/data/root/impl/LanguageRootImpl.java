@@ -31,7 +31,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
-	public String getSearchIndexNames() {
+	public String getSearchIndexName() {
 		return Language.TYPE;
 	}
 

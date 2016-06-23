@@ -41,7 +41,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	}
 
 	@Override
-	public String getSearchIndexNames() {
+	public String getSearchIndexName() {
 		return Role.TYPE;
 	}
 

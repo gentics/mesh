@@ -95,7 +95,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		Route postRoute = route("/" + typeName).method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			try {
-				searchHandler.handleSearch(InternalActionContext.create(rc), root, classOfRL, root.getSearchIndexNames());
+				searchHandler.handleSearch(InternalActionContext.create(rc), root, classOfRL, root.getSearchIndexName());
 			} catch (Exception e) {
 				// fail(rc, "search_error_query");
 				rc.fail(e);

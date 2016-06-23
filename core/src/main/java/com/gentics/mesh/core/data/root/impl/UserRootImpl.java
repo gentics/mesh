@@ -53,7 +53,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public String getSearchIndexNames() {
+	public String getSearchIndexName() {
 		return User.TYPE;
 	}
 

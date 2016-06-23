@@ -31,7 +31,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	private static final Logger log = LoggerFactory.getLogger(TagRootImpl.class);
 
 	@Override
-	public String getSearchIndexNames() {
+	public String getSearchIndexName() {
 		return Tag.TYPE;
 	}
 

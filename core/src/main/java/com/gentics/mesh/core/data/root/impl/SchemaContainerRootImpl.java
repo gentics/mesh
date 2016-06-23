@@ -49,8 +49,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public String getSearchIndexNames() {
-		return SchemaContainer.TYPE;
+	public String getSearchIndexName() {
+		return "schema_container";
 	}
 
 	@Override

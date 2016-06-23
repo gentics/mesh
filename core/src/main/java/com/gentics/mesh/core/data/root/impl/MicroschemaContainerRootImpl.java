@@ -45,7 +45,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 	
 	@Override
-	public String getSearchIndexNames() {
+	public String getSearchIndexName() {
 		return MicroschemaContainer.TYPE;
 	}
 

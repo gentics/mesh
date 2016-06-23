@@ -122,6 +122,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	Class<? extends T> getPersistanceClass();
 
-	String getSearchIndexNames();
+	String getSearchIndexName();
 
 }

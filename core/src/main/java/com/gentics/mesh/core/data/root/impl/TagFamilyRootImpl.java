@@ -50,8 +50,8 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public String getSearchIndexNames() {
-		return TagFamily.TYPE;
+	public String getSearchIndexName() {
+		return "tag_family";
 	}
 
 	@Override
