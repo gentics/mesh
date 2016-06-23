@@ -232,28 +232,6 @@
 
 	<repositories>
 		<repository>
-			<id>lan.snapshots</id>
-			<name>Gentics Snapshots Repository</name>
-			<url>http://artifactory.office/repository/lan.snapshots.mesh</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>lan.releases.staging.mesh</id>
-			<name>Gentics Releases Repository</name>
-			<url>http://artifactory.office/repository/lan.releases.staging.mesh</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
 			<id>maven.gentics.com</id>
 			<name>Gentics Maven Repository</name>
 			<url>https://maven.gentics.com/maven2</url>

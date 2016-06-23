@@ -6,11 +6,13 @@ RUN apt-get update --quiet --quiet \
 
 EXPOSE 8080 7474
 
-ADD ./maven /mesh
+RUN mkdir /mesh
 WORKDIR /mesh
+ADD ./target/mesh-demo*jar /mesh/meshdemo.jar
+
 
 RUN mkdir /data
-RUN ln -s /data /mesh/data
+RUN ln -s /mesh/data /data
 VOLUME /data
 
-CMD [ "java", "-jar" , "mesh.jar" ]
+CMD [ "java", "-jar" , "meshdemo.jar" ]
