@@ -1,13 +1,14 @@
 properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
 [$class: 'BooleanParameterDefinition', name: 'skipTests', defaultValue: false],
 [$class: 'BooleanParameterDefinition', name: 'skipDocker', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'skipRelease', defaultValue: false]
+[$class: 'BooleanParameterDefinition', name: 'skipReleaseBuild', defaultValue: false]
+[$class: 'BooleanParameterDefinition', name: 'skipIntegrationTests', defaultValue: false]
+[$class: 'BooleanParameterDefinition', name: 'skipPerformanceTests', defaultValue: false]
+[$class: 'BooleanParameterDefinition', name: 'skipDeploy', defaultValue: false]
 ]]])
 
 stage 'Test'
-if (Boolean.valueOf(skipTests)) {
-	echo "Skipped"
-} else {
+if (!Boolean.valueOf(skipTests)) {
 	def splits = splitTests parallelism: [$class: 'CountDrivenParallelism', size: 5], generateInclusions: true
 	def branches = [:]
 	for (int i = 0; i < splits.size(); i++) {
@@ -35,9 +36,12 @@ if (Boolean.valueOf(skipTests)) {
 		echo "Failed " + err.getMessage()
 		error err.getMessage()
 	}
+} else {
+	echo "Tests skipped.."
 }
 
 node('dockerSlave') {
+
 	stage 'Checkout'
 	sh "rm -rf *"
 	sh "rm -rf .git"
@@ -45,6 +49,7 @@ node('dockerSlave') {
 	checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]],
 		extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
 	def mvnHome = tool 'M3'
+
 
 	stage 'Set Version'
 	def originalV = version();
@@ -61,29 +66,57 @@ node('dockerSlave') {
 	sh "git commit -m 'Raise version'"
 	sh "git tag ${v}"
 
+
 	stage 'Release Build'
-	if (Boolean.valueOf(skipRelease)) {
-		echo "Skipped - Only invoking mvn package instead of deploy"
+	if (!Boolean.valueOf(skipReleaseBuild)) {
 		sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-			sh "${mvnHome}/bin/mvn -B -DskipTests -Ddocker.skip=true clean package"
+			sh "${mvnHome}/bin/mvn -B -DskipTests clean package"
 		}
 	} else {
+		echo "Release build skipped.."
+	}
+
+
+	stage 'Docker Build'
+	if (!Boolean.valueOf(skipDocker)) {
+		withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
+			sh "captain build"
+		}
+	} else {
+		echo "Docker build skipped.."
+	}
+
+
+	stage 'Performance Tests'
+	if (!Boolean.valueOf(skipPerformanceTests)) {
+		echo "Not yet implemented"
+	} else {
+		echo "Performance tests skipped.."
+	}
+
+
+	stage 'Integration Tests'
+	if (!Boolean.valueOf(skipPerformanceTests)) {
+		withEnv(['DOCKER_HOST=tcp://gemini.office:2375', "MESH_VERSION=${v}"]) {
+			sh "integration-tests/test.sh"
+		}
+	} else {
+		echo "Performance tests skipped.."
+	}
+
+
+	stage 'Deploy/Push'
+	if (!Boolean.valueOf(skipDeploy)) {
+		withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
+			sh "captain push"
+		}
 		sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-			sh "${mvnHome}/bin/mvn -B -DskipTests -Ddocker.skip=false -Ddocker.tag=latest clean deploy"
+			sh "${mvnHome}/bin/mvn -B -DskipTests clean deploy"
 			sh "git push origin " + env.BRANCH_NAME
 			sh "git push origin ${v}"
 		}
-		stage 'Docker Build'
-		if (Boolean.valueOf(skipDocker)) {
-			 echo "Skipped"
-		} else {
-			/*
-			withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
-				sh "captain build"
-				sh "captain push"
-			}
-			*/
-		}
+	} else {
+		echo "Deploy/Push skipped.."
 	}
 
 }
