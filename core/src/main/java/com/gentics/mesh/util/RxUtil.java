@@ -54,7 +54,9 @@ public final class RxUtil {
 				synchronized (subscriptions) {
 					// unsub could happen when subbing to obs in list
 					for (Subscription s : subscriptions) {
-						s.unsubscribe();
+						if (s != null) {
+							s.unsubscribe();
+						}
 					}
 				}
 			}));
@@ -95,8 +97,12 @@ public final class RxUtil {
 					}, error -> {
 						// When an error occurs, nothing else should happen. Also unsubscribe to all observables.
 						done.set(true);
-						for (Subscription s : subscriptions) {
-							s.unsubscribe();
+						synchronized (subscriptions) {
+							for (Subscription s : subscriptions) {
+								if (s != null) {
+									s.unsubscribe();
+								}
+							}
 						}
 						// TODO maybe wrap it in another error with more information (index, happened in concat)?
 						sub.onError(error);
@@ -164,7 +170,7 @@ public final class RxUtil {
 
 	/**
 	 * Wait for the given observable to complete before emitting any items from the source observable.
-	 * 
+	 *
 	 * @param o1
 	 * @return
 	 */

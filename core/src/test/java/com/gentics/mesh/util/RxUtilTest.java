@@ -1,8 +1,8 @@
 package com.gentics.mesh.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Test;
+import rx.Observable;
+import rx.subjects.BehaviorSubject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,10 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Test;
-
-import rx.Observable;
-import rx.subjects.BehaviorSubject;
+import static org.junit.Assert.*;
 
 public class RxUtilTest {
 
@@ -78,7 +75,7 @@ public class RxUtilTest {
 	}
 
 	@Test
-	public void testConcatWithSingleObservable() {
+	public void testConcatWithSingleObservable() throws Throwable {
 		List<Observable<Integer>> l = Collections.singletonList(Observable.just(1, 2, 3));
 
 		int count = testCountingObservable(RxUtil.concatList(l));
@@ -93,18 +90,37 @@ public class RxUtilTest {
 		RxUtil.concatList(l).toBlocking().last();
 	}
 
+	@Test(expected = TestException.class)
+	public void testConcatErrorBeforeSub() throws Throwable {
+		List<Observable<Integer>> l = Arrays.asList(Observable.error(new TestException()), Observable.just(1, 2, 3), Observable.just(4, 5, 6));
+
+		int count = testCountingObservable(RxUtil.concatList(l));
+		assertEquals(6, count);
+	}
+
+	private class TestException extends Exception {
+
+	}
+
 	/**
 	 * Checks if the given observable counts from 1 in the correct order.
-	 * 
-	 * @param counting
-	 *            The observable to check for
+	 *
+	 * @param counting The observable to check for
 	 * @return How many numbers have been emitted.
 	 */
-	private int testCountingObservable(Observable<Integer> counting) {
+	private int testCountingObservable(Observable<Integer> counting) throws Throwable {
 		AtomicInteger counter = new AtomicInteger(1);
-		counting.toBlocking().forEach(i -> {
-			assertEquals(counter.getAndIncrement(), (int) i);
-		});
+		try {
+			counting.toBlocking().forEach(i -> {
+				assertEquals(counter.getAndIncrement(), (int) i);
+			});
+		} catch (RuntimeException e) {
+			if (e.getCause() != null) {
+				throw e.getCause();
+			} else {
+				throw e;
+			}
+		}
 		return counter.get() - 1;
 	}
 }
