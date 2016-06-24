@@ -575,7 +575,6 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		expectException(future, BAD_REQUEST, "user_incomplete_node_reference");
 	}
 
-	@Ignore("Latch times out sometimes")
 	@Test
 	public void testUpdatePassword() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		User user = user();
@@ -901,7 +900,6 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("Latch times out sometimes")
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 
 		UserRoot userRoot = meshRoot().getUserRoot();
@@ -923,7 +921,6 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test(expected = NullPointerException.class)
-	@Ignore("Latch times out sometimes")
 	public void testDeleteWithUuidNull() throws Exception {
 		Future<GenericMessageResponse> future = getClient().deleteUser(null);
 		latchFor(future);
