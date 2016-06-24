@@ -1,6 +1,11 @@
 package com.gentics.mesh.core.data.node.field.nesting;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -45,6 +50,11 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 		// Rest model is empty or null - Abort
 		if (restIsNullOrEmpty) {
 			return;
+		}
+
+		// Check whether the request contains all required information to execute it
+		if (StringUtils.isEmpty(nodeField.getUuid())) {
+			throw error(BAD_REQUEST, "node_error_field_property_missing", "uuid", fieldKey);
 		}
 
 		// Handle Update / Create 

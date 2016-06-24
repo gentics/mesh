@@ -80,6 +80,9 @@ public class VersionNumber implements Comparable<VersionNumber> {
 		return new VersionNumber(major + 1, 0);
 	}
 
+	/**
+	 * Return the full version string.
+	 */
 	@Override
 	public String toString() {
 		return fullVersion;

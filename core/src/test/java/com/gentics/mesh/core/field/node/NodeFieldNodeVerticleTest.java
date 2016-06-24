@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field.node;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -92,9 +93,10 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeResponse firstResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 		String oldNumber = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl());
-		assertThat(secondResponse.getFields().getNodeField(NODE_FIELD_NAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getFields().getNodeField(NODE_FIELD_NAME).getUuid()).as("Updated Field Value").isNull();
+		updateNodeFailure(NODE_FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", NODE_FIELD_NAME);
+
+		NodeResponse secondResponse = updateNode(NODE_FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getNodeField(NODE_FIELD_NAME)).as("Deleted Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
 	}
 
@@ -192,8 +194,8 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(NODE_FIELD_NAME, (Field) null);
 		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
-		assertNotNull(field);
-		assertNull(field.getUuid());
+		assertNull("The expanded node field within the response should be null since we created the node without providing any field information.",
+				field);
 	}
 
 	@Test

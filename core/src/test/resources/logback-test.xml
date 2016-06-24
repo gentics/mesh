@@ -34,6 +34,9 @@
 		<appender-ref ref="STDERR"/>
 	</logger>
  -->
+<!-- 
+    <logger name="com.gentics.mesh.rest.MeshResponseHandler" level="DEBUG"/>
+     -->
 	<root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>

@@ -728,9 +728,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
 				Type type = Type.forVersion(ac.getVersioningParameters().getVersion());
-				String url = linkReplacer
-						.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(), restNode.getLanguage())
-						.toBlocking().single();
+				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
+						getProject().getName(), restNode.getLanguage()).toBlocking().single();
 				reference.setPath(url);
 			}
 			breadcrumb.add(reference);
@@ -1290,9 +1289,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					}
 				}
 
-				// Create new field container as clone of the existing
-				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
-
 				// Make sure to only update those fields which have been altered in between the latest version and the current request. Remove unaffected fields
 				// from the rest request in order to prevent duplicate references.
 				// We don't want to touch field that have not been changed. Otherwise the graph field references would no longer point to older revisions of the
@@ -1308,9 +1304,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					requestModel.getFields().remove(fieldKey);
 				}
 
-				// Update the existing fields
-				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
-				latestDraftVersion = newDraftVersion;
+				// Check whether the request still contains data which needs to be updated.
+				if (!requestModel.getFields().isEmpty()) {
+
+					// Create new field container as clone of the existing
+					NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+
+					// Update the existing fields
+					newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
+					latestDraftVersion = newDraftVersion;
+				}
 			}
 			return createIndexBatch(STORE_ACTION, Arrays.asList(latestDraftVersion), release.getUuid(), Type.DRAFT);
 		}).process().map(i -> this);

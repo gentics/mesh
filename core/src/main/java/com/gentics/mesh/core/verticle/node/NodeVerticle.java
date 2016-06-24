@@ -68,6 +68,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addNavigationHandlers() {
+		
 		addAction("/:uuid/navigation", GET, APPLICATION_JSON);
 		
 		route("/:uuid/navigation").method(GET).produces(APPLICATION_JSON).handler(rc -> {

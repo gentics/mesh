@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
@@ -84,6 +85,7 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getGraphFieldContainer(english()).getVersion().toString()));
 
 		NodeResponse response = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
 				new NodeParameters().setLanguages("en")));
@@ -98,6 +100,7 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getGraphFieldContainer(english()).getVersion().toString()));
 
 		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
 				new NodeParameters().setLanguages("en")), status, bodyMessageI18nKey, i18nParams);

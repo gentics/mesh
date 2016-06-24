@@ -2,7 +2,9 @@ package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
@@ -229,7 +231,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	public void testGetPermissionsViaHandle() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
 			Language language = english();
-			String[] perms = { "create", "update", "delete", "read" };
+			String[] perms = { "create", "update", "delete", "read", "publish", "readpublished" };
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			long start = System.currentTimeMillis();
@@ -255,7 +257,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	public void testGetPermissions() {
 		try (NoTrx noTx = db.noTrx()) {
 			Language language = english();
-			String[] perms = { "create", "update", "delete", "read" };
+			String[] perms = { "create", "update", "delete", "read", "readpublished", "publish" };
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			long start = System.currentTimeMillis();
@@ -391,7 +393,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 			roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newUser);
 			newGroup.addRole(roleWithAllPerm);
-			roleWithAllPerm.grantPermissions(sourceNode, CREATE_PERM, UPDATE_PERM, DELETE_PERM, READ_PERM);
+			roleWithAllPerm.grantPermissions(sourceNode, CREATE_PERM, UPDATE_PERM, DELETE_PERM, READ_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
 
 			roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newUser);
 			newGroup.addRole(roleWithCreatePerm);
