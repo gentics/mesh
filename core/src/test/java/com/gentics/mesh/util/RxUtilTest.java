@@ -12,8 +12,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.lang.ObjectUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import rx.Observable;
@@ -81,7 +79,7 @@ public class RxUtilTest {
 
 	@Test
 	public void testConcatWithSingleObservable() {
-		List<Observable<Integer>> l = Collections.singletonList(Observable.just(1,2,3));
+		List<Observable<Integer>> l = Collections.singletonList(Observable.just(1, 2, 3));
 
 		int count = testCountingObservable(RxUtil.concatList(l));
 
@@ -90,20 +88,22 @@ public class RxUtilTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testConcatWithListWithNulls() {
-		List<Observable<Integer>> l = Arrays.asList(Observable.just(1,2,3), null, Observable.just(4,5,6));
+		List<Observable<Integer>> l = Arrays.asList(Observable.just(1, 2, 3), null, Observable.just(4, 5, 6));
 
 		RxUtil.concatList(l).toBlocking().last();
 	}
 
 	/**
 	 * Checks if the given observable counts from 1 in the correct order.
-	 * @param counting The observable to check for
+	 * 
+	 * @param counting
+	 *            The observable to check for
 	 * @return How many numbers have been emitted.
-     */
+	 */
 	private int testCountingObservable(Observable<Integer> counting) {
 		AtomicInteger counter = new AtomicInteger(1);
 		counting.toBlocking().forEach(i -> {
-			assertEquals(counter.getAndIncrement(), (int)i);
+			assertEquals(counter.getAndIncrement(), (int) i);
 		});
 		return counter.get() - 1;
 	}
