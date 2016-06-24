@@ -13,8 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-
-import io.vertx.ext.web.Route;
+import com.gentics.mesh.rest.Endpoint;
 
 @Component
 @Scope("singleton")
@@ -30,7 +29,10 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/*");
+		endpoint.handler(getSpringConfiguration().authHandler());
+
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
@@ -40,7 +42,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadPermissionHandler() {
-		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
+		endpoint.method(GET);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String userUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
@@ -49,7 +55,11 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandler() {
-		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readEndpoint = createEndpoint();
+		readEndpoint.path("/:uuid");
+		readEndpoint.method(GET);
+		readEndpoint.produces(APPLICATION_JSON);
+		readEndpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleRead(ac, uuid);
@@ -58,13 +68,21 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		/*
 		 * List all users when no parameter was specified
 		 */
-		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readAllEndpoint = createEndpoint();
+		readAllEndpoint.path("/");
+		readAllEndpoint.method(GET);
+		readAllEndpoint.produces(APPLICATION_JSON);
+		readAllEndpoint.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(DELETE);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -72,8 +90,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(PUT);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -81,8 +103,12 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addCreateHandler() {
-		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/");
+		endpoint.method(POST);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}

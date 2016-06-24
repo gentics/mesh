@@ -2,6 +2,9 @@ package com.gentics.mesh.core;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +12,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
@@ -24,6 +28,8 @@ import io.vertx.ext.web.Router;
 public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractWebVerticle.class);
+
+	private List<Endpoint> endpoints = new ArrayList<>();
 
 	protected Router localRouter = null;
 	protected String basePath;
@@ -128,6 +134,20 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	protected Route route() {
 		Route route = getRouter().route();
 		return route;
+	}
+
+	protected Endpoint createEndpoint() {
+		Endpoint endpoint = new Endpoint(getRouter());
+		endpoints.add(endpoint);
+		return endpoint;
+	}
+
+	public List<Endpoint> getEndpoints() {
+		return endpoints;
+	}
+
+	public String getBasePath() {
+		return basePath;
 	}
 
 }
