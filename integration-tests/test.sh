@@ -1,5 +1,10 @@
 #!/bin/bash
 
+SCRIPT="`readlink -f $0`" 
+BASEDIR="`dirname "$SCRIPT"`"
+
+cd $BASEDIR
+
 # define some colors to use for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
