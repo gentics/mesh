@@ -59,7 +59,6 @@ public class HtmlGraphFieldTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testHtmlFieldTransformation() throws Exception {
-		setupData();
 		Node node = folder("2015");
 
 		// Add html field schema to the schema
