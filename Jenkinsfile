@@ -108,12 +108,11 @@ node('dockerSlave') {
 	stage 'Deploy/Push'
 	if (!Boolean.valueOf(skipDeploy)) {
 
-		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
-			sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD'
-		}
-
 		withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
-			sh "captain push"
+			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
+				sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD -e entwicklung@genitcs.com'
+				sh "captain push"
+			}
 		}
 		sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 			sh "${mvnHome}/bin/mvn -B -DskipTests clean deploy"
