@@ -1,9 +1,9 @@
 properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
 [$class: 'BooleanParameterDefinition', name: 'skipTests', defaultValue: false],
 [$class: 'BooleanParameterDefinition', name: 'skipDocker', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'skipReleaseBuild', defaultValue: false]
-[$class: 'BooleanParameterDefinition', name: 'skipIntegrationTests', defaultValue: false]
-[$class: 'BooleanParameterDefinition', name: 'skipPerformanceTests', defaultValue: false]
+[$class: 'BooleanParameterDefinition', name: 'skipReleaseBuild', defaultValue: false],
+[$class: 'BooleanParameterDefinition', name: 'skipIntegrationTests', defaultValue: false],
+[$class: 'BooleanParameterDefinition', name: 'skipPerformanceTests', defaultValue: false],
 [$class: 'BooleanParameterDefinition', name: 'skipDeploy', defaultValue: false]
 ]]])
 
