@@ -1,8 +1,8 @@
 package com.gentics.mesh.util;
 
-import org.junit.Test;
-import rx.Observable;
-import rx.subjects.BehaviorSubject;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +12,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import rx.Observable;
+import rx.subjects.BehaviorSubject;
 
 public class RxUtilTest {
 
