@@ -13,6 +13,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -33,7 +36,7 @@ public class MicroschemaContainerVersionImpl
 		implements MicroschemaContainerVersion {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(MicroschemaContainerVersionImpl.class);
+		database.addVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

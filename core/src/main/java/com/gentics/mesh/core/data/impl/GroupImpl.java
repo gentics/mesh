@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -45,7 +46,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	public static final String NAME_KEY = "name";
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(GroupImpl.class);
+		database.addVertexType(GroupImpl.class, MeshVertexImpl.class);
 	}
 
 	public GroupReference createEmptyReferenceModel() {

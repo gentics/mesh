@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -34,7 +35,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	}
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(SchemaContainerImpl.class);
+		database.addVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

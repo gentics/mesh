@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -66,7 +67,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	public static void checkIndices(Database database) {
 		// TODO index to name + unique constraint
-		database.addVertexType(ProjectImpl.class);
+		database.addVertexType(ProjectImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

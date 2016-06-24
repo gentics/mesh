@@ -29,7 +29,7 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	private static final String CUSTOM_PREFIX = "custom_";
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(SearchQueueEntryImpl.class);
+		database.addVertexType(SearchQueueEntryImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

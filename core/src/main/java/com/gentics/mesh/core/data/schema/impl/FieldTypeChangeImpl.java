@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -31,7 +32,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements FieldTypeChange {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(FieldTypeChangeImpl.class);
+		database.addVertexType(FieldTypeChangeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

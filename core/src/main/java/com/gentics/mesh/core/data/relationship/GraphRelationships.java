@@ -72,6 +72,9 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_LATEST_VERSION);
 			db.addEdgeType(HAS_PARENT_CONTAINER);
 			db.addEdgeType(HAS_SCHEMA_CONTAINER_VERSION);
+
+			// Changelog
+			db.addEdgeIndex(HAS_CHANGELOG_ROOT);
 			return null;
 		});
 
@@ -154,5 +157,8 @@ public class GraphRelationships {
 	public static final String HAS_VERSION = "HAS_VERSION";
 	public static final String HAS_CHANGE = "HAS_CHANGE";
 	public static final String HAS_LATEST_VERSION = "HAS_LATEST_VERSION";
+
+	// Changelog system
+	private static final String HAS_CHANGELOG_ROOT = "HAS_CHANGELOG_ROOT";
 
 }

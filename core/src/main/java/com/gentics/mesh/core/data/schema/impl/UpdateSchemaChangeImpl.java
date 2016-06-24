@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SE
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -21,7 +22,7 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 		implements UpdateSchemaChange {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(UpdateSchemaChangeImpl.class);
+		database.addVertexType(UpdateSchemaChangeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

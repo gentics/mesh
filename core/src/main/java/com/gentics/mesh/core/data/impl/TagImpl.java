@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -67,7 +68,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(TagImpl.class);
+		database.addVertexType(TagImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

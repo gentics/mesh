@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -62,7 +63,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(TagFamilyImpl.class);
+		database.addVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

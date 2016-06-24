@@ -35,7 +35,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	 * @param database
 	 */
 	public static void checkIndices(Database database) {
-		database.addVertexType(SearchQueueBatchImpl.class);
+		database.addVertexType(SearchQueueBatchImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

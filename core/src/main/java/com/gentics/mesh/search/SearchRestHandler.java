@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +42,9 @@ import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -113,7 +117,8 @@ public class SearchRestHandler {
 		try {
 			JSONObject queryStringObject = new JSONObject(searchQuery);
 			/**
-			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more efficient ways to do deep scrolling.
+			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
+			 * efficient ways to do deep scrolling.
 			 */
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
@@ -129,8 +134,6 @@ public class SearchRestHandler {
 			@Override
 			public void onResponse(SearchResponse response) {
 				db.noTrx(() -> {
-					rootVertex.reload();
-
 					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
 					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 
@@ -163,7 +166,7 @@ public class SearchRestHandler {
 
 					Observable.merge(obs).collect(() -> {
 						return new ArrayList<Tuple<T, String>>();
-					} , (x, y) -> {
+					}, (x, y) -> {
 						// Check permissions and language
 						if (y != null && requestUser.hasPermissionSync(ac, y.v1(), permission)
 								&& (y.v2() == null || requestedLanguageTags.contains(y.v2()))) {
@@ -202,15 +205,15 @@ public class SearchRestHandler {
 						// Populate the response data with the transformed elements and send the response
 						RxUtil.concatList(transformedElements).collect(() -> {
 							return listResponse.getData();
-						} , (x, y) -> {
+						}, (x, y) -> {
 							x.add(y);
 						}).subscribe(itemList -> {
 							ac.send(JsonUtil.toJson(listResponse), OK);
-						} , error -> {
+						}, error -> {
 							ac.fail(error);
 						});
 
-					} , error -> {
+					}, error -> {
 						log.error("Error while processing search response items", error);
 						ac.fail(error);
 					});

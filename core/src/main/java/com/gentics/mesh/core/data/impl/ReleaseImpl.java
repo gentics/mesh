@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -39,6 +40,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import rx.Observable;
 
 public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release> implements Release {
+
 	public static final String UNIQUENAME_PROPERTY_KEY = "uniqueName";
 
 	public static final String UNIQUENAME_INDEX_NAME = "uniqueReleaseNameIndex";
@@ -48,7 +50,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	public static final String MIGRATED_PROPERTY_KEY = "migrated";
 
 	public static void init(Database database) {
-		database.addVertexType(ReleaseImpl.class);
+		database.addVertexType(ReleaseImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(UNIQUENAME_INDEX_NAME, ReleaseImpl.class, true, UNIQUENAME_PROPERTY_KEY);
 	}
 

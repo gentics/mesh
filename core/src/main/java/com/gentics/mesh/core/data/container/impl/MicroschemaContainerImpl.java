@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -33,7 +33,7 @@ public class MicroschemaContainerImpl
 	}
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(MicroschemaContainerImpl.class);
+		database.addVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

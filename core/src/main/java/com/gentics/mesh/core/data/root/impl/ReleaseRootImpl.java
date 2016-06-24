@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -45,7 +46,7 @@ import rx.Observable;
 public class ReleaseRootImpl extends AbstractRootVertex<Release> implements ReleaseRoot {
 
 	public static void init(Database database) {
-		database.addVertexType(ReleaseRootImpl.class);
+		database.addVertexType(ReleaseRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

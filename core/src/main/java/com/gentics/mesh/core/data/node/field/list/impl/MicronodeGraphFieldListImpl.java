@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
@@ -37,7 +38,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		implements MicronodeGraphFieldList {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(MicronodeGraphFieldListImpl.class);
+		database.addVertexType(MicronodeGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

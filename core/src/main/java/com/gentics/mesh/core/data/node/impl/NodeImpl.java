@@ -50,6 +50,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
@@ -114,7 +115,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(NodeImpl.class);
+		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -37,7 +39,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(SchemaContainerVersionImpl.class);
+		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

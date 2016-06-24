@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
@@ -22,7 +23,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		implements StringGraphFieldList {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(StringGraphFieldListImpl.class);
+		database.addVertexType(StringGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

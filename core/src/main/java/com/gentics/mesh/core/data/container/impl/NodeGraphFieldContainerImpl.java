@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
@@ -76,7 +77,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(NodeGraphFieldContainerImpl.class);
+		database.addVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, WEBROOT_PROPERTY_KEY);
 		database.addVertexIndex(PUBLISHED_WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, PUBLISHED_WEBROOT_PROPERTY_KEY);
 	}

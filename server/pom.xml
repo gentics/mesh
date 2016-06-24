@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.6.17</version>
+		<version>0.6.18</version>
 	</parent>
 
 	<properties>
@@ -37,46 +37,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>io.fabric8</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<configuration>
-					<skip>${docker.skip}</skip>
-					<dockerHost>${dockerHostProtocol}://${dockerHost}:2375</dockerHost>
-					<images>
-						<image>
-							<name>gentics/mesh</name>
-							<build>
-								<tags>
-									<tag>${docker.tag}</tag>
-									<tag>${project.version}</tag>
-								</tags>
-								<assembly>
-									<mode>dir</mode>
-									<basedir>/opt/mesh</basedir>
-									<dockerFileDir>mesh</dockerFileDir>
-									<descriptor>docker-assembly.xml</descriptor>
-								</assembly>
-							</build>
-						</image>
-					</images>
-					<authConfig>
-						<username>${dockerhub.username}</username>
-						<password>${dockerhub.password}</password>
-					</authConfig>
-				</configuration>
-				<executions>
-					<execution>
-						<id>docker-build</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>build</goal>
-							<goal>push</goal>
-							<goal>remove</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>

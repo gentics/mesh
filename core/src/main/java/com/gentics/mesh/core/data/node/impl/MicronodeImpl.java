@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -50,7 +51,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(MicronodeImpl.class);
+		database.addVertexType(MicronodeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
