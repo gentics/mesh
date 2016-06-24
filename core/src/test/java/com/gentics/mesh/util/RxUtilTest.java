@@ -6,17 +6,19 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
-@Ignore
 public class RxUtilTest {
 
 	@Test
@@ -67,5 +69,42 @@ public class RxUtilTest {
 
 		assertTrue("RxUtil.concatList should be completed", completed.get());
 		assertEquals("All elements should be emitted", 10, expectedNumber.get());
+	}
+
+	@Test
+	public void testConcatWithEmptyList() {
+		List<Observable<Object>> l = Collections.emptyList();
+		int count = RxUtil.concatList(l).count().timeout(2, TimeUnit.SECONDS).toBlocking().single();
+
+		assertEquals("Empty list should return 0 elements", 0, count);
+	}
+
+	@Test
+	public void testConcatWithSingleObservable() {
+		List<Observable<Integer>> l = Collections.singletonList(Observable.just(1,2,3));
+
+		int count = testCountingObservable(RxUtil.concatList(l));
+
+		assertEquals("It should emit 3 numbers", 3, count);
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testConcatWithListWithNulls() {
+		List<Observable<Integer>> l = Arrays.asList(Observable.just(1,2,3), null, Observable.just(4,5,6));
+
+		RxUtil.concatList(l).toBlocking().last();
+	}
+
+	/**
+	 * Checks if the given observable counts from 1 in the correct order.
+	 * @param counting The observable to check for
+	 * @return How many numbers have been emitted.
+     */
+	private int testCountingObservable(Observable<Integer> counting) {
+		AtomicInteger counter = new AtomicInteger(1);
+		counting.toBlocking().forEach(i -> {
+			assertEquals(counter.getAndIncrement(), (int)i);
+		});
+		return counter.get() - 1;
 	}
 }
