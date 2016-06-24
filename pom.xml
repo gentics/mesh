@@ -43,7 +43,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.2.5</version>
+		<version>3.3.0-SNAPSHOT</version>
 	</parent>
 
 	<developers>
@@ -273,6 +273,7 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		<!-- 
 		<repository>
 			<id>sonatype-nexus-snapshots</id>
 			<name>Sonatype Nexus Snapshots</name>
@@ -281,6 +282,7 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		 -->
 	</repositories>
 
 	<pluginRepositories>

@@ -3,7 +3,7 @@ package com.gentics.mesh.auth;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthHandler;
@@ -11,13 +11,11 @@ import io.vertx.ext.web.handler.impl.JWTAuthHandlerImpl;
 
 /**
  * This class extends the vertx JWTAuthHandler, so that it also works when the token is set as a cookie.
- * @author philippguertler
- *
  */
-public class MeshJWTAuthHandler extends JWTAuthHandlerImpl{
+public class MeshJWTAuthHandler extends JWTAuthHandlerImpl {
 
-	public MeshJWTAuthHandler(AuthProvider authProvider) {
-		super(authProvider, null);
+	public MeshJWTAuthHandler(JWTAuth authProvider) {
+		super(authProvider ,null);
 	}
 
 	@Override
@@ -29,7 +27,7 @@ public class MeshJWTAuthHandler extends JWTAuthHandlerImpl{
 		super.handle(context);
 	}
 
-	public static AuthHandler create(MeshAuthProvider authProvider) {
+	public static AuthHandler create(JWTAuth authProvider) {
 		return new MeshJWTAuthHandler(authProvider);
 	}
 }

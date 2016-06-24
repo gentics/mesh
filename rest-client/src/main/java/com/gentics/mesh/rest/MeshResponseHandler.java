@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest;
 
 import com.gentics.mesh.core.rest.error.AbstractRestException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.http.HttpConstants;
@@ -109,7 +110,11 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 						log.debug("Could not deserialize response {" + json + "}.", e);
 					}
 				}
-				future.fail(responseMessage);
+				if (responseMessage == null) {
+					future.fail(new GenericRestException(HttpResponseStatus.valueOf(response.statusCode()), json));
+				} else {
+					future.fail(responseMessage);
+				}
 			});
 		}
 		if (handler != null) {

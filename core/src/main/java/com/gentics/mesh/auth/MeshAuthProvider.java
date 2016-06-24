@@ -18,12 +18,14 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.auth.jwt.JWTOptions;
 
 /**
  * Mesh auth provider
  */
 @Component
-public class MeshAuthProvider implements AuthProvider {
+public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshAuthProvider.class);
 
@@ -79,5 +81,11 @@ public class MeshAuthProvider implements AuthProvider {
 			return null;
 		}).subscribe();
 
+	}
+
+	@Override
+	public String generateToken(JsonObject claims, JWTOptions options) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

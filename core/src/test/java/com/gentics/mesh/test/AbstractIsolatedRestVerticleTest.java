@@ -96,7 +96,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 		JsonObject config = new JsonObject();
 		config.put("port", port);
-		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", config, Thread.currentThread().getContextClassLoader());
+		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", null, config, Thread.currentThread().getContextClassLoader());
 
 		CountDownLatch latch = new CountDownLatch(getVertices().size());
 
