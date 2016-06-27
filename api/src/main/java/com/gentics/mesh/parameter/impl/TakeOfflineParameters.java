@@ -25,4 +25,9 @@ public class TakeOfflineParameters extends AbstractParameters {
 		return BooleanUtils.toBooleanDefaultIfNull(Boolean.valueOf(getParameter(RECURSIVE_PARAMETER_KEY)), false);
 	}
 
+	@Override
+	public void validate() {
+		// TODO validate query parameter value
+	}
+
 }

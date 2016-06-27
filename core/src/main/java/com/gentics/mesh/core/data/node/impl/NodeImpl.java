@@ -520,12 +520,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		NodeParameters nodeParameters = new NodeParameters(ac);
-		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
 		try {
+			NodeParameters nodeParameters = ac.getNodeParameters();
+			VersioningParameters versioiningParameters = ac.getVersioningParameters();
+
 			Set<Observable<NodeResponse>> obs = new HashSet<>();
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();

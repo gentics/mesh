@@ -15,6 +15,7 @@ public abstract class AbstractParameters implements ParameterProvider {
 
 	public AbstractParameters(ActionContext ac) {
 		this(ac.getParameters());
+		validate();
 	}
 
 	public AbstractParameters(MultiMap parameters) {

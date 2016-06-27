@@ -37,4 +37,9 @@ public class RolePermissionParameters extends AbstractParameters {
 		return getParameter(ROLE_PERMISSION_QUERY_PARAM_KEY);
 	}
 
+	@Override
+	public void validate() {
+		// Not needed
+	}
+
 }

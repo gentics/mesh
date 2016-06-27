@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.language;
 
+import static com.gentics.mesh.test.StopWatch.stopWatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
@@ -11,11 +13,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.tinkerpop.blueprints.Vertex;
 
 public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 
@@ -38,6 +43,22 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 
 			int nLanguagesAfter = languageRoot.findAll().size();
 			assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
+		}
+	}
+
+	@Test
+	public void testLanguageIndex() {
+		try (NoTrx noTx = db.noTrx()) {
+			stopWatch(50000, () -> {
+				Iterable<Vertex> it = Database.getThreadLocalGraph().getVertices("LanguageImpl.languageTag", "en");
+				assertTrue(it.iterator().hasNext());
+				Iterable<Vertex> it2 = Database.getThreadLocalGraph()
+						.getVertices(LanguageImpl.class.getSimpleName() + "." + LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY, "en");
+				assertTrue(it2.iterator().hasNext());
+				Vertex vertex = it2.iterator().next();
+				assertNotNull("The language node with languageTag 'en' could not be found.", vertex);
+				assertEquals("en", vertex.getProperty(LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY));
+			});
 		}
 	}
 

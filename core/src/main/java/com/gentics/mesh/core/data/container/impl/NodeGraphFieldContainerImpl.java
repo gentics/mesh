@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VER
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -197,7 +198,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					webRootInfo.toString());
 			if (conflictingContainer != null) {
 				Node conflictingNode = conflictingContainer.getParentNode();
-				throw conflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictI18n, segmentFieldName, segment);
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage().getLanguageTag(), conflictI18n, segmentFieldName, segment);
 			}
 
 			setProperty(propertyName, webRootInfo.toString());

@@ -162,4 +162,8 @@ public class PagingParameters extends AbstractParameters {
 		return SortOrder.valueOfName(getParameter(SORT_ORDER_PARAMETER_KEY));
 	}
 
+	@Override
+	public void validate() {
+	}
+
 }

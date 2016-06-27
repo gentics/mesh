@@ -47,6 +47,30 @@ public enum Errors {
 	}
 
 	/**
+	 * Create a new http conflict exception.
+	 * 
+	 * @param conflictingUuid
+	 *            Uuid of the object which was part of the conflict
+	 * @param conflictingName
+	 *            Name field value which caused the conflict
+	 * @param conflictingLanguage
+	 *            Language which caused the conflict
+	 * @param i18nMessageKey
+	 *            I18n key
+	 * @param parameters
+	 *            I18n message parameters
+	 * @return
+	 */
+	public static NameConflictException nodeConflict(String conflictingUuid, String conflictingName, String conflictingLanguage,
+			String i18nMessageKey, String... parameters) {
+		NameConflictException error = new NameConflictException(i18nMessageKey, parameters);
+		error.setProperty("conflictingUuid", conflictingUuid);
+		error.setProperty("conflictingName", conflictingName);
+		error.setProperty("conflictingLanguage", conflictingLanguage);
+		return error;
+	}
+
+	/**
 	 * Create a i18n translated error exception.
 	 * 
 	 * @param status

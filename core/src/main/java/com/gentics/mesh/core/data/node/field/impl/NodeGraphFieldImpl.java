@@ -44,7 +44,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	public Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		// TODO handle null across all types
 		//if (getNode() != null) {
-		NodeParameters parameters = new NodeParameters(ac);
+		NodeParameters parameters = ac.getNodeParameters();
 		boolean expandField = ac.getNodeParameters().getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			return getNode().transformToRestSync(ac, level, languageTags.toArray(new String[languageTags.size()]));

@@ -60,4 +60,9 @@ public class NavigationParameters extends AbstractParameters {
 		return this;
 	}
 
+	@Override
+	public void validate() {
+		// TODO Auto-generated method stub
+	}
+
 }

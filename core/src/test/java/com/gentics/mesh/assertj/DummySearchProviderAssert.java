@@ -14,13 +14,20 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 
 	public DummySearchProviderAssert recordedStoreEvents(int count) {
 		isNotNull();
-		assertEquals("The search provider did not record the correct amount of store events.", count, actual.getStoreEvents().size());
+		String info = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + info + "\n}", count,
+				actual.getStoreEvents().size());
 		return this;
 	}
 
 	public DummySearchProviderAssert recordedDeleteEvents(int count) {
 		isNotNull();
-		assertEquals("The search provider did not record the correct amount of delete events.", count, actual.getDeleteEvents().size());
+		String info = actual.getDeleteEvents().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		int found = actual.getDeleteEvents().size();
+		if (found != count) {
+			failWithMessage("The search provider did not record the correct amount {%s} of delete events. Found {%s} events: {\n" + info + "\n}",
+					count, found);
+		}
 		return this;
 	}
 }

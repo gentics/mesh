@@ -74,4 +74,9 @@ public class VersioningParameters extends AbstractParameters {
 		return getParameter(RELEASE_QUERY_PARAM_KEY);
 	}
 
+	@Override
+	public void validate() {
+		//TODO validate version pattern and release parameter value
+	}
+
 }

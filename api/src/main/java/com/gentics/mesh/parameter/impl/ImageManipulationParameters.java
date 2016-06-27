@@ -161,6 +161,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	/**
 	 * * Validate the set parameters and throw an exception when an invalid set of parameters has been detected.
 	 */
+	@Override
 	public void validate() {
 		Integer width = getWidth();
 		if (width != null && width < 1) {

@@ -1,9 +1,14 @@
 package com.gentics.mesh.parameter.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 
 public class NodeParameters extends AbstractParameters {
@@ -22,25 +27,6 @@ public class NodeParameters extends AbstractParameters {
 
 	public NodeParameters() {
 		super();
-	}
-
-	//	@Override
-	protected void constructFrom() {
-
-		// // check whether given language tags exist
-		// Database db = MeshSpringConfiguration.getInstance().database();
-		// try (NoTrx noTrx = db.noTrx()) {
-		// for (String languageTag : languageTags) {
-		// if (languageTag != null) {
-		// Iterator<Vertex> it = db.getVertices(LanguageImpl.class, new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY },
-		// new Object[] { languageTag });
-		// if (!it.hasNext()) {
-		// throw error(BAD_REQUEST, "error_language_not_found", languageTag);
-		// }
-		// }
-		// }
-		// }
-
 	}
 
 	/**
@@ -134,6 +120,19 @@ public class NodeParameters extends AbstractParameters {
 	public NodeParameters setResolveLinks(LinkType type) {
 		setParameter(RESOLVE_LINKS_QUERY_PARAM_KEY, type.name().toLowerCase());
 		return this;
+	}
+
+	@Override
+	public void validate() {
+		// Check whether all given language tags exist
+
+		// try (NoTrx noTrx = db.noTrx()) {
+		for (String languageTag : getLanguages()) {
+			Iterator<?> it = Database.getThreadLocalGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
+			if (!it.hasNext()) {
+				throw error(BAD_REQUEST, "error_language_not_found", languageTag);
+			}
+		}
 	}
 
 }
