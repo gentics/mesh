@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -101,21 +102,16 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 				log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {" + json
 						+ "} for method {" + this.method + "} and uri {" + this.uri + "}");
 
-				AbstractRestException responseMessage = null;
 				try {
-					responseMessage = JsonUtil.readValue(json, AbstractRestException.class);
-					responseMessage.setStatus(HttpResponseStatus.valueOf(response.statusCode()));
-					responseMessage.setTranslatedMessage(responseMessage.getI18nKey());
+					GenericMessageResponse responseMessage = JsonUtil.readValue(json, GenericMessageResponse.class);
+					future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage(), responseMessage));
+					return;
 				} catch (Exception e) {
 					if (log.isDebugEnabled()) {
 						log.debug("Could not deserialize response {" + json + "}.", e);
 					}
 				}
-				if (responseMessage == null) {
-					future.fail(new GenericRestException(HttpResponseStatus.valueOf(response.statusCode()), json));
-				} else {
-					future.fail(responseMessage);
-				}
+				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage()));
 			});
 		}
 		if (handler != null) {

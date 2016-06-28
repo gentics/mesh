@@ -57,6 +57,7 @@ import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.MeshRestClient;
+import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -509,9 +510,9 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		assertTrue("We expected the future to have failed but it succeeded.", future.failed());
 		assertNotNull("No failure cause could be found within the provided future.", future.cause());
 
-		if (future.cause() instanceof AbstractRestException) {
-			AbstractRestException exception = ((AbstractRestException) future.cause());
-			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatus().code());
+		if (future.cause() instanceof MeshRestClientHttpException) {
+			MeshRestClientHttpException exception = ((MeshRestClientHttpException) future.cause());
+			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatusCode());
 			assertEquals(message, exception.getMessage());
 		} else {
 			future.cause().printStackTrace();

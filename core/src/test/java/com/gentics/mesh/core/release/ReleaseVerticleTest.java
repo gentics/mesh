@@ -44,6 +44,7 @@ import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
@@ -347,9 +348,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			ListResponse<ReleaseResponse> responseList = call(() -> getClient().findReleases(project.getName()));
 
-			RoutingContext rc = getMockedRoutingContext();
-			InternalActionContext ac = InternalActionContext.create(rc);
-
+			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 			assertThat(responseList).isNotNull();
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
 					initialRelease.transformToRestSync(ac, 0).toBlocking().single(), secondRelease.transformToRestSync(ac, 0).toBlocking().single());

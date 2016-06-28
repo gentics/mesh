@@ -13,6 +13,10 @@ public class MeshRestClientHttpException extends Exception {
 
 	private GenericMessageResponse responseMessage;
 
+	public MeshRestClientHttpException(int statusCode, String statusMessage) {
+		this(statusCode, statusMessage, null);
+	}
+
 	public MeshRestClientHttpException(int statusCode, String statusMessage, GenericMessageResponse responseMessage) {
 		super(statusMessage);
 		this.statusCode = statusCode;
@@ -25,6 +29,11 @@ public class MeshRestClientHttpException extends Exception {
 
 	public GenericMessageResponse getResponseMessage() {
 		return responseMessage;
+	}
+
+	@Override
+	public String getMessage() {
+		return responseMessage.getMessage();
 	}
 
 }
