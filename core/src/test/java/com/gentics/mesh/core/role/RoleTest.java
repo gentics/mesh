@@ -159,7 +159,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Role role = role();
 			Node node = content("news overview");
-			assertEquals(4, role.getPermissions(node).size());
+			assertEquals(6, role.getPermissions(node).size());
 		}
 	}
 
@@ -226,7 +226,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			assertEquals(0, requestUser.getPermissions(ac, node).size());
 			requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 			ac.data().clear();
-			assertEquals(4, requestUser.getPermissions(ac, node).size());
+			assertEquals(6, requestUser.getPermissions(ac, node).size());
 
 			try (Trx tx = db.trx()) {
 				for (Role role : roles().values()) {
