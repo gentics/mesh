@@ -49,6 +49,11 @@ public interface ActionContext {
 	 */
 	String getParameter(String name);
 
+	/**
+	 * Returns the action context request parameters.
+	 * 
+	 * @return
+	 */
 	MultiMap getParameters();
 
 	/**
@@ -141,7 +146,5 @@ public interface ActionContext {
 	 * Perform a logout.
 	 */
 	void logout();
-
-
 
 }

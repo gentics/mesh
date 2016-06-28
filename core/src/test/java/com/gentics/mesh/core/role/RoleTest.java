@@ -214,10 +214,12 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(parentNode);
 
 			parentNode.reload();
-			// Also assign create permissions on the parent object to other roles
+			// Grant all permissions to all roles
 			for (Role role : roles().values()) {
 				role.reload();
-				role.grantPermissions(parentNode, CREATE_PERM);
+				for (GraphPermission perm : GraphPermission.values()) {
+					role.grantPermissions(parentNode, perm);
+				}
 			}
 
 			RoutingContext rc = getMockedRoutingContext();

@@ -453,7 +453,7 @@ public final class Mocks {
 		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
 		MultiMap paramMultiMap = MultiMap.caseInsensitiveMultiMap();
 		for (Entry<String, String> entry : paramMap.entrySet()) {
-			paramMap.put(entry.getKey(), entry.getValue());
+			paramMultiMap.add(entry.getKey(), entry.getValue());
 		}
 		when(request.params()).thenReturn(paramMultiMap);
 		when(request.getParam(Mockito.anyString())).thenAnswer(in -> {

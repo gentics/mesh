@@ -48,6 +48,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -148,8 +149,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTrx noTx = db.noTrx()) {
-			RoutingContext rc = getMockedRoutingContext("version=draft");
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = Mocks.getMockedInternalActionContext("version=draft", user());
 			PageImpl<? extends Node> page = boot.nodeRoot().findAll(ac, new PagingParameters(1, 10));
 
 			assertEquals(getNodeCount(), page.getTotalElements());
@@ -166,11 +166,12 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node newsNode = content("news overview");
 			Language german = german();
-			RoutingContext rc = getMockedRoutingContext("lang=de,en&version=draft");
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = Mocks.getMockedInternalActionContext("lang=de,en&version=draft", user());
+			assertThat(ac.getNodeParameters().getLanguages()).containsExactly("de", "en");
 			NodeGraphFieldContainer germanFields = newsNode.getGraphFieldContainer(german);
-			assertEquals(germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField()).getString(),
-					newsNode.getDisplayName(ac));
+			String expectedDisplayName = germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField())
+					.getString();
+			assertEquals("The display name value did not match up", expectedDisplayName, newsNode.getDisplayName(ac));
 			// TODO add some fields
 		}
 	}

@@ -124,9 +124,7 @@ public class NodeParameters extends AbstractParameters {
 
 	@Override
 	public void validate() {
-		// Check whether all given language tags exist
-
-		// try (NoTrx noTrx = db.noTrx()) {
+		// Check whether all given language tags exists
 		for (String languageTag : getLanguages()) {
 			Iterator<?> it = Database.getThreadLocalGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
 			if (!it.hasNext()) {
