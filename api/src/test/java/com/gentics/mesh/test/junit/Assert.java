@@ -17,7 +17,7 @@ public class Assert extends org.junit.Assert {
 	public static void assertException(GenericRestException exception, HttpResponseStatus status, String bodyMessageI18nKey,
 			String... i18nParams) {
 		assertEquals("The http status code did not match the expected one.", status, exception.getStatus());
-		assertEquals("The i18n message was not correct", bodyMessageI18nKey, exception.getMessage());
+		assertEquals("The i18n message was not correct", bodyMessageI18nKey, exception.getI18nKey());
 		assertArrayEquals("The i18n parameters did not match the expected values", i18nParams, exception.getI18nParameters());
 	}
 
