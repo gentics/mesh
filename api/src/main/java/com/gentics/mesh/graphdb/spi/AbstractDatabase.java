@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.TransactionContextScheduler;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Vertx;
@@ -97,7 +98,6 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Observable<T> asyncNoTrx(TrxHandler<T> txHandler) {
-
 		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
 		Observable<T> obs = Observable.create(sub -> {
 			try {
@@ -130,7 +130,12 @@ public abstract class AbstractDatabase implements Database {
 				bc.fail(e);
 			}
 
-		} , false, obsFut.toHandler());
+		}, false, obsFut.toHandler());
 		return obsFut;
+	}
+
+	@Override
+	public TransactionContextScheduler noTx() {
+		return new TransactionContextScheduler(vertx, false, this);
 	}
 }

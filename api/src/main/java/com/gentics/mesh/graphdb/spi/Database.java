@@ -8,6 +8,7 @@ import java.util.Iterator;
 
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.TransactionContextScheduler;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
@@ -251,9 +252,13 @@ public interface Database {
 
 	/**
 	 * Check whether the value can be put into the given index for a new element of given class
-	 * @param indexName index name
-	 * @param classOfT class of the proposed new element
-	 * @param key index key to check
+	 * 
+	 * @param indexName
+	 *            index name
+	 * @param classOfT
+	 *            class of the proposed new element
+	 * @param key
+	 *            index key to check
 	 * @return the conflicting element or null if no conflict exists
 	 */
 	<T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key);
@@ -270,7 +275,8 @@ public interface Database {
 	 * Create a new vertex type for the given vertex class type.
 	 * 
 	 * @param clazzOfVertex
-	 * @param superClazzOfVertex Super vertex type. If null "V" will be used.
+	 * @param superClazzOfVertex
+	 *            Super vertex type. If null "V" will be used.
 	 */
 	void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex);
 
@@ -285,5 +291,7 @@ public interface Database {
 	void setVertexType(Element element, Class<?> classOfVertex);
 
 	TransactionalGraph rawTx();
+
+	TransactionContextScheduler noTx();
 
 }
