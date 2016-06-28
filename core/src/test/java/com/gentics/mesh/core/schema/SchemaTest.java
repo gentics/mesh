@@ -35,7 +35,7 @@ public class SchemaTest {
 			container.validate();
 			fail("No exception was thrown but we would expect a {" + bodyMessageI18nKey + "} error.");
 		} catch (GenericRestException e) {
-			assertEquals("The exception did not contain the expected message.", bodyMessageI18nKey, e.getMessage());
+			assertEquals("The exception did not contain the expected message.", bodyMessageI18nKey, e.getI18nKey());
 			assertArrayEquals(i18nParams, e.getI18nParameters());
 			// Lets check english translation
 			Locale en = Locale.ENGLISH;
