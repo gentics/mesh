@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Stack;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -85,7 +85,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            type
 	 * @return
 	 */
-	NodeGraphFieldContainer getGraphFieldContainer(Language language, Release release, Type type);
+	NodeGraphFieldContainer getGraphFieldContainer(Language language, Release release, ContainerType type);
 
 	/**
 	 * Return the draft field container for the given language in the latest release
@@ -103,7 +103,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, String releaseUuid, Type type);
+	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, String releaseUuid, ContainerType type);
 
 	/**
 	 * Create a new graph field container for the given language and assign the schema version of the release to the container. The graph field container will
@@ -151,7 +151,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, Type type);
+	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, ContainerType type);
 
 	/**
 	 * Return a list of graph field containers of given type for the node in the given release
@@ -160,7 +160,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, Type type);
+	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type);
 
 	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any release
@@ -197,7 +197,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            container version type
 	 * @return
 	 */
-	List<String> getAvailableLanguageNames(Release release, Type type);
+	List<String> getAvailableLanguageNames(Release release, ContainerType type);
 
 	/**
 	 * Return the project of the node.
@@ -239,7 +239,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            edge type
 	 * @return
 	 */
-	List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, Type type);
+	List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, ContainerType type);
 
 	/**
 	 * Returns the parent node of this node.
@@ -292,7 +292,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, Type type,
+	PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
 			PagingParameters pagingParameter) throws InvalidArgumentException;
 
 	/**
@@ -436,7 +436,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param pathStack
 	 * @return
 	 */
-	Observable<Path> resolvePath(String releaseUuid, Type type, Path nodePath, Stack<String> pathStack);
+	Observable<Path> resolvePath(String releaseUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
 
 	/**
 	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
@@ -449,7 +449,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @return Segment information or null if this node is not providing the given segment
 	 */
-	PathSegment getSegment(String releaseUuid, Type type, String segment);
+	PathSegment getSegment(String releaseUuid, ContainerType type, String segment);
 
 	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
@@ -464,7 +464,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 * @throws UnsupportedEncodingException
 	 */
-	Observable<String> getPath(String releaseUuid, Type type, String... languageTag) throws UnsupportedEncodingException;
+	Observable<String> getPath(String releaseUuid, ContainerType type, String... languageTag) throws UnsupportedEncodingException;
 
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
@@ -478,7 +478,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	Observable<String> getPathSegment(String releaseUuid, Type type, String... languageTag);
+	Observable<String> getPathSegment(String releaseUuid, ContainerType type, String... languageTag);
 
 	/**
 	 * Delete the node and ignore any checks.

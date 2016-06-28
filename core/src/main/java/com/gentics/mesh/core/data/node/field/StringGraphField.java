@@ -5,7 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Arrays;
 
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -34,7 +34,7 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 					if (project == null) {
 						project = parentNode.getProject();
 					}
-					stringField.setString(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersioningParameters().getVersion()),
+					stringField.setString(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
 							stringField.getString(), ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
 				}
 				return stringField;

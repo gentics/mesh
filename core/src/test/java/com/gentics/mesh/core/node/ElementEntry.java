@@ -3,7 +3,7 @@ package com.gentics.mesh.core.node;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 
 /***
@@ -16,7 +16,7 @@ public class ElementEntry {
 	private SearchQueueEntryAction action;
 	private String projectUuid;
 	private String releaseUuid;
-	private Type type;
+	private ContainerType type;
 
 	/**
 	 * Create a new entry
@@ -27,7 +27,7 @@ public class ElementEntry {
 	 * @param type
 	 * @param languages
 	 */
-	public ElementEntry(SearchQueueEntryAction action, String uuid, String projectUuid, String releaseUuid, Type type, List<String> languages) {
+	public ElementEntry(SearchQueueEntryAction action, String uuid, String projectUuid, String releaseUuid, ContainerType type, List<String> languages) {
 		this.action = action;
 		this.uuid = uuid;
 		this.projectUuid = projectUuid;
@@ -45,7 +45,7 @@ public class ElementEntry {
 	 * @param type
 	 * @param languages
 	 */
-	public ElementEntry(SearchQueueEntryAction action, String uuid, String projectUuid, String releaseUuid, Type type, String... languages) {
+	public ElementEntry(SearchQueueEntryAction action, String uuid, String projectUuid, String releaseUuid, ContainerType type, String... languages) {
 		this(action, uuid, projectUuid, releaseUuid, type, Arrays.asList(languages));
 	}
 
@@ -91,7 +91,7 @@ public class ElementEntry {
 		return releaseUuid;
 	}
 
-	public Type getType() {
+	public ContainerType getType() {
 		return type;
 	}
 }

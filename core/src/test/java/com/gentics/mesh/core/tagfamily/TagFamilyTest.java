@@ -19,7 +19,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
@@ -170,7 +170,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 				// Tagged nodes should be updated
 				for (Node node : redTag.getNodes(release)) {
 					affectedElements.put("red tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), release.getUuid(),
-							Type.DRAFT, node.getAvailableLanguageNames()));
+							ContainerType.DRAFT, node.getAvailableLanguageNames()));
 					i++;
 				}
 
@@ -178,7 +178,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 				affectedElements.put("tagFamily.green", new ElementEntry(DELETE_ACTION, greenTag.getUuid()));
 				for (Node node : greenTag.getNodes(release)) {
 					affectedElements.put("green tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(),
-							release.getUuid(), Type.DRAFT, node.getAvailableLanguageNames()));
+							release.getUuid(), ContainerType.DRAFT, node.getAvailableLanguageNames()));
 					i++;
 				}
 
@@ -186,7 +186,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 				affectedElements.put("tagFamily.blue", new ElementEntry(DELETE_ACTION, blueTag.getUuid()));
 				for (Node node : blueTag.getNodes(release)) {
 					affectedElements.put("blue tagged node " + i, new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), release.getUuid(),
-							Type.DRAFT, node.getAvailableLanguageNames()));
+							ContainerType.DRAFT, node.getAvailableLanguageNames()));
 					i++;
 				}
 

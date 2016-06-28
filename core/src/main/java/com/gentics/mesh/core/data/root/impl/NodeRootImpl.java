@@ -23,7 +23,7 @@ import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -98,8 +98,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			throws InvalidArgumentException {
 		MeshAuthUser requestUser = ac.getUser();
 		Release release = ac.getRelease(null);
-		Type type = Type.forVersion(ac.getVersioningParameters().getVersion());
-		String permLabel = type == Type.PUBLISHED ? READ_PUBLISHED_PERM.label() : READ_PERM.label();
+		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+		String permLabel = type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM.label() : READ_PERM.label();
 
 		VertexTraversal<?, ?, ?> traversal = getAllTraversal(requestUser, release, type, permLabel);
 		VertexTraversal<?, ?, ?> countTraversal = getAllTraversal(requestUser, release, type, permLabel);
@@ -115,7 +115,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @param permLabel permission label
 	 * @return vertex traversal
 	 */
-	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, Type type,
+	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, ContainerType type,
 			String permLabel) {
 		return out(getRootLabel()).has(getPersistanceClass()).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER)
 				.retain(requestUser.getImpl()).back().mark().outE(HAS_FIELD_CONTAINER)

@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
@@ -637,9 +637,9 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// node must be migrated for initial release
 		content.reload();
 		container.reload();
-		assertThat(content.getGraphFieldContainer("en", initialRelease.getUuid(), Type.DRAFT)).isOf(container.getLatestVersion());
+		assertThat(content.getGraphFieldContainer("en", initialRelease.getUuid(), ContainerType.DRAFT)).isOf(container.getLatestVersion());
 
 		// node must not be migrated for new release
-		assertThat(content.getGraphFieldContainer("en", newRelease.getUuid(), Type.DRAFT)).isOf(container.getLatestVersion().getPreviousVersion());
+		assertThat(content.getGraphFieldContainer("en", newRelease.getUuid(), ContainerType.DRAFT)).isOf(container.getLatestVersion().getPreviousVersion());
 	}
 }

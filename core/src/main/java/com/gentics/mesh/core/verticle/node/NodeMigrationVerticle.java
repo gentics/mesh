@@ -28,6 +28,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Observable;
 
 /**
  * Dedicated worker verticle which will handle schema and microschema migrations.
@@ -119,7 +120,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						setRunning(statusBean, statusMBeanName);
 						nodeMigrationHandler
 								.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean)
-								.toBlocking().lastOrDefault(null);
+								.toBlocking().single();
 						return null;
 					});
 					setDone(schemaUuid, statusMBeanName);
@@ -191,7 +192,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.microschema);
 						setRunning(statusBean, statusMBeanName);
-						nodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean);
+						nodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean).toBlocking().single();
 						return null;
 					});
 					setDone(microschemaUuid, statusMBeanName);

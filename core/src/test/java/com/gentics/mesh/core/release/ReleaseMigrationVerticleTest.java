@@ -21,7 +21,7 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.gentics.mesh.core.AbstractSpringVerticle;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
@@ -90,7 +90,7 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 		assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(false);
 
 		nodes.forEach(node -> {
-			Arrays.asList(Type.INITIAL, Type.DRAFT, Type.PUBLISHED).forEach(type -> {
+			Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 				assertThat(node.getGraphFieldContainers(newRelease, type))
 						.as(type + " Field Containers before Migration").isNotNull().isEmpty();
 			});
@@ -108,16 +108,16 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 
 		nodes.forEach(node -> {
 			node.reload();
-			Arrays.asList(Type.INITIAL, Type.DRAFT).forEach(type -> {
+			Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT).forEach(type -> {
 				assertThat(node.getGraphFieldContainers(newRelease, type))
 						.as(type + " Field Containers after Migration").isNotNull().isNotEmpty();
 			});
 
 			if (published.contains(node)) {
-				assertThat(node.getGraphFieldContainers(newRelease, Type.PUBLISHED))
+				assertThat(node.getGraphFieldContainers(newRelease, ContainerType.PUBLISHED))
 						.as("Published field containers after migration").isNotNull().isNotEmpty();
 			} else {
-				assertThat(node.getGraphFieldContainers(newRelease, Type.PUBLISHED))
+				assertThat(node.getGraphFieldContainers(newRelease, ContainerType.PUBLISHED))
 						.as("Published field containers after migration").isNotNull().isEmpty();
 			}
 

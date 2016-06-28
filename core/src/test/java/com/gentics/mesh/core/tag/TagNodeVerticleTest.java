@@ -11,12 +11,15 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
@@ -24,9 +27,12 @@ public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
 	@Autowired
 	private TagFamilyVerticle tagFamilyVerticle;
 
+	@Autowired
+	private NodeVerticle nodeVerticle;
+
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		return new ArrayList<>(Arrays.asList(tagFamilyVerticle));
+		return new ArrayList<>(Arrays.asList(tagFamilyVerticle, nodeVerticle));
 	}
 
 	@Test
@@ -43,11 +49,15 @@ public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
 	@Test
 	public void testReadPublishedNodesForTag() {
 		try (NoTrx noTx = db.noTrx()) {
+
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new TakeOfflineParameters().setRecursive(true)));
 			NodeListResponse nodeList = call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
 			assertThat(nodeList.getData()).as("Published tagged nodes").isNotNull().isEmpty();
 
-			// publish the node
-			content("concorde").publish(getMockedInternalActionContext());
+			// publish the node and its parent
+			InternalActionContext ac = getMockedInternalActionContext(user());
+			content("concorde").getParentNode(project().getLatestRelease().getUuid()).publish(ac);
+			content("concorde").publish(ac);
 
 			nodeList = call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
 			NodeResponse concorde = new NodeResponse();

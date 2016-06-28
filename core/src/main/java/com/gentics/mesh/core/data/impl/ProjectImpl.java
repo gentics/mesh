@@ -18,7 +18,7 @@ import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -274,11 +274,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 					continue;
 				}
 				releases.forEach(release -> {
-					node.getGraphFieldContainers(release, Type.DRAFT).forEach(container -> {
-						container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), Type.DRAFT);
+					node.getGraphFieldContainers(release, ContainerType.DRAFT).forEach(container -> {
+						container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), ContainerType.DRAFT);
 					});
-					node.getGraphFieldContainers(release, Type.PUBLISHED).forEach(container -> {
-						container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), Type.PUBLISHED);
+					node.getGraphFieldContainers(release, ContainerType.PUBLISHED).forEach(container -> {
+						container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), ContainerType.PUBLISHED);
 					});
 				});
 			}

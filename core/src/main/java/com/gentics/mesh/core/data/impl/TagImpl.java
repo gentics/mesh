@@ -21,7 +21,7 @@ import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -170,7 +170,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 			// all nodes
 			for (Node node : getNodes(release)) {
 				// draft and published versions
-				for (Type type : Arrays.asList(Type.DRAFT, Type.PUBLISHED)) {
+				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					// all languages
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(release, type)) {
 						container.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, type);
@@ -182,7 +182,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, Type type, PagingParameters pagingInfo)
+	public PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, ContainerType type, PagingParameters pagingInfo)
 			throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(requestUser, release, languageTags, type);
@@ -206,7 +206,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	 * @return
 	 */
 	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(MeshAuthUser requestUser, Release release,
-			List<String> languageTags, Type type) {
+			List<String> languageTags, ContainerType type) {
 		
 		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release)
 				.mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back().mark()
@@ -259,7 +259,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 		for (Release release : getProject().getReleaseRoot().findAll()) {
 			String releaseUuid = release.getUuid();
 			for (Node node : getNodes(release)) {
-				for (Type type : Arrays.asList(Type.DRAFT, Type.PUBLISHED)) {
+				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(release, type)) {
 						container.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, type);
 					}

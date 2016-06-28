@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -279,7 +279,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			meshRoot().getNodeRoot().reload();
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().single();
-			for (Type type : Arrays.asList(Type.INITIAL, Type.DRAFT)) {
+			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
 						.isNotNull().hasVersion("0.1");
 				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release").isNull();
@@ -310,7 +310,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			meshRoot().getNodeRoot().reload();
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().single();
-			for (Type type : Arrays.asList(Type.INITIAL, Type.DRAFT)) {
+			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
 						.isNotNull().hasVersion("0.1");
 				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release").isNull();
@@ -341,7 +341,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			meshRoot().getNodeRoot().reload();
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().single();
 
-			for (Type type : Arrays.asList(Type.INITIAL, Type.DRAFT)) {
+			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
 						.isNull();
 				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release").isNotNull()
@@ -1595,8 +1595,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// 5. Assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
 			node.reload();
-			assertThat(node.getGraphFieldContainers(initialRelease, Type.DRAFT)).as("draft containers for initial release").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newRelease, Type.DRAFT)).as("draft containers for new release").isEmpty();
+			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release").isNotEmpty();
+			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.DRAFT)).as("draft containers for new release").isEmpty();
 		}
 	}
 
@@ -1628,10 +1628,10 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// 6. Assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
 			node.reload();
-			assertThat(node.getGraphFieldContainers(initialRelease, Type.DRAFT)).as("draft containers for initial release").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(initialRelease, Type.PUBLISHED)).as("published containers for initial release").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newRelease, Type.DRAFT)).as("draft containers for new release").isEmpty();
-			assertThat(node.getGraphFieldContainers(newRelease, Type.PUBLISHED)).as("published containers for new release").isEmpty();
+			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release").isNotEmpty();
+			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.PUBLISHED)).as("published containers for initial release").isNotEmpty();
+			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.DRAFT)).as("draft containers for new release").isEmpty();
+			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.PUBLISHED)).as("published containers for new release").isEmpty();
 		}
 	}
 

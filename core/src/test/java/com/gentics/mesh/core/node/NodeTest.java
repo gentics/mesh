@@ -28,8 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -77,13 +77,13 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node newsNode = content("news overview");
 			CountDownLatch latch = new CountDownLatch(2);
-			Observable<String> path = newsNode.getPath(project().getLatestRelease().getUuid(), Type.DRAFT, english().getLanguageTag());
+			Observable<String> path = newsNode.getPath(project().getLatestRelease().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
 			path.subscribe(s -> {
 				assertEquals("/News/News+Overview.en.html", s);
 				latch.countDown();
 			});
 
-			Observable<String> pathSegementFieldValue = newsNode.getPathSegment(project().getLatestRelease().getUuid(), Type.DRAFT,
+			Observable<String> pathSegementFieldValue = newsNode.getPathSegment(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
 					english().getLanguageTag());
 			pathSegementFieldValue.subscribe(s -> {
 				assertEquals("News Overview.en.html", s);
@@ -439,9 +439,9 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 5. assert searchqueuebatch
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
 			affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid, project.getUuid(),
-					initialRelease.getUuid(), Type.DRAFT, "en"));
+					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
-					initialRelease.getUuid(), Type.DRAFT, "en"));
+					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
 			assertAffectedElements(affectedElements, batch);
 		}
 	}
@@ -520,9 +520,9 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 11. assert searchqueuebatch
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
 			affectedElements.put("subFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subFolderUuid, project.getUuid(),
-					initialRelease.getUuid(), Type.DRAFT, "en"));
+					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
-					initialRelease.getUuid(), Type.DRAFT, "en"));
+					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
 			assertAffectedElements(affectedElements, batch);
 		}
 	}
@@ -586,9 +586,9 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			db.noTrx(() -> {
 				Map<String, ElementEntry> affectedElements = new HashMap<>();
 				affectedElements.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
-						initialRelease.getUuid(), Type.DRAFT, "en"));
+						initialRelease.getUuid(), ContainerType.DRAFT, "en"));
 				affectedElements.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
-						initialRelease.getUuid(), Type.PUBLISHED, "en"));
+						initialRelease.getUuid(), ContainerType.PUBLISHED, "en"));
 
 				assertAffectedElements(affectedElements, batch);
 				return null;
@@ -661,9 +661,9 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			db.noTrx(() -> {
 				Map<String, ElementEntry> affectedElements = new HashMap<>();
 				affectedElements.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
-						initialRelease.getUuid(), Type.DRAFT, "en"));
+						initialRelease.getUuid(), ContainerType.DRAFT, "en"));
 				affectedElements.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
-						initialRelease.getUuid(), Type.PUBLISHED, "en"));
+						initialRelease.getUuid(), ContainerType.PUBLISHED, "en"));
 
 				assertAffectedElements(affectedElements, batch);
 				return null;

@@ -28,11 +28,11 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -206,7 +206,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Observable<Void> store(Node node, String documentType, SearchQueueEntry entry) {
 		String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
 		String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
-		Type type = Type.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
+		ContainerType type = ContainerType.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
 		String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, type.toString().toLowerCase());
 
 		// TODO check consistency
@@ -295,7 +295,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
 		String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
 		String projectUuid = entry.getCustomProperty(CUSTOM_PROJECT_UUID);
-		Type type = Type.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
+		ContainerType type = ContainerType.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
 		String indexName = getIndexName(projectUuid, releaseUuid, type.toString().toLowerCase());
 
 		return searchProvider.deleteDocument(indexName, documentType, composeDocumentId(uuid, languageTag));
@@ -676,7 +676,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public GraphPermission getReadPermission(InternalActionContext ac) {
-		switch (Type.forVersion(ac.getVersioningParameters().getVersion())) {
+		switch (ContainerType.forVersion(ac.getVersioningParameters().getVersion())) {
 		case PUBLISHED:
 			return GraphPermission.READ_PUBLISHED_PERM;
 		default:

@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -487,7 +487,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			String uuid = tag.getUuid();
 			expectedEntries.put("tag", new ElementEntry(DELETE_ACTION, uuid));
 			expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), project().getUuid(),
-					project().getLatestRelease().getUuid(), Type.DRAFT, "en", "de"));
+					project().getLatestRelease().getUuid(), ContainerType.DRAFT, "en", "de"));
 			SearchQueueBatch batch = createBatch();
 			tag.delete(batch);
 			batch.reload();

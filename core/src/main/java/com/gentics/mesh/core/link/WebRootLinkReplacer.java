@@ -11,7 +11,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.etc.RouterStorage;
@@ -53,7 +53,7 @@ public class WebRootLinkReplacer {
 	 * @param languageTags optional language tags
 	 * @return content with links (probably) replaced
 	 */
-	public String replace(String releaseUuid, GraphFieldContainerEdge.Type edgeType, String content, LinkType type,
+	public String replace(String releaseUuid, ContainerType edgeType, String content, LinkType type,
 			String projectName, List<String> languageTags) {
 		if (isEmpty(content) || type == LinkType.OFF || type == null) {
 			return content;
@@ -124,7 +124,7 @@ public class WebRootLinkReplacer {
 	 * @param languageTags optional language tags
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(String releaseUuid, GraphFieldContainerEdge.Type edgeType, String uuid, LinkType type,
+	public Observable<String> resolve(String releaseUuid, ContainerType edgeType, String uuid, LinkType type,
 			String projectName, String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
@@ -161,7 +161,7 @@ public class WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(String releaseUuid, GraphFieldContainerEdge.Type edgeType, Node node, LinkType type,
+	public Observable<String> resolve(String releaseUuid, ContainerType edgeType, Node node, LinkType type,
 			String... languageTag) {
 		if (languageTag == null || languageTag.length == 0) {
 			String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
@@ -177,7 +177,7 @@ public class WebRootLinkReplacer {
 		}
 		// edge type defaults to DRAFT
 		if (edgeType == null) {
-			edgeType = GraphFieldContainerEdge.Type.DRAFT;
+			edgeType = ContainerType.DRAFT;
 		}
 		try {
 			if (log.isDebugEnabled()) {

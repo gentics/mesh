@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 import java.util.Set;
 
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -128,14 +127,14 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *
 	 * @return set of tuples (may be empty, but never null)
 	 */
-	Set<Tuple<String, Type>> getReleaseTypes();
+	Set<Tuple<String, ContainerType>> getReleaseTypes();
 
 	/**
 	 * Get the release Uuids for which this container is the container of given type
 	 * @param type type
 	 * @return set of release Uuids (may be empty, but never null)
 	 */
-	Set<String> getReleases(Type type);
+	Set<String> getReleases(ContainerType type);
 
 	/**
 	 * Add a search queue batch entry to the given batch for the given action.
@@ -147,7 +146,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param type
 	 *            type
 	 */
-	void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, Type type);
+	void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, ContainerType type);
 
 	/**
 	 * Compare the container values of both containers and return a list of differences.

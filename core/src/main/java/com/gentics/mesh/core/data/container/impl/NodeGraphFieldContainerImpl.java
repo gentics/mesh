@@ -8,7 +8,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MIC
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -24,13 +23,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
@@ -116,8 +115,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		getReleaseTypes().forEach(tuple -> {
 			String releaseUuid = tuple.v1();
-			Type type = tuple.v2();
-			if (type != Type.INITIAL) {
+			ContainerType type = tuple.v2();
+			if (type != ContainerType.INITIAL) {
 				addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, type);
 			}
 		});
@@ -130,13 +129,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void deleteFromRelease(Release release, SearchQueueBatch batch) {
 		String releaseUuid = release.getUuid();
 
-		addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, Type.DRAFT);
+		addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, ContainerType.DRAFT);
 		if (isPublished(releaseUuid)) {
-			addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, Type.PUBLISHED);
+			addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, ContainerType.PUBLISHED);
 		}
 		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
-				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.DRAFT.getCode()),
-						e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.PUBLISHED.getCode()))
+				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
+						e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
 				.removeAll();
 		// remove webroot property
 		setProperty(WEBROOT_PROPERTY_KEY, null);
@@ -155,12 +154,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateWebrootPathInfo(String releaseUuid, String conflictI18n) {
 		if (isDraft(releaseUuid)) {
-			updateWebrootPathInfo(releaseUuid, conflictI18n, Type.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
+			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
 		} else {
 			setProperty(WEBROOT_PROPERTY_KEY, null);
 		}
 		if (isPublished(releaseUuid)) {
-			updateWebrootPathInfo(releaseUuid, conflictI18n, Type.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_INDEX_NAME);
+			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_INDEX_NAME);
 		} else {
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
@@ -180,7 +179,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @param indexName
 	 *            name of the index to check for uniqueness
 	 */
-	protected void updateWebrootPathInfo(String releaseUuid, String conflictI18n, Type type, String propertyName, String indexName) {
+	protected void updateWebrootPathInfo(String releaseUuid, String conflictI18n, ContainerType type, String propertyName, String indexName) {
 		Node node = getParentNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		// Determine the webroot path of the container parent node
@@ -269,27 +268,27 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public boolean isDraft(String releaseUuid) {
 		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.DRAFT.getCode());
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode());
 		return traversal.hasNext();
 	}
 
 	@Override
 	public boolean isPublished(String releaseUuid) {
 		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.PUBLISHED.getCode());
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode());
 		return traversal.hasNext();
 	}
 
 	@Override
-	public Set<Tuple<String, Type>> getReleaseTypes() {
-		Set<Tuple<String, Type>> typeSet = new HashSet<>();
+	public Set<Tuple<String, ContainerType>> getReleaseTypes() {
+		Set<Tuple<String, ContainerType>> typeSet = new HashSet<>();
 		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)
 				.forEach(edge -> typeSet.add(Tuple.tuple(edge.getReleaseUuid(), edge.getType())));
 		return typeSet;
 	}
 
 	@Override
-	public Set<String> getReleases(Type type) {
+	public Set<String> getReleases(ContainerType type) {
 		Set<String> releaseUuids = new HashSet<>();
 		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).frameExplicit(GraphFieldContainerEdgeImpl.class)
 				.forEach(edge -> releaseUuids.add(edge.getReleaseUuid()));
@@ -313,7 +312,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, Type type) {
+	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, ContainerType type) {
 		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainerVersion());
 		Node node = getParentNode();
 		batch.addEntry(node.getUuid(), node.getType(), action, indexType,

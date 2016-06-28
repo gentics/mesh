@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.impl;
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -61,12 +62,12 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 	}
 
 	@Override
-	public Type getType() {
-		return Type.get(getProperty(EDGE_TYPE_KEY));
+	public ContainerType getType() {
+		return ContainerType.get(getProperty(EDGE_TYPE_KEY));
 	}
 
 	@Override
-	public void setType(Type type) {
+	public void setType(ContainerType type) {
 		if (type == null) {
 			setProperty(EDGE_TYPE_KEY, null);
 		} else {

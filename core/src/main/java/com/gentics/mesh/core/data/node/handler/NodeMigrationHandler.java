@@ -7,7 +7,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +21,8 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -135,7 +134,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						publish = true;
 					} else {
 						// check whether there is another published version
-						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, Type.PUBLISHED);
+						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, ContainerType.PUBLISHED);
 						if (oldPublished != null) {
 							ac.getVersioningParameters().setVersion("published");
 							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().last();
@@ -147,7 +146,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 							node.setPublished(migrated, releaseUuid);
 							migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
-							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
+							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.PUBLISHED);
 
 							ac.getVersioningParameters().setVersion("draft");
 						}
@@ -167,9 +166,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 					}
 					migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
-					migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.DRAFT);
+					migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
 					if (publish) {
-						migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
+						migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.PUBLISHED);
 					}
 
 					return null;
@@ -250,7 +249,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						publish = true;
 					} else {
 						// check whether there is another published version
-						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, Type.PUBLISHED);
+						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, ContainerType.PUBLISHED);
 						if (oldPublished != null) {
 							ac.getVersioningParameters().setVersion("published");
 
@@ -265,7 +264,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields,
 									migrationScripts);
 
-							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
+							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.PUBLISHED);
 
 							ac.getVersioningParameters().setVersion("draft");
 						}
@@ -282,9 +281,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 					migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields,
 							migrationScripts);
 
-					migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.DRAFT);
+					migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
 					if (publish) {
-						migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
+						migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.PUBLISHED);
 					}
 
 					return null;
@@ -337,33 +336,33 @@ public class NodeMigrationHandler extends AbstractHandler {
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		for (Node node : nodes) {
 			db.trx(() -> {
-				if (!node.getGraphFieldContainers(newRelease, Type.INITIAL).isEmpty()) {
+				if (!node.getGraphFieldContainers(newRelease, ContainerType.INITIAL).isEmpty()) {
 					return null;
 				}
-				node.getGraphFieldContainers(oldRelease, Type.DRAFT).stream().forEach(container -> {
+				node.getGraphFieldContainers(oldRelease, ContainerType.DRAFT).stream().forEach(container -> {
 					GraphFieldContainerEdgeImpl initialEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER,
 							container.getImpl(), GraphFieldContainerEdgeImpl.class);
 					initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-					initialEdge.setType(Type.INITIAL);
+					initialEdge.setType(ContainerType.INITIAL);
 					initialEdge.setReleaseUuid(newReleaseUuid);
 
 					GraphFieldContainerEdgeImpl draftEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER,
 							container.getImpl(), GraphFieldContainerEdgeImpl.class);
 					draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-					draftEdge.setType(Type.DRAFT);
+					draftEdge.setType(ContainerType.DRAFT);
 					draftEdge.setReleaseUuid(newReleaseUuid);
 
-					container.addIndexBatchEntry(batch, STORE_ACTION, newReleaseUuid, Type.DRAFT);
+					container.addIndexBatchEntry(batch, STORE_ACTION, newReleaseUuid, ContainerType.DRAFT);
 				});
 
-				node.getGraphFieldContainers(oldRelease, Type.PUBLISHED).stream().forEach(container -> {
+				node.getGraphFieldContainers(oldRelease, ContainerType.PUBLISHED).stream().forEach(container -> {
 					GraphFieldContainerEdgeImpl edge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER,
 							container.getImpl(), GraphFieldContainerEdgeImpl.class);
 					edge.setLanguageTag(container.getLanguage().getLanguageTag());
-					edge.setType(Type.PUBLISHED);
+					edge.setType(ContainerType.PUBLISHED);
 					edge.setReleaseUuid(newReleaseUuid);
 
-					container.addIndexBatchEntry(batch, STORE_ACTION, newReleaseUuid, Type.PUBLISHED);
+					container.addIndexBatchEntry(batch, STORE_ACTION, newReleaseUuid, ContainerType.PUBLISHED);
 				});
 
 				Node parent = node.getParentNode(oldReleaseUuid);

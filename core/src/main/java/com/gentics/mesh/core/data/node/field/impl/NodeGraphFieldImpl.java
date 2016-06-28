@@ -5,8 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -54,7 +54,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			nodeField.setUuid(node.getUuid());
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 				nodeField.setPath(WebRootLinkReplacer.getInstance()
-						.resolve(ac.getRelease(null).getUuid(), Type.forVersion(ac.getVersioningParameters().getVersion()), node,
+						.resolve(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), node,
 								ac.getNodeParameters().getResolveLinks(), languageTags.toArray(new String[languageTags.size()]))
 						.toBlocking().first());
 			}

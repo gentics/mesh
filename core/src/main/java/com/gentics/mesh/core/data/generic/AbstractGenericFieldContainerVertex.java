@@ -3,8 +3,8 @@ package com.gentics.mesh.core.data.generic;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 
 import com.gentics.mesh.core.data.BasicFieldContainer;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Release;
@@ -15,11 +15,11 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>>
 		extends AbstractMeshCoreVertex<T, R> {
 
-	protected <U extends BasicFieldContainer> U getGraphFieldContainer(Language language, Release release, Type type, Class<U> classOfU) {
+	protected <U extends BasicFieldContainer> U getGraphFieldContainer(Language language, Release release, ContainerType type, Class<U> classOfU) {
 		return getGraphFieldContainer(language.getLanguageTag(), release != null ? release.getUuid() : null, type, classOfU);
 	}
 
-	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String releaseUuid, Type type, Class<U> classOfU) {
+	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String releaseUuid, ContainerType type, Class<U> classOfU) {
 		EdgeTraversal<?,?,?> traversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
 		if (releaseUuid != null) {
 			traversal = traversal.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid);

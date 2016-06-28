@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
@@ -76,7 +76,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
 			String releaseUuid = ac.getRelease(null).getUuid();
-			Type type = Type.forVersion(new VersioningParameters(ac).getVersion());
+			ContainerType type = ContainerType.forVersion(new VersioningParameters(ac).getVersion());
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				// Create the rest field and populate the fields
 				NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(item.getNode().getUuid());

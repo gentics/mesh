@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -65,7 +65,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 
 				Release release = ac.getRelease(null);
-				node.getGraphFieldContainers(ac.getRelease(null), Type.DRAFT)
+				node.getGraphFieldContainers(ac.getRelease(null), ContainerType.DRAFT)
 						.forEach(container -> node.deleteLanguageContainer(release, container.getLanguage(), batch));
 
 				// if the node has no more field containers in any release, it will be deleted
@@ -157,15 +157,15 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	public void handleReadChildren(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		NodeParameters nodeParams = new NodeParameters(ac);
-		PagingParameters pagingParams = new PagingParameters(ac);
-		VersioningParameters versionParams = new VersioningParameters(ac);
 
 		db.asyncNoTrxExperimental(() -> {
+			NodeParameters nodeParams = ac.getNodeParameters();
+			PagingParameters pagingParams = ac.getPagingParameters();
+			VersioningParameters versionParams = ac.getVersioningParameters();
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(),
-							ac.getRelease(node.getProject()).getUuid(), Type.forVersion(versionParams.getVersion()), pagingParams);
+							ac.getRelease(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 					return page.transformToRest(ac, 0);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
