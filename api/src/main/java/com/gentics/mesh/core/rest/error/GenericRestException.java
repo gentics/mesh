@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.rest.error;
 
-import java.util.Arrays;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
@@ -70,11 +68,6 @@ public class GenericRestException extends AbstractRestException {
 	@Override
 	public String getType() {
 		return TYPE;
-	}
-
-	@Override
-	public String getMessage() {
-		return super.getMessage() + "," + Arrays.toString(getI18nParameters());
 	}
 
 }

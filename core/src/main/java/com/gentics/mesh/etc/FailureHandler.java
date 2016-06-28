@@ -99,10 +99,10 @@ public class FailureHandler implements Handler<RoutingContext> {
 	 * @param error
 	 */
 	private void translateMessage(AbstractRestException error, RoutingContext rc) {
-		String i18nMsg = error.getMessage();
+		String i18nMsg = error.getI18nKey();
 		try {
-			i18nMsg = I18NUtil.get(InternalActionContext.create(rc), error.getMessage(), error.getI18nParameters());
-			error.setMessage(i18nMsg);
+			i18nMsg = I18NUtil.get(InternalActionContext.create(rc), error.getI18nKey(), error.getI18nParameters());
+			error.setTranslatedMessage(i18nMsg);
 		} catch (MissingResourceException e) {
 			log.error("Did not find i18n message for key {" + error.getMessage() + "}", e);
 		}

@@ -105,6 +105,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 				try {
 					responseMessage = JsonUtil.readValue(json, AbstractRestException.class);
 					responseMessage.setStatus(HttpResponseStatus.valueOf(response.statusCode()));
+					responseMessage.setTranslatedMessage(responseMessage.getI18nKey());
 				} catch (Exception e) {
 					if (log.isDebugEnabled()) {
 						log.debug("Could not deserialize response {" + json + "}.", e);

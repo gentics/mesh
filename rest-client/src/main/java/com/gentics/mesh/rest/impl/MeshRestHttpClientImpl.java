@@ -14,6 +14,8 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.error.AbstractRestException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -76,8 +78,8 @@ import com.gentics.mesh.rest.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.BasicAuthentication;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.MeshResponseHandler;
-import com.gentics.mesh.rest.MeshRestClientHttpException;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -843,25 +845,31 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 					future.complete(response);
 				});
 			} else {
-				rh.bodyHandler(buffer -> {
-					String json = buffer.toString();
+				rh.bodyHandler(bh -> {
+					String json = bh.toString();
 					if (log.isDebugEnabled()) {
 						log.debug(json);
 					}
-					if (log.isDebugEnabled()) {
-						log.debug(
-								"Request failed with statusCode {" + rh.statusCode() + "} statusMessage {" + rh.statusMessage() + "} {" + json + ")");
-					}
-					GenericMessageResponse responseMessage = null;
+
+					log.error("Request failed with statusCode {" + code + "} statusMessage {" + rh.statusMessage() + "} {" + json
+							+ "} for method {" + GET + "} and uri {" + uri + "}");
+
+					AbstractRestException responseMessage = null;
 					try {
-						responseMessage = JsonUtil.readValue(json, GenericMessageResponse.class);
+						responseMessage = JsonUtil.readValue(json, AbstractRestException.class);
+						responseMessage.setStatus(HttpResponseStatus.valueOf(code));
+						responseMessage.setTranslatedMessage(responseMessage.getI18nKey());
 					} catch (Exception e) {
 						if (log.isDebugEnabled()) {
 							log.debug("Could not deserialize response {" + json + "}.", e);
 						}
-						responseMessage = new GenericMessageResponse(json);
 					}
-					future.fail(new MeshRestClientHttpException(rh.statusCode(), rh.statusMessage(), responseMessage));
+					if (responseMessage == null) {
+						future.fail(new GenericRestException(HttpResponseStatus.valueOf(code), json));
+					} else {
+						future.fail(responseMessage);
+					}
+					
 
 				});
 			}

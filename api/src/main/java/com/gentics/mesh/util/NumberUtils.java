@@ -15,6 +15,10 @@ public final class NumberUtils extends org.apache.commons.lang.math.NumberUtils 
 		if (StringUtils.isEmpty(str)) {
 			return defaultValue;
 		}
-		return Integer.valueOf(str);
+		try {
+			return Integer.valueOf(str);
+		} catch (NumberFormatException e) {
+			return defaultValue;
+		}
 	}
 }

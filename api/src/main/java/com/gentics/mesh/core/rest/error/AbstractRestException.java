@@ -15,7 +15,8 @@ public abstract class AbstractRestException extends RuntimeException {
 
 	protected HttpResponseStatus status;
 	protected String[] i18nParameters;
-	protected String i18nMessage;
+	protected String i18nKey;
+	protected String translatedMessage;
 
 	public AbstractRestException() {
 	}
@@ -32,7 +33,7 @@ public abstract class AbstractRestException extends RuntimeException {
 	 */
 	public AbstractRestException(HttpResponseStatus status, String message, Throwable e) {
 		super(message, e);
-		this.i18nMessage = message;
+		this.i18nKey = message;
 		this.status = status;
 	}
 
@@ -46,7 +47,7 @@ public abstract class AbstractRestException extends RuntimeException {
 	 */
 	public AbstractRestException(HttpResponseStatus status, String message) {
 		super(message);
-		this.i18nMessage = message;
+		this.i18nKey = message;
 		this.status = status;
 	}
 
@@ -63,7 +64,7 @@ public abstract class AbstractRestException extends RuntimeException {
 	public AbstractRestException(HttpResponseStatus status, String i18nMessageKey, String... i18nParameters) {
 		super(i18nMessageKey);
 		this.status = status;
-		this.i18nMessage = i18nMessageKey;
+		this.i18nKey = i18nMessageKey;
 		this.i18nParameters = i18nParameters;
 	}
 
@@ -75,7 +76,7 @@ public abstract class AbstractRestException extends RuntimeException {
 	 */
 	protected AbstractRestException(String message) {
 		super(message);
-		this.i18nMessage = message;
+		this.i18nKey = message;
 	}
 
 	/**
@@ -119,21 +120,37 @@ public abstract class AbstractRestException extends RuntimeException {
 		if (getI18nParameters() != null) {
 			extraInfo = " params {" + String.join(",", getI18nParameters()) + "}";
 		}
-		return getStatus() + " " + getMessage() + extraInfo;
-	}
-
-	@Override
-	public String getMessage() {
-		return i18nMessage;
+		return getStatus() + " " + getI18nKey() + extraInfo;
 	}
 
 	/**
-	 * Set the i18n message.
-	 * 
-	 * @param message
+	 * Returns the stored information or if possible a translated message.
 	 */
-	public void setMessage(String message) {
-		this.i18nMessage = message;
+	@Override
+	public String getMessage() {
+		if (translatedMessage != null) {
+			return translatedMessage;
+		} else {
+			return toString();
+		}
+	}
+
+	@JsonIgnore
+	public String getI18nKey() {
+		return this.i18nKey;
+	}
+
+	public void setI18nKey(String i18nKey) {
+		this.i18nKey = i18nKey;
+	}
+
+	@JsonIgnore
+	public String getTranslatedMessage() {
+		return translatedMessage;
+	}
+
+	public void setTranslatedMessage(String translatedMessage) {
+		this.translatedMessage = translatedMessage;
 	}
 
 }
