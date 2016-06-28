@@ -27,7 +27,7 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 		BooleanFieldListImpl booleanList = fieldMap.getBooleanFieldList(fieldKey);
 		boolean isBooleanListFieldSetToNull = fieldMap.hasField(fieldKey) && booleanList == null;
 		GraphField.failOnDeletionOfRequiredField(graphBooleanFieldList, isBooleanListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = booleanList == null;// booleanList.getItems().isEmpty()
+		boolean restIsNullOrEmpty = booleanList == null || booleanList.getItems().isEmpty();
 		GraphField.failOnMissingRequiredField(graphBooleanFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion

@@ -28,7 +28,7 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 		NumberGraphFieldList graphNumberFieldList = container.getNumberList(fieldKey);
 		boolean isNumberListFieldSetToNull = fieldMap.hasField(fieldKey) && numberList == null;
 		GraphField.failOnDeletionOfRequiredField(graphNumberFieldList, isNumberListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = numberList == null; //  numberList.getItems().isEmpty()
+		boolean restIsNullOrEmpty = numberList == null ||  numberList.getItems().isEmpty();
 		GraphField.failOnMissingRequiredField(graphNumberFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion
@@ -49,9 +49,11 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 
 		// Handle Update
 		graphNumberFieldList.removeAll();
-		for (Number item : numberList.getItems()) {
-			graphNumberFieldList.createNumber(item);
-		}
+		for (
+	Number item:numberList.getItems())
+	{
+		graphNumberFieldList.createNumber(item);
+	}
 
 	};
 

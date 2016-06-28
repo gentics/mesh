@@ -27,7 +27,7 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 		DateFieldListImpl dateList = fieldMap.getDateFieldList(fieldKey);
 		boolean isDateListFieldSetToNull = fieldMap.hasField(fieldKey) && (dateList == null);
 		GraphField.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = dateList == null; //  dateList.getItems().isEmpty()
+		boolean restIsNullOrEmpty = dateList == null || dateList.getItems().isEmpty();
 		GraphField.failOnMissingRequiredField(graphDateFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion

@@ -30,7 +30,7 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 		MicronodeFieldList micronodeList = fieldMap.getMicronodeFieldList(fieldKey);
 		boolean isMicronodeListFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeList == null;
 		GraphField.failOnDeletionOfRequiredField(micronodeGraphFieldList, isMicronodeListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = micronodeList == null; //  micronodeList.getItems().isEmpty()
+		boolean restIsNullOrEmpty = micronodeList == null || micronodeList.getItems().isEmpty();
 		GraphField.failOnMissingRequiredField(micronodeGraphFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion

@@ -56,13 +56,15 @@ public class BooleanFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest 
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			Boolean oldValue = getBooleanValue(container, FIELD_NAME);
 
-			boolean flag = Math.random() > 0.5;
+			String expectedVersion = container.getVersion().nextDraft().toString();
+			boolean flag = false;
 			NodeResponse response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(flag));
 			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 			assertEquals(flag, field.getValue());
 			node.reload();
 			container.reload();
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("The version within the response should be bumped by one minor version.", expectedVersion,
+					response.getVersion().getNumber());
 			assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
 
 			container = node.getGraphFieldContainer("en");
@@ -94,15 +96,17 @@ public class BooleanFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest 
 		String oldNumber = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, new BooleanFieldImpl());
-		assertThat(secondResponse.getFields().getBooleanField(FIELD_NAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getFields().getBooleanField(FIELD_NAME).getValue()).as("Updated Field Value").isNull();
+		assertThat(secondResponse.getFields().getBooleanField(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
 	}
 
 	/**
 	 * Get boolean value
-	 * @param container field container
-	 * @param fieldName field name
+	 * 
+	 * @param container
+	 *            field container
+	 * @param fieldName
+	 *            field name
 	 * @return value
 	 */
 	protected Boolean getBooleanValue(NodeGraphFieldContainer container, String fieldName) {

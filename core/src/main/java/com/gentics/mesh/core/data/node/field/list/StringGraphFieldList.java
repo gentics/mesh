@@ -27,7 +27,7 @@ public interface StringGraphFieldList extends ListGraphField<StringGraphField, S
 		StringFieldListImpl stringList = fieldMap.getStringFieldList(fieldKey);
 		boolean isStringListFieldSetToNull = fieldMap.hasField(fieldKey) && (stringList == null || stringList.getItems() == null);
 		GraphField.failOnDeletionOfRequiredField(graphStringList, isStringListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = stringList == null;
+		boolean restIsNullOrEmpty = stringList == null || stringList.getItems().isEmpty();
 		GraphField.failOnMissingRequiredField(graphStringList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion

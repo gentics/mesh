@@ -80,7 +80,6 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		setupData();
 		Node newsNode = folder("news");
 		Node node = folder("2015");
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();

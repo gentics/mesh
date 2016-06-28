@@ -34,8 +34,9 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 					if (project == null) {
 						project = parentNode.getProject();
 					}
-					stringField.setString(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
-							stringField.getString(), ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
+					stringField.setString(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(),
+							ContainerType.forVersion(ac.getVersioningParameters().getVersion()), stringField.getString(),
+							ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
 				}
 				return stringField;
 			});
@@ -50,14 +51,6 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 		boolean restIsNullOrEmpty = stringField == null || stringField.getString() == null;
 		GraphField.failOnMissingRequiredField(graphStringField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
-		// check value restrictions
-		StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
-		if (stringFieldSchema.getAllowedValues() != null) {
-			if (stringField.getString() != null && !Arrays.asList(stringFieldSchema.getAllowedValues()).contains(stringField.getString())) {
-				throw error(BAD_REQUEST, "node_error_invalid_string_field_value", fieldKey, stringField.getString());
-			}
-		}
-
 		// Handle Deletion
 		if (isStringFieldSetToNull && graphStringField != null) {
 			graphStringField.removeField(container);
@@ -67,6 +60,14 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 		// Rest model is empty or null - Abort
 		if (restIsNullOrEmpty) {
 			return;
+		}
+
+		// check value restrictions
+		StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
+		if (stringFieldSchema.getAllowedValues() != null) {
+			if (stringField.getString() != null && !Arrays.asList(stringFieldSchema.getAllowedValues()).contains(stringField.getString())) {
+				throw error(BAD_REQUEST, "node_error_invalid_string_field_value", fieldKey, stringField.getString());
+			}
 		}
 
 		// Handle Update / Create

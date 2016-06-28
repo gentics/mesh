@@ -23,7 +23,7 @@ import rx.Observable;
 public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeFieldList, Node> {
 
 	final Logger log = LoggerFactory.getLogger(NodeGraphFieldList.class);
-	
+
 	String TYPE = "node";
 
 	FieldTransformator NODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
@@ -40,7 +40,7 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
 		GraphField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = nodeList == null;// || nodeList.getItems() == null;
+		boolean restIsNullOrEmpty = nodeList == null || nodeList.getItems().isEmpty();
 		GraphField.failOnMissingRequiredField(graphNodeFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion

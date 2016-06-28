@@ -56,8 +56,7 @@ public class StringFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(null, (Field) null);
 		StringFieldImpl stringField = response.getFields().getStringField(FIELD_NAME);
-		assertNotNull(stringField);
-		assertNull(stringField.getString());
+		assertNull(stringField);
 	}
 
 	@Test
@@ -98,8 +97,7 @@ public class StringFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		String oldNumber = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, new StringFieldImpl());
-		assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getFields().getStringField(FIELD_NAME).getString()).as("Updated Field Value").isNull();
+		assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
 	}
 

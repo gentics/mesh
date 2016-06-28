@@ -119,7 +119,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 			updater.call(container);
 			fail("The update should have failed");
 		} catch (GenericRestException e) {
-			assertEquals("node_error_required_field_not_deletable", e.getMessage());
+			assertEquals("node_error_required_field_not_deletable", e.getI18nKey());
 			assertThat(e.getI18nParameters()).containsExactly(fieldName, "dummySchema");
 		}
 	}
@@ -146,7 +146,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 				fail("The update should have failed but it did not.");
 			}
 		} catch (GenericRestException e) {
-			assertEquals("node_error_missing_required_field_value", e.getMessage());
+			assertEquals("node_error_missing_required_field_value", e.getI18nKey());
 			assertThat(e.getI18nParameters()).containsExactly(fieldName, "dummySchema");
 
 			// verify that the container was not modified
