@@ -70,6 +70,7 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -162,9 +163,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					return Observable.just(binaryField.getFileName());
 				}
 			}
-			return Observable.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_field", fieldName, getUuid(), Arrays.toString(languageTag), releaseUuid, type.getShortName()));
+			return Observable.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_field", fieldName, getUuid(),
+					Arrays.toString(languageTag), releaseUuid, type.getShortName()));
 		}
-		return Observable.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_container", getUuid(), Arrays.toString(languageTag), releaseUuid, type.getShortName()));
+		return Observable.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_container", getUuid(), Arrays.toString(languageTag),
+				releaseUuid, type.getShortName()));
 	}
 
 	@Override
@@ -845,11 +848,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
 
-		getGraphFieldContainers(release, ContainerType.DRAFT).stream().filter(c -> !languages.containsKey(c.getLanguage().getLanguageTag())).forEach(c -> {
-			PublishStatusModel status = new PublishStatusModel().setPublished(false)
-					.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString()));
-			languages.put(c.getLanguage().getLanguageTag(), status);
-		});
+		getGraphFieldContainers(release, ContainerType.DRAFT).stream().filter(c -> !languages.containsKey(c.getLanguage().getLanguageTag()))
+				.forEach(c -> {
+					PublishStatusModel status = new PublishStatusModel().setPublished(false)
+							.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString()));
+					languages.put(c.getLanguage().getLanguageTag(), status);
+				});
 
 		return Observable.just(publishStatus);
 	}
@@ -1269,8 +1273,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				if (baseVersionContainer == null) {
 					throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion().getNumber(), requestModel.getLanguage());
 				}
-				// TODO handle simplified case in which baseContainerVersion and latestDraftVersion are equal
 
+				assertForUnhandledFields(latestDraftVersion, requestModel.getFields());
+
+				// TODO handle simplified case in which baseContainerVersion and latestDraftVersion are equal
 				List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
 				List<FieldContainerChange> requestVersionDiff = latestDraftVersion.compareTo(requestModel.getFields());
 
@@ -1321,6 +1327,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return createIndexBatch(STORE_ACTION, Arrays.asList(latestDraftVersion), release.getUuid(), ContainerType.DRAFT);
 		}).process().map(i -> this);
 
+	}
+
+	/**
+	 * Assert that the request only contains fields which are described in the schema. Otherwise an exception will be thrown.
+	 * 
+	 * @param fieldContainer
+	 *            Field container which will be used to load the schema which is used for comparison
+	 * @param fields
+	 *            Field map of the request which may contain additional unknown fields
+	 */
+	private void assertForUnhandledFields(NodeGraphFieldContainer fieldContainer, FieldMap fields) {
+		Schema latestSchema = fieldContainer.getSchemaContainerVersion().getSchema();
+		Set<String> allFieldsOfRequest = new HashSet<>(fields.keySet());
+		for (FieldSchema fieldSchema : latestSchema.getFields()) {
+			allFieldsOfRequest.remove(fieldSchema.getName());
+		}
+		if (allFieldsOfRequest.size() > 0) {
+			throw error(BAD_REQUEST, "node_unhandled_fields", latestSchema.getName(), Arrays.toString(allFieldsOfRequest.toArray()));
+		}
 	}
 
 	@Override

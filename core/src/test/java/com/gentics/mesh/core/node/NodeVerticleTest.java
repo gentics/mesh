@@ -1507,28 +1507,26 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
+
 			NodeUpdateRequest request = new NodeUpdateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("content");
-			request.setSchema(schemaReference);
+			request.setSchema(new SchemaReference().setName("content"));
 			request.setLanguage("en");
 			request.setVersion(new VersionReference(null, "0.1"));
 			final String newName = "english renamed name";
 			final String newDisplayName = "display name changed";
 
 			request.getFields().put("name", FieldUtil.createStringField(newName));
-			request.getFields().put("displayName", FieldUtil.createStringField(newDisplayName));
+
+			// Add another field which has not been specified in the content schema
+			request.getFields().put("someField", FieldUtil.createStringField(newDisplayName));
 
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("de", "en");
-			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_unhandled_fields", "folder", "[displayName]");
-
-			assertNull(future.result());
+			call(() -> getClient().updateNode(PROJECT_NAME, uuid, request, parameters), BAD_REQUEST, "node_unhandled_fields", "folder",
+					"[someField]");
 
 			NodeGraphFieldContainer englishContainer = folder("2015").getGraphFieldContainer(english());
-			assertNotEquals(newName, englishContainer.getString("name").getString());
+			assertNotEquals("The name should not have been changed.", newName, englishContainer.getString("name").getString());
 		}
 	}
 
@@ -1629,7 +1627,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
 			node.reload();
 			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.PUBLISHED)).as("published containers for initial release").isNotEmpty();
+			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.PUBLISHED)).as("published containers for initial release")
+					.isNotEmpty();
 			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.DRAFT)).as("draft containers for new release").isEmpty();
 			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.PUBLISHED)).as("published containers for new release").isEmpty();
 		}

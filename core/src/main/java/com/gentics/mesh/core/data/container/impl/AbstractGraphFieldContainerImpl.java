@@ -335,8 +335,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 *            Field schema of the field
 	 * @param schema
 	 */
-	protected void updateField(InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema,
-			FieldSchemaContainer schema) {
+	protected void updateField(InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema, FieldSchemaContainer schema) {
 		GraphFieldTypes type = GraphFieldTypes.valueByFieldSchema(fieldSchema);
 		if (type != null) {
 			type.updateField(this, ac, fieldMap, fieldKey, fieldSchema, schema);
@@ -349,28 +348,11 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap fieldMap) {
 		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
 		//TODO: This should return an observable
-		// Initially all fields are not yet handled
-		List<String> unhandledFieldKeys = new ArrayList<>(fieldMap.size());
-		unhandledFieldKeys.addAll(fieldMap.keySet());
-
 		// Iterate over all known field that are listed in the schema for the node
 		for (FieldSchema entry : schema.getFields()) {
 			String key = entry.getName();
-			unhandledFieldKeys.remove(key);
 			updateField(ac, fieldMap, key, entry, schema);
 		}
-
-		// Some fields were specified within the JSON but were not specified in the schema. Those fields can't be handled. We throw an error to inform the user
-		// about this.
-		String extraFields = "";
-		for (String key : unhandledFieldKeys) {
-			extraFields += "[" + key + "]";
-		}
-
-		if (!StringUtils.isEmpty(extraFields)) {
-			throw error(BAD_REQUEST, "node_unhandled_fields", schema.getName(), extraFields);
-		}
-
 	}
 
 	@Override
