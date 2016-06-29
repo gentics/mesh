@@ -22,7 +22,7 @@ if (!Boolean.valueOf(skipTests)) {
 				def mvnHome = tool 'M3'
 				sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 					try {
-						sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server' -B clean test"
+						sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server,!performance-tests' -B clean test"
 					} finally {
 						step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 					}
