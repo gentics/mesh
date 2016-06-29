@@ -23,9 +23,9 @@ if (!Boolean.valueOf(skipTests)) {
 				sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 					try {
 						sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server' -B clean test"
-				} finally {
+					} finally {
 						step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-				}
+					}
 				}
 			}
 		}
@@ -89,7 +89,19 @@ node('dockerSlave') {
 
 	stage 'Performance Tests'
 	if (!Boolean.valueOf(skipPerformanceTests)) {
-		echo "Not yet implemented"
+		node('cetus') {
+			sh "rm -rf *"
+			sh "rm -rf .git"
+			checkout scm
+			checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]],
+				extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
+			def mvnHome = tool 'M3'
+			try {
+				sh "${mvnHome}/bin/mvn -B clean package -pl '!changelog-system,!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false"
+			} finally {
+				step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+			}
+		}
 	} else {
 		echo "Performance tests skipped.."
 	}
