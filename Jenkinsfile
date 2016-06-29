@@ -107,7 +107,7 @@ node('dockerSlave') {
 
 
 	stage 'Integration Tests'
-	if (!Boolean.valueOf(skipPerformanceTests)) {
+	if (!Boolean.valueOf(skipIntegrationTests)) {
 		withEnv(['DOCKER_HOST=tcp://gemini.office:2375', "MESH_VERSION=${v}"]) {
 			sh "integration-tests/test.sh"
 		}
