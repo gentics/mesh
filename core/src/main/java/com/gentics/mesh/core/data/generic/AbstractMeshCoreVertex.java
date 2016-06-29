@@ -69,7 +69,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		model.setUuid(getUuid());
 
 		if (this instanceof EditorTrackingVertex) {
-			EditorTrackingVertex edited = (EditorTrackingVertex)this;
+			EditorTrackingVertex edited = (EditorTrackingVertex) this;
 
 			User editor = edited.getEditor();
 			if (editor != null) {
@@ -81,15 +81,15 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		}
 
 		if (this instanceof CreatorTrackingVertex) {
-			CreatorTrackingVertex created = (CreatorTrackingVertex)this;
+			CreatorTrackingVertex created = (CreatorTrackingVertex) this;
 			User creator = created.getCreator();
 			if (creator != null) {
 				model.setCreator(creator.transformToReference());
 			} else {
-				log.error("The object has no creator. Omitting creator field");
+				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
 				// TODO throw error and log something
 			}
-			
+
 			model.setCreated(created.getCreationTimestamp() == null ? 0 : created.getCreationTimestamp());
 		}
 

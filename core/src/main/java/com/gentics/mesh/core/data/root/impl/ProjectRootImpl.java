@@ -96,6 +96,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		project.createBaseNode(creator, schemaContainerVersion);
 
 		project.setCreated(creator);
+		project.setEditor(creator);
 		project.getSchemaContainerRoot();
 		project.getTagFamilyRoot();
 

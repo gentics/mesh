@@ -19,14 +19,17 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.StopWatch;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class NodeVerticlePerformanceTest extends AbstractRestVerticleTest {
+public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
@@ -41,29 +44,30 @@ public class NodeVerticlePerformanceTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testCreateBenchmark() throws Exception {
-		Node parentNode = folder("news");
-		String uuid = parentNode.getUuid();
-		assertNotNull(parentNode);
-		assertNotNull(parentNode.getUuid());
+	public void testReadPerformance() {
+		StopWatch.stopWatch("node.read", 2000, (step) -> {
+			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(100)));
+		});
+	}
 
-		int nRuns = 10;
-		mark();
-		for (int i = 0; i < nRuns; i++) {
+	@Test
+	public void testCreatePerformance() throws Exception {
+		String uuid = db.noTrx(() -> folder("news").getUuid());
+		StopWatch.stopWatch("node.create", 200, (step) -> {
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+			request.setSchema(new SchemaReference().setName("content"));
 			request.setLanguage("en");
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page_" + i + ".html"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page_" + step + ".html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
 			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 			latchFor(future);
 			assertSuccess(future);
-		}
-		measureAndAssert(nRuns, 0.059f, 4.0f);
+		});
+		//measureAndAssert(nRuns, 0.059f, 4.0f);
 	}
 
 }

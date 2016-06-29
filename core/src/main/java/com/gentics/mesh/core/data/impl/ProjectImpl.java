@@ -194,6 +194,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			baseNode = getGraph().addFramedVertex(NodeImpl.class);
 			baseNode.setSchemaContainer(schemaContainerVersion.getSchemaContainer());
 			baseNode.setProject(this);
+			baseNode.setCreated(creator);
 			Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(Mesh.mesh().getOptions().getDefaultLanguage());
 			baseNode.createGraphFieldContainer(language, getLatestRelease(), creator);
 			setBaseNode(baseNode);

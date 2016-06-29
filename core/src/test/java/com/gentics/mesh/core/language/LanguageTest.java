@@ -49,7 +49,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testLanguageIndex() {
 		try (NoTrx noTx = db.noTrx()) {
-			stopWatch(50000, () -> {
+			stopWatch("languageindex.read", 50000, (step) -> {
 				Iterable<Vertex> it = Database.getThreadLocalGraph().getVertices("LanguageImpl.languageTag", "en");
 				assertTrue(it.iterator().hasNext());
 				Iterable<Vertex> it2 = Database.getThreadLocalGraph()

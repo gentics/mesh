@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>mesh-performance-tests</artifactId>
@@ -51,5 +50,33 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skip>${skip.performance.tests}</skip>
+					<forkCount>1</forkCount>
+					<reuseForks>false</reuseForks>
+					<!-- Don't execute more than one test per jvm fork! -->
+					<threadCount>1</threadCount>
+					<threadCountClasses>1</threadCountClasses>
+					<trimStackTrace>false</trimStackTrace>
+					<!-- // Kill the forked test if it takes more than 3h for execution. Nope, currently disabled -->
+					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
+					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
+					<!-- <includes> <include>**/*Test.java</include> <include>**/*TestSuite.java</include> </includes> -->
+					<excludes>
+						<exclude>**/*AbstractTest.java</exclude>
+						<exclude>**/*Abstract*.java</exclude>
+						<exclude>**/Abstract*.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+
+	</build>
 
 </project>

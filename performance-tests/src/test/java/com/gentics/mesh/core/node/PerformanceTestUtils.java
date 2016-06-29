@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import org.assertj.core.data.Percentage;
 
 import com.gentics.mesh.test.BenchmarkJob;
+import com.gentics.mesh.test.StopWatch;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -25,6 +26,10 @@ public final class PerformanceTestUtils {
 
 	private static long currentMark;
 
+	/**
+	 * @deprecated Use {@link StopWatch}
+	 */
+	@Deprecated
 	public static void mark() {
 		currentMark = System.currentTimeMillis();
 	}
