@@ -131,8 +131,8 @@ public class TestDataProvider {
 			german = rootService.languageRoot().findByLanguageTag("de");
 
 			addBootstrappedData();
-			addUserGroupRoleProject();
 			addSchemaContainers();
+			addUserGroupRoleProject();
 			addMicroschemaContainers();
 
 			addTagFamilies();
@@ -311,9 +311,12 @@ public class TestDataProvider {
 		GroupRoot groupRoot = getMeshRoot().getGroupRoot();
 		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 
-		project = root.getProjectRoot().create(PROJECT_NAME, userInfo.getUser());
+		project = root.getProjectRoot().create(PROJECT_NAME, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion());
 		project.addLanguage(getEnglish());
 		project.addLanguage(getGerman());
+		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("folder"));
+		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("content"));
+		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("binary-content"));
 
 		// Guest Group / Role
 		Group guestGroup = root.getGroupRoot().create("guests", userInfo.getUser());
@@ -336,6 +339,10 @@ public class TestDataProvider {
 
 		Role role = roleRoot.create("extra_role", userInfo.getUser());
 		roles.put(role.getName(), role);
+
+		// Publish the project basenode
+		project.getBaseNode().publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
+
 	}
 
 	private void addTagFamilies() {
@@ -356,17 +363,14 @@ public class TestDataProvider {
 
 		// folder
 		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder").toBlocking().single();
-		project.getSchemaContainerRoot().addSchemaContainer(folderSchemaContainer);
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
 		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content").toBlocking().first();
-		project.getSchemaContainerRoot().addSchemaContainer(contentSchemaContainer);
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary-content
 		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content").toBlocking().first();
-		project.getSchemaContainerRoot().addSchemaContainer(binaryContentSchemaContainer);
 		schemaContainers.put("binary-content", binaryContentSchemaContainer);
 
 	}
@@ -604,7 +608,8 @@ public class TestDataProvider {
 	}
 
 	public int getNodeCount() {
-		return folders.size() + contents.size();
+		// folders, contents + basenode
+		return folders.size() + contents.size() + 1;
 	}
 
 	public Map<String, TagFamily> getTagFamilies() {

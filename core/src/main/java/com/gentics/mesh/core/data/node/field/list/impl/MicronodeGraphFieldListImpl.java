@@ -87,6 +87,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				// Resolve the microschema reference from the rest model
 				MicroschemaReference microschemaReference = item.getMicroschema();
 				if (microschemaReference == null) {
+					//TODO i18n
 					return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
 				}
 

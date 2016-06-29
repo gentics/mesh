@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
@@ -189,6 +191,17 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 				}
 			}
 			field.validate();
+		}
+	}
+
+	@Override
+	public void assertForUnhandledFields(FieldMap fieldMap) {
+		Set<String> allFieldsOfRequest = new HashSet<>(fieldMap.keySet());
+		for (FieldSchema fieldSchema : getFields()) {
+			allFieldsOfRequest.remove(fieldSchema.getName());
+		}
+		if (allFieldsOfRequest.size() > 0) {
+			throw error(BAD_REQUEST, "node_unhandled_fields", getName(), Arrays.toString(allFieldsOfRequest.toArray()));
 		}
 	}
 

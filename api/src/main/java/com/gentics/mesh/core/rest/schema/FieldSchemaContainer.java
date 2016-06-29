@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.gentics.mesh.core.rest.common.RestResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 
 /**
  * A field schema container is a named container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.
@@ -160,5 +161,12 @@ public interface FieldSchemaContainer extends RestResponse {
 	 * @param rolePerms
 	 */
 	void setRolePerms(String... rolePerms);
+
+	/**
+	 * Assert that the field map does not contain any fields which are not specified by the schema.
+	 * 
+	 * @param fieldMap
+	 */
+	void assertForUnhandledFields(FieldMap fieldMap);
 
 }

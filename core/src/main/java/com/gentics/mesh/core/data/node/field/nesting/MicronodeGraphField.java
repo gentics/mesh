@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field.nesting;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Arrays;
 import java.util.List;
@@ -58,6 +59,10 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 		}
 
 		MicroschemaReference microschemaReference = micronodeRestField.getMicroschema();
+		if (microschemaReference == null || !microschemaReference.isSet()) {
+			throw error(BAD_REQUEST, "micronode_error_missing_reference", fieldKey);
+		}
+		
 		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot()
 				.fromReference(microschemaReference, ac.getRelease(null)).toBlocking().single();
 

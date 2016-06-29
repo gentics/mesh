@@ -103,7 +103,7 @@ public class MicroschemaProjectVerticleTest extends AbstractRestVerticleTest {
 		MicroschemaContainer microschema = microschemaContainer("vcard");
 		Project project = project();
 		ProjectRoot projectRoot = meshRoot().getProjectRoot();
-		Project extraProject = projectRoot.create("extraProject", user());
+		Project extraProject = projectRoot.create("extraProject", user(), schemaContainer("folder").getLatestVersion());
 		// Add only read perms
 		role().grantPermissions(microschema, READ_PERM);
 		role().grantPermissions(project, READ_PERM);

@@ -8,13 +8,11 @@ import org.apache.commons.io.FileUtils;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.TransactionContextScheduler;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 import rx.Scheduler;
@@ -67,23 +65,23 @@ public abstract class AbstractDatabase implements Database {
 		start();
 	}
 
-//	@Override
-//	public <T> Observable<T> asyncTrx(TrxHandler<T> txHandler) {
-//		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
-//		Observable<T> obs = Observable.create(sub -> {
-//			try {
-//				T result = trx(txHandler);
-//				sub.onNext(result);
-//				sub.onCompleted();
-//			} catch (Exception e) {
-//				sub.onError(e);
-//			}
-//
-//		});
-//
-//		return obs.observeOn(scheduler);
-//
-//	}
+	//	@Override
+	//	public <T> Observable<T> asyncTrx(TrxHandler<T> txHandler) {
+	//		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
+	//		Observable<T> obs = Observable.create(sub -> {
+	//			try {
+	//				T result = trx(txHandler);
+	//				sub.onNext(result);
+	//				sub.onCompleted();
+	//			} catch (Exception e) {
+	//				sub.onError(e);
+	//			}
+	//
+	//		});
+	//
+	//		return obs.observeOn(scheduler);
+	//
+	//	}
 
 	@Override
 	public <T> T noTrx(TrxHandler<T> txHandler) {
@@ -114,28 +112,28 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler) {
-		ObservableFuture<T> obsFut = RxHelper.observableFuture();
-		Mesh.vertx().executeBlocking(bc -> {
 
-			try (NoTrx noTx = noTrx()) {
+		return Observable.<T> create(sub -> {
+			NoTrx noTx = noTrx();
+			try {
 				Observable<T> result = trxHandler.call();
 				if (result == null) {
-					bc.complete();
-				} else {
-					T ele = result.toBlocking().single();
-					bc.complete(ele);
+					sub.onCompleted();
 				}
+				result.toList().subscribe(list -> {
+					noTx.close();
+					list.forEach(sub::onNext);
+					sub.onCompleted();
+				}, error -> {
+					noTx.close();
+					sub.onError(error);
+				});
 			} catch (Exception e) {
 				log.error("Error while handling no-transaction.", e);
-				bc.fail(e);
+				sub.onError(e);
 			}
 
-		}, false, obsFut.toHandler());
-		return obsFut;
+		}).subscribeOn(RxHelper.scheduler(Mesh.vertx()));
 	}
 
-	@Override
-	public TransactionContextScheduler noTx() {
-		return new TransactionContextScheduler(vertx, false, this);
-	}
 }

@@ -117,9 +117,6 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 	@Override
 	public Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference, Release release) {
-		if (reference == null) {
-			throw error(INTERNAL_SERVER_ERROR, "Missing microschema reference");
-		}
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
 		Integer version = release == null ? reference.getVersion() : null;

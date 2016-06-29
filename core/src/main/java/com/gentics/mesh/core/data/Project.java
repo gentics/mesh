@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
@@ -27,9 +28,13 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * Create the base node of the project using the user as a reference for the editor and creator fields.
 	 * 
 	 * @param creator
-	 * @return
+	 *            Creator of the base node
+	 * @param schemaContainerVersion
+	 *            Schema version used for the basenode creation
+	 * 
+	 * @return Created base node
 	 */
-	Node createBaseNode(User creator);
+	Node createBaseNode(User creator, SchemaContainerVersion schemaContainerVersion);
 
 	/**
 	 * Return the base node of the project.

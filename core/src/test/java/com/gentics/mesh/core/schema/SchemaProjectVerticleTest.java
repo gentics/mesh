@@ -100,7 +100,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		SchemaContainer schema = schemaContainer("content");
 		Project project = project();
 		ProjectRoot projectRoot = meshRoot().getProjectRoot();
-		Project extraProject = projectRoot.create("extraProject", user());
+		Project extraProject = projectRoot.create("extraProject", user(), schemaContainer("folder").getLatestVersion());
 		// Add only read perms
 		role().grantPermissions(schema, READ_PERM);
 		role().grantPermissions(project, READ_PERM);

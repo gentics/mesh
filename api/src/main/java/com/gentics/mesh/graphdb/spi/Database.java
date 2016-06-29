@@ -8,7 +8,6 @@ import java.util.Iterator;
 
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.TransactionContextScheduler;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
@@ -291,7 +290,5 @@ public interface Database {
 	void setVertexType(Element element, Class<?> classOfVertex);
 
 	TransactionalGraph rawTx();
-
-	TransactionContextScheduler noTx();
 
 }

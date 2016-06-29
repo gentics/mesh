@@ -665,6 +665,10 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testReadPublishedNodes() {
 		try (NoTrx noTx = db.noTrx()) {
+			// 1. Take all nodes offline
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new TakeOfflineParameters().setRecursive(true)));
+
+			// 2. Assert that all nodes are offline. The findNodes method should not find any node because it searches for published nodes by default.
 			NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
@@ -985,7 +989,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
-			assertThat(response).hasVersion("0.1").hasLanguage("en").hasStringField("name", "2015");
+			assertThat(response).hasVersion("1.0").hasLanguage("en").hasStringField("name", "2015");
 
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
@@ -1075,7 +1079,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, uuid, new TakeOfflineParameters().setRecursive(true)));
 
 			// 2. Load load using default options. By default the scope published is active. Thus the node can't be found.
-			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
+			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid), NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", uuid,
+					project().getLatestRelease().getUuid());
 
 			// 3. Publish the node again.
 			call(() -> getClient().publishNode(PROJECT_NAME, uuid));
@@ -1102,7 +1107,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			assertThat(call(
 					() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setRelease(initialRelease.getName()).draft())))
-							.as("Initial Release Version").hasVersion("0.1").hasStringField("name", "2015");
+							.as("Initial Release Version").hasVersion("1.0").hasStringField("name", "2015");
 			assertThat(
 					call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getName()).draft())))
 							.as("New Release Version").hasVersion("0.1").hasStringField("name", "2015 in new release");
@@ -1211,6 +1216,25 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNull("No path should be rendered since by default the linkType is OFF", response.getBreadcrumb().get(0).getPath());
 			assertNull("No path should be rendered since by default the linkType is OFF", response.getBreadcrumb().get(1).getPath());
 			assertEquals("Only two items should be listed in the breadcrumb", 2, response.getBreadcrumb().size());
+		}
+	}
+
+	@Test
+	public void testReadBaseNode() throws Exception {
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = project().getBaseNode();
+			String uuid = node.getUuid();
+
+			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
+			assertNotNull(response);
+			assertEquals("folder", response.getSchema().getName());
+			assertThat(response.getAvailableLanguages()).containsExactly("en");
+			assertEquals("en", response.getLanguage());
+
+			response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setResolveLinks(LinkType.FULL)));
+			assertNotNull(response);
+			assertEquals("folder", response.getSchema().getName());
+			assertEquals("/api/v1/dummy/webroot/", response.getLanguagePaths().get("en"));
 		}
 	}
 
@@ -1336,31 +1360,39 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws GenericRestException, Exception {
+		final String newName = "english renamed name";
+
+		String uuid = db.noTrx(() -> content("concorde").getUuid());
+		Node node = db.noTrx(() -> content("concorde"));
+		NodeGraphFieldContainer origContainer = db.noTrx(() -> {
+			Node prod = content("concorde");
+			NodeGraphFieldContainer container = prod.getGraphFieldContainer(english());
+			assertEquals("Concorde_english_name", container.getString("name").getString());
+			assertEquals("Concorde english title", container.getString("title").getString());
+			return container;
+		});
+		String schemaUuid = db.noTrx(() -> schemaContainer("content").getUuid());
+		// Prepare the request
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("content");
+		schemaReference.setUuid(schemaUuid);
+		request.setSchema(schemaReference);
+		request.setLanguage("en");
+		request.setVersion(new VersionReference(null, "0.1"));
+		request.getFields().put("name", FieldUtil.createStringField(newName));
+		NodeParameters parameters = new NodeParameters();
+		parameters.setLanguages("en", "de");
+
+		// Update the node
+		NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, uuid, request, parameters));
+
+		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("1.1").hasStringField("name", newName)
+				.hasStringField("title", "Concorde english title");
+
 		try (NoTrx noTx = db.noTrx()) {
-			final String newName = "english renamed name";
-			Node node = content("concorde");
-			String uuid = node.getUuid();
-			NodeGraphFieldContainer origContainer = node.getGraphFieldContainer(english());
-			assertEquals("Concorde_english_name", origContainer.getString("name").getString());
-			assertEquals("Concorde english title", origContainer.getString("title").getString());
+			node = content("concorde");
 
-			// Prepare the request
-			NodeUpdateRequest request = new NodeUpdateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("content");
-			schemaReference.setUuid(schemaContainer("content").getUuid());
-			request.setSchema(schemaReference);
-			request.setLanguage("en");
-			request.setVersion(new VersionReference(null, "0.1"));
-			request.getFields().put("name", FieldUtil.createStringField(newName));
-			NodeParameters parameters = new NodeParameters();
-			parameters.setLanguages("en", "de");
-
-			// Update the node
-			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, uuid, request, parameters));
-
-			assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("0.2").hasStringField("name", newName)
-					.hasStringField("title", "Concorde english title");
 			node.reload();
 			origContainer.reload();
 			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
@@ -1382,7 +1414,9 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// assertEquals(restNode.getUuid(), entry.getElementUuid());
 			// assertEquals(Node.TYPE, entry.getElementType());
 			// assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getElementAction());
+
 		}
+
 	}
 
 	@Test
@@ -1426,7 +1460,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	}
 
 	@Test
-	public void testUpdateNodeWithExtraField() throws UnknownHostException, InterruptedException {
+	public void testCreateNodeWithExtraField() throws UnknownHostException, InterruptedException {
 		try (NoTrx noTx = db.noTrx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
@@ -1444,10 +1478,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			request.setParentNodeUuid(uuid);
 
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_unhandled_fields", "content", "[extrafield]");
-			assertNull(future.result());
+			call(() -> getClient().createNode(PROJECT_NAME, request), BAD_REQUEST, "node_unhandled_fields", "content", "[extrafield]");
 		}
 
 	}
@@ -1695,8 +1726,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			PublishStatusResponse publishStatus = call(
 					() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(initialRelease.getName())));
-			assertThat(publishStatus).as("Initial release publish status").isNotNull().isNotPublished("en").hasVersion("en", "0.1")
-					.doesNotContain("de");
+			assertThat(publishStatus).as("Initial release publish status").isNotNull().isPublished("en").hasVersion("en", "1.0").doesNotContain("de");
 
 			publishStatus = call(
 					() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(newRelease.getName())));
@@ -1728,8 +1758,14 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testGetPublishStatusForLanguage() {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = folder("products");
+
+			// 1. Take everything offline
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new TakeOfflineParameters().setRecursive(true)));
+
+			// 2. Publish only a specific language of a node
 			call(() -> getClient().publishNodeLanguage(PROJECT_NAME, node.getUuid(), "en"));
 
+			// 3. Assert that the other language is not published
 			assertThat(call(() -> getClient().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "de"))).as("German publish status")
 					.isNotPublished();
 			assertThat(call(() -> getClient().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "en"))).as("English publish status")
@@ -1860,6 +1896,9 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(),
+					new VersioningParameters().setRelease(initialRelease.getUuid()), new TakeOfflineParameters().setRecursive(true)));
+
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
 			update.getFields().put("name", FieldUtil.createStringField("2015 de"));
@@ -1904,41 +1943,43 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testTakeNodeOffline() {
-		try (NoTrx noTx = db.noTrx()) {
+
+		String nodeUuid = db.noTrx(() -> {
 			Node node = folder("products");
-			String nodeUuid = node.getUuid();
+			String uuid = node.getUuid();
 
-			assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new TakeOfflineParameters().setRecursive(true)));
 
-			// assert that the containers have both webrootpath properties set
-			db.noTrx(() -> {
-				for (String language : Arrays.asList("en", "de")) {
-					for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
-							NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
-						assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
-								.as("Property " + property + " for " + language).isNotNull();
-					}
-				}
-				return null;
-			});
+			assertThat(call(() -> getClient().publishNode(PROJECT_NAME, uuid))).as("Publish Status").isPublished("en").isPublished("de");
+			return uuid;
+		});
 
-			assertThat(call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new TakeOfflineParameters().setRecursive(true))))
-					.as("Publish Status after take offline").isNotPublished("en").isNotPublished("de");
-
-			// assert that the containers have only the draft webrootpath properties set
-			db.noTrx(() -> {
-				for (String language : Arrays.asList("en", "de")) {
-					String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
+		// assert that the containers have both webrootpath properties set
+		try (NoTrx noTx1 = db.noTrx()) {
+			for (String language : Arrays.asList("en", "de")) {
+				for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
+						NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
 					assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
 							.as("Property " + property + " for " + language).isNotNull();
-
-					property = NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY;
-					assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
-							.as("Property " + property + " for " + language).isNull();
-
 				}
-				return null;
-			});
+			}
+		}
+
+		assertThat(call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new TakeOfflineParameters().setRecursive(true))))
+				.as("Publish Status after take offline").isNotPublished("en").isNotPublished("de");
+
+		// assert that the containers have only the draft webrootpath properties set
+		try (NoTrx noTx2 = db.noTrx()) {
+			for (String language : Arrays.asList("en", "de")) {
+				String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
+				assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
+						.as("Property " + property + " for " + language).isNotNull();
+
+				property = NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY;
+				assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
+						.as("Property " + property + " for " + language).isNull();
+
+			}
 		}
 
 	}
@@ -2062,8 +2103,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "de"));
 
-		// TODO
-		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "en"), CONFLICT, "", "");
+		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published",
+				news2015Uuid);
 
 	}
 

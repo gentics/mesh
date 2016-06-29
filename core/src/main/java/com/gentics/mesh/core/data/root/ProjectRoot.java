@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 
 /**
  * Project Root Node domain model interface.
@@ -30,9 +31,11 @@ public interface ProjectRoot extends RootVertex<Project> {
 	 *            Name of the new project.
 	 * @param creator
 	 *            User that is being used to set the initial creator and editor references.
+	 * @param schemaContainerVersion
+	 *            Schema container version which will be used to create the basenode
 	 * @return
 	 */
-	Project create(String projectName, User creator);
+	Project create(String projectName, User creator, SchemaContainerVersion schemaContainerVersion);
 
 	/**
 	 * Remove the project from the aggregation vertex.

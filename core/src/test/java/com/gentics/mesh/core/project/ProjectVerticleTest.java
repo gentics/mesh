@@ -41,6 +41,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
@@ -69,16 +70,32 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	// Create Tests
 
 	@Test
+	public void testCreateNoSchemaReference() {
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName("Test1234");
+		call(() -> getClient().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
+
+		request.setSchemaReference(new SchemaReference());
+		call(() -> getClient().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
+	}
+
+	@Test
+	public void testCreateBogusSchemaReference() {
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName("Test1234");
+		request.setSchemaReference(new SchemaReference().setName("bogus42"));
+		call(() -> getClient().createProject(request), BAD_REQUEST, "error_schema_reference_not_found", "bogus42", "-", "-");
+	}
+
+	@Test
 	@Override
 	public void testCreate() throws Exception {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
+		request.setSchemaReference(new SchemaReference().setName("folder"));
 
-		Future<ProjectResponse> future = getClient().createProject(request);
-		latchFor(future);
-		assertSuccess(future);
-		ProjectResponse restProject = future.result();
+		ProjectResponse restProject = call(() -> getClient().createProject(request));
 
 		try (NoTrx noTx = db.noTrx()) {
 			test.assertProject(request, restProject);
@@ -92,6 +109,8 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertTrue(user().hasPermissionAsync(ac, project.getBaseNode(), CREATE_PERM).toBlocking().first());
 			assertTrue(user().hasPermissionAsync(ac, project.getTagFamilyRoot(), CREATE_PERM).toBlocking().first());
 			assertTrue(user().hasPermissionAsync(ac, project.getNodeRoot(), CREATE_PERM).toBlocking().first());
+
+			assertEquals("folder", project.getBaseNode().getSchemaContainer().getLatestVersion().getName());
 		}
 	}
 
@@ -108,6 +127,8 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
+		request.setSchemaReference(new SchemaReference().setName("folder"));
+
 
 		try (NoTrx noTx = db.noTrx()) {
 			// Create a new project
@@ -116,7 +137,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(createFuture);
 			ProjectResponse restProject = createFuture.result();
 			test.assertProject(request, restProject);
-			assertEquals(4, restProject.getPermissions().length);
+			assertEquals(6, restProject.getPermissions().length);
 
 			meshRoot().getProjectRoot().reload();
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().single());
@@ -146,11 +167,11 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			final int nProjects = 142;
 			String noPermProjectName;
 			for (int i = 0; i < nProjects; i++) {
-				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, user());
+				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, user(), schemaContainer("folder").getLatestVersion());
 				extraProject.setBaseNode(project().getBaseNode());
 				role().grantPermissions(extraProject, READ_PERM);
 			}
-			Project noPermProject = meshRoot().getProjectRoot().create("no_perm_project", user());
+			Project noPermProject = meshRoot().getProjectRoot().create("no_perm_project", user(), schemaContainer("folder").getLatestVersion());
 			noPermProjectName = noPermProject.getName();
 
 			// Don't grant permissions to no perm project
@@ -260,7 +281,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
-			assertEquals(4, future.result().getRolePerms().length);
+			assertEquals(6, future.result().getRolePerms().length);
 		}
 	}
 
@@ -284,7 +305,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testUpdateWithConflicitingName() {
 		try (NoTrx noTx = db.noTrx()) {
-			MeshRoot.getInstance().getProjectRoot().create("Test234", user());
+			MeshRoot.getInstance().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
 
 			Project project = project();
 			String uuid = project.getUuid();
@@ -456,6 +477,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		for (int i = 0; i < nJobs; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("test12345_" + i);
+			request.setSchemaReference(new SchemaReference().setName("folder"));
 			set.add(getClient().createProject(request));
 		}
 		validateCreation(set, null);

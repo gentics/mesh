@@ -39,7 +39,7 @@ public class AtomicTagTest extends AbstractDBTest {
 			meshRoot.getTagRoot();
 
 			ProjectRoot projectRoot = meshRoot.getProjectRoot();
-			Project project = projectRoot.create("dummy", user);
+			Project project = projectRoot.create("dummy", user, schemaContainer("folder").getLatestVersion());
 			TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 			TagFamily tagFamily = tagFamilyRoot.create("basic", user);
 

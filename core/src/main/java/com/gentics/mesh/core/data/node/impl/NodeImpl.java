@@ -142,6 +142,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<String> getPathSegment(String releaseUuid, ContainerType type, String... languageTag) {
+
+		// Check whether this node is the base node.
+		if (getParentNode(releaseUuid) == null) {
+			return Observable.just("");
+		}
 		NodeGraphFieldContainer container = null;
 		for (String tag : languageTag) {
 			if ((container = getGraphFieldContainer(tag, releaseUuid, type)) != null) {
@@ -589,8 +594,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					log.error("Could not find field container for languages {" + requestedLanguageTags + "} and release {" + release.getUuid()
 							+ "} and version params version {" + versioiningParameters.getVersion() + "}, release {"
 							+ versioiningParameters.getRelease() + "}");
-					//TODO the response should be specific.. add publish and release info
-					throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
+					throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", getUuid(), release.getUuid());
 				}
 
 				// if a specific version was requested, that does not exist, we also return NOT_FOUND
@@ -977,6 +981,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			getGraphFieldContainerEdge(languageTag, releaseUuid, ContainerType.PUBLISHED).remove();
 			published.getImpl().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 
+			assertPublishConsistency(ac);
+
 			// reindex
 			return createIndexBatch(DELETE_ACTION, Arrays.asList(published), releaseUuid, ContainerType.PUBLISHED);
 		}).process().map(i -> {
@@ -1274,7 +1280,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion().getNumber(), requestModel.getLanguage());
 				}
 
-				assertForUnhandledFields(latestDraftVersion, requestModel.getFields());
+				latestDraftVersion.getSchemaContainerVersion().getSchema().assertForUnhandledFields(requestModel.getFields());
 
 				// TODO handle simplified case in which baseContainerVersion and latestDraftVersion are equal
 				List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
@@ -1327,25 +1333,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return createIndexBatch(STORE_ACTION, Arrays.asList(latestDraftVersion), release.getUuid(), ContainerType.DRAFT);
 		}).process().map(i -> this);
 
-	}
-
-	/**
-	 * Assert that the request only contains fields which are described in the schema. Otherwise an exception will be thrown.
-	 * 
-	 * @param fieldContainer
-	 *            Field container which will be used to load the schema which is used for comparison
-	 * @param fields
-	 *            Field map of the request which may contain additional unknown fields
-	 */
-	private void assertForUnhandledFields(NodeGraphFieldContainer fieldContainer, FieldMap fields) {
-		Schema latestSchema = fieldContainer.getSchemaContainerVersion().getSchema();
-		Set<String> allFieldsOfRequest = new HashSet<>(fields.keySet());
-		for (FieldSchema fieldSchema : latestSchema.getFields()) {
-			allFieldsOfRequest.remove(fieldSchema.getName());
-		}
-		if (allFieldsOfRequest.size() > 0) {
-			throw error(BAD_REQUEST, "node_unhandled_fields", latestSchema.getName(), Arrays.toString(allFieldsOfRequest.toArray()));
-		}
 	}
 
 	@Override

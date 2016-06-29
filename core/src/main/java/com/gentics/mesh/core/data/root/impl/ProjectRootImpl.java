@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.NameConflictException;
@@ -83,12 +84,16 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	// TODO unique
 
 	@Override
-	public Project create(String name, User creator) {
+	public Project create(String name, User creator, SchemaContainerVersion schemaContainerVersion) {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		project.setName(name);
 		project.getNodeRoot();
 		project.getReleaseRoot().create(name, creator).setMigrated(true);
-		project.createBaseNode(creator);
+
+		// Assign the provided schema container to the project
+		project.getSchemaContainerRoot().addItem(schemaContainerVersion.getSchemaContainer());
+		project.getLatestRelease().assignSchemaVersion(schemaContainerVersion);
+		project.createBaseNode(creator, schemaContainerVersion);
 
 		project.setCreated(creator);
 		project.getSchemaContainerRoot();
@@ -164,9 +169,15 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			if (conflictingProject != null) {
 				throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 			}
+			if (requestModel.getSchemaReference() == null || !requestModel.getSchemaReference().isSet()) {
+				throw error(BAD_REQUEST, "project_error_no_schema_reference");
+			}
+			SchemaContainerVersion schemaContainerVersion = BootstrapInitializer.getBoot().schemaContainerRoot()
+					.fromReference(requestModel.getSchemaReference()).toBlocking().single();
+			
 			Tuple<SearchQueueBatch, Project> tuple = db.trx(() -> {
 				requestUser.reload();
-				Project project = create(requestModel.getName(), requestUser);
+				Project project = create(requestModel.getName(), requestUser, schemaContainerVersion);
 
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project);
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
@@ -182,14 +193,12 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				NodeIndexHandler nodeIndexHandler = NodeIndexHandler.getInstance();
 				TagIndexHandler tagIndexHandler = TagIndexHandler.getInstance();
 				TagFamilyIndexHandler tagFamilyIndexHandler = TagFamilyIndexHandler.getInstance();
-				batch.addEntry(nodeIndexHandler.getIndexName(project.getUuid(), initialRelease.getUuid(), "draft"),
-						Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
-				batch.addEntry(nodeIndexHandler.getIndexName(project.getUuid(), initialRelease.getUuid(), "published"),
-						Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
-				batch.addEntry(tagIndexHandler.getIndexName(project.getUuid()), Tag.TYPE,
+				batch.addEntry(nodeIndexHandler.getIndexName(project.getUuid(), initialRelease.getUuid(), "draft"), Node.TYPE,
 						SearchQueueEntryAction.CREATE_INDEX);
-				batch.addEntry(tagFamilyIndexHandler.getIndexName(project.getUuid()), TagFamily.TYPE,
+				batch.addEntry(nodeIndexHandler.getIndexName(project.getUuid(), initialRelease.getUuid(), "published"), Node.TYPE,
 						SearchQueueEntryAction.CREATE_INDEX);
+				batch.addEntry(tagIndexHandler.getIndexName(project.getUuid()), Tag.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+				batch.addEntry(tagFamilyIndexHandler.getIndexName(project.getUuid()), TagFamily.TYPE, SearchQueueEntryAction.CREATE_INDEX);
 
 				return Tuple.tuple(batch, project);
 			});

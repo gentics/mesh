@@ -30,10 +30,13 @@ public class MicronodeResponse extends AbstractResponse implements MicronodeFiel
 	/**
 	 * Set the microschema reference to the micronode
 	 * 
-	 * @param microschema microschema reference
+	 * @param microschema
+	 *            microschema reference
+	 * @return Fluent API
 	 */
-	public void setMicroschema(MicroschemaReference microschema) {
+	public MicronodeResponse setMicroschema(MicroschemaReference microschema) {
 		this.microschema = microschema;
+		return this;
 	}
 
 	@Override

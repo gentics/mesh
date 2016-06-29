@@ -55,7 +55,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	public void testCreate() {
 		try (NoTrx noTx = db.noTrx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			Project project = projectRoot.create("test", user());
+			Project project = projectRoot.create("test", user(), schemaContainer("folder").getLatestVersion());
 			Project project2 = projectRoot.findByName(project.getName()).toBlocking().single();
 			assertNotNull(project2);
 			assertEquals("test", project2.getName());
@@ -114,7 +114,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			int nProjectsBefore = projectRoot.findAll().size();
-			assertNotNull(projectRoot.create("test1234556", user()));
+			assertNotNull(projectRoot.create("test1234556", user(), schemaContainer("folder").getLatestVersion()));
 			int nProjectsAfter = projectRoot.findAll().size();
 			assertEquals(nProjectsBefore + 1, nProjectsAfter);
 		}
@@ -124,7 +124,8 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTrx noTx = db.noTrx()) {
-			PageImpl<? extends Project> page = meshRoot().getProjectRoot().findAll(getMockedInternalActionContext(user()), new PagingParameters(1, 25));
+			PageImpl<? extends Project> page = meshRoot().getProjectRoot().findAll(getMockedInternalActionContext(user()),
+					new PagingParameters(1, 25));
 			assertNotNull(page);
 		}
 	}
@@ -177,7 +178,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
-			Project project = meshRoot().getProjectRoot().create("newProject", user());
+			Project project = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			assertNotNull(project);
 			String uuid = project.getUuid();
 			SearchQueueBatch batch = createBatch();
@@ -196,7 +197,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
-			Project project = root.getProjectRoot().create("TestProject", user());
+			Project project = root.getProjectRoot().create("TestProject", user(), schemaContainer("folder").getLatestVersion());
 			assertFalse(user().hasPermissionAsync(ac, project, GraphPermission.CREATE_PERM).toBlocking().single());
 			user().addCRUDPermissionOnRole(root.getProjectRoot(), GraphPermission.CREATE_PERM, project);
 			ac.data().clear();
@@ -236,7 +237,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	public void testReadPermission() {
 		try (NoTrx noTx = db.noTrx()) {
 			Project newProject;
-			newProject = meshRoot().getProjectRoot().create("newProject", user());
+			newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.READ_PERM, newProject);
 		}
 	}
@@ -246,7 +247,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	public void testDeletePermission() {
 		try (NoTrx noTx = db.noTrx()) {
 			Project newProject;
-			newProject = meshRoot().getProjectRoot().create("newProject", user());
+			newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.DELETE_PERM, newProject);
 		}
 	}
@@ -255,7 +256,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testUpdatePermission() {
 		try (NoTrx noTx = db.noTrx()) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", user());
+			Project newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.UPDATE_PERM, newProject);
 		}
 	}
@@ -264,7 +265,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testCreatePermission() {
 		try (NoTrx noTx = db.noTrx()) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", user());
+			Project newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.CREATE_PERM, newProject);
 		}
 	}

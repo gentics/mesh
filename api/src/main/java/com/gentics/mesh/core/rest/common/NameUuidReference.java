@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.rest.common;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Base class for named references. A named reference is a reference to a element within mesh that can be identified by uuid and name.
  *
@@ -64,5 +68,15 @@ public abstract class NameUuidReference<T> {
 	public T setUuid(String uuid) {
 		this.uuid = uuid;
 		return (T) this;
+	}
+
+	/**
+	 * Checks whether one of the needed parameters (name or uuid) is set.
+	 * 
+	 * @return
+	 */
+	@JsonIgnore
+	public boolean isSet() {
+		return !StringUtils.isEmpty(getName()) || !StringUtils.isEmpty(getUuid());
 	}
 }

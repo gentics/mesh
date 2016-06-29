@@ -7,9 +7,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
+import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -347,6 +348,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap fieldMap) {
 		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
+		schema.assertForUnhandledFields(fieldMap);
+
 		//TODO: This should return an observable
 		// Iterate over all known field that are listed in the schema for the node
 		for (FieldSchema entry : schema.getFields()) {

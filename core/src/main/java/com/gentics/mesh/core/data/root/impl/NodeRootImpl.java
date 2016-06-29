@@ -230,6 +230,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				throw error(BAD_REQUEST, "error_schema_parameter_missing");
 			}
 
+			//TODO use fromReference call to load the schema container
+			
 			if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 				// 2. Use schema reference by uuid first
 				return project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM).flatMap(schemaContainer -> {

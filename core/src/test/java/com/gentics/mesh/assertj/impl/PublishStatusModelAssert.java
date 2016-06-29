@@ -14,24 +14,31 @@ public class PublishStatusModelAssert extends AbstractAssert<PublishStatusModelA
 
 	/**
 	 * Assert that the status is published
+	 * 
 	 * @return fluent API
 	 */
 	public PublishStatusModelAssert isPublished() {
-		assertThat(actual.isPublished()).isTrue();
+		if (actual.isPublished() == false) {
+			failWithMessage("The language was not published");
+		}
 		return this;
 	}
 
 	/**
 	 * Assert that the status is not published
+	 * 
 	 * @return fluent API
 	 */
 	public PublishStatusModelAssert isNotPublished() {
-		assertThat(actual.isPublished()).isFalse();
+		if (actual.isPublished() == true) {
+			failWithMessage("The language was published");
+		}
 		return this;
 	}
 
 	/**
 	 * Assert that the status references the given version
+	 * 
 	 * @param version
 	 * @return fluent API
 	 */

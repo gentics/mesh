@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -45,6 +46,7 @@ import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -186,12 +188,14 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Node createBaseNode(User creator) {
+	public Node createBaseNode(User creator, SchemaContainerVersion schemaContainerVersion) {
 		Node baseNode = getBaseNode();
 		if (baseNode == null) {
 			baseNode = getGraph().addFramedVertex(NodeImpl.class);
-			baseNode.setSchemaContainer(BootstrapInitializer.getBoot().schemaContainerRoot().findByName("folder").toBlocking().single());
+			baseNode.setSchemaContainer(schemaContainerVersion.getSchemaContainer());
 			baseNode.setProject(this);
+			Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(Mesh.mesh().getOptions().getDefaultLanguage());
+			baseNode.createGraphFieldContainer(language, getLatestRelease(), creator);
 			setBaseNode(baseNode);
 			// Add the node to the aggregation nodes
 			getNodeRoot().addNode(baseNode);

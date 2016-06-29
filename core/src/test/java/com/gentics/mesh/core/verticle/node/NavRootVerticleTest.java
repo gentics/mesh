@@ -15,15 +15,17 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.Future;
 
-public class NavRootVerticleTest extends AbstractRestVerticleTest {
+public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private NavRootVerticle navRootVerticle;
@@ -44,18 +46,20 @@ public class NavRootVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadMultithreaded() {
-		int nJobs = 200;
-		String path = "/";
+		try (NoTrx noTx = db.noTrx()) {
+			int nJobs = 200;
+			String path = "/";
 
-		List<Future<NavigationResponse>> futures = new ArrayList<>();
-		for (int i = 0; i < nJobs; i++) {
-			futures.add(getClient().navroot(PROJECT_NAME, path, new NodeParameters().setLanguages("en", "de")));
-		}
+			List<Future<NavigationResponse>> futures = new ArrayList<>();
+			for (int i = 0; i < nJobs; i++) {
+				futures.add(getClient().navroot(PROJECT_NAME, path, new NodeParameters().setLanguages("en", "de")));
+			}
 
-		for (Future<NavigationResponse> fut : futures) {
-			latchFor(fut);
-			assertSuccess(fut);
-			assertThat(fut.result()).isValid(7).hasDepth(3);
+			for (Future<NavigationResponse> fut : futures) {
+				latchFor(fut);
+				assertSuccess(fut);
+				assertThat(fut.result()).isValid(7).hasDepth(3);
+			}
 		}
 	}
 
@@ -64,11 +68,13 @@ public class NavRootVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadNavWithValidPath() {
-		String path = "/News/2015";
-		Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10));
-		latchFor(future);
-		assertSuccess(future);
-		assertThat(future.result()).hasDepth(0).isValid(1);
+		try (NoTrx noTx = db.noTrx()) {
+			String path = "/News/2015";
+			Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10));
+			latchFor(future);
+			assertSuccess(future);
+			assertThat(future.result()).hasDepth(0).isValid(1);
+		}
 	}
 
 	/**
@@ -76,11 +82,13 @@ public class NavRootVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadNavWithValidPath2() {
-		String path = "/News/2015/";
-		Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10));
-		latchFor(future);
-		assertSuccess(future);
-		assertThat(future.result()).isValid(1).hasDepth(0);
+		try (NoTrx noTx = db.noTrx()) {
+			String path = "/News/2015/";
+			Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10));
+			latchFor(future);
+			assertSuccess(future);
+			assertThat(future.result()).isValid(1).hasDepth(0);
+		}
 	}
 
 	/**
@@ -88,13 +96,19 @@ public class NavRootVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadNavForBasenode() {
-		String path = "/";
-		Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10));
-		latchFor(future);
-		assertSuccess(future);
-		assertThat(future.result()).isValid(7).hasDepth(3);
-		assertEquals("The root element of the navigation did not contain the project basenode uuid.", project().getBaseNode().getUuid(),
-				future.result().getRoot().getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+
+//			for (NodeGraphFieldContainer container : project().getBaseNode().getGraphFieldContainers()) {
+//				System.out.println(container.isPublished(project().getLatestRelease().getUuid()));
+//			}
+			String path = "/";
+			Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10));
+			latchFor(future);
+			assertSuccess(future);
+			assertThat(future.result()).isValid(7).hasDepth(3);
+			assertEquals("The root element of the navigation did not contain the project basenode uuid.", project().getBaseNode().getUuid(),
+					future.result().getRoot().getUuid());
+		}
 	}
 
 	/**
@@ -102,10 +116,12 @@ public class NavRootVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadNavWithInvalidPath() {
-		String path = "/blub";
-		Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path);
-		latchFor(future);
-		expectException(future, NOT_FOUND, "node_not_found_for_path", "/blub");
+		try (NoTrx noTx = db.noTrx()) {
+			String path = "/blub";
+			Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path);
+			latchFor(future);
+			expectException(future, NOT_FOUND, "node_not_found_for_path", "/blub");
+		}
 	}
 
 	/**
@@ -113,9 +129,11 @@ public class NavRootVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadNavWithPathToContent() {
-		String path = "/News/2015/News_2015.en.html";
-		Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NodeParameters().setLanguages("en", "de"));
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "navigation_error_no_container");
+		try (NoTrx noTx = db.noTrx()) {
+			String path = "/News/2015/News_2015.en.html";
+			Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NodeParameters().setLanguages("en", "de"));
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "navigation_error_no_container");
+		}
 	}
 }

@@ -84,8 +84,8 @@ public class MicronodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 			NodeResponse response = updateNode(FIELDNAME, field);
 
 			MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELDNAME);
-			assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName)
-					.hasStringField("address", null).hasStringField("postcode", null);
+			assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName).hasStringField("address", null)
+					.hasStringField("postcode", null);
 
 			node.reload();
 			container.reload();
@@ -125,16 +125,31 @@ public class MicronodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		NodeResponse firstResponse = updateNode(FIELDNAME, field);
 		String oldNumber = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELDNAME, new MicronodeResponse());
+		createNodeAndExpectFailure(FIELDNAME, new MicronodeResponse(), BAD_REQUEST, "micronode_error_missing_reference", "micronodeField");
+
+		// Assert that an empty request will not update any data of the micronode
+		NodeResponse secondResponse = updateNode(FIELDNAME, new MicronodeResponse().setMicroschema(new MicroschemaReference().setName("vcard")));
 		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME).getFields().getStringField("firstName").getString()).isEqualTo("Max");
+		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME).getFields().getStringField("lastName").getString()).isEqualTo("Moritz");
+		// TODO yes this is failing. We need to update the check which determines that nothing was updated
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+
+		// Assert that a null field value request will delete the micronode 
+		secondResponse = updateNode(FIELDNAME, null);
+		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME)).isNull();
 		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME).getUuid()).as("Updated Field Value").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+
 	}
 
 	/**
 	 * Get the micronode value
-	 * @param container container
-	 * @param fieldName field name
+	 * 
+	 * @param container
+	 *            container
+	 * @param fieldName
+	 *            field name
 	 * @return micronode value or null
 	 */
 	protected Micronode getMicronodeValue(NodeGraphFieldContainer container, String fieldName) {
