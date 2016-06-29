@@ -95,7 +95,6 @@ node('dockerSlave') {
 			checkout scm
 			checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]],
 				extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
-			def mvnHome = tool 'M3'
 			try {
 				sh "${mvnHome}/bin/mvn -B clean package -pl '!changelog-system,!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false"
 			} finally {
