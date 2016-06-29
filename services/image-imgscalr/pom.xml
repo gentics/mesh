@@ -29,13 +29,7 @@
 			<artifactId>imageio-jpeg</artifactId>
 			<version>3.2</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>com.twelvemonkeys.imageio</groupId>
-			<artifactId>imageio-bmp</artifactId>
-			<version>3.2</version>
-		</dependency>
-		 -->
+		<!-- <dependency> <groupId>com.twelvemonkeys.imageio</groupId> <artifactId>imageio-bmp</artifactId> <version>3.2</version> </dependency> -->
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-tiff</artifactId>
@@ -47,5 +41,17 @@
 			<version>3.2</version>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skip>${skip.unit.tests}</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
