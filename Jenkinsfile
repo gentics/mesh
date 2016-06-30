@@ -11,25 +11,32 @@ stage 'Test'
 if (!Boolean.valueOf(skipTests)) {
 	def splits = splitTests parallelism: [$class: 'CountDrivenParallelism', size: 5], generateInclusions: true
 	def branches = [:]
+	def skippedAll = true
 	for (int i = 0; i < splits.size(); i++) {
 		def split = splits[i]
 		echo "Split ${i} option: " + split.includes
-		echo "Split ${i}:\n" + split.list.join("\n")
-		branches["split${i}"] = {
-			node('dockerSlave') {
-				sh 'rm -rf *'
-				checkout scm
-				writeFile file: (split.includes ? 'inclusions.txt' : 'exclusions.txt'), text: split.list.join("\n")
-				writeFile file: (split.includes ? 'exclusions.txt' : 'inclusions.txt'), text: ''
-				def mvnHome = tool 'M3'
-				sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-					try {
-						sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server,!performance-tests' -B clean test"
-					} finally {
-						step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+		echo "Split ${i}:\n" + split.list.size()
+		if (split.list.size() != 0) {
+			skippedAll = false;
+			branches["split${i}"] = {
+				node('dockerSlave') {
+					sh 'rm -rf *'
+					checkout scm
+					writeFile file: (split.includes ? 'inclusions.txt' : 'exclusions.txt'), text: split.list.join("\n")
+					writeFile file: (split.includes ? 'exclusions.txt' : 'inclusions.txt'), text: ''
+					def mvnHome = tool 'M3'
+					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+						try {
+							sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server,!performance-tests' -B clean test"
+						} finally {
+							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+						}
 					}
 				}
 			}
+		}
+		if (skippedAll) {
+			echo "Hey this is not good.. no split contained any tests"
 		}
 	}
 	try {
