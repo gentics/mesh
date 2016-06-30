@@ -389,6 +389,7 @@ public class DemoDataProvider {
 
 			log.info("Creating project {" + name + "}");
 			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setSchemaReference(new SchemaReference().setName("folder"));
 			request.setName(name);
 			Future<ProjectResponse> projectFuture = client.createProject(request);
 			latchFor(projectFuture);

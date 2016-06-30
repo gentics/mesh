@@ -31,3 +31,5 @@ binaryImageCache
 .factorypath
 mesh-ui-config.js
 doc/src/main/docs/changelog.asciidoc
+alltests
+inclusions.txt
