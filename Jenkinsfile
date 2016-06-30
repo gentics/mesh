@@ -44,7 +44,7 @@ node('dockerSlave') {
 		def branches = [:]
 		for (int i = 0; i < splits; i++) {
 			echo "Split ${i}"
-			def current O i;
+			def current = i
 			branches["split${i}"] = {
 				node('dockerSlave') {
 					echo "Preparing slave environment for ${i}"
