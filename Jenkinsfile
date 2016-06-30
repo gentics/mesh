@@ -40,24 +40,23 @@ node('dockerSlave') {
 		def splits = 5;
 		sh "find -name  \"*Test.java\"   -exec basename {}  \\; | sed 's/.java//' | shuf  > alltests"
 		sh "split -a 1 -d -n ${splits} alltests  includes-"
-		sh "ls -la"
-		stash includes: '*', name: 'project', useDefaultExcludes: false
+		stash includes: '*', name: 'project'
 		def branches = [:]
 		for (int i = 0; i < splits; i++) {
 			echo "Split ${i}"
+			def current O i;
 			branches["split${i}"] = {
 				node('dockerSlave') {
 					echo "Preparing slave environment for ${i}"
-					echo "Preparing slave environment for " + i
+					echo "Preparing slave environment for ${current}"
 					sh "rm -rf *"
 					checkout scm
 					checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]],
 						extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
-					sh "ls -la"
 					unstash 'project'
 					sh "ls -la"
 					echo "Setting correct inclusions file"
-					sh "mv includes-" + i + " inclusions.txt"
+					sh "mv includes-${i} inclusions.txt"
 					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 						try {
 							sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server,!performance-tests' -B clean test"
