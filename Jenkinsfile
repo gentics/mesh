@@ -51,7 +51,9 @@ node('dockerSlave') {
 					//checkout scm
 					//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]],
 					//	extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
+					sh "ls -la"
 					unstash 'project'
+					sh "ls -la"
 					echo "Setting correct inclusions file"
 					sh "mv includes-${i} inclusions.txt"
 					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
