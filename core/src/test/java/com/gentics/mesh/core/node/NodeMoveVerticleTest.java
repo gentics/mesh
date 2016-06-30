@@ -113,7 +113,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId, sourceNode.getParentNode(releaseUuid).getUuid());
 			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
 					targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			assertEquals(2, searchProvider.getStoreEvents().size());
+			assertEquals("A store event for each language variation per version should occure",4, searchProvider.getStoreEvents().size());
 		}
 		// TODO assert entries
 	}

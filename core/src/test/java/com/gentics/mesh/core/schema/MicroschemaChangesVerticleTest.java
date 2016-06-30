@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.test.TestUtils;
+import com.gentics.mesh.test.performance.TestUtils;
 
 public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest {
 

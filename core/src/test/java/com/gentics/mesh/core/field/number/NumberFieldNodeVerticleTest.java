@@ -41,7 +41,6 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		numberFieldSchema.setName(FIELD_NAME);
 		// numberFieldSchema.setMin(10);
 		// numberFieldSchema.setMax(1000);
-		numberFieldSchema.setRequired(true);
 		schema.addField(numberFieldSchema);
 		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
@@ -51,8 +50,7 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(FIELD_NAME, (Field) null);
 		NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
-		assertNotNull(field);
-		assertNull(field.getNumber());
+		assertNull("The field should be null since we did not specify a field when executing the creation call", field);
 	}
 
 	@Test
@@ -105,19 +103,26 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
-		String oldNumber = firstResponse.getVersion().getNumber();
+		NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new NumberFieldImpl());
-		assertThat(secondResponse.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getFields().getNumberField(FIELD_NAME).getNumber()).as("Updated Field Value").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		// Field should be deleted
+		response = updateNode(FIELD_NAME, null);
+		assertThat(response.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
+
+		// Update again to restore a value
+		updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
+
+		response = updateNode(FIELD_NAME, new NumberFieldImpl());
+		assertThat(response.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
 	}
 
 	/**
 	 * Get the number value
-	 * @param container container
-	 * @param fieldName field name
+	 * 
+	 * @param container
+	 *            container
+	 * @param fieldName
+	 *            field name
 	 * @return number value (may be null)
 	 */
 	protected Number getNumberValue(NodeGraphFieldContainer container, String fieldName) {

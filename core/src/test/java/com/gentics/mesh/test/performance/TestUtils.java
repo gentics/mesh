@@ -1,4 +1,4 @@
-package com.gentics.mesh.test;
+package com.gentics.mesh.test.performance;
 
 import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 

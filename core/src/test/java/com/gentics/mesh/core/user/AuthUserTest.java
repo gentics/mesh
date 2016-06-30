@@ -1,32 +1,32 @@
 package com.gentics.mesh.core.user;
 
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.AbstractBasicDBTest;
+import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.mock.Mocks;
 
-import io.vertx.ext.web.RoutingContext;
-
-public class AuthUserTest extends AbstractBasicDBTest {
+public class AuthUserTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testAuthorization() throws Exception {
-		RoutingContext rc = getMockedRoutingContext();
-		InternalActionContext ac = InternalActionContext.create(rc);
-		MeshAuthUser requestUser = ac.getUser();
-		Language targetNode = english();
-		assertTrue(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().first());
+		try (NoTrx noTrx = db.noTrx()) {
+			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
+			MeshAuthUser requestUser = ac.getUser();
+			Language targetNode = english();
+			assertTrue(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().first());
 
-		role().revokePermissions(targetNode, GraphPermission.READ_PERM);
-		ac.data().clear();
-		assertFalse(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().first());
+			role().revokePermissions(targetNode, GraphPermission.READ_PERM);
+			ac.data().clear();
+			assertFalse(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().first());
+		}
 	}
 
 }

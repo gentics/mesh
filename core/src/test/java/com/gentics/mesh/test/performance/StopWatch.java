@@ -1,4 +1,4 @@
-package com.gentics.mesh.test;
+package com.gentics.mesh.test.performance;
 
 import java.text.DecimalFormat;
 
@@ -6,7 +6,7 @@ import rx.functions.Action1;
 
 public final class StopWatch {
 
-	public static void stopWatch(String name, int steps, Action1<Integer> action) {
+	public static void loggingStopWatch(StopWatchLogger logger, String name, int steps, Action1<Integer> action) {
 		System.out.println("-------------------------------");
 		DecimalFormat df = new DecimalFormat("#.####");
 		org.apache.commons.lang3.time.StopWatch watch = new org.apache.commons.lang3.time.StopWatch();
@@ -21,7 +21,16 @@ public final class StopWatch {
 		}
 		watch.stop();
 		double perStep = (double) watch.getTime() / (double) steps;
+		if (logger != null) {
+			logger.log(name + ".avg", perStep);
+			logger.flush();
+		}
 		System.out.println("[" + name + "] Avg step: " + df.format(perStep) + " [ms]");
 		System.out.println("[" + name + "] Took: " + watch.getTime() + " [ms]");
+
+	}
+
+	public static void stopWatch(String name, int steps, Action1<Integer> action) {
+		loggingStopWatch(null, name, steps, action);
 	}
 }

@@ -96,7 +96,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	@Before
 	public void setupVerticleTest() throws Exception {
 		setupData();
-		port = com.gentics.mesh.test.TestUtils.getRandomPort();
+		port = com.gentics.mesh.test.performance.TestUtils.getRandomPort();
 		vertx = Mesh.vertx();
 
 		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);

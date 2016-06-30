@@ -52,7 +52,7 @@ import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-import com.gentics.mesh.test.TestUtils;
+import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.AsyncResult;

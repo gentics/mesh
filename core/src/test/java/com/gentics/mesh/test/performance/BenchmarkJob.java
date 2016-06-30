@@ -1,4 +1,4 @@
-package com.gentics.mesh.test;
+package com.gentics.mesh.test.performance;
 
 public class BenchmarkJob implements Runnable {
 

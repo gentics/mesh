@@ -23,7 +23,7 @@ import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.test.TestUtils;
+import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.core.DeploymentOptions;

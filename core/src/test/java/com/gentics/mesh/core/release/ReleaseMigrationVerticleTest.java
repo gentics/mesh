@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.release;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
+import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.AsyncResult;
@@ -74,6 +76,9 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 		Project project = project();
 		assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
 
+		call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid()
+				,new TakeOfflineParameters().setRecursive(true)));
+		
 		List<? extends Node> published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 		List<? extends Node> nodes = project.getNodeRoot().findAll().stream()
 				.filter(node -> node.getParentNode(project.getLatestRelease().getUuid()) != null)
@@ -138,8 +143,7 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 		Project project = project();
 		Release initialRelease = project.getInitialRelease();
 
-		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(),
-				initialRelease.getUuid());
+		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), initialRelease.getUuid());
 
 		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
 		assertThat(result.failed()).isTrue();
@@ -165,8 +169,7 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 		Release newRelease = project.getReleaseRoot().create("newrelease", user());
 		Release newestRelease = project.getReleaseRoot().create("newestrelease", user());
 
-		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(),
-				newestRelease.getUuid());
+		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), newestRelease.getUuid());
 		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
 		assertThat(result.failed()).isTrue();
 
@@ -188,8 +191,8 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 		String baseNodeUuid = project.getBaseNode().getUuid();
 
 		MetricRegistry metrics = new MetricRegistry();
-		ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics).convertRatesTo(TimeUnit.SECONDS)
-				.convertDurationsTo(TimeUnit.MILLISECONDS).build();
+		ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics).convertRatesTo(TimeUnit.SECONDS).convertDurationsTo(TimeUnit.MILLISECONDS)
+				.build();
 		reporter.start(1, TimeUnit.SECONDS);
 
 		Meter createdNode = metrics.meter("Create Node");
@@ -216,8 +219,7 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		Release newRelease = project.getReleaseRoot().create("newrelease", user());
-		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(),
-				newRelease.getUuid());
+		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
 
 		try (Timer.Context ctx = migrationTimer.time()) {
 			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.MINUTES);
@@ -229,12 +231,14 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 
 	/**
 	 * Request release migration and return the future
-	 * @param projectUuid project Uuid
-	 * @param releaseUuid release Uuid
+	 * 
+	 * @param projectUuid
+	 *            project Uuid
+	 * @param releaseUuid
+	 *            release Uuid
 	 * @return future
 	 */
-	protected CompletableFuture<AsyncResult<Message<Object>>> requestReleaseMigration(String projectUuid,
-			String releaseUuid) {
+	protected CompletableFuture<AsyncResult<Message<Object>>> requestReleaseMigration(String projectUuid, String releaseUuid) {
 		DeliveryOptions options = new DeliveryOptions();
 		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
 		options.addHeader(NodeMigrationVerticle.UUID_HEADER, releaseUuid);

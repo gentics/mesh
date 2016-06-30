@@ -67,7 +67,7 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.search.index.NodeIndexHandler;
-import com.gentics.mesh.test.TestUtils;
+import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.DeploymentOptions;

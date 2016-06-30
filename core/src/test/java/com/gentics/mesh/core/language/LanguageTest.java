@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.language;
 
-import static com.gentics.mesh.test.StopWatch.stopWatch;
+import static com.gentics.mesh.test.performance.StopWatch.stopWatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
