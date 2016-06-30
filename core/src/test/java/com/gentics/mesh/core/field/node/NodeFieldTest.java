@@ -91,7 +91,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 		schemaStorage.addSchema(node.getSchemaContainer().getLatestVersion().getSchema());
 
 		// 2. Add the node reference to the node fields
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		container.createNode(NODE_FIELD, newsNode);
 
 		// 3. Transform the node to json and examine the data

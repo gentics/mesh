@@ -207,7 +207,7 @@ public class MicronodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		MicroschemaContainerVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
 		Node node = folder("2015");
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 
 		MicronodeGraphField micronodeField = container.createMicronode(FIELDNAME, microschema);
 		micronodeField.getMicronode().createString("firstName").setString("Max");

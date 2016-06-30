@@ -85,7 +85,7 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
-		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getGraphFieldContainer(english()).getVersion().toString()));
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
 
 		NodeResponse response = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
 				new NodeParameters().setLanguages("en")));
@@ -100,7 +100,7 @@ public abstract class AbstractFieldNodeVerticleTest extends AbstractRestVerticle
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
-		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getGraphFieldContainer(english()).getVersion().toString()));
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
 
 		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
 				new NodeParameters().setLanguages("en")), status, bodyMessageI18nKey, i18nParams);

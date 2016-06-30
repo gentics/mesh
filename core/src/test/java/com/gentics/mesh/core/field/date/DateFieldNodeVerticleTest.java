@@ -114,7 +114,7 @@ public class DateFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		Long nowEpoch = System.currentTimeMillis() / 1000;
 
 		Node node = folder("2015");
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		container.createDate(FIELD_NAME).setDate(nowEpoch);
 
 		NodeResponse response = readNode(node);

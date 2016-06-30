@@ -56,7 +56,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 		schema.addField(stringFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		StringGraphField field = container.createString("stringField");
 		field.setString("someString");
 

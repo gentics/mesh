@@ -83,7 +83,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 		schema.addField(htmlFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		HtmlGraphField field = container.createHTML(HTML_FIELD);
 		field.setHtml("Some<b>htmlABCDE");
 

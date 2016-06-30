@@ -53,7 +53,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		schema.addField(createFieldSchema(true));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		BinaryGraphField field = container.createBinary(BINARY_FIELD);
 		field.setMimeType("image/jpg");
 		field.setSHA512Sum(

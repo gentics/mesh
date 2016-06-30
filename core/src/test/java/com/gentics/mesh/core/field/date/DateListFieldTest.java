@@ -47,7 +47,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		Node node = folder("2015");
 		prepareNode(node, "dateList", "date");
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		DateGraphFieldList dateList = container.createDateList("dateList");
 		dateList.createDate(1L);
 		dateList.createDate(2L);

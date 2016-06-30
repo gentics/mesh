@@ -138,7 +138,7 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testReadNodeWithExistingField() throws IOException {
 		Node node = folder("2015");
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		NumberGraphField numberField = container.createNumber(FIELD_NAME);
 		numberField.setNumber(100.9f);
 

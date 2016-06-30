@@ -53,7 +53,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		prepareNode(node, MICRONODE_LIST, "micronode");
 		InternalActionContext ac = getMockedInternalActionContext("");
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 
 		MicronodeFieldListImpl field = new MicronodeFieldListImpl();
 		MicronodeResponse micronodeA = new MicronodeResponse();

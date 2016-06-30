@@ -58,7 +58,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 		schema.addField(booleanFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		BooleanGraphField field = container.createBoolean(BOOLEAN_FIELD);
 		field.setBoolean(true);
 

@@ -98,7 +98,7 @@ public class BinaryNodeVerticleTest extends AbstractBinaryVerticleTest {
 			container.reload();
 
 			assertEquals("The binary filename was not updated.", fileName,
-					node.getGraphFieldContainer(english()).getBinary("binary").getFileName());
+					node.getLatestDraftFieldContainer(english()).getBinary("binary").getFileName());
 
 			NodeResponse response = readNode(PROJECT_NAME, node.getUuid());
 			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
@@ -177,7 +177,7 @@ public class BinaryNodeVerticleTest extends AbstractBinaryVerticleTest {
 		assertSuccess(future);
 
 		// Load the uploaded binary field and return the segment path to the field
-		BinaryGraphField binaryField = node.getGraphFieldContainer(english())
+		BinaryGraphField binaryField = node.getLatestDraftFieldContainer(english())
 				.getBinary("binary");
 		String uuid = "b677504736ed47a1b7504736ed07a14a";
 		binaryField.setUuid(uuid);

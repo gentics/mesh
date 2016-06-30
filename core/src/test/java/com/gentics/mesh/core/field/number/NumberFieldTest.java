@@ -104,7 +104,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 		schema.addField(numberFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		NumberGraphField numberField = container.createNumber("numberField");
 		numberField.setNumber(100.9f);
 

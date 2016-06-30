@@ -863,7 +863,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		final String newName = "english renamed name";
 		Node node = folder("2015");
 		String uuid = node.getUuid();
-		assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
+		assertEquals("2015", node.getLatestDraftFieldContainer(english()).getString("name").getString());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
@@ -1243,7 +1243,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = folder("products");
 			SearchQueueBatch batch = createBatch();
-			node.getGraphFieldContainer(english()).delete(batch);
+			node.getLatestDraftFieldContainer(english()).delete(batch);
 			String uuid = node.getUuid();
 
 			// Request the node with various language parameter values. Fallback to "de"
@@ -1362,46 +1362,54 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testUpdate() throws GenericRestException, Exception {
 		final String newName = "english renamed name";
 
+		// 1. Load Ids / Objects
 		String uuid = db.noTrx(() -> content("concorde").getUuid());
 		Node node = db.noTrx(() -> content("concorde"));
 		NodeGraphFieldContainer origContainer = db.noTrx(() -> {
 			Node prod = content("concorde");
-			NodeGraphFieldContainer container = prod.getGraphFieldContainer(english());
+			NodeGraphFieldContainer container = prod.getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", container.getString("name").getString());
 			assertEquals("Concorde english title", container.getString("title").getString());
 			return container;
 		});
-		String schemaUuid = db.noTrx(() -> schemaContainer("content").getUuid());
-		// Prepare the request
+
+		// 2. Prepare the update request (change name field)
 		NodeUpdateRequest request = new NodeUpdateRequest();
-		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setName("content");
-		schemaReference.setUuid(schemaUuid);
+		SchemaReference schemaReference = new SchemaReference().setName("content");
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
 		request.setVersion(new VersionReference(null, "0.1"));
 		request.getFields().put("name", FieldUtil.createStringField(newName));
-		NodeParameters parameters = new NodeParameters();
-		parameters.setLanguages("en", "de");
 
-		// Update the node
-		NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, uuid, request, parameters));
+		// 3. Invoke update 
+		NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, uuid, request, new NodeParameters().setLanguages("en", "de")));
 
+		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
 		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("1.1").hasStringField("name", newName)
 				.hasStringField("title", "Concorde english title");
 
+		//5. Assert graph changes
 		try (NoTrx noTx = db.noTrx()) {
 			node = content("concorde");
-
 			node.reload();
 			origContainer.reload();
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+
+			// First check whether the objects we check are the correct ones
+			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.reload();
-			assertEquals(newName, container.getString("name").getString());
+			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion().toString());
+
+			// Assert applied changes
+			assertEquals("The string field was not updated within the new container", newName, container.getString("name").getString());
 			assertEquals("Concorde english title", container.getString("title").getString());
 
-			assertThat(container).as("new container").hasPrevious(origContainer).isLast();
-			assertThat(origContainer).as("orig container").hasNext(container).isFirst();
+			// Assert that the containers were linked together as expected
+			// 0.1 -> 1.0 -> 1.1
+			assertThat(container).as("new container").hasPrevious(origContainer);
+			assertThat(container).as("new container").isLast();
+			assertThat(origContainer).as("orig container").hasNext(container);
+			assertThat(origContainer.getPreviousVersion()).isFirst();
 
 			assertEquals(1, searchProvider.getStoreEvents().size());
 
@@ -1556,7 +1564,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			call(() -> getClient().updateNode(PROJECT_NAME, uuid, request, parameters), BAD_REQUEST, "node_unhandled_fields", "folder",
 					"[someField]");
 
-			NodeGraphFieldContainer englishContainer = folder("2015").getGraphFieldContainer(english());
+			NodeGraphFieldContainer englishContainer = folder("2015").getLatestDraftFieldContainer(english());
 			assertNotEquals("The name should not have been changed.", newName, englishContainer.getString("name").getString());
 		}
 	}
@@ -1990,14 +1998,25 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
+			// 1. Take all nodes offline
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new TakeOfflineParameters().setRecursive(true)));
+
+			// 2. publish the test node
 			assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
+			// 3. Take only en offline 
 			assertThat(call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"))).as("Status after taken en offline")
 					.isNotPublished();
+
+			// 4. Assert status
 			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isPublished("de");
+
+			// 5. Take also de offline
 			assertThat(call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"))).as("Status after taken en offline")
 					.isNotPublished();
+
+			// 6. Assert that both are offline
 			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isNotPublished("de");
 		}

@@ -74,7 +74,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		// 1. Transform the node into a binary content
 		SchemaContainer container = schemaContainer("binary-content");
 		node.setSchemaContainer(container);
-		node.getGraphFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
+		node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
 		prepareSchema(node, "image/*", "binary");
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
@@ -110,7 +110,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testReadFolderByPathAndResolveLinks() {
 		Node content = content("news_2015");
 
-		content.getGraphFieldContainer(english()).getHtml("content")
+		content.getLatestDraftFieldContainer(english()).getHtml("content")
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 
 		String path = "/News/2015/News_2015.en.html";
@@ -153,7 +153,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		englishContainer.createString("filename").setString("test.de.html");
 
 		// Add node reference to node 2015
-		parentNode.getGraphFieldContainer(english()).createNode("nodeRef", node);
+		parentNode.getLatestDraftFieldContainer(english()).createNode("nodeRef", node);
 
 		String path = "/News/2015";
 		WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path,

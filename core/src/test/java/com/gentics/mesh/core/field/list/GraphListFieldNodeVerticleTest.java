@@ -451,7 +451,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 	public void testReadNodeWithExistingField() {
 		Node node = folder("2015");
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 		nodeList.createNode("1", folder("news"));
 		NodeResponse response = readNode(node);
@@ -466,7 +466,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		Node node = folder("2015");
 
 		// Create node list
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 		nodeList.createNode("1", newsNode);
 

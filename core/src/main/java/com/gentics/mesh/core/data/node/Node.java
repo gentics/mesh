@@ -74,7 +74,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param language
 	 * @return
 	 */
-	NodeGraphFieldContainer getGraphFieldContainer(Language language);
+	NodeGraphFieldContainer getLatestDraftFieldContainer(Language language);
 
 	/**
 	 * Return the field container for the given language, type and release

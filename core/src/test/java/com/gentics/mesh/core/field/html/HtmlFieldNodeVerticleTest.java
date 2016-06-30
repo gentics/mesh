@@ -109,7 +109,7 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testReadNodeWithExistingField() {
 		Node node = folder("2015");
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		container.createHTML(FIELD_NAME).setHtml("some<b>html");
 
 		NodeResponse response = readNode(node);

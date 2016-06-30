@@ -143,7 +143,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 		try (Trx trx = db.trx()) {
 			updateSchema();
-			NodeGraphFieldContainer origContainer = getTestNode().getGraphFieldContainer(english());
+			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", origContainer.getString("name").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
 			trx.success();
@@ -314,7 +314,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	public void testConflictInMicronode() {
 		try (Trx trx = db.trx()) {
 			updateSchema();
-			NodeGraphFieldContainer origContainer = getTestNode().getGraphFieldContainer(english());
+			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", origContainer.getString("name").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
 			trx.success();

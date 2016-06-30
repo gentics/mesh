@@ -40,7 +40,7 @@ public class BooleanFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest 
 	@Override
 	public void testReadNodeWithExistingField() {
 		Node node = folder("2015");
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		container.createBoolean(FIELD_NAME).setBoolean(true);
 		NodeResponse response = readNode(node);
 		BooleanFieldImpl deserializedBooleanField = response.getFields().getBooleanField(FIELD_NAME);

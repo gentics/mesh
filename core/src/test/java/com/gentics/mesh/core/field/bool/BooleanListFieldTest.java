@@ -45,7 +45,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 		Node node = folder("2015");
 		prepareNode(node, BOOLEAN_LIST, "boolean");
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 
 		BooleanGraphFieldList booleanList = container.createBooleanList(BOOLEAN_LIST);
 		booleanList.createBoolean(true);

@@ -144,7 +144,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			Tag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().first();
 			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes(release).size());
 			Node contentFromTag = reloadedTag.getNodes(release).iterator().next();
-			NodeGraphFieldContainer fieldContainer = contentFromTag.getGraphFieldContainer(german);
+			NodeGraphFieldContainer fieldContainer = contentFromTag.getLatestDraftFieldContainer(german);
 
 			assertNotNull(contentFromTag);
 			assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());

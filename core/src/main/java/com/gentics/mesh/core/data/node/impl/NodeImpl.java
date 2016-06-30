@@ -316,7 +316,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer getGraphFieldContainer(Language language) {
+	public NodeGraphFieldContainer getLatestDraftFieldContainer(Language language) {
 		return getGraphFieldContainer(language, getProject().getLatestRelease(), ContainerType.DRAFT, NodeGraphFieldContainerImpl.class);
 	}
 

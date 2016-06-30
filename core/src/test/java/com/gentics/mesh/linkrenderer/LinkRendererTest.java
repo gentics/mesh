@@ -247,7 +247,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary").setLabel("Binary content"));
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			node.getGraphFieldContainer(english()).createBinary("binary").setFileName(fileName);
+			node.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName(fileName);
 
 			// Render the link
 			final String meshLink = "{{mesh.link(\"" + uuid + "\", \"en\")}}";

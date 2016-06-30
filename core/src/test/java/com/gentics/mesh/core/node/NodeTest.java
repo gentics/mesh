@@ -169,7 +169,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			Language german = german();
 			InternalActionContext ac = Mocks.getMockedInternalActionContext("lang=de,en&version=draft", user());
 			assertThat(ac.getNodeParameters().getLanguages()).containsExactly("de", "en");
-			NodeGraphFieldContainer germanFields = newsNode.getGraphFieldContainer(german);
+			NodeGraphFieldContainer germanFields = newsNode.getLatestDraftFieldContainer(german);
 			String expectedDisplayName = germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField())
 					.getString();
 			assertEquals("The display name value did not match up", expectedDisplayName, newsNode.getDisplayName(ac));
@@ -311,7 +311,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			germanContainer.createString("content").setString("german content");
 			assertEquals(2, node.getGraphFieldContainers().size());
 
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(english);
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english);
 			assertNotNull(container);
 			String text = container.getString("content").getString();
 			assertNotNull(text);

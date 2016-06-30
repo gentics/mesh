@@ -99,7 +99,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 		schema.addField(dateFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		DateGraphField field = container.createDate(DATE_FIELD);
 		long date = System.currentTimeMillis();
 		field.setDate(date);

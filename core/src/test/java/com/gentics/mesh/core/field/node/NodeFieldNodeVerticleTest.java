@@ -181,7 +181,7 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node newsNode = folder("news");
 		Node node = folder("2015");
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		container.createNode(NODE_FIELD_NAME, newsNode);
 		NodeResponse response = readNode(node);
 		NodeField deserializedNodeField = response.getFields().getNodeField(NODE_FIELD_NAME);
@@ -204,7 +204,7 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node node = folder("2015");
 
 		// Create test field
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		container.createNode(NODE_FIELD_NAME, newsNode);
 
 		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
@@ -225,7 +225,7 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node node = folder("2015");
 
 		// Create test field
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		container.createNode(NODE_FIELD_NAME, newsNode);
 
 		// 1. Read node with collapsed fields and check that the collapsed node field can be read

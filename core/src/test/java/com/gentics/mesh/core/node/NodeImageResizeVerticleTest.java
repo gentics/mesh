@@ -68,7 +68,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		assertSuccess(downloadFuture);
 
 		// 3. Validate resize
-		validateResizeImage(downloadFuture.result(), node.getGraphFieldContainer(english()).getBinary("image"), params, 100, 102);
+		validateResizeImage(downloadFuture.result(), node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
 		latchFor(downloadFuture);
 		assertSuccess(downloadFuture);
-		validateResizeImage(downloadFuture.result(), node.getGraphFieldContainer(english()).getBinary("image"), params, 2048, 102);
+		validateResizeImage(downloadFuture.result(), node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 2048, 102);
 
 	}
 

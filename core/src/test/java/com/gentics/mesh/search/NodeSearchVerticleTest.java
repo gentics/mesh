@@ -789,7 +789,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		node.getGraphFieldContainer(english()).createNumber("speed").setNumber(number);
+		node.getLatestDraftFieldContainer(english()).createNumber("speed").setNumber(number);
 	}
 
 	/**
@@ -804,7 +804,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 		schema.addField(vcardFieldSchema);
 
-		MicronodeGraphField vcardField = node.getGraphFieldContainer(english()).createMicronode("vcard",
+		MicronodeGraphField vcardField = node.getLatestDraftFieldContainer(english()).createMicronode("vcard",
 				microschemaContainers().get("vcard").getLatestVersion());
 		vcardField.getMicronode().createString("firstName").setString("Mickey");
 		vcardField.getMicronode().createString("lastName").setString("Mouse");
@@ -827,7 +827,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		// Set the mapping for the schema
 		nodeIndexHandler.setNodeIndexMapping(schema.getName() + "-" + schema.getVersion(), schema).toBlocking().first();
 
-		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
+		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
 			Micronode micronode = vcardListField.createMicronode();
 			micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());

@@ -45,7 +45,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		Node node = folder("2015");
 		prepareNode(node, "numberList", "number");
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		NumberGraphFieldList numberList = container.createNumberList("numberList");
 		numberList.createNumber(1);
 		numberList.createNumber(1.11);

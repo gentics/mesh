@@ -53,7 +53,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		htmlListFieldSchema.setListType("html");
 		schema.addField(htmlListFieldSchema);
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		HtmlGraphFieldList htmlList = container.createHTMLList(HTML_LIST);
 		htmlList.createHTML("some<b>html</b>");
 		htmlList.createHTML("some<b>more html</b>");

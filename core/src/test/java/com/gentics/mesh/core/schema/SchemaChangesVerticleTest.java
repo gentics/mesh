@@ -88,7 +88,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 		// Update a single node field in order to trigger a single blocking
 		// migration script
-		content().getGraphFieldContainer(english()).getHtml("content").setHtml("triggerWait");
+		content().getLatestDraftFieldContainer(english()).getHtml("content").setHtml("triggerWait");
 
 		String blockingScript = IOUtils.toString(getClass().getResourceAsStream("/testscripts/longMigrate.js"));
 		change.setMigrationScript(blockingScript);
@@ -202,7 +202,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	public void testRemoveAddFieldTypeWithSameKey() throws Exception {
 
 		Node content = content();
-		content.getGraphFieldContainer(english()).getHtml("content").setHtml("42.1");
+		content.getLatestDraftFieldContainer(english()).getHtml("content").setHtml("42.1");
 
 		// 1. Create update request by removing the content field from schema and adding a new content with different type
 		SchemaContainer container = schemaContainer("content");

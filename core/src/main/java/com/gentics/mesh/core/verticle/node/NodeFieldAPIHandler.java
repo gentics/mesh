@@ -66,7 +66,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				NodeGraphFieldContainer container = node.getGraphFieldContainer(language);
+				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
 				if (container == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
@@ -110,7 +110,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
-				NodeGraphFieldContainer container = node.getGraphFieldContainer(language);
+				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
 				if (container == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
@@ -278,7 +278,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
-				NodeGraphFieldContainer container = node.getGraphFieldContainer(language);
+				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
 				if (container == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}

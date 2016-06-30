@@ -304,7 +304,7 @@ public final class Mocks {
 		NodeGraphFieldContainer container = mockContainer(language, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
 		when(container.getParentNode()).thenReturn(node);
-		when(node.getGraphFieldContainer(language)).thenReturn(container);
+		when(node.getLatestDraftFieldContainer(language)).thenReturn(container);
 		Mockito.<List<? extends NodeGraphFieldContainer>> when(node.getGraphFieldContainers()).thenReturn(Arrays.asList(container));
 		return node;
 	}

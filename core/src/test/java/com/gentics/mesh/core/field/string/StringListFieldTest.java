@@ -46,7 +46,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		Node node = folder("2015");
 		prepareNode(node, "stringList", "string");
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		StringGraphFieldList stringList = container.createStringList("stringList");
 		stringList.createString("dummyString1");
 		stringList.createString("dummyString2");

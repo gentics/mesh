@@ -114,7 +114,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandler nodeIndexHandler = ctx.getBean(NodeIndexHandler.class);
-		nodeIndexHandler.storeContainer(node.getGraphFieldContainer(language), null, null);
+		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), null, null);
 		writeStoreEvent("node.search");
 
 	}

@@ -530,8 +530,8 @@ public class TestDataProvider {
 	 */
 	public String getPathForNews2015Tag(Language language) {
 
-		String name = folders.get("news").getGraphFieldContainer(language).getString("name").getString();
-		String name2 = folders.get("2015").getGraphFieldContainer(language).getString("name").getString();
+		String name = folders.get("news").getLatestDraftFieldContainer(language).getString("name").getString();
+		String name2 = folders.get("2015").getLatestDraftFieldContainer(language).getString("name").getString();
 		return name + "/" + name2;
 	}
 
