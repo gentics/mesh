@@ -988,51 +988,59 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
+
+			// Load node and assert initial versions and field values
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
 			assertThat(response).hasVersion("1.0").hasLanguage("en").hasStringField("name", "2015");
 
+			// create version 1.1
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
-			// create version 0.2
-			updateRequest.setVersion(new VersionReference(null, "0.1"));
+			updateRequest.setVersion(new VersionReference(null, "1.0"));
 			updateRequest.getFields().put("name", FieldUtil.createStringField("one"));
 			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
-			// create version 0.3
-			updateRequest.setVersion(new VersionReference(null, "0.2"));
+
+			// create version 1.2
+			updateRequest.setVersion(new VersionReference(null, "1.1"));
 			updateRequest.getFields().put("name", FieldUtil.createStringField("two"));
 			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
-			// create version 0.4
-			updateRequest.setVersion(new VersionReference(null, "0.3"));
+
+			// create version 1.3
+			updateRequest.setVersion(new VersionReference(null, "1.2"));
 			updateRequest.getFields().put("name", FieldUtil.createStringField("three"));
 			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
 
-			updateRequest.setLanguage("de");
 			// create german version 0.1
+			updateRequest.setLanguage("de");
 			updateRequest.setVersion(null);
 			updateRequest.getFields().put("name", FieldUtil.createStringField("eins"));
 			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
+
 			// create german version 0.2
 			updateRequest.setVersion(new VersionReference(null, "0.1"));
 			updateRequest.getFields().put("name", FieldUtil.createStringField("zwei"));
 			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
+
 			// create german version 0.3
 			updateRequest.setVersion(new VersionReference(null, "0.2"));
 			updateRequest.getFields().put("name", FieldUtil.createStringField("drei"));
 			call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
 
-			// test english versions
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()))).as("Draft").hasVersion("0.4")
+			// Test english versions
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()))).as("Draft").hasVersion("1.3")
 					.hasLanguage("en").hasStringField("name", "three");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("0.1")))).as("Version 0.1")
-					.hasVersion("0.1").hasLanguage("en").hasStringField("name", "2015");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("0.2")))).as("Version 0.2")
-					.hasVersion("0.2").hasLanguage("en").hasStringField("name", "one");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("0.3")))).as("Version 0.3")
-					.hasVersion("0.3").hasLanguage("en").hasStringField("name", "two");
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("0.4")))).as("Version 0.4")
-					.hasVersion("0.4").hasLanguage("en").hasStringField("name", "three");
 
-			// test german versions
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("1.0")))).as("Version 1.0")
+					.hasVersion("1.0").hasLanguage("en").hasStringField("name", "2015");
+
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("1.1")))).as("Version 1.1")
+					.hasVersion("1.1").hasLanguage("en").hasStringField("name", "one");
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("1.2")))).as("Version 1.2")
+					.hasVersion("1.2").hasLanguage("en").hasStringField("name", "two");
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("1.3")))).as("Version 1.3")
+					.hasVersion("1.3").hasLanguage("en").hasStringField("name", "three");
+
+			// Test german versions
 			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"),
 					new VersioningParameters().draft()))).as("German draft").hasVersion("0.3").hasLanguage("de").hasStringField("name", "drei");
 			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"),
@@ -1867,22 +1875,37 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 
+			// Only publish the test node. Take all children offline
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new TakeOfflineParameters().setRecursive(true)));
+			call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
+
 			// Update german language -> new draft
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
-			update.getFields().put("name", FieldUtil.createStringField("2015-de"));
+			update.getFields().put("name", FieldUtil.createStringField("changed-de"));
 			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+
+			assertThat(
+					call(() -> getClient().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"))).getAvailableLanguages())
+							.containsOnly("en");
 
 			// Take english language offline
 			call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, node.getUuid(), "en"));
+
+			// The node should not be loadable since both languages are offline
+			call(() -> getClient().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de")), NOT_FOUND,
+					"node_error_published_not_found_for_uuid_release_version", nodeUuid, project().getLatestRelease().getUuid());
 
 			// Publish german version
 			PublishStatusModel publishStatus = call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
 			assertThat(publishStatus).as("Publish status").isPublished().hasVersion("1.0");
 
-			// Assert that german is published and english is offline 
+			// Assert that german is published and english is offline
+			assertThat(
+					call(() -> getClient().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"))).getAvailableLanguages())
+							.containsOnly("de");
 			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isPublished("de")
-					.hasVersion("de", "1.0").isNotPublished("en").hasVersion("en", "1.0");
+					.hasVersion("de", "1.0").isNotPublished("en").hasVersion("en", "2.0");
 		}
 	}
 
