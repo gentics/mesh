@@ -47,7 +47,6 @@ node('dockerSlave') {
 			def current = i
 			branches["split${i}"] = {
 				node('dockerSlave') {
-					echo "Preparing slave environment for ${i}"
 					echo "Preparing slave environment for ${current}"
 					sh "rm -rf *"
 					checkout scm
@@ -56,7 +55,7 @@ node('dockerSlave') {
 					unstash 'project'
 					sh "ls -la"
 					echo "Setting correct inclusions file"
-					sh "mv includes-${i} inclusions.txt"
+					sh "mv includes-${current} inclusions.txt"
 					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 						try {
 							sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server,!performance-tests' -B clean test"
