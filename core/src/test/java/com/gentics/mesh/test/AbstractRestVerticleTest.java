@@ -416,6 +416,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected ProjectResponse createProject(String projectName) {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(projectName);
+		projectCreateRequest.setSchemaReference(new SchemaReference().setName("folder"));
 		Future<ProjectResponse> future = getClient().createProject(projectCreateRequest);
 		latchFor(future);
 		assertSuccess(future);

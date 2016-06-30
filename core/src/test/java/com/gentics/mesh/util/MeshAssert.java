@@ -113,16 +113,16 @@ public final class MeshAssert {
 							if (!e.getElementUuid().equals(entry.getUuid())) {
 								return false;
 							}
-							if (entry.getProjectUuid() != null && !entry.getProjectUuid()
-									.equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_PROJECT_UUID))) {
+							if (entry.getProjectUuid() != null
+									&& !entry.getProjectUuid().equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_PROJECT_UUID))) {
 								return false;
 							}
-							if (entry.getReleaseUuid() != null && !entry.getReleaseUuid()
-									.equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_RELEASE_UUID))) {
+							if (entry.getReleaseUuid() != null
+									&& !entry.getReleaseUuid().equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_RELEASE_UUID))) {
 								return false;
 							}
-							if (entry.getType() != null && !entry.getType().toString()
-									.equalsIgnoreCase(e.getCustomProperty(NodeIndexHandler.CUSTOM_VERSION))) {
+							if (entry.getType() != null
+									&& !entry.getType().toString().equalsIgnoreCase(e.getCustomProperty(NodeIndexHandler.CUSTOM_VERSION))) {
 								return false;
 							}
 							if (!language.equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_LANGUAGE_TAG))) {
@@ -150,7 +150,9 @@ public final class MeshAssert {
 			for (SearchQueueEntry entry : batch.getEntries()) {
 				System.out.println("Entry: " + entry.toString());
 			}
-			assertEquals("The search queue batch did not contain the amount of expected elements.", nExpectedBatchEntries, batch.getEntries().size());
+			// each node has two versions
+			assertEquals("The search queue batch did not contain the amount of expected elements.", nExpectedBatchEntries * 2,
+					batch.getEntries().size());
 		}
 	}
 

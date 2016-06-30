@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.data.TransformableElement;
@@ -82,7 +83,9 @@ public final class TraversalHelper {
 						f1 = f2;
 						f2 = tmp;
 					}
-					return f2.getProperty(sortBy).equals(f1.getProperty(sortBy)) ? 1 : 0;
+					Object prop1 = f1.getProperty(sortBy);
+					Object prop2 = f2.getProperty(sortBy);
+					return Objects.equals(prop1, prop2) ? 1 : 0;
 				});
 			}
 
