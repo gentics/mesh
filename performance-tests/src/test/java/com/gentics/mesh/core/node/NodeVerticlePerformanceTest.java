@@ -8,7 +8,6 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,17 +18,12 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-import com.gentics.mesh.test.performance.StopWatch;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
-
-	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
 	@Autowired
 	private NodeVerticle verticle;
@@ -50,7 +44,6 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 		});
 	}
 
-	@Ignore
 	@Test
 	public void testCreatePerformance() throws Exception {
 		String uuid = db.noTrx(() -> folder("news").getUuid());
@@ -63,12 +56,8 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 			request.getFields().put("filename", FieldUtil.createStringField("new-page_" + step + ".html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
-
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
-			latchFor(future);
-			assertSuccess(future);
+			call(() -> getClient().createNode(PROJECT_NAME, request));
 		});
-		//measureAndAssert(nRuns, 0.059f, 4.0f);
 	}
 
 }
