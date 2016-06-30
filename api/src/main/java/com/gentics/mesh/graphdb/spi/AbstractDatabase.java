@@ -67,24 +67,6 @@ public abstract class AbstractDatabase implements Database {
 		start();
 	}
 
-	//	@Override
-	//	public <T> Observable<T> asyncTrx(TrxHandler<T> txHandler) {
-	//		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
-	//		Observable<T> obs = Observable.create(sub -> {
-	//			try {
-	//				T result = trx(txHandler);
-	//				sub.onNext(result);
-	//				sub.onCompleted();
-	//			} catch (Exception e) {
-	//				sub.onError(e);
-	//			}
-	//
-	//		});
-	//
-	//		return obs.observeOn(scheduler);
-	//
-	//	}
-
 	@Override
 	public <T> T noTrx(TrxHandler<T> txHandler) {
 		try (NoTrx noTx = noTrx()) {
@@ -112,33 +94,57 @@ public abstract class AbstractDatabase implements Database {
 		return obs.observeOn(scheduler);
 	}
 
+//	@Override
+//	public <T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler) {
+//
+//		return Observable.<T> create(sub -> {
+//			NoTrx noTx = noTrx();
+//			try {
+//				Observable<T> result = trxHandler.call();
+//				if (result == null) {
+//					sub.onCompleted();
+//				}
+//				result.toList().subscribe(list -> {
+//					// We need to close the transaction right away in order to 
+//					// prevent the transaction to remain open while onNext is
+//					// invoked for following observables. 
+//					noTx.close();
+//					list.forEach(sub::onNext);
+//					sub.onCompleted();
+//				}, error -> {
+//					noTx.close();
+//					log.error("Error while handling noTrx", error);
+//					sub.onError(error);
+//				});
+//			} catch (Exception e) {
+//				log.error("Error while handling no-transaction.", e);
+//				sub.onError(e);
+//			}
+//		}).subscribeOn(RxHelper.blockingScheduler(Mesh.vertx(), false));
+//	}
+//	
+	
 	@Override
 	public <T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler) {
+		ObservableFuture<T> obsFut = RxHelper.observableFuture();
+		Mesh.vertx().executeBlocking(bc -> {
 
-		return Observable.<T> create(sub -> {
-			NoTrx noTx = noTrx();
-			try {
+			try (NoTrx noTx = noTrx()) {
 				Observable<T> result = trxHandler.call();
 				if (result == null) {
-					sub.onCompleted();
+					bc.complete();
+				} else {
+					T ele = result.toBlocking().single();
+					bc.complete(ele);
 				}
-				result.toList().subscribe(list -> {
-					// We need to close the transaction right away in order to 
-					// prevent the transaction to remain open while onNext is
-					// invoked for following observables. 
-					noTx.close();
-					list.forEach(sub::onNext);
-					sub.onCompleted();
-				}, error -> {
-					noTx.close();
-					log.error("Error while handling noTrx", error);
-					sub.onError(error);
-				});
 			} catch (Exception e) {
 				log.error("Error while handling no-transaction.", e);
-				sub.onError(e);
+				bc.fail(e);
 			}
-		}).subscribeOn(RxHelper.blockingScheduler(Mesh.vertx(), false));
+
+		}, false, obsFut.toHandler());
+		return obsFut;
 	}
+	
 
 }

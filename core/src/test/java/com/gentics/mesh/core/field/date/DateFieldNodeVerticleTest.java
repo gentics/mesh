@@ -40,8 +40,7 @@ public class DateFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(FIELD_NAME, (Field) null);
 		DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
-		assertNotNull(field);
-		assertNull(field.getDate());
+		assertNull(field);
 	}
 
 	@Test
@@ -79,19 +78,27 @@ public class DateFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testUpdateSetNull() {
 		Long nowEpoch = System.currentTimeMillis() / 1000;
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
-		String oldNumber = firstResponse.getVersion().getNumber();
+		NodeResponse response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		String oldNumber = response.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl());
-		assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getFields().getDateField(FIELD_NAME).getDate()).as("Updated Field Value").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		response = updateNode(FIELD_NAME, null);
+		assertThat(response.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
+
+		response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		oldNumber = response.getVersion().getNumber();
+
+		response = updateNode(FIELD_NAME, new DateFieldImpl());
+		assertThat(response.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
+		assertThat(response.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
 	}
 
 	/**
 	 * Get the date value
-	 * @param container container
-	 * @param fieldName field name
+	 * 
+	 * @param container
+	 *            container
+	 * @param fieldName
+	 *            field name
 	 * @return date value (may be null)
 	 */
 	protected Long getDateValue(NodeGraphFieldContainer container, String fieldName) {
