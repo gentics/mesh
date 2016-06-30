@@ -33,18 +33,20 @@ node('dockerSlave') {
 	sh "git commit -m 'Raise version'"
 	sh "git tag ${v}"
 
-	stash includes: '.*', name: 'project', useDefaultExcludes: false
+
 
 	stage 'Test'
 	if (!Boolean.valueOf(skipTests)) {
 		def splits = 5;
 		sh "find -name  \"*Test.java\"   -exec basename {}  \\; | sed 's/.java//' | shuf  > alltests"
 		sh "split -a 1 -d -n ${splits} alltests  includes-"
+		stash includes: '.*', name: 'project', useDefaultExcludes: false
 		def branches = [:]
 		for (int i = 0; i < splits; i++) {
 			echo "Split ${i}"
 			branches["split${i}"] = {
 				node('dockerSlave') {
+					sh "rm -rf *"
 					unstash 'project'
 					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 						try {
