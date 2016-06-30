@@ -40,11 +40,13 @@ node('dockerSlave') {
 		def splits = 5;
 		sh "find -name  \"*Test.java\"   -exec basename {}  \\; | sed 's/.java//' | shuf  > alltests"
 		sh "split -a 1 -d -n ${splits} alltests  includes-"
+		sh "ls -la"
 		stash includes: '*', name: 'project', useDefaultExcludes: false
 		def branches = [:]
 		for (int i = 0; i < splits; i++) {
 			echo "Split ${i}"
 			branches["split${i}"] = {
+				def current = i
 				node('dockerSlave') {
 					echo "Preparing slave environment"
 					sh "rm -rf *"
@@ -55,7 +57,7 @@ node('dockerSlave') {
 					unstash 'project'
 					sh "ls -la"
 					echo "Setting correct inclusions file"
-					sh "mv includes-${i} inclusions.txt"
+					sh "mv includes-${current} inclusions.txt"
 					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 						try {
 							sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server,!performance-tests' -B clean test"
