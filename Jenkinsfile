@@ -46,8 +46,11 @@ node('dockerSlave') {
 			echo "Split ${i}"
 			branches["split${i}"] = {
 				node('dockerSlave') {
+					echo "Preparing slave environment"
 					sh "rm -rf *"
 					unstash 'project'
+					echo "Setting correct inclusions file"
+					sh "mv includes-${i} inclusions.txt"
 					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 						try {
 							sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server,!performance-tests' -B clean test"
