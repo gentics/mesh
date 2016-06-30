@@ -28,12 +28,13 @@ import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 
-public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
+public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private SchemaVerticle verticle;
@@ -78,65 +79,72 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDiffDisplayField() throws GenericRestException, Exception {
-		SchemaContainer container = schemaContainer("content");
-		Schema request = getSchema();
-		request.setDisplayField("name");
+		try (NoTrx noTx = db.noTrx()) {
+			SchemaContainer container = schemaContainer("content");
+			Schema request = getSchema();
+			request.setDisplayField("name");
 
-		Future<SchemaChangesListModel> future = getClient().diffSchema(container.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
-		SchemaChangesListModel changes = future.result();
-		assertNotNull(changes);
-		// We expect one change that indicates that the displayField property has changed.
-		assertThat(changes.getChanges()).hasSize(1);
-		assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty(DISPLAY_FIELD_NAME_KEY, "name");
-
+			Future<SchemaChangesListModel> future = getClient().diffSchema(container.getUuid(), request);
+			latchFor(future);
+			assertSuccess(future);
+			SchemaChangesListModel changes = future.result();
+			assertNotNull(changes);
+			// We expect one change that indicates that the displayField property has changed.
+			assertThat(changes.getChanges()).hasSize(1);
+			assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty(DISPLAY_FIELD_NAME_KEY, "name");
+		}
 	}
 
 	@Test
 	public void testNoDiff() {
-		SchemaContainer schema = schemaContainer("content");
-		Schema request = getSchema();
-		Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
-		SchemaChangesListModel changes = future.result();
-		assertNotNull(changes);
-		assertThat(changes.getChanges()).isEmpty();
+		try (NoTrx noTx = db.noTrx()) {
+			SchemaContainer schema = schemaContainer("content");
+			Schema request = getSchema();
+			Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
+			latchFor(future);
+			assertSuccess(future);
+			SchemaChangesListModel changes = future.result();
+			assertNotNull(changes);
+			assertThat(changes.getChanges()).isEmpty();
+		}
 	}
 
 	@Test
 	public void testAddField() {
-		SchemaContainer schema = schemaContainer("content");
-		Schema request = getSchema();
-		BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binary");
-		binaryField.setAllowedMimeTypes("one", "two");
-		request.addField(binaryField);
-		Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
-		SchemaChangesListModel changes = future.result();
-		assertNotNull(changes);
-		assertThat(changes.getChanges()).hasSize(2);
-		assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("binary");
-		assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order",
-				new String[] { "name", "filename", "title", "content", "binary" });
+		try (NoTrx noTx = db.noTrx()) {
+			SchemaContainer schema = schemaContainer("content");
+			Schema request = getSchema();
+			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binary");
+			binaryField.setAllowedMimeTypes("one", "two");
+			request.addField(binaryField);
+			Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
+			latchFor(future);
+			assertSuccess(future);
+			SchemaChangesListModel changes = future.result();
+			assertNotNull(changes);
+			assertThat(changes.getChanges()).hasSize(2);
+			assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("binary");
+			assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order",
+					new String[] { "name", "filename", "title", "content", "binary" });
+		}
 	}
 
 	@Test
-	public void testRemoveField() {
-		SchemaContainer schema = schemaContainer("content");
-		Schema request = getSchema();
-		request.removeField("content");
-		Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
-		SchemaChangesListModel changes = future.result();
-		assertNotNull(changes);
-		assertThat(changes.getChanges()).hasSize(2);
-		assertThat(changes.getChanges().get(0)).is(REMOVEFIELD).forField("content");
-		assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order", new String[] { "name", "filename", "title" });
-		assertNotNull("A default migration script should have been added to the change.", changes.getChanges().get(0).getMigrationScript());
+	public void testDefaultMigration() {
+		try (NoTrx noTx = db.noTrx()) {
+			SchemaContainer schema = schemaContainer("content");
+			Schema request = getSchema();
+			request.removeField("content");
+			Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
+			latchFor(future);
+			assertSuccess(future);
+			SchemaChangesListModel changes = future.result();
+			assertNotNull(changes);
+			assertThat(changes.getChanges()).hasSize(2);
+			assertThat(changes.getChanges().get(0)).is(REMOVEFIELD).forField("content");
+			assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order", new String[] { "name", "filename", "title" });
+			assertNotNull("A default migration script should have been added to the change.", changes.getChanges().get(0).getMigrationScript());
+		}
 	}
 
 }

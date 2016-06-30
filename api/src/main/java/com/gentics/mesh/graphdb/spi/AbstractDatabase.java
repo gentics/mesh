@@ -9,10 +9,12 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
+import com.tinkerpop.gremlin.Tokens.T;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 import rx.Scheduler;
@@ -121,20 +123,22 @@ public abstract class AbstractDatabase implements Database {
 					sub.onCompleted();
 				}
 				result.toList().subscribe(list -> {
+					// We need to close the transaction right away in order to 
+					// prevent the transaction to remain open while onNext is
+					// invoked for following observables. 
+					noTx.close();
 					list.forEach(sub::onNext);
 					sub.onCompleted();
-					noTx.close();
 				}, error -> {
+					noTx.close();
 					log.error("Error while handling noTrx", error);
 					sub.onError(error);
-					noTx.close();
 				});
 			} catch (Exception e) {
 				log.error("Error while handling no-transaction.", e);
 				sub.onError(e);
 			}
-
-		}).subscribeOn(RxHelper.scheduler(Mesh.vertx()));
+		}).subscribeOn(RxHelper.blockingScheduler(Mesh.vertx(), false));
 	}
 
 }
