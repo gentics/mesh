@@ -38,7 +38,7 @@ node('dockerSlave') {
 	stage 'Test'
 	if (!Boolean.valueOf(skipTests)) {
 		def splits = 5;
-		sh "find -name  \"*Test.java\"   -exec basename {}  \; | sed 's/.java//' | shuf  > alltests"
+		sh "find -name  \"*Test.java\"   -exec basename {}  \\; | sed 's/.java//' | shuf  > alltests"
 		sh "split -a 1 -d -n ${splits} alltests  includes-"
 		def branches = [:]
 		for (int i = 0; i < splits; i++) {
