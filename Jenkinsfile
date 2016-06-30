@@ -43,7 +43,6 @@ node('dockerSlave') {
 		stash includes: '*', name: 'project'
 		def branches = [:]
 		for (int i = 0; i < splits; i++) {
-			echo "Split ${i}"
 			def current = i
 			branches["split${i}"] = {
 				node('dockerSlave') {
