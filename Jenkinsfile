@@ -35,15 +35,27 @@ if (!Boolean.valueOf(skipTests)) {
 				}
 			}
 		}
-		if (skippedAll) {
-			echo "Hey this is not good.. no split contained any tests"
-		}
 	}
 	try {
 		parallel branches
 	} catch (err) {
 		echo "Failed " + err.getMessage()
 		error err.getMessage()
+	}
+	if (skippedAll) {
+		echo "Hey this is not good.. no split contained any tests.. I'll run the tests in a single thread.."
+		node('dockerSlave') {
+			sh 'rm -rf *'
+			checkout scm
+			def mvnHome = tool 'M3'
+			sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+				try {
+					sh "${mvnHome}/bin/mvn -pl '!demo,!doc,!server,!performance-tests' -B clean test"
+				} finally {
+					step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+				}
+			}
+		}
 	}
 } else {
 	echo "Tests skipped.."
