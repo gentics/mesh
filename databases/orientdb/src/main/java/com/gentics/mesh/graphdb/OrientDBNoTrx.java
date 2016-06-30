@@ -4,6 +4,7 @@ import com.gentics.mesh.graphdb.ferma.DelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -12,14 +13,19 @@ public class OrientDBNoTrx extends AbstractNoTrx implements AutoCloseable {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBNoTrx.class);
 
+	OrientGraphNoTx noTx = null;
+
 	public OrientDBNoTrx(OrientGraphFactory factory) {
-		FramedGraph graph = new DelegatingFramedOrientGraph(factory.getNoTx(), true, false);
+		this.noTx = factory.getNoTx();
+		FramedGraph graph = new DelegatingFramedOrientGraph(noTx, true, false);
 		init(graph);
 	}
 
 	@Override
 	public void close() {
-		Database.setThreadLocalGraph(getOldGraph());
-		getGraph().shutdown();
+		if (!noTx.isClosed()) {
+			noTx.shutdown();
+			Database.setThreadLocalGraph(getOldGraph());
+		}
 	}
 }

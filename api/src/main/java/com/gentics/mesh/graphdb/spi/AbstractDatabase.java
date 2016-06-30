@@ -121,12 +121,13 @@ public abstract class AbstractDatabase implements Database {
 					sub.onCompleted();
 				}
 				result.toList().subscribe(list -> {
-					noTx.close();
 					list.forEach(sub::onNext);
 					sub.onCompleted();
-				}, error -> {
 					noTx.close();
+				}, error -> {
+					log.error("Error while handling noTrx", error);
 					sub.onError(error);
+					noTx.close();
 				});
 			} catch (Exception e) {
 				log.error("Error while handling no-transaction.", e);
