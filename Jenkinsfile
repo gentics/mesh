@@ -13,6 +13,8 @@ if (!Boolean.valueOf(skipTests)) {
 	def branches = [:]
 	for (int i = 0; i < splits.size(); i++) {
 		def split = splits[i]
+		echo "Split ${i} option: " + split.includes
+		echo "Split ${i}:\n" + split.list.join("\n")
 		branches["split${i}"] = {
 			node('dockerSlave') {
 				sh 'rm -rf *'
