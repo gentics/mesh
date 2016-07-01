@@ -248,6 +248,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName(newProjectName);
+		createProject.setSchemaReference(new SchemaReference().setName("folder"));
 		call(() -> getClient().createProject(createProject));
 
 		call(() -> getClient().createRelease(newProjectName, request));
@@ -324,8 +325,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			ListResponse<ReleaseResponse> responseList = call(() -> getClient().findReleases(project.getName()));
 
-			RoutingContext rc = getMockedRoutingContext();
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 
 			assertThat(responseList).isNotNull();
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(

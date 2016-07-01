@@ -5,6 +5,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Exception which will be thrown if a conflict was detected during a node update.
  */
@@ -14,10 +16,9 @@ public class NodeVersionConflictException extends AbstractRestException {
 
 	private static final long serialVersionUID = -7624719224170510923L;
 
-	private List<String> conflicts = new ArrayList<>();
-
-	private String oldVersion;
-	private String newVersion;
+	private static final String CONFLICT_KEY = "conflicts";
+	private static final String NEW_VERSION_KEY = "newVersion";
+	private static final String OLD_VERSION_KEY = "oldVersion";
 
 	public NodeVersionConflictException() {
 	}
@@ -36,14 +37,20 @@ public class NodeVersionConflictException extends AbstractRestException {
 	 * Add the given field key to the list of conflicting fields.
 	 */
 	public void addConflict(String fieldKey) {
-		conflicts.add(fieldKey);
+		getConflicts().add(fieldKey);
 	}
 
 	/**
 	 * Return the list of fields which contain a conflict.
 	 */
+	@JsonIgnore
 	public List<String> getConflicts() {
-		return conflicts;
+		List<String> list = (List<String>) getProperties().get(CONFLICT_KEY);
+		if (list == null) {
+			list = new ArrayList<String>();
+			getProperties().put(CONFLICT_KEY, list);
+		}
+		return list;
 	}
 
 	@Override
@@ -56,8 +63,9 @@ public class NodeVersionConflictException extends AbstractRestException {
 	 * 
 	 * @return
 	 */
+	@JsonIgnore
 	public String getOldVersion() {
-		return oldVersion;
+		return getProperty(OLD_VERSION_KEY);
 	}
 
 	/**
@@ -66,7 +74,7 @@ public class NodeVersionConflictException extends AbstractRestException {
 	 * @param oldVersion
 	 */
 	public void setOldVersion(String oldVersion) {
-		this.oldVersion = oldVersion;
+		setProperty(OLD_VERSION_KEY, oldVersion);
 	}
 
 	/**
@@ -74,8 +82,9 @@ public class NodeVersionConflictException extends AbstractRestException {
 	 * 
 	 * @return
 	 */
+	@JsonIgnore
 	public String getNewVersion() {
-		return newVersion;
+		return getProperty(NEW_VERSION_KEY);
 	}
 
 	/**
@@ -84,7 +93,7 @@ public class NodeVersionConflictException extends AbstractRestException {
 	 * @param newVersion
 	 */
 	public void setNewVersion(String newVersion) {
-		this.newVersion = newVersion;
+		setProperty(NEW_VERSION_KEY, newVersion);
 	}
 
 }

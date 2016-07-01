@@ -35,7 +35,6 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -45,6 +44,7 @@ import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -92,7 +92,8 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			int totalPages = (int) Math.ceil(totalTags / (double) perPage);
 			List<TagResponse> allTags = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<TagListResponse> tagPageFut = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(page, perPage));
+				Future<TagListResponse> tagPageFut = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(),
+						new PagingParameters(page, perPage));
 				latchFor(tagPageFut);
 				assertSuccess(future);
 				restResponse = tagPageFut.result();
@@ -362,9 +363,9 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest);
 			latchFor(future);
 			expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", "colors");
-			NameConflictException exception = ((NameConflictException) future.cause());
-			assertNotNull(exception.getProperties());
-			assertNotNull(exception.getProperties().get("conflictingUuid"));
+			MeshRestClientHttpException exception = ((MeshRestClientHttpException) future.cause());
+			assertNotNull(exception.getResponseMessage().getProperties());
+			assertNotNull(exception.getResponseMessage().getProperties().get("conflictingUuid"));
 		}
 	}
 

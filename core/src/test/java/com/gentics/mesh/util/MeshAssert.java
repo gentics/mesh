@@ -147,14 +147,6 @@ public final class MeshAssert {
 				}
 			}
 		}
-		if (batch.getEntries().size() != nExpectedBatchEntries) {
-			for (SearchQueueEntry entry : batch.getEntries()) {
-				System.out.println("Entry: " + entry.toString());
-			}
-			// each node has two versions
-			assertEquals("The search queue batch did not contain the amount of expected elements.", nExpectedBatchEntries * 2,
-					batch.getEntries().size());
-		}
 	}
 
 }

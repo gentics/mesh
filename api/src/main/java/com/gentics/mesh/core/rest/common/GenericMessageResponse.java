@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.common;
 
 import java.util.Map;
 
+import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.handler.ActionContext;
 
 /**
@@ -13,7 +14,7 @@ public class GenericMessageResponse implements RestModel {
 
 	private String internalMessage;
 
-	private Map<String, String> properties;
+	private Map<String, Object> properties;
 
 	/**
 	 * Create a new generic message response pojo.
@@ -56,7 +57,7 @@ public class GenericMessageResponse implements RestModel {
 		this.internalMessage = internalMessage;
 	}
 
-	public GenericMessageResponse(String message, String internalMessage, Map<String, String> properties) {
+	public GenericMessageResponse(String message, String internalMessage, Map<String, Object> properties) {
 		this(message, internalMessage);
 		this.properties = properties;
 	}
@@ -104,7 +105,7 @@ public class GenericMessageResponse implements RestModel {
 	 * 
 	 * @return JSON properties or null of no properties have been set
 	 */
-	public Map<String, String> getProperties() {
+	public Map<String, Object> getProperties() {
 		return properties;
 	}
 
@@ -114,8 +115,19 @@ public class GenericMessageResponse implements RestModel {
 	 * @param properties
 	 *            JSON properties to be attached to the message
 	 */
-	public void setProperties(Map<String, String> properties) {
+	public void setProperties(Map<String, Object> properties) {
 		this.properties = properties;
+	}
+
+	/**
+	 * Return the property value for the given key.
+	 * 
+	 * @param key
+	 *            Property key
+	 * @return Found value or null if no value could be found
+	 */
+	public Object getProperty(String key) {
+		return properties.get(key);
 	}
 
 	@Override

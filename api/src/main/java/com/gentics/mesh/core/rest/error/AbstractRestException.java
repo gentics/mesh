@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.error;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -17,6 +20,7 @@ public abstract class AbstractRestException extends RuntimeException {
 	protected String[] i18nParameters;
 	protected String i18nKey;
 	protected String translatedMessage;
+	protected Map<String, Object> properties = new HashMap<>();
 
 	public AbstractRestException() {
 	}
@@ -123,6 +127,17 @@ public abstract class AbstractRestException extends RuntimeException {
 		return getStatus() + " " + getI18nKey() + extraInfo;
 	}
 
+	//	@Override
+	//	public String toString() {
+	//		if (translatedMessage != null) {
+	//			return translatedMessage;
+	//		} else {
+	//			String i18nInfo = Arrays.toString(getI18nParameters());
+	//			String propInfo = JsonUtil.toJson(getProperties());
+	//			return "Key: " + super.getI18nKey() + "\n\nI18nParams:\n" + i18nInfo + "\n\nProperties:\n" + propInfo;
+	//		}
+	//	}
+
 	/**
 	 * Returns the stored information or if possible a translated message.
 	 */
@@ -151,6 +166,36 @@ public abstract class AbstractRestException extends RuntimeException {
 
 	public void setTranslatedMessage(String translatedMessage) {
 		this.translatedMessage = translatedMessage;
+	}
+
+	/**
+	 * Return the exception specific properties.
+	 * 
+	 * @return
+	 */
+	public Map<String, Object> getProperties() {
+		return properties;
+	}
+
+	/**
+	 * Return the property value for the given key.
+	 * 
+	 * @param key
+	 *            Key of the value to be located
+	 * @return Found value or null if no value was found
+	 */
+	public <T> T getProperty(String key) {
+		return (T) getProperties().get(key);
+	}
+
+	/**
+	 * Set the exception specific properties.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	public void setProperty(String key, Object value) {
+		this.properties.put(key, value);
 	}
 
 }
