@@ -40,7 +40,7 @@ public class JsonUtilTest {
 			JsonUtil.readValue(json, NodeCreateRequest.class);
 			fail("json parsing should fail");
 		} catch (GenericRestException e) {
-			assertEquals("error_json_malformed", e.getMessage());
+			assertEquals("error_json_malformed", e.getI18nKey());
 			assertThat(e.getI18nParameters()).containsExactly("1", "3",
 					"Unexpected character ('b' (code 98)): was expecting double-quote to start field name");
 		}
@@ -53,8 +53,8 @@ public class JsonUtilTest {
 			JsonUtil.readValue(json, NodeCreateRequest.class);
 			fail("json parsing should fail");
 		} catch (GenericRestException e) {
-			assertEquals("error_json_structure_invalid", e.getMessage());
-			assertThat(e.getI18nParameters()).containsExactly("1", "2", "schema");
+			assertEquals("error_json_structure_invalid", e.getI18nKey());
+			assertThat(e.getI18nParameters()).containsExactly("1", "11", "schema");
 		}
 	}
 
