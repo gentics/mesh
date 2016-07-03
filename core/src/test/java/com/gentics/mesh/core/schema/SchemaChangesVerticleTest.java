@@ -560,6 +560,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// Update the node and set the new field
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber("1.0"));
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
 		nodeUpdateRequest.getFields().put("extraname", new StringFieldImpl().setString("sometext"));
 		response = call(() -> getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));

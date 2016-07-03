@@ -90,7 +90,6 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		setupData();
 		Node node = folder("2015");
 
 		// Add html field schema to the schema
@@ -113,7 +112,6 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 		com.gentics.mesh.core.rest.node.field.DateField deserializedNodeField = response.getFields().getDateField("dateField");
 		assertNotNull(deserializedNodeField);
 		assertEquals(Long.valueOf(date), deserializedNodeField.getDate());
-
 	}
 
 	@Test

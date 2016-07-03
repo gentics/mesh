@@ -24,6 +24,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
@@ -68,6 +69,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		SchemaContainer schema = schemaContainer("content");
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setSchemaReference(new SchemaReference().setName("folder"));
 		request.setName(name);
 
 		ProjectResponse restProject = call(() -> getClient().createProject(request));
@@ -80,9 +82,10 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		SchemaContainer schema = schemaContainer("content");
 		ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
-		ProjectCreateRequest createProject = new ProjectCreateRequest();
-		createProject.setName("extraProject");
-		ProjectResponse created = call(() -> getClient().createProject(createProject));
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName("extraProject");
+		request.setSchemaReference(new SchemaReference().setName("folder"));
+		ProjectResponse created = call(() -> getClient().createProject(request));
 		Project extraProject = projectRoot.findByUuidSync(created.getUuid());
 
 		// Add only read perms

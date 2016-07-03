@@ -71,7 +71,6 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		setupData();
 		Node node = folder("2015");
 
 		// Add html field schema to the schema

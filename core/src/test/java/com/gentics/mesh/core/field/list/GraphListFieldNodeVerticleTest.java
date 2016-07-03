@@ -140,7 +140,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 	public void testNullNodeList() throws IOException {
 		setSchema("node");
 		NodeResponse response = createNode("listField", (Field) null);
-		//TODO see CL-359
+		// TODO see CL-359
 	}
 
 	@Test
@@ -225,9 +225,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		Node targetNode = folder("news");
 		Node targetNode2 = folder("deals");
 
-		List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode),
-				Arrays.asList(targetNode2, targetNode), Collections.emptyList(), Arrays.asList(targetNode, targetNode2),
-				Arrays.asList(targetNode2));
+		List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
+				Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
 		for (int i = 0; i < 20; i++) {
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -240,13 +239,11 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 			}
 			NodeResponse response = updateNode(FIELD_NAME, list);
 			NodeFieldList field = response.getFields().getNodeFieldList(FIELD_NAME);
-			assertThat(field.getItems()).as("Updated field").usingElementComparatorOnFields("uuid")
-					.containsExactlyElementsOf(list.getItems());
+			assertThat(field.getItems()).as("Updated field").usingElementComparatorOnFields("uuid").containsExactlyElementsOf(list.getItems());
 			node.reload();
 			container.reload();
 
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(),
-					response.getVersion().getNumber());
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
 			assertEquals("Check old value", oldValue, getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME));
 		}
 	}
@@ -256,8 +253,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		setSchema("string");
 		Node node = folder("2015");
 
-		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"),
-				Collections.emptyList(), Arrays.asList("X", "Y"), Arrays.asList("C"));
+		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
+				Arrays.asList("X", "Y"), Arrays.asList("C"));
 
 		for (int i = 0; i < 20; i++) {
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -274,10 +271,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 			node.reload();
 			container.reload();
 
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(),
-					response.getVersion().getNumber());
-			assertEquals("Check old value", oldValue,
-					getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME));
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("Check old value", oldValue, getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME));
 		}
 	}
 
@@ -286,8 +281,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		setSchema("html");
 		Node node = folder("2015");
 
-		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"),
-				Collections.emptyList(), Arrays.asList("X", "Y"), Arrays.asList("C"));
+		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
+				Arrays.asList("X", "Y"), Arrays.asList("C"));
 
 		for (int i = 0; i < 20; i++) {
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -304,10 +299,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 			node.reload();
 			container.reload();
 
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(),
-					response.getVersion().getNumber());
-			assertEquals("Check old value", oldValue,
-					getListValues(container, HtmlGraphFieldListImpl.class, FIELD_NAME));
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("Check old value", oldValue, getListValues(container, HtmlGraphFieldListImpl.class, FIELD_NAME));
 		}
 	}
 
@@ -316,8 +309,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		setSchema("date");
 		Node node = folder("2015");
 
-		List<List<Long>> valueCombinations = Arrays.asList(Arrays.asList(1L, 2L, 3L), Arrays.asList(3L, 2L, 1L),
-				Collections.emptyList(), Arrays.asList(4711L, 815L), Arrays.asList(3L));
+		List<List<Long>> valueCombinations = Arrays.asList(Arrays.asList(1L, 2L, 3L), Arrays.asList(3L, 2L, 1L), Collections.emptyList(),
+				Arrays.asList(4711L, 815L), Arrays.asList(3L));
 
 		for (int i = 0; i < 20; i++) {
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -334,10 +327,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 			node.reload();
 			container.reload();
 
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(),
-					response.getVersion().getNumber());
-			assertEquals("Check old value", oldValue,
-					getListValues(container, DateGraphFieldListImpl.class, FIELD_NAME));
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("Check old value", oldValue, getListValues(container, DateGraphFieldListImpl.class, FIELD_NAME));
 		}
 	}
 
@@ -346,8 +337,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		setSchema("number");
 		Node node = folder("2015");
 
-		List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1),
-				Collections.emptyList(), Arrays.asList(47.11, 8.15), Arrays.asList(3));
+		List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1), Collections.emptyList(),
+				Arrays.asList(47.11, 8.15), Arrays.asList(3));
 
 		for (int i = 0; i < 20; i++) {
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -364,10 +355,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 			node.reload();
 			container.reload();
 
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(),
-					response.getVersion().getNumber());
-			assertEquals("Check old value", oldValue,
-					getListValues(container, NumberGraphFieldListImpl.class, FIELD_NAME));
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("Check old value", oldValue, getListValues(container, NumberGraphFieldListImpl.class, FIELD_NAME));
 		}
 	}
 
@@ -394,10 +383,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 			node.reload();
 			container.reload();
 
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(),
-					response.getVersion().getNumber());
-			assertEquals("Check old value", oldValue,
-					getListValues(container, BooleanGraphFieldListImpl.class, FIELD_NAME));
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("Check old value", oldValue, getListValues(container, BooleanGraphFieldListImpl.class, FIELD_NAME));
 		}
 	}
 
@@ -426,13 +413,13 @@ public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		NodeFieldListImpl list = new NodeFieldListImpl();
 		list.add(new NodeFieldListItemImpl(targetNode.getUuid()));
 		list.add(new NodeFieldListItemImpl(targetNode2.getUuid()));
-		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-		String oldNumber = firstResponse.getVersion().getNumber();
+		updateNode(FIELD_NAME, list);
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new NodeFieldListImpl());
-		assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME).getItems()).as("Updated Field Value").isEmpty();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		updateNodeFailure(FIELD_NAME, new NodeFieldListImpl(), BAD_REQUEST, "node_error_missing_node_field_uuid", FIELD_NAME);
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated Field").isNull();
+
 	}
 
 	@Test
