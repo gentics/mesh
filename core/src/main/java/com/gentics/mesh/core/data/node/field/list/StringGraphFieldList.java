@@ -41,10 +41,10 @@ public interface StringGraphFieldList extends ListGraphField<StringGraphField, S
 			return;
 		}
 
-		// Handle Create
-		if (graphStringList == null) {
-			graphStringList = container.createStringList(fieldKey);
-		}
+		// Always create a new list. 
+		// This will effectively unlink the old list and create a new one. 
+		// Otherwise the list which is linked to old versions would be updated. 
+		graphStringList = container.createStringList(fieldKey);
 
 		// Handle Update
 		graphStringList.removeAll();

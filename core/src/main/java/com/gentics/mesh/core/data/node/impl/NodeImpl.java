@@ -1322,7 +1322,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				if (!requestModel.getFields().isEmpty()) {
 
 					// Create new field container as clone of the existing
-
 					NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
 					// Update the existing fields
 					newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());

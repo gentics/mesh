@@ -42,18 +42,16 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 			return;
 		}
 
-		// Handle Create
-		if (graphNumberFieldList == null) {
-			graphNumberFieldList = container.createNumberList(fieldKey);
-		}
+		// Always create a new list. 
+		// This will effectively unlink the old list and create a new one. 
+		// Otherwise the list which is linked to old versions would be updated. 
+		graphNumberFieldList = container.createNumberList(fieldKey);
 
 		// Handle Update
 		graphNumberFieldList.removeAll();
-		for (
-	Number item:numberList.getItems())
-	{
-		graphNumberFieldList.createNumber(item);
-	}
+		for (Number item : numberList.getItems()) {
+			graphNumberFieldList.createNumber(item);
+		}
 
 	};
 

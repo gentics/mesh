@@ -39,7 +39,7 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
 		GraphField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNull= nodeList == null;
+		boolean restIsNull = nodeList == null;
 		GraphField.failOnMissingRequiredField(graphNodeFieldList, restIsNull, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion
@@ -53,10 +53,10 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 			return;
 		}
 
-		// Handle Create
-		if (graphNodeFieldList == null) {
-			graphNodeFieldList = container.createNodeList(fieldKey);
-		}
+		// Always create a new list. 
+		// This will effectively unlink the old list and create a new one. 
+		// Otherwise the list which is linked to old versions would be updated. 
+		graphNodeFieldList = container.createNodeList(fieldKey);
 
 		// Handle Update
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();

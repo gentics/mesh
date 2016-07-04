@@ -84,6 +84,7 @@ public abstract class AbstractBasicFieldNodeVerticleTest extends AbstractRestVer
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
+		node.reload();
 		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
 
 		NodeResponse response = call(

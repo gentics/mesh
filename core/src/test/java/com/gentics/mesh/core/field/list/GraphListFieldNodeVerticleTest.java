@@ -68,12 +68,6 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphListFieldVertic
 	}
 
 	@Test
-	public void testNullNodeList() throws IOException {
-		NodeResponse response = createNode("listField", (Field) null);
-		// TODO see CL-359
-	}
-
-	@Test
 	public void testNullNodeList2() throws IOException {
 		NodeFieldListImpl listField = new NodeFieldListImpl();
 		listField.add(new NodeFieldListItemImpl(null));
@@ -88,8 +82,8 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphListFieldVertic
 		List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
 				Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
+		NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 		for (int i = 0; i < 20; i++) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			List<Node> oldValue = getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME);
 			List<Node> newValue = valueCombinations.get(i % valueCombinations.size());
 
@@ -103,8 +97,10 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphListFieldVertic
 			node.reload();
 			container.reload();
 
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
+			assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion().getNumber());
 			assertEquals("Check old value", oldValue, getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME));
+			container = newContainerVersion;
 		}
 	}
 

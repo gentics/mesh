@@ -1,8 +1,7 @@
 package com.gentics.mesh.core.field.list;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -16,8 +15,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 
 public class GraphListFieldStringVerticleTest extends AbstractGraphListFieldVerticleTest {
@@ -31,8 +28,7 @@ public class GraphListFieldStringVerticleTest extends AbstractGraphListFieldVert
 	public void testCreateNodeWithNullFieldValue() throws IOException {
 		NodeResponse response = createNode(FIELD_NAME, (Field) null);
 		StringFieldListImpl nodeField = response.getFields().getStringFieldList(FIELD_NAME);
-		assertNotNull(nodeField);
-		assertEquals(0, nodeField.getItems().size());
+		assertNull("No string field should have been created.", nodeField);
 	}
 
 	@Test
@@ -49,15 +45,7 @@ public class GraphListFieldStringVerticleTest extends AbstractGraphListFieldVert
 		listField.setItems(null);
 		NodeResponse response = createNode(FIELD_NAME, listField);
 		StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
-		assertEquals(0, listFromResponse.getItems().size());
-	}
-
-	@Test
-	public void testCreateWithOmittedStringListValue() throws IOException {
-		NodeResponse response = createNode(null, (Field) null);
-		StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
-		assertNotNull(listFromResponse);
-		assertEquals(0, listFromResponse.getItems().size());
+		assertNull("The string list should be null since the request was sending null instead of an array.", listFromResponse);
 	}
 
 	@Test
@@ -84,8 +72,6 @@ public class GraphListFieldStringVerticleTest extends AbstractGraphListFieldVert
 		for (int i = 0; i < 20; i++) {
 			List<String> oldValue = getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME);
 			List<String> newValue = valueCombinations.get(i % valueCombinations.size());
-			System.out.println("OLD: " + oldValue);
-			System.out.println("NEW: " + newValue);
 
 			StringFieldListImpl list = new StringFieldListImpl();
 			for (String value : newValue) {
@@ -98,8 +84,10 @@ public class GraphListFieldStringVerticleTest extends AbstractGraphListFieldVert
 			container.reload();
 
 			NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
+			assertEquals("The old container version did not match", container.getVersion().nextDraft().toString(), response.getVersion().toString());
 			assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion().getNumber());
-			//assertEquals("Check old value", oldValue, getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME));
+			assertEquals("Check old value", oldValue, getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME));
+			assertEquals("Check new value", newValue, getListValues(newContainerVersion, StringGraphFieldListImpl.class, FIELD_NAME));
 			container = newContainerVersion;
 		}
 	}

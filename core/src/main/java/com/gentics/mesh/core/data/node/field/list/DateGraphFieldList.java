@@ -27,7 +27,7 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 		DateFieldListImpl dateList = fieldMap.getDateFieldList(fieldKey);
 		boolean isDateListFieldSetToNull = fieldMap.hasField(fieldKey) && (dateList == null);
 		GraphField.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNull= dateList == null;
+		boolean restIsNull = dateList == null;
 		GraphField.failOnMissingRequiredField(graphDateFieldList, restIsNull, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion
@@ -41,10 +41,10 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 			return;
 		}
 
-		// Handle Create
-		if (graphDateFieldList == null) {
-			graphDateFieldList = container.createDateList(fieldKey);
-		}
+		// Always create a new list. 
+		// This will effectively unlink the old list and create a new one. 
+		// Otherwise the list which is linked to old versions would be updated. 
+		graphDateFieldList = container.createDateList(fieldKey);
 
 		// Handle Update
 		graphDateFieldList.removeAll();

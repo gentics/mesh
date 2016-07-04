@@ -14,8 +14,6 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 
 public class GraphListFieldNumberVerticleTest extends AbstractGraphListFieldVerticleTest {
@@ -44,8 +42,8 @@ public class GraphListFieldNumberVerticleTest extends AbstractGraphListFieldVert
 		List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1), Collections.emptyList(),
 				Arrays.asList(47.11, 8.15), Arrays.asList(3));
 
+		NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 		for (int i = 0; i < 20; i++) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			List<Number> oldValue = getListValues(container, NumberGraphFieldListImpl.class, FIELD_NAME);
 			List<Number> newValue = valueCombinations.get(i % valueCombinations.size());
 
@@ -59,8 +57,10 @@ public class GraphListFieldNumberVerticleTest extends AbstractGraphListFieldVert
 			node.reload();
 			container.reload();
 
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
+			assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion().getNumber());
 			assertEquals("Check old value", oldValue, getListValues(container, NumberGraphFieldListImpl.class, FIELD_NAME));
+			container = newContainerVersion;
 		}
 	}
 

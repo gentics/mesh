@@ -15,7 +15,7 @@ public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlF
 	FieldTransformator HTML_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		HtmlGraphFieldList htmlFieldList = container.getHTMLList(fieldKey);
 		if (htmlFieldList == null) {
-			return Observable.just(new HtmlFieldListImpl());
+			return Observable.just(null);
 		} else {
 			return htmlFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}

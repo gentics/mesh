@@ -16,8 +16,11 @@ public class VersionReference extends AbstractResponse {
 
 	/**
 	 * Create an instance with uuid and number
-	 * @param uuid field container uuid
-	 * @param number version number
+	 * 
+	 * @param uuid
+	 *            field container uuid
+	 * @param number
+	 *            version number
 	 */
 	public VersionReference(String uuid, String number) {
 		this();
@@ -27,6 +30,7 @@ public class VersionReference extends AbstractResponse {
 
 	/**
 	 * Get the version number
+	 * 
 	 * @return version number
 	 */
 	public String getNumber() {
@@ -35,11 +39,18 @@ public class VersionReference extends AbstractResponse {
 
 	/**
 	 * Set the version number
-	 * @param number version number
+	 * 
+	 * @param number
+	 *            version number
 	 * @return Fluent API
 	 */
 	public VersionReference setNumber(String number) {
 		this.number = number;
 		return this;
+	}
+
+	@Override
+	public String toString() {
+		return getNumber();
 	}
 }

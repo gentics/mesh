@@ -41,10 +41,10 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 			return;
 		}
 
-		// Handle Create 
-		if (graphBooleanFieldList == null) {
-			graphBooleanFieldList = container.createBooleanList(fieldKey);
-		}
+		// Always create a new list. 
+		// This will effectively unlink the old list and create a new one. 
+		// Otherwise the list which is linked to old versions would be updated. 
+		graphBooleanFieldList = container.createBooleanList(fieldKey);
 
 		// Handle Update
 		// Remove all and add the listed items
