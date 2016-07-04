@@ -41,8 +41,10 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -88,8 +90,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 		// 3. Try to resolve the path
 		String path = "/News/2015/somefile.dat";
-		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, path,
-				new VersioningParameters().draft(), new NodeParameters().setResolveLinks(LinkType.FULL)));
+		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+				new NodeParameters().setResolveLinks(LinkType.FULL)));
 		NodeDownloadResponse downloadResponse = response.getDownloadResponse();
 		assertTrue(response.isBinary());
 		assertNotNull(downloadResponse);
@@ -101,8 +103,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		Node folder = folder("2015");
 		String path = "/News/2015";
 
-		WebRootResponse restNode = call(
-				() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft()));
+		WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft()));
 		assertThat(restNode.getNodeResponse()).is(folder).hasLanguage("en");
 	}
 
@@ -114,8 +115,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 
 		String path = "/News/2015/News_2015.en.html";
-		WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path,
-				new VersioningParameters().draft(), new NodeParameters().setResolveLinks(LinkType.FULL).setLanguages("en")));
+		WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+				new NodeParameters().setResolveLinks(LinkType.FULL).setLanguages("en")));
 		HtmlFieldImpl contentField = restNode.getNodeResponse().getFields().getHtmlField("content");
 		assertNotNull(contentField);
 		assertEquals("Check rendered content", "<a href=\"/api/v1/dummy/webroot/News/2015/News_2015.en.html\">somelink</a>", contentField.getHTML());
@@ -125,8 +126,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testReadContentByPath() throws Exception {
 		String path = "/News/2015/News_2015.en.html";
-		WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path,
-				new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
+		WebRootResponse restNode = call(
+				() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
 
 		Node node = content("news_2015");
 		assertThat(restNode.getNodeResponse()).is(node).hasLanguage("en");
@@ -156,15 +157,15 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		parentNode.getLatestDraftFieldContainer(english()).createNode("nodeRef", node);
 
 		String path = "/News/2015";
-		WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path,
-				new VersioningParameters().draft(), new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en", "de")));
+		WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+				new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en", "de")));
 		assertEquals("The node reference did not point to the german node.", "/dummy/News/2015/test.de.html",
 				restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
 		assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
 
 		// Again with no german fallback option (only english)
-		restNode = call(() -> getClient().webroot(PROJECT_NAME, path,
-				new VersioningParameters().draft(), new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en")));
+		restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+				new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en")));
 		assertEquals("The node reference did not point to the 404 path.", "/dummy/error/404",
 				restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
 		assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
@@ -178,8 +179,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 		List<Future<WebRootResponse>> futures = new ArrayList<>();
 		for (int i = 0; i < nJobs; i++) {
-			futures.add(getClient().webroot(PROJECT_NAME, path,
-					new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
+			futures.add(getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
 		}
 
 		for (Future<WebRootResponse> fut : futures) {
@@ -191,8 +191,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testPathWithSpaces() throws Exception {
 		String[] path = new String[] { "News", "2015", "Special News_2014.en.html" };
-		call(() -> getClient().webroot(PROJECT_NAME, path,
-				new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
+		call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
 	}
 
 	@Test
@@ -212,19 +211,16 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testReadProjectBaseNode() {
-		WebRootResponse response = call(
-				() -> getClient().webroot(PROJECT_NAME, "/", new VersioningParameters().draft()));
+		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, "/", new VersioningParameters().draft()));
 		assertFalse(response.isBinary());
-		assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(),
-				response.getNodeResponse().getUuid());
+		assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 	}
 
 	@Test
 	public void testReadDoubleSlashes() {
 		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, "//", new VersioningParameters().draft()));
 		assertFalse(response.isBinary());
-		assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(),
-				response.getNodeResponse().getUuid());
+		assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 	}
 
 	@Test
@@ -236,8 +232,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 				for (String path3 : Arrays.asList("March", "März")) {
 					for (String language : Arrays.asList("en", "de")) {
 						WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME,
-								new String[] { path1, path2, path3, name + "." + language + ".html" },
-								new VersioningParameters().draft()));
+								new String[] { path1, path2, path3, name + "." + language + ".html" }, new VersioningParameters().draft()));
 
 						assertEquals("Check response language", language, response.getNodeResponse().getLanguage());
 					}
@@ -253,8 +248,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		newsFolder = folder("2015");
 		role().revokePermissions(newsFolder, READ_PERM);
 
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, englishPath,
-				new VersioningParameters().draft());
+		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, englishPath, new VersioningParameters().draft());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", newsFolder.getUuid());
 	}
@@ -319,26 +313,25 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testReadPublished() {
 		String path = "/News/2015";
 
+		try (NoTrx noTx = db.noTrx()) {
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new TakeOfflineParameters().setRecursive(true)));
+		}
 		// 1. Assert that published path cannot be found
-		db.noTrx(() -> {
-			call(() -> getClient().webroot(PROJECT_NAME, path, new NodeParameters()), NOT_FOUND,
-					"node_not_found_for_path", path);
-			return null;
-		});
+		try (NoTrx noTx = db.noTrx()) {
+			call(() -> getClient().webroot(PROJECT_NAME, path, new NodeParameters()), NOT_FOUND, "node_not_found_for_path", path);
+		}
 
 		// 2. Publish nodes
-		db.noTrx(() -> {
-			folder("news").publish(getMockedInternalActionContext()).toBlocking().single();
-			folder("2015").publish(getMockedInternalActionContext()).toBlocking().single();
-			return null;
-		});
+		try (NoTrx noTx = db.noTrx()) {
+			folder("news").publish(getMockedInternalActionContext(user())).toBlocking().single();
+			folder("2015").publish(getMockedInternalActionContext(user())).toBlocking().single();
+		}
 
 		// 3. Assert that published path can be found
-		db.noTrx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new NodeParameters()));
-			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
-			return null;
-		});
+			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("2.0").hasLanguage("en");
+		}
 	}
 
 	@Test
@@ -369,8 +362,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 		// 4. Assert published path in draft
 		db.noTrx(() -> {
-			call(() -> getClient().webroot(PROJECT_NAME, publishedPath, new VersioningParameters().draft()), NOT_FOUND,
-					"node_not_found_for_path", publishedPath);
+			call(() -> getClient().webroot(PROJECT_NAME, publishedPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
+					publishedPath);
 			return null;
 		});
 
@@ -383,8 +376,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 		// 6. Assert draft path in published
 		db.noTrx(() -> {
-			call(() -> getClient().webroot(PROJECT_NAME, draftPath, new NodeParameters()), NOT_FOUND,
-					"node_not_found_for_path", draftPath);
+			call(() -> getClient().webroot(PROJECT_NAME, draftPath, new NodeParameters()), NOT_FOUND, "node_not_found_for_path", draftPath);
 			return null;
 		});
 	}
@@ -412,15 +404,15 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		// 3. Assert new names in new release
 		db.noTrx(() -> {
 			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, newPath, new VersioningParameters().draft()));
-			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("0.2").hasLanguage("en");
+			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
 			return null;
 		});
 
 		// 4. Assert new names in initial release
 		db.noTrx(() -> {
 			call(() -> getClient().webroot(PROJECT_NAME, newPath,
-					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())), NOT_FOUND,
-					"node_not_found_for_path", newPath);
+					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())), NOT_FOUND, "node_not_found_for_path",
+					newPath);
 			return null;
 		});
 
@@ -428,45 +420,53 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		db.noTrx(() -> {
 			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, initialPath,
 					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())));
-			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("0.1").hasLanguage("en");
+			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 			return null;
 		});
 
 		// 6. Assert old names in new release
 		db.noTrx(() -> {
-			call(() -> getClient().webroot(PROJECT_NAME, initialPath, new VersioningParameters().draft()), NOT_FOUND,
-					"node_not_found_for_path", initialPath);
+			call(() -> getClient().webroot(PROJECT_NAME, initialPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
+					initialPath);
 			return null;
 		});
 	}
 
 	/**
 	 * Update the node name for the latest release
-	 * @param node node
-	 * @param language language
-	 * @param newName new name
+	 * 
+	 * @param node
+	 *            node
+	 * @param language
+	 *            language
+	 * @param newName
+	 *            new name
 	 */
 	protected void updateName(Node node, String language, String newName) {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
-		update.setVersion(new VersionReference(node.getGraphFieldContainer(language).getUuid(),
-				node.getGraphFieldContainer(language).getVersion().toString()));
+		update.setVersion(
+				new VersionReference(node.getGraphFieldContainer(language).getUuid(), node.getGraphFieldContainer(language).getVersion().toString()));
 		update.getFields().put("name", FieldUtil.createStringField(newName));
 		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update));
 	}
 
 	/**
 	 * Update the node name for the given release
-	 * @param node node
-	 * @param release release
-	 * @param language language
-	 * @param newName new name
+	 * 
+	 * @param node
+	 *            node
+	 * @param release
+	 *            release
+	 * @param language
+	 *            language
+	 * @param newName
+	 *            new name
 	 */
 	protected void updateName(Node node, Release release, String language, String newName) {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
 		update.getFields().put("name", FieldUtil.createStringField(newName));
-		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update,
-				new VersioningParameters().setRelease(release.getUuid())));
+		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update, new VersioningParameters().setRelease(release.getUuid())));
 	}
 }

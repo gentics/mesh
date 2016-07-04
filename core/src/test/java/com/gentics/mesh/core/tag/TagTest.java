@@ -41,6 +41,7 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -289,9 +290,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTrx noTx = db.noTrx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
-
+			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 			PageImpl<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParameters(1, 10));
 			assertEquals(12, tagPage.getTotalElements());
 			assertEquals(10, tagPage.getSize());

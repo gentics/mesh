@@ -22,12 +22,13 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.Future;
 
-public class NodeLanguagesVerticleTest extends AbstractRestVerticleTest {
+public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private NodeVerticle verticle;
@@ -41,63 +42,70 @@ public class NodeLanguagesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteLanguage() {
-		Node node = content();
-		String uuid = node.getUuid();
-		int nLanguagesBefore = node.getAvailableLanguageNames().size();
-		assertThat(node.getAvailableLanguageNames()).contains("en", "de");
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = content();
+			String uuid = node.getUuid();
+			int nLanguagesBefore = node.getAvailableLanguageNames().size();
+			assertThat(node.getAvailableLanguageNames()).contains("en", "de");
 
-		// Delete the english version 
-		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en");
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "node_deleted_language", node.getUuid(), "en");
+			// Delete the english version 
+			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en");
+			latchFor(future);
+			assertSuccess(future);
+			expectResponseMessage(future, "node_deleted_language", node.getUuid(), "en");
 
-		// Loading is still be possible but the node will contain no fields
-		Future<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en"));
-		latchFor(response);
-		assertSuccess(response);
-		assertThat(response.result().getAvailableLanguages()).contains("de");
-		assertThat(response.result().getFields()).isEmpty();
+			// Loading is still be possible but the node will contain no fields
+			Future<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en"));
+			latchFor(response);
+			assertSuccess(response);
+			assertThat(response.result().getAvailableLanguages()).contains("de");
+			assertThat(response.result().getFields()).isEmpty();
 
-		response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"));
-		latchFor(response);
-		assertSuccess(future);
+			response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"));
+			latchFor(response);
+			assertSuccess(future);
 
-		// Delete the english version again
-		future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en");
-		latchFor(future);
-		expectException(future, NOT_FOUND, "node_no_language_found", "en");
+			// Delete the english version again
+			future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en");
+			latchFor(future);
+			expectException(future, NOT_FOUND, "node_no_language_found", "en");
 
-		// Check the deletion
-		node.reload();
-		assertThat(searchProvider).recordedDeleteEvents(1);
-		assertFalse(node.getAvailableLanguageNames().contains("en"));
-		assertEquals(nLanguagesBefore - 1, node.getAvailableLanguageNames().size());
+			// Check the deletion
+			node.reload();
+			assertThat(searchProvider).recordedDeleteEvents(2);
+			assertFalse(node.getAvailableLanguageNames().contains("en"));
+			assertEquals(nLanguagesBefore - 1, node.getAvailableLanguageNames().size());
 
-		// Now delete the remaining german version
-		future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "de");
-		latchFor(future);
-		assertThat(searchProvider).recordedDeleteEvents(2);
-		response = getClient().findNodeByUuid(PROJECT_NAME, uuid);
-		latchFor(response);
-		expectException(response, NOT_FOUND, "object_not_found_for_uuid", uuid);
+			// Now delete the remaining german version
+			future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "de");
+			latchFor(future);
+			assertThat(searchProvider).recordedDeleteEvents(2 + 2);
+			response = getClient().findNodeByUuid(PROJECT_NAME, uuid);
+			latchFor(response);
+			expectException(response, NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", uuid,
+					project().getLatestRelease().getUuid());
+		}
 
 	}
 
 	@Test
 	public void testDeleteBogusLanguage() {
-		Node node = content();
-		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "blub");
-		latchFor(future);
-		expectException(future, NOT_FOUND, "error_language_not_found", "blub");
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = content();
+			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "blub");
+			latchFor(future);
+			expectException(future, NOT_FOUND, "error_language_not_found", "blub");
+		}
 	}
 
 	@Test
 	public void testDeleteLanguageNoPerm() {
-		Node node = content();
-		role().revokePermissions(node, DELETE_PERM);
-		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en");
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = content();
+			role().revokePermissions(node, DELETE_PERM);
+			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en");
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+		}
 	}
 }

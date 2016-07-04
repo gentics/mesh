@@ -39,7 +39,7 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class MicronodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
+public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	protected final static String FIELDNAME = "micronodeField";
 
 	@Before
@@ -128,7 +128,6 @@ public class MicronodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		// Assert that a null field value request will delete the micronode 
 		NodeResponse secondResponse = updateNode(FIELDNAME, null);
 		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME)).isNull();
-		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME).getUuid()).as("Updated Field Value").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
 
 	}
@@ -186,7 +185,7 @@ public class MicronodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		microschema.setName("notexisting");
 		field.setMicroschema(microschema);
 		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-		createNodeAndExpectFailure(FIELDNAME, field, BAD_REQUEST, "microschema_reference_invalid", "micronodeField");
+		createNodeAndExpectFailure(FIELDNAME, field, BAD_REQUEST, "error_microschema_reference_not_found", "notexisting", "-", "-");
 	}
 
 	@Test

@@ -230,7 +230,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull(future.result().getRolePerms());
-		assertEquals(4, future.result().getRolePerms().length);
+		assertEquals(6, future.result().getRolePerms().length);
 	}
 
 	@Test

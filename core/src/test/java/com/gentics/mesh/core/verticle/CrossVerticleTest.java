@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
@@ -37,6 +38,7 @@ public class CrossVerticleTest extends AbstractRestVerticleTest {
 	public void testAccessNewProjectRoute() {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setSchemaReference(new SchemaReference().setName("folder"));
 		request.setName(name);
 
 		call(() -> getClient().createProject(request));

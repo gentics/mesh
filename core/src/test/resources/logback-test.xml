@@ -35,9 +35,10 @@
 	</logger>
  -->
 <!-- 
-    <logger name="com.gentics.mesh.rest.MeshResponseHandler" level="DEBUG"/>
-     -->
-	<root level="ERROR">
+<logger name="com.gentics.mesh.rest.MeshResponseHandler" level="DEBUG"/>
+<logger name="com.gentics.mesh.rest.MeshRestRequestUtil" level="DEBUG"/>
+ -->
+<root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>
