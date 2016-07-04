@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
@@ -91,11 +92,11 @@ public class DatabaseHelper {
 		// Fields
 		NodeGraphFieldContainerImpl.checkIndices(database);
 		StringGraphFieldListImpl.checkIndices(database);
+		HtmlGraphFieldListImpl.checkIndices(database);
 		NodeGraphFieldListImpl.checkIndices(database);
 		TagGraphFieldContainerImpl.checkIndices(database);
 		MicronodeGraphFieldListImpl.checkIndices(database);
 
-		
 		LanguageImpl.checkIndices(database);
 		GroupImpl.checkIndices(database);
 		RoleImpl.checkIndices(database);

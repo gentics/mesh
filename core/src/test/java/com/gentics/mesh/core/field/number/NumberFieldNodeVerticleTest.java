@@ -112,7 +112,13 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		// Update again to restore a value
 		updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
 
-		response = updateNode(FIELD_NAME, new NumberFieldImpl());
+	}
+
+	@Test
+	@Override
+	public void testUpdateSetEmpty() {
+		// Number fields can't be set to empty - The rest model will generate a null field for the update request json. Thus the field will be deleted.
+		NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl());
 		assertThat(response.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
 	}
 

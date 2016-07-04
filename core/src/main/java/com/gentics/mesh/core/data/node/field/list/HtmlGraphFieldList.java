@@ -26,7 +26,7 @@ public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlF
 		HtmlFieldListImpl htmlList = fieldMap.getHtmlFieldList(fieldKey);
 		boolean isHtmlListFieldSetToNull = fieldMap.hasField(fieldKey) && htmlList == null;
 		GraphField.failOnDeletionOfRequiredField(graphHtmlFieldList, isHtmlListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = htmlList == null || htmlList.getItems().isEmpty();
+		boolean restIsNull = htmlList == null;
 		GraphField.failOnMissingRequiredField(graphHtmlFieldList, htmlList == null, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion
@@ -36,7 +36,7 @@ public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlF
 		}
 
 		// Rest model is empty or null - Abort
-		if (restIsNullOrEmpty) {
+		if (restIsNull) {
 			return;
 		}
 

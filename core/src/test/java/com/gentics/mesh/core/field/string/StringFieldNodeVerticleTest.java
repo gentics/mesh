@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -96,15 +97,32 @@ public class StringFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
 		String oldNumber = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new StringFieldImpl());
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+	}
+
+	@Test
+	@Override
+	public void testUpdateSetEmpty() {
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
+		String oldNumber = firstResponse.getVersion().getNumber();
+
+		StringField emptyField = new StringFieldImpl();
+		emptyField.setString("");
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+		assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getStringField(FIELD_NAME).getString()).as("Updated Field Value").isEqualTo("");
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
 	}
 
 	/**
 	 * Get the string value
-	 * @param container container
-	 * @param fieldName field name
+	 * 
+	 * @param container
+	 *            container
+	 * @param fieldName
+	 *            field name
 	 * @return string value (may be null)
 	 */
 	protected String getStringValue(NodeGraphFieldContainer container, String fieldName) {

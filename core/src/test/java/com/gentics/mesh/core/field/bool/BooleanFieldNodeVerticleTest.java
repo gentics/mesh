@@ -100,6 +100,14 @@ public class BooleanFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest 
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
 	}
 
+	@Test
+	
+	@Override
+	public void testUpdateSetEmpty() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	/**
 	 * Get boolean value
 	 * 

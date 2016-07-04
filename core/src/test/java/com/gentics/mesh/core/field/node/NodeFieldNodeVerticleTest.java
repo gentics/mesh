@@ -93,11 +93,18 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeResponse firstResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 		String oldNumber = firstResponse.getVersion().getNumber();
 
-		updateNodeFailure(NODE_FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", NODE_FIELD_NAME);
-
 		NodeResponse secondResponse = updateNode(NODE_FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getNodeField(NODE_FIELD_NAME)).as("Deleted Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateSetEmpty() {
+		Node target = folder("news");
+		updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		updateNodeFailure(NODE_FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", NODE_FIELD_NAME);
 	}
 
 	/**

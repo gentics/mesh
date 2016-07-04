@@ -16,7 +16,7 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 	FieldTransformator NUMBER_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NumberGraphFieldList numberFieldList = container.getNumberList(fieldKey);
 		if (numberFieldList == null) {
-			return Observable.just(new NumberFieldListImpl());
+			return Observable.just(null);
 		} else {
 			return numberFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -28,8 +28,8 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 		NumberGraphFieldList graphNumberFieldList = container.getNumberList(fieldKey);
 		boolean isNumberListFieldSetToNull = fieldMap.hasField(fieldKey) && numberList == null;
 		GraphField.failOnDeletionOfRequiredField(graphNumberFieldList, isNumberListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = numberList == null ||  numberList.getItems().isEmpty();
-		GraphField.failOnMissingRequiredField(graphNumberFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		boolean restIsNull = numberList == null;
+		GraphField.failOnMissingRequiredField(graphNumberFieldList, restIsNull, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion
 		if (isNumberListFieldSetToNull && graphNumberFieldList != null) {
@@ -37,8 +37,8 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 			return;
 		}
 
-		// Rest model is empty or null - Abort
-		if (restIsNullOrEmpty) {
+		// Rest model is null - Abort
+		if (restIsNull) {
 			return;
 		}
 

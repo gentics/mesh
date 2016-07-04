@@ -25,12 +25,13 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.Future;
 
-public class NodeTagVerticleTest extends AbstractRestVerticleTest {
+public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private NodeVerticle verticle;
@@ -44,123 +45,143 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeTags() throws Exception {
-		Node node = folder("2015");
-		assertNotNull(node);
-		assertNotNull(node.getUuid());
-		assertNotNull(node.getSchemaContainer());
-		Future<TagListResponse> future = getClient().findTagsForNode(PROJECT_NAME, node.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		TagListResponse tagList = future.result();
-		assertEquals(4, tagList.getData().size());
-		assertEquals(4, tagList.getMetainfo().getTotalCount());
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			assertNotNull(node);
+			assertNotNull(node.getUuid());
+			assertNotNull(node.getSchemaContainer());
+			Future<TagListResponse> future = getClient().findTagsForNode(PROJECT_NAME, node.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			TagListResponse tagList = future.result();
+			assertEquals(4, tagList.getData().size());
+			assertEquals(4, tagList.getMetainfo().getTotalCount());
+		}
 	}
 
 	@Test
 	public void testAddTagToNode() throws Exception {
-		Node node = folder("2015");
-		Tag tag = tag("red");
-		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			Tag tag = tag("red");
+			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 
-		assertThat(searchProvider).recordedStoreEvents(0);
-		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		assertThat(searchProvider).recordedStoreEvents(1);
+			assertThat(searchProvider).recordedStoreEvents(0);
+			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			assertThat(searchProvider)
+					.as("Recorded store events after node update occured. Published and draft of the node should have been updated.")
+					.recordedStoreEvents(2);
+			// node-[:nodeUuid]-[draft/published]-[schemaname]-[schemaversion]-[release_uuid]
+			searchProvider.getStoreEvents().containsKey("node-" + node.getUuid() + "-published-folder-1-" + project().getLatestRelease().getUuid());
+			searchProvider.getStoreEvents().containsKey("node-" + node.getUuid() + "-draft-folder-1-" + project().getLatestRelease().getUuid());
 
-		future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
-		latchFor(future);
-		assertSuccess(future);
+			future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
+			latchFor(future);
+			assertSuccess(future);
 
-		node.reload();
-		NodeResponse restNode = future.result();
-		assertThat(restNode).contains(tag);
-		assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
+			node.reload();
+			NodeResponse restNode = future.result();
+			assertThat(restNode).contains(tag);
+			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 
-		// TODO check for properties of the nested tag
+			// TODO check for properties of the nested tag
+		}
 	}
 
 	@Test
 	public void testAddTagToNoPermNode() throws Exception {
-		Node node = folder("2015");
-		Tag tag = tag("red");
-		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
-		role().revokePermissions(node, UPDATE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			Tag tag = tag("red");
+			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			role().revokePermissions(node, UPDATE_PERM);
 
-		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
-		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+		}
 	}
 
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
-		Node node = folder("2015");
-		Tag tag = tag("red");
-		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
-		role().revokePermissions(tag, READ_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			Tag tag = tag("red");
+			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			role().revokePermissions(tag, READ_PERM);
 
-		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
+			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 
-		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+		}
 	}
 
 	@Test
 	public void testRemoveTagFromNode() throws Exception {
-		Node node = folder("2015");
-		Tag tag = tag("bike");
-		assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			Tag tag = tag("bike");
+			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 
-		Future<NodeResponse> future;
-		future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
-		latchFor(future);
-		assertSuccess(future);
+			Future<NodeResponse> future;
+			future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
+			latchFor(future);
+			assertSuccess(future);
 
-		NodeResponse restNode = future.result();
-		assertThat(restNode).contains(tag);
-		node.reload();
-		assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
-		// TODO check for properties of the nested tag
-
+			NodeResponse restNode = future.result();
+			assertThat(restNode).contains(tag);
+			node.reload();
+			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
+			// TODO check for properties of the nested tag
+		}
 	}
 
 	@Test
 	public void testRemoveBogusTagFromNode() throws Exception {
-		Node node = folder("2015");
-		String uuid = node.getUuid();
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			String uuid = node.getUuid();
 
-		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, uuid, "bogus");
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, uuid, "bogus");
+			latchFor(future);
+			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		}
 	}
 
 	@Test
 	public void testRemoveTagFromNoPermNode() throws Exception {
-		Node node = folder("2015");
-		Tag tag = tag("bike");
-		assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
-		role().revokePermissions(node, UPDATE_PERM);
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			Tag tag = tag("bike");
+			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
+			role().revokePermissions(node, UPDATE_PERM);
 
-		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters());
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+			Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 
-		assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
+			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
+		}
 	}
 
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
-		Node node = folder("2015");
-		Tag tag = tag("bike");
-		assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
-		role().revokePermissions(tag, READ_PERM);
-		Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters());
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			Node node = folder("2015");
+			Tag tag = tag("bike");
+			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
+			role().revokePermissions(tag, READ_PERM);
+			Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 
-		assertTrue("The tag should not have been removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
+			assertTrue("The tag should not have been removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
+		}
 	}
 
 }

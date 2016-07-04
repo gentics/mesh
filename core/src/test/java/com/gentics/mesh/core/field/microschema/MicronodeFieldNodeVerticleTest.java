@@ -125,6 +125,24 @@ public class MicronodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		NodeResponse firstResponse = updateNode(FIELDNAME, field);
 		String oldNumber = firstResponse.getVersion().getNumber();
 
+		// Assert that a null field value request will delete the micronode 
+		NodeResponse secondResponse = updateNode(FIELDNAME, null);
+		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME)).isNull();
+		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME).getUuid()).as("Updated Field Value").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateSetEmpty() {
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReference().setName("vcard"));
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+		NodeResponse firstResponse = updateNode(FIELDNAME, field);
+		String oldNumber = firstResponse.getVersion().getNumber();
+
 		createNodeAndExpectFailure(FIELDNAME, new MicronodeResponse(), BAD_REQUEST, "micronode_error_missing_reference", "micronodeField");
 
 		// Assert that an empty request will not update any data of the micronode
@@ -135,26 +153,6 @@ public class MicronodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		// TODO yes this is failing. We need to update the check which determines that nothing was updated
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
 
-		// Assert that a null field value request will delete the micronode 
-		secondResponse = updateNode(FIELDNAME, null);
-		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME)).isNull();
-		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME).getUuid()).as("Updated Field Value").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
-
-	}
-
-	/**
-	 * Get the micronode value
-	 * 
-	 * @param container
-	 *            container
-	 * @param fieldName
-	 *            field name
-	 * @return micronode value or null
-	 */
-	protected Micronode getMicronodeValue(NodeGraphFieldContainer container, String fieldName) {
-		MicronodeGraphField field = container.getMicronode(fieldName);
-		return field != null ? field.getMicronode() : null;
 	}
 
 	@Test
@@ -318,4 +316,19 @@ public class MicronodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTes
 		NodeResponse response = updateNode("full", field);
 		assertThat(response.getFields().getMicronodeField("full")).matches(field, fullMicroschema);
 	}
+
+	/**
+	 * Get the micronode value
+	 * 
+	 * @param container
+	 *            container
+	 * @param fieldName
+	 *            field name
+	 * @return micronode value or null
+	 */
+	protected Micronode getMicronodeValue(NodeGraphFieldContainer container, String fieldName) {
+		MicronodeGraphField field = container.getMicronode(fieldName);
+		return field != null ? field.getMicronode() : null;
+	}
+
 }

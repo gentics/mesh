@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
 import rx.Observable;
@@ -19,6 +21,10 @@ import rx.Observable;
  * @see HtmlGraphFieldList
  */
 public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl, String> implements HtmlGraphFieldList {
+
+	public static void checkIndices(Database database) {
+		database.addVertexType(HtmlGraphFieldListImpl.class, MeshVertexImpl.class);
+	}
 
 	@Override
 	public HtmlGraphField createHTML(String html) {
@@ -64,7 +70,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof HtmlFieldListImpl) {
-			HtmlFieldListImpl restField= (HtmlFieldListImpl)obj;
+			HtmlFieldListImpl restField = (HtmlFieldListImpl) obj;
 			List<String> restList = restField.getItems();
 			List<? extends HtmlGraphField> graphList = getList();
 			List<String> graphStringList = graphList.stream().map(e -> e.getHTML()).collect(Collectors.toList());

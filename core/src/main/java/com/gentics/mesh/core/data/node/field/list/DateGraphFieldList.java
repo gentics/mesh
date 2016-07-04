@@ -16,7 +16,7 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 	FieldTransformator DATE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		DateGraphFieldList dateFieldList = container.getDateList(fieldKey);
 		if (dateFieldList == null) {
-			return Observable.just(new DateFieldListImpl());
+			return Observable.just(null);
 		} else {
 			return dateFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -27,8 +27,8 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 		DateFieldListImpl dateList = fieldMap.getDateFieldList(fieldKey);
 		boolean isDateListFieldSetToNull = fieldMap.hasField(fieldKey) && (dateList == null);
 		GraphField.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = dateList == null || dateList.getItems().isEmpty();
-		GraphField.failOnMissingRequiredField(graphDateFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		boolean restIsNull= dateList == null;
+		GraphField.failOnMissingRequiredField(graphDateFieldList, restIsNull, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion
 		if (isDateListFieldSetToNull && graphDateFieldList != null) {
@@ -37,7 +37,7 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 		}
 
 		// Rest model is empty or null - Abort
-		if (restIsNullOrEmpty) {
+		if (restIsNull) {
 			return;
 		}
 

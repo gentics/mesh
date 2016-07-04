@@ -68,33 +68,37 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testUpdateSameValue() {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-		String oldNumber = firstResponse.getVersion().getNumber();
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-		String oldNumber = firstResponse.getVersion().getNumber();
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl());
 		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNotNull();
 		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME).getHTML()).as("Updated Field Value").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 	}
 
-	/**
-	 * Get the html value
-	 * @param container container
-	 * @param fieldName field name
-	 * @return html value (may be null)
-	 */
-	protected String getHtmlValue(NodeGraphFieldContainer container, String fieldName) {
-		HtmlGraphField field = container.getHtml(fieldName);
-		return field != null ? field.getHTML() : null;
+	@Test
+	@Override
+	public void testUpdateSetEmpty() {
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
+		String oldVersion = firstResponse.getVersion().getNumber();
+
+		HtmlFieldImpl emptyField = new HtmlFieldImpl();
+		emptyField.setHTML("");
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME).getHTML()).as("Updated Field Value").isEqualTo("");
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
 	}
 
 	@Test
@@ -116,7 +120,20 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		HtmlFieldImpl deserializedHtmlField = response.getFields().getHtmlField(FIELD_NAME);
 		assertNotNull(deserializedHtmlField);
 		assertEquals("some<b>html", deserializedHtmlField.getHTML());
+	}
 
+	/**
+	 * Get the html value
+	 * 
+	 * @param container
+	 *            container
+	 * @param fieldName
+	 *            field name
+	 * @return html value (may be null)
+	 */
+	protected String getHtmlValue(NodeGraphFieldContainer container, String fieldName) {
+		HtmlGraphField field = container.getHtml(fieldName);
+		return field != null ? field.getHTML() : null;
 	}
 
 }

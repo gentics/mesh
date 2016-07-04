@@ -16,7 +16,7 @@ public interface StringGraphFieldList extends ListGraphField<StringGraphField, S
 	FieldTransformator STRING_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		StringGraphFieldList stringFieldList = container.getStringList(fieldKey);
 		if (stringFieldList == null) {
-			return Observable.just(new StringFieldListImpl());
+			return Observable.just(null);
 		} else {
 			return stringFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -27,8 +27,8 @@ public interface StringGraphFieldList extends ListGraphField<StringGraphField, S
 		StringFieldListImpl stringList = fieldMap.getStringFieldList(fieldKey);
 		boolean isStringListFieldSetToNull = fieldMap.hasField(fieldKey) && (stringList == null || stringList.getItems() == null);
 		GraphField.failOnDeletionOfRequiredField(graphStringList, isStringListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = stringList == null || stringList.getItems().isEmpty();
-		GraphField.failOnMissingRequiredField(graphStringList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		boolean restIsNull = stringList == null;
+		GraphField.failOnMissingRequiredField(graphStringList, restIsNull, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion
 		if (isStringListFieldSetToNull && graphStringList != null) {
@@ -37,7 +37,7 @@ public interface StringGraphFieldList extends ListGraphField<StringGraphField, S
 		}
 
 		// Rest model is empty or null - Abort
-		if (restIsNullOrEmpty) {
+		if (restIsNull) {
 			return;
 		}
 

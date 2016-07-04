@@ -16,7 +16,7 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 	FieldTransformator BOOLEAN_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BooleanGraphFieldList booleanFieldList = container.getBooleanList(fieldKey);
 		if (booleanFieldList == null) {
-			return Observable.just(new BooleanFieldListImpl());
+			return Observable.just(null);
 		} else {
 			return booleanFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -27,8 +27,8 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 		BooleanFieldListImpl booleanList = fieldMap.getBooleanFieldList(fieldKey);
 		boolean isBooleanListFieldSetToNull = fieldMap.hasField(fieldKey) && booleanList == null;
 		GraphField.failOnDeletionOfRequiredField(graphBooleanFieldList, isBooleanListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = booleanList == null || booleanList.getItems().isEmpty();
-		GraphField.failOnMissingRequiredField(graphBooleanFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		boolean restIsNull = booleanList == null;
+		GraphField.failOnMissingRequiredField(graphBooleanFieldList, restIsNull, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion
 		if (isBooleanListFieldSetToNull && graphBooleanFieldList != null) {
@@ -37,7 +37,7 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 		}
 
 		// Rest model is empty or null - Abort
-		if (restIsNullOrEmpty) {
+		if (restIsNull) {
 			return;
 		}
 

@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
-import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -29,7 +28,7 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 	FieldTransformator NODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NodeGraphFieldList nodeFieldList = container.getNodeList(fieldKey);
 		if (nodeFieldList == null) {
-			return Observable.just(new NodeFieldListImpl());
+			return Observable.just(null);
 		} else {
 			return nodeFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -40,8 +39,8 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
 		GraphField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = nodeList == null || nodeList.getItems().isEmpty();
-		GraphField.failOnMissingRequiredField(graphNodeFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		boolean restIsNull= nodeList == null;
+		GraphField.failOnMissingRequiredField(graphNodeFieldList, restIsNull, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion
 		if (isNodeListFieldSetToNull && graphNodeFieldList != null) {
@@ -50,7 +49,7 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 		}
 
 		// Rest model is empty or null - Abort
-		if (restIsNullOrEmpty) {
+		if (restIsNull) {
 			return;
 		}
 

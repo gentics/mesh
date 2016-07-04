@@ -112,8 +112,7 @@ public class MicronodeListFieldNodeVerticleTest extends AbstractFieldNodeVerticl
 			node.reload();
 			container.reload();
 
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(),
-					response.getVersion().getNumber());
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
 			assertEquals("Check old value", oldValue, getListValues(container, MicronodeGraphFieldListImpl.class, FIELDNAME));
 		}
 	}
@@ -140,10 +139,25 @@ public class MicronodeListFieldNodeVerticleTest extends AbstractFieldNodeVerticl
 		NodeResponse firstResponse = updateNode(FIELDNAME, field);
 		String oldNumber = firstResponse.getVersion().getNumber();
 
+		NodeResponse secondResponse = updateNode(FIELDNAME, null);
+		assertThat(secondResponse.getFields().getMicronodeFieldList(FIELDNAME)).as("Updated Field").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+	}
+
+	@Test
+	@Override
+	public void testUpdateSetEmpty() {
+		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		field.add(createItem("Max", "Böse"));
+		field.add(createItem("Moritz", "Böse"));
+		NodeResponse firstResponse = updateNode(FIELDNAME, field);
+		String oldNumber = firstResponse.getVersion().getNumber();
+
 		NodeResponse secondResponse = updateNode(FIELDNAME, new MicronodeFieldListImpl());
 		assertThat(secondResponse.getFields().getMicronodeFieldList(FIELDNAME)).as("Updated Field").isNotNull();
 		assertThat(secondResponse.getFields().getMicronodeFieldList(FIELDNAME).getItems()).as("Updated Field Value").isEmpty();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+
 	}
 
 	/**
@@ -302,7 +316,8 @@ public class MicronodeListFieldNodeVerticleTest extends AbstractFieldNodeVerticl
 	 *            expected field
 	 * @param field
 	 *            field to check
-	 * @param assertUuid true to assert equality of uuids
+	 * @param assertUuid
+	 *            true to assert equality of uuids
 	 */
 	protected void assertFieldEquals(FieldList<MicronodeField> expected, FieldList<MicronodeField> field, boolean assertUuid) {
 		assertEquals("Check # of micronode items", expected.getItems().size(), field.getItems().size());

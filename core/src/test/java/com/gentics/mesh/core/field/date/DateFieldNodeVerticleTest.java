@@ -68,10 +68,10 @@ public class DateFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testUpdateSameValue() {
 		Long nowEpoch = System.currentTimeMillis() / 1000;
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
-		String oldNumber = firstResponse.getVersion().getNumber();
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
@@ -79,17 +79,24 @@ public class DateFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testUpdateSetNull() {
 		Long nowEpoch = System.currentTimeMillis() / 1000;
 		NodeResponse response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
-		String oldNumber = response.getVersion().getNumber();
 
 		response = updateNode(FIELD_NAME, null);
 		assertThat(response.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
+	}
 
-		response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
-		oldNumber = response.getVersion().getNumber();
+	@Test
+	@Override
+	public void testUpdateSetEmpty() {
 
+		Long nowEpoch = System.currentTimeMillis() / 1000;
+		NodeResponse response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		String oldNumber = response.getVersion().getNumber();
+
+		// Date fields can't be set to empty.
 		response = updateNode(FIELD_NAME, new DateFieldImpl());
 		assertThat(response.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
 		assertThat(response.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+
 	}
 
 	/**
