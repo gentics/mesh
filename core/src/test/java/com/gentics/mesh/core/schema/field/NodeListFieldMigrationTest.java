@@ -67,7 +67,8 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Override
 	public void testChangeToBooleanList() throws Exception {
 		changeType(CREATENODELIST, FILL, FETCH, CREATEBOOLEANLIST, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
 		});
 	}
 
@@ -83,7 +84,8 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Override
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATENODELIST, FILL, FETCH, CREATEDATELIST, (container, name) -> {
-			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
 		});
 	}
 
@@ -99,7 +101,8 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Override
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATENODELIST, FILL, FETCH, CREATEHTMLLIST, (container, name) -> {
-			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNull();
+			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
 		});
 	}
 
@@ -149,7 +152,8 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Override
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATENODELIST, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
-			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
 		});
 	}
 
@@ -165,7 +169,8 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Override
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATENODELIST, FILL, FETCH, CREATESTRINGLIST, (container, name) -> {
-			assertThat(container.getStringList(name)).as(NEWFIELD).isNull();
+			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
 		});
 	}
 

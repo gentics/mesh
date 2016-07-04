@@ -40,13 +40,12 @@ public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlF
 			return;
 		}
 
-		// Handle Create
-		if (graphHtmlFieldList == null) {
-			graphHtmlFieldList = container.createHTMLList(fieldKey);
-		}
+		// Always create a new list. 
+		// This will effectively unlink the old list and create a new one. 
+		// Otherwise the list which is linked to old versions would be updated. 
+		graphHtmlFieldList = container.createHTMLList(fieldKey);
 
-		// Handle Update
-		graphHtmlFieldList.removeAll();
+		// Add items from rest model
 		for (String item : htmlList.getItems()) {
 			graphHtmlFieldList.createHTML(item);
 		}

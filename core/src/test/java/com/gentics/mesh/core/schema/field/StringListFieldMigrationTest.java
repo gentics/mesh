@@ -16,6 +16,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
 
@@ -81,7 +82,8 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		});
 
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEBOOLEANLIST, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
 		});
 	}
 
@@ -107,7 +109,8 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		});
 
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEDATELIST, (container, name) -> {
-			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
 		});
 	}
 
@@ -184,7 +187,8 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		});
 
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATENUMBERLIST, (container, name) -> {
-			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
 		});
 	}
 
