@@ -2,8 +2,6 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,15 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 import com.gentics.mesh.util.FieldUtil;
-
-import io.vertx.core.Future;
 
 public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
 
@@ -38,9 +33,17 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 	}
 
 	@Test
-	public void testReadPerformance() {
-		loggingStopWatch(logger, "node.read", 200, (step) -> {
+	public void testReadPage() {
+		loggingStopWatch(logger, "node.read-page-100", 200, (step) -> {
 			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(100)));
+		});
+	}
+	
+	@Test
+	public void testReadSingleNode() {
+		String uuid = db.noTrx(() -> folder("news").getUuid());
+		loggingStopWatch(logger, "node.read-by-uuid", 200, (step) -> {
+			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new PagingParameters().setPerPage(100)));
 		});
 	}
 
