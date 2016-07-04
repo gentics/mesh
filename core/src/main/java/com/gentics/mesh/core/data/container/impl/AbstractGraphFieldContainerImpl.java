@@ -7,10 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -169,7 +166,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		Micronode existingMicronode = null;
 		if (existing != null) {
 			existingMicronode = existing.getMicronode();
-			//existing.getMicronode().delete(null);
+			// existing.getMicronode().delete(null);
 		}
 
 		// Create a new micronode and assign the given schema to it
@@ -198,12 +195,21 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public BinaryGraphField createBinary(String key) {
+	public BinaryGraphField createBinary(String fieldKey) {
+		BinaryGraphField existing = getBinary(fieldKey);
 		BinaryGraphFieldImpl field = getGraph().addFramedVertex(BinaryGraphFieldImpl.class);
-		field.setFieldKey(key);
+		field.setFieldKey(fieldKey);
 
 		MeshEdgeImpl edge = getGraph().addFramedEdge(this, field, HAS_FIELD, MeshEdgeImpl.class);
-		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, key);
+		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey);
+
+		if (existing != null) {
+			unlinkOut(existing.getImpl(), HAS_FIELD);
+			// Remove the field if no more containers are using it
+			if (existing.getImpl().in(HAS_FIELD).count() == 0) {
+				existing.getImpl().remove();
+			}
+		}
 		return field;
 	}
 
@@ -350,7 +356,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
 		schema.assertForUnhandledFields(fieldMap);
 
-		//TODO: This should return an observable
+		// TODO: This should return an observable
 		// Iterate over all known field that are listed in the schema for the node
 		for (FieldSchema entry : schema.getFields()) {
 			String key = entry.getName();

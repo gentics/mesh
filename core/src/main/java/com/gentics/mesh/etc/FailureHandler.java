@@ -49,7 +49,9 @@ public class FailureHandler implements Handler<RoutingContext> {
 			if (log.isDebugEnabled()) {
 				log.debug("Got failure with 401 code.");
 			}
-			rc.next();
+			String msg = I18NUtil.get(InternalActionContext.create(rc), "error_not_authorized");
+			rc.response().setStatusCode(401);
+			rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
 			return;
 		} else {
 			log.error("Error for request in path: " + rc.normalisedPath());

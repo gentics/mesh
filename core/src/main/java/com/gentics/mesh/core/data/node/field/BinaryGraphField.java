@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field;
 
 import java.io.File;
 
+import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 
@@ -28,7 +29,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
 		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
 		GraphField.failOnDeletionOfRequiredField(graphBinaryField, isBinaryFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = binaryField == null;
+		boolean restIsNull = binaryField == null;
 		// The required check for binary fields is not enabled since binary fields can only be created using the field api
 
 		// Handle Deletion
@@ -38,14 +39,12 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 		}
 
 		// Rest model is empty or null - Abort
-		if (restIsNullOrEmpty) {
+		if (restIsNull) {
 			return;
 		}
 
 		// Handle Create - Create new graph field if no existing one could be found
-		if (graphBinaryField == null) {
-			graphBinaryField = container.createBinary(fieldKey);
-		}
+		graphBinaryField = container.createBinary(fieldKey);
 
 		// Handle Update
 		graphBinaryField.setImageDPI(binaryField.getDpi());
@@ -205,4 +204,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	 * @param uuid
 	 */
 	void setUuid(String uuid);
+
+	BinaryGraphFieldImpl getImpl();
+
 }

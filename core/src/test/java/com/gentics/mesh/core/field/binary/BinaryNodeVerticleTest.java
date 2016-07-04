@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.binary;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -7,7 +8,6 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -88,21 +88,31 @@ public class BinaryNodeVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = folder("news");
 		prepareSchema(node, "", "binary");
 
+		NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 		for (int i = 0; i < 20; i++) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			BinaryGraphField oldValue = container.getBinary("binary");
-			String fileName = "somefile" + i + ".dat";
+			String oldFilename = null;
+			if (oldValue != null) {
+				oldFilename = oldValue.getFileName();
+			}
+			String newFileName = "somefile" + i + ".dat";
 
-			call(() -> updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName));
+			call(() -> updateBinaryField(node, "en", "binary", binaryLen, contentType, newFileName));
 			node.reload();
 			container.reload();
 
-			assertEquals("The binary filename was not updated.", fileName,
-					node.getLatestDraftFieldContainer(english()).getBinary("binary").getFileName());
+			NodeGraphFieldContainer newContainer = container.getNextVersion();
+			assertNotNull("No new version was created.", newContainer);
+			assertEquals(newContainer.getUuid(), node.getLatestDraftFieldContainer(english()).getUuid());
 
 			NodeResponse response = readNode(PROJECT_NAME, node.getUuid());
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
-			assertThat(container.getBinary("binary")).isEqualToComparingFieldByField(oldValue);
+			assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion().getNumber());
+			String value = container.getBinary("binary") == null ? null : container.getBinary("binary").getFileName();
+			assertEquals("Version {" + container.getVersion() + "} did not contain the old value", oldFilename, value);
+			assertNotNull("Version {" + newContainer.getVersion() + "} did not contain the updated field.",newContainer.getBinary("binary"));
+			assertEquals("Version {" + newContainer.getVersion() + "} did not contain the updated value.", newFileName,
+					newContainer.getBinary("binary").getFileName());
+			container = newContainer;
 		}
 	}
 
@@ -177,8 +187,8 @@ public class BinaryNodeVerticleTest extends AbstractBinaryVerticleTest {
 		assertSuccess(future);
 
 		// Load the uploaded binary field and return the segment path to the field
-		BinaryGraphField binaryField = node.getLatestDraftFieldContainer(english())
-				.getBinary("binary");
+		node.reload();
+		BinaryGraphField binaryField = node.getLatestDraftFieldContainer(english()).getBinary("binary");
 		String uuid = "b677504736ed47a1b7504736ed07a14a";
 		binaryField.setUuid(uuid);
 		String path = binaryField.getSegmentedPath();
@@ -201,8 +211,7 @@ public class BinaryNodeVerticleTest extends AbstractBinaryVerticleTest {
 
 		node.reload();
 
-		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new VersioningParameters().draft()));
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 
 		BinaryField binaryField = response.getFields().getBinaryField("binary");
 		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
@@ -267,8 +276,7 @@ public class BinaryNodeVerticleTest extends AbstractBinaryVerticleTest {
 
 		node.reload();
 
-		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new VersioningParameters().draft()));
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 
 		BinaryField binaryField = response.getFields().getBinaryField(fieldName);
 		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());

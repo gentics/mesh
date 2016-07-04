@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -105,17 +106,21 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
-				// TODO Update SQB
 				Language language = boot.languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
-				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
-				if (container == null) {
+				
+				// Create new field container as clone of the existing
+				NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(language, release, ContainerType.DRAFT);
+
+				if (latestDraftVersion == null) {
+					// Create a new field container
+					//latestDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser());
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				Optional<FieldSchema> fieldSchema = container.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
+				Optional<FieldSchema> fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
 				if (!fieldSchema.isPresent()) {
 					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}
@@ -124,14 +129,8 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 				}
 
-				BinaryGraphField field = container.getBinary(fieldName);
-				if (field == null) {
-					field = container.createBinary(fieldName);
-				}
-				if (field == null) {
-					// ac.fail(BAD_REQUEST, "Binary field {" + fieldName + "} could not be found.");
-					// return;
-				}
+				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+				BinaryGraphField field = newDraftVersion.createBinary(fieldName);
 
 				MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 				try {
@@ -157,22 +156,21 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					String fileName = ul.fileName();
 					String fieldUuid = field.getUuid();
 
-					final BinaryGraphField binaryField = field;
 					Observable<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
 					return obsHash.flatMap(sha512sum -> {
 						Tuple<SearchQueueBatch, String> tuple = db.trx(() -> {
-							binaryField.setFileName(fileName);
-							binaryField.setFileSize(ul.size());
-							binaryField.setMimeType(contentType);
-							binaryField.setSHA512Sum(sha512sum);
+							field.setFileName(fileName);
+							field.setFileSize(ul.size());
+							field.setMimeType(contentType);
+							field.setSHA512Sum(sha512sum);
 							//TODO handle image properties as well
 							// node.setBinaryImageDPI(dpi);
 							// node.setBinaryImageHeight(heigth);
 							// node.setBinaryImageWidth(width);
 
 							// if the binary field is the segment field, we need to update the webroot info in the node
-							if (binaryField.getFieldKey().equals(container.getSchemaContainerVersion().getSchema().getSegmentField())) {
-								container.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
+							if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+								newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 							}
 
 							SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);

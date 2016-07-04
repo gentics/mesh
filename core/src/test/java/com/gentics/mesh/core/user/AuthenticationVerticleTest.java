@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -64,10 +65,10 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		Observable<GenericMessageResponse> logoutFuture = client.logout();
 		logoutFuture.toBlocking().single();
 
-		//		assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
+		// assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
 		meResponse = client.me();
 		latchFor(meResponse);
-		expectFailureMessage(meResponse, HttpResponseStatus.UNAUTHORIZED, "Unauthorized");
+		expectException(meResponse, UNAUTHORIZED, "error_not_authorized");
 	}
 
 }

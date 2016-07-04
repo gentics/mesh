@@ -228,4 +228,9 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		}
 		return false;
 	}
+
+	@Override
+	public BinaryGraphFieldImpl getImpl() {
+		return this;
+	}
 }
