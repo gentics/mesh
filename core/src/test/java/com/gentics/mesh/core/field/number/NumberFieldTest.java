@@ -91,7 +91,6 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		setupData();
 		Node node = folder("2015");
 
 		// Update the schema

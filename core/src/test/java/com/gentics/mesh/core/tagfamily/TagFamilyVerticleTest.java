@@ -88,7 +88,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull("The response did not contain the expected role permission field value", future.result().getRolePerms());
-			assertEquals("The response did not contain the expected amount of role permissions.", 4, future.result().getRolePerms().length);
+			assertEquals("The response did not contain the expected amount of role permissions.", 6, future.result().getRolePerms().length);
 		}
 
 	}
