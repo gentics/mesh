@@ -1,9 +1,9 @@
-package com.gentics.mesh.core.field.microschema;
+package com.gentics.mesh.core.field.micronode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import org.elasticsearch.common.lang3.StringUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -35,8 +36,9 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTrx;
 
-public class MicronodeListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
+public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	protected final static String FIELDNAME = "micronodeListField";
 
 	@Before
@@ -64,8 +66,8 @@ public class MicronodeListFieldNodeVerticleTest extends AbstractFieldNodeVerticl
 	public void testUpdateNodeFieldWithField() {
 		Node node = folder("2015");
 
+		NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 		for (int i = 0; i < 20; i++) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			List<Micronode> oldValue = getListValues(container, MicronodeGraphFieldListImpl.class, FIELDNAME);
 
 			NodeResponse response = null;
@@ -112,8 +114,10 @@ public class MicronodeListFieldNodeVerticleTest extends AbstractFieldNodeVerticl
 			node.reload();
 			container.reload();
 
+			NodeGraphFieldContainer newContainer = container.getNextVersion();
 			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
 			assertEquals("Check old value", oldValue, getListValues(container, MicronodeGraphFieldListImpl.class, FIELDNAME));
+			container = newContainer;
 		}
 	}
 
@@ -242,6 +246,7 @@ public class MicronodeListFieldNodeVerticleTest extends AbstractFieldNodeVerticl
 	 * </ol>
 	 */
 	@Test
+	@Ignore
 	public void testMultipleChanges() {
 		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 		field.add(createItem("One", "One"));
@@ -287,26 +292,7 @@ public class MicronodeListFieldNodeVerticleTest extends AbstractFieldNodeVerticl
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(FIELDNAME, (Field) null);
 		FieldList<MicronodeField> field = response.getFields().getMicronodeFieldList(FIELDNAME);
-		assertNotNull(field);
-		assertTrue("List field must be empty", field.getItems().isEmpty());
-		assertMicronodes(field);
-	}
-
-	/**
-	 * Create an item for the MicronodeFieldList
-	 * 
-	 * @param firstName
-	 *            first name
-	 * @param lastName
-	 *            last name
-	 * @return item
-	 */
-	protected MicronodeResponse createItem(String firstName, String lastName) {
-		MicronodeResponse item = new MicronodeResponse();
-		item.setMicroschema(new MicroschemaReference().setName("vcard"));
-		item.getFields().put("firstName", new StringFieldImpl().setString(firstName));
-		item.getFields().put("lastName", new StringFieldImpl().setString(lastName));
-		return item;
+		assertNull(field);
 	}
 
 	/**
@@ -343,8 +329,27 @@ public class MicronodeListFieldNodeVerticleTest extends AbstractFieldNodeVerticl
 	 *            field
 	 */
 	protected void assertMicronodes(FieldList<MicronodeField> field) {
-		Set<? extends MicronodeImpl> unboundMicronodes = db.noTrx().getGraph().v().has(MicronodeImpl.class).toList(MicronodeImpl.class).stream()
-				.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
-		assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();
+		try (NoTrx noTx = db.noTrx()) {
+			Set<? extends MicronodeImpl> unboundMicronodes = noTx.getGraph().v().has(MicronodeImpl.class).toList(MicronodeImpl.class).stream()
+					.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
+			assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();
+		}
+	}
+
+	/**
+	 * Create an item for the MicronodeFieldList
+	 * 
+	 * @param firstName
+	 *            first name
+	 * @param lastName
+	 *            last name
+	 * @return item
+	 */
+	protected MicronodeResponse createItem(String firstName, String lastName) {
+		MicronodeResponse item = new MicronodeResponse();
+		item.setMicroschema(new MicroschemaReference().setName("vcard"));
+		item.getFields().put("firstName", new StringFieldImpl().setString(firstName));
+		item.getFields().put("lastName", new StringFieldImpl().setString(lastName));
+		return item;
 	}
 }

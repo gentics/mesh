@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field.list;
+package com.gentics.mesh.core.field.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
@@ -13,14 +13,15 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
+import com.gentics.mesh.core.field.AbstractGraphListFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 
-public class GraphListFieldStringVerticleTest extends AbstractGraphListFieldVerticleTest {
+public class StringFieldListVerticleTest extends AbstractGraphListFieldVerticleTest {
 
 	@Override
-	String getListFieldType() {
+	public String getListFieldType() {
 		return "string";
 	}
 

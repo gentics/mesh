@@ -529,8 +529,6 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		schema.getFields().add(FieldUtil.createStringFieldSchema("extraname").setLabel("someLabel"));
 		ServerSchemaStorage.getInstance().clear();
 
-		// Update the schema client side
-
 		// 2. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 

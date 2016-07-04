@@ -80,9 +80,9 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
 		String oldVersion = firstResponse.getVersion().getNumber();
 
+		// Simple field with no value results in a request JSON null value. 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl());
-		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME).getHTML()).as("Updated Field Value").isNull();
+		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 	}
 

@@ -1,10 +1,9 @@
-package com.gentics.mesh.core.field.list;
+package com.gentics.mesh.core.field;
 
 import java.io.IOException;
 
 import org.junit.Before;
 
-import com.gentics.mesh.core.field.AbstractBasicFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -13,7 +12,7 @@ public abstract class AbstractGraphListFieldVerticleTest extends AbstractBasicFi
 
 	protected static final String FIELD_NAME = "listField";
 
-	abstract String getListFieldType();
+	public abstract String getListFieldType();
 
 	@Before
 	public void updateSchema() throws IOException {

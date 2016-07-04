@@ -16,8 +16,8 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
-import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FETCH;
-import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FILL;
+import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FETCH;
+import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FILL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;

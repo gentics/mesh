@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field.microschema;
+package com.gentics.mesh.core.field.micronode;
 
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;

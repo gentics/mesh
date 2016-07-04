@@ -8,7 +8,6 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
-import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 
 import rx.Observable;
 
@@ -19,7 +18,7 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 	FieldTransformator MICRONODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		MicronodeGraphFieldList graphMicroschemaField = container.getMicronodeList(fieldKey);
 		if (graphMicroschemaField == null) {
-			return Observable.just(new MicronodeFieldListImpl());
+			return Observable.just(null);
 		} else {
 			return graphMicroschemaField.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -30,8 +29,8 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 		MicronodeFieldList micronodeList = fieldMap.getMicronodeFieldList(fieldKey);
 		boolean isMicronodeListFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeList == null;
 		GraphField.failOnDeletionOfRequiredField(micronodeGraphFieldList, isMicronodeListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = micronodeList == null || micronodeList.getItems().isEmpty();
-		GraphField.failOnMissingRequiredField(micronodeGraphFieldList, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		boolean restIsNull = micronodeList == null;
+		GraphField.failOnMissingRequiredField(micronodeGraphFieldList, restIsNull, fieldSchema, fieldKey, schema);
 
 		// Handle Deletion
 		if (isMicronodeListFieldSetToNull && micronodeGraphFieldList != null) {
@@ -40,14 +39,14 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 		}
 
 		// Rest model is empty or null - Abort
-		if (restIsNullOrEmpty) {
+		if (restIsNull) {
 			return;
 		}
 
-		// Handle Create
-		if (micronodeGraphFieldList == null) {
-			micronodeGraphFieldList = container.createMicronodeFieldList(fieldKey);
-		}
+		// Always create a new list. 
+		// This will effectively unlink the old list and create a new one. 
+		// Otherwise the list which is linked to old versions would be updated. 
+		micronodeGraphFieldList = container.createMicronodeFieldList(fieldKey);
 
 		// Handle Update
 		//TODO instead this method should also return an observable 

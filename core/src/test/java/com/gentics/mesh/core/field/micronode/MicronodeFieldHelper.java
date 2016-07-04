@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field.microschema;
+package com.gentics.mesh.core.field.micronode;
 
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;

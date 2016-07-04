@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field.list;
+package com.gentics.mesh.core.field.node;
 
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
+import com.gentics.mesh.core.field.AbstractGraphListFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
@@ -28,10 +29,10 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 
 import io.vertx.core.Future;
 
-public class GraphListFieldNodeVerticleTest extends AbstractGraphListFieldVerticleTest {
+public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTest {
 
 	@Override
-	String getListFieldType() {
+	public String getListFieldType() {
 		return "node";
 	}
 

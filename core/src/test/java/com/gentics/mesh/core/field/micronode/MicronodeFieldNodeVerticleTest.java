@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field.microschema;
+package com.gentics.mesh.core.field.micronode;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;

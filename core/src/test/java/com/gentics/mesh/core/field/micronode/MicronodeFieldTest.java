@@ -1,10 +1,9 @@
-package com.gentics.mesh.core.field.microschema;
+package com.gentics.mesh.core.field.micronode;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-
-import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.CREATE_EMPTY;
-import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FETCH;
-import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FILL;
+import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FETCH;
+import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FILL;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
