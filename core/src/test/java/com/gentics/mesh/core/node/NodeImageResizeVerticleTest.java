@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
@@ -68,6 +69,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		assertSuccess(downloadFuture);
 
 		// 3. Validate resize
+		node.reload();
 		validateResizeImage(downloadFuture.result(), node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
 	}
 
@@ -82,7 +84,6 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth() + 1).setHeight(102);
 		call(() -> getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), BAD_REQUEST,
 				"image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(options.getMaxWidth() + 1));
-
 	}
 
 	@Test
@@ -97,8 +98,9 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
 		latchFor(downloadFuture);
 		assertSuccess(downloadFuture);
+		node.reload();
+		assertNotNull(node.getLatestDraftFieldContainer(english()));
 		validateResizeImage(downloadFuture.result(), node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 2048, 102);
-
 	}
 
 	@Test

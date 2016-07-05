@@ -73,8 +73,8 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		updateNode(FIELDNAME, field);
 		node.reload();
 
+		NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 		for (int i = 0; i < 20; i++) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			Micronode oldValue = getMicronodeValue(container, FIELDNAME);
 
 			field = new MicronodeResponse();
@@ -89,6 +89,7 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 
 			node.reload();
 			container.reload();
+			NodeGraphFieldContainer newContainer = container.getNextVersion();
 			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
 			if (oldValue == null) {
 				assertThat(getMicronodeValue(container, FIELDNAME)).as("old value").isNull();
@@ -98,6 +99,7 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 				assertThat(getMicronodeValue(container, FIELDNAME)).as("old value").isEqualToComparingFieldByField(oldValue);
 				assertThat(fieldResponse.getUuid()).as("New uuid").isNotEqualTo(oldValue.getUuid());
 			}
+			container = newContainer;
 		}
 	}
 

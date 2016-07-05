@@ -321,7 +321,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			assertPage(globalTagPage, tags().size());
 
 			role().grantPermissions(noPermTag, READ_PERM);
-			globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(), new PagingParameters(1, 20));
+			globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()), new PagingParameters(1, 20));
 			assertPage(globalTagPage, tags().size() + 1);
 		}
 	}

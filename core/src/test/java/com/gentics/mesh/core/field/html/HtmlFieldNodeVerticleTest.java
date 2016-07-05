@@ -39,8 +39,7 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(null, (Field) null);
 		HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
-		assertNotNull(htmlField);
-		assertNull(htmlField.getHTML());
+		assertNull("The response should not contain the field because it should still be null", htmlField);
 	}
 
 	@Test

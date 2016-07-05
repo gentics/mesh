@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.util.FieldUtil;
 
 public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTest implements FieldDiffTestcases {
@@ -18,104 +19,97 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Test
 	@Override
 	public void testNoDiffByValue() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapJsonImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertNoDiff(list);
-			return null;
-		});
+		}
 	}
 
 	@Override
 	public void testDiffByValue() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapJsonImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue2"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testNoDiffByValuesNull() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			FieldMap dummyMap = new FieldMapJsonImpl();
 			dummyMap.put("dummy", null);
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertNoDiff(list);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffByValueNonNull() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			FieldMap dummyMap = new FieldMapJsonImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue2"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffByValueNonNull2() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue2");
 			FieldMap dummyMap = new FieldMapJsonImpl();
 			dummyMap.put("dummy", null);
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffBySchemaFieldRemoved() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = new SchemaModel();
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.REMOVED);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffBySchemaFieldAdded() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(null);
 			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.ADDED);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffBySchemaFieldTypeChanged() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapJsonImpl();
@@ -123,7 +117,6 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			dummyMap.put("dummy", FieldUtil.createHtmlField("someValue"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
-			return null;
-		});
+		}
 	}
 }
