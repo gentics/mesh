@@ -161,7 +161,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public MicronodeGraphField createMicronode(String key, MicroschemaContainerVersion microschema) {
-		// copy existing micronode
+		// 1. Copy existing micronode
 		MicronodeGraphField existing = getMicronode(key);
 		Micronode existingMicronode = null;
 		if (existing != null) {
@@ -169,20 +169,21 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			// existing.getMicronode().delete(null);
 		}
 
-		// Create a new micronode and assign the given schema to it
+		// 2. Create a new micronode and assign the given schema to it
 		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
 		micronode.setSchemaContainerVersion(microschema);
 		if (existingMicronode != null) {
 			micronode.clone(existingMicronode);
 
-			// remove the old field (edge)
+			// Remove the old field (edge)
 			existing.getImpl().remove();
 
-			// if the existing micronode was only used by this container, remove it
+			// If the existing micronode was only used by this container, remove it
 			if (existingMicronode.getImpl().in(HAS_FIELD).count() == 0) {
 				existingMicronode.getImpl().remove();
 			}
 		}
+		// 3. Create a new edge from the container to the created micronode field
 		MicronodeGraphField field = getGraph().addFramedEdge(this, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;

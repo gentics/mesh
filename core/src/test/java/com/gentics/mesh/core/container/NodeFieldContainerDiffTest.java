@@ -2,7 +2,6 @@ package com.gentics.mesh.core.container;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -18,6 +17,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.FieldUtil;
 import com.syncleus.ferma.FramedGraph;
@@ -27,34 +27,32 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	@Override
 	public void testNoDiffByValue() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue");
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertNoDiff(list);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffByValue() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue2");
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertChanges(list, FieldChangeTypes.UPDATED);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	public void testNoDiffStringFieldList() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listA = containerA.createStringList("dummy");
 			listA.addItem(listA.createString("test123"));
@@ -65,13 +63,12 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertNoDiff(list);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	public void testDiffStringFieldList() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listA = containerA.createStringList("dummy");
 			listA.addItem(listA.createString("test123"));
@@ -85,13 +82,12 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 			assertChanges(list, FieldChangeTypes.UPDATED);
 			FieldContainerChange change = list.get(0);
 			assertEquals("dummy", change.getFieldKey());
-			return null;
-		});
+		}
 	}
 
 	@Test
 	public void testDiffMicronodeField() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(
 					FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
 
@@ -123,89 +119,82 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 			assertEquals(FieldChangeTypes.UPDATED, change.getType());
 			assertEquals("micronodeField", change.getFieldKey());
 			assertEquals("micronodeField.lastName", change.getFieldCoordinates());
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testNoDiffByValuesNull() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString(null);
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertNoDiff(list);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffByValueNonNull() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue2");
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertChanges(list, FieldChangeTypes.UPDATED);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffByValueNonNull2() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue2");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString(null);
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertChanges(list, FieldChangeTypes.UPDATED);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffBySchemaFieldRemoved() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(null);
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertChanges(list, FieldChangeTypes.REMOVED);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffBySchemaFieldAdded() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(null);
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue");
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertChanges(list, FieldChangeTypes.ADDED);
-			return null;
-		});
+		}
 	}
 
 	@Test
 	@Override
 	public void testDiffBySchemaFieldTypeChanged() {
-		db.trx(() -> {
+		try (NoTrx noTx = db.noTrx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createHtmlFieldSchema("dummy"));
 			containerB.createHTML("dummy").setHtml("someValue");
 			List<FieldContainerChange> list = containerA.compareTo(containerB);
 			assertChanges(list, FieldChangeTypes.UPDATED);
-			return null;
-		});
+		}
 	}
 }

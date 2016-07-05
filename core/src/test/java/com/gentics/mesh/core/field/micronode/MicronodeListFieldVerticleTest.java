@@ -51,7 +51,6 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		listFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(listFieldSchema);
 		schemaContainer("folder").getLatestVersion().setSchema(schema);
-
 	}
 
 	@Test
@@ -69,14 +68,14 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 		for (int i = 0; i < 20; i++) {
 			List<Micronode> oldValue = getListValues(container, MicronodeGraphFieldListImpl.class, FIELDNAME);
-
+			FieldList<MicronodeField> newValue = new MicronodeFieldListImpl();
 			NodeResponse response = null;
 			if (oldValue == null) {
 				// fill with new data
-				FieldList<MicronodeField> field = new MicronodeFieldListImpl();
-				field.add(createItem("Max", "Böse"));
-				field.add(createItem("Moritz", "Böse"));
-				response = updateNode(FIELDNAME, field);
+				newValue.getItems().clear();
+				newValue.add(createItem("Max", "Böse"));
+				newValue.add(createItem("Moritz", "Böse"));
+				response = updateNode(FIELDNAME, newValue);
 
 				FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELDNAME);
 				List<String> uuids = new ArrayList<>();
@@ -86,26 +85,27 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 			} else if (i % 3 == 1) {
 				// reorder data
 				NodeResponse readResponse = readNode(node);
-				FieldList<MicronodeField> responseField = readResponse.getFields().getMicronodeFieldList(FIELDNAME);
-				Collections.reverse(responseField.getItems());
+				newValue = readResponse.getFields().getMicronodeFieldList(FIELDNAME);
+				Collections.reverse(newValue.getItems());
 
-				response = updateNode(FIELDNAME, responseField);
+				response = updateNode(FIELDNAME, newValue);
 				FieldList<MicronodeField> updatedField = response.getFields().getMicronodeFieldList(FIELDNAME);
 
 				// compare uuids
-				assertFieldEquals(responseField, updatedField, true);
+				assertFieldEquals(newValue, updatedField, true);
 			} else if (i % 3 == 2) {
 				// change data
 				NodeResponse readResponse = readNode(node);
-				FieldList<MicronodeField> responseField = readResponse.getFields().getMicronodeFieldList(FIELDNAME);
+				newValue = readResponse.getFields().getMicronodeFieldList(FIELDNAME);
 
-				responseField.getItems().stream().forEach(field -> field.getFields().getStringField("firstName")
-						.setString("Strammer " + field.getFields().getStringField("firstName").getString()));
-
-				response = updateNode(FIELDNAME, responseField);
+				for (MicronodeField field : newValue.getItems()) {
+					StringFieldImpl firstNameField = field.getFields().getStringField("firstName");
+					firstNameField.setString("Strammer " + firstNameField.getString());
+					field.getFields().put("firstName", firstNameField);
+				}
+				response = updateNode(FIELDNAME, newValue);
 				FieldList<MicronodeField> updatedField = response.getFields().getMicronodeFieldList(FIELDNAME);
-
-				assertFieldEquals(responseField, updatedField, false);
+				assertFieldEquals(newValue, updatedField, false);
 			} else {
 				response = updateNode(FIELDNAME, new MicronodeFieldListImpl());
 				assertThat(response.getFields().getMicronodeFieldList(FIELDNAME).getItems()).isEmpty();
@@ -114,10 +114,21 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 			node.reload();
 			container.reload();
 
-			NodeGraphFieldContainer newContainer = container.getNextVersion();
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
-			assertEquals("Check old value", oldValue, getListValues(container, MicronodeGraphFieldListImpl.class, FIELDNAME));
-			container = newContainer;
+			// We only have to check for new versions if those should have been created.
+			boolean bothEmpty = oldValue != null && newValue.getItems().isEmpty() && oldValue.isEmpty();
+			if (!bothEmpty) {
+				NodeGraphFieldContainer newContainer = container.getNextVersion();
+				assertNotNull("No new container version was created. {" + i % 3 + "}", newContainer);
+				assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion().getNumber());
+				assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
+						getListValues(container, MicronodeGraphFieldListImpl.class, FIELDNAME));
+				container = newContainer;
+			} else {
+				assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
+						getListValues(container, MicronodeGraphFieldListImpl.class, FIELDNAME));
+				assertEquals("The version should not have been updated.", container.getVersion().toString(), response.getVersion().getNumber());
+			}
+
 		}
 	}
 

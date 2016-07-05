@@ -122,6 +122,10 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 					if (graphField != null && graphField.equals(nestedRestField)) {
 						continue;
 					}
+					// Field is not part of the request and has not been set to null. Skip it.
+					if (nestedRestField == null && !micronodeB.getFields().hasField(fieldSchema.getName())) {
+						continue;
+					}
 					if (!CompareUtils.equals(graphField, nestedRestField)) {
 						FieldContainerChange change = new FieldContainerChange(getFieldKey(), FieldChangeTypes.UPDATED);
 						// Set the micronode specific field coordinates

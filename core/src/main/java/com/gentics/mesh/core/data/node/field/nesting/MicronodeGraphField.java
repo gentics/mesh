@@ -62,7 +62,7 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 		if (microschemaReference == null || !microschemaReference.isSet()) {
 			throw error(BAD_REQUEST, "micronode_error_missing_reference", fieldKey);
 		}
-		
+
 		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot()
 				.fromReference(microschemaReference, ac.getRelease(null)).toBlocking().single();
 
@@ -77,7 +77,7 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaContainerVersion.getName());
 		}
 
-		// create a new micronode field, that will be filled
+		// Always create a new micronode field since each update must create a new field instance. The old field must be detached from the given container.
 		micronodeGraphField = container.createMicronode(fieldKey, microschemaContainerVersion);
 		micronode = micronodeGraphField.getMicronode();
 

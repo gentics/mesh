@@ -215,7 +215,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// 3. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
-		// 4. Update the schema server side
+		// 4. Update the schema server side -> 2.0
 		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
 		latchFor(future);
 		assertSuccess(future);
@@ -234,13 +234,14 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertNotNull("The response should contain the content field.", response.getFields().hasField("content"));
 		assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
 				response.getFields().getNumberField("content").getClass());
+		assertEquals("2.0", response.getVersion().getNumber());
 
 		// 7. Update the node and set the new field
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
 		nodeUpdateRequest.getFields().put("content", new NumberFieldImpl().setNumber(42.01));
-		nodeUpdateRequest.setVersion(new VersionReference().setNumber("1"));
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber("2.0"));
 		response = call(() -> getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));
 		assertNotNull(response);
 		assertNotNull(response.getFields().hasField("content"));
@@ -532,7 +533,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// 2. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
-		// 3. Update the schema server side
+		// 3. Update the schema server side -> 2.0
 		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
 		latchFor(future);
 		assertSuccess(future);
@@ -558,7 +559,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// Update the node and set the new field
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
-		nodeUpdateRequest.setVersion(new VersionReference().setNumber("1.0"));
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber("2.0"));
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
 		nodeUpdateRequest.getFields().put("extraname", new StringFieldImpl().setString("sometext"));
 		response = call(() -> getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));

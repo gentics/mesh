@@ -23,8 +23,9 @@ import com.gentics.mesh.util.VersionNumber;
 public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
 
 	/**
-	 * Delete the field container. This will also delete linked elements like lists.
-	 * If the container has a "next" container, that container will be deleted as well.
+	 * Delete the field container. This will also delete linked elements like lists. If the container has a "next" container, that container will be deleted as
+	 * well.
+	 * 
 	 * @param batch
 	 */
 	void delete(SearchQueueBatch batch);
@@ -108,7 +109,8 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	/**
 	 * Check whether this field container is the draft version for the given release
 	 * 
-	 * @param releaseUuid release Uuid
+	 * @param releaseUuid
+	 *            release Uuid
 	 * @return true if it is the draft, false if not
 	 */
 	boolean isDraft(String releaseUuid);
@@ -131,7 +133,9 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Get the release Uuids for which this container is the container of given type
-	 * @param type type
+	 * 
+	 * @param type
+	 *            type
 	 * @return set of release Uuids (may be empty, but never null)
 	 */
 	Set<String> getReleases(ContainerType type);
@@ -156,8 +160,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	List<FieldContainerChange> compareTo(NodeGraphFieldContainer container);
 
 	/**
-	 * Compare the values of this container with the values of the given fieldmap.
-	 * schemas.
+	 * Compare the values of this container with the values of the given fieldmap and return a list of detected differences.
 	 * 
 	 * @param fieldMap
 	 * @return
@@ -169,14 +172,18 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Get all micronode fields that have a micronode using the given microschema container version
-	 * @param version microschema container version
+	 * 
+	 * @param version
+	 *            microschema container version
 	 * @return list of micronode fields
 	 */
 	List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version);
 
 	/**
 	 * Get all micronode list fields that have at least one micronode using the given microschema container version
-	 * @param version microschema container version
+	 * 
+	 * @param version
+	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
 	List<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version);

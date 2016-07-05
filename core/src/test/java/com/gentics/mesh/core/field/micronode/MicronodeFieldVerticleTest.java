@@ -84,8 +84,7 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 			NodeResponse response = updateNode(FIELDNAME, field);
 
 			MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELDNAME);
-			assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName).hasStringField("address", null)
-					.hasStringField("postcode", null);
+			assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName);
 
 			node.reload();
 			container.reload();
@@ -151,9 +150,7 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME)).as("Updated Field").isNotNull();
 		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME).getFields().getStringField("firstName").getString()).isEqualTo("Max");
 		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME).getFields().getStringField("lastName").getString()).isEqualTo("Moritz");
-		// TODO yes this is failing. We need to update the check which determines that nothing was updated
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
-
 	}
 
 	@Test
@@ -236,8 +233,7 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		for (int i = 0; i < 10; i++) {
 			nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
 		}
-
-		microschemaContainers().put("noderef", boot.microschemaContainerRoot().create(nodeMicroschema, getRequestUser()));
+		microschemaContainers().put("noderef", project().getMicroschemaContainerRoot().create(nodeMicroschema, getRequestUser()));
 
 		// 2. Update the folder schema and add a micronode field
 		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
@@ -270,9 +266,9 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node newsOverview = content("news overview");
 		Node newsFolder = folder("news");
 
+		// 1. Create microschema that includes all field types
 		Microschema fullMicroschema = new MicroschemaModel();
 		fullMicroschema.setName("full");
-
 		// TODO implement BinaryField in Micronode
 		//		fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
 		fullMicroschema.addField(new BooleanFieldSchemaImpl().setName("booleanfield").setLabel("Boolean Field"));
@@ -289,8 +285,11 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		fullMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield").setLabel("Node Field"));
 		fullMicroschema.addField(new NumberFieldSchemaImpl().setName("numberfield").setLabel("Number Field"));
 		fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
-		microschemaContainers().put("full", boot.microschemaContainerRoot().create(fullMicroschema, getRequestUser()));
 
+		// 2. Add the microschema to the list of microschemas of the project
+		microschemaContainers().put("full", project().getMicroschemaContainerRoot().create(fullMicroschema, getRequestUser()));
+
+		// 3. Update the folder schema and inject a micronode field which uses the full schema
 		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 		microschemaFieldSchema.setName("full");
@@ -299,6 +298,7 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		schema.addField(microschemaFieldSchema);
 		schemaContainer("folder").getLatestVersion().setSchema(schema);
 
+		// 4. Prepare the micronode field for the update request
 		MicronodeResponse field = new MicronodeResponse();
 		field.setMicroschema(new MicroschemaReference().setName("full"));
 		field.getFields().put("booleanfield", FieldUtil.createBooleanField(true));
@@ -314,7 +314,10 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		field.getFields().put("numberfield", FieldUtil.createNumberField(4711));
 		field.getFields().put("stringfield", FieldUtil.createStringField("String value"));
 
+		// 5. Invoke the update request
 		NodeResponse response = updateNode("full", field);
+
+		// 6. Compare the response with the update request
 		assertThat(response.getFields().getMicronodeField("full")).matches(field, fullMicroschema);
 	}
 

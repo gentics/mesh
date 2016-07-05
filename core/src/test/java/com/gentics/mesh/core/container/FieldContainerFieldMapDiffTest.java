@@ -2,6 +2,7 @@ package com.gentics.mesh.core.container;
 
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -87,9 +88,10 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapJsonImpl();
-			Schema schema = new SchemaModel();
+			dummyMap.put("dummy", null);
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
-			assertChanges(list, FieldChangeTypes.REMOVED);
+			// The field existed in both objects but the null value fieldmap update is still an update of the existing field.
+			assertChanges(list, FieldChangeTypes.UPDATED);
 		}
 	}
 
@@ -97,24 +99,30 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Override
 	public void testDiffBySchemaFieldAdded() {
 		try (NoTrx noTx = db.noTrx()) {
-			NodeGraphFieldContainer containerA = createContainer(null);
+			// Create a container which does not contain a dummy field value 
+			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			FieldMap dummyMap = new FieldMapJsonImpl();
-			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
-			assertChanges(list, FieldChangeTypes.ADDED);
+			// The field exists in both but the change was an update 
+			assertChanges(list, FieldChangeTypes.UPDATED);
 		}
 	}
 
 	@Test
 	@Override
+	@Ignore("Not applicable")
 	public void testDiffBySchemaFieldTypeChanged() {
 		try (NoTrx noTx = db.noTrx()) {
+			// Create container with string field value
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
+
+			// Create fieldmap with html field value
 			FieldMap dummyMap = new FieldMapJsonImpl();
-			Schema schema = createSchema(FieldUtil.createHtmlFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createHtmlField("someValue"));
+
+			// Compare both
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
 		}
