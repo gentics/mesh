@@ -37,7 +37,7 @@ node('dockerRoot') {
 
 	stage 'Test'
 	if (!Boolean.valueOf(skipTests)) {
-		def splits = 9;
+		def splits = 25;
 		sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
 		sh "split -a 1 -d -n l/${splits} alltests  includes-"
 		stash includes: '*', name: 'project'
@@ -53,15 +53,20 @@ node('dockerRoot') {
 						extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
 					unstash 'project'
 					sh "ls -la"
-					echo "Setting correct inclusions file"
-					sh "mv includes-${current} inclusions.txt"
-					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-						try {
-							sh "${mvnHome}/bin/mvn -e -pl '!demo,!doc,!server,!performance-tests' -B clean test"
-						} finally {
-							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-						}
+					def postfix = current;
+					if (current < 9) {
+						postfix = "0" + current 
 					}
+					echo "Setting correct inclusions file ${postfix}"
+					sh "mv includes-${postfix} inclusions.txt"
+
+//					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+//						try {
+//							sh "${mvnHome}/bin/mvn -e -pl '!demo,!doc,!server,!performance-tests' -B clean test"
+//						} finally {
+//							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+//						}
+//					}
 				}
 			}
 		}
