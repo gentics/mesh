@@ -340,7 +340,7 @@
 					<threadCountClasses>1</threadCountClasses>
 					<!-- <rerunFailingTestsCount>2</rerunFailingTestsCount> -->
 					<trimStackTrace>false</trimStackTrace>
-					<forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
 					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
 					<!-- <includes> <include>**/*Test.java</include> <include>**/*TestSuite.java</include> </includes> -->
 					<excludes>
