@@ -54,19 +54,18 @@ node('dockerRoot') {
 					unstash 'project'
 					sh "ls -la"
 					def postfix = current;
-					if (current < 9) {
+					if (current <= 9) {
 						postfix = "0" + current 
 					}
 					echo "Setting correct inclusions file ${postfix}"
 					sh "mv includes-${postfix} inclusions.txt"
-
-//					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-//						try {
-//							sh "${mvnHome}/bin/mvn -e -pl '!demo,!doc,!server,!performance-tests' -B clean test"
-//						} finally {
-//							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-//						}
-//					}
+					sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+						try {
+							sh "${mvnHome}/bin/mvn -e -pl '!demo,!doc,!server,!performance-tests' -B clean test"
+						} finally {
+							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+						}
+					}
 				}
 			}
 		}
