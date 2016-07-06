@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -65,13 +66,29 @@ public final class MeshAssert {
 		return timeout;
 	}
 
+	private static void printAllStackTraces() {
+		Map<Thread, StackTraceElement[]> liveThreads = Thread.getAllStackTraces();
+		for (Iterator<Thread> i = liveThreads.keySet().iterator(); i.hasNext();) {
+			Thread key = i.next();
+			System.err.println("Thread " + key.getName());
+			StackTraceElement[] trace = liveThreads.get(key);
+			for (int j = 0; j < trace.length; j++) {
+				System.err.println("\tat " + trace[j]);
+			}
+		}
+	}
+
 	public static void latchFor(Future<?> future) {
 		CountDownLatch latch = new CountDownLatch(1);
 		future.setHandler(rh -> {
 			latch.countDown();
 		});
 		try {
-			assertTrue("The timeout of the latch was reached.", latch.await(getTimeout(), TimeUnit.SECONDS));
+			if (!latch.await(getTimeout(), TimeUnit.SECONDS)) {
+				printAllStackTraces();
+				fail("The timeout of the latch was reached.");
+			}
+
 		} catch (UnknownHostException | InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -79,12 +96,14 @@ public final class MeshAssert {
 
 	public static void failingLatch(CountDownLatch latch, int timeoutInSeconds) throws InterruptedException {
 		if (!latch.await(timeoutInSeconds, TimeUnit.SECONDS)) {
+			printAllStackTraces();
 			fail("Latch timeout reached");
 		}
 	}
 
 	public static void failingLatch(CountDownLatch latch) throws Exception {
 		if (!latch.await(getTimeout(), TimeUnit.SECONDS)) {
+			printAllStackTraces();
 			fail("Latch timeout reached");
 		}
 	}
