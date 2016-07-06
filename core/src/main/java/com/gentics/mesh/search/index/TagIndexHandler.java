@@ -22,6 +22,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 
@@ -53,8 +54,11 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	@Override
 	public Set<String> getIndices() {
 		return db.noTrx(() -> {
-			List<? extends Project> projects = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findAll();
-			return projects.stream().map(project -> getIndexName(project.getUuid())).collect(Collectors.toSet());
+			ProjectRoot projectRoot = BootstrapInitializer.getBoot().meshRoot().getProjectRoot();
+			projectRoot.reload();
+			List<? extends Project> projects = projectRoot.findAll();
+			Set<String> indices = projects.stream().map(project -> getIndexName(project.getUuid())).collect(Collectors.toSet());
+			return indices;
 		});
 	}
 
@@ -72,7 +76,9 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	/**
 	 * Get the index name for the given project
-	 * @param project Uuid
+	 * 
+	 * @param project
+	 *            Uuid
 	 * @return index name
 	 */
 	public String getIndexName(String projectUuid) {
