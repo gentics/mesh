@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
@@ -12,6 +13,7 @@ import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
 import rx.Observable;
@@ -21,6 +23,10 @@ import rx.Observable;
  */
 public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl, Boolean>
 		implements BooleanGraphFieldList {
+
+	public static void checkIndices(Database database) {
+		database.addVertexType(BooleanGraphFieldListImpl.class, MeshVertexImpl.class);
+	}
 
 	@Override
 	public BooleanGraphField getBoolean(int index) {
