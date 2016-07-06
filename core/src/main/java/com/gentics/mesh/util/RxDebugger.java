@@ -28,7 +28,7 @@ public class RxDebugger extends Thread implements Runnable {
 			@Override
 			public <T> String start(DebugNotification<T> n) {
 				Observer<?> obs = n.getObserver();
-				if (obs != null && n.getKind() == Kind.OnNext) {
+				if (obs != null && (n.getKind() == Kind.OnNext || n.getKind()== Kind.Subscribe)) {
 					String eventId = obs.toString() + "." + n.getKind().name();
 					if (log.isDebugEnabled()) {
 						log.debug("Got event: " + eventId);

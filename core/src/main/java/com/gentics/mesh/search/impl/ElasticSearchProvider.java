@@ -248,24 +248,27 @@ public class ElasticSearchProvider implements SearchProvider {
 		IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
 
 		builder.setSource(map);
-		ObservableFuture<Void> fut = RxHelper.observableFuture();
-		builder.execute().addListener(new ActionListener<IndexResponse>() {
+		Observable<Void> obs = Observable.create(sub -> {
+			builder.execute().addListener(new ActionListener<IndexResponse>() {
 
-			@Override
-			public void onResponse(IndexResponse response) {
-				if (log.isDebugEnabled()) {
-					log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+				@Override
+				public void onResponse(IndexResponse response) {
+					if (log.isDebugEnabled()) {
+						log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+					}
+					sub.onNext(null);
+					sub.onCompleted();
 				}
-				fut.toHandler().handle(Future.succeededFuture());
-			}
 
-			@Override
-			public void onFailure(Throwable e) {
-				log.error("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-				fut.toHandler().handle(Future.failedFuture(e));
-			}
+				@Override
+				public void onFailure(Throwable e) {
+					log.error("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
+							e);
+					sub.onError(e);
+				}
+			});
 		});
-		return fut;
+		return obs;
 
 	}
 

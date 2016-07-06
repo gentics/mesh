@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jettison.json.JSONException;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,6 +19,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.search.index.TagIndexHandler;
+import com.gentics.mesh.util.RxDebugger;
 
 import io.vertx.core.Future;
 
@@ -28,6 +30,11 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 
 	@Autowired
 	private TagIndexHandler tagIndexHandler;
+
+	@BeforeClass
+	public static void testSetupDB() {
+		new RxDebugger().start();
+	}
 
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
@@ -91,7 +98,8 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
-		assertEquals(1, searchFuture.result().getData().size());
+		assertEquals("The tag with name {" + name + "} and uuid {" + uuid + "} could not be found in the search index.", 1,
+				searchFuture.result().getData().size());
 
 		// 2. Delete the tag
 		deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid);
