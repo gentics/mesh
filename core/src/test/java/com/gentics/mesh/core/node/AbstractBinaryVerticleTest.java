@@ -4,22 +4,24 @@ import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.test.core.TestUtils;
 
-public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTest {
+public abstract class AbstractBinaryVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Before
 	public void setup() throws IOException {

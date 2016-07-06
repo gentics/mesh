@@ -34,6 +34,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.core.Future;
@@ -57,126 +58,146 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testImageResize() throws Exception {
-		Node node = folder("news");
 
-		// 1. Upload image
-		uploadImage(node, "en", "image");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = folder("news");
 
-		// 2. Resize image
-		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
-		Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
-		latchFor(downloadFuture);
-		assertSuccess(downloadFuture);
+			// 1. Upload image
+			uploadImage(node, "en", "image");
 
-		// 3. Validate resize
-		node.reload();
-		validateResizeImage(downloadFuture.result(), node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
+			// 2. Resize image
+			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
+			Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
+			latchFor(downloadFuture);
+			assertSuccess(downloadFuture);
+
+			// 3. Validate resize
+			node.reload();
+			validateResizeImage(downloadFuture.result(), node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
+		}
 	}
 
 	@Test
 	public void testImageResizeOverLimit() throws Exception {
-		Node node = folder("news");
-		ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
-		// 1. Upload image
-		uploadImage(node, "en", "image");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = folder("news");
+			ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
+			// 1. Upload image
+			uploadImage(node, "en", "image");
 
-		// 2. Resize image
-		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth() + 1).setHeight(102);
-		call(() -> getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), BAD_REQUEST,
-				"image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(options.getMaxWidth() + 1));
+			// 2. Resize image
+			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth() + 1).setHeight(102);
+			call(() -> getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), BAD_REQUEST,
+					"image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(options.getMaxWidth() + 1));
+		}
 	}
 
 	@Test
 	public void testImageExactLimit() throws Exception {
-		Node node = folder("news");
-		ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
-		// 1. Upload image
-		uploadImage(node, "en", "image");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = folder("news");
+			ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
+			// 1. Upload image
+			uploadImage(node, "en", "image");
 
-		// 2. Resize image
-		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth()).setHeight(102);
-		Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
-		latchFor(downloadFuture);
-		assertSuccess(downloadFuture);
-		node.reload();
-		assertNotNull(node.getLatestDraftFieldContainer(english()));
-		validateResizeImage(downloadFuture.result(), node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 2048, 102);
+			// 2. Resize image
+			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth()).setHeight(102);
+			Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
+			latchFor(downloadFuture);
+			assertSuccess(downloadFuture);
+			node.reload();
+			assertNotNull(node.getLatestDraftFieldContainer(english()));
+			validateResizeImage(downloadFuture.result(), node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 2048, 102);
+		}
 	}
 
 	@Test
 	public void testTransformImage() throws Exception {
-		Node node = folder("news");
-		// 1. Upload image
-		uploadImage(node, "en", "image");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = folder("news");
+			// 1. Upload image
+			uploadImage(node, "en", "image");
 
-		// 2. Transform the image
-		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params);
-		latchFor(transformFuture);
-		assertSuccess(transformFuture);
+			// 2. Transform the image
+			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
+			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
+					params);
+			latchFor(transformFuture);
+			assertSuccess(transformFuture);
 
-		// 3. Download the image
-		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image");
-		latchFor(downloadFuture);
-		assertSuccess(downloadFuture);
+			// 3. Download the image
+			Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image");
+			latchFor(downloadFuture);
+			assertSuccess(downloadFuture);
 
-		// 4. Validate the resized image
-		validateResizeImage(downloadFuture.result(), null, params, 100, 118);
+			// 4. Validate the resized image
+			validateResizeImage(downloadFuture.result(), null, params, 100, 118);
+		}
 	}
 
 	@Test
 	public void testTransformImageNoParameters() throws Exception {
-		Node node = folder("news");
-		// 1. Upload image
-		uploadImage(node, "en", "image");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = folder("news");
+			// 1. Upload image
+			uploadImage(node, "en", "image");
 
-		// 2. Transform the image
-		ImageManipulationParameters params = new ImageManipulationParameters();
-		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params);
-		latchFor(transformFuture);
-		expectException(transformFuture, BAD_REQUEST, "error_no_image_transformation", "image");
+			// 2. Transform the image
+			ImageManipulationParameters params = new ImageManipulationParameters();
+			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
+					params);
+			latchFor(transformFuture);
+			expectException(transformFuture, BAD_REQUEST, "error_no_image_transformation", "image");
+		}
 	}
 
 	@Test
 	public void testTransformNonBinary() throws Exception {
-		Node node = folder("news");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = folder("news");
 
-		// try to transform the "name"
-		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "name", params);
-		latchFor(transformFuture);
-		expectException(transformFuture, BAD_REQUEST, "error_found_field_is_not_binary", "name");
+			// try to transform the "name"
+			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
+			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "name", params);
+			latchFor(transformFuture);
+			expectException(transformFuture, BAD_REQUEST, "error_found_field_is_not_binary", "name");
+		}
 	}
 
 	@Test
 	public void testTransformNonImage() throws Exception {
-		Node node = folder("news");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = folder("news");
 
-		prepareSchema(node, "*/*", "image");
+			prepareSchema(node, "*/*", "image");
 
-		// upload non-image data
-		Future<GenericMessageResponse> uploadFuture = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
-				Buffer.buffer("I am not an image"), "test.txt", "text/plain");
-		latchFor(uploadFuture);
-		assertSuccess(uploadFuture);
+			// upload non-image data
+			Future<GenericMessageResponse> uploadFuture = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
+					Buffer.buffer("I am not an image"), "test.txt", "text/plain");
+			latchFor(uploadFuture);
+			assertSuccess(uploadFuture);
 
-		// Transform
-		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params);
-		latchFor(transformFuture);
-		expectException(transformFuture, BAD_REQUEST, "error_transformation_non_image", "image");
+			// Transform
+			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
+			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
+					params);
+			latchFor(transformFuture);
+			expectException(transformFuture, BAD_REQUEST, "error_transformation_non_image", "image");
+		}
 	}
 
 	@Test
 	public void testTransformEmptyField() throws Exception {
-		Node node = folder("news");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = folder("news");
 
-		prepareSchema(node, "image/.*", "image");
+			prepareSchema(node, "image/.*", "image");
 
-		// 2. Transform the image
-		ImageManipulationParameters params = new ImageManipulationParameters();
-		call(() -> getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), NOT_FOUND,
-				"error_binaryfield_not_found_with_name", "image");
+			// 2. Transform the image
+			ImageManipulationParameters params = new ImageManipulationParameters();
+			call(() -> getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), NOT_FOUND,
+					"error_binaryfield_not_found_with_name", "image");
+		}
 	}
 
 	private Future<NodeDownloadResponse> resizeImage(Node node, ImageManipulationParameters params) {

@@ -71,104 +71,116 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		Node node = content("news_2015");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = content("news_2015");
 
-		// 1. Transform the node into a binary content
-		SchemaContainer container = schemaContainer("binary-content");
-		node.setSchemaContainer(container);
-		node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
-		prepareSchema(node, "image/*", "binary");
-		String contentType = "application/octet-stream";
-		int binaryLen = 8000;
-		String fileName = "somefile.dat";
+			// 1. Transform the node into a binary content
+			SchemaContainer container = schemaContainer("binary-content");
+			node.setSchemaContainer(container);
+			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
+			prepareSchema(node, "image/*", "binary");
+			String contentType = "application/octet-stream";
+			int binaryLen = 8000;
+			String fileName = "somefile.dat";
 
-		// 2. Update the binary data
-		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
+			// 2. Update the binary data
+			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+			latchFor(future);
+			assertSuccess(future);
+			expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
 
-		// 3. Try to resolve the path
-		String path = "/News/2015/somefile.dat";
-		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
-				new NodeParameters().setResolveLinks(LinkType.FULL)));
-		NodeDownloadResponse downloadResponse = response.getDownloadResponse();
-		assertTrue(response.isBinary());
-		assertNotNull(downloadResponse);
+			// 3. Try to resolve the path
+			String path = "/News/2015/somefile.dat";
+			WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+					new NodeParameters().setResolveLinks(LinkType.FULL)));
+			NodeDownloadResponse downloadResponse = response.getDownloadResponse();
+			assertTrue(response.isBinary());
+			assertNotNull(downloadResponse);
+		}
 
 	}
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
-		Node folder = folder("2015");
-		String path = "/News/2015";
+		try (NoTrx noTrx = db.noTrx()) {
+			Node folder = folder("2015");
+			String path = "/News/2015";
 
-		WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft()));
-		assertThat(restNode.getNodeResponse()).is(folder).hasLanguage("en");
+			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft()));
+			assertThat(restNode.getNodeResponse()).is(folder).hasLanguage("en");
+		}
 	}
 
 	@Test
 	public void testReadFolderByPathAndResolveLinks() {
-		Node content = content("news_2015");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node content = content("news_2015");
 
-		content.getLatestDraftFieldContainer(english()).getHtml("content")
-				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
+			content.getLatestDraftFieldContainer(english()).getHtml("content")
+					.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 
-		String path = "/News/2015/News_2015.en.html";
-		WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
-				new NodeParameters().setResolveLinks(LinkType.FULL).setLanguages("en")));
-		HtmlFieldImpl contentField = restNode.getNodeResponse().getFields().getHtmlField("content");
-		assertNotNull(contentField);
-		assertEquals("Check rendered content", "<a href=\"/api/v1/dummy/webroot/News/2015/News_2015.en.html\">somelink</a>", contentField.getHTML());
-		assertThat(restNode.getNodeResponse()).is(content).hasLanguage("en");
+			String path = "/News/2015/News_2015.en.html";
+			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+					new NodeParameters().setResolveLinks(LinkType.FULL).setLanguages("en")));
+			HtmlFieldImpl contentField = restNode.getNodeResponse().getFields().getHtmlField("content");
+			assertNotNull(contentField);
+			assertEquals("Check rendered content", "<a href=\"/api/v1/dummy/webroot/News/2015/News_2015.en.html\">somelink</a>",
+					contentField.getHTML());
+			assertThat(restNode.getNodeResponse()).is(content).hasLanguage("en");
+		}
 	}
 
 	@Test
 	public void testReadContentByPath() throws Exception {
 		String path = "/News/2015/News_2015.en.html";
+
 		WebRootResponse restNode = call(
 				() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
 
-		Node node = content("news_2015");
-		assertThat(restNode.getNodeResponse()).is(node).hasLanguage("en");
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = content("news_2015");
+			assertThat(restNode.getNodeResponse()).is(node).hasLanguage("en");
+		}
 	}
 
 	@Test
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
-		Node parentNode = folder("2015");
-		// Update content schema and add node field
-		SchemaContainer folderSchema = schemaContainer("folder");
-		Schema schema = folderSchema.getLatestVersion().getSchema();
-		schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
-		folderSchema.getLatestVersion().setSchema(schema);
-		ServerSchemaStorage.getInstance().addSchema(schema);
+		try (NoTrx noTrx = db.noTrx()) {
+			Node parentNode = folder("2015");
+			// Update content schema and add node field
+			SchemaContainer folderSchema = schemaContainer("folder");
+			Schema schema = folderSchema.getLatestVersion().getSchema();
+			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
+			folderSchema.getLatestVersion().setSchema(schema);
+			ServerSchemaStorage.getInstance().addSchema(schema);
 
-		// Create content which is only german
-		SchemaContainer contentSchema = schemaContainer("content");
-		Node node = parentNode.create(user(), contentSchema.getLatestVersion(), project());
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), project().getLatestRelease(), user());
-		englishContainer.createString("name").setString("german_name");
-		englishContainer.createString("title").setString("german title");
-		englishContainer.createString("displayName").setString("german displayName");
-		englishContainer.createString("filename").setString("test.de.html");
+			// Create content which is only german
+			SchemaContainer contentSchema = schemaContainer("content");
+			Node node = parentNode.create(user(), contentSchema.getLatestVersion(), project());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), project().getLatestRelease(), user());
+			englishContainer.createString("name").setString("german_name");
+			englishContainer.createString("title").setString("german title");
+			englishContainer.createString("displayName").setString("german displayName");
+			englishContainer.createString("filename").setString("test.de.html");
 
-		// Add node reference to node 2015
-		parentNode.getLatestDraftFieldContainer(english()).createNode("nodeRef", node);
+			// Add node reference to node 2015
+			parentNode.getLatestDraftFieldContainer(english()).createNode("nodeRef", node);
 
-		String path = "/News/2015";
-		WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
-				new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en", "de")));
-		assertEquals("The node reference did not point to the german node.", "/dummy/News/2015/test.de.html",
-				restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
-		assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
+			String path = "/News/2015";
+			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+					new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en", "de")));
+			assertEquals("The node reference did not point to the german node.", "/dummy/News/2015/test.de.html",
+					restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
+			assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
 
-		// Again with no german fallback option (only english)
-		restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
-				new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en")));
-		assertEquals("The node reference did not point to the 404 path.", "/dummy/error/404",
-				restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
-		assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
+			// Again with no german fallback option (only english)
+			restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+					new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en")));
+			assertEquals("The node reference did not point to the 404 path.", "/dummy/error/404",
+					restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
+			assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
+		}
 
 	}
 
@@ -213,14 +225,18 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testReadProjectBaseNode() {
 		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, "/", new VersioningParameters().draft()));
 		assertFalse(response.isBinary());
-		assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
+		try (NoTrx noTrx = db.noTrx()) {
+			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
+		}
 	}
 
 	@Test
 	public void testReadDoubleSlashes() {
 		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, "//", new VersioningParameters().draft()));
 		assertFalse(response.isBinary());
-		assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
+		try (NoTrx noTrx = db.noTrx()) {
+			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
+		}
 	}
 
 	@Test
@@ -244,13 +260,16 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "/News/2015";
-		Node newsFolder;
-		newsFolder = folder("2015");
-		role().revokePermissions(newsFolder, READ_PERM);
+		String uuid;
+		try (NoTrx noTrx = db.noTrx()) {
+			Node newsFolder = folder("2015");
+			uuid = newsFolder.getUuid();
+			role().revokePermissions(newsFolder, READ_PERM);
+		}
 
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, englishPath, new VersioningParameters().draft());
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", newsFolder.getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
@@ -287,26 +306,28 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testRead404Node() {
 		String notFoundPath = "/error/404";
 
-		NodeCreateRequest createErrorFolder = new NodeCreateRequest();
-		createErrorFolder.setSchema(new SchemaReference().setName("folder"));
-		createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
-		createErrorFolder.getFields().put("name", FieldUtil.createStringField("error"));
-		createErrorFolder.setLanguage("en");
-		NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, createErrorFolder));
-		String errorNodeUuid = response.getUuid();
+		try (NoTrx noTrx = db.noTrx()) {
+			NodeCreateRequest createErrorFolder = new NodeCreateRequest();
+			createErrorFolder.setSchema(new SchemaReference().setName("folder"));
+			createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
+			createErrorFolder.getFields().put("name", FieldUtil.createStringField("error"));
+			createErrorFolder.setLanguage("en");
+			NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, createErrorFolder));
+			String errorNodeUuid = response.getUuid();
 
-		NodeCreateRequest create404Node = new NodeCreateRequest();
-		create404Node.setSchema(new SchemaReference().setName("content"));
-		create404Node.setParentNodeUuid(errorNodeUuid);
-		create404Node.getFields().put("filename", FieldUtil.createStringField("404"));
-		create404Node.getFields().put("name", FieldUtil.createStringField("Error Content"));
-		create404Node.getFields().put("content", FieldUtil.createStringField("An error happened"));
-		create404Node.setLanguage("en");
-		call(() -> getClient().createNode(PROJECT_NAME, create404Node));
+			NodeCreateRequest create404Node = new NodeCreateRequest();
+			create404Node.setSchema(new SchemaReference().setName("content"));
+			create404Node.setParentNodeUuid(errorNodeUuid);
+			create404Node.getFields().put("filename", FieldUtil.createStringField("404"));
+			create404Node.getFields().put("name", FieldUtil.createStringField("Error Content"));
+			create404Node.getFields().put("content", FieldUtil.createStringField("An error happened"));
+			create404Node.setLanguage("en");
+			call(() -> getClient().createNode(PROJECT_NAME, create404Node));
 
-		Future<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft());
-		latchFor(webrootFuture);
-		expectFailureMessage(webrootFuture, NOT_FOUND, null);
+			Future<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft());
+			latchFor(webrootFuture);
+			expectFailureMessage(webrootFuture, NOT_FOUND, null);
+		}
 	}
 
 	@Test

@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -43,20 +44,23 @@ public class NodeVerticleFieldAPITest extends AbstractBinaryVerticleTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = folder("news");
-		prepareSchema(node, "", "binary");
 
-		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
+		try (NoTrx noTrx = db.noTrx()) {
+			Node node = folder("news");
+			prepareSchema(node, "", "binary");
 
-		node.reload();
+			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+			latchFor(future);
+			assertSuccess(future);
+			expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
 
-		// 2. Download the data using the field api
-		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary");
-		latchFor(downloadFuture);
-		assertSuccess(downloadFuture);
-		assertEquals(binaryLen, downloadFuture.result().getBuffer().length());
+			node.reload();
+
+			// 2. Download the data using the field api
+			Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary");
+			latchFor(downloadFuture);
+			assertSuccess(downloadFuture);
+			assertEquals(binaryLen, downloadFuture.result().getBuffer().length());
+		}
 	}
 }
