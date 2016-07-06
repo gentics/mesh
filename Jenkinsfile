@@ -37,7 +37,7 @@ node('dockerSlave') {
 
 	stage 'Test'
 	if (!Boolean.valueOf(skipTests)) {
-		def splits = 5;
+		def splits = 9;
 		sh "find -name \"*Test.java\" | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
 		sh "split -a 1 -d -n l/${splits} alltests  includes-"
 		stash includes: '*', name: 'project'
@@ -109,7 +109,7 @@ node('dockerSlave') {
 				sh "${mvnHome}/bin/mvn -B clean package -pl '!changelog-system,!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false"
 			} finally {
 				//step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-                                step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
+				step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
 			}
 		}
 	} else {
@@ -129,7 +129,6 @@ node('dockerSlave') {
 
 	stage 'Deploy/Push'
 	if (!Boolean.valueOf(skipDeploy)) {
-
 		withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
 			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
 				sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD -e entwicklung@genitcs.com'
