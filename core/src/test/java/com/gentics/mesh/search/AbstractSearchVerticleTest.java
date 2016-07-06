@@ -56,9 +56,6 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 	@After
 	public void resetElasticSearch() {
 		searchProvider.reset();
-		for (IndexHandler handler : registry.getHandlers()) {
-			handler.init().toBlocking().single();
-		}
 	}
 
 	@BeforeClass

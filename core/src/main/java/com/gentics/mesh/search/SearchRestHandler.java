@@ -7,7 +7,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -42,9 +41,6 @@ import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;

@@ -213,13 +213,13 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Observable<Void> updateDocument(String index, String type, String uuid, Map<String, Object> map) {
-		long start = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Updating object {" + uuid + ":" + type + "} to index.");
-		}
-		UpdateRequestBuilder builder = getSearchClient().prepareUpdate(index, type, uuid);
-		builder.setDoc(map);
 		return Observable.create(sub -> {
+			long start = System.currentTimeMillis();
+			if (log.isDebugEnabled()) {
+				log.debug("Updating object {" + uuid + ":" + type + "} to index.");
+			}
+			UpdateRequestBuilder builder = getSearchClient().prepareUpdate(index, type, uuid);
+			builder.setDoc(map);
 			builder.execute().addListener(new ActionListener<UpdateResponse>() {
 
 				@Override
@@ -244,14 +244,14 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Observable<Void> storeDocument(String index, String type, String uuid, Map<String, Object> map) {
-		long start = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Adding object {" + uuid + ":" + type + "} to index.");
-		}
-		IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
-
-		builder.setSource(map);
 		return Observable.create(sub -> {
+			long start = System.currentTimeMillis();
+			if (log.isDebugEnabled()) {
+				log.debug("Adding object {" + uuid + ":" + type + "} to index.");
+			}
+			IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
+
+			builder.setSource(map);
 			builder.execute().addListener(new ActionListener<IndexResponse>() {
 
 				@Override
@@ -275,8 +275,8 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Observable<Void> deleteIndex(String indexName) {
-		long start = System.currentTimeMillis();
 		return Observable.create(sub -> {
+			long start = System.currentTimeMillis();
 			getSearchClient().admin().indices().prepareDelete(indexName).execute(new ActionListener<DeleteIndexResponse>() {
 
 				public void onResponse(DeleteIndexResponse response) {
@@ -299,8 +299,8 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Observable<Void> clearIndex(String indexName) {
-		long start = System.currentTimeMillis();
 		return Observable.create(sub -> {
+			long start = System.currentTimeMillis();
 			getSearchClient().prepareDeleteByQuery(indexName).setQuery(QueryBuilders.matchAllQuery()).execute()
 					.addListener(new ActionListener<DeleteByQueryResponse>() {
 						public void onResponse(DeleteByQueryResponse response) {
