@@ -71,12 +71,12 @@ public class TestSearch {
 	private void getDocument(String uuid, String language) {
 		GetResponse getResponse = client.prepareGet("node", "node-" + language, uuid).setFields("uuid", "name", "fields.name", "language").execute()
 				.actionGet();
-		System.out.println("\nLoading object with uuid {" + uuid + "}");
-		System.out.println("------------------------------");
-		for (String field : getResponse.getFields().keySet()) {
-			System.out.println(field + "=" + getResponse.getField(field).getValue());
-		}
-		System.out.println("------------------------------\n");
+//		System.out.println("\nLoading object with uuid {" + uuid + "}");
+//		System.out.println("------------------------------");
+//		for (String field : getResponse.getFields().keySet()) {
+//			System.out.println(field + "=" + getResponse.getField(field).getValue());
+//		}
+//		System.out.println("------------------------------\n");
 	}
 
 	private void search(String name) throws JsonParseException, JsonMappingException, IOException {

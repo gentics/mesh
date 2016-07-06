@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
@@ -65,7 +66,9 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 
 	@Test
 	public void testSearchSchema() throws InterruptedException, JSONException {
-		fullIndex();
+		try (NoTrx noTx = db.noTrx()) {
+			fullIndex();
+		}
 
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleQuery("folder"), new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -91,7 +94,9 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	public void testDocumentCreation() throws Exception {
 		final String newName = "newschema";
 		Schema schema = createSchema(newName);
-		MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
+		try (NoTrx noTx = db.noTrx()) {
+			MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
+		}
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName),
 				new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);

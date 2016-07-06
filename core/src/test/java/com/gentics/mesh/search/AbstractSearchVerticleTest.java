@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.gentics.mesh.search.index.IndexHandler;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
 import io.vertx.core.logging.Logger;
@@ -29,7 +29,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 @ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
 @ActiveProfiles("test-search")
-public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTest {
+public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchVerticleTest.class);
 

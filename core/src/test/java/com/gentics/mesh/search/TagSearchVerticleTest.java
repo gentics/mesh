@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.util.RxDebugger;
 
@@ -48,7 +49,9 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String tagName = "newtag";
-		createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
+		try (NoTrx noTx = db.noTrx()) {
+			createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
+		}
 
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", tagName));
 		latchFor(searchFuture);
@@ -59,20 +62,29 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	@Test
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
-		Tag tag = tag("red");
-		TagFamily parentTagFamily = tagFamily("colors");
+		String tagUuid;
+		String parentTagFamilyUuid;
+		try (NoTrx noTx = db.noTrx()) {
+			Tag tag = tag("red");
+			TagFamily parentTagFamily = tagFamily("colors");
+			tagUuid = tag.getUuid();
+			parentTagFamilyUuid = parentTagFamily.getUuid();
+		}
 
 		long start = System.currentTimeMillis();
 		String newName = "redish";
-		updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid(), newName);
+		updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, newName);
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
 		start = System.currentTimeMillis();
 
-		updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid(), newName + "2");
+		updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, newName + "2");
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
 
-		assertEquals(newName + "2", tag.getName());
-		assertEquals(0, meshRoot().getSearchQueue().getSize());
+		try (NoTrx noTx = db.noTrx()) {
+
+			assertEquals(newName + "2", tag("red").getName());
+			assertEquals(0, meshRoot().getSearchQueue().getSize());
+		}
 
 		start = System.currentTimeMillis();
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName + "2"));
@@ -86,7 +98,9 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	@Test
 	@Override
 	public void testDocumentDeletion() throws Exception {
-		fullIndex();
+		try (NoTrx noTx = db.noTrx()) {
+			fullIndex();
+		}
 
 		Tag tag = tag("red");
 		TagFamily parentTagFamily = tagFamily("colors");

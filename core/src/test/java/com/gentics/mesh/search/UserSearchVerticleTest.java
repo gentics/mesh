@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 
 import io.vertx.core.Future;
@@ -48,7 +49,9 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSimpleQuerySearch() {
 
 		String username = "testuser42a";
-		createUser(username);
+		try (NoTrx noTx = db.noTrx()) {
+			createUser(username);
+		}
 
 		String json = "{\n" + "  \"query\": {\n" + "      \"simple_query_string\" : {\n" + "          \"query\": \"testuser*\",\n"
 				+ "          \"analyzer\": \"snowball\",\n" + "          \"fields\": [\"name^5\",\"_all\"],\n"
@@ -65,7 +68,9 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testEmptyResult() {
 		String username = "testuser42a";
-		createUser(username);
+		try (NoTrx noTx = db.noTrx()) {
+			createUser(username);
+		}
 
 		String json = "{\n" + "  \"query\": {\n" + "      \"simple_query_string\" : {\n" + "          \"query\": \"testuser111235*\",\n"
 				+ "          \"analyzer\": \"snowball\",\n" + "          \"fields\": [\"name^5\",\"_all\"],\n"
@@ -82,7 +87,9 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 
 		String username = "testuser42a";
-		createUser(username);
+		try (NoTrx noTx = db.noTrx()) {
+			createUser(username);
+		}
 
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", username));
 		latchFor(searchFuture);
@@ -95,8 +102,10 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testTokenzierIssueQuery() throws InterruptedException, JSONException {
 
 		String impossibleName = "Jöhä@sRe2";
-		user().setLastname(impossibleName);
-		fullIndex();
+		try (NoTrx noTx = db.noTrx()) {
+			user().setLastname(impossibleName);
+			fullIndex();
+		}
 		Future<UserListResponse> future = getClient().searchUsers(getSimpleTermQuery("lastname", impossibleName));
 		latchFor(future);
 		assertSuccess(future);
@@ -110,8 +119,10 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testTokenzierIssueQuery2() throws InterruptedException, JSONException {
 		String impossibleName = "Jöhä@sRe";
-		user().setLastname(impossibleName);
-		fullIndex();
+		try (NoTrx noTx = db.noTrx()) {
+			user().setLastname(impossibleName);
+			fullIndex();
+		}
 		Future<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName + "*"));
 		latchFor(future);
 		assertSuccess(future);
@@ -125,8 +136,10 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testTokenzierIssueLowercasedQuery() throws InterruptedException, JSONException {
 		String impossibleName = "Jöhä@sRe";
-		user().setLastname(impossibleName);
-		fullIndex();
+		try (NoTrx noTx = db.noTrx()) {
+			user().setLastname(impossibleName);
+			fullIndex();
+		}
 		Future<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*"));
 		latchFor(future);
 		assertSuccess(future);
@@ -145,7 +158,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		request.setUsername("testuser42a");
 		request.setPassword("test1234");
 		request.setEmailAddress(email);
-		request.setGroupUuid(group().getUuid());
+		request.setGroupUuid(db.noTrx(() -> group().getUuid()));
 
 		Future<UserResponse> future = getClient().createUser(request);
 		latchFor(future);
@@ -160,9 +173,11 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testSearchUserForGroup() throws InterruptedException, JSONException {
 
-		String groupName = group().getName();
 		String username = "extrauser42a";
-		createUser(username);
+		String groupName = db.noTrx(() -> group().getName());
+		try (NoTrx noTx = db.noTrx()) {
+			createUser(username);
+		}
 
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()));
 		latchFor(searchFuture);
@@ -282,9 +297,11 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testSearchUserWithPerPageZero() throws InterruptedException, JSONException {
 
-		String groupName = group().getName();
+		String groupName = db.noTrx(() -> group().getName());
 		String username = "extrauser42a";
-		createUser(username);
+		try (NoTrx noTx = db.noTrx()) {
+			createUser(username);
+		}
 
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()),
 				new PagingParameters().setPerPage(0));
@@ -299,8 +316,10 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String userName = "testuser42a";
-		UserResponse user = createUser(userName);
-		deleteUser(user.getUuid());
+		try (NoTrx noTx = db.noTrx()) {
+			UserResponse user = createUser(userName);
+			deleteUser(user.getUuid());
+		}
 
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", userName));
 		latchFor(searchFuture);
@@ -312,10 +331,11 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		String userName = "testuser42a";
-		UserResponse user = createUser(userName);
-
 		String newUserName = "testgrouprenamed";
-		user = updateUser(user.getUuid(), newUserName);
+		try (NoTrx noTx = db.noTrx()) {
+			UserResponse user = createUser(userName);
+			user = updateUser(user.getUuid(), newUserName);
+		}
 
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", userName));
 		latchFor(searchFuture);
