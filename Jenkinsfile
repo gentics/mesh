@@ -7,7 +7,7 @@ properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
 [$class: 'BooleanParameterDefinition', name: 'skipDeploy', defaultValue: false]
 ]]])
 
-node('dockerSlave') {
+node('dockerRoot') {
 
 	stage 'Checkout'
 	sh "rm -rf *"
