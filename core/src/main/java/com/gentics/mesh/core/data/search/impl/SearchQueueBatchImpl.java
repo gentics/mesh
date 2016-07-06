@@ -39,7 +39,8 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType, Collection<Tuple<String, Object>> customProperties) {
+	public void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType,
+			Collection<Tuple<String, Object>> customProperties) {
 		SearchQueueEntry entry = getGraph().addFramedVertex(SearchQueueEntryImpl.class);
 		entry.setElementUuid(uuid);
 		entry.setElementType(elementType);
@@ -107,7 +108,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
 		Database db = springConfiguration.database();
 
-//		return db.noTrx(() -> {
+		return db.noTrx(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Processing batch {" + getBatchId() + "}");
 				printDebug();
@@ -139,12 +140,12 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 				}
 			});
 
-			//TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
+			// TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
 			// mergedObs.doOnError(error -> {
 			// return null;
 			// });
 			return mergedObs;
-//		});
+		});
 
 	}
 

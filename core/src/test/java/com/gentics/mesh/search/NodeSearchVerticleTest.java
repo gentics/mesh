@@ -24,6 +24,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,6 +74,7 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
+import com.gentics.mesh.util.RxDebugger;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -105,6 +107,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Autowired
 	private ReleaseVerticle releaseVerticle;
+
+	@BeforeClass
+	public static void debug() {
+		new RxDebugger().start();
+	}
 
 	@Override
 	@Before
@@ -249,10 +256,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		// create a new folder named "bla"
 		NodeCreateRequest create = new NodeCreateRequest();
-		create.setSchema(new SchemaReference().setName("folder").setUuid(schemaContainer("folder").getUuid()));
+		create.setSchema(new SchemaReference().setName("folder").setUuid(db.noTrx(() -> schemaContainer("folder").getUuid())));
 		create.setLanguage("en");
 		create.getFields().put("name", FieldUtil.createStringField("bla"));
-		create.setParentNodeUuid(folder("2015").getUuid());
+		create.setParentNodeUuid(db.noTrx(() -> folder("2015").getUuid()));
 
 		call(() -> getClient().createNode(PROJECT_NAME, create));
 
@@ -518,7 +525,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 					assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 					for (NodeResponse nodeResponse : response.getData()) {
 						assertNotNull("Returned node must not be null", nodeResponse);
-						assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
+						assertEquals("Check result uuid", db.noTrx(() -> content("concorde").getUuid()), nodeResponse.getUuid());
 					}
 				} else {
 					assertEquals("Check returned search results", 0, response.getData().size());
@@ -549,7 +556,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 					assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 					for (NodeResponse nodeResponse : response.getData()) {
 						assertNotNull("Returned node must not be null", nodeResponse);
-						assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
+						assertEquals("Check result uuid", db.noTrx(() -> content("concorde").getUuid()), nodeResponse.getUuid());
 					}
 				} else {
 					assertEquals("Check returned search results", 0, response.getData().size());
@@ -594,7 +601,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		// assign the new schema version to the release
 		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(schemaUuid));
-		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, db.noTrx(() -> project().getLatestRelease().getUuid()),
 				new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 
 		// Wait for migration to complete
@@ -728,7 +735,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		createNode.getFields().put("name", FieldUtil.createStringField("Concorde"));
 		NodeResponse newNode = call(() -> getClient().createNode("mynewproject", createNode));
 
-		call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new TakeOfflineParameters().setRecursive(true)));
+		String baseUuid = db.noTrx(() -> project().getBaseNode().getUuid());
+		call(() -> getClient().takeNodeOffline(PROJECT_NAME, baseUuid, new TakeOfflineParameters().setRecursive(true)));
 
 		// search globally for published version
 		NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde")));
@@ -754,10 +762,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
+		String uuid = db.noTrx(() -> content("concorde").getUuid());
+
 		// publish the Concorde
-		NodeResponse concorde = call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
-		call(() -> getClient().publishNode(PROJECT_NAME, content("concorde").getUuid()));
+		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
+		call(() -> getClient().publishNode(PROJECT_NAME, uuid));
 
 		// "supersonic" found in published nodes
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
@@ -794,8 +803,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		String oldContent = "supersonic";
 		String newContent = "urschnell";
-		NodeResponse concorde = call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
+		String uuid = db.noTrx(() -> content("concorde").getUuid());
+		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
 
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
@@ -823,9 +832,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 			fullIndex();
 		}
 
-		NodeResponse concorde = call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
-		call(() -> getClient().publishNode(PROJECT_NAME, concorde.getUuid()));
+		String uuid = db.noTrx(() -> content("concorde").getUuid());
+		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
+		call(() -> getClient().publishNode(PROJECT_NAME, uuid));
 
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
 		createRelease.setName("newrelease");
@@ -856,8 +865,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
+		String releaseName = db.noTrx(() -> project().getInitialRelease().getName());
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new VersioningParameters().setRelease(project().getInitialRelease().getName()).draft()));
+				new VersioningParameters().setRelease(releaseName).draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
