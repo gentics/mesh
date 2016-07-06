@@ -107,7 +107,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
 		Database db = springConfiguration.database();
 
-		return db.noTrx(() -> {
+//		return db.noTrx(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Processing batch {" + getBatchId() + "}");
 				printDebug();
@@ -144,7 +144,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			// return null;
 			// });
 			return mergedObs;
-		});
+//		});
 
 	}
 

@@ -846,7 +846,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		}
 
 		NodeResponse concorde = call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
+				() -> getClient().findNodeByUuid(PROJECT_NAME, db.noTrx(() -> content("concorde").getUuid()), new VersioningParameters().draft()));
 
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
 		createRelease.setName("newrelease");

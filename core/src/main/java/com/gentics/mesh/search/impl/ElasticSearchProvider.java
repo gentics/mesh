@@ -168,46 +168,47 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Observable<Map<String, Object>> getDocument(String index, String type, String uuid) {
-		ObservableFuture<Map<String, Object>> fut = RxHelper.observableFuture();
-		getSearchClient().prepareGet(index, type, uuid).execute().addListener(new ActionListener<GetResponse>() {
+		return Observable.create(sub -> {
+			getSearchClient().prepareGet(index, type, uuid).execute().addListener(new ActionListener<GetResponse>() {
 
-			@Override
-			public void onResponse(GetResponse response) {
-				if (log.isDebugEnabled()) {
-					log.debug("Get object {" + uuid + ":" + type + "} from index {" + index + "}");
+				@Override
+				public void onResponse(GetResponse response) {
+					if (log.isDebugEnabled()) {
+						log.debug("Get object {" + uuid + ":" + type + "} from index {" + index + "}");
+					}
+					sub.onNext(response.getSourceAsMap());
+					sub.onCompleted();
 				}
-				fut.toHandler().handle(Future.succeededFuture(response.getSourceAsMap()));
-			}
 
-			@Override
-			public void onFailure(Throwable e) {
-				log.error("Could not get object {" + uuid + ":" + type + "} from index {" + index + "}");
-				fut.toHandler().handle(Future.failedFuture(e));
-			}
+				@Override
+				public void onFailure(Throwable e) {
+					log.error("Could not get object {" + uuid + ":" + type + "} from index {" + index + "}");
+					sub.onError(e);
+				}
+			});
 		});
-		return fut;
 	}
 
 	@Override
 	public Observable<Void> deleteDocument(String index, String type, String uuid) {
-		ObservableFuture<Void> fut = RxHelper.observableFuture();
-		getSearchClient().prepareDelete(index, type, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
-
-			@Override
-			public void onResponse(DeleteResponse response) {
-				if (log.isDebugEnabled()) {
-					log.debug("Deleted object {" + uuid + ":" + type + "} from index {" + index + "}");
+		return Observable.create(sub -> {
+			getSearchClient().prepareDelete(index, type, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
+				@Override
+				public void onResponse(DeleteResponse response) {
+					if (log.isDebugEnabled()) {
+						log.debug("Deleted object {" + uuid + ":" + type + "} from index {" + index + "}");
+					}
+					sub.onNext(null);
+					sub.onCompleted();
 				}
-				fut.toHandler().handle(Future.succeededFuture());
-			}
 
-			@Override
-			public void onFailure(Throwable e) {
-				log.error("Could not delete object {" + uuid + ":" + type + "} from index {" + index + "}");
-				fut.toHandler().handle(Future.failedFuture(e));
-			}
+				@Override
+				public void onFailure(Throwable e) {
+					log.error("Could not delete object {" + uuid + ":" + type + "} from index {" + index + "}");
+					sub.onError(e);
+				}
+			});
 		});
-		return fut;
 	}
 
 	@Override
@@ -218,25 +219,27 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 		UpdateRequestBuilder builder = getSearchClient().prepareUpdate(index, type, uuid);
 		builder.setDoc(map);
-		ObservableFuture<Void> fut = RxHelper.observableFuture();
-		builder.execute().addListener(new ActionListener<UpdateResponse>() {
+		return Observable.create(sub -> {
+			builder.execute().addListener(new ActionListener<UpdateResponse>() {
 
-			@Override
-			public void onResponse(UpdateResponse response) {
-				if (log.isDebugEnabled()) {
-					log.debug("Update object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+				@Override
+				public void onResponse(UpdateResponse response) {
+					if (log.isDebugEnabled()) {
+						log.debug("Update object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+					}
+					sub.onNext(null);
+					sub.onCompleted();
 				}
-				fut.toHandler().handle(Future.succeededFuture());
-			}
 
-			@Override
-			public void onFailure(Throwable e) {
-				log.error("Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
-						e);
-				fut.toHandler().handle(Future.failedFuture(e));
-			}
+				@Override
+				public void onFailure(Throwable e) {
+					log.error(
+							"Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
+							e);
+					sub.onError(e);
+				}
+			});
 		});
-		return fut;
 	}
 
 	@Override
@@ -248,7 +251,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
 
 		builder.setSource(map);
-		Observable<Void> obs = Observable.create(sub -> {
+		return Observable.create(sub -> {
 			builder.execute().addListener(new ActionListener<IndexResponse>() {
 
 				@Override
@@ -268,54 +271,55 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 			});
 		});
-		return obs;
-
 	}
 
 	@Override
 	public Observable<Void> deleteIndex(String indexName) {
 		long start = System.currentTimeMillis();
-		ObservableFuture<Void> fut = RxHelper.observableFuture();
-		getSearchClient().admin().indices().prepareDelete(indexName).execute(new ActionListener<DeleteIndexResponse>() {
+		return Observable.create(sub -> {
+			getSearchClient().admin().indices().prepareDelete(indexName).execute(new ActionListener<DeleteIndexResponse>() {
 
-			public void onResponse(DeleteIndexResponse response) {
-				if (log.isDebugEnabled()) {
-					log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+				public void onResponse(DeleteIndexResponse response) {
+					if (log.isDebugEnabled()) {
+						log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+					}
+					sub.onNext(null);
+					;
+					sub.onCompleted();
+				};
+
+				@Override
+				public void onFailure(Throwable e) {
+					log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+					sub.onError(e);
 				}
-				fut.toHandler().handle(Future.succeededFuture());
-			};
-
-			@Override
-			public void onFailure(Throwable e) {
-				log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-				fut.toHandler().handle(Future.failedFuture(e));
-			}
+			});
 		});
-		return fut;
 	}
 
 	@Override
 	public Observable<Void> clearIndex(String indexName) {
 		long start = System.currentTimeMillis();
-		ObservableFuture<Void> fut = RxHelper.observableFuture();
-		getSearchClient().prepareDeleteByQuery(indexName).setQuery(QueryBuilders.matchAllQuery()).execute()
-				.addListener(new ActionListener<DeleteByQueryResponse>() {
-					public void onResponse(DeleteByQueryResponse response) {
+		return Observable.create(sub -> {
+			getSearchClient().prepareDeleteByQuery(indexName).setQuery(QueryBuilders.matchAllQuery()).execute()
+					.addListener(new ActionListener<DeleteByQueryResponse>() {
+						public void onResponse(DeleteByQueryResponse response) {
 
-						if (log.isDebugEnabled()) {
-							log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+							if (log.isDebugEnabled()) {
+								log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+							}
+							sub.onNext(null);
+							sub.onCompleted();
+						};
+
+						@Override
+						public void onFailure(Throwable e) {
+							log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+							sub.onError(e);
 						}
-						fut.toHandler().handle(Future.succeededFuture());
-					};
+					});
 
-					@Override
-					public void onFailure(Throwable e) {
-						log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-						fut.toHandler().handle(Future.failedFuture(e));
-					}
-				});
-
-		return fut;
+		});
 	}
 
 	@Override

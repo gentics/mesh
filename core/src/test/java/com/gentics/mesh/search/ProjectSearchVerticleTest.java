@@ -64,7 +64,9 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 	public void testDocumentCreation() throws Exception {
 		final String newName = "newproject";
 		ProjectResponse project = createProject(newName);
-		MeshAssert.assertElement(boot.projectRoot(), project.getUuid(), true);
+		try (NoTrx noTx = db.noTrx()) {
+			MeshAssert.assertElement(boot.projectRoot(), project.getUuid(), true);
+		}
 		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", newName),
 				new PagingParameters().setPage(1).setPerPage(2));
 		latchFor(future);

@@ -106,7 +106,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * 
 	 * @param object
 	 * @param documentType
-	 * @param entry search queue entry
+	 * @param entry
+	 *            search queue entry
 	 * @return
 	 */
 	public Observable<Void> store(T object, String documentType, SearchQueueEntry entry) {
@@ -157,12 +158,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		// TODO make sure field names match node response
 		map.put("uuid", vertex.getUuid());
 		if (vertex instanceof CreatorTrackingVertex) {
-			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex)vertex;
+			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex) vertex;
 			addUser(map, "creator", createdVertex.getCreator());
 			map.put("created", createdVertex.getCreationTimestamp());
 		}
 		if (vertex instanceof EditorTrackingVertex) {
-			EditorTrackingVertex editedVertex = (EditorTrackingVertex)vertex;
+			EditorTrackingVertex editedVertex = (EditorTrackingVertex) vertex;
 			addUser(map, "editor", editedVertex.getEditor());
 			map.put("edited", editedVertex.getLastEditedTimestamp());
 		}
@@ -257,16 +258,20 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Observable<Void> reindexAll() {
-		log.info("Handling full reindex entry");
-		for (T element : getRootVertex().findAll()) {
-			log.info("Invoking reindex for {" + getType() + "/" + element.getUuid() + "}");
-			SearchQueueBatch batch = element.createIndexBatch(STORE_ACTION);
-			for (SearchQueueEntry entry : batch.getEntries()) {
-				entry.process().toBlocking().lastOrDefault(null);
+		return Observable.create(sub -> {
+			log.info("Handling full reindex entry");
+
+			for (T element : getRootVertex().findAll()) {
+				log.info("Invoking reindex for {" + getType() + "/" + element.getUuid() + "}");
+				SearchQueueBatch batch = element.createIndexBatch(STORE_ACTION);
+				for (SearchQueueEntry entry : batch.getEntries()) {
+					entry.process().toBlocking().lastOrDefault(null);
+				}
+				batch.delete(null);
 			}
-			batch.delete(null);
-		}
-		return Observable.just(null);
+			sub.onNext(null);
+			sub.onCompleted();
+		});
 	}
 
 	/**
@@ -297,10 +302,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Observable<Void> updateMapping(String indexName) {
 		if (searchProvider.getNode() != null) {
-			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices()
-					.preparePutMapping(indexName);
+			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
 			mappingRequestBuilder.setType(getType());
-			
 			JsonObject mappingProperties = getMapping();
 			// Enhance mappings with generic/common field types
 			mappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
@@ -308,23 +311,23 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			root.put("properties", mappingProperties);
 			JsonObject mapping = new JsonObject();
 			mapping.put(getType(), root);
-			
 			mappingRequestBuilder.setSource(mapping.toString());
-			
-			ObservableFuture<Void> obs = RxHelper.observableFuture();
-			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
-				
-				@Override
-				public void onResponse(PutMappingResponse response) {
-					obs.toHandler().handle(Future.succeededFuture());
-				}
-				
-				@Override
-				public void onFailure(Throwable e) {
-					obs.toHandler().handle(Future.failedFuture(e));
-				}
+
+			return Observable.create(sub -> {
+				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+
+					@Override
+					public void onResponse(PutMappingResponse response) {
+						sub.onNext(null);
+						sub.onCompleted();
+					}
+
+					@Override
+					public void onFailure(Throwable e) {
+						sub.onError(e);
+					}
+				});
 			});
-			return obs;
 		} else {
 			return Observable.just(null);
 		}
@@ -342,10 +345,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	/**
-	 * Create the index, if it is one of the indices handled by this index handler.
-	 * If the index name is not handled by this index handler, an error will be thrown
-	 * @param indexName index name
-	 * @return 
+	 * Create the index, if it is one of the indices handled by this index handler. If the index name is not handled by this index handler, an error will be
+	 * thrown
+	 * 
+	 * @param indexName
+	 *            index name
+	 * @return
 	 */
 	protected Observable<Void> createIndex(String indexName) {
 		if (getIndices().contains(indexName)) {

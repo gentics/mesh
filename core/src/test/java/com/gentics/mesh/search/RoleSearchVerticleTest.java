@@ -15,6 +15,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 
 import io.vertx.core.Future;
 
@@ -35,7 +36,7 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String roleName = "rolename42a";
-		createRole(roleName, group().getUuid());
+		createRole(roleName, db.noTrx(() -> group().getUuid()));
 
 		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
 		latchFor(searchFuture);
@@ -47,7 +48,7 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String roleName = "rolename42a";
-		RoleResponse role = createRole(roleName, group().getUuid());
+		RoleResponse role = createRole(roleName, db.noTrx(() -> group().getUuid()));
 
 		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
 		latchFor(searchFuture);
@@ -67,7 +68,7 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		String roleName = "rolename42a";
-		RoleResponse role = createRole(roleName, group().getUuid());
+		RoleResponse role = createRole(roleName, db.noTrx(() -> group().getUuid()));
 
 		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
 		latchFor(searchFuture);
