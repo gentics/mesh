@@ -890,22 +890,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
-		TakeOfflineParameters parameters = ac.getTakeOfflineParameters();
-
 		return db.trx(() -> {
 			List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, ContainerType.PUBLISHED);
+
+			// Remove the published edge for each found container
 			getGraphFieldContainerEdges(releaseUuid, ContainerType.PUBLISHED).stream().forEach(EdgeFrame::remove);
+			// Reset the webroot property for each published container
 			published.forEach(c -> c.getImpl().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null));
 
+			// Handle recursion
+			TakeOfflineParameters parameters = ac.getTakeOfflineParameters();
 			if (parameters.isRecursive()) {
 				for (Node node : getChildren()) {
-					node.takeOffline(ac);
+					node.takeOffline(ac).toBlocking().last();
 				}
 			}
 
 			assertPublishConsistency(ac);
 
-			// reindex
+			// Remove the published node from the index
 			return createIndexBatch(DELETE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
 		}).process().map(i -> {
 			return null;

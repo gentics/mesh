@@ -74,6 +74,24 @@ import rx.Observable;
 
 /**
  * Handler for the node specific search index.
+ * 
+ * <p>
+ * Format:
+ * <ul>
+ * <li>Document Id: [:uuid]-[:languageTag]</li>
+ * <li>Example: 234ef7f2510e4d0e8ef9f2210e0d0ec2-en</li>
+ * </ul>
+ * 
+ * <ul>
+ * <li>Document Type: [:schemaName]-[:schemaVersion]</li>
+ * <li>Example: content-1</li>
+ * </ul>
+ * 
+ * <ul>
+ * <li>Document Index: [node-[:projectUuid]-[:releaseUuid]-[:versionType]</li>
+ * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
+ * </ul> 
+ * <p>
  */
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {

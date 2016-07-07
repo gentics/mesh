@@ -35,13 +35,9 @@ import org.elasticsearch.search.SearchHit;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.util.RxUtil;
 
-import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 /**
@@ -119,6 +115,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public void refreshIndex() {
+		//TODO it would be way better to only target specific indices
 		getNode().client().admin().indices().refresh(refreshRequest()).actionGet();
 	}
 
@@ -284,7 +281,6 @@ public class ElasticSearchProvider implements SearchProvider {
 						log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onNext(null);
-					;
 					sub.onCompleted();
 				};
 
@@ -324,29 +320,29 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Observable<Integer> deleteDocumentsViaQuery(String index, String searchQuery) {
-		ObservableFuture<Integer> observable = RxHelper.observableFuture();
-		Client client = getNode().client();
-		SearchRequestBuilder builder = client.prepareSearch(index).setSource(searchQuery);
+		return Observable.create(sub -> {
+			Client client = getNode().client();
+			SearchRequestBuilder builder = client.prepareSearch(index).setSource(searchQuery);
 
-		Set<Observable<Void>> obs = new HashSet<>();
-		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
-			@Override
-			public void onResponse(SearchResponse response) {
-				// Invoke the deletion for each found document
-				for (SearchHit hit : response.getHits()) {
-					obs.add(deleteDocument(hit.getIndex(), hit.getType(), hit.getId()));
+			Set<Observable<Void>> obs = new HashSet<>();
+			builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+			builder.execute().addListener(new ActionListener<SearchResponse>() {
+				@Override
+				public void onResponse(SearchResponse response) {
+					// Invoke the deletion for each found document
+					for (SearchHit hit : response.getHits()) {
+						obs.add(deleteDocument(hit.getIndex(), hit.getType(), hit.getId()));
+					}
+					Observable.merge(obs).toBlocking().lastOrDefault(null);
+					sub.onNext(obs.size());
+					sub.onCompleted();
 				}
-				observable.toHandler().handle(Future.succeededFuture(obs.size()));
-			}
 
-			@Override
-			public void onFailure(Throwable e) {
-				observable.toHandler().handle(Future.failedFuture(e));
-			}
+				@Override
+				public void onFailure(Throwable e) {
+					sub.onError(e);
+				}
+			});
 		});
-
-		// Wait for obs to complete first. After that let `observable` complete and return the result.
-		return observable.compose(RxUtil.delay(Observable.merge(obs)));
 	}
 }

@@ -115,7 +115,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
-			//MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
 		});
 	}
 

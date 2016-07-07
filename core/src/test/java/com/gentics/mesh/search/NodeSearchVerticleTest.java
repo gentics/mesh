@@ -65,6 +65,7 @@ import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -109,7 +110,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@BeforeClass
 	public static void debug() {
-//		new RxDebugger().start();
+		//		new RxDebugger().start();
 	}
 
 	@Override
@@ -567,19 +568,20 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSchemaMigrationNodeSearchTest() throws Exception {
-		String uuid;
+
+		// 1. Index all existing contents
 		try (NoTrx noTx = db.noTrx()) {
-			Node concorde = content("concorde");
-			uuid = concorde.getUuid();
 			fullIndex();
 		}
 
+		// 2. Assert that the the en, de variant of the node could be found in the search index
+		String uuid = db.noTrx(() -> content("concorde").getUuid());
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
-
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid),
 				new PagingParameters().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
 		assertEquals("We expect to find the two language versions.", 2, response.getData().size());
 
+		// 3. Prepare an updated schema
 		String schemaUuid;
 		Schema schema;
 		try (NoTrx noTx = db.noTrx()) {
@@ -589,16 +591,21 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 			schema.addField(FieldUtil.createStringFieldSchema("extraField"));
 			schemaUuid = concorde.getSchemaContainer().getUuid();
 		}
-
 		// Clear the schema storage in order to purge the reference from the storage which we would otherwise modify.
 		ServerSchemaStorage.getInstance().clear();
 
+		try (NoTrx noTx = db.noTrx()) {
+			meshRoot().getSearchQueue().reload();
+			assertEquals("No more entries should remain in the search queue", 0, meshRoot().getSearchQueue().getSize());
+		}
+
+		// 4. Invoke the schema migration
 		Future<GenericMessageResponse> migrationFuture = getClient().updateSchema(schemaUuid, schema);
 		latchFor(migrationFuture);
 		assertSuccess(migrationFuture);
 		expectResponseMessage(migrationFuture, "migration_invoked", "content");
 
-		// assign the new schema version to the release
+		// 5. Assign the new schema version to the release
 		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(schemaUuid));
 		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, db.noTrx(() -> project().getLatestRelease().getUuid()),
 				new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
@@ -606,10 +613,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		// Wait for migration to complete
 		failingLatch(latch);
 
+		searchProvider.refreshIndex();
+		
+		// 6. Assert that the two migrated language variations can be found
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid),
 				new PagingParameters().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
-
-		assertEquals("We only expect to find the two language versions.", 2, response.getData().size());
+		assertEquals("We only expect to find the two language versions while searching for uuid {" +uuid +"}", 2, response.getData().size());
 	}
 
 	@Test
