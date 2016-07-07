@@ -74,7 +74,6 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
-import com.gentics.mesh.util.RxDebugger;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -110,7 +109,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@BeforeClass
 	public static void debug() {
-		new RxDebugger().start();
+//		new RxDebugger().start();
 	}
 
 	@Override
@@ -914,7 +913,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		nodeIndexHandler.setNodeIndexMapping(schema.getName() + "-" + schema.getVersion(), schema).toBlocking().first();
+		nodeIndexHandler.setNodeIndexMapping(schema.getName() + "-" + schema.getVersion(), schema).toBlocking().single();
 
 		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {

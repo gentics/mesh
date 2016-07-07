@@ -159,7 +159,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 					SearchQueueBatch batch = user.createIndexBatch(STORE_ACTION);
 
 					if (!isEmpty(groupUuid)) {
-						Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM).toBlocking().first();
+						Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM).toBlocking().single();
 						parentGroup.addUser(user);
 						batch.addEntry(parentGroup, STORE_ACTION);
 						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
@@ -179,7 +179,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 						if (project == null) {
 							throw error(BAD_REQUEST, "project_not_found", projectName);
 						}
-						Node node = project.getNodeRoot().loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().first();
+						Node node = project.getNodeRoot().loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().single();
 						user.setReferencedNode(node);
 					} else if (reference != null) {
 						// TODO handle user create using full node rest model.
@@ -194,7 +194,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 				//				User createdUser = tuple.v2();
 				return batch.process().map(done -> {
 					return tuple.v2();
-				}).toBlocking().first();
+				}).toBlocking().last();
 
 			});
 

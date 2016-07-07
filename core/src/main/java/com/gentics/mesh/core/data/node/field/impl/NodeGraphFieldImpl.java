@@ -56,7 +56,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 				nodeField.setPath(WebRootLinkReplacer.getInstance()
 						.resolve(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), node,
 								ac.getNodeParameters().getResolveLinks(), languageTags.toArray(new String[languageTags.size()]))
-						.toBlocking().first());
+						.toBlocking().single());
 			}
 			return Observable.just(nodeField);
 		}

@@ -251,7 +251,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 					return createIndexBatch(STORE_ACTION);
 				});
 
-				batch.process().toBlocking().first();
+				batch.process().toBlocking().single();
 				return this;
 			});
 			return obs;

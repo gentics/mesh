@@ -83,7 +83,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 					listItem.setUrl(WebRootLinkReplacer.getInstance().resolve(releaseUuid, type, item.getNode(), ac.getNodeParameters().getResolveLinks(), lTagsArray)
-							.toBlocking().first());
+							.toBlocking().single());
 				}
 
 				restModel.add(listItem);

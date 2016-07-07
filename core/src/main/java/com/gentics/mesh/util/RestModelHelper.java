@@ -32,7 +32,7 @@ public final class RestModelHelper {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 
 		if (!isEmpty(roleUuid)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).toBlocking().first();
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).toBlocking().single();
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(sourceElement);
 				Set<String> humanNames = new HashSet<>();

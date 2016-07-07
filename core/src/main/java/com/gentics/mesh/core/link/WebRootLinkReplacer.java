@@ -109,7 +109,7 @@ public class WebRootLinkReplacer {
 
 		// 3.: Buildup the new content
 		StringBuilder renderedContent = new StringBuilder(length);
-		segments.stream().forEachOrdered(obs -> renderedContent.append(obs.toBlocking().first()));
+		segments.stream().forEachOrdered(obs -> renderedContent.append(obs.toBlocking().last()));
 
 		return renderedContent.toString();
 	}

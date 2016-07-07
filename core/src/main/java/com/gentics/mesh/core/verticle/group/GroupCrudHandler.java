@@ -110,7 +110,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 				return batch.process().map(done -> {
 					return updatedGroup.transformToRest(ac, 0);
-				}).flatMap(x -> x).toBlocking().first();
+				}).flatMap(x -> x).toBlocking().last();
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

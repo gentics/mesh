@@ -124,7 +124,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				Tuple<SearchQueueBatch, SchemaContainer> tuple = db.trx(() -> {
 
 					String schemaName = requestModel.getName();
-					SchemaContainer conflictingSchema = findByName(schemaName).toBlocking().last();
+					SchemaContainer conflictingSchema = findByName(schemaName).toBlocking().single();
 					if (conflictingSchema != null) {
 						throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
 					}

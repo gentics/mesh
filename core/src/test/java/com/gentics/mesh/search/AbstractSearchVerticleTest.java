@@ -48,14 +48,10 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 	@Before
 	public void setupVerticleTest() throws Exception {
 		super.setupVerticleTest();
+		searchProvider.reset();
 		for (IndexHandler handler : registry.getHandlers()) {
 			handler.init().toBlocking().single();
 		}
-	}
-
-	@After
-	public void resetElasticSearch() {
-		searchProvider.reset();
 	}
 
 	@BeforeClass

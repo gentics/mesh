@@ -137,7 +137,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, ContainerType.PUBLISHED);
 						if (oldPublished != null) {
 							ac.getVersioningParameters().setVersion("published");
-							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().last();
+							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().single();
 							restModel.getSchema().setVersion(newSchema.getVersion());
 
 							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(

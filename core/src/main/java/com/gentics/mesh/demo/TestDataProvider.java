@@ -366,11 +366,11 @@ public class TestDataProvider {
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content").toBlocking().first();
+		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content").toBlocking().single();
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary-content
-		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content").toBlocking().first();
+		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content").toBlocking().single();
 		schemaContainers.put("binary-content", binaryContentSchemaContainer);
 
 	}

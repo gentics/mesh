@@ -124,7 +124,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Project project = mockProject(user);
 		ProjectIndexHandler projectIndexHandler = ctx.getBean(ProjectIndexHandler.class);
-		projectIndexHandler.store(project, "project", null).toBlocking().first();
+		projectIndexHandler.store(project, "project", null).toBlocking().last();
 		writeStoreEvent("project.search");
 	}
 
@@ -132,7 +132,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Group group = mockGroup("adminGroup", user);
 		GroupIndexHandler groupIndexHandler = ctx.getBean(GroupIndexHandler.class);
-		groupIndexHandler.store(group, "group", null).toBlocking().first();
+		groupIndexHandler.store(group, "group", null).toBlocking().last();
 		writeStoreEvent("group.search");
 	}
 
@@ -140,7 +140,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Role role = mockRole("adminRole", user);
 		RoleIndexHandler roleIndexHandler = ctx.getBean(RoleIndexHandler.class);
-		roleIndexHandler.store(role, "role", null).toBlocking().first();
+		roleIndexHandler.store(role, "role", null).toBlocking().last();
 		writeStoreEvent("role.search");
 	}
 
@@ -151,7 +151,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Group groupB = mockGroup("superEditors", user);
 		Mockito.<List<? extends Group>> when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
 		UserIndexHandler userIndexHandler = ctx.getBean(UserIndexHandler.class);
-		userIndexHandler.store(user, "user", null).toBlocking().first();
+		userIndexHandler.store(user, "user", null).toBlocking().last();
 		writeStoreEvent("user.search");
 	}
 
@@ -167,7 +167,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			return tagList;
 		});
 		TagFamilyIndexHandler tagFamilyIndexHandler = ctx.getBean(TagFamilyIndexHandler.class);
-		tagFamilyIndexHandler.store(tagFamily, "tagFamily", null).toBlocking().first();
+		tagFamilyIndexHandler.store(tagFamily, "tagFamily", null).toBlocking().last();
 		writeStoreEvent("tagFamily.search");
 	}
 
@@ -176,7 +176,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 
 		SchemaContainerIndexHandler searchIndexHandler = ctx.getBean(SchemaContainerIndexHandler.class);
-		searchIndexHandler.store(schemaContainer, "schema", null).toBlocking().first();
+		searchIndexHandler.store(schemaContainer, "schema", null).toBlocking().last();
 		writeStoreEvent("schema.search");
 	}
 
@@ -185,7 +185,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer("geolocation", user);
 
 		MicroschemaContainerIndexHandler searchIndexHandler = ctx.getBean(MicroschemaContainerIndexHandler.class);
-		searchIndexHandler.store(microschemaContainer, "schema", null).toBlocking().first();
+		searchIndexHandler.store(microschemaContainer, "schema", null).toBlocking().last();
 		writeStoreEvent("microschema.search");
 	}
 
@@ -195,7 +195,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		TagFamily tagFamily = mockTagFamily("colors", user, project);
 		Tag tag = mockTag("red", user, tagFamily, project);
 		TagIndexHandler tagIndexHandler = ctx.getBean(TagIndexHandler.class);
-		tagIndexHandler.store(tag, "tag", null).toBlocking().first();
+		tagIndexHandler.store(tag, "tag", null).toBlocking().last();
 		writeStoreEvent("tag.search");
 	}
 

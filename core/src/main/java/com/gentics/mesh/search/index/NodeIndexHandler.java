@@ -458,7 +458,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 								addMicroschema(itemMap, micronode.getSchemaContainerVersion());
 								addFields(itemMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
 								return itemMap;
-							}).toList().toBlocking().first());
+							}).toList().toBlocking().single());
 						}
 						break;
 					case "string":

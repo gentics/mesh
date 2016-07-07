@@ -231,7 +231,7 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 	public void testAsyncNoTrxSuccess() throws Throwable {
 		String result = db.asyncNoTrxExperimental(() -> {
 			return Observable.just("OK");
-		}).toBlocking().first();
+		}).toBlocking().single();
 		assertEquals("OK", result);
 	}
 
