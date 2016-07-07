@@ -20,6 +20,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 
@@ -27,8 +28,9 @@ import io.vertx.core.json.JsonObject;
 
 @Component
 public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
+
 	/**
-	 * Name of the custom property of SearchQueueEntry containing the project uuid
+	 * Name of the custom property of SearchQueueEntry containing the project UUID.
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
@@ -51,7 +53,9 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	@Override
 	public Set<String> getIndices() {
 		return db.noTrx(() -> {
-			List<? extends Project> projects = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findAll();
+			ProjectRoot root = BootstrapInitializer.getBoot().meshRoot().getProjectRoot();
+			root.reload();
+			List<? extends Project> projects = root.findAll();
 			return projects.stream().map(project -> getIndexName(project.getUuid())).collect(Collectors.toSet());
 		});
 	}
@@ -70,7 +74,9 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	/**
 	 * Get the index name for the given project
-	 * @param project Uuid
+	 * 
+	 * @param project
+	 *            Uuid
 	 * @return index name
 	 */
 	public String getIndexName(String projectUuid) {

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.search;
+package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -19,8 +19,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.search.AbstractSearchVerticleTest;
-import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 
@@ -61,9 +60,10 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	public void testReindex() {
 		// Add the user to the admin group - this way the user is in fact an admin.
-		user().addGroup(groups().get("admin"));
-
-		searchProvider.refreshIndex();
+		try (NoTrx noTrx = db.noTrx()) {
+			user().addGroup(groups().get("admin"));
+			searchProvider.refreshIndex();
+		}
 
 		Future<GenericMessageResponse> future = getClient().invokeReindex();
 		latchFor(future);
@@ -80,36 +80,44 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testClearIndex() throws InterruptedException {
-		fullIndex();
+		try (NoTrx noTrx = db.noTrx()) {
+			fullIndex();
+		}
 
 		// Make sure the document was added to the index.
-		Map<String, Object> map = searchProvider.getDocument("user", "user", user().getUuid()).toBlocking().single();
+		Map<String, Object> map = searchProvider.getDocument("user", "user", db.noTrx(() -> user().getUuid())).toBlocking().single();
 		assertNotNull("The user document should be stored within the index since we invoked a full index but it could not be found.", map);
-		assertEquals(user().getUuid(), map.get("uuid"));
+		assertEquals(db.noTrx(() -> user().getUuid()), map.get("uuid"));
 
 		for (IndexHandler handler : registry.getHandlers()) {
 			handler.clearIndex().toBlocking().single();
 		}
 
 		// Make sure the document is no longer stored within the search index.
-		map = searchProvider.getDocument("user", "user", user().getUuid()).toBlocking().single();
+		map = searchProvider.getDocument("user", "user", db.noTrx(() -> user().getUuid())).toBlocking().single();
 		assertNull("The user document should no longer be part of the search index.", map);
 
 	}
 
 	@Test
 	public void testAsyncSearchQueueUpdates() throws Exception {
-		Node node = folder("2015");
-		String uuid = node.getUuid();
-		String indexType = NodeIndexHandler.getDocumentType(node.getSchemaContainer().getLatestVersion());
-		for (int i = 0; i < 10; i++) {
-			meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, Node.TYPE, STORE_ACTION);
+		try (NoTrx noTrx = db.noTrx()) {
+
+			Node node = folder("2015");
+			String uuid = node.getUuid();
+			String indexType = NodeIndexHandler.getDocumentType(node.getSchemaContainer().getLatestVersion());
+			for (int i = 0; i < 10; i++) {
+				meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, Node.TYPE, STORE_ACTION);
+			}
+
+			String documentId = NodeIndexHandler.composeDocumentId(node, "en");
+			searchProvider.deleteDocument(Node.TYPE, indexType, documentId).toBlocking().single();
+			meshRoot().getSearchQueue().processAll();
+			assertNull(
+					"The document with uuid {" + uuid + "} could still be found within the search index. Used index type {" + indexType
+							+ "} document id {" + documentId + "}",
+					searchProvider.getDocument(Node.TYPE, indexType, documentId).toBlocking().first());
 		}
-		String documentId = NodeIndexHandler.composeDocumentId(node, "en");
-		searchProvider.deleteDocument(Node.TYPE, indexType, documentId).toBlocking().single();
-		meshRoot().getSearchQueue().processAll();
-		assertNull("The document with uuid {" + uuid + "} could still be found within the search index. Used index type {" + indexType
-				+ "} document id {" + documentId + "}", searchProvider.getDocument(Node.TYPE, indexType, documentId).toBlocking().first());
 	}
 
 }

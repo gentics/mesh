@@ -102,11 +102,17 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 			fullIndex();
 		}
 
-		Tag tag = tag("red");
-		TagFamily parentTagFamily = tagFamily("colors");
+		String name;
+		String uuid;
+		String parentTagFamilyUuid;
+		try (NoTrx noTx = db.noTrx()) {
+			Tag tag = tag("red");
+			TagFamily parentTagFamily = tagFamily("colors");
 
-		String name = tag.getName();
-		String uuid = tag.getUuid();
+			name = tag.getName();
+			uuid = tag.getUuid();
+			parentTagFamilyUuid = parentTagFamily.getUuid();
+		}
 
 		// 1. Verify that the tag is indexed
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name));
@@ -116,7 +122,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 				searchFuture.result().getData().size());
 
 		// 2. Delete the tag
-		deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid);
+		deleteTag(PROJECT_NAME, parentTagFamilyUuid, uuid);
 
 		// 3. Search again and verify that the document was removed from the index
 		searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name));

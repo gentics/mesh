@@ -786,7 +786,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		// publish content "urschnell"
-		call(() -> getClient().publishNode(PROJECT_NAME, content("concorde").getUuid()));
+		call(() -> getClient().publishNode(PROJECT_NAME, db.noTrx(() -> content("concorde").getUuid())));
 
 		// "supersonic" no longer found, but "urschnell" found in published nodes
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
@@ -844,7 +844,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new VersioningParameters().setRelease(project().getInitialRelease().getName())));
+				new VersioningParameters().setRelease(db.noTrx(() -> project().getInitialRelease().getName()))));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

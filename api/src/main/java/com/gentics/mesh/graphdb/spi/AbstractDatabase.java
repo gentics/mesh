@@ -125,7 +125,7 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler) {
-		Observable<T> obs = Observable.create(sub -> {
+		return Observable.create(sub -> {
 			Mesh.vertx().executeBlocking(bc -> {
 				try (NoTrx noTx = noTrx()) {
 					Observable<T> result = trxHandler.call();
@@ -148,7 +148,6 @@ public abstract class AbstractDatabase implements Database {
 				}
 			});
 		});
-		return obs;
 	}
 
 }

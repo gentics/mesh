@@ -4,6 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BAT
 import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
@@ -118,7 +121,18 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		long count = 0;
 		while ((batch = take()) != null) {
 			if (batch.getEntries().size() > 0) {
-				batch.process().toBlocking().lastOrDefault(null);
+				CountDownLatch latch = new CountDownLatch(1);
+				batch.process().subscribe(next -> {
+					//					MeshSpringConfiguration.getInstance().database().noTrx(() -> {
+					//						System.out.println(next.toString());
+					//						return null;
+					//					});
+				}, error -> {
+					error.printStackTrace();
+				}, () -> {
+					latch.countDown();
+				});
+				latch.await(10, TimeUnit.SECONDS);
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("Proccessed batch.");

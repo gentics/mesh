@@ -12,11 +12,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
+@Ignore
 public class RxUtilTest {
 
 	@Test
@@ -108,7 +110,8 @@ public class RxUtilTest {
 	/**
 	 * Checks if the given observable counts from 1 in the correct order.
 	 *
-	 * @param counting The observable to check for
+	 * @param counting
+	 *            The observable to check for
 	 * @return How many numbers have been emitted.
 	 */
 	private int testCountingObservable(Observable<Integer> counting) throws Throwable {
