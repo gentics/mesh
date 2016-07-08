@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 
-public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
+public class HtmlFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	private static final String FIELD_NAME = "htmlField";
 
 	@Before
@@ -80,9 +80,14 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		String oldVersion = firstResponse.getVersion().getNumber();
 
 		// Simple field with no value results in a request JSON null value. 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl());
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
+
 	}
 
 	@Test
@@ -97,7 +102,10 @@ public class HtmlFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNotNull();
 		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME).getHTML()).as("Updated Field Value").isEqualTo("");
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
-
+		
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 	}
 
 	@Test

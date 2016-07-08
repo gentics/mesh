@@ -31,7 +31,7 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 
 import io.vertx.core.Future;
 
-public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
+public class NumberFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	private static final String FIELD_NAME = "numberField";
 
 	@Before
@@ -103,11 +103,17 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		// Field should be deleted
-		response = updateNode(FIELD_NAME, null);
-		assertThat(response.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 
 		// Update again to restore a value
 		updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
@@ -118,22 +124,8 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testUpdateSetEmpty() {
 		// Number fields can't be set to empty - The rest model will generate a null field for the update request json. Thus the field will be deleted.
-		NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl());
-		assertThat(response.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
-	}
-
-	/**
-	 * Get the number value
-	 * 
-	 * @param container
-	 *            container
-	 * @param fieldName
-	 *            field name
-	 * @return number value (may be null)
-	 */
-	protected Number getNumberValue(NodeGraphFieldContainer container, String fieldName) {
-		NumberGraphField field = container.getNumber(fieldName);
-		return field != null ? field.getNumber() : null;
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl());
+		assertThat(firstResponse.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
 	}
 
 	@Test
@@ -158,6 +150,20 @@ public class NumberFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		NumberFieldImpl deserializedNumberField = response.getFields().getNumberField(FIELD_NAME);
 		assertNotNull(deserializedNumberField);
 		assertEquals(100.9, deserializedNumberField.getNumber());
+	}
+
+	/**
+	 * Get the number value
+	 * 
+	 * @param container
+	 *            container
+	 * @param fieldName
+	 *            field name
+	 * @return number value (may be null)
+	 */
+	protected Number getNumberValue(NodeGraphFieldContainer container, String fieldName) {
+		NumberGraphField field = container.getNumber(fieldName);
+		return field != null ? field.getNumber() : null;
 	}
 
 }

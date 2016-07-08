@@ -38,7 +38,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Future;
 
-public class BinaryNodeVerticleTest extends AbstractBinaryVerticleTest {
+public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Autowired
 	private NodeVerticle nodeVerticle;

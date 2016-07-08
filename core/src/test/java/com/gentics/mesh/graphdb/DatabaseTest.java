@@ -16,13 +16,13 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.AbstractBasicDBTest;
+import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 
-public class DatabaseTest extends AbstractBasicDBTest {
+public class DatabaseTest extends AbstractIsolatedBasicDBTest {
 
 	private File outputDirectory;
 
@@ -42,10 +42,12 @@ public class DatabaseTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testIndex() {
-		GroupRootImpl.checkIndices(db);
-		GroupRootImpl.checkIndices(db);
-		db.addVertexIndex(LanguageImpl.class, true, "languageTag");
-		db.addEdgeIndexSource(GraphRelationships.ASSIGNED_TO_ROLE);
+		try (NoTrx noTrx = db.noTrx()) {
+			GroupRootImpl.checkIndices(db);
+			GroupRootImpl.checkIndices(db);
+			db.addVertexIndex(LanguageImpl.class, true, "languageTag");
+			db.addEdgeIndexSource(GraphRelationships.ASSIGNED_TO_ROLE);
+		}
 	}
 
 	@Test

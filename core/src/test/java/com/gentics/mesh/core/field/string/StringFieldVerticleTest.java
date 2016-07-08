@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-public class StringFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
+public class StringFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	private static final String FIELD_NAME = "stringField";
 
 	/**
@@ -95,25 +95,33 @@ public class StringFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testUpdateSetNull() {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
-		String oldNumber = firstResponse.getVersion().getNumber();
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
-		String oldNumber = firstResponse.getVersion().getNumber();
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		StringField emptyField = new StringFieldImpl();
 		emptyField.setString("");
 		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 		assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNotNull();
 		assertThat(secondResponse.getFields().getStringField(FIELD_NAME).getString()).as("Updated Field Value").isEqualTo("");
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 	}
 
 	/**

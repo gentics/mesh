@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 
-public class DateFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
+public class DateFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	private static final String FIELD_NAME = "dateField";
 
 	@Before
@@ -78,10 +78,16 @@ public class DateFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testUpdateSetNull() {
 		Long nowEpoch = System.currentTimeMillis() / 1000;
-		NodeResponse response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		String oldVersion = firstResponse.getVersion().getNumber();
 
-		response = updateNode(FIELD_NAME, null);
-		assertThat(response.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 	}
 
 	@Test
@@ -89,13 +95,13 @@ public class DateFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testUpdateSetEmpty() {
 
 		Long nowEpoch = System.currentTimeMillis() / 1000;
-		NodeResponse response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
-		String oldNumber = response.getVersion().getNumber();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		// Date fields can't be set to empty.
-		response = updateNode(FIELD_NAME, new DateFieldImpl());
-		assertThat(response.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
-		assertThat(response.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl());
+		assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 
 	}
 

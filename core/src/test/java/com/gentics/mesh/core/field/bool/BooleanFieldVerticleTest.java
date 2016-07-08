@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -22,7 +23,7 @@ import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 
-public class BooleanFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
+public class BooleanFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 
 	private static final String FIELD_NAME = "booleanField";
 
@@ -93,21 +94,24 @@ public class BooleanFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest 
 	@Override
 	public void testUpdateSetNull() {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
-		String oldNumber = firstResponse.getVersion().getNumber();
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, new BooleanFieldImpl());
 		assertThat(secondResponse.getFields().getBooleanField(FIELD_NAME)).as("Updated Field").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 	}
 
 	@Test
-	
 	@Override
+	@Ignore
 	public void testUpdateSetEmpty() {
-		// TODO Auto-generated method stub
-		
+		// Boolean fields can be set to empty - thus this is overed by the set null test			
 	}
-	
+
 	/**
 	 * Get boolean value
 	 * 

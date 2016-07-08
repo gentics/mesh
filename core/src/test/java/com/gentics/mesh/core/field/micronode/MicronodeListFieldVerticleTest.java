@@ -39,13 +39,13 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTrx;
 
 public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTest {
-	protected final static String FIELDNAME = "micronodeListField";
+	protected final static String FIELD_NAME = "micronodeListField";
 
 	@Before
 	public void updateSchema() throws IOException {
 		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
-		listFieldSchema.setName(FIELDNAME);
+		listFieldSchema.setName(FIELD_NAME);
 		listFieldSchema.setLabel("Some label");
 		listFieldSchema.setListType("micronode");
 		listFieldSchema.setAllowedSchemas(new String[] { "vcard" });
@@ -67,7 +67,7 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 		for (int i = 0; i < 20; i++) {
-			List<Micronode> oldValue = getListValues(container, MicronodeGraphFieldListImpl.class, FIELDNAME);
+			List<Micronode> oldValue = getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME);
 			FieldList<MicronodeField> newValue = new MicronodeFieldListImpl();
 			NodeResponse response = null;
 			if (oldValue == null) {
@@ -75,9 +75,9 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 				newValue.getItems().clear();
 				newValue.add(createItem("Max", "Böse"));
 				newValue.add(createItem("Moritz", "Böse"));
-				response = updateNode(FIELDNAME, newValue);
+				response = updateNode(FIELD_NAME, newValue);
 
-				FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELDNAME);
+				FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELD_NAME);
 				List<String> uuids = new ArrayList<>();
 				for (MicronodeField item : responseField.getItems()) {
 					uuids.add(item.getUuid());
@@ -85,30 +85,30 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 			} else if (i % 3 == 1) {
 				// reorder data
 				NodeResponse readResponse = readNode(node);
-				newValue = readResponse.getFields().getMicronodeFieldList(FIELDNAME);
+				newValue = readResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 				Collections.reverse(newValue.getItems());
 
-				response = updateNode(FIELDNAME, newValue);
-				FieldList<MicronodeField> updatedField = response.getFields().getMicronodeFieldList(FIELDNAME);
+				response = updateNode(FIELD_NAME, newValue);
+				FieldList<MicronodeField> updatedField = response.getFields().getMicronodeFieldList(FIELD_NAME);
 
 				// compare uuids
 				assertFieldEquals(newValue, updatedField, true);
 			} else if (i % 3 == 2) {
 				// change data
 				NodeResponse readResponse = readNode(node);
-				newValue = readResponse.getFields().getMicronodeFieldList(FIELDNAME);
+				newValue = readResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
 				for (MicronodeField field : newValue.getItems()) {
 					StringFieldImpl firstNameField = field.getFields().getStringField("firstName");
 					firstNameField.setString("Strammer " + firstNameField.getString());
 					field.getFields().put("firstName", firstNameField);
 				}
-				response = updateNode(FIELDNAME, newValue);
-				FieldList<MicronodeField> updatedField = response.getFields().getMicronodeFieldList(FIELDNAME);
+				response = updateNode(FIELD_NAME, newValue);
+				FieldList<MicronodeField> updatedField = response.getFields().getMicronodeFieldList(FIELD_NAME);
 				assertFieldEquals(newValue, updatedField, false);
 			} else {
-				response = updateNode(FIELDNAME, new MicronodeFieldListImpl());
-				assertThat(response.getFields().getMicronodeFieldList(FIELDNAME).getItems()).isEmpty();
+				response = updateNode(FIELD_NAME, new MicronodeFieldListImpl());
+				assertThat(response.getFields().getMicronodeFieldList(FIELD_NAME).getItems()).isEmpty();
 			}
 
 			node.reload();
@@ -121,11 +121,11 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 				assertNotNull("No new container version was created. {" + i % 3 + "}", newContainer);
 				assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion().getNumber());
 				assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
-						getListValues(container, MicronodeGraphFieldListImpl.class, FIELDNAME));
+						getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
 				container = newContainer;
 			} else {
 				assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
-						getListValues(container, MicronodeGraphFieldListImpl.class, FIELDNAME));
+						getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
 				assertEquals("The version should not have been updated.", container.getVersion().toString(), response.getVersion().getNumber());
 			}
 
@@ -138,10 +138,10 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
-		NodeResponse firstResponse = updateNode(FIELDNAME, field);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, field);
 		String oldNumber = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELDNAME, field);
+		NodeResponse secondResponse = updateNode(FIELD_NAME, field);
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
 	}
 
@@ -151,12 +151,17 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
-		NodeResponse firstResponse = updateNode(FIELDNAME, field);
-		String oldNumber = firstResponse.getVersion().getNumber();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, field);
+		String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELDNAME, null);
-		assertThat(secondResponse.getFields().getMicronodeFieldList(FIELDNAME)).as("Updated Field").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getMicronodeFieldList(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 	}
 
 	@Test
@@ -165,13 +170,20 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
-		NodeResponse firstResponse = updateNode(FIELDNAME, field);
-		String oldNumber = firstResponse.getVersion().getNumber();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, field);
+		String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELDNAME, new MicronodeFieldListImpl());
-		assertThat(secondResponse.getFields().getMicronodeFieldList(FIELDNAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getFields().getMicronodeFieldList(FIELDNAME).getItems()).as("Updated Field Value").isEmpty();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		MicronodeFieldListImpl emptyField = new MicronodeFieldListImpl();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+		assertThat(secondResponse.getFields().getMicronodeFieldList(FIELD_NAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getMicronodeFieldList(FIELD_NAME).getItems()).as("Updated Field Value").isEmpty();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
+		assertThat(secondResponse.getVersion().getNumber()).as("No new version number should be generated")
+				.isEqualTo(secondResponse.getVersion().getNumber());
 
 	}
 
@@ -184,9 +196,9 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		field.add(createItem("One", "One"));
 		field.add(createItem("Two", "Two"));
 		field.add(createItem("Three", "Three"));
-		NodeResponse initialResponse = updateNode(FIELDNAME, field);
+		NodeResponse initialResponse = updateNode(FIELD_NAME, field);
 
-		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELDNAME);
+		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 		FieldList<MicronodeField> reorderedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> reorderedField.add(item));
 
@@ -197,8 +209,8 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 			}
 		});
 
-		NodeResponse updateResponse = updateNode(FIELDNAME, reorderedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELDNAME);
+		NodeResponse updateResponse = updateNode(FIELD_NAME, reorderedField);
+		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
 		assertFieldEquals(reorderedField, updatedField, true);
 		assertMicronodes(updatedField);
@@ -213,15 +225,15 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		field.add(createItem("One", "One"));
 		field.add(createItem("Two", "Two"));
 		field.add(createItem("Three", "Three"));
-		NodeResponse initialResponse = updateNode(FIELDNAME, field);
-		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELDNAME);
+		NodeResponse initialResponse = updateNode(FIELD_NAME, field);
+		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
 		FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
 		changedField.getItems().add(1, createItem("Four", "Four"));
 
-		NodeResponse updateResponse = updateNode(FIELDNAME, changedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELDNAME);
+		NodeResponse updateResponse = updateNode(FIELD_NAME, changedField);
+		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 		assertFieldEquals(changedField, updatedField, true);
 		assertMicronodes(updatedField);
 	}
@@ -235,15 +247,15 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		field.add(createItem("One", "One"));
 		field.add(createItem("Two", "Two"));
 		field.add(createItem("Three", "Three"));
-		NodeResponse initialResponse = updateNode(FIELDNAME, field);
-		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELDNAME);
+		NodeResponse initialResponse = updateNode(FIELD_NAME, field);
+		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
 		FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
 		changedField.getItems().remove(1);
 
-		NodeResponse updateResponse = updateNode(FIELDNAME, changedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELDNAME);
+		NodeResponse updateResponse = updateNode(FIELD_NAME, changedField);
+		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 		assertFieldEquals(changedField, updatedField, true);
 		assertMicronodes(updatedField);
 	}
@@ -263,8 +275,8 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		field.add(createItem("One", "One"));
 		field.add(createItem("Two", "Two"));
 		field.add(createItem("Three", "Three"));
-		NodeResponse initialResponse = updateNode(FIELDNAME, field);
-		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELDNAME);
+		NodeResponse initialResponse = updateNode(FIELD_NAME, field);
+		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
 		FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
@@ -277,8 +289,8 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 			}
 		});
 
-		NodeResponse updateResponse = updateNode(FIELDNAME, changedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELDNAME);
+		NodeResponse updateResponse = updateNode(FIELD_NAME, changedField);
+		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 		assertFieldEquals(changedField, updatedField, true);
 		assertMicronodes(updatedField);
 	}
@@ -290,9 +302,9 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
 		assertThat(field.getItems()).hasSize(2);
-		NodeResponse response = createNode(FIELDNAME, field);
+		NodeResponse response = createNode(FIELD_NAME, field);
 
-		FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELDNAME);
+		FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELD_NAME);
 		assertNotNull(responseField);
 		assertFieldEquals(field, responseField, true);
 		assertMicronodes(responseField);
@@ -301,8 +313,8 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELDNAME, (Field) null);
-		FieldList<MicronodeField> field = response.getFields().getMicronodeFieldList(FIELDNAME);
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		FieldList<MicronodeField> field = response.getFields().getMicronodeFieldList(FIELD_NAME);
 		assertNull(field);
 	}
 

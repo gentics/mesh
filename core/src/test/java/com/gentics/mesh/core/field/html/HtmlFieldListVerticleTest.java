@@ -84,18 +84,32 @@ public class HtmlFieldListVerticleTest extends AbstractGraphListFieldVerticleTes
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getHtmlFieldList(FIELD_NAME)).as("Updated Field").isNull();
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 	}
 
 	@Test
+	@Override
 	public void testUpdateSetEmpty() {
 		HtmlFieldListImpl list = new HtmlFieldListImpl();
 		list.add("A");
 		list.add("B");
-		updateNode(FIELD_NAME, list);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldListImpl());
+		DateFieldListImpl emptyField = new DateFieldListImpl();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 		assertThat(secondResponse.getFields().getHtmlFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
 		assertThat(secondResponse.getFields().getHtmlFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number should be generated").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
+		assertThat(secondResponse.getVersion().getNumber()).as("No new version number should be generated")
+				.isEqualTo(secondResponse.getVersion().getNumber());
 	}
 
 }

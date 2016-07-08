@@ -18,7 +18,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	FieldTransformator BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		if (graphBinaryField == null) {
-			return Observable.just(new BinaryFieldImpl());
+			return Observable.just(null);
 		} else {
 			return graphBinaryField.transformToRest(ac);
 		}

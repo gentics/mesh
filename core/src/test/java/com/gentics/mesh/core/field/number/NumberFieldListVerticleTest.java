@@ -71,22 +71,38 @@ public class NumberFieldListVerticleTest extends AbstractGraphListFieldVerticleT
 		NumberFieldListImpl list = new NumberFieldListImpl();
 		list.add(42);
 		list.add(41.1f);
-		updateNode(FIELD_NAME, list);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getNumberFieldList(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 	}
 
 	@Test
+	@Override
 	public void testUpdateSetEmpty() {
 		NumberFieldListImpl list = new NumberFieldListImpl();
 		list.add(42);
 		list.add(41.1f);
-		updateNode(FIELD_NAME, list);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new NumberFieldListImpl());
+		NumberFieldListImpl emptyField = new NumberFieldListImpl();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 		assertThat(secondResponse.getFields().getNumberFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
 		assertThat(secondResponse.getFields().getNumberFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number should be generated").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
+		assertThat(secondResponse.getVersion().getNumber()).as("No new version number should be generated")
+				.isEqualTo(secondResponse.getVersion().getNumber());
 	}
 
 }

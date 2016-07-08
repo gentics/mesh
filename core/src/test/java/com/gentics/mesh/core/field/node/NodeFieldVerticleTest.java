@@ -37,7 +37,7 @@ import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 
-public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
+public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 
 	final String NODE_FIELD_NAME = "nodeField";
 
@@ -91,11 +91,15 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	public void testUpdateSetNull() {
 		Node target = folder("news");
 		NodeResponse firstResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
-		String oldNumber = firstResponse.getVersion().getNumber();
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(NODE_FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getNodeField(NODE_FIELD_NAME)).as("Deleted Field").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(NODE_FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 
 	}
 
@@ -105,20 +109,6 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node target = folder("news");
 		updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 		updateNodeFailure(NODE_FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", NODE_FIELD_NAME);
-	}
-
-	/**
-	 * Get the node value
-	 * 
-	 * @param container
-	 *            container
-	 * @param fieldName
-	 *            field name
-	 * @return node value (may be null)
-	 */
-	protected Node getNodeValue(NodeGraphFieldContainer container, String fieldName) {
-		NodeGraphField field = container.getNode(fieldName);
-		return field != null ? field.getNode() : null;
 	}
 
 	@Test
@@ -311,5 +301,19 @@ public class NodeFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 			assertNotNull("Field must be present", nodeField);
 			assertEquals("Check target node language", "de", nodeField.getLanguage());
 		}
+	}
+
+	/**
+	 * Get the node value
+	 * 
+	 * @param container
+	 *            container
+	 * @param fieldName
+	 *            field name
+	 * @return node value (may be null)
+	 */
+	protected Node getNodeValue(NodeGraphFieldContainer container, String fieldName) {
+		NodeGraphField field = container.getNode(fieldName);
+		return field != null ? field.getNode() : null;
 	}
 }

@@ -121,6 +121,7 @@ public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTes
 	}
 
 	@Test
+	@Override
 	public void testUpdateSetNull() {
 		Node targetNode = folder("news");
 		Node targetNode2 = folder("deals");
@@ -128,14 +129,21 @@ public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTes
 		NodeFieldListImpl list = new NodeFieldListImpl();
 		list.add(new NodeFieldListItemImpl(targetNode.getUuid()));
 		list.add(new NodeFieldListItemImpl(targetNode2.getUuid()));
-		updateNode(FIELD_NAME, list);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 
 	}
 
 	@Test
+	@Override
 	public void testUpdateSetEmpty() {
 		Node targetNode = folder("news");
 		Node targetNode2 = folder("deals");
@@ -143,11 +151,20 @@ public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTes
 		NodeFieldListImpl list = new NodeFieldListImpl();
 		list.add(new NodeFieldListItemImpl(targetNode.getUuid()));
 		list.add(new NodeFieldListItemImpl(targetNode2.getUuid()));
-		updateNode(FIELD_NAME, list);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new NodeFieldListImpl());
+		NodeFieldListImpl emptyField = new NodeFieldListImpl();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 		assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
 		assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number should be generated").isNotEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
+		assertThat(secondResponse.getVersion().getNumber()).as("No new version number should be generated")
+				.isEqualTo(secondResponse.getVersion().getNumber());
 
 	}
 
