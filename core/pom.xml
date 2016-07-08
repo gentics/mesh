@@ -33,9 +33,6 @@
 						<artifactId>maven-surefire-plugin</artifactId>
 						<configuration>
 							<includesFile>../inclusions.txt</includesFile>
-							<includes>
-								<include>Sample.java</include>
-							</includes>
 						</configuration>
 					</plugin>
 				</plugins>
