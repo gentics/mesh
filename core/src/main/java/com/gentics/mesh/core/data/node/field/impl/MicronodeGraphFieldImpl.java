@@ -68,9 +68,13 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	@Override
 	public void removeField(GraphFieldContainer container) {
 		Micronode micronode = getMicronode();
+		// 1. Remove the edge
 		remove();
 		if (micronode != null) {
-			micronode.delete(null);
+			// Remove the micronode if this was the last edge to the micronode
+			if (micronode.getImpl().in(HAS_FIELD).count() == 0) {
+				micronode.delete(null);
+			}
 		}
 	}
 

@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.node.field.nesting;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +9,8 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
@@ -25,7 +26,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
-public interface MicronodeGraphField extends ListableReferencingGraphField {
+/**
+ * A {@link MicronodeGraphField} is an {@link MeshEdge} which links a {@link GraphFieldContainer} to a {@link Micronode} vertex.
+ */
+public interface MicronodeGraphField extends ListableReferencingGraphField, MeshEdge {
 
 	static final Logger log = LoggerFactory.getLogger(MicronodeGraphField.class);
 

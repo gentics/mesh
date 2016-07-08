@@ -135,8 +135,8 @@ public class MicronodeFieldVerticleTest extends AbstractFieldVerticleTest {
 		Node node = folder("2015");
 		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
-		assertThat(latest.getHtml(FIELD_NAME)).isNull();
-		assertThat(latest.getPreviousVersion().getMicronode(FIELD_NAME)).isNotNull();
+		assertThat(latest.getMicronode(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getMicronode(FIELD_NAME)).as("The old version micronode field could not be found.").isNotNull();
 		Micronode oldMicronode = latest.getPreviousVersion().getMicronode(FIELD_NAME).getMicronode();
 		assertThat(oldMicronode.getString("firstName").getString()).as("Old version micronode firstname field value should not be modified")
 				.isEqualTo("Max");

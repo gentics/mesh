@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 
 import java.io.File;
 import java.util.Objects;
@@ -48,6 +49,18 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		restModel.setHeight(getImageHeight());
 		return Observable.just(restModel);
 
+	}
+
+	@Override
+	public void copyTo(BinaryGraphField target) {
+		for (String key : getPropertyKeys()) {
+			//Don't copy the uuid
+			if ("uuid".equals(key)) {
+				continue;
+			}
+			Object value = getProperty(key);
+			target.getImpl().setProperty(key, value);
+		}
 	}
 
 	@Override
@@ -179,7 +192,15 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 	@Override
 	public void removeField(GraphFieldContainer container) {
-		remove();
+		// Detach the list from the given graph field container
+		container.getImpl().unlinkOut(getImpl(), HAS_FIELD);
+
+		// Remove the field if no more containers are attached to it
+		if (in(HAS_FIELD).count() == 0) {
+//			delete(null);
+			remove();
+		}
+
 	}
 
 	@Override

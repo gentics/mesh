@@ -43,13 +43,18 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 			return;
 		}
 
-		// Handle Create - Create new graph field if no existing one could be found
-		graphBinaryField = container.createBinary(fieldKey);
+		// Always create a new binary field since each update must create a new field instance. The old field must be detached from the given container.
+		BinaryGraphField newGraphBinaryField = container.createBinary(fieldKey);
+
+		// Copy the old values to the new field
+		if (graphBinaryField != null) {
+			graphBinaryField.copyTo(newGraphBinaryField);
+		}
 
 		// Handle Update
-		graphBinaryField.setImageDPI(binaryField.getDpi());
-		graphBinaryField.setFileName(binaryField.getFileName());
-		graphBinaryField.setMimeType(binaryField.getMimeType());
+		newGraphBinaryField.setImageDPI(binaryField.getDpi());
+		newGraphBinaryField.setFileName(binaryField.getFileName());
+		newGraphBinaryField.setMimeType(binaryField.getMimeType());
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 
@@ -63,6 +68,13 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	 * @return
 	 */
 	String getFileName();
+
+	/**
+	 * Copy the values of this field to the specified target field.
+	 * 
+	 * @param target
+	 */
+	void copyTo(BinaryGraphField target);
 
 	/**
 	 * Check whether the binary data represents an image.
