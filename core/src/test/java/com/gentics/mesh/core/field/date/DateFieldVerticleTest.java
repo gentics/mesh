@@ -13,7 +13,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
-import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
+import com.gentics.mesh.core.field.AbstractFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 
-public class DateFieldVerticleTest extends AbstractFieldNodeVerticleTest {
+public class DateFieldVerticleTest extends AbstractFieldVerticleTest {
 	private static final String FIELD_NAME = "dateField";
 
 	@Before
@@ -85,6 +85,15 @@ public class DateFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 
+		// Assert that the old version was not modified
+		Node node = folder("2015");
+		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+		assertThat(latest.getDate(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
+		Long oldValue = latest.getPreviousVersion().getDate(FIELD_NAME).getDate();
+		assertThat(oldValue).isEqualTo(nowEpoch);
+		
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
 				secondResponse.getVersion().getNumber());

@@ -10,7 +10,9 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.field.AbstractFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
@@ -21,7 +23,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.test.core.TestUtils;
 
-public class BinaryFieldVerticleTest extends AbstractFieldNodeVerticleTest {
+public class BinaryFieldVerticleTest extends AbstractFieldVerticleTest {
 
 	private static final String FIELD_NAME = "binaryField";
 
@@ -87,8 +89,9 @@ public class BinaryFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 
 		//1. Upload a binary field
 		String uuid = db.noTrx(() -> folder("2015").getUuid());
+		String filename = "filename.txt";
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
+		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, filename, "application/binary"));
 
 		NodeResponse firstResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
 		String oldVersion = firstResponse.getVersion().getNumber();
@@ -97,6 +100,15 @@ public class BinaryFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
+		// Assert that the old version was not modified
+		Node node = folder("2015");
+		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+		assertThat(latest.getBinary(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getBinary(FIELD_NAME)).isNotNull();
+		String oldFilename = latest.getPreviousVersion().getBinary(FIELD_NAME).getFileName();
+		assertThat(oldFilename).as("Old version filename should match the intitial version filename").isEqualTo(filename);
 
 		// 3. Set the field to null one more time and assert that no new version was created
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);

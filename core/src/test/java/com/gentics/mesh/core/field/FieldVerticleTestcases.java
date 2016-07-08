@@ -17,7 +17,7 @@ public interface FieldVerticleTestcases {
 	/**
 	 * Update a node with a currently filled field. Change the field and make sure the changes were applied correctly.
 	 */
-	void testUpdateNodeFieldWithField();
+	void testUpdateNodeFieldWithField() throws IOException;
 
 	/**
 	 * Update a node with a currently filled field with the same value. No new version should be generated.
@@ -25,7 +25,13 @@ public interface FieldVerticleTestcases {
 	void testUpdateSameValue();
 
 	/**
-	 * Update a node with a currently filled field using a null value. Assert that the field will be deleted and is no longer listed in the response.
+	 * Update a node with a currently filled field using a null value. Assert that:
+	 * <ul>
+	 * <li>the field will be deleted and is no longer listed in the response</li>
+	 * <li>the initial update delete call will create a new version</li>
+	 * <li>the initial update call does not affect the previous version of the node</li>
+	 * <li>a succeeding update call using a null value for the field will not generate a new version.</li>
+	 * </ul>
 	 */
 	void testUpdateSetNull();
 

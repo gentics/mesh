@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
+import com.gentics.mesh.core.field.AbstractFieldVerticleTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -39,7 +39,7 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
+public class MicronodeFieldVerticleTest extends AbstractFieldVerticleTest {
 	protected final static String FIELD_NAME = "micronodeField";
 
 	@Before
@@ -130,6 +130,16 @@ public class MicronodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+
+		// Assert that the old version was not modified
+		Node node = folder("2015");
+		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+		assertThat(latest.getHtml(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getMicronode(FIELD_NAME)).isNotNull();
+		Micronode oldMicronode = latest.getPreviousVersion().getMicronode(FIELD_NAME).getMicronode();
+		assertThat(oldMicronode.getString("firstName").getString()).as("Old version micronode firstname field value should not be modified")
+				.isEqualTo("Max");
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),

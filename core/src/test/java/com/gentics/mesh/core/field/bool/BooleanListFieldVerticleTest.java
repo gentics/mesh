@@ -1,23 +1,27 @@
 package com.gentics.mesh.core.field.bool;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
-import com.gentics.mesh.core.field.AbstractGraphListFieldVerticleTest;
+import com.gentics.mesh.core.field.AbstractListFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 
-public class BooleanListFieldVerticleTest extends AbstractGraphListFieldVerticleTest {
+public class BooleanListFieldVerticleTest extends AbstractListFieldVerticleTest {
 
 	@Override
 	public String getListFieldType() {
@@ -25,19 +29,60 @@ public class BooleanListFieldVerticleTest extends AbstractGraphListFieldVerticle
 	}
 
 	@Test
-	public void testBooleanList() throws IOException {
+	@Override
+	public void testCreateNodeWithField() {
 		BooleanFieldListImpl listField = new BooleanFieldListImpl();
 		listField.add(true);
 		listField.add(false);
 		listField.add(null);
 
 		NodeResponse response = createNode(FIELD_NAME, listField);
-		BooleanFieldListImpl listFromResponse = response.getFields().getBooleanFieldList(FIELD_NAME);
-		assertEquals("Only valid values (true,false) should be stored.", 2, listFromResponse.getItems().size());
+		BooleanFieldListImpl field = response.getFields().getBooleanFieldList(FIELD_NAME);
+		assertThat(field.getItems()).as("Only valid values (true,false) should be stored").containsExactly(true, false);
 	}
 
 	@Test
-	public void testUpdateNodeWithBooleanField() throws IOException {
+	@Override
+	public void testCreateNodeWithNoField() {
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		assertThat(response.getFields().getBooleanFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
+	}
+
+	@Test
+	@Override
+	public void testUpdateSameValue() {
+		BooleanFieldListImpl listField = new BooleanFieldListImpl();
+		listField.add(true);
+		listField.add(false);
+		listField.add(null);
+
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		String oldVersion = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+	}
+
+	@Test
+	@Override
+	public void testReadNodeWithExistingField() {
+		// 1. Update an existing node
+		BooleanFieldListImpl listField = new BooleanFieldListImpl();
+		listField.add(true);
+		listField.add(false);
+		listField.add(null);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+
+		//2. Read the node
+		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
+		BooleanFieldListImpl deserializedBooleanField = response.getFields().getBooleanFieldList(FIELD_NAME);
+		assertNotNull(deserializedBooleanField);
+		assertThat(deserializedBooleanField.getItems()).as("Only valid list field values should be listed").containsExactly(true, false);
+	}
+
+	@Test
+	@Override
+	public void testUpdateNodeFieldWithField() throws IOException {
 		Node node = folder("2015");
 
 		List<List<Boolean>> valueCombinations = Arrays.asList(Arrays.asList(true, false, false), Arrays.asList(false, false, true),
@@ -75,6 +120,16 @@ public class BooleanListFieldVerticleTest extends AbstractGraphListFieldVerticle
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getBooleanFieldList(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+
+		// Assert that the old version was not modified
+		Node node = folder("2015");
+		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+		assertThat(latest.getBooleanList(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getBooleanList(FIELD_NAME)).isNotNull();
+		List<Boolean> oldValueList = latest.getPreviousVersion().getBooleanList(FIELD_NAME).getList().stream().map(item -> item.getBoolean())
+				.collect(Collectors.toList());
+		assertThat(oldValueList).containsExactly(true, false);
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),

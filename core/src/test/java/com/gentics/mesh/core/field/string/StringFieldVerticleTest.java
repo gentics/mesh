@@ -13,7 +13,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
-import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
+import com.gentics.mesh.core.field.AbstractFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-public class StringFieldVerticleTest extends AbstractFieldNodeVerticleTest {
+public class StringFieldVerticleTest extends AbstractFieldVerticleTest {
 	private static final String FIELD_NAME = "stringField";
 
 	/**
@@ -100,6 +100,15 @@ public class StringFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
+		// Assert that the old version was not modified
+		Node node = folder("2015");
+		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+		assertThat(latest.getString(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getString(FIELD_NAME)).isNotNull();
+		String oldValue = latest.getPreviousVersion().getString(FIELD_NAME).getString();
+		assertThat(oldValue).isEqualTo("bla");
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),

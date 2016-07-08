@@ -1,28 +1,84 @@
 package com.gentics.mesh.core.field.string;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
-import com.gentics.mesh.core.field.AbstractGraphListFieldVerticleTest;
+import com.gentics.mesh.core.field.AbstractListFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 
-public class StringFieldListVerticleTest extends AbstractGraphListFieldVerticleTest {
+public class StringFieldListVerticleTest extends AbstractListFieldVerticleTest {
 
 	@Override
 	public String getListFieldType() {
 		return "string";
+	}
+
+	@Test
+	@Override
+	public void testCreateNodeWithField() {
+		StringFieldListImpl listField = new StringFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add(null);
+
+		NodeResponse response = createNode(FIELD_NAME, listField);
+		StringFieldListImpl field = response.getFields().getStringFieldList(FIELD_NAME);
+		assertThat(field.getItems()).as("Only valid values should be stored").containsExactly("A", "B");
+	}
+
+	@Test
+	@Override
+	public void testCreateNodeWithNoField() {
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		assertThat(response.getFields().getStringFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
+	}
+
+	@Test
+	@Override
+	public void testUpdateSameValue() {
+		StringFieldListImpl listField = new StringFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add(null);
+
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		String oldVersion = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+	}
+
+	@Test
+	@Override
+	public void testReadNodeWithExistingField() {
+		// 1. Update an existing node
+		StringFieldListImpl listField = new StringFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add(null);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+
+		//2. Read the node
+		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
+		StringFieldListImpl deserializedField = response.getFields().getStringFieldList(FIELD_NAME);
+		assertNotNull(deserializedField);
+		assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly("A", "B");
 	}
 
 	@Test
@@ -63,7 +119,8 @@ public class StringFieldListVerticleTest extends AbstractGraphListFieldVerticleT
 	}
 
 	@Test
-	public void testUpdateNodeWithStringField() throws IOException {
+	@Override
+	public void testUpdateNodeFieldWithField() throws IOException {
 		Node node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
@@ -105,6 +162,16 @@ public class StringFieldListVerticleTest extends AbstractGraphListFieldVerticleT
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getStringFieldList(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+
+		// Assert that the old version was not modified
+		Node node = folder("2015");
+		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+		assertThat(latest.getStringList(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getStringList(FIELD_NAME)).isNotNull();
+		List<String> oldValueList = latest.getPreviousVersion().getStringList(FIELD_NAME).getList().stream().map(item -> item.getString())
+				.collect(Collectors.toList());
+		assertThat(oldValueList).containsExactly("A", "B");
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),

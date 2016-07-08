@@ -20,7 +20,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
+import com.gentics.mesh.core.field.AbstractFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -37,15 +37,15 @@ import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 
-public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
+public class NodeFieldVerticleTest extends AbstractFieldVerticleTest {
 
-	final String NODE_FIELD_NAME = "nodeField";
+	final String FIELD_NAME = "nodeField";
 
 	@Before
 	public void updateSchema() throws Exception {
 		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
-		nodeFieldSchema.setName(NODE_FIELD_NAME);
+		nodeFieldSchema.setName(FIELD_NAME);
 		nodeFieldSchema.setLabel("Some label");
 		nodeFieldSchema.setAllowedSchemas("folder");
 		schema.addField(nodeFieldSchema);
@@ -59,19 +59,19 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
 		for (int i = 0; i < 20; i++) {
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-			Node oldValue = getNodeValue(container, NODE_FIELD_NAME);
+			Node oldValue = getNodeValue(container, FIELD_NAME);
 
 			Node newValue = targetNodes.get(i % 2);
 
 			// Update the field to point to new target
-			NodeResponse response = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(newValue.getUuid()));
-			NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+			NodeResponse response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(newValue.getUuid()));
+			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertThat(field.getUuid()).as("New Value").isEqualTo(newValue.getUuid());
 			node.reload();
 			container.reload();
 
 			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
-			assertEquals("Check old value", oldValue, getNodeValue(container, NODE_FIELD_NAME));
+			assertEquals("Check old value", oldValue, getNodeValue(container, FIELD_NAME));
 		}
 	}
 
@@ -79,10 +79,10 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testUpdateSameValue() {
 		Node target = folder("news");
-		NodeResponse firstResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 		String oldNumber = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
 	}
 
@@ -90,14 +90,23 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testUpdateSetNull() {
 		Node target = folder("news");
-		NodeResponse firstResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 		String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(NODE_FIELD_NAME, null);
-		assertThat(secondResponse.getFields().getNodeField(NODE_FIELD_NAME)).as("Deleted Field").isNull();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getNodeField(FIELD_NAME)).as("Deleted Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 
-		NodeResponse thirdResponse = updateNode(NODE_FIELD_NAME, null);
+		// Assert that the old version was not modified
+		Node node = folder("2015");
+		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+		assertThat(latest.getNode(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getNode(FIELD_NAME)).isNotNull();
+		String oldValue = latest.getPreviousVersion().getNode(FIELD_NAME).getNode().getUuid();
+		assertThat(oldValue).isEqualTo(target.getUuid());
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
 				secondResponse.getVersion().getNumber());
 
@@ -107,8 +116,8 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Override
 	public void testUpdateSetEmpty() {
 		Node target = folder("news");
-		updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
-		updateNodeFailure(NODE_FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", NODE_FIELD_NAME);
+		updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		updateNodeFailure(FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", FIELD_NAME);
 	}
 
 	@Test
@@ -121,18 +130,18 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		NodeResponse loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 
 		// Update the field to point to node
-		NodeResponse response = updateNode(NODE_FIELD_NAME, loadedNode);
-		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		NodeResponse response = updateNode(FIELD_NAME, loadedNode);
+		NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 		assertEquals(node.getUuid(), field.getUuid());
 
 		loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParameters().setLanguages("en"),
 				new VersioningParameters().draft()));
-		field = loadedNode.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		field = loadedNode.getFields().getNodeFieldExpanded(FIELD_NAME);
 		assertEquals(node.getUuid(), field.getUuid());
 
 		// Update the field to point to node2
-		response = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(node2.getUuid()));
-		field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(node2.getUuid()));
+		field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 		assertEquals(node2.getUuid(), field.getUuid());
 
 		loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParameters().setLanguages("en"),
@@ -146,14 +155,14 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Ignore("Field deletion is currently not implemented.")
 	public void testCreateDeleteNodeField() {
 
-		NodeResponse response = createNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
-		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		NodeResponse response = createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
+		NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 		assertEquals(folder("news").getUuid(), field.getUuid());
 
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeUpdateRequest.setLanguage("en");
-		nodeUpdateRequest.getFields().put(NODE_FIELD_NAME, null);
+		nodeUpdateRequest.getFields().put(FIELD_NAME, null);
 
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest,
 				new NodeParameters().setLanguages("en"));
@@ -161,14 +170,14 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		assertSuccess(future);
 		response = future.result();
 
-		assertNull("The field should have been deleted", response.getFields().getNodeField(NODE_FIELD_NAME));
+		assertNull("The field should have been deleted", response.getFields().getNodeField(FIELD_NAME));
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
-		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		NodeResponse response = createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
+		NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 		assertEquals(folder("news").getUuid(), field.getUuid());
 	}
 
@@ -179,9 +188,9 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		Node node = folder("2015");
 
 		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		container.createNode(NODE_FIELD_NAME, newsNode);
+		container.createNode(FIELD_NAME, newsNode);
 		NodeResponse response = readNode(node);
-		NodeField deserializedNodeField = response.getFields().getNodeField(NODE_FIELD_NAME);
+		NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
 		assertNotNull(deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 	}
@@ -189,8 +198,8 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(NODE_FIELD_NAME, (Field) null);
-		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 		assertNull("The expanded node field within the response should be null since we created the node without providing any field information.",
 				field);
 	}
@@ -202,13 +211,13 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 
 		// Create test field
 		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		container.createNode(NODE_FIELD_NAME, newsNode);
+		container.createNode(FIELD_NAME, newsNode);
 
 		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
 				new VersioningParameters().draft()));
 
 		// Check expanded node field
-		NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 		assertNotNull("The ", deserializedExpandedNodeField);
 		NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
 		assertEquals(newsNode.getUuid(), expandedField.getUuid());
@@ -223,28 +232,28 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 
 		// Create test field
 		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		container.createNode(NODE_FIELD_NAME, newsNode);
+		container.createNode(FIELD_NAME, newsNode);
 
 		// 1. Read node with collapsed fields and check that the collapsed node field can be read
 		NodeResponse responseCollapsed = readNode(node);
-		NodeField deserializedNodeField = responseCollapsed.getFields().getNodeField(NODE_FIELD_NAME);
+		NodeField deserializedNodeField = responseCollapsed.getFields().getNodeField(FIELD_NAME);
 		assertNotNull(deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 
 		// Check whether it is possible to read the field in an expanded form.
-		NodeResponse deserializedExpandedNodeField = responseCollapsed.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		NodeResponse deserializedExpandedNodeField = responseCollapsed.getFields().getNodeFieldExpanded(FIELD_NAME);
 		assertNotNull(deserializedExpandedNodeField);
 
 		// 2. Read node with expanded fields
-		NodeResponse responseExpanded = readNode(node, NODE_FIELD_NAME, "bogus");
+		NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
 
 		// Check collapsed node field
-		deserializedNodeField = responseExpanded.getFields().getNodeField(NODE_FIELD_NAME);
+		deserializedNodeField = responseExpanded.getFields().getNodeField(FIELD_NAME);
 		assertNotNull(deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 
 		// Check expanded node field
-		deserializedExpandedNodeField = responseExpanded.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		deserializedExpandedNodeField = responseExpanded.getFields().getNodeFieldExpanded(FIELD_NAME);
 		NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
 		assertNotNull(expandedField);
 		assertEquals(newsNode.getUuid(), expandedField.getUuid());
@@ -282,7 +291,7 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 		createSourceNode.setParentNodeUuid(folder.getUuid());
 		createSourceNode.setLanguage("de");
 		createSourceNode.getFields().put("name", FieldUtil.createStringField("German Source"));
-		createSourceNode.getFields().put(NODE_FIELD_NAME, FieldUtil.createNodeField(germanTarget.getUuid()));
+		createSourceNode.getFields().put(FIELD_NAME, FieldUtil.createNodeField(germanTarget.getUuid()));
 
 		Future<NodeResponse> createSourceFuture = getClient().createNode(PROJECT_NAME, createSourceNode);
 		latchFor(createSourceFuture);
@@ -297,7 +306,7 @@ public class NodeFieldVerticleTest extends AbstractFieldNodeVerticleTest {
 			assertSuccess(resultFuture);
 			NodeResponse response = resultFuture.result();
 			assertEquals("Check node language", "de", response.getLanguage());
-			NodeResponse nodeField = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+			NodeResponse nodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertNotNull("Field must be present", nodeField);
 			assertEquals("Check target node language", "de", nodeField.getLanguage());
 		}

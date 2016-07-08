@@ -196,11 +196,9 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		assertThat(micronodeFields.getJsonArray("listfield-html")).as("HTML List Field").matches("<b>first</b>", "<i>second</i>");
 		assertThat(micronodeFields.getJsonArray("listfield-node")).as("Node List Field").key("uuid").matches(node.getUuid(), newOverview.getUuid());
 		assertThat(micronodeFields.getJsonArray("listfield-number")).as("Number List Field").matches(47, 11);
-		// TODO check select list field
 		assertThat(micronodeFields.getJsonArray("listfield-string")).as("String List Field").matches("first", "second", "third");
 		assertThat(micronodeFields.getJsonObject("nodefield")).as("Node Field").key("uuid").matches(newOverview.getUuid());
 		assertEquals("Number Field", 4711, micronodeFields.getInteger("numberfield").intValue());
-		// TODO check select field
 		assertEquals("String Field", "String Value", micronodeFields.getString("stringfield"));
 	}
 

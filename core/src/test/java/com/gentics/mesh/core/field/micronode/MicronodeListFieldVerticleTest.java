@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
+import com.gentics.mesh.core.field.AbstractFieldVerticleTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -38,7 +38,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTrx;
 
-public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTest {
+public class MicronodeListFieldVerticleTest extends AbstractFieldVerticleTest {
 	protected final static String FIELD_NAME = "micronodeListField";
 
 	@Before
@@ -55,9 +55,8 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 
 	@Test
 	@Override
+	@Ignore("Not yet implemented")
 	public void testReadNodeWithExistingField() throws IOException {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Test
@@ -159,6 +158,15 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldNodeVerticleTes
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
 
+		// Assert that the old version was not modified
+		Node node = folder("2015");
+		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+		assertThat(latest.getMicronodeList(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getMicronodeList(FIELD_NAME)).isNotNull();
+		List<String> oldValueList = latest.getPreviousVersion().getMicronodeList(FIELD_NAME).getList().stream().map(item -> item.getMicronode().getString("firstName").getString()).collect(Collectors.toList());
+		assertThat(oldValueList).containsExactly("Max","Moritz");
+		
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
 				secondResponse.getVersion().getNumber());

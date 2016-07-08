@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
-import com.gentics.mesh.core.field.AbstractGraphListFieldVerticleTest;
+import com.gentics.mesh.core.field.AbstractListFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
@@ -29,7 +30,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 
 import io.vertx.core.Future;
 
-public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTest {
+public class NodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
 
 	@Override
 	public String getListFieldType() {
@@ -37,6 +38,7 @@ public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTes
 	}
 
 	@Test
+	@Override
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(null, (Field) null);
 		NodeFieldList nodeField = response.getFields().getNodeFieldList(FIELD_NAME);
@@ -69,12 +71,7 @@ public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTes
 	}
 
 	@Test
-	public void testNullNodeList2() throws IOException {
-		NodeFieldListImpl listField = new NodeFieldListImpl();
-		listField.add(new NodeFieldListItemImpl(null));
-	}
-
-	@Test
+	@Override
 	public void testUpdateNodeFieldWithField() {
 		Node node = folder("2015");
 		Node targetNode = folder("news");
@@ -106,6 +103,7 @@ public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTes
 	}
 
 	@Test
+	@Override
 	public void testUpdateSameValue() {
 		Node targetNode = folder("news");
 		Node targetNode2 = folder("deals");
@@ -135,6 +133,16 @@ public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTes
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+
+		// Assert that the old version was not modified
+		Node node = folder("2015");
+		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+		assertThat(latest.getNodeList(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getNodeList(FIELD_NAME)).isNotNull();
+		List<String> oldValueList = latest.getPreviousVersion().getNodeList(FIELD_NAME).getList().stream().map(item -> item.getNode().getUuid())
+				.collect(Collectors.toList());
+		assertThat(oldValueList).containsExactly(targetNode.getUuid(), targetNode2.getUuid());
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
@@ -169,6 +177,7 @@ public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTes
 	}
 
 	@Test
+	@Override
 	public void testCreateNodeWithField() {
 		NodeFieldListImpl listField = new NodeFieldListImpl();
 		NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folder("news").getUuid());
@@ -179,6 +188,7 @@ public class NodeListFieldVerticleTest extends AbstractGraphListFieldVerticleTes
 	}
 
 	@Test
+	@Override
 	public void testReadNodeWithExistingField() {
 		Node node = folder("2015");
 

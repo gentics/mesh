@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
-public abstract class AbstractGraphListFieldVerticleTest extends AbstractBasicFieldNodeVerticleTest {
+public abstract class AbstractListFieldVerticleTest extends AbstractFieldVerticleTest implements FieldVerticleTestcases {
 
 	protected static final String FIELD_NAME = "listField";
 
@@ -30,15 +30,4 @@ public abstract class AbstractGraphListFieldVerticleTest extends AbstractBasicFi
 		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
-	/**
-	 * Update a node with a currently filled field using a null value. Assert that the field will be deleted and is no longer listed in the response.
-	 */
-	abstract public void testUpdateSetNull();
-
-	/**
-	 * Update a node with a currently filled field using a empty field value. Assert that the field will still be listed in the response. It should not be
-	 * deleted. Some basic field types can't be set to empty (e.g: Number, Date, Boolean..) Assert that the field will be set to null in those cases.
-	 */
-	abstract public void testUpdateSetEmpty();
-	
 }

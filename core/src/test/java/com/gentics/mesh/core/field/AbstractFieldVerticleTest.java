@@ -25,7 +25,7 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-public abstract class AbstractBasicFieldNodeVerticleTest extends AbstractRestVerticleTest {
+public abstract class AbstractFieldVerticleTest extends AbstractRestVerticleTest implements FieldVerticleTestcases {
 
 	@Autowired
 	private NodeVerticle verticle;

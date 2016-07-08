@@ -1,23 +1,27 @@
 package com.gentics.mesh.core.field.date;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
-import com.gentics.mesh.core.field.AbstractGraphListFieldVerticleTest;
+import com.gentics.mesh.core.field.AbstractListFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 
-public class DateFieldListVerticleTest extends AbstractGraphListFieldVerticleTest {
+public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 
 	@Override
 	public String getListFieldType() {
@@ -25,19 +29,60 @@ public class DateFieldListVerticleTest extends AbstractGraphListFieldVerticleTes
 	}
 
 	@Test
-	public void testDateList() throws IOException {
+	@Override
+	public void testCreateNodeWithField() {
 		DateFieldListImpl listField = new DateFieldListImpl();
-		listField.add((System.currentTimeMillis() / 1000) + 1);
-		listField.add((System.currentTimeMillis() / 1000) + 2);
-		listField.add((System.currentTimeMillis() / 1000) + 3);
+		listField.add(42L);
+		listField.add(41L);
+		listField.add(null);
 
 		NodeResponse response = createNode(FIELD_NAME, listField);
-		DateFieldListImpl listFromResponse = response.getFields().getDateFieldList(FIELD_NAME);
-		assertEquals(3, listFromResponse.getItems().size());
+		DateFieldListImpl field = response.getFields().getDateFieldList(FIELD_NAME);
+		assertThat(field.getItems()).as("List with valid values").containsExactly(42L, 41L);
 	}
 
 	@Test
-	public void testUpdateNodeWithDateField() throws IOException {
+	@Override
+	public void testCreateNodeWithNoField() {
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		assertThat(response.getFields().getDateFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
+	}
+
+	@Test
+	@Override
+	public void testUpdateSameValue() {
+		DateFieldListImpl listField = new DateFieldListImpl();
+		listField.add(42L);
+		listField.add(41L);
+		listField.add(null);
+
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		String oldVersion = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+	}
+
+	@Test
+	@Override
+	public void testReadNodeWithExistingField() {
+		// 1. Update an existing node
+		DateFieldListImpl listField = new DateFieldListImpl();
+		listField.add(42L);
+		listField.add(41L);
+		listField.add(null);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+
+		//2. Read the node
+		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
+		DateFieldListImpl deserializedField = response.getFields().getDateFieldList(FIELD_NAME);
+		assertNotNull(deserializedField);
+		assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly(42L, 41L);
+	}
+
+	@Test
+	@Override
+	public void testUpdateNodeFieldWithField() throws IOException {
 		Node node = folder("2015");
 
 		List<List<Long>> valueCombinations = Arrays.asList(Arrays.asList(1L, 2L, 3L), Arrays.asList(3L, 2L, 1L), Collections.emptyList(),
@@ -75,6 +120,15 @@ public class DateFieldListVerticleTest extends AbstractGraphListFieldVerticleTes
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getDateFieldList(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+		
+		// Assert that the old version was not modified
+		Node node = folder("2015");
+		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+		assertThat(latest.getDateList(FIELD_NAME)).isNull();
+		assertThat(latest.getPreviousVersion().getDateList(FIELD_NAME)).isNotNull();
+		List<Number> oldValueList = latest.getPreviousVersion().getDateList(FIELD_NAME).getList().stream().map(item -> item.getDate()).collect(Collectors.toList());
+		assertThat(oldValueList).containsExactly(42L,41L);
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
