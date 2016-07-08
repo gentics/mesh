@@ -39,7 +39,6 @@ public class HtmlFieldListVerticleTest extends AbstractListFieldVerticleTest {
 
 		NodeResponse response = createNode(FIELD_NAME, listField);
 		HtmlFieldListImpl field = response.getFields().getHtmlFieldList(FIELD_NAME);
-		assertEquals("Only valid values (A,B,C) should be stored.", 2, field.getItems().size());
 		assertThat(field.getItems()).containsExactly("A", "B", "C");
 	}
 

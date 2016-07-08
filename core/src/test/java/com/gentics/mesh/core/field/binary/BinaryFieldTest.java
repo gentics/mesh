@@ -27,6 +27,8 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.json.JsonUtil;
 
 public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
@@ -219,7 +221,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			BinaryField field = new BinaryFieldImpl();
 			field.setFileName("someFile.txt");
 			updateContainer(ac, container, BINARY_FIELD, field);
-		} , (container) -> {
+		}, (container) -> {
 			BinaryGraphField field = container.getBinary(BINARY_FIELD);
 			assertNotNull("The graph field {" + BINARY_FIELD + "} could not be found.", field);
 			assertEquals("The html of the field was not updated.", "someFile.txt", field.getFileName());
