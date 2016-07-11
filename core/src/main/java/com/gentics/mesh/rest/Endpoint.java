@@ -2,6 +2,7 @@ package com.gentics.mesh.rest;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 
@@ -12,6 +13,9 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Simple wrapper for vert.x routes. The wrapper is commonly used to generate RAML descriptions for the route.
+ */
 public class Endpoint implements Route {
 
 	private Route route;
@@ -28,6 +32,8 @@ public class Endpoint implements Route {
 
 	private String pathRegex;
 
+	private HttpMethod method;
+
 	public Endpoint(Router router) {
 		this.route = router.route();
 	}
@@ -38,6 +44,11 @@ public class Endpoint implements Route {
 
 	@Override
 	public Route method(HttpMethod method) {
+		if (this.method != null) {
+			throw new RuntimeException(
+					"The method for the endpoint was already set. The endpoint wrapper currently does not support more than one method per route.");
+		}
+		this.method = method;
 		return route.method(method);
 	}
 
@@ -170,6 +181,10 @@ public class Endpoint implements Route {
 
 	public String getPathRegex() {
 		return pathRegex;
+	}
+
+	public HttpMethod getMethod() {
+		return method;
 	}
 
 }

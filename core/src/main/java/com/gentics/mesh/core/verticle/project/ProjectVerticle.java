@@ -14,8 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-
-import io.vertx.ext.web.Route;
+import com.gentics.mesh.rest.Endpoint;
 
 @Component
 @Scope("singleton")
@@ -25,13 +24,16 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	@Autowired
 	private ProjectCrudHandler crudHandler;
 
-	protected ProjectVerticle() {
+	public ProjectVerticle() {
 		super("projects");
 	}
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/*");
+		endpoint.handler(getSpringConfiguration().authHandler());
+
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
@@ -39,8 +41,13 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint updateEndpoint = createEndpoint();
+		updateEndpoint.path("/:uuid");
+		updateEndpoint.description("Update the project with the given uuid.");
+		updateEndpoint.method(PUT);
+		updateEndpoint.consumes(APPLICATION_JSON);
+		updateEndpoint.produces(APPLICATION_JSON);
+		updateEndpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -50,14 +57,23 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	// TODO when the root tag is not saved the project can't be saved. Unfortunately this did not show up as an http error. We must handle those
 	// cases. They must show up in any case.
 	private void addCreateHandler() {
-		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/");
+		endpoint.method(POST);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addReadHandler() {
-		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readItem = createEndpoint();
+		readItem.path("/:uuid");
+		readItem.method(GET);
+		readItem.description("Load the project with the given uuid.");
+		readItem.produces(APPLICATION_JSON);
+		readItem.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -66,13 +82,23 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 			}
 		});
 
-		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readAll = createEndpoint();
+		readAll.path("/");
+		readAll.method(GET);
+		readAll.description("Load multiple projects and return a paged response.");
+		readAll.produces(APPLICATION_JSON);
+		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(DELETE);
+		endpoint.description("Delete the project and all attached nodes.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleDelete(ac, uuid);

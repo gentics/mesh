@@ -16,12 +16,14 @@ import org.raml.model.Response;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 
 public class RAMLGenerator {
@@ -76,18 +78,34 @@ public class RAMLGenerator {
 				action.setBody(bodyMap);
 			}
 
-			Resource pathResource = new Resource();
-
-			pathResource.getActions().put(ActionType.GET, action);
 			String path = endpoint.getPath();
 			if (path == null) {
 				path = endpoint.getPathRegex();
 			}
+			Resource pathResource = verticleResource.getResources().get(path);
+			if (pathResource == null) {
+				pathResource = new Resource();
+			}
+			if (endpoint.getMethod() == null) {
+				continue;
+			}
+			pathResource.getActions().put(getActionType(endpoint.getMethod()), action);
+
 			verticleResource.getResources().put(path, pathResource);
 
 		}
 		baseResource.getResources().put("/" + vericle.getBasePath(), verticleResource);
 
+	}
+
+	/**
+	 * Convert the http method to a RAML action type.
+	 * 
+	 * @param method
+	 * @return
+	 */
+	private ActionType getActionType(HttpMethod method) {
+		return ActionType.valueOf(method.name());
 	}
 
 	private void initVerticle(AbstractWebVerticle verticle) throws Exception {
@@ -113,5 +131,9 @@ public class RAMLGenerator {
 		UserVerticle userVerticle = Mockito.spy(new UserVerticle());
 		initVerticle(userVerticle);
 		addEndpoints(apiResource, userVerticle);
+
+		ProjectVerticle projectVerticle = Mockito.spy(new ProjectVerticle());
+		initVerticle(projectVerticle);
+		addEndpoints(apiResource, projectVerticle);
 	}
 }

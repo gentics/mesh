@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.rest.Endpoint;
 
 @Component
 @Scope("singleton")
@@ -55,7 +56,11 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuid").method(DELETE).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.description("Delete the role with the given uuid");
+		endpoint.path("/:uuid");
+		endpoint.method(DELETE);
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -63,7 +68,12 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.description("Update the role with the given uuid.");
+		endpoint.path("/:uuid");
+		endpoint.method(PUT);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -86,7 +96,13 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addCreateHandler() {
-		route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/");
+		endpoint.description("Create a new role.");
+		endpoint.method(POST);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
