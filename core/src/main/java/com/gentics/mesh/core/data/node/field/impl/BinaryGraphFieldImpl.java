@@ -197,7 +197,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 		// Remove the field if no more containers are attached to it
 		if (in(HAS_FIELD).count() == 0) {
-//			delete(null);
+			//			delete(null);
 			remove();
 		}
 
@@ -234,18 +234,27 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		}
 		if (obj instanceof BinaryField) {
 			BinaryField binaryField = (BinaryField) obj;
-			String filenameA = getFileName();
-			String filenameB = binaryField.getFileName();
-			boolean filename = Objects.equals(filenameA, filenameB);
 
-			String mimeTypeA = getMimeType();
-			String mimeTypeB = binaryField.getMimeType();
-			boolean mimetype = Objects.equals(mimeTypeA, mimeTypeB);
+			boolean matchingFilename = true;
+			if (binaryField.getFileName() != null) {
+				String filenameA = getFileName();
+				String filenameB = binaryField.getFileName();
+				matchingFilename = Objects.equals(filenameA, filenameB);
+			}
 
-			String hashSumA = getSHA512Sum();
-			String hashSumB = binaryField.getSha512sum();
-			boolean sha512sum = Objects.equals(hashSumA, hashSumB);
-			return filename && mimetype && sha512sum;
+			boolean matchingMimetype = true;
+			if (binaryField.getMimeType() != null) {
+				String mimeTypeA = getMimeType();
+				String mimeTypeB = binaryField.getMimeType();
+				matchingMimetype = Objects.equals(mimeTypeA, mimeTypeB);
+			}
+			boolean matchingSha512sum = true;
+			if (binaryField.getSha512sum() != null) {
+				String hashSumA = getSHA512Sum();
+				String hashSumB = binaryField.getSha512sum();
+				matchingSha512sum = Objects.equals(hashSumA, hashSumB);
+			}
+			return matchingFilename && matchingMimetype && matchingSha512sum;
 		}
 		return false;
 	}

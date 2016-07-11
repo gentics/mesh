@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.data.node.field;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.io.File;
 
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
@@ -51,10 +55,27 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 			graphBinaryField.copyTo(newGraphBinaryField);
 		}
 
-		// Handle Update
-		newGraphBinaryField.setImageDPI(binaryField.getDpi());
-		newGraphBinaryField.setFileName(binaryField.getFileName());
-		newGraphBinaryField.setMimeType(binaryField.getMimeType());
+		// Handle Update - DPI
+		if (binaryField.getDpi() != null) {
+			newGraphBinaryField.setImageDPI(binaryField.getDpi());
+		}
+
+		// Handle Update - Filename
+		if (binaryField.getFileName() != null) {
+			if (isEmpty(binaryField.getFileName())) {
+				throw error(BAD_REQUEST, "field_binary_error_emptyfilename", fieldKey);
+			} else {
+				newGraphBinaryField.setFileName(binaryField.getFileName());
+			}
+		}
+
+		// Handle Update - MimeType
+		if (binaryField.getMimeType() != null) {
+			if (isEmpty(binaryField.getMimeType())) {
+				throw error(BAD_REQUEST, "field_binary_error_emptymimetype", fieldKey);
+			}
+			newGraphBinaryField.setMimeType(binaryField.getMimeType());
+		}
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 

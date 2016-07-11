@@ -571,4 +571,9 @@ public class FieldMapJsonImpl implements FieldMap {
 		return node;
 	}
 
+	@Override
+	public String toString() {
+		return node.toString();
+	}
+
 }

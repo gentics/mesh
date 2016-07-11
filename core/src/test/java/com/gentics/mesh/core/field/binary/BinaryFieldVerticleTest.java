@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.binary;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -19,6 +20,7 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.test.core.TestUtils;
@@ -71,16 +73,15 @@ public class BinaryFieldVerticleTest extends AbstractFieldVerticleTest {
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
 
-		NodeResponse firstResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
+		NodeResponse firstResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
 		assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
 		String oldVersion = firstResponse.getVersion().getNumber();
-
 		BinaryField binaryField = firstResponse.getFields().getBinaryField(FIELD_NAME);
 
 		// 2. Update the node using the loaded binary field data 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, binaryField);
 		assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number should not be generated.").isEqualTo(oldVersion);
 	}
 
 	@Test
@@ -125,16 +126,29 @@ public class BinaryFieldVerticleTest extends AbstractFieldVerticleTest {
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
 
-		NodeResponse firstResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
+		NodeResponse firstResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
 		assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
 		String oldVersion = firstResponse.getVersion().getNumber();
 
-		// 2. Set the field to empty
+		// 2. Set the field to empty - Node should not be updated since nothing changes
 		NodeResponse secondResponse = updateNode(FIELD_NAME, new BinaryFieldImpl());
 		assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+	}
 
-		fail("Decide what should happen");
+	@Test
+	public void testUpdateSetEmptyFilename() {
+		//1. Upload a binary field
+		String uuid = db.noTrx(() -> folder("2015").getUuid());
+		Buffer buffer = TestUtils.randomBuffer(1000);
+		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
+
+		NodeResponse firstResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
+		assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
+
+		// 2. Set the field to empty
+		updateNodeFailure(FIELD_NAME, new BinaryFieldImpl().setFileName(""), BAD_REQUEST, "field_binary_error_emptyfilename", FIELD_NAME);
+		updateNodeFailure(FIELD_NAME, new BinaryFieldImpl().setMimeType(""), BAD_REQUEST, "field_binary_error_emptymimetype", FIELD_NAME);
 	}
 
 	@Override

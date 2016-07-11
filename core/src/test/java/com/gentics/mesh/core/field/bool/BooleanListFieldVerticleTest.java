@@ -74,7 +74,6 @@ public class BooleanListFieldVerticleTest extends AbstractListFieldVerticleTest 
 		BooleanFieldListImpl listField = new BooleanFieldListImpl();
 		listField.add(true);
 		listField.add(false);
-		listField.add(null);
 
 		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 		String oldVersion = firstResponse.getVersion().getNumber();
@@ -90,7 +89,6 @@ public class BooleanListFieldVerticleTest extends AbstractListFieldVerticleTest 
 		BooleanFieldListImpl listField = new BooleanFieldListImpl();
 		listField.add(true);
 		listField.add(false);
-		listField.add(null);
 		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
 		//2. Read the node

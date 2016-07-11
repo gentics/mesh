@@ -208,6 +208,14 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		handleCreateField(ac, uuid, languageTag, fieldName);
 	}
 
+	/**
+	 * Remove the field with the given name from the node language.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @param languageTag
+	 * @param fieldName
+	 */
 	public void handleRemoveField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
 		validateParameter(uuid, "uuid");
 		validateParameter(languageTag, "languageTag");
