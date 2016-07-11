@@ -6,9 +6,11 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 
+import org.apache.commons.collections.bag.SynchronizedSortedBag;
+
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
@@ -29,6 +31,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	};
 
 	FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		container.reload();
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
 		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
@@ -49,11 +52,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 
 		// Always create a new binary field since each update must create a new field instance. The old field must be detached from the given container.
 		BinaryGraphField newGraphBinaryField = container.createBinary(fieldKey);
-
-		// Copy the old values to the new field
-		if (graphBinaryField != null) {
-			graphBinaryField.copyTo(newGraphBinaryField);
-		}
 
 		// Handle Update - DPI
 		if (binaryField.getDpi() != null) {

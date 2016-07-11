@@ -205,6 +205,9 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey);
 
 		if (existing != null) {
+			// Copy the old values to the new field
+			existing.copyTo(field);
+
 			unlinkOut(existing.getImpl(), HAS_FIELD);
 			// Remove the field if no more containers are using it
 			if (existing.getImpl().in(HAS_FIELD).count() == 0) {

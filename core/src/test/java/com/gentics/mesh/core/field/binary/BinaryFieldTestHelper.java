@@ -3,8 +3,6 @@ package com.gentics.mesh.core.field.binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
 
 public interface BinaryFieldTestHelper {
 
