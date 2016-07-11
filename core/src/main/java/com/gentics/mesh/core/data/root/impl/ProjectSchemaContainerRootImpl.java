@@ -6,15 +6,24 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * Project specific implementation of schema container root
  */
 public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
+
+	public static void checkIndices(Database database) {
+		database.addVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
+	}
+
 	/**
 	 * Get the project
+	 * 
 	 * @return project
 	 */
 	protected Project getProject() {

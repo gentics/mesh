@@ -5,7 +5,6 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
@@ -22,7 +21,9 @@ import com.gentics.mesh.core.data.root.impl.LanguageRootImpl;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.root.impl.MicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
@@ -64,7 +65,7 @@ public class DatabaseHelper {
 	public void init() {
 
 		log.info("Creating database indices. This may take a few seconds...");
-		
+
 		// Base type for most vertices
 		MeshVertexImpl.checkIndices(database);
 
@@ -84,6 +85,8 @@ public class DatabaseHelper {
 		ProjectRootImpl.checkIndices(database);
 		SchemaContainerRootImpl.checkIndices(database);
 		MicroschemaContainerRootImpl.checkIndices(database);
+		ProjectSchemaContainerRootImpl.checkIndices(database);
+		ProjectMicroschemaContainerRootImpl.checkIndices(database);
 		ReleaseRootImpl.init(database);
 
 		// Nodes

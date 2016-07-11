@@ -359,6 +359,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<Schema> assignSchemaToProject(String projectName, String schemaUuid) {
 		LocalActionContextImpl<Schema> ac = createContext(Schema.class);
+		ac.setProject(projectName);
 		schemaCrudHandler.handleAddSchemaToProject(ac, schemaUuid);
 		return ac.getFuture();
 	}
