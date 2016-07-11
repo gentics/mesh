@@ -46,6 +46,22 @@ public class NodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
 	}
 
 	@Test
+	@Override
+	public void testNullValueInListOnCreate() {
+		NodeFieldListImpl listField = new NodeFieldListImpl();
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+	}
+
+	@Test
+	@Override
+	public void testNullValueInListOnUpdate() {
+		NodeFieldListImpl listField = new NodeFieldListImpl();
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+	}
+
+	@Test
 	public void testBogusNodeList() throws IOException {
 		NodeFieldListImpl listField = new NodeFieldListImpl();
 		listField.add(new NodeFieldListItemImpl("bogus"));

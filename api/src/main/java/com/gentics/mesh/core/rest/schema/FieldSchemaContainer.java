@@ -168,5 +168,4 @@ public interface FieldSchemaContainer extends RestResponse {
 	 * @param fieldMap
 	 */
 	void assertForUnhandledFields(FieldMap fieldMap);
-
 }

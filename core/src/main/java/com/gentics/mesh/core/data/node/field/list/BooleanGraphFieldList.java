@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.node.field.list;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
@@ -50,6 +53,9 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 		// Remove all and add the listed items
 		graphBooleanFieldList.removeAll();
 		for (Boolean item : booleanList.getItems()) {
+			if (item == null) {
+				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
+			}
 			graphBooleanFieldList.createBoolean(item);
 		}
 

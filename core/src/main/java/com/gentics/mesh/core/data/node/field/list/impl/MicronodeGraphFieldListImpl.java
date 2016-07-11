@@ -58,7 +58,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 		return RxUtil.concatList(obs).collect(() -> {
 			return restModel.getItems();
-		} , (x, y) -> {
+		}, (x, y) -> {
 			x.add(y);
 		}).map(i -> restModel);
 	}
@@ -76,14 +76,18 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		// Transform the list of micronodes into a hashmap. This way we can lookup micronode fields faster
 		Map<String, Micronode> existing = getList().stream().collect(Collectors.toMap(field -> {
 			return field.getMicronode().getUuid();
-		} , field -> {
+		}, field -> {
 			return field.getMicronode();
-		} , (a, b) -> {
+		}, (a, b) -> {
 			return a;
 		}));
 
 		return Observable.create(subscriber -> {
 			Observable.from(list.getItems()).flatMap(item -> {
+				if (item == null) {
+					throw error(BAD_REQUEST, "field_list_error_null_not_allowed", getFieldKey());
+				}
+
 				// Resolve the microschema reference from the rest model
 				MicroschemaReference microschemaReference = item.getMicroschema();
 				if (microschemaReference == null) {
@@ -93,7 +97,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 				return ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference, ac.getRelease(null));
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
-			} , (node, microschemaContainerVersion) -> {
+			}, (node, microschemaContainerVersion) -> {
 				// Load the micronode for the current field
 				Micronode micronode = existing.get(node.getUuid());
 
@@ -133,9 +137,9 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				existing.values().stream().forEach(micronode -> {
 					micronode.delete(null);
 				});
-			} , e -> {
+			}, e -> {
 				subscriber.onError(e);
-			} , () -> {
+			}, () -> {
 				subscriber.onNext(true);
 				subscriber.onCompleted();
 			});

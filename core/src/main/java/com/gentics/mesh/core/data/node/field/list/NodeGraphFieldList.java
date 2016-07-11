@@ -64,6 +64,9 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 		graphNodeFieldList.removeAll();
 		AtomicInteger integer = new AtomicInteger();
 		for (NodeFieldListItem item : nodeList.getItems()) {
+			if (item == null) {
+				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
+			}
 			Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().single();
 			if (node == null) {
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());

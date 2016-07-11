@@ -60,12 +60,12 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 
-			List<Observable<NodeResponse>> futures = new ArrayList<>();
+			List<Observable<NodeResponse>> obs = new ArrayList<>();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				futures.add(item.getNode().transformToRestSync(ac, level, lTagsArray));
+				obs.add(item.getNode().transformToRestSync(ac, level, lTagsArray));
 			}
 
-			return RxUtil.concatList(futures).collect(() -> {
+			return RxUtil.concatList(obs).collect(() -> {
 				return restModel.getItems();
 			}, (x, y) -> {
 				x.add(y);

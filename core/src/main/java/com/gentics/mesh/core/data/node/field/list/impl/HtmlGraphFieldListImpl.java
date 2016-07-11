@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

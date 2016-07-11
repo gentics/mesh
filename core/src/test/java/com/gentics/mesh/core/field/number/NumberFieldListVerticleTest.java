@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.number;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -36,11 +37,30 @@ public class NumberFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		listField.add(41L);
 		listField.add(0.1f);
 		listField.add(Long.MAX_VALUE);
-		listField.add(null);
 
 		NodeResponse response = createNode(FIELD_NAME, listField);
 		NumberFieldListImpl field = response.getFields().getNumberFieldList(FIELD_NAME);
 		assertThat(field.getItems()).as("Only valid values should be stored").containsExactly(42, 41, 0.1, Long.MAX_VALUE);
+	}
+
+	@Test
+	@Override
+	public void testNullValueInListOnCreate() {
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(42);
+		listField.add(41);
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+	}
+
+	@Test
+	@Override
+	public void testNullValueInListOnUpdate() {
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(42);
+		listField.add(41);
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
@@ -56,7 +76,6 @@ public class NumberFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		NumberFieldListImpl listField = new NumberFieldListImpl();
 		listField.add(41L);
 		listField.add(42L);
-		listField.add(null);
 
 		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 		String oldVersion = firstResponse.getVersion().getNumber();
@@ -72,7 +91,6 @@ public class NumberFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		NumberFieldListImpl listField = new NumberFieldListImpl();
 		listField.add(41L);
 		listField.add(42L);
-		listField.add(null);
 		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
 		//2. Read the node

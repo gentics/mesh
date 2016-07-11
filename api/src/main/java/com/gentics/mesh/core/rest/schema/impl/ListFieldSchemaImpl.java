@@ -16,8 +16,8 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFieldSchema {
 
-	private Integer min;
-	private Integer max;
+//	private Integer min;
+//	private Integer max;
 
 	@JsonProperty("allow")
 	private String[] allowedSchemas;
@@ -30,7 +30,7 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	}
 
 	@Override
-	public ListFieldSchema setAllowedSchemas(String[] allowedSchemas) {
+	public ListFieldSchema setAllowedSchemas(String... allowedSchemas) {
 		this.allowedSchemas = allowedSchemas;
 		return this;
 	}

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.micronode;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -24,7 +25,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.field.AbstractFieldVerticleTest;
+import com.gentics.mesh.core.field.AbstractListFieldVerticleTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -38,7 +39,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTrx;
 
-public class MicronodeListFieldVerticleTest extends AbstractFieldVerticleTest {
+public class MicronodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
 	protected final static String FIELD_NAME = "micronodeListField";
 
 	@Before
@@ -53,10 +54,33 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldVerticleTest {
 		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
+	@Override
+	public String getListFieldType() {
+		return "micronode";
+	}
+
 	@Test
 	@Override
 	@Ignore("Not yet implemented")
 	public void testReadNodeWithExistingField() throws IOException {
+	}
+
+	@Test
+	@Override
+	public void testNullValueInListOnCreate() {
+		FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
+		listField.add(createItem("Max", "Böse"));
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+	}
+
+	@Test
+	@Override
+	public void testNullValueInListOnUpdate() {
+		FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
+		listField.add(createItem("Max", "Böse"));
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
@@ -164,9 +188,10 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldVerticleTest {
 		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
 		assertThat(latest.getMicronodeList(FIELD_NAME)).isNull();
 		assertThat(latest.getPreviousVersion().getMicronodeList(FIELD_NAME)).isNotNull();
-		List<String> oldValueList = latest.getPreviousVersion().getMicronodeList(FIELD_NAME).getList().stream().map(item -> item.getMicronode().getString("firstName").getString()).collect(Collectors.toList());
-		assertThat(oldValueList).containsExactly("Max","Moritz");
-		
+		List<String> oldValueList = latest.getPreviousVersion().getMicronodeList(FIELD_NAME).getList().stream()
+				.map(item -> item.getMicronode().getString("firstName").getString()).collect(Collectors.toList());
+		assertThat(oldValueList).containsExactly("Max", "Moritz");
+
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
 				secondResponse.getVersion().getNumber());
@@ -383,4 +408,5 @@ public class MicronodeListFieldVerticleTest extends AbstractFieldVerticleTest {
 		item.getFields().put("lastName", new StringFieldImpl().setString(lastName));
 		return item;
 	}
+
 }

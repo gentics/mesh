@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.date;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -34,11 +35,30 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		DateFieldListImpl listField = new DateFieldListImpl();
 		listField.add(42L);
 		listField.add(41L);
-		listField.add(null);
 
 		NodeResponse response = createNode(FIELD_NAME, listField);
 		DateFieldListImpl field = response.getFields().getDateFieldList(FIELD_NAME);
 		assertThat(field.getItems()).as("List with valid values").containsExactly(42L, 41L);
+	}
+
+	@Test
+	@Override
+	public void testNullValueInListOnCreate() {
+		DateFieldListImpl listField = new DateFieldListImpl();
+		listField.add(42L);
+		listField.add(41L);
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+	}
+
+	@Test
+	@Override
+	public void testNullValueInListOnUpdate() {
+		DateFieldListImpl listField = new DateFieldListImpl();
+		listField.add(42L);
+		listField.add(41L);
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
@@ -54,7 +74,6 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		DateFieldListImpl listField = new DateFieldListImpl();
 		listField.add(42L);
 		listField.add(41L);
-		listField.add(null);
 
 		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 		String oldVersion = firstResponse.getVersion().getNumber();
@@ -70,7 +89,6 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		DateFieldListImpl listField = new DateFieldListImpl();
 		listField.add(42L);
 		listField.add(41L);
-		listField.add(null);
 		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
 		//2. Read the node
@@ -120,15 +138,16 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getDateFieldList(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
-		
+
 		// Assert that the old version was not modified
 		Node node = folder("2015");
 		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
 		assertThat(latest.getDateList(FIELD_NAME)).isNull();
 		assertThat(latest.getPreviousVersion().getDateList(FIELD_NAME)).isNotNull();
-		List<Number> oldValueList = latest.getPreviousVersion().getDateList(FIELD_NAME).getList().stream().map(item -> item.getDate()).collect(Collectors.toList());
-		assertThat(oldValueList).containsExactly(42L,41L);
+		List<Number> oldValueList = latest.getPreviousVersion().getDateList(FIELD_NAME).getList().stream().map(item -> item.getDate())
+				.collect(Collectors.toList());
+		assertThat(oldValueList).containsExactly(42L, 41L);
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),

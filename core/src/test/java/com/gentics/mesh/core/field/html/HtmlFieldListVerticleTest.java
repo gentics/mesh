@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.html;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,6 +43,27 @@ public class HtmlFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		assertThat(field.getItems()).containsExactly("A", "B", "C");
 	}
 
+	
+	@Test
+	@Override
+	public void testNullValueInListOnCreate() {
+		HtmlFieldListImpl listField = new HtmlFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+	}
+
+	@Test
+	@Override
+	public void testNullValueInListOnUpdate() {
+		HtmlFieldListImpl listField = new HtmlFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+	}
+	
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {

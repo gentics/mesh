@@ -1238,9 +1238,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (language == null) {
 				throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 			}
-
 			Release release = ac.getRelease(getProject());
-
 			NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(language, release, ContainerType.DRAFT);
 
 			// No existing container was found. This means that no conflict check can be performed. Conflict checks only occur for updates.

@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
-public abstract class AbstractListFieldVerticleTest extends AbstractFieldVerticleTest implements FieldVerticleTestcases {
+public abstract class AbstractListFieldVerticleTest extends AbstractFieldVerticleTest implements FieldVerticleTestcases, ListFieldVerticleTestcases {
 
 	protected static final String FIELD_NAME = "listField";
 

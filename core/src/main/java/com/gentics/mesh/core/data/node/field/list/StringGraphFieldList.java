@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.node.field.list;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
@@ -49,6 +52,9 @@ public interface StringGraphFieldList extends ListGraphField<StringGraphField, S
 		// Handle Update
 		graphStringList.removeAll();
 		for (String item : stringList.getItems()) {
+			if (item == null) {
+				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
+			}
 			graphStringList.createString(item);
 		}
 	};
