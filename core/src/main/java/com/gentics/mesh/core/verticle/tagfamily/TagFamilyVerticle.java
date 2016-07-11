@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
+import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -38,7 +39,10 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/*");
+		endpoint.handler(getSpringConfiguration().authHandler());
+
 		getRouter().routeWithRegex("\\/([^\\/]{32})\\/.*").handler(tagFamilyCrudHandler.getUuidHandler("tagfamily_not_found"));
 
 		addTagFamilyReadHandler();
@@ -62,8 +66,9 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	// TODO update other fields as well?
 	// TODO Update user information
 	private void addTagUpdateHandler() {
-		Route route = route("/:tagFamilyUuid/tags/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint addTag = createEndpoint();
+		addTag.path("/:tagFamilyUuid/tags/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		addTag.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("uuid");
@@ -76,11 +81,13 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	// TODO handle creator
 	// TODO maybe projects should not be a set?
 	private void addTagCreateHandler() {
-		Route route = route("/:tagFamilyUuid/tags").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint createTag = createEndpoint();
+		createTag.description("Create a new tag within the tag family.");
+		createTag.path("/:tagFamilyUuid/tags").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		createTag.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String tagFamilyUuid = ac.getParameter("tagFamilyUuid"); 
-			tagCrudHandler.handleCreate(ac , tagFamilyUuid);
+			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
+			tagCrudHandler.handleCreate(ac, tagFamilyUuid);
 		});
 	}
 
@@ -115,8 +122,9 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addTaggedNodesHandler() {
-		Route getRoute = route("/:tagFamilyUuid/tags/:uuid/nodes").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> {
+		Endpoint listTaggedNodes = createEndpoint();
+		listTaggedNodes.path("/:tagFamilyUuid/tags/:uuid/nodes").method(GET).produces(APPLICATION_JSON);
+		listTaggedNodes.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("uuid");
@@ -125,8 +133,9 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addTagFamilyDeleteHandler() {
-		Route deleteRoute = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
-		deleteRoute.handler(rc -> {
+		Endpoint deleteTagFamily = createEndpoint();
+		deleteTagFamily.path("/:uuid").method(DELETE).produces(APPLICATION_JSON);
+		deleteTagFamily.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			tagFamilyCrudHandler.handleDelete(ac, uuid);
@@ -134,29 +143,47 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addTagFamilyReadHandler() {
-		Route readRoute = route("/:uuid").method(GET).produces(APPLICATION_JSON);
-		readRoute.handler(rc -> {
+		Endpoint readOne = createEndpoint();
+		readOne.path("/:uuid");
+		readOne.method(GET);
+		readOne.description("Read the tag family with the given uuid.");
+		readOne.produces(APPLICATION_JSON);
+		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			tagFamilyCrudHandler.handleRead(ac, uuid);
 		});
 
-		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
-		readAllRoute.handler(rc -> {
+		Endpoint readAll = createEndpoint();
+		readAll.path("/");
+		readAll.method(GET);
+		readAll.produces(APPLICATION_JSON);
+		readAll.description("Load multiple tag families and return a paged list response.");
+		readAll.handler(rc -> {
 			tagFamilyCrudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addTagFamilyCreateHandler() {
-		Route createRoute = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		createRoute.handler(rc -> {
+		Endpoint createTagFamily = createEndpoint();
+		createTagFamily.path("/");
+		createTagFamily.method(POST);
+		createTagFamily.description("Create a new tag family.");
+		createTagFamily.consumes(APPLICATION_JSON);
+		createTagFamily.produces(APPLICATION_JSON);
+		createTagFamily.handler(rc -> {
 			tagFamilyCrudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addTagFamilyUpdateHandler() {
-		Route updateRoute = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		updateRoute.handler(rc -> {
+		Endpoint updateTagFamily = createEndpoint();
+		updateTagFamily.path("/:uuid");
+		updateTagFamily.method(PUT);
+		updateTagFamily.description("Update the tagfamily with the given uuid.");
+		updateTagFamily.consumes(APPLICATION_JSON);
+		updateTagFamily.produces(APPLICATION_JSON);
+		updateTagFamily.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			tagFamilyCrudHandler.handleUpdate(ac, uuid);

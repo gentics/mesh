@@ -14,8 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-
-import io.vertx.ext.web.Route;
+import com.gentics.mesh.rest.Endpoint;
 
 @Component
 @Scope("singleton")
@@ -25,13 +24,15 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	@Autowired
 	private MicroschemaCrudHandler crudHandler;
 
-	protected MicroschemaVerticle() {
+	public MicroschemaVerticle() {
 		super("microschemas");
 	}
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/*");
+		endpoint.handler(getSpringConfiguration().authHandler());
 
 		addDiffHandler();
 		addChangesHandler();
@@ -44,8 +45,9 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addDiffHandler() {
-		Route route = route("/:uuid/diff").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint diffEndpoint = createEndpoint();
+		diffEndpoint.path("/:uuid/diff").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		diffEndpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String schemaUuid = ac.getParameter("uuid");
 			crudHandler.handleDiff(ac, schemaUuid);
@@ -53,15 +55,17 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addChangesHandler() {
-		Route getRoute = route("/:schemaUuid/changes").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> {
+		Endpoint readChanges = createEndpoint();
+		readChanges.path("/:schemaUuid/changes").method(GET).produces(APPLICATION_JSON);
+		readChanges.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
 			crudHandler.handleGetSchemaChanges(ac, schemaUuid);
 		});
 
-		Route executeRoute = route("/:schemaUuid/changes").method(POST).produces(APPLICATION_JSON);
-		executeRoute.handler(rc -> {
+		Endpoint executeChanges = createEndpoint();
+		executeChanges.path("/:schemaUuid/changes").method(POST).produces(APPLICATION_JSON);
+		executeChanges.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
@@ -79,13 +83,19 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 			}
 		});
 
-		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readAll = createEndpoint();
+		readAll.path("/");
+		readAll.method(GET);
+		readAll.description("Read multiple microschemas and return a paged list response.");
+		readAll.produces(APPLICATION_JSON);
+		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint deleteMicroschema = createEndpoint();
+		deleteMicroschema.path("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -93,16 +103,21 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		route("/:uuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint updateMicroschema = createEndpoint();
+		updateMicroschema.path("/:uuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
-
 	}
 
 	private void addCreateHandler() {
-		route().method(POST).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint createMicroschema = createEndpoint();
+		createMicroschema.path("/");
+		createMicroschema.method(POST);
+		createMicroschema.description("Create a new microschema.");
+		createMicroschema.produces(APPLICATION_JSON);
+		createMicroschema.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 

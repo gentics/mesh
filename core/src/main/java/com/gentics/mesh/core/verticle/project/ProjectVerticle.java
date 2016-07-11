@@ -60,6 +60,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.method(POST);
+		endpoint.description("Create a new project.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.handler(rc -> {

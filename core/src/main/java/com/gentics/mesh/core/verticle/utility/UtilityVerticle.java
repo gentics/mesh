@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.rest.Endpoint;
 
 /**
  * Verticle providing endpoints for various utilities.
@@ -19,7 +20,7 @@ public class UtilityVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
 	private UtilityHandler utilityHandler;
-	
+
 	protected UtilityVerticle() {
 		super("utilities");
 	}
@@ -34,7 +35,8 @@ public class UtilityVerticle extends AbstractCoreApiVerticle {
 	 * Add the handler for link resolving
 	 */
 	private void addResolveLinkHandler() {
-		route("/linkResolver").method(POST).handler(rc -> {
+		Endpoint resolver = createEndpoint();
+		resolver.path("/linkResolver").method(POST).handler(rc -> {
 			utilityHandler.handleResolveLinks(rc);
 		});
 	}

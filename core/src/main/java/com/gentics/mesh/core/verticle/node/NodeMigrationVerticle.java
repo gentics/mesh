@@ -28,7 +28,6 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
 
 /**
  * Dedicated worker verticle which will handle schema and microschema migrations.
@@ -83,9 +82,8 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 			String toVersionUuid = message.headers().get(TO_VERSION_UUID_HEADER);
 
 			if (log.isDebugEnabled()) {
-				log.debug("Node migration for schema {" + schemaUuid + "} from version {" + fromVersionUuid
-						+ "} to version {" + toVersionUuid + "} for release {" + releaseUuid + "} in project {"
-						+ projectUuid + "} was requested");
+				log.debug("Node migration for schema {" + schemaUuid + "} from version {" + fromVersionUuid + "} to version {" + toVersionUuid
+						+ "} for release {" + releaseUuid + "} in project {" + projectUuid + "} was requested");
 			}
 
 			try {
@@ -118,9 +116,8 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.schema);
 						setRunning(statusBean, statusMBeanName);
-						nodeMigrationHandler
-								.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean)
-								.toBlocking().single();
+						nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).toBlocking()
+								.single();
 						return null;
 					});
 					setDone(schemaUuid, statusMBeanName);
@@ -154,8 +151,8 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 			String toVersionUuuid = message.headers().get(TO_VERSION_UUID_HEADER);
 
 			if (log.isDebugEnabled()) {
-				log.debug("Micronode migration for microschema {" + microschemaUuid + "} from version {" + fromVersionUuid + "} to version {" + toVersionUuuid
-						+ "} was requested");
+				log.debug("Micronode migration for microschema {" + microschemaUuid + "} from version {" + fromVersionUuid + "} to version {"
+						+ toVersionUuuid + "} was requested");
 			}
 
 			try {
@@ -192,7 +189,8 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.microschema);
 						setRunning(statusBean, statusMBeanName);
-						nodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean).toBlocking().single();
+						nodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean).toBlocking()
+								.single();
 						return null;
 					});
 					setDone(microschemaUuid, statusMBeanName);

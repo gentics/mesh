@@ -29,7 +29,10 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/*");
+		endpoint.handler(getSpringConfiguration().authHandler());
+
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
@@ -39,7 +42,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addPermissionHandler() {
-		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON)
+		Endpoint permissionSetEndpoint = createEndpoint();
+		permissionSetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON)
 				.handler(rc -> {
 					InternalActionContext ac = InternalActionContext.create(rc);
 					String roleUuid = ac.getParameter("param0");
@@ -47,7 +51,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 					crudHandler.handlePermissionUpdate(ac, roleUuid, pathToElement);
 				});
 
-		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint permissionGetEndpoint = createEndpoint();
+		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
@@ -81,7 +86,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandler() {
-		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readOne = createEndpoint();
+		readOne.path("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleRead(ac, uuid);
@@ -90,7 +96,11 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		/*
 		 * List all roles when no parameter was specified
 		 */
-		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readAll = createEndpoint();
+		readAll.path("/");
+		readAll.method(GET);
+		readAll.produces(APPLICATION_JSON);
+		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}

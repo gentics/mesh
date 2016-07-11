@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.ext.web.Route;
 
@@ -45,17 +46,20 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addReadHandler() {
-		route("/:uuid/schemas").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readSchemas = createEndpoint();
+		readSchemas.path("/:uuid/schemas").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			crudHandler.handleGetSchemaVersions(InternalActionContext.create(rc), uuid);
 		});
 
-		route("/:uuid/microschemas").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readMicroschemas = createEndpoint();
+		readMicroschemas.path("/:uuid/microschemas").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			crudHandler.handleGetMicroschemaVersions(InternalActionContext.create(rc), uuid);
 		});
 
-		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readOne = createEndpoint();
+		readOne.path("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -64,21 +68,39 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 			}
 		});
 
-		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readAll = createEndpoint();
+		readAll.path("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addUpdateHandler() {
-		route("/:uuid/schemas").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint addSchema = createEndpoint();
+		addSchema.path("/:uuid/schemas");
+		addSchema.method(PUT);
+		addSchema.consumes(APPLICATION_JSON);
+		addSchema.produces(APPLICATION_JSON);
+		addSchema.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			crudHandler.handleAssignSchemaVersion(InternalActionContext.create(rc), uuid);
 		});
-		route("/:uuid/microschemas").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
+
+		Endpoint addMicroschema = createEndpoint();
+		addMicroschema.path("/:uuid/microschemas");
+		addMicroschema.method(PUT);
+		addMicroschema.consumes(APPLICATION_JSON);
+		addMicroschema.produces(APPLICATION_JSON);
+		addMicroschema.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			crudHandler.handleAssignMicroschemaVersion(InternalActionContext.create(rc), uuid);
 		});
-		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
+
+		Endpoint updateRelease = createEndpoint();
+		updateRelease.path("/:uuid");
+		updateRelease.method(PUT);
+		updateRelease.consumes(APPLICATION_JSON);
+		updateRelease.produces(APPLICATION_JSON);
+		updateRelease.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			crudHandler.handleUpdate(InternalActionContext.create(rc), uuid);
 		});

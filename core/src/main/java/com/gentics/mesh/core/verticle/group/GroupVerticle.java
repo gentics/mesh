@@ -13,8 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-
-import io.vertx.ext.web.Route;
+import com.gentics.mesh.rest.Endpoint;
 
 @Component
 @Scope("singleton")
@@ -30,7 +29,10 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/*");
+		endpoint.handler(getSpringConfiguration().authHandler());
+
 		addGroupUserHandlers();
 		addGroupRoleHandlers();
 
@@ -41,21 +43,34 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addGroupRoleHandlers() {
-
-		route("/:groupUuid/roles").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readRoles = createEndpoint();
+		readRoles.path("/:groupUuid/roles");
+		readRoles.method(GET);
+		readRoles.description("Load multiple roles that are assigned to the group. Return a paged list response.");
+		readRoles.produces(APPLICATION_JSON);
+		readRoles.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			crudHandler.handleGroupRolesList(ac, groupUuid);
 		});
 
-		route("/:groupUuid/roles/:roleUuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint addRole = createEndpoint();
+		addRole.path("/:groupUuid/roles/:roleUuid");
+		addRole.method(PUT);
+		addRole.description("Add the specified role to the group.");
+		addRole.produces(APPLICATION_JSON);
+		addRole.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");
 			crudHandler.handleAddRoleToGroup(ac, groupUuid, roleUuid);
 		});
 
-		route("/:groupUuid/roles/:roleUuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint removeRole = createEndpoint();
+		removeRole.path("/:groupUuid/roles/:roleUuid");
+		removeRole.method(DELETE);
+		removeRole.description("Remove the given role from the group.");
+		removeRole.produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");
@@ -64,22 +79,29 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addGroupUserHandlers() {
-		route("/:groupUuid/users").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readUsers = createEndpoint();
+		readUsers.path("/:groupUuid/users").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			crudHandler.handleGroupUserList(ac, groupUuid);
 		});
 
-		Route route = route("/:groupUuid/users/:userUuid").method(PUT).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint addUser = createEndpoint();
+		addUser.path("/:groupUuid/users/:userUuid");
+		addUser.method(PUT);
+		addUser.description("Add the given user to the group");
+		addUser.produces(APPLICATION_JSON);
+		addUser.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String userUuid = ac.getParameter("userUuid");
 			crudHandler.handleAddUserToGroup(ac, groupUuid, userUuid);
 		});
 
-		route = route("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint removeUser = createEndpoint();
+		removeUser.path("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
+		removeUser.description("Remove the given user from the group.");
+		removeUser.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String userUuid = ac.getParameter("userUuid");
@@ -88,7 +110,12 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addDeleteHandler() {
-		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint deleteGroup = createEndpoint();
+		deleteGroup.path("/:uuid");
+		deleteGroup.method(DELETE);
+		deleteGroup.description("Delete the given group.");
+		deleteGroup.produces(APPLICATION_JSON);
+		deleteGroup.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -98,7 +125,12 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO Determine what we should do about conflicting group names. Should we let neo4j handle those cases?
 	// TODO update timestamps
 	private void addUpdateHandler() {
-		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint updateGroup = createEndpoint();
+		updateGroup.path("/:uuid");
+		updateGroup.method(PUT);
+		updateGroup.consumes(APPLICATION_JSON);
+		updateGroup.produces(APPLICATION_JSON);
+		updateGroup.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -107,7 +139,12 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandler() {
-		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readOne = createEndpoint();
+		readOne.path("/:uuid");
+		readOne.method(GET);
+		readOne.description("Read the group with the given uuid.");
+		readOne.produces(APPLICATION_JSON);
+		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleRead(ac, uuid);
@@ -116,14 +153,23 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		/*
 		 * List all groups when no parameter was specified
 		 */
-		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readAll = createEndpoint();
+		readAll.path("/");
+		readAll.method(GET);
+		readAll.description("Read multiple groups and return a paged list response.");
+		readAll.produces(APPLICATION_JSON);
+		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	// TODO handle conflicting group name: group_conflicting_name
 	private void addCreateHandler() {
-		route("/").method(POST).handler(rc -> {
+		Endpoint createGroup = createEndpoint();
+		createGroup.path("/");
+		createGroup.method(POST);
+		createGroup.description("Create a new group");
+		createGroup.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 

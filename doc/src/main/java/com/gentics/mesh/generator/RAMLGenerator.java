@@ -15,8 +15,13 @@ import org.raml.model.Response;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.verticle.group.GroupVerticle;
+import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.core.verticle.role.RoleVerticle;
+import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
@@ -120,11 +125,13 @@ public class RAMLGenerator {
 	}
 
 	private void addProjectVerticles(Raml raml) throws Exception {
-		NodeVerticle verticle = Mockito.spy(new NodeVerticle());
-		initVerticle(verticle);
+		NodeVerticle nodeVerticle = Mockito.spy(new NodeVerticle());
+		initVerticle(nodeVerticle);
+		addEndpoints(apiResource, nodeVerticle);
 
-		// raml.getResources()
-		addEndpoints(apiResource, verticle);
+		TagFamilyVerticle tagFamilyVerticle = Mockito.spy(new TagFamilyVerticle());
+		initVerticle(tagFamilyVerticle);
+		addEndpoints(apiResource, tagFamilyVerticle);
 	}
 
 	private void addCoreVerticles(Raml raml) throws Exception {
@@ -132,8 +139,25 @@ public class RAMLGenerator {
 		initVerticle(userVerticle);
 		addEndpoints(apiResource, userVerticle);
 
+		RoleVerticle roleVerticle = Mockito.spy(new RoleVerticle());
+		initVerticle(roleVerticle);
+		addEndpoints(apiResource, roleVerticle);
+
+		GroupVerticle groupVerticle = Mockito.spy(new GroupVerticle());
+		initVerticle(groupVerticle);
+		addEndpoints(apiResource, groupVerticle);
+
 		ProjectVerticle projectVerticle = Mockito.spy(new ProjectVerticle());
 		initVerticle(projectVerticle);
 		addEndpoints(apiResource, projectVerticle);
+
+		SchemaVerticle schemaVerticle = Mockito.spy(new SchemaVerticle());
+		initVerticle(schemaVerticle);
+		addEndpoints(apiResource, schemaVerticle);
+
+		MicroschemaVerticle microschemaVerticle = Mockito.spy(new MicroschemaVerticle());
+		initVerticle(microschemaVerticle);
+		addEndpoints(apiResource, microschemaVerticle);
+
 	}
 }
