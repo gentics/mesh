@@ -119,7 +119,7 @@ public interface SearchQueueBatch extends MeshVertex {
 	/**
 	 * Process this batch by invoking process on all batch entries.
 	 */
-	Observable<SearchQueueBatch> process();
+	Observable<? extends SearchQueueBatch> process();
 
 	/**
 	 * Print debug output.
@@ -145,6 +145,6 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * 
 	 * @param ac
 	 */
-	Observable<SearchQueueBatch> process(InternalActionContext ac);
+	Observable<? extends SearchQueueBatch> process(InternalActionContext ac);
 
 }

@@ -1,12 +1,6 @@
 package com.gentics.mesh.core.data.search.impl;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -19,12 +13,13 @@ import rx.Observable;
 /**
  * @see SearchQueueEntry
  */
-public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueEntry {
+public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueEntry, Comparable<SearchQueueEntry> {
 
-	private static final String ACTION_KEY = "element_action";
-	private static final String ELEMENT_UUID = "element_uuid";
-	private static final String ELEMENT_TYPE = "element_type";
-	private static final String ELEMENT_INDEX_TYPE = "element_index_type";
+	public static final String ACTION_KEY = "element_action";
+	public static final String ELEMENT_UUID = "element_uuid";
+	public static final String ELEMENT_TYPE = "element_type";
+	public static final String ELEMENT_INDEX_TYPE = "element_index_type";
+	public static final String ENTRY_TIME = "entry_time";
 
 	private static final String CUSTOM_PREFIX = "custom_";
 
@@ -116,4 +111,21 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	public void setCustomProperty(String name, Object value) {
 		setProperty(CUSTOM_PREFIX + name, value);
 	}
+
+	@Override
+	public SearchQueueEntry setTime(long timeInMs) {
+		setProperty(ENTRY_TIME, timeInMs);
+		return this;
+	}
+
+	@Override
+	public long getTime() {
+		return getProperty(ENTRY_TIME);
+	}
+
+	@Override
+	public int compareTo(SearchQueueEntry o) {
+		return 0;
+	}
+
 }

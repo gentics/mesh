@@ -19,8 +19,10 @@ import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
@@ -175,7 +177,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			}
 			SchemaContainerVersion schemaContainerVersion = BootstrapInitializer.getBoot().schemaContainerRoot()
 					.fromReference(requestModel.getSchemaReference()).toBlocking().single();
-			
+
 			Tuple<SearchQueueBatch, Project> tuple = db.trx(() -> {
 				requestUser.reload();
 				Project project = create(requestModel.getName(), requestUser, schemaContainerVersion);
@@ -191,16 +193,17 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				SearchQueueBatch batch = project.createIndexBatch(STORE_ACTION);
 
 				Release initialRelease = project.getInitialRelease();
-				NodeIndexHandler nodeIndexHandler = NodeIndexHandler.getInstance();
-				TagIndexHandler tagIndexHandler = TagIndexHandler.getInstance();
-				TagFamilyIndexHandler tagFamilyIndexHandler = TagFamilyIndexHandler.getInstance();
-				batch.addEntry(nodeIndexHandler.getIndexName(project.getUuid(), initialRelease.getUuid(), "draft"), Node.TYPE,
-						SearchQueueEntryAction.CREATE_INDEX);
-				batch.addEntry(nodeIndexHandler.getIndexName(project.getUuid(), initialRelease.getUuid(), "published"), Node.TYPE,
-						SearchQueueEntryAction.CREATE_INDEX);
-				batch.addEntry(tagIndexHandler.getIndexName(project.getUuid()), Tag.TYPE, SearchQueueEntryAction.CREATE_INDEX);
-				batch.addEntry(tagFamilyIndexHandler.getIndexName(project.getUuid()), TagFamily.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+				String releaseUuid = initialRelease.getUuid();
+				String projectUuid = project.getUuid();
 
+				// 1. Create needed indices
+				batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "draft"), Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+				batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "published"), Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+				batch.addEntry(TagIndexHandler.getIndexName(projectUuid), Tag.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+				batch.addEntry(TagFamilyIndexHandler.getIndexName(project.getUuid()), TagFamily.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+				// 2. Add created basenode to SQB
+				NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
+				baseNodeFieldContainer.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
 				return Tuple.tuple(batch, project);
 			});
 

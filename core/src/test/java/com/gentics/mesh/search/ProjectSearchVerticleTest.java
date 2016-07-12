@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jettison.json.JSONException;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,6 +19,7 @@ import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.MeshAssert;
+import com.gentics.mesh.util.RxDebugger;
 
 import io.vertx.core.Future;
 
@@ -32,6 +34,11 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 		list.add(searchVerticle);
 		list.add(projectVerticle);
 		return list;
+	}
+	
+	@BeforeClass
+	public static void setupOnce() {
+		new RxDebugger().start();
 	}
 
 	@Test
@@ -62,6 +69,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 	@Test
 	@Override
 	public void testDocumentCreation() throws Exception {
+
 		final String newName = "newproject";
 		ProjectResponse project = createProject(newName);
 		try (NoTrx noTx = db.noTrx()) {

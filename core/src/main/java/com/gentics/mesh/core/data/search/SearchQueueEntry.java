@@ -89,15 +89,35 @@ public interface SearchQueueEntry extends MeshVertex {
 
 	/**
 	 * Get property with given name
-	 * @param name property name
+	 * 
+	 * @param name
+	 *            property name
 	 * @return property
 	 */
 	<T> T getCustomProperty(final String name);
 
 	/**
 	 * Set the property with given name
-	 * @param name property name
-	 * @param value property value
+	 * 
+	 * @param name
+	 *            property name
+	 * @param value
+	 *            property value
 	 */
 	void setCustomProperty(final String name, final Object value);
+
+	/**
+	 * Set the timestamp for the entry.
+	 * 
+	 * @param currentTimeMillis
+	 * @return
+	 */
+	SearchQueueEntry setTime(long currentTimeMillis);
+
+	/**
+	 * Return the timestamp on which the entry was created.
+	 * 
+	 * @return
+	 */
+	long getTime();
 }

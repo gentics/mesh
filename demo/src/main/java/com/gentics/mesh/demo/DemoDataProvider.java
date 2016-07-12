@@ -195,7 +195,7 @@ public class DemoDataProvider {
 		future.setHandler(rh -> {
 			latch.countDown();
 		});
-		if (!latch.await(35, TimeUnit.SECONDS)) {
+		if (!latch.await(1135, TimeUnit.SECONDS)) {
 			throw new RuntimeException("Timeout reached");
 		}
 

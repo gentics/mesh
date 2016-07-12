@@ -85,7 +85,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 *            status MBean
 	 * @return Observable which contains the search queue batch which needs to be processed
 	 */
-	public Observable<SearchQueueBatch> migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
+	public Observable<? extends SearchQueueBatch> migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
 			NodeMigrationStatus statusMBean) {
 		String releaseUuid = db.noTrx(release::getUuid);
 
@@ -309,7 +309,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @param newRelease new release
 	 * @return
 	 */
-	public Observable<SearchQueueBatch> migrateNodes(Release newRelease) {
+	public Observable<? extends SearchQueueBatch> migrateNodes(Release newRelease) {
 		Release oldRelease = db.noTrx(() -> {
 			if (newRelease.isMigrated()) {
 				throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} is already migrated");

@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
@@ -46,6 +47,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		entry.setElementType(elementType);
 		entry.setElementAction(action.getName());
 		entry.setElementIndexType(indexType);
+		entry.setTime(System.currentTimeMillis());
 
 		if (customProperties != null) {
 			for (Tuple<String, Object> custom : customProperties) {
@@ -63,7 +65,20 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 	@Override
 	public List<? extends SearchQueueEntry> getEntries() {
-		return out(HAS_ITEM).has(SearchQueueEntryImpl.class).toListExplicit(SearchQueueEntryImpl.class);
+		List<? extends SearchQueueEntryImpl> list = out(HAS_ITEM).has(SearchQueueEntryImpl.class).order((o1, o2) -> {
+			Long a = o1.getProperty(SearchQueueEntryImpl.ENTRY_TIME);
+			Long b = o2.getProperty(SearchQueueEntryImpl.ENTRY_TIME);
+			String actionA = o1.getProperty(SearchQueueEntryImpl.ACTION_KEY);
+			String actionB = o1.getProperty(SearchQueueEntryImpl.ACTION_KEY);
+			if (actionA.equals("create_index")) {
+				return Integer.MIN_VALUE;
+			}
+			if (actionB.equals("create_index")) {
+				return Integer.MIN_VALUE;
+			}
+			return a.compareTo(b);
+		}).toListExplicit(SearchQueueEntryImpl.class);
+		return list;
 	}
 
 	@Override
@@ -103,7 +118,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public Observable<SearchQueueBatch> process() {
+	public Observable<? extends SearchQueueBatch> process() {
 
 		MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
 		Database db = springConfiguration.database();
@@ -113,44 +128,67 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 				log.debug("Processing batch {" + getBatchId() + "}");
 				printDebug();
 			}
-			List<Observable<Void>> obs = new ArrayList<>();
+
+			
 			for (SearchQueueEntry entry : getEntries()) {
-				obs.add(entry.process());
+				entry.process().toBlocking().last();
+			}
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Handled all search queue items.");
 			}
 
-			obs.add(Observable.just(null));
-			Observable<SearchQueueBatch> mergedObs = Observable.merge(obs).last().map(done -> this);
-			mergedObs = mergedObs.doOnCompleted(() -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Handled all search queue items.");
-				}
-
-				// We successfully finished this batch. Delete it.
-				db.trx(() -> {
-					reload();
-					delete(null);
-					return null;
-				});
-				// Refresh index
-				SearchProvider provider = springConfiguration.searchProvider();
-				if (provider != null) {
-					provider.refreshIndex();
-				} else {
-					log.error("Could not refresh index since the elasticsearch provider has not been initalized");
-				}
+			// We successfully finished this batch. Delete it.
+			db.trx(() -> {
+				reload();
+				delete(null);
+				return null;
 			});
+			// Refresh index
+			SearchProvider provider = springConfiguration.searchProvider();
+			if (provider != null) {
+				provider.refreshIndex();
+			} else {
+				log.error("Could not refresh index since the elasticsearch provider has not been initalized");
+			}
+			return Observable.just(this);
 
-			// TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
-			// mergedObs.doOnError(error -> {
-			// return null;
-			// });
-			return mergedObs;
 		});
+
+//			List<Observable<Void>> obs = new ArrayList<>();
+//			for (SearchQueueEntry entry : getEntries()) {
+//				obs.add(entry.process());
+//			}
+//			return RxUtil.concatListNotEager(obs).last().map(o -> this).doOnCompleted(() -> {
+//				if (log.isDebugEnabled()) {
+//					log.debug("Handled all search queue items.");
+//				}
+//
+//				// We successfully finished this batch. Delete it.
+//				db.trx(() -> {
+//					reload();
+//					delete(null);
+//					return null;
+//				});
+//				// Refresh index
+//				SearchProvider provider = springConfiguration.searchProvider();
+//				if (provider != null) {
+//					provider.refreshIndex();
+//				} else {
+//					log.error("Could not refresh index since the elasticsearch provider has not been initalized");
+//				}
+//
+//				// TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
+//				// mergedObs.doOnError(error -> {
+//				// return null;
+//				// });
+//
+//			});
 
 	}
 
 	@Override
-	public Observable<SearchQueueBatch> process(InternalActionContext ac) {
+	public Observable<? extends SearchQueueBatch> process(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 

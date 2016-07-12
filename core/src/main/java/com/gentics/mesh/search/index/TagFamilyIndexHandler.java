@@ -73,13 +73,13 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	/**
-	 * Get the index name for the given project
+	 * Get the index name for the given project.
 	 * 
 	 * @param project
 	 *            Uuid
 	 * @return index name
 	 */
-	public String getIndexName(String projectUuid) {
+	public static String getIndexName(String projectUuid) {
 		StringBuilder indexName = new StringBuilder("tag-family");
 		indexName.append("-").append(projectUuid);
 		return indexName.toString();

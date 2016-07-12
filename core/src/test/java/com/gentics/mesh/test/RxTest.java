@@ -4,11 +4,13 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.rx.java.RxHelper;
 import io.vertx.rxjava.core.Vertx;
@@ -17,7 +19,6 @@ import rx.Observable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
-@Ignore("Just used for manual testing")
 public class RxTest {
 
 	private Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
@@ -87,6 +88,25 @@ public class RxTest {
 			}
 			System.out.println("Done waiting: " + text);
 			return text;
+		});
+	}
+
+	@Test
+	public void testFlatMap() throws Exception {
+
+		Observable<String> obs = Observable.just("hallo").flatMap(item -> {
+			System.out.println("FLATMAP");
+			return Observable.create(sub -> {
+				sub.onNext("Tüte");
+				sub.onCompleted();
+			});
+		});
+
+		List<Observable<String>> obsAll = new ArrayList<>();
+		obsAll.add(obs);
+
+		RxUtil.concatListNotEager(obsAll).subscribe(next -> {
+			System.out.println(next);
 		});
 	}
 

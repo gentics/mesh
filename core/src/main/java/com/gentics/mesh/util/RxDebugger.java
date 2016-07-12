@@ -16,8 +16,8 @@ import rx.plugins.RxJavaPlugins;
 public class RxDebugger extends Thread implements Runnable {
 
 	private Map<String, RxEventInfo> runningObservables = new ConcurrentHashMap<>();
-	private long maxObsTimeInMs = 1000;
-	private long checkInterval = 2000;
+	private long maxObsTimeInMs = 5000;
+	private long checkInterval = 5000;
 
 	private static final Logger log = LoggerFactory.getLogger(RxDebugger.class);
 
@@ -28,7 +28,7 @@ public class RxDebugger extends Thread implements Runnable {
 			@Override
 			public <T> String start(DebugNotification<T> n) {
 				Observer<?> obs = n.getObserver();
-				if (obs != null && (n.getKind() == Kind.OnNext || n.getKind()== Kind.Subscribe)) {
+				if (obs != null && (n.getKind() == Kind.OnNext || n.getKind() == Kind.Subscribe)) {
 					String eventId = obs.toString() + "." + n.getKind().name();
 					if (log.isDebugEnabled()) {
 						log.debug("Got event: " + eventId);

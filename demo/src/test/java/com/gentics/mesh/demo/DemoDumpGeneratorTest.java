@@ -1,8 +1,6 @@
 package com.gentics.mesh.demo;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 
@@ -25,6 +23,7 @@ import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.util.RxDebugger;
 
 @ContextConfiguration(classes = { DemoDumpConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -55,6 +54,7 @@ public class DemoDumpGeneratorTest {
 
 	@Test
 	public void testSetup() throws Exception {
+		new RxDebugger().start();
 		generator.invokeDump(boot, dataProvider);
 		NoTrx tx = db.noTrx();
 		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().single().getNodeRoot().findAll().size() > 0);
@@ -72,11 +72,15 @@ public class DemoDumpGeneratorTest {
 
 		assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().findAll().size() > 5);
 		for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-				String languageTag = container.getLanguage().getLanguageTag();
-				assertNotNull("The search document for node {" + node.getUuid() + "} container {" + languageTag + "} could not be found",
-						searchProvider.getDocument(Node.TYPE, NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion()),
-								NodeIndexHandler.composeDocumentId(node, languageTag)).toBlocking().single());
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
+			String languageTag = container.getLanguage().getLanguageTag();
+			String indexName = NodeIndexHandler.getIndexName(node.getProject().getUuid(), node.getProject().getLatestRelease().getUuid(), "-draft");
+			String documentType = NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion());
+			String documentId = NodeIndexHandler.composeDocumentId(node, languageTag);
+			if (searchProvider.getDocument(indexName, documentType, documentId).toBlocking().single() == null) {
+				String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag + "} could not be found within index {"
+						+ indexName + "} - {" + documentType + "} - {" + documentId + "}";
+				fail(msg);
 			}
 		}
 		tx.close();

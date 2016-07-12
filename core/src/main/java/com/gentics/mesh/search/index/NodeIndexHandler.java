@@ -90,7 +90,7 @@ import rx.Observable;
  * <ul>
  * <li>Document Index: [node-[:projectUuid]-[:releaseUuid]-[:versionType]</li>
  * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
- * </ul> 
+ * </ul>
  * <p>
  */
 @Component
@@ -158,6 +158,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Set<String> getIndices() {
 		return db.noTrx(() -> {
 			Set<String> indexNames = new HashSet<>();
+			BootstrapInitializer.getBoot().meshRoot().getProjectRoot().reload();
 			List<? extends Project> projects = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findAll();
 			projects.forEach((project) -> {
 				List<? extends Release> releases = project.getReleaseRoot().findAll();
@@ -188,12 +189,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	/**
 	 * Get the index name for the given project/release/version
+	 * 
 	 * @param projectUuid
 	 * @param releaseUuid
 	 * @param version
 	 * @return index name
 	 */
-	public String getIndexName(String projectUuid, String releaseUuid, String version) {
+	public static String getIndexName(String projectUuid, String releaseUuid, String version) {
 		// TODO check that only "draft" and "publisheD" are used for version
 		StringBuilder indexName = new StringBuilder("node");
 		indexName.append("-").append(projectUuid).append("-").append(releaseUuid).append("-").append(version);
@@ -222,6 +224,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Observable<Void> store(Node node, String documentType, SearchQueueEntry entry) {
+		System.out.println("Store called for node {" + node.getUuid() + "}");
 		String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
 		String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
 		ContainerType type = ContainerType.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
@@ -300,6 +303,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}));
 		}
 		return Observable.merge(obs).doOnCompleted(() -> {
+			System.out.println("DONE STORE");
 			if (log.isDebugEnabled()) {
 				log.debug("Stored node in index.");
 			}
@@ -323,8 +327,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * Generate a flat property map from the given container and store the map within the search index.
 	 * 
 	 * @param container
-	 * @param indexName project name
-	 * @param releaseUuid release Uuid
+	 * @param indexName
+	 *            project name
+	 * @param releaseUuid
+	 *            release Uuid
 	 * @return
 	 */
 	public Observable<Void> storeContainer(NodeGraphFieldContainer container, String indexName, String releaseUuid) {
@@ -589,22 +595,27 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Componse the document ID for the index document
+	 * Compose the document ID for the index document.
 	 * 
-	 * @param nodeUuid node Uuid
-	 * @param language language
+	 * @param nodeUuid
+	 *            node UUID
+	 * @param languageTag
+	 *            language
 	 * @return document ID
 	 */
-	public static String composeDocumentId(String nodeUuid, String language) {
+	public static String composeDocumentId(String nodeUuid, String languageTag) {
 		StringBuilder id = new StringBuilder(nodeUuid);
-		id.append("-").append(language);
+		id.append("-").append(languageTag);
 		return id.toString();
 	}
 
 	/**
-	 * Set the mapping for the given type in all indices for the schema
-	 * @param type type name
-	 * @param schema schema
+	 * Set the mapping for the given type in all indices for the schema.
+	 * 
+	 * @param type
+	 *            type name
+	 * @param schema
+	 *            schema
 	 * @return observable
 	 */
 	public Observable<Void> setNodeIndexMapping(String type, Schema schema) {
@@ -615,7 +626,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Set the mapping for the given type in the given index for the schema
+	 * Set the mapping for the given type in the given index for the schema.
 	 *
 	 * @param indexName
 	 *            index name

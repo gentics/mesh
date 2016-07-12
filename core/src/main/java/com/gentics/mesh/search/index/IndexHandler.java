@@ -15,6 +15,7 @@ import rx.Observable;
 public interface IndexHandler {
 	/**
 	 * Index handler key for the registry
+	 * 
 	 * @return handler key
 	 */
 	String getKey();
@@ -48,7 +49,7 @@ public interface IndexHandler {
 	Observable<Void> updateMapping();
 
 	/**
-	 * Update the mapping for the given index
+	 * Update the mapping for the given index.
 	 * 
 	 * @param indexName
 	 *            index name
@@ -57,18 +58,21 @@ public interface IndexHandler {
 	Observable<Void> updateMapping(String indexName);
 
 	/**
-	 * Handle search index action
-	 * @param entry search queue entry
+	 * Handle search index action.
+	 * 
+	 * @param entry
+	 *            search queue entry
 	 * @return
 	 */
 	Observable<Void> handleAction(SearchQueueEntry entry);
 
 	/**
-	 * Delete the document with the given uuid and document type from the search index.
+	 * Delete the document with the given UUID and document type from the search index.
 	 * 
 	 * @param uuid
 	 * @param documentType
-	 * @param entry search queue entry
+	 * @param entry
+	 *            search queue entry
 	 * @return
 	 */
 	Observable<Void> delete(String uuid, String documentType, SearchQueueEntry entry);
@@ -78,7 +82,8 @@ public interface IndexHandler {
 	 * 
 	 * @param uuid
 	 * @param documentType
-	 * @param entry search queue entry
+	 * @param entry
+	 *            search queue entry
 	 * @return
 	 */
 	Observable<Void> store(String uuid, String documentType, SearchQueueEntry entry);
@@ -91,21 +96,26 @@ public interface IndexHandler {
 	Observable<Void> reindexAll();
 
 	/**
-	 * Get the name of all indices
+	 * Get the name of all indices.
+	 * 
 	 * @return name of all indices
 	 */
 	Set<String> getIndices();
 
 	/**
-	 * Get the name of all affected indices
-	 * @param ac action context
+	 * Get the name of all affected indices.
+	 * 
+	 * @param ac
+	 *            action context
 	 * @return name of affected indices
 	 */
 	Set<String> getAffectedIndices(InternalActionContext ac);
 
 	/**
-	 * Get the permission required to read the elements found in the index
-	 * @param ac action context
+	 * Get the permission required to read the elements found in the index.
+	 * 
+	 * @param ac
+	 *            action context
 	 * @return read permission
 	 */
 	default GraphPermission getReadPermission(InternalActionContext ac) {

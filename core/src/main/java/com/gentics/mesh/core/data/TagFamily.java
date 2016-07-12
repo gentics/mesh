@@ -15,8 +15,8 @@ import rx.Observable;
 /**
  * The TagFamily Domain Model interface.
  * 
- * A tag family is the parent element for multiple tags. A typical tag family would be "colors" for tags "red", "blue", "green". Tag families are
- * bound to projects via the {@link TagFamilyRootImpl} class.
+ * A tag family is the parent element for multiple tags. A typical tag family would be "colors" for tags "red", "blue", "green". Tag families are bound to
+ * projects via the {@link TagFamilyRootImpl} class.
  */
 public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex {
 
@@ -95,5 +95,11 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 */
 	TagRoot getTagRoot();
 
+	/**
+	 * Create a new tag using the information from the action context.
+	 * 
+	 * @param ac
+	 * @return
+	 */
 	Observable<Tag> create(InternalActionContext ac);
 }

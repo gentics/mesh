@@ -126,8 +126,10 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Observable<Void> createIndex(String indexName) {
 		// TODO Add method which will be used to create an index and set a custom mapping
-
 		return Observable.create(sub -> {
+			System.out.println("Create Index " + indexName);
+
+			log.info("Creating ES Index {" + indexName + "}");
 			CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
 			Map<String, Object> indexSettings = new HashMap<>();
 			Map<String, Object> analysisSettings = new HashMap<>();
@@ -143,7 +145,9 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onResponse(CreateIndexResponse response) {
-					log.debug("Create index response: {" + response.toString() + "}");
+					if (log.isDebugEnabled()) {
+						log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
+					}
 					sub.onNext(null);
 					sub.onCompleted();
 				}
@@ -242,6 +246,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Observable<Void> storeDocument(String index, String type, String uuid, Map<String, Object> map) {
 		return Observable.create(sub -> {
+			System.out.println("Store Document " + index + "-" + type + "-" + uuid);
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
 				log.debug("Adding object {" + uuid + ":" + type + "} to index.");
@@ -300,7 +305,6 @@ public class ElasticSearchProvider implements SearchProvider {
 			getSearchClient().prepareDeleteByQuery(indexName).setQuery(QueryBuilders.matchAllQuery()).execute()
 					.addListener(new ActionListener<DeleteByQueryResponse>() {
 						public void onResponse(DeleteByQueryResponse response) {
-
 							if (log.isDebugEnabled()) {
 								log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 							}

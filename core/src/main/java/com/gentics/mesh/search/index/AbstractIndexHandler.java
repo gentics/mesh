@@ -35,16 +35,14 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 
-import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 @Component
@@ -127,15 +125,14 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Observable<Void> store(String uuid, String indexType, SearchQueueEntry entry) {
-		return getRootVertex().findByUuid(uuid).flatMap(element -> {
-			return db.noTrx(() -> {
-				if (element == null) {
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, indexType);
-				} else {
-					return store(element, indexType, entry);
-				}
-			});
-		});
+		try (NoTrx noTx = db.noTrx()) {
+			T element = getRootVertex().findByUuidSync(uuid);
+			if (element == null) {
+				throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, indexType);
+			} else {
+				return store(element, indexType, entry);
+			}
+		}
 	}
 
 	/**
@@ -318,6 +315,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 					@Override
 					public void onResponse(PutMappingResponse response) {
+						if (log.isDebugEnabled()) {
+							log.debug("Updated mapping for index {" + indexName + "}");
+						}
 						sub.onNext(null);
 						sub.onCompleted();
 					}

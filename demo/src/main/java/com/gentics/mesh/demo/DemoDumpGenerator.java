@@ -66,13 +66,14 @@ public class DemoDumpGenerator {
 	 */
 	public void invokeDump(BootstrapInitializer boot, DemoDataProvider provider)
 			throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		boot.initSearchIndex();
 		boot.initMandatoryData();
 		boot.initPermissions();
-		boot.invokeChangelog();
+		//boot.initSearchIndex();
+		//boot.invokeChangelog();
 
 		// Setup demo data
 		provider.setup();
+		//boot.initSearchIndex();
 	}
 
 }
