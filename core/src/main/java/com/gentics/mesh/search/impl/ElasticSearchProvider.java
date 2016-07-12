@@ -127,8 +127,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	public Observable<Void> createIndex(String indexName) {
 		// TODO Add method which will be used to create an index and set a custom mapping
 		return Observable.create(sub -> {
-			System.out.println("Create Index " + indexName);
-
 			log.info("Creating ES Index {" + indexName + "}");
 			CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
 			Map<String, Object> indexSettings = new HashMap<>();
@@ -246,7 +244,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Observable<Void> storeDocument(String index, String type, String uuid, Map<String, Object> map) {
 		return Observable.create(sub -> {
-			System.out.println("Store Document " + index + "-" + type + "-" + uuid);
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
 				log.debug("Adding object {" + uuid + ":" + type + "} to index.");

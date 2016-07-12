@@ -224,7 +224,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Observable<Void> store(Node node, String documentType, SearchQueueEntry entry) {
-		System.out.println("Store called for node {" + node.getUuid() + "}");
 		String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
 		String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
 		ContainerType type = ContainerType.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
@@ -303,7 +302,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}));
 		}
 		return Observable.merge(obs).doOnCompleted(() -> {
-			System.out.println("DONE STORE");
 			if (log.isDebugEnabled()) {
 				log.debug("Stored node in index.");
 			}

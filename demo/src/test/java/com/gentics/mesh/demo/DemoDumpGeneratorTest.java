@@ -74,7 +74,7 @@ public class DemoDumpGeneratorTest {
 		for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
 			String languageTag = container.getLanguage().getLanguageTag();
-			String indexName = NodeIndexHandler.getIndexName(node.getProject().getUuid(), node.getProject().getLatestRelease().getUuid(), "-draft");
+			String indexName = NodeIndexHandler.getIndexName(node.getProject().getUuid(), node.getProject().getLatestRelease().getUuid(), "draft");
 			String documentType = NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion());
 			String documentId = NodeIndexHandler.composeDocumentId(node, languageTag);
 			if (searchProvider.getDocument(indexName, documentType, documentId).toBlocking().single() == null) {
