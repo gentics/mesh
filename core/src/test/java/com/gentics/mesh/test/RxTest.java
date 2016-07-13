@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -19,6 +20,8 @@ import rx.Observable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
+
+@Ignore
 public class RxTest {
 
 	private Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());

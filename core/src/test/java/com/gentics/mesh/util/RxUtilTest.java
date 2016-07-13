@@ -18,6 +18,7 @@ import org.junit.Test;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
+@Ignore
 public class RxUtilTest {
 
 	@Test
