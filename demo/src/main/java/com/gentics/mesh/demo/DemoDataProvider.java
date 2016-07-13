@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
@@ -46,6 +47,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -104,12 +106,33 @@ public class DemoDataProvider {
 
 		addSchemaContainers();
 		addNodes();
+		publishAllNodes();
 		addWebclientPermissions();
 		// updatePermissions();
 		// invokeFullIndex();
 		log.info("Demo data setup completed");
 	}
 
+	/**
+	 * Publish the basenodes for each project we created.
+	 * 
+	 * @throws InterruptedException
+	 */
+	private void publishAllNodes() throws InterruptedException {
+
+		for (ProjectResponse project : projects.values()) {
+			Future<PublishStatusResponse> future = client.publishNode(PROJECT_NAME, project.getRootNodeUuid(),
+					new PublishParameters().setRecursive(true));
+			latchFor(future);
+		}
+
+	}
+
+	/**
+	 * Add the webclient role permissions.
+	 * 
+	 * @throws InterruptedException
+	 */
 	private void addWebclientPermissions() throws InterruptedException {
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
@@ -275,8 +298,7 @@ public class DemoDataProvider {
 			String parentNodeName = nodeJson.getString("parent");
 			String name = nodeJson.getString("name");
 			Schema schema = getSchemaModel(schemaName);
-			NodeResponse parentNode = (nodeJson.getString("project") + ".basenode").equals(parentNodeName) ? null
-					: getNode(parentNodeName);
+			NodeResponse parentNode = (nodeJson.getString("project") + ".basenode").equals(parentNodeName) ? null : getNode(parentNodeName);
 
 			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();

@@ -5,15 +5,15 @@ import org.apache.commons.lang.BooleanUtils;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.ParameterProvider;
 
-public class TakeOfflineParameters extends AbstractParameters {
+public class PublishParameters extends AbstractParameters {
 
 	public static final String RECURSIVE_PARAMETER_KEY = "recursive";
 
-	public TakeOfflineParameters(ActionContext ac) {
+	public PublishParameters(ActionContext ac) {
 		super(ac);
 	}
 
-	public TakeOfflineParameters() {
+	public PublishParameters() {
 	}
 
 	public ParameterProvider setRecursive(boolean flag) {

@@ -70,7 +70,7 @@ import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
+import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
@@ -744,7 +744,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		NodeResponse newNode = call(() -> getClient().createNode("mynewproject", createNode));
 
 		String baseUuid = db.noTrx(() -> project().getBaseNode().getUuid());
-		call(() -> getClient().takeNodeOffline(PROJECT_NAME, baseUuid, new TakeOfflineParameters().setRecursive(true)));
+		call(() -> getClient().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParameters().setRecursive(true)));
 
 		// search globally for published version
 		NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde")));

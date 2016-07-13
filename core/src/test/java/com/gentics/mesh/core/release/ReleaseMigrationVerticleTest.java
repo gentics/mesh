@@ -32,7 +32,7 @@ import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
-import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
+import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.AsyncResult;
@@ -77,7 +77,7 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 		assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
 
 		call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid()
-				,new TakeOfflineParameters().setRecursive(true)));
+				,new PublishParameters().setRecursive(true)));
 		
 		List<? extends Node> published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 		List<? extends Node> nodes = project.getNodeRoot().findAll().stream()

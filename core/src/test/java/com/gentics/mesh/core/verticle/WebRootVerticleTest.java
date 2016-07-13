@@ -44,7 +44,7 @@ import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
+import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -335,7 +335,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		String path = "/News/2015";
 
 		try (NoTrx noTx = db.noTrx()) {
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new TakeOfflineParameters().setRecursive(true)));
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 		}
 		// 1. Assert that published path cannot be found
 		try (NoTrx noTx = db.noTrx()) {

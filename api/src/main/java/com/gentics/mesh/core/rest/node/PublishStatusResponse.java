@@ -5,7 +5,7 @@ import java.util.Map;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
- * POJO for the rest model of a publish status response for a node
+ * POJO for the rest model of a publish status response for a node.
  */
 public class PublishStatusResponse implements RestModel {
 	private Map<String, PublishStatusModel> availableLanguages;

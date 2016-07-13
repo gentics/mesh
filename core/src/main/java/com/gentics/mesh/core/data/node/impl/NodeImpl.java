@@ -88,7 +88,7 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
+import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -231,7 +231,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Node parentNode = getParentNode(releaseUuid);
 
 			// Only assert consistency of parent nodes which are not project base nodes.
-			if (!parentNode.getUuid().equals(getProject().getBaseNode().getUuid())) {
+			if (parentNode!= null && (!parentNode.getUuid().equals(getProject().getBaseNode().getUuid()))) {
 
 				// Check whether the parent node has a published field container for the given release and language
 				NodeGraphFieldContainer fieldContainer = parentNode.findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid,
@@ -877,6 +877,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			List<NodeGraphFieldContainer> published = unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser()))
 					.collect(Collectors.toList());
 
+			// Handle recursion
+			PublishParameters parameters = ac.getPublishParameters();
+			if (parameters.isRecursive()) {
+				for (Node node : getChildren()) {
+					node.publish(ac).toBlocking().last();
+				}
+			}
+
 			assertPublishConsistency(ac);
 			return createIndexBatch(STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
 		}).process().map(i -> {
@@ -899,7 +907,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			published.forEach(c -> c.getImpl().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null));
 
 			// Handle recursion
-			TakeOfflineParameters parameters = ac.getTakeOfflineParameters();
+			PublishParameters parameters = ac.getPublishParameters();
 			if (parameters.isRecursive()) {
 				for (Node node : getChildren()) {
 					node.takeOffline(ac).toBlocking().last();

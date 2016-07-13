@@ -5,7 +5,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
-import com.gentics.mesh.parameter.impl.TakeOfflineParameters;
+import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 
 public interface ParameterProviderContext extends ActionContext {
@@ -30,8 +30,8 @@ public interface ParameterProviderContext extends ActionContext {
 		return new ImageManipulationParameters(this);
 	}
 
-	default TakeOfflineParameters getTakeOfflineParameters() {
-		return new TakeOfflineParameters(this);
+	default PublishParameters getPublishParameters() {
+		return new PublishParameters(this);
 	}
 
 }
