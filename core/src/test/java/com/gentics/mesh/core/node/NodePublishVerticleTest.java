@@ -9,12 +9,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,6 +37,7 @@ import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
+import com.gentics.mesh.util.RxDebugger;
 
 public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
@@ -49,6 +51,11 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 		return list;
 	}
 
+	@BeforeClass
+	public static void setupOnce() {
+		new RxDebugger().start();
+	}
+
 	/**
 	 * Folder /news/2015 is not published. A new node will be created in folder 2015. Publishing the created folder should fail since the parent folder
 	 * (/news/2015) is not yet published. This test will also assert that publishing works fine as soon as the parent node is published.
@@ -58,7 +65,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 		// 1. Take the parent folder offline
 		String folderUuid = db.noTrx(() -> {
-			InternalActionContext ac = getMockedInternalActionContext("recursive=true");
+			InternalActionContext ac = getMockedInternalActionContext("recursive=true", user());
 			Node folder = folder("2015");
 			folder.takeOffline(ac);
 			folder("news").publish(ac);
@@ -349,10 +356,12 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 	public void testPublishInOfflineContainer() {
 		String nodeUuid = db.noTrx(() -> folder("2015").getUuid());
 
+		// 1. Take a node subtree offline
 		call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
 
+		// 2. Try to publish a node from within that subtree structure
 		String contentUuid = db.noTrx(() -> content("news_2015").getUuid());
-		call(() -> getClient().publishNode(PROJECT_NAME, contentUuid), BAD_REQUEST, "");
+		call(() -> getClient().publishNode(PROJECT_NAME, contentUuid), BAD_REQUEST, "node_error_parent_containers_not_published", nodeUuid);
 
 	}
 
@@ -361,7 +370,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 		String nodeUuid = db.noTrx(() -> project().getBaseNode().getUuid());
 		String contentUuid = db.noTrx(() -> content("news_2015").getUuid());
 
-		//1. Check initial status
+		// 1. Check initial status
 		assertPublishStatus("Node should be published.", nodeUuid, true);
 		assertPublishStatus("Node should be published.", contentUuid, true);
 
@@ -381,7 +390,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 		String nodeUuid = db.noTrx(() -> project().getBaseNode().getUuid());
 		String contentUuid = db.noTrx(() -> content("news_2015").getUuid());
 
-		//1. Check initial status
+		// 1. Check initial status
 		assertPublishStatus("Node should be published.", nodeUuid, true);
 		assertPublishStatus("Node should be published.", contentUuid, true);
 

@@ -14,9 +14,9 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
@@ -123,42 +123,13 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
 		Database db = springConfiguration.database();
 
-		//		return db.noTrx(() -> {
-		//			if (log.isDebugEnabled()) {
-		//				log.debug("Processing batch {" + getBatchId() + "}");
-		//				printDebug();
-		//			}
-		//
-		//			
-		//			for (SearchQueueEntry entry : getEntries()) {
-		//				entry.process().toBlocking().last();
-		//			}
-		//			
-		//			if (log.isDebugEnabled()) {
-		//				log.debug("Handled all search queue items.");
-		//			}
-		//
-		//			// We successfully finished this batch. Delete it.
-		//			db.trx(() -> {
-		//				reload();
-		//				delete(null);
-		//				return null;
-		//			});
-		//			// Refresh index
-		//			SearchProvider provider = springConfiguration.searchProvider();
-		//			if (provider != null) {
-		//				provider.refreshIndex();
-		//			} else {
-		//			}
-		//			return Observable.just(this);
-		//
-		//		});
-
 		List<Observable<Void>> obs = new ArrayList<>();
-		for (SearchQueueEntry entry : getEntries()) {
-			obs.add(entry.process());
+		try (NoTrx noTrx = db.noTrx()) {
+			for (SearchQueueEntry entry : getEntries()) {
+				obs.add(entry.process());
+			}
 		}
-
+		obs.add(Observable.just(null));
 		return Observable.concat(Observable.from(obs)).last().map(o -> this).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Handled all search queue items.");

@@ -355,7 +355,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return
 	 */
-	Observable<Void> publish(InternalActionContext ac);
+	Observable<? extends SearchQueueBatch> publish(InternalActionContext ac);
 
 	/**
 	 * Take the node offline (all languages)

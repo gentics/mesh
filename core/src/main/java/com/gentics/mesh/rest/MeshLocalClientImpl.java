@@ -182,8 +182,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public Future<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
-			ParameterProvider... parameters) {
+	public Future<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest, ParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleUpdate(ac, uuid);
@@ -1008,33 +1007,39 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public Future<PublishStatusResponse> publishNode(String projectName, String nodeUuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<PublishStatusResponse> ac = createContext(PublishStatusResponse.class, parameters);
+		ac.setProject(projectName);
+		nodeCrudHandler.handlePublish(ac, nodeUuid);
+		return ac.getFuture();
 	}
 
 	@Override
-	public Future<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
-			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+	public Future<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
+		LocalActionContextImpl<PublishStatusModel> ac = createContext(PublishStatusModel.class, parameters);
+		ac.setProject(projectName);
+		nodeCrudHandler.handlePublish(ac, nodeUuid, languageTag);
+		return ac.getFuture();
 	}
 
 	@Override
 	public Future<PublishStatusResponse> takeNodeOffline(String projectName, String nodeUuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<PublishStatusResponse> ac = createContext(PublishStatusResponse.class, parameters);
+		ac.setProject(projectName);
+		nodeCrudHandler.handleTakeOffline(ac, nodeUuid);
+		return ac.getFuture();
 	}
 
 	@Override
 	public Future<PublishStatusModel> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
 			ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<PublishStatusModel> ac = createContext(PublishStatusModel.class, parameters);
+		ac.setProject(projectName);
+		nodeCrudHandler.handleTakeOffline(ac, nodeUuid, languageTag);
+		return ac.getFuture();
 	}
 
 	@Override
-	public Future<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest,
-			ParameterProvider... parameters) {
+	public Future<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1110,8 +1115,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public Future<TagFamilyListResponse> searchTagFamilies(String projectName, String json,
-			ParameterProvider... parameters) {
+	public Future<TagFamilyListResponse> searchTagFamilies(String projectName, String json, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
