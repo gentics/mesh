@@ -33,7 +33,9 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		if (springConfiguration != null) {
+			route("/*").handler(springConfiguration.authHandler());
+		}
 
 		addCreateHandler();
 		addReadHandler();
@@ -41,25 +43,41 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addCreateHandler() {
-		Route route = route("/").method(POST).produces(APPLICATION_JSON);
-		route.handler(rc -> crudHandler.handleCreate(InternalActionContext.create(rc)));
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/");
+		endpoint.method(POST);
+		endpoint.description("Create a new release.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> crudHandler.handleCreate(InternalActionContext.create(rc)));
 	}
 
 	private void addReadHandler() {
 		Endpoint readSchemas = createEndpoint();
-		readSchemas.path("/:uuid/schemas").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		readSchemas.path("/:uuid/schemas");
+		readSchemas.method(GET);
+		readSchemas.description("Load schemas that are assigned to the release and return a paged list response.");
+		readSchemas.produces(APPLICATION_JSON);
+		readSchemas.handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			crudHandler.handleGetSchemaVersions(InternalActionContext.create(rc), uuid);
 		});
 
 		Endpoint readMicroschemas = createEndpoint();
-		readMicroschemas.path("/:uuid/microschemas").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		readMicroschemas.path("/:uuid/microschemas");
+		readMicroschemas.method(GET);
+		readMicroschemas.description("Load schemas that are assigned to the release and return a paged list response.");
+		readMicroschemas.produces(APPLICATION_JSON);
+		readMicroschemas.handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			crudHandler.handleGetMicroschemaVersions(InternalActionContext.create(rc), uuid);
 		});
 
 		Endpoint readOne = createEndpoint();
-		readOne.path("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		readOne.path("/:uuid");
+		readOne.method(GET);
+		readOne.description("Load the release with the given uuid.");
+		readOne.produces(APPLICATION_JSON);
+		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -69,7 +87,11 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		});
 
 		Endpoint readAll = createEndpoint();
-		readAll.path("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		readAll.path("/");
+		readAll.method(GET);
+		readAll.description("Load multiple releases and return a paged list response.");
+		readAll.produces(APPLICATION_JSON);
+		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
@@ -78,6 +100,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		Endpoint addSchema = createEndpoint();
 		addSchema.path("/:uuid/schemas");
 		addSchema.method(PUT);
+		addSchema.description("Assign a schema version to the release.");
 		addSchema.consumes(APPLICATION_JSON);
 		addSchema.produces(APPLICATION_JSON);
 		addSchema.handler(rc -> {
@@ -88,6 +111,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		Endpoint addMicroschema = createEndpoint();
 		addMicroschema.path("/:uuid/microschemas");
 		addMicroschema.method(PUT);
+		addMicroschema.description("Assign a microschema version to the release.");
 		addMicroschema.consumes(APPLICATION_JSON);
 		addMicroschema.produces(APPLICATION_JSON);
 		addMicroschema.handler(rc -> {
@@ -98,6 +122,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		Endpoint updateRelease = createEndpoint();
 		updateRelease.path("/:uuid");
 		updateRelease.method(PUT);
+		updateRelease.description("Update the release with the given uuid.");
 		updateRelease.consumes(APPLICATION_JSON);
 		updateRelease.produces(APPLICATION_JSON);
 		updateRelease.handler(rc -> {

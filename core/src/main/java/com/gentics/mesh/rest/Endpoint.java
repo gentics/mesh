@@ -2,7 +2,6 @@ package com.gentics.mesh.rest;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 

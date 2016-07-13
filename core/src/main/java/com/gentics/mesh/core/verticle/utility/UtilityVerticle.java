@@ -21,13 +21,15 @@ public class UtilityVerticle extends AbstractCoreApiVerticle {
 	@Autowired
 	private UtilityHandler utilityHandler;
 
-	protected UtilityVerticle() {
+	public UtilityVerticle() {
 		super("utilities");
 	}
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		if (springConfiguration != null) {
+			route("/*").handler(springConfiguration.authHandler());
+		}
 		addResolveLinkHandler();
 	}
 
@@ -36,7 +38,10 @@ public class UtilityVerticle extends AbstractCoreApiVerticle {
 	 */
 	private void addResolveLinkHandler() {
 		Endpoint resolver = createEndpoint();
-		resolver.path("/linkResolver").method(POST).handler(rc -> {
+		resolver.path("/linkResolver");
+		resolver.method(POST);
+		resolver.description("Return the posted text and resolve and replace all found links.");
+		resolver.handler(rc -> {
 			utilityHandler.handleResolveLinks(rc);
 		});
 	}

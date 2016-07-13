@@ -43,14 +43,16 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		endpoint.path("/*");
 		endpoint.handler(getSpringConfiguration().authHandler());
 
-		getRouter().routeWithRegex("\\/([^\\/]{32})\\/.*").handler(tagFamilyCrudHandler.getUuidHandler("tagfamily_not_found"));
+		if (tagFamilyCrudHandler != null) {
+			getRouter().routeWithRegex("\\/([^\\/]{32})\\/.*").handler(tagFamilyCrudHandler.getUuidHandler("tagfamily_not_found"));
+		}
 
 		addTagFamilyReadHandler();
 		addTagFamilyCreateHandler();
 		addTagFamilyUpdateHandler();
 		addTagFamilyDeleteHandler();
 
-		//Tags API
+		// Tags API
 		addTagCreateHandler();
 		addTagReadHandler();
 		addTagUpdateHandler();

@@ -87,7 +87,11 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		Endpoint readOne = createEndpoint();
-		readOne.path("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		readOne.path("/:uuid");
+		readOne.method(GET);
+		readOne.description("Load the role with the given uuid.");
+		readOne.produces(APPLICATION_JSON);
+		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleRead(ac, uuid);
@@ -98,6 +102,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		 */
 		Endpoint readAll = createEndpoint();
 		readAll.path("/");
+		readAll.description("Load multiple roles and return a paged list response");
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {

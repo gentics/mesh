@@ -16,8 +16,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.rest.Endpoint;
 
-import io.vertx.ext.web.Route;
-
 /**
  * Verticle for /api/v1/schemas endpoint
  */
@@ -50,13 +48,19 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 	private void addChangesHandler() {
 		Endpoint readChanges = createEndpoint();
-		readChanges.path("/:schemaUuid/changes").method(GET).produces(APPLICATION_JSON);
+		readChanges.path("/:schemaUuid/changes");
+		readChanges.method(GET);
+		readChanges.description("Return a list of changes ");
+		readChanges.produces(APPLICATION_JSON);
 		readChanges.handler(rc -> {
 			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
 		});
 
 		Endpoint executeChanges = createEndpoint();
-		executeChanges.path("/:schemaUuid/changes").method(POST).produces(APPLICATION_JSON);
+		executeChanges.path("/:schemaUuid/changes");
+		executeChanges.method(POST);
+		executeChanges.description("Apply the posted changes to the schema.");
+		executeChanges.produces(APPLICATION_JSON);
 		executeChanges.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
@@ -66,7 +70,11 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 	private void addCreateHandler() {
 		Endpoint createSchema = createEndpoint();
-		createSchema.path("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		createSchema.path("/");
+		createSchema.method(POST);
+		createSchema.description("Create a new schema.");
+		createSchema.consumes(APPLICATION_JSON);
+		createSchema.produces(APPLICATION_JSON);
 		createSchema.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
@@ -88,8 +96,12 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 	private void addUpdateHandler() {
 		Endpoint updateSchema = createEndpoint();
-		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		updateSchema.path("/:uuid");
+		updateSchema.method(PUT);
+		updateSchema.description("Update the schema.");
+		updateSchema.consumes(APPLICATION_JSON);
+		updateSchema.produces(APPLICATION_JSON);
+		updateSchema.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -98,7 +110,10 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		Endpoint deleteSchema = createEndpoint();
-		deleteSchema.path("/:uuid").method(DELETE).produces(APPLICATION_JSON);
+		deleteSchema.path("/:uuid");
+		deleteSchema.method(DELETE);
+		deleteSchema.description("Delete the schema with the given uuid.");
+		deleteSchema.produces(APPLICATION_JSON);
 		deleteSchema.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -110,6 +125,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		Endpoint readOne = createEndpoint();
 		readOne.path("/:uuid");
 		readOne.method(GET);
+		readOne.description("Load the schema with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");

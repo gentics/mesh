@@ -4,9 +4,6 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -36,9 +33,11 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.IndexHandler;
 
 import io.vertx.ext.web.Route;
+import rx.functions.Func0;
 
 @Component
 @Scope("singleton")
@@ -57,7 +56,9 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		if (springConfiguration != null) {
+			route("/*").handler(springConfiguration.authHandler());
+		}
 		addSearchEndpoints();
 	}
 
@@ -65,19 +66,17 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		db.noTrx(() -> {
-			registerSearchHandler("users", boot.meshRoot().getUserRoot(), UserListResponse.class, User.TYPE);
-			registerSearchHandler("groups", boot.meshRoot().getGroupRoot(), GroupListResponse.class, Group.TYPE);
-			registerSearchHandler("roles", boot.meshRoot().getRoleRoot(), RoleListResponse.class, Role.TYPE);
-			registerSearchHandler("nodes", boot.meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE);
-			registerSearchHandler("tags", boot.meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE);
-			registerSearchHandler("tagFamilies", boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, TagFamily.TYPE);
-			registerSearchHandler("projects", boot.meshRoot().getProjectRoot(), ProjectListResponse.class, Project.TYPE);
-			registerSearchHandler("schemas", boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, SchemaContainer.TYPE);
-			registerSearchHandler("microschemas", boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class, MicroschemaContainer.TYPE);
-			addAdminHandlers();
-			return null;
-		});
+		registerSearchHandler("users", () -> boot.meshRoot().getUserRoot(), UserListResponse.class, User.TYPE);
+		registerSearchHandler("groups", () -> boot.meshRoot().getGroupRoot(), GroupListResponse.class, Group.TYPE);
+		registerSearchHandler("roles", () -> boot.meshRoot().getRoleRoot(), RoleListResponse.class, Role.TYPE);
+		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE);
+		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE);
+		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, TagFamily.TYPE);
+		registerSearchHandler("projects", () -> boot.meshRoot().getProjectRoot(), ProjectListResponse.class, Project.TYPE);
+		registerSearchHandler("schemas", () -> boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, SchemaContainer.TYPE);
+		registerSearchHandler("microschemas", () -> boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class,
+				MicroschemaContainer.TYPE);
+		addAdminHandlers();
 	}
 
 	private void addAdminHandlers() {
@@ -102,17 +101,22 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	 *            Aggregation node that should be used to load the objects that were found within the search index
 	 * @param classOfRL
 	 *            Class of matching list response
-	 * @param indexHandlerKey key of the index handler
+	 * @param indexHandlerKey
+	 *            key of the index handlers
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
-			RootVertex<T> root, Class<RL> classOfRL, String indexHandlerKey) {
-		Route postRoute = route("/" + typeName).method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
+			Func0<RootVertex<T>> root, Class<RL> classOfRL, String indexHandlerKey) {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/" + typeName);
+		endpoint.method(POST);
+		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			try {
 				IndexHandler indexHandler = registry.get(indexHandlerKey);
 				InternalActionContext ac = InternalActionContext.create(rc);
-				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getAffectedIndices(ac),
-						indexHandler.getReadPermission(ac));
+				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getAffectedIndices(ac), indexHandler.getReadPermission(ac));
 			} catch (Exception e) {
 				// fail(rc, "search_error_query");
 				rc.fail(e);

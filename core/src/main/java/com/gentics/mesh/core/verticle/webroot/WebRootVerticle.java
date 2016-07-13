@@ -8,8 +8,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-
-import io.vertx.ext.web.Route;
+import com.gentics.mesh.rest.Endpoint;
 
 @Component
 @Scope("singleton")
@@ -19,29 +18,35 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 	@Autowired
 	private WebRootHandler handler;
 
-	protected WebRootVerticle() {
+	public WebRootVerticle() {
 		super("webroot");
 	}
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		if (springConfiguration != null) {
+			Endpoint endpoint = createEndpoint();
+			endpoint.path("/*").handler(springConfiguration.authHandler());
+		}
 		addErrorHandlers();
 		addPathHandler();
 	}
 
-	private Route pathRoute() {
-		return getRouter().routeWithRegex("\\/(.*)");
-	}
-
 	private void addPathHandler() {
-		pathRoute().method(GET).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.pathRegex("\\/(.*)");
+		endpoint.method(GET);
+		endpoint.description("Load the node which is located using the provided path.");
+		endpoint.handler(rc -> {
 			handler.handleGetPath(rc);
 		});
 	}
 
 	private void addErrorHandlers() {
-		route("/error/404").handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/error/404");
+		endpoint.description("Fallback endpoint for unresolvable links which returns 404.");
+		endpoint.handler(rc -> {
 			rc.data().put("statuscode", "404");
 			rc.next();
 		});

@@ -8,8 +8,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-
-import io.vertx.ext.web.Route;
+import com.gentics.mesh.rest.Endpoint;
 
 @Component
 @Scope("singleton")
@@ -19,21 +18,23 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 	@Autowired
 	private NavRootHandler handler;
 
-	protected NavRootVerticle() {
+	public NavRootVerticle() {
 		super("navroot");
 	}
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		if (springConfiguration != null) {
+			route("/*").handler(springConfiguration.authHandler());
+		}
 		addPathHandler();
 	}
 
-	private Route pathRoute() {
-		return getRouter().routeWithRegex("\\/(.*)");
-	}
-
 	private void addPathHandler() {
-		pathRoute().method(GET).handler(rc -> handler.handleGetPath(rc));
+		Endpoint endpoint = createEndpoint();
+		endpoint.pathRegex("\\/(.*)");
+		endpoint.method(GET);
+		endpoint.description("Return a navigation for the node which is located using the given path.");
+		endpoint.handler(rc -> handler.handleGetPath(rc));
 	}
 }

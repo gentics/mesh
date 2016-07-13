@@ -15,17 +15,24 @@ import org.raml.model.Response;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
+import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
+import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
+import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.search.ProjectSearchVerticle;
+import com.gentics.mesh.search.SearchVerticle;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -117,7 +124,8 @@ public class RAMLGenerator {
 		Mockito.when(verticle.getRouter()).thenReturn(Router.router(Vertx.vertx()));
 		MeshSpringConfiguration mockConfig = Mockito.mock(MeshSpringConfiguration.class);
 		Mockito.when(verticle.getSpringConfiguration()).thenReturn(mockConfig);
-
+		// Router mockRouter = Mockito.mock(Router.class);
+		// Mockito.when(verticle.getRouter()).thenReturn(mockRouter);
 		// NodeCrudHandler mockHandler = Mockito.mock(NodeCrudHandler.class);
 		// Mockito.when(verticle.getCrudHandler()).thenReturn(mockHandler);
 
@@ -132,6 +140,27 @@ public class RAMLGenerator {
 		TagFamilyVerticle tagFamilyVerticle = Mockito.spy(new TagFamilyVerticle());
 		initVerticle(tagFamilyVerticle);
 		addEndpoints(apiResource, tagFamilyVerticle);
+
+		NavRootVerticle navVerticle = Mockito.spy(new NavRootVerticle());
+		initVerticle(navVerticle);
+		addEndpoints(apiResource, navVerticle);
+
+		// TagCloudVerticle tagCloudVerticle = Mockito.spy(new TagCloudVerticle());
+		// initVerticle(tagCloudVerticle);
+		// addEndpoints(apiResource, tagCloudVerticle);
+
+		WebRootVerticle webVerticle = Mockito.spy(new WebRootVerticle());
+		initVerticle(webVerticle);
+		addEndpoints(apiResource, webVerticle);
+
+		ReleaseVerticle releaseVerticle = Mockito.spy(new ReleaseVerticle());
+		initVerticle(releaseVerticle);
+		addEndpoints(apiResource, releaseVerticle);
+
+		ProjectSearchVerticle projectSearchVerticle = Mockito.spy(new ProjectSearchVerticle());
+		initVerticle(projectSearchVerticle);
+		addEndpoints(apiResource, projectSearchVerticle);
+
 	}
 
 	private void addCoreVerticles(Raml raml) throws Exception {
@@ -158,6 +187,18 @@ public class RAMLGenerator {
 		MicroschemaVerticle microschemaVerticle = Mockito.spy(new MicroschemaVerticle());
 		initVerticle(microschemaVerticle);
 		addEndpoints(apiResource, microschemaVerticle);
+
+		AdminVerticle adminVerticle = Mockito.spy(new AdminVerticle());
+		initVerticle(adminVerticle);
+		addEndpoints(apiResource, adminVerticle);
+
+		SearchVerticle searchVerticle = Mockito.spy(new SearchVerticle());
+		initVerticle(searchVerticle);
+		addEndpoints(apiResource, searchVerticle);
+
+		UtilityVerticle utilityVerticle = Mockito.spy(new UtilityVerticle());
+		initVerticle(utilityVerticle);
+		addEndpoints(apiResource, utilityVerticle);
 
 	}
 }

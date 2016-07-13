@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -48,31 +49,52 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addMigrationStatusHandler() {
-		route("/migrationStatus").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/migrationStatus");
+		endpoint.method(GET);
+		endpoint.description("Return the current schema migration status.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			handler.handleMigrationStatus(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addExportHandler() {
-		route("/export").method(GET).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/export");
+		endpoint.method(GET);
+		endpoint.description("Invoke a graph database export");
+		endpoint.handler(rc -> {
 			handler.handleExport(rc);
 		});
 	}
 
 	private void addImportHandler() {
-		route("/import").method(GET).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/import");
+		endpoint.method(GET);
+		endpoint.description("Invoke a graph database import");
+		endpoint.handler(rc -> {
 			handler.handleImport(rc);
 		});
 	}
 
 	private void addRestoreHandler() {
-		route("/restore").method(GET).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/restore");
+		endpoint.description("Invoke a graph database restore");
+		endpoint.method(GET);
+		endpoint.handler(rc -> {
 			handler.handleRestore(rc);
 		});
 	}
 
 	private void addBackupHandler() {
-		route("/backup").method(GET).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/backup");
+		endpoint.method(GET);
+		endpoint.description("Invoke an incremental graph database backup.");
+		endpoint.handler(rc -> {
 			handler.handleBackup(rc);
 		});
 	}
@@ -81,7 +103,11 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	 * Handler that reacts onto status requests.
 	 */
 	private void addStatusHandler() {
-		route("/status").method(GET).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.description("Return the mesh system status.");
+		endpoint.path("/status");
+		endpoint.method(GET);
+		endpoint.handler(rc -> {
 			handler.handleStatus(rc);
 		});
 

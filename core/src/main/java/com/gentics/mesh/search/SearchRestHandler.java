@@ -48,6 +48,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
+import rx.functions.Func0;
 
 /**
  * Collection of handlers which are used to deal with rest search requests.
@@ -85,7 +86,7 @@ public class SearchRestHandler {
 	 * @throws MeshJsonException
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
-			RootVertex<T> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
+			Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
 					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
 		PagingParameters pagingInfo = ac.getPagingParameters();
@@ -147,9 +148,9 @@ public class SearchRestHandler {
 						//TODO check permissions without loading the vertex
 
 						// Locate the node
-						rootVertex.findByUuid(uuid).subscribe(element -> {
+						rootVertex.call().findByUuid(uuid).subscribe(element -> {
 							if (element == null) {
-								log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.getImpl().getFermaType()
+								log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.call().getImpl().getFermaType()
 										+ "}");
 								obsResult.toHandler().handle(Future.succeededFuture());
 							} else {
