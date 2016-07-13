@@ -41,6 +41,7 @@ public class DemoRunner {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
+		options.getStorageOptions().setStartServer(true);
 		options.getSearchOptions().setHttpEnabled(true);
 
 		Mesh mesh = Mesh.mesh(options);

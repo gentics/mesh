@@ -130,6 +130,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Effective orientdb server configuration:" + configString);
 		}
+
+		String safeParentDirPath = StringEscapeUtils.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getParentFile().getAbsolutePath()));
+		configString = configString.replaceAll("%MESH_DB_PARENT_PATH%", safeParentDirPath);
+		System.out.println(configString);
 		InputStream stream = new ByteArrayInputStream(configString.getBytes(StandardCharsets.UTF_8));
 		return stream;
 	}
@@ -137,12 +141,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private void startOrientServer() throws Exception {
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
+		System.out.println(orientdbHome);
 		OServer server = OServerMain.create();
 		log.info("Extracting OrientDB Studio");
-		InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.1.zip");
+		InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.2.zip");
 		File pluginDirectory = new File("orient-plugins");
 		pluginDirectory.mkdirs();
-		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.1.zip")));
+		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.2.zip")));
 
 		server.startup(getOrientServerConfig());
 		OServerPluginManager manager = new OServerPluginManager();

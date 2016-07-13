@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.AbstractInternalActionContext;
@@ -18,6 +19,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.util.HttpQueryUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -55,10 +57,17 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param parameters
 	 *            Query parameters which will form the complete query string
 	 */
-	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse, ParameterProvider... parameters) {
-		this.query = getQuery(parameters);
+	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse, ParameterProvider... requestParameters) {
+		this.query = getQuery(requestParameters);
 		this.user = user;
 		this.classOfResponse = classOfResponse;
+
+		for (ParameterProvider requestParameter : requestParameters) {
+			Map<String, String> paramMap = HttpQueryUtils.splitQuery(requestParameter.getQueryParameters());
+			for (Entry<String, String> entry : paramMap.entrySet()) {
+				parameters.add(entry.getKey(), entry.getValue());
+			}
+		}
 	}
 
 	@Override
