@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,7 +36,6 @@ import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
-import com.gentics.mesh.util.RxDebugger;
 
 public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
@@ -51,10 +49,10 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 		return list;
 	}
 
-	@BeforeClass
-	public static void setupOnce() {
-		new RxDebugger().start();
-	}
+//	@BeforeClass
+//	public static void setupOnce() {
+//		new RxDebugger().start();
+//	}
 
 	/**
 	 * Folder /news/2015 is not published. A new node will be created in folder 2015. Publishing the created folder should fail since the parent folder
@@ -260,7 +258,13 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 	 */
 	@Test
 	public void testMoveConsistency() {
-		fail("implement me");
+		// 1. Take the target folder offline
+		String newsFolderUuid = db.noTrx(() -> folder("news").getUuid());
+		call(() -> getClient().takeNodeOffline(PROJECT_NAME, newsFolderUuid, new PublishParameters().setRecursive(true)));
+
+		// 2. Move the published node into the offline target node
+		String publishedNode = db.noTrx(() -> content("concorde").getUuid());
+		call(() -> getClient().moveNode(PROJECT_NAME, publishedNode, newsFolderUuid), BAD_REQUEST, "node_error_parent_containers_not_published", newsFolderUuid);
 	}
 
 	@Test

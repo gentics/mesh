@@ -1380,8 +1380,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			getGraphFieldContainers(releaseUuid, ContainerType.DRAFT).stream()
 					.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
 
-			SearchQueueBatch batch = createIndexBatch(STORE_ACTION);
-			return batch;
+			assertPublishConsistency(ac);
+			return createIndexBatch(STORE_ACTION);
 		}).process().map(i -> {
 			return null;
 		});
