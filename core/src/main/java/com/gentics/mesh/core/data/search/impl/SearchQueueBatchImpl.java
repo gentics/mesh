@@ -123,17 +123,43 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
 		Database db = springConfiguration.database();
 
-		return db.noTrx(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Processing batch {" + getBatchId() + "}");
-				printDebug();
-			}
+		//		return db.noTrx(() -> {
+		//			if (log.isDebugEnabled()) {
+		//				log.debug("Processing batch {" + getBatchId() + "}");
+		//				printDebug();
+		//			}
+		//
+		//			
+		//			for (SearchQueueEntry entry : getEntries()) {
+		//				entry.process().toBlocking().last();
+		//			}
+		//			
+		//			if (log.isDebugEnabled()) {
+		//				log.debug("Handled all search queue items.");
+		//			}
+		//
+		//			// We successfully finished this batch. Delete it.
+		//			db.trx(() -> {
+		//				reload();
+		//				delete(null);
+		//				return null;
+		//			});
+		//			// Refresh index
+		//			SearchProvider provider = springConfiguration.searchProvider();
+		//			if (provider != null) {
+		//				provider.refreshIndex();
+		//			} else {
+		//			}
+		//			return Observable.just(this);
+		//
+		//		});
 
-			
-			for (SearchQueueEntry entry : getEntries()) {
-				entry.process().toBlocking().last();
-			}
-			
+		List<Observable<Void>> obs = new ArrayList<>();
+		for (SearchQueueEntry entry : getEntries()) {
+			obs.add(entry.process());
+		}
+
+		return Observable.concat(Observable.from(obs)).last().map(o -> this).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Handled all search queue items.");
 			}
@@ -151,39 +177,13 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			} else {
 				log.error("Could not refresh index since the elasticsearch provider has not been initalized");
 			}
-			return Observable.just(this);
+
+			// TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
+			// mergedObs.doOnError(error -> {
+			// return null;
+			// });
 
 		});
-
-//			List<Observable<Void>> obs = new ArrayList<>();
-//			for (SearchQueueEntry entry : getEntries()) {
-//				obs.add(entry.process());
-//			}
-//			return RxUtil.concatListNotEager(obs).last().map(o -> this).doOnCompleted(() -> {
-//				if (log.isDebugEnabled()) {
-//					log.debug("Handled all search queue items.");
-//				}
-//
-//				// We successfully finished this batch. Delete it.
-//				db.trx(() -> {
-//					reload();
-//					delete(null);
-//					return null;
-//				});
-//				// Refresh index
-//				SearchProvider provider = springConfiguration.searchProvider();
-//				if (provider != null) {
-//					provider.refreshIndex();
-//				} else {
-//					log.error("Could not refresh index since the elasticsearch provider has not been initalized");
-//				}
-//
-//				// TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
-//				// mergedObs.doOnError(error -> {
-//				// return null;
-//				// });
-//
-//			});
 
 	}
 

@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.Subscriber;
+import rx.functions.Func0;
 import rx.functions.Func2;
 
 public final class RxUtil {
@@ -187,6 +188,12 @@ public final class RxUtil {
 	public static <T> Transformer<T, T> delay(Observable<?> o1) {
 		return source -> {
 			return source.delaySubscription(() -> o1.ignoreElements());
+		};
+	}
+
+	public static <T, U> Transformer<T, U> then(Func0<Observable<U>> o1) {
+		return source -> {
+			return Observable.defer(o1).delaySubscription(() -> source.ignoreElements());
 		};
 	}
 
