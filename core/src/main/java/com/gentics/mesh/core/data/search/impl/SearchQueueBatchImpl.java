@@ -129,32 +129,42 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 				obs.add(entry.process());
 			}
 		}
-		obs.add(Observable.just(null));
-		return Observable.concat(Observable.from(obs)).last().map(o -> this).doOnCompleted(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Handled all search queue items.");
-			}
-
+	
+		if (obs.isEmpty()) {
 			// We successfully finished this batch. Delete it.
 			db.trx(() -> {
 				reload();
 				delete(null);
 				return null;
 			});
-			// Refresh index
-			SearchProvider provider = springConfiguration.searchProvider();
-			if (provider != null) {
-				provider.refreshIndex();
-			} else {
-				log.error("Could not refresh index since the elasticsearch provider has not been initalized");
-			}
+			return Observable.just(this);
+		} else {
+			return Observable.concat(Observable.from(obs)).last().map(o -> this).doOnCompleted(() -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Handled all search queue items.");
+				}
 
-			// TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
-			// mergedObs.doOnError(error -> {
-			// return null;
-			// });
+				// We successfully finished this batch. Delete it.
+				db.trx(() -> {
+					reload();
+					delete(null);
+					return null;
+				});
+				// Refresh index
+				SearchProvider provider = springConfiguration.searchProvider();
+				if (provider != null) {
+					provider.refreshIndex();
+				} else {
+					log.error("Could not refresh index since the elasticsearch provider has not been initalized");
+				}
 
-		});
+				// TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
+				// mergedObs.doOnError(error -> {
+				// return null;
+				// });
+
+			});
+		}
 
 	}
 

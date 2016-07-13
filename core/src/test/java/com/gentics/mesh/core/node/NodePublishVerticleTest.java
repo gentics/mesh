@@ -64,28 +64,35 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 	public void testPublishNodeInUnpublishedContainer() {
 
 		// 1. Take the parent folder offline
-		String folderUuid = db.noTrx(() -> {
+		String parentFolderUuid;
+		String subFolderUuid;
+		try (NoTrx notrx = db.noTrx()) {
 			InternalActionContext ac = getMockedInternalActionContext("recursive=true", user());
-			Node folder = folder("2015");
-			folder.takeOffline(ac);
-			folder("news").publish(ac);
-			return folder.getUuid();
-		});
+			Node subFolder = folder("2015");
+			Node parentFolder = folder("news");
+			parentFolder.publish(ac);
+			subFolder.takeOffline(ac);
+			subFolderUuid = subFolder.getUuid();
+			parentFolderUuid = parentFolder.getUuid();
+		}
 
-		// 2. Create a new node in the folder
+		assertPublishStatus("Node 2015 should not be published", subFolderUuid, false);
+		assertPublishStatus("Node News should be published", parentFolderUuid, true);
+
+		// 2. Create a new node in the folder 2015
 		NodeCreateRequest requestA = new NodeCreateRequest();
 		requestA.setLanguage("en");
-		requestA.setParentNodeUuid(folderUuid);
+		requestA.setParentNodeUuid(subFolderUuid);
 		requestA.setSchema(new SchemaReference().setName("content"));
 		requestA.getFields().put("name", FieldUtil.createStringField("nodeA"));
 		requestA.getFields().put("filename", FieldUtil.createStringField("nodeA"));
 		NodeResponse nodeA = call(() -> getClient().createNode(PROJECT_NAME, requestA));
 
-		// 3. Publish nodeA - It should fail since the parentfolder is not published
-		call(() -> getClient().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published", folderUuid);
+		// 3. Publish the created node - It should fail since the parentfolder is not published
+		call(() -> getClient().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published", subFolderUuid);
 
 		// 4. Publish the parent folder
-		call(() -> getClient().publishNode(PROJECT_NAME, folderUuid));
+		call(() -> getClient().publishNode(PROJECT_NAME, subFolderUuid));
 
 		// 4. Verify that publishing now works
 		call(() -> getClient().publishNode(PROJECT_NAME, nodeA.getUuid()));
