@@ -13,7 +13,6 @@ public class GraphRelationships {
 
 		db.noTrx(() -> {
 			db.addEdgeIndexSource(ASSIGNED_TO_ROLE);
-			db.addEdgeType(MEMBER_OF);
 			db.addEdgeType(HAS_SEARCH_QUEUE_ROOT);
 			db.addEdgeType(HAS_PROJECT);
 			db.addEdgeType(HAS_RELEASE);
@@ -31,15 +30,10 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_TAG_FAMILY);
 			db.addEdgeType(HAS_TAG, TagEdgeImpl.RELEASE_UUID_KEY);
 
-			db.addEdgeType(LINKED);
 			db.addEdgeType(HAS_CREATOR);
 			db.addEdgeType(HAS_EDITOR);
-			db.addEdgeType(PARENT_OF);
-			db.addEdgeType(HAS_LOCALIZED_TAGS);
 			db.addEdgeType(HAS_LANGUAGE);
-			db.addEdgeType(HAS_LOCALISATION);
 			db.addEdgeType(HAS_FIELD_CONTAINER);
-			db.addEdgeType(HAS_CHILD);
 			db.addEdgeType(HAS_PARENT_NODE);
 			db.addEdgeType(HAS_BASE_NODE);
 
@@ -49,7 +43,6 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_SCHEMA_CONTAINER);
 			db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
 			db.addEdgeType(HAS_MICROSCHEMA_ROOT);
-			db.addEdgeType(HAS_PROPERTY_TYPE);
 
 			db.addEdgeType(HAS_NODE_ROOT);
 			db.addEdgeType(HAS_TAGFAMILY_ROOT);
@@ -62,8 +55,6 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_FIELD);
 			db.addEdgeType(HAS_ITEM);
 			db.addEdgeType(HAS_BATCH);
-			db.addEdgeType(ALLOWED_SCHEMA);
-
 			db.addEdgeType(HAS_LIST);
 
 			// Versioning
@@ -79,9 +70,6 @@ public class GraphRelationships {
 		});
 
 	}
-
-	// Auth Relationships
-	public static final String MEMBER_OF = "MEMBER_OF";
 
 	// Search
 	public static final String HAS_SEARCH_QUEUE_ROOT = "HAS_SEARCH_QUEUE_ROOT";
@@ -113,15 +101,10 @@ public class GraphRelationships {
 	public static final String HAS_TAG = "HAS_TAG";
 
 	// Misc
-	public static final String LINKED = "LINKED";
 	public static final String HAS_CREATOR = "HAS_CREATOR";
 	public static final String HAS_EDITOR = "HAS_EDITOR";
-	public static final String PARENT_OF = "PARENT_OF";
-	public static final String HAS_LOCALIZED_TAGS = "HAS_LOCALIZED_TAGS";
 	public static final String HAS_LANGUAGE = "HAS_LANGUAGE";
-	public static final String HAS_LOCALISATION = "HAS_LOCALISATION";
 	public static final String HAS_FIELD_CONTAINER = "HAS_FIELD_CONTAINER";
-	public static final String HAS_CHILD = "HAS_CHILD";
 
 	public static final String HAS_PARENT_NODE = "HAS_PARENT_NODE";
 	public static final String HAS_BASE_NODE = "HAS_ROOT_NODE";
@@ -134,7 +117,6 @@ public class GraphRelationships {
 	public static final String HAS_PARENT_CONTAINER = "HAS_PARENT_CONTAINER";
 	public static final String HAS_SCHEMA_CONTAINER_ITEM = "HAS_SCHEMA_CONTAINER_ITEM";
 	public static final String HAS_MICROSCHEMA_CONTAINER = "HAS_MICROSCHEMA_CONTAINER";
-	public static final String HAS_PROPERTY_TYPE = "HAS_PROPERTY_TYPE";
 
 	// Roots
 	public static final String HAS_NODE_ROOT = "HAS_NODE_ROOT";
@@ -149,7 +131,6 @@ public class GraphRelationships {
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";
 	public static final String HAS_BATCH = "HAS_BATCH";
-	public static final String ALLOWED_SCHEMA = "ALLOWED_SCHEMA";
 
 	public static final String HAS_LIST = "HAS_LIST";
 

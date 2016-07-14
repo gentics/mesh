@@ -198,10 +198,16 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- RX Java -->
 		<dependency>
 			<groupId>io.reactivex</groupId>
 			<artifactId>rxjava-debug</artifactId>
 			<version>1.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>io.reactivex</groupId>
+			<artifactId>rxjava</artifactId>
+			<version>1.1.7</version>
 		</dependency>
 
 		<!-- Spring -->

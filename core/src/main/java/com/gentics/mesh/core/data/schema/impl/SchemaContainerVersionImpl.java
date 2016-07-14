@@ -25,6 +25,9 @@ import com.gentics.mesh.util.RestModelHelper;
 
 import rx.Observable;
 
+/**
+ * @see SchemaContainerVersion
+ */
 public class SchemaContainerVersionImpl extends
 		AbstractGraphFieldSchemaContainerVersion<Schema, SchemaReference, SchemaContainerVersion, SchemaContainer> implements SchemaContainerVersion {
 
