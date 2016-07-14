@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.search;
 
 import com.gentics.mesh.core.data.MeshVertex;
 
-import rx.Observable;
+import rx.Completable;
 
 /**
  * A search queue entry is contains the information that is needed to update the search index for the element that is specified in this entry. In order to
@@ -85,7 +85,7 @@ public interface SearchQueueEntry extends MeshVertex {
 	 * 
 	 * @return
 	 */
-	Observable<Void> process();
+	Completable process();
 
 	/**
 	 * Get property with given name

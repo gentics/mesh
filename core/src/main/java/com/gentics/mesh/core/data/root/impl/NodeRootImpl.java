@@ -53,7 +53,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
@@ -159,7 +159,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	//TODO use schema container version instead of container
-	private Observable<Node> createNode(InternalActionContext ac, Observable<SchemaContainer> obsSchemaContainer) {
+	private Single<Node> createNode(InternalActionContext ac, Single<SchemaContainer> obsSchemaContainer) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Project project = ac.getProject();
@@ -168,7 +168,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		return obsSchemaContainer.flatMap(schemaContainer -> {
 
-			Observable<Tuple<SearchQueueBatch, Node>> obsTuple = db.noTrx(() -> {
+			Single<Tuple<SearchQueueBatch, Node>> obsTuple = db.noTrx(() -> {
 				String body = ac.getBodyAsString();
 
 				NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
@@ -201,14 +201,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				});
 			});
 			return obsTuple.flatMap(tuple -> {
-				return tuple.v1().process().map(i -> tuple.v2());
+				return tuple.v1().process().toSingleDefault(tuple.v2());
 			});
 
 		});
 	}
 
 	@Override
-	public Observable<Node> create(InternalActionContext ac) {
+	public Single<Node> create(InternalActionContext ac) {
 
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
@@ -235,20 +235,20 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 				// 2. Use schema reference by uuid first
 				return project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM).flatMap(schemaContainer -> {
-					return createNode(ac, Observable.just(schemaContainer));
+					return createNode(ac, Single.just(schemaContainer));
 				});
 			}
 
 			//TODO handle schema version as well? Decide whether it should be possible to create a node and specify the schema version.
 			// 3. Or just schema reference by name
 			if (!isEmpty(schemaInfo.getSchema().getName())) {
-				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName()).toBlocking().single();
+				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName()).toBlocking().value();
 				if (containerByName != null) {
 					String schemaName = containerByName.getName();
 					String schemaUuid = containerByName.getUuid();
 					return requestUser.hasPermissionAsync(ac, containerByName, GraphPermission.READ_PERM).flatMap(hasPerm -> {
 						if (hasPerm) {
-							return createNode(ac, Observable.just(containerByName));
+							return createNode(ac, Single.just(containerByName));
 						} else {
 							throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);
 						}

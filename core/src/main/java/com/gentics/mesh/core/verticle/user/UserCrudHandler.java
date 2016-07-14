@@ -22,7 +22,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 @Component
 public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
@@ -61,12 +61,12 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 			return db.noTrx(() -> {
 				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-				Observable<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+				Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
-				Observable<? extends MeshVertex> resolvedElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
+				Single<? extends MeshVertex> resolvedElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
 
-				Observable<UserPermissionResponse> respObs = Observable.zip(obsUser, resolvedElement, (user, targetElement) -> {
+				Single<UserPermissionResponse> respObs = Single.zip(obsUser, resolvedElement, (user, targetElement) -> {
 
 					return db.noTrx(() -> {
 						if (targetElement == null) {

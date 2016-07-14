@@ -50,7 +50,7 @@ import com.gentics.mesh.search.index.TagIndexHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 /**
  * @see ProjectRoot
@@ -108,14 +108,14 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public Observable<? extends MeshVertex> resolveToElement(Stack<String> stack) {
+	public Single<? extends MeshVertex> resolveToElement(Stack<String> stack) {
 		if (stack.isEmpty()) {
-			return Observable.just(this);
+			return Single.just(this);
 		} else {
 			String uuidSegment = stack.pop();
 			return findByUuid(uuidSegment).flatMap(project -> {
 				if (stack.isEmpty()) {
-					return Observable.just(project);
+					return Single.just(project);
 				} else {
 					String nestedRootNode = stack.pop();
 					switch (nestedRootNode) {
@@ -135,7 +135,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 						NodeRoot nodeRoot = project.getNodeRoot();
 						return nodeRoot.resolveToElement(stack);
 					default:
-						return Observable.error(new Exception("Unknown project element {" + nestedRootNode + "}"));
+						return Single.error(new Exception("Unknown project element {" + nestedRootNode + "}"));
 					}
 				}
 			});
@@ -149,7 +149,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public Observable<Project> create(InternalActionContext ac) {
+	public Single<Project> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		RouterStorage routerStorage = RouterStorage.getIntance();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
@@ -168,7 +168,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid());
 			}
 			// TODO instead of this check, a constraint in the db should be added
-			Project conflictingProject = boot.projectRoot().findByName(requestModel.getName()).toBlocking().single();
+			Project conflictingProject = boot.projectRoot().findByName(requestModel.getName()).toBlocking().value();
 			if (conflictingProject != null) {
 				throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 			}
@@ -218,10 +218,10 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				}
 			} catch (InvalidNameException e) {
 				// TODO should we really fail here?
-				return Observable.error(error(BAD_REQUEST, "Error while adding project to router storage", e));
+				return Single.error(error(BAD_REQUEST, "Error while adding project to router storage", e));
 			}
 
-			return batch.process().map(t -> project);
+			return batch.process().andThen(Single.just(project));
 
 		});
 	}

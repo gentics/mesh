@@ -75,7 +75,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertThat(schema).matches(restSchema);
 			assertThat(restSchema.getPermissions()).isNotEmpty().contains("create", "read", "update", "delete");
 
-			SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchema.getUuid()).toBlocking().first();
+			SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchema.getUuid()).toBlocking().value();
 			assertNotNull(schemaContainer);
 			assertEquals("Name does not match with the requested name", schema.getName(), schemaContainer.getName());
 			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
@@ -295,7 +295,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().single();
+			SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().value();
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
 	}
@@ -316,7 +316,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			expectException(future, BAD_REQUEST, "schema_delete_still_in_use", uuid);
 
-			SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(uuid).toBlocking().single();
+			SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(uuid).toBlocking().value();
 			assertNotNull("The schema should not have been deleted.", reloaded);
 
 			// Validate and delete all remaining nodes that use the schema
@@ -332,7 +332,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			expectResponseMessage(future, "schema_deleted", name);
 
 			boot.schemaContainerRoot().reload();
-			reloaded = boot.schemaContainerRoot().findByUuid(uuid).toBlocking().single();
+			reloaded = boot.schemaContainerRoot().findByUuid(uuid).toBlocking().value();
 			assertNull("The schema should have been deleted.", reloaded);
 		}
 	}

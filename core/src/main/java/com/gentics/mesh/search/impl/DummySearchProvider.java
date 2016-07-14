@@ -10,7 +10,9 @@ import org.elasticsearch.node.Node;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.search.SearchProvider;
 
+import rx.Completable;
 import rx.Observable;
+import rx.Single;
 
 public class DummySearchProvider implements SearchProvider {
 
@@ -24,25 +26,27 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Void> createIndex(String indexName) {
-		return Observable.just(null);
+	public Completable createIndex(String indexName) {
+		return Completable.complete();
 	}
 
 	@Override
 
-	public Observable<Void> updateDocument(String index, String type, String uuid, Map<String, Object> map) {
-		updateEvents.put(index + "-" + type + "-" + uuid, map);
-		return Observable.just(null);
+	public Completable updateDocument(String index, String type, String uuid, Map<String, Object> map) {
+		return Completable.fromAction(() -> {
+			updateEvents.put(index + "-" + type + "-" + uuid, map);
+		});
 	}
 
-	public Observable<Void> setNodeIndexMapping(String indexName, String type, Schema schema) {
-		return Observable.just(null);
+	public Completable setNodeIndexMapping(String indexName, String type, Schema schema) {
+		return Completable.complete();
 	}
 
 	@Override
-	public Observable<Void> deleteDocument(String index, String type, String uuid) {
-		deleteEvents.add(index + "-" + type + "-" + uuid);
-		return Observable.just(null);
+	public Completable deleteDocument(String index, String type, String uuid) {
+		return Completable.fromAction(() -> {
+			deleteEvents.add(index + "-" + type + "-" + uuid);
+		});
 	}
 
 	@Override
@@ -52,9 +56,10 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Void> storeDocument(String index, String type, String uuid, Map<String, Object> map) {
-		storeEvents.put(index + "-" + type + "-" + uuid, map);
-		return Observable.just(null);
+	public Completable storeDocument(String index, String type, String uuid, Map<String, Object> map) {
+		return Completable.fromAction(() -> {
+			storeEvents.put(index + "-" + type + "-" + uuid, map);
+		});
 	}
 
 	@Override
@@ -91,17 +96,17 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Void> clearIndex(String indexName) {
-		return Observable.just(null);
+	public Completable clearIndex(String indexName) {
+		return Completable.complete();
 	}
 
 	@Override
-	public Observable<Void> deleteIndex(String indexName) {
-		return Observable.just(null);
+	public Completable deleteIndex(String indexName) {
+		return Completable.complete();
 	}
 
 	@Override
-	public Observable<Integer> deleteDocumentsViaQuery(String index, String query) {
-		return Observable.just(0);
+	public Single<Integer> deleteDocumentsViaQuery(String index, String query) {
+		return Single.just(0);
 	}
 }

@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * A graph field container (eg. a container for fields of a node) is used to hold i18n specific graph fields.
@@ -292,7 +292,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 *            language tags
 	 * @param level
 	 */
-	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags,
+	Single<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags,
 			int level);
 
 	/**

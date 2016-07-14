@@ -16,7 +16,7 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
-import rx.Observable;
+import rx.Single;
 
 /**
  * Main description of a graph database.
@@ -128,7 +128,7 @@ public interface Database {
 	 * @deprecated Use {@link #asyncNoTrxExperimental(TrxHandler)} instead
 	 */
 	@Deprecated
-	<T> Observable<T> asyncNoTrx(TrxHandler<T> trxHandler);
+	<T> Single<T> asyncNoTrx(TrxHandler<T> trxHandler);
 
 	/**
 	 * Asynchronously execute the trxHandler within the scope of a non transaction. Experimental implementation. This version will use RxJava schedulers to
@@ -137,7 +137,7 @@ public interface Database {
 	 * @param trxHandler
 	 * @return
 	 */
-	<T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler);
+	<T> Single<T> asyncNoTrxExperimental(TrxHandler<Single<T>> trxHandler);
 
 	/**
 	 * Initialize the database and store the settings.

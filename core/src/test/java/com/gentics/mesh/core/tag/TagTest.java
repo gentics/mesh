@@ -126,7 +126,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			Release release = project.getLatestRelease();
 			Tag tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
-			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
+			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().value());
 
 			// 2. Create the node
 			final String GERMAN_TEST_FILENAME = "german.html";
@@ -142,7 +142,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			node.addTag(tag, release);
 
 			// 4. Reload the tag and inspect the tagged nodes
-			Tag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().first();
+			Tag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().value();
 			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes(release).size());
 			Node contentFromTag = reloadedTag.getNodes(release).iterator().next();
 			NodeGraphFieldContainer fieldContainer = contentFromTag.getLatestDraftFieldContainer(german);
@@ -169,7 +169,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			Release initialRelease = project.getInitialRelease();
 			Tag tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
-			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
+			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().value());
 
 			// 2. Create new Release
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -215,7 +215,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			Release initialRelease = project.getInitialRelease();
 			Tag tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
-			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
+			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().value());
 
 			// 2. Create and Tag a node
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
@@ -257,7 +257,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			initialRelease = project.getInitialRelease();
 			tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
-			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
+			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().value());
 
 			// 2. Create and Tag a node
 			node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
@@ -367,11 +367,11 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindByName() {
 		try (NoTrx noTx = db.noTrx()) {
 			Tag tag = tag("car");
-			Tag foundTag = meshRoot().getTagRoot().findByName("Car").toBlocking().single();
+			Tag foundTag = meshRoot().getTagRoot().findByName("Car").toBlocking().value();
 			assertNotNull(foundTag);
 			assertEquals("Car", foundTag.getName());
-			assertNotNull(meshRoot().getTagRoot().findByName(tag.getName()).toBlocking().single());
-			assertNull("No tag with the name bogus should be found", meshRoot().getTagRoot().findByName("bogus").toBlocking().single());
+			assertNotNull(meshRoot().getTagRoot().findByName(tag.getName()).toBlocking().value());
+			assertNull("No tag with the name bogus should be found", meshRoot().getTagRoot().findByName("bogus").toBlocking().value());
 		}
 	}
 
@@ -380,9 +380,9 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindByUUID() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
 			Tag tag = tag("car");
-			assertNotNull("The tag with the uuid could not be found", meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().single());
+			assertNotNull("The tag with the uuid could not be found", meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().value());
 			assertNull("A tag with the a bogus uuid should not be found but it was.",
-					meshRoot().getTagRoot().findByUuid("bogus").toBlocking().single());
+					meshRoot().getTagRoot().findByUuid("bogus").toBlocking().value());
 		}
 	}
 
@@ -395,13 +395,13 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(tag);
 			String uuid = tag.getUuid();
 			CountDownLatch latch = new CountDownLatch(1);
-			Tag loadedTag = meshRoot().getTagRoot().findByUuid(uuid).toBlocking().single();
+			Tag loadedTag = meshRoot().getTagRoot().findByUuid(uuid).toBlocking().value();
 			assertNotNull("The folder could not be found.", loadedTag);
 			String name = loadedTag.getName();
 			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
 			assertEquals(10, tagFamily.getTagRoot().findAll().size());
 			latch.countDown();
-			Tag projectTag = tagFamily.getTagRoot().findByUuid(uuid).toBlocking().single();
+			Tag projectTag = tagFamily.getTagRoot().findByUuid(uuid).toBlocking().value();
 			assertNotNull("The tag should also be assigned to the project tag root", projectTag);
 		}
 
@@ -423,7 +423,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			int nTransformations = 100;
 			for (int i = 0; i < nTransformations; i++) {
 				long start = System.currentTimeMillis();
-				TagResponse response = tag.transformToRest(ac, 0).toBlocking().first();
+				TagResponse response = tag.transformToRest(ac, 0).toBlocking().value();
 
 				assertNotNull(response);
 				long dur = System.currentTimeMillis() - start;
@@ -442,9 +442,9 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create("someTag", project(), user());
 			String uuid = tag.getUuid();
-			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().single());
+			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().value());
 			tag.delete(createBatch());
-			assertNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().single());
+			assertNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().value());
 		}
 	}
 
@@ -455,11 +455,11 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			TagFamily tagFamily = tagFamily("basic");
 			InternalActionContext ac = getMockedInternalActionContext("");
 			Tag tag = tagFamily.create("someTag", project(), user());
-			assertTrue(user().hasPermissionAsync(ac, tagFamily, GraphPermission.READ_PERM).toBlocking().first());
-			assertFalse(user().hasPermissionAsync(ac, tag, GraphPermission.READ_PERM).toBlocking().first());
+			assertTrue(user().hasPermissionAsync(ac, tagFamily, GraphPermission.READ_PERM).toBlocking().value());
+			assertFalse(user().hasPermissionAsync(ac, tag, GraphPermission.READ_PERM).toBlocking().value());
 			getRequestUser().addCRUDPermissionOnRole(tagFamily, GraphPermission.CREATE_PERM, tag);
 			ac.data().clear();
-			assertTrue(user().hasPermissionAsync(ac, tag, GraphPermission.READ_PERM).toBlocking().first());
+			assertTrue(user().hasPermissionAsync(ac, tag, GraphPermission.READ_PERM).toBlocking().value());
 		}
 	}
 

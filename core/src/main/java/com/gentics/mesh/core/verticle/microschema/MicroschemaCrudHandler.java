@@ -22,7 +22,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.json.JsonUtil;
 
-import rx.Observable;
+import rx.Single;
 
 @Component
 public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, Microschema> {
@@ -49,14 +49,14 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 						model.getChanges().addAll(MicroschemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
 						String name = element.getName();
 						if (model.getChanges().isEmpty()) {
-							return Observable.just(message(ac, "schema_update_no_difference_detected", name));
+							return Single.just(message(ac, "schema_update_no_difference_detected", name));
 						} else {
 							return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
-								return Observable.just(message(ac, "migration_invoked", name));
+								return Single.just(message(ac, "migration_invoked", name));
 							});
 						}
 					} catch (Exception e) {
-						return Observable.error(e);
+						return Single.error(e);
 					}
 				});
 			});
@@ -78,7 +78,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			Single<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			return obsSchema.flatMap(microschema -> microschema.getLatestVersion().diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -91,7 +91,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<MicroschemaContainer> obsSchema = boot.microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+			Single<MicroschemaContainer> obsSchema = boot.microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
 			});
@@ -109,10 +109,10 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			Observable<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), UPDATE_PERM);
-			Observable<MicroschemaContainer> obsMicroschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), UPDATE_PERM);
+			Single<MicroschemaContainer> obsMicroschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 
-			return Observable.zip(obsPerm, obsMicroschema, (perm, microschema) -> {
+			return Single.zip(obsPerm, obsMicroschema, (perm, microschema) -> {
 				if (!perm.booleanValue()) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 				}
@@ -131,11 +131,11 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			Observable<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), UPDATE_PERM);
+			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), UPDATE_PERM);
 			// TODO check whether microschema is assigned to project
-			Observable<MicroschemaContainer> obsMicroschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+			Single<MicroschemaContainer> obsMicroschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 
-			return Observable.zip(obsPerm, obsMicroschema, (perm, microschema) -> {
+			return Single.zip(obsPerm, obsMicroschema, (perm, microschema) -> {
 				if (!perm.booleanValue()) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 				}

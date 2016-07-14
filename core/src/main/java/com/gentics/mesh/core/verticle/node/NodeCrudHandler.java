@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
@@ -41,7 +40,8 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import rx.Observable;
+import rx.Completable;
+import rx.Single;
 
 @Component
 public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
@@ -131,13 +131,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Project project = ac.getProject();
 			// Load the node that should be moved
 
-			Observable<Node> obsSourceNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Observable<Node> obsTargetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
+			Single<Node> obsSourceNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Single<Node> obsTargetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 
-			return Observable.zip(obsSourceNode, obsTargetNode, (sourceNode, targetNode) -> {
+			return Single.zip(obsSourceNode, obsTargetNode, (sourceNode, targetNode) -> {
 				// TODO Update SQB
-				Observable<Void> obs1 = sourceNode.moveTo(ac, targetNode);
-				Observable<GenericMessageResponse> obs2 = obs1.map(er -> {
+				Completable obs1 = sourceNode.moveTo(ac, targetNode);
+				Single<GenericMessageResponse> obs2 = obs1.map(er -> {
 					return message(ac, "node_moved_to", uuid, toUuid);
 				});
 				return obs2;
@@ -196,11 +196,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
-			Observable<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Observable<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+			Single<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Single<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
-			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
+			Single<Single<NodeResponse>> obs = Single.zip(obsNode, obsTag, (node, tag) -> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
 					node.addTag(tag, release);
 					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
@@ -235,10 +235,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
-			Observable<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Observable<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+			Single<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Single<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
-			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
+			Single<Single<NodeResponse>> obs = Single.zip(obsNode, obsTag, (node, tag) -> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
 					// TODO get release specific containers
 					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
@@ -364,12 +364,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
-				return node.takeOffline(ac, languageTag).flatMap(v -> {
+				return node.takeOffline(ac, languageTag).toSingle(() -> {
 					return db.noTrx(() -> {
 						node.reload();
 						return node.transformToPublishStatus(ac, languageTag);
 					});
-				});
+				}).flatMap(x -> x);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

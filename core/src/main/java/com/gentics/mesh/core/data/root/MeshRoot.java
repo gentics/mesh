@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
@@ -97,6 +97,6 @@ public interface MeshRoot extends MeshVertex {
 	 * 
 	 * @param pathToElement
 	 */
-	Observable<? extends MeshVertex> resolvePathToElement(String pathToElement);
+	Single<? extends MeshVertex> resolvePathToElement(String pathToElement);
 
 }

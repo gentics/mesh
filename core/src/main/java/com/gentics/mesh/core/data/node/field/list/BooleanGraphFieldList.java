@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 
-import rx.Observable;
+import rx.Single;
 
 public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField, BooleanFieldListImpl, Boolean> {
 
@@ -19,7 +19,7 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 	FieldTransformator BOOLEAN_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BooleanGraphFieldList booleanFieldList = container.getBooleanList(fieldKey);
 		if (booleanFieldList == null) {
-			return Observable.just(null);
+			return Single.just(null);
 		} else {
 			return booleanFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}

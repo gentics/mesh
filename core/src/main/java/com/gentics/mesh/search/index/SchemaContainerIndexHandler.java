@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 import io.vertx.core.json.JsonObject;
+import rx.Completable;
 import rx.Observable;
 
 @Component
@@ -85,7 +86,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	public Observable<Void> store(SchemaContainer container, String type, SearchQueueEntry entry) {
+	public Completable store(SchemaContainer container, String type, SearchQueueEntry entry) {
 		return super.store(container, type, entry).flatMap(done -> {
 			if (db != null) {
 				Observable<Void> obs = db.noTrx(() -> {

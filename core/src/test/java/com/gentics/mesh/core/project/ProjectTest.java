@@ -56,7 +56,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			Project project = projectRoot.create("test", user(), schemaContainer("folder").getLatestVersion());
-			Project project2 = projectRoot.findByName(project.getName()).toBlocking().single();
+			Project project2 = projectRoot.findByName(project.getName()).toBlocking().value();
 			assertNotNull(project2);
 			assertEquals("test", project2.getName());
 			assertEquals(project.getUuid(), project2.getUuid());
@@ -144,8 +144,8 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByName() {
 		try (NoTrx noTx = db.noTrx()) {
-			assertNull(meshRoot().getProjectRoot().findByName("bogus").toBlocking().single());
-			assertNotNull(meshRoot().getProjectRoot().findByName("dummy").toBlocking().single());
+			assertNull(meshRoot().getProjectRoot().findByName("bogus").toBlocking().value());
+			assertNotNull(meshRoot().getProjectRoot().findByName("dummy").toBlocking().value());
 		}
 	}
 
@@ -153,9 +153,9 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
-			Project project = meshRoot().getProjectRoot().findByUuid(project().getUuid()).toBlocking().single();
+			Project project = meshRoot().getProjectRoot().findByUuid(project().getUuid()).toBlocking().value();
 			assertNotNull(project);
-			project = meshRoot().getProjectRoot().findByUuid("bogus").toBlocking().single();
+			project = meshRoot().getProjectRoot().findByUuid("bogus").toBlocking().value();
 			assertNull(project);
 		}
 	}
@@ -167,7 +167,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 			Project project = project();
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
-			ProjectResponse response = project.transformToRest(ac, 0).toBlocking().first();
+			ProjectResponse response = project.transformToRest(ac, 0).toBlocking().value();
 
 			assertEquals(project.getName(), response.getName());
 			assertEquals(project.getUuid(), response.getUuid());
@@ -182,11 +182,11 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(project);
 			String uuid = project.getUuid();
 			SearchQueueBatch batch = createBatch();
-			Project foundProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
+			Project foundProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().value();
 			assertNotNull(foundProject);
 			project.delete(batch);
 			// TODO check for attached nodes
-			foundProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
+			foundProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().value();
 			assertNull(foundProject);
 		}
 	}
@@ -198,10 +198,10 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
 			Project project = root.getProjectRoot().create("TestProject", user(), schemaContainer("folder").getLatestVersion());
-			assertFalse(user().hasPermissionAsync(ac, project, GraphPermission.CREATE_PERM).toBlocking().single());
+			assertFalse(user().hasPermissionAsync(ac, project, GraphPermission.CREATE_PERM).toBlocking().value());
 			user().addCRUDPermissionOnRole(root.getProjectRoot(), GraphPermission.CREATE_PERM, project);
 			ac.data().clear();
-			assertTrue(user().hasPermissionAsync(ac, project, GraphPermission.CREATE_PERM).toBlocking().single());
+			assertTrue(user().hasPermissionAsync(ac, project, GraphPermission.CREATE_PERM).toBlocking().value());
 		}
 	}
 

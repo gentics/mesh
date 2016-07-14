@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 /**
  * A {@link MicronodeGraphField} is an {@link MeshEdge} which links a {@link GraphFieldContainer} to a {@link Micronode} vertex.
@@ -36,7 +36,7 @@ public interface MicronodeGraphField extends ListableReferencingGraphField, Mesh
 	FieldTransformator MICRONODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
 		if (micronodeGraphField == null) {
-			return Observable.just(null);
+			return Single.just(null);
 		} else {
 			return micronodeGraphField.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -68,7 +68,7 @@ public interface MicronodeGraphField extends ListableReferencingGraphField, Mesh
 		}
 
 		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot()
-				.fromReference(microschemaReference, ac.getRelease(null)).toBlocking().single();
+				.fromReference(microschemaReference, ac.getRelease(null)).toBlocking().value();
 
 		Micronode micronode = null;
 
@@ -109,6 +109,6 @@ public interface MicronodeGraphField extends ListableReferencingGraphField, Mesh
 	 * @param level
 	 *            Level of transformation
 	 */
-	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
+	Single<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
 
 }

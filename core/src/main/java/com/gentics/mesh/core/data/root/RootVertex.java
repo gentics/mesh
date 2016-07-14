@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
@@ -32,7 +32,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param name
 	 * @return
 	 */
-	Observable<T> findByName(String name);
+	Single<T> findByName(String name);
 
 	/**
 	 * Find the element with the given uuid.
@@ -41,7 +41,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Uuid of the element to be located
 	 * @return Observable which may emit the located element
 	 */
-	Observable<T> findByUuid(String uuid);
+	Single<T> findByUuid(String uuid);
 
 	/**
 	 * Find the element with the given uuid.
@@ -54,7 +54,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 	/**
 	 * Find the visible elements and return a paged result.
-	 * @param ac action context
+	 * 
+	 * @param ac
+	 *            action context
 	 * @param pagingInfo
 	 *            Paging information object that contains page options.
 	 * 
@@ -70,14 +72,14 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param stack
 	 * @return
 	 */
-	Observable<? extends MeshVertex> resolveToElement(Stack<String> stack);
+	Single<? extends MeshVertex> resolveToElement(Stack<String> stack);
 
 	/**
 	 * Create a new object within this aggregation vertex.
 	 * 
 	 * @param ac
 	 */
-	Observable<T> create(InternalActionContext ac);
+	Single<T> create(InternalActionContext ac);
 
 	/**
 	 * Load the object by uuid and check the given permission.
@@ -89,7 +91,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param perm
 	 *            Permission that must be granted in order to load the object
 	 */
-	Observable<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
+	Single<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
 
 	/**
 	 * Add the given item to the this root vertex.

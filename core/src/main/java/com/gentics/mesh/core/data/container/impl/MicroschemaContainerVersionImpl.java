@@ -27,7 +27,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestModelHelper;
 
-import rx.Observable;
+import rx.Single;
 
 public class MicroschemaContainerVersionImpl
 		extends AbstractGraphFieldSchemaContainerVersion<Microschema, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
@@ -99,7 +99,7 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public Observable<Microschema> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public Single<Microschema> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		try {
 			// Load the microschema and add/overwrite some properties 
 			Microschema microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
@@ -109,9 +109,9 @@ public class MicroschemaContainerVersionImpl
 			RestModelHelper.setRolePermissions(ac, getSchemaContainer(), microschema);
 			microschema.setPermissions(ac.getUser().getPermissionNames(ac, getSchemaContainer()));
 
-			return Observable.just(microschema);
+			return Single.just(microschema);
 		} catch (IOException e) {
-			return Observable.error(e);
+			return Single.error(e);
 		}
 	}
 

@@ -16,7 +16,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 
-import rx.Observable;
+import rx.Single;
 
 @Component
 public class TagCrudHandler extends AbstractHandler {
@@ -47,7 +47,7 @@ public class TagCrudHandler extends AbstractHandler {
 							ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 					return page.transformToRest(ac, 0);
 				} catch (Exception e) {
-					return Observable.error(e);
+					return Single.error(e);
 				}
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);

@@ -43,7 +43,7 @@ import com.gentics.mesh.search.SearchProvider;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Completable;
 
 @Component
 public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> implements IndexHandler {
@@ -108,7 +108,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 *            search queue entry
 	 * @return
 	 */
-	public Observable<Void> store(T object, String documentType, SearchQueueEntry entry) {
+	public Completable store(T object, String documentType, SearchQueueEntry entry) {
 		return searchProvider.storeDocument(getIndex(entry), documentType, object.getUuid(), transformToDocumentMap(object)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
@@ -118,13 +118,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Observable<Void> delete(String uuid, String documentType, SearchQueueEntry entry) {
+	public Completable delete(String uuid, String documentType, SearchQueueEntry entry) {
 		// We don't need to resolve the uuid and load the graph object in this case.
 		return searchProvider.deleteDocument(getIndex(entry), documentType, uuid);
 	}
 
 	@Override
-	public Observable<Void> store(String uuid, String indexType, SearchQueueEntry entry) {
+	public Completable store(String uuid, String indexType, SearchQueueEntry entry) {
 		try (NoTrx noTx = db.noTrx()) {
 			T element = getRootVertex().findByUuidSync(uuid);
 			if (element == null) {
@@ -224,7 +224,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Observable<Void> handleAction(SearchQueueEntry entry) {
+	public Completable handleAction(SearchQueueEntry entry) {
 		String uuid = entry.getElementUuid();
 		String actionName = entry.getElementActionName();
 		String indexType = entry.getElementIndexType();
@@ -232,7 +232,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		if (!isSearchClientAvailable()) {
 			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";
 			log.error(msg);
-			return Observable.error(new Exception(msg));
+			return Completable.error(new Exception(msg));
 		}
 
 		if (indexType == null) {
@@ -247,26 +247,25 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		case REINDEX_ALL:
 			return reindexAll();
 		case CREATE_INDEX:
-			return createIndex(uuid).flatMap(i -> updateMapping(uuid));
+			return createIndex(uuid).doOnCompleted(() -> updateMapping(uuid));
 		default:
-			return Observable.error(new Exception("Action type {" + action + "} is unknown."));
+			return Completable.error(new Exception("Action type {" + action + "} is unknown."));
 		}
 	}
 
 	@Override
-	public Observable<Void> reindexAll() {
-		return Observable.create(sub -> {
+	public Completable reindexAll() {
+		return Completable.create(sub -> {
 			log.info("Handling full reindex entry");
 
 			for (T element : getRootVertex().findAll()) {
 				log.info("Invoking reindex for {" + getType() + "/" + element.getUuid() + "}");
 				SearchQueueBatch batch = element.createIndexBatch(STORE_ACTION);
 				for (SearchQueueEntry entry : batch.getEntries()) {
-					entry.process().toBlocking().lastOrDefault(null);
+					entry.process().await();
 				}
 				batch.delete(null);
 			}
-			sub.onNext(null);
 			sub.onCompleted();
 		});
 	}
@@ -279,25 +278,25 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	protected abstract JsonObject getMapping();
 
 	@Override
-	public Observable<Void> updateMapping() {
+	public Completable updateMapping() {
 		try {
-			Set<Observable<Void>> obsSet = new HashSet<>();
+			Set<Completable> obsSet = new HashSet<>();
 			getIndices().forEach(indexName -> {
 				obsSet.add(updateMapping(indexName));
 			});
 
 			if (obsSet.isEmpty()) {
-				return Observable.just(null);
+				return Completable.complete();
 			} else {
-				return Observable.merge(obsSet).last();
+				return Completable.merge(obsSet);
 			}
 		} catch (Exception e) {
-			return Observable.error(e);
+			return Completable.error(e);
 		}
 	}
 
 	@Override
-	public Observable<Void> updateMapping(String indexName) {
+	public Completable updateMapping(String indexName) {
 		if (searchProvider.getNode() != null) {
 			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
 			mappingRequestBuilder.setType(getType());
@@ -310,7 +309,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			mapping.put(getType(), root);
 			mappingRequestBuilder.setSource(mapping.toString());
 
-			return Observable.create(sub -> {
+			return Completable.create(sub -> {
 				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
 
 					@Override
@@ -318,7 +317,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 						if (log.isDebugEnabled()) {
 							log.debug("Updated mapping for index {" + indexName + "}");
 						}
-						sub.onNext(null);
 						sub.onCompleted();
 					}
 
@@ -329,18 +327,18 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				});
 			});
 		} else {
-			return Observable.just(null);
+			return Completable.complete();
 		}
 	}
 
 	@Override
-	public Observable<Void> createIndex() {
-		Set<Observable<Void>> obs = new HashSet<>();
+	public Completable createIndex() {
+		Set<Completable> obs = new HashSet<>();
 		getIndices().forEach(index -> obs.add(searchProvider.createIndex(index)));
 		if (obs.isEmpty()) {
-			return Observable.just(null);
+			return Completable.complete();
 		} else {
-			return Observable.merge(obs).last();
+			return Completable.merge(obs);
 		}
 	}
 
@@ -352,7 +350,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 *            index name
 	 * @return
 	 */
-	protected Observable<Void> createIndex(String indexName) {
+	protected Completable createIndex(String indexName) {
 		if (getIndices().contains(indexName)) {
 			return searchProvider.createIndex(indexName);
 		} else {
@@ -361,18 +359,18 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Observable<Void> init() {
-		return createIndex().flatMap(i -> updateMapping());
+	public Completable init() {
+		return createIndex().doOnCompleted(() -> updateMapping());
 	}
 
 	@Override
-	public Observable<Void> clearIndex() {
-		Set<Observable<Void>> obs = new HashSet<>();
+	public Completable clearIndex() {
+		Set<Completable> obs = new HashSet<>();
 		getIndices().forEach(index -> obs.add(searchProvider.clearIndex(index)));
 		if (obs.isEmpty()) {
-			return Observable.just(null);
+			return Completable.complete();
 		} else {
-			return Observable.merge(obs).last();
+			return Completable.merge(obs);
 		}
 	}
 }

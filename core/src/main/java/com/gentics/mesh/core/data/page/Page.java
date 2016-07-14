@@ -4,7 +4,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * A page is the result of a query which returns paged data. Each page may contain multiple items. A page can be transformed into a rest response.
@@ -60,7 +60,7 @@ public interface Page {
 	 * @param level
 	 *            Level of transformation
 	 */
-	Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level);
+	Single<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level);
 
 	/**
 	 * Set the paging parameters into the given list response by examining the given page.

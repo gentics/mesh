@@ -8,7 +8,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.util.Tuple;
-import rx.Observable;
+
+import rx.Completable;
 
 /**
  * A batch of search queue entries. Usually a batch groups those elements that need to be updated in order to sync the search index with the graph database
@@ -119,7 +120,7 @@ public interface SearchQueueBatch extends MeshVertex {
 	/**
 	 * Process this batch by invoking process on all batch entries.
 	 */
-	Observable<? extends SearchQueueBatch> process();
+	Completable process();
 
 	/**
 	 * Print debug output.
@@ -145,6 +146,6 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * 
 	 * @param ac
 	 */
-	Observable<? extends SearchQueueBatch> process(InternalActionContext ac);
+	Completable process(InternalActionContext ac);
 
 }

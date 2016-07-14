@@ -26,7 +26,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 /**
  * @see RoleRoot
@@ -74,7 +74,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		return role;
 	}
 
-	public Observable<Role> create(InternalActionContext ac) {
+	public Single<Role> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
@@ -85,7 +85,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
 
-		Role conflictingRole = findByName(roleName).toBlocking().single();
+		Role conflictingRole = findByName(roleName).toBlocking().value();
 		if (conflictingRole != null) {
 			throw conflict(conflictingRole.getUuid(), roleName, "role_conflicting_name");
 		}
@@ -106,7 +106,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		SearchQueueBatch batch = tuple.v1();
 		Role createdRole = tuple.v2();
 
-		return batch.process().map(i -> createdRole);
+		return batch.process().toSingleDefault(createdRole);
 
 	}
 

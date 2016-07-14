@@ -94,7 +94,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			String invalidName = "thereIsNoMicroschemaWithThisName";
 
 			for (String name : microschemaContainers().keySet()) {
-				MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name).toBlocking().single();
+				MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name).toBlocking().value();
 				assertNotNull("Could not find microschema container for name " + name, container);
 				Microschema microschema = container.getLatestVersion().getSchema();
 				assertNotNull("Container for microschema " + name + " did not contain a microschema", microschema);
@@ -102,7 +102,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			}
 
 			assertNull("Must not find microschema with name " + invalidName,
-					boot.microschemaContainerRoot().findByName(invalidName).toBlocking().single());
+					boot.microschemaContainerRoot().findByName(invalidName).toBlocking().value());
 		}
 	}
 
@@ -115,10 +115,10 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			MicroschemaContainerRoot root = boot.microschemaContainerRoot();
 			for (MicroschemaContainer container : microschemaContainers().values()) {
 				String uuid = container.getUuid();
-				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid).toBlocking().single());
+				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid).toBlocking().value());
 			}
 
-			assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID).toBlocking().single());
+			assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID).toBlocking().value());
 		}
 	}
 
@@ -171,10 +171,10 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			Microschema schema = new MicroschemaModel();
 			schema.setName("test");
 			MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
-			assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
+			assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().value());
 			SearchQueueBatch batch = createBatch();
 			container.delete(batch);
-			assertNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
+			assertNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().value());
 		}
 	}
 
@@ -237,7 +237,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
-			Microschema schema = vcard.transformToRest(ac, 0, "en").toBlocking().single();
+			Microschema schema = vcard.transformToRest(ac, 0, "en").toBlocking().value();
 			assertEquals(vcard.getUuid(), schema.getUuid());
 		}
 	}
@@ -287,7 +287,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			model.getChanges().addAll(MicroschemaComparator.getIntance().diff(microschema, updatedMicroschema));
 
 			InternalActionContext ac = getMockedInternalActionContext();
-			vcard.applyChanges(ac, model).toBlocking().last();
+			vcard.applyChanges(ac, model).toBlocking().value();
 			MicroschemaContainerVersion newVCard = microschemaContainer("vcard").getLatestVersion();
 
 			NodeGraphFieldContainer containerWithBoth = folder("2015").getGraphFieldContainer("en");

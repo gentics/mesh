@@ -16,9 +16,10 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 public interface NodeGraphField extends ListableReferencingGraphField, MicroschemaListableGraphField {
 
@@ -27,7 +28,7 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	FieldTransformator NODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		if (graphNodeField == null) {
-			return Observable.just(null);
+			return Single.just(null);
 		} else {
 			return graphNodeField.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -59,7 +60,7 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 
 		// Handle Update / Create 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		Observable<Node> obsNode = boot.nodeRoot().findByUuid(nodeField.getUuid());
+		Single<Node> obsNode = boot.nodeRoot().findByUuid(nodeField.getUuid());
 		obsNode.map(node -> {
 			if (node == null) {
 				// TODO We want to delete the field when the field has been explicitly set to null
@@ -82,7 +83,7 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 				}
 			}
 			return null;
-		}).toBlocking().single();
+		}).toBlocking().value();
 	};
 
 	FieldGetter NODE_GETTER = (container, fieldSchema) -> {
@@ -106,6 +107,6 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	 * @param level
 	 *            Level of transformation
 	 */
-	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
+	Single<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
 
 }

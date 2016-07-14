@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeFieldList, Node> {
 
@@ -28,7 +28,7 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 	FieldTransformator NODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NodeGraphFieldList nodeFieldList = container.getNodeList(fieldKey);
 		if (nodeFieldList == null) {
-			return Observable.just(null);
+			return Single.just(null);
 		} else {
 			return nodeFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -67,7 +67,7 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().single();
+			Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().value();
 			if (node == null) {
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
 			}

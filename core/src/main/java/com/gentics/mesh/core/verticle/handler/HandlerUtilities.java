@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle.handler;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -27,7 +26,7 @@ import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.UUIDUtil;
 
-import rx.Observable;
+import rx.Single;
 
 public final class HandlerUtilities {
 
@@ -69,7 +68,7 @@ public final class HandlerUtilities {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();
-			Observable<T> obs = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+			Single<T> obs = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 			return obs.flatMap(element -> {
 
 				return db.noTrx(() -> {
@@ -96,7 +95,7 @@ public final class HandlerUtilities {
 
 					String id = tuple.v1();
 					SearchQueueBatch batch = tuple.v2();
-					return batch.process().map(done -> {
+					return batch.process().andThen(done -> {
 						return message(ac, responseMessage, id);
 					});
 				});

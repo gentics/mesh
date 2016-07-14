@@ -57,6 +57,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.vertx.rxjava.core.buffer.Buffer;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import rx.Completable;
 import rx.Observable;
 
 /**
@@ -83,9 +84,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @param toVersion
 	 * @param statusMBean
 	 *            status MBean
-	 * @return Observable which contains the search queue batch which needs to be processed
 	 */
-	public Observable<? extends SearchQueueBatch> migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
+	public Completable migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
 			NodeMigrationStatus statusMBean) {
 		String releaseUuid = db.noTrx(release::getUuid);
 
@@ -96,7 +96,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 		// no field containers -> no nodes, migration is done
 		if (fieldContainers.isEmpty()) {
-			return Observable.just(null);
+			return Completable.complete();
 		}
 
 		if (statusMBean != null) {
@@ -109,7 +109,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		try (NoTrx noTrx = db.noTrx()) {
 			prepareMigration(fromVersion, migrationScripts, touchedFields);
 		} catch (IOException e) {
-			return Observable.error(e);
+			return Completable.error(e);
 		}
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
@@ -137,7 +137,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, ContainerType.PUBLISHED);
 						if (oldPublished != null) {
 							ac.getVersioningParameters().setVersion("published");
-							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().single();
+							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().value();
 							restModel.getSchema().setVersion(newSchema.getVersion());
 
 							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(
@@ -152,7 +152,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						}
 					}
 
-					NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().last();
+					NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().value();
 
 					// Update the schema version. Otherwise deserialisation of the JSON will fail later on.
 					restModel.getSchema().setVersion(newSchema.getVersion());
@@ -178,7 +178,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			});
 
 			if (e != null) {
-				return Observable.error(e);
+				return Completable.error(e);
 			}
 
 			if (statusMBean != null) {
@@ -309,7 +309,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @param newRelease new release
 	 * @return
 	 */
-	public Observable<? extends SearchQueueBatch> migrateNodes(Release newRelease) {
+	public Completable migrateNodes(Release newRelease) {
 		Release oldRelease = db.noTrx(() -> {
 			if (newRelease.isMigrated()) {
 				throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} is already migrated");
@@ -487,7 +487,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			field = container.createMicronode(field.getFieldKey(), fromVersion);
 			Micronode micronode = field.getMicronode();
 			// transform to rest and migrate
-			MicronodeResponse restModel = micronode.transformToRestSync(ac, 0).toBlocking().last();
+			MicronodeResponse restModel = micronode.transformToRestSync(ac, 0).toBlocking().value();
 			migrate(ac, micronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);
 		}
 
@@ -508,7 +508,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 				// migrate the micronode, if it uses the fromVersion
 				if (newMicronode.getSchemaContainerVersion().getImpl().equals(fromVersion.getImpl())) {
 					// transform to rest and migrate
-					MicronodeResponse restModel = newMicronode.transformToRestSync(ac, 0).toBlocking().last();
+					MicronodeResponse restModel = newMicronode.transformToRestSync(ac, 0).toBlocking().value();
 					migrate(ac, newMicronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);
 				}
 			}

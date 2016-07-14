@@ -4,7 +4,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static org.apache.commons.lang3.StringUtils.endsWith;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -218,7 +217,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			englishContainer.createString(fieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
-			node.publish(InternalActionContext.create(getMockedRoutingContext(user())), "en").toBlocking().single();
+			node.publish(InternalActionContext.create(getMockedRoutingContext(user())), "en").await();
 
 			doSchemaMigration(container, versionA, versionB);
 
@@ -252,7 +251,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 		}
 		try (NoTrx tx = db.noTrx()) {
 			node.reload();
-			node.publish(InternalActionContext.create(getMockedRoutingContext(user())), "en").toBlocking().single();
+			node.publish(InternalActionContext.create(getMockedRoutingContext(user())), "en").await();
 		}
 
 		try (NoTrx tx = db.noTrx()) {

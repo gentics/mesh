@@ -47,10 +47,10 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 	}
 
 	@Override
-	public Observable<NumberField> transformToRest(ActionContext ac) {
+	public Single<NumberField> transformToRest(ActionContext ac) {
 		NumberField restModel = new NumberFieldImpl();
 		restModel.setNumber(getNumber());
-		return Observable.just(restModel);
+		return Single.just(restModel);
 	}
 
 	@Override

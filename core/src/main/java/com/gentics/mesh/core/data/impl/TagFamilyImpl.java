@@ -54,6 +54,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
+import rx.Single;
 
 /**
  * @see TagFamily
@@ -136,7 +137,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Observable<Tag> create(InternalActionContext ac) {
+	public Single<Tag> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		return db.noTrx(() -> {
@@ -173,7 +174,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				throw error(FORBIDDEN, "error_missing_perm", getUuid());
 			}
 
-			Tag conflictingTag = getTagRoot().findByName(tagName).toBlocking().single();
+			Tag conflictingTag = getTagRoot().findByName(tagName).toBlocking().value();
 			if (conflictingTag != null) {
 				throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
 			}
@@ -194,13 +195,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			SearchQueueBatch batch = tuple.v1();
 			Tag tag = tuple.v2();
 
-			return batch.process().map(t -> tag);
+			return batch.process().toSingleDefault(tag);
 		});
 	}
 
 	@Override
-	public Observable<TagFamilyResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Observable<TagFamilyResponse>> obs = new HashSet<>();
+	public Single<TagFamilyResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		Set<Single<TagFamilyResponse>> obs = new HashSet<>();
 
 		TagFamilyResponse restTagFamily = new TagFamilyResponse();
 		restTagFamily.setName(getName());
@@ -230,7 +231,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Observable<TagFamily> update(InternalActionContext ac) {
+	public Single<TagFamily> update(InternalActionContext ac) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.trx(() -> {
@@ -241,8 +242,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				throw error(BAD_REQUEST, "tagfamily_name_not_set");
 			}
 
-			Observable<TagFamily> tagFamilyWithSameNameObs = project.getTagFamilyRoot().findByName(newName);
-			Observable<TagFamily> obs = tagFamilyWithSameNameObs.map(tagFamilyWithSameName -> {
+			Single<TagFamily> tagFamilyWithSameNameObs = project.getTagFamilyRoot().findByName(newName);
+			Single<TagFamily> obs = tagFamilyWithSameNameObs.map(tagFamilyWithSameName -> {
 				if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
 					throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 				}
@@ -251,7 +252,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 					return createIndexBatch(STORE_ACTION);
 				});
 
-				batch.process().toBlocking().single();
+				batch.process().await();
 				return this;
 			});
 			return obs;

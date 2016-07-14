@@ -39,7 +39,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
@@ -307,13 +307,13 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
-	public Observable<? extends MeshVertex> resolvePathToElement(String pathToElement) {
+	public Single<? extends MeshVertex> resolvePathToElement(String pathToElement) {
 		MeshRoot root = BootstrapInitializer.getBoot().meshRoot();
 		if (StringUtils.isEmpty(pathToElement)) {
-			return Observable.error(new Exception("Could not resolve path. The path must must not be empty or null."));
+			return Single.error(new Exception("Could not resolve path. The path must must not be empty or null."));
 		}
 		if (pathToElement.endsWith("/")) {
-			return Observable.error(new Exception("Could not resolve path. The path must not end with a slash."));
+			return Single.error(new Exception("Could not resolve path. The path must not end with a slash."));
 		}
 
 		// Prepare the stack which we use for resolving
@@ -351,7 +351,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			return root.getSchemaContainerRoot().resolveToElement(stack);
 		default:
 			// TOOO i18n
-			return Observable.error(new Exception("Could not resolve given path. Unknown element {" + rootNodeSegment + "}"));
+			return Single.error(new Exception("Could not resolve given path. Unknown element {" + rootNodeSegment + "}"));
 		}
 	}
 

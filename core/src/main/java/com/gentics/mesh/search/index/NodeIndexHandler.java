@@ -64,13 +64,12 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
-import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
+import rx.Completable;
 import rx.Observable;
+import rx.Single;
 
 /**
  * Handler for the node specific search index.
@@ -223,7 +222,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Observable<Void> store(Node node, String documentType, SearchQueueEntry entry) {
+	public Completable store(Node node, String documentType, SearchQueueEntry entry) {
 		String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
 		String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
 		ContainerType type = ContainerType.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
@@ -231,12 +230,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 		// TODO check consistency
 
-		Set<Observable<Void>> obs = new HashSet<>();
+		Set<Single<Integer>> obs = new HashSet<>();
 
 		// Store all containers if no language was specified
 		if (languageTag == null) {
 			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-				obs.add(storeContainer(container, indexName, releaseUuid));
+				obs.add(storeContainer(container, indexName, releaseUuid).toSingleDefault(0));
 			}
 		} else {
 
@@ -249,13 +248,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			// We'll need to delete all documents which match the given query:
 			// * match node documents with same UUID
 			// * match node documents with same language
-			// * exclude all documents which have the same document type in order to avoid deletion 
-			//   of the document which will be updated later on
-			// 
-			// This will ensure that only one version of the node document remains in the search index. 
-			// 
-			// A node migration for example requires old node documents to be removed from the index since the migration itself may create new node versions.  
-			// Those documents are stored within a schema container version specific index type. 
+			// * exclude all documents which have the same document type in order to avoid deletion
+			// of the document which will be updated later on
+			//
+			// This will ensure that only one version of the node document remains in the search index.
+			//
+			// A node migration for example requires old node documents to be removed from the index since the migration itself may create new node versions.
+			// Those documents are stored within a schema container version specific index type.
 			// We need to ensure that those documents are purged from the index.
 			JSONObject query = new JSONObject();
 			try {
@@ -292,16 +291,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				}
 				// Don't store the container if it is null.
 				if (container == null) {
-					return Observable.just(null);
+					return Single.just(0);
 				} else {
 					// 2. Try to store the updated document
 					return db.noTrx(() -> {
 						return storeContainer(container, indexName, releaseUuid);
-					});
+					}).toSingleDefault(0);
 				}
 			}));
 		}
-		return Observable.merge(obs).doOnCompleted(() -> {
+		return Single.merge(obs).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored node in index.");
 			}
@@ -311,7 +310,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Observable<Void> delete(String uuid, String documentType, SearchQueueEntry entry) {
+	public Completable delete(String uuid, String documentType, SearchQueueEntry entry) {
 		String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
 		String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
 		String projectUuid = entry.getCustomProperty(CUSTOM_PROJECT_UUID);
@@ -331,7 +330,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            release Uuid
 	 * @return
 	 */
-	public Observable<Void> storeContainer(NodeGraphFieldContainer container, String indexName, String releaseUuid) {
+	public Completable storeContainer(NodeGraphFieldContainer container, String indexName, String releaseUuid) {
 
 		Node node = container.getParentNode();
 		Map<String, Object> map = new HashMap<>();
@@ -573,9 +572,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		Map<String, Object> parentNodeInfo = new HashMap<>();
 		parentNodeInfo.put(UUID_KEY, parentNode.getUuid());
 		// TODO check whether nesting of nested elements would also work
-		//TODO FIXME MIGRATE: How to add this reference info? The schema is now linked to the node. Should we add another reference: (n:Node)->(sSchemaContainer) ?
-		//		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
-		//		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
+		// TODO FIXME MIGRATE: How to add this reference info? The schema is now linked to the node. Should we add another reference:
+		// (n:Node)->(sSchemaContainer) ?
+		// parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
+		// parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
 		map.put("parentNode", parentNodeInfo);
 	}
 
@@ -616,11 +616,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            schema
 	 * @return observable
 	 */
-	public Observable<Void> setNodeIndexMapping(String type, Schema schema) {
-		Set<Observable<Void>> obs = new HashSet<>();
+	public Completable setNodeIndexMapping(String type, Schema schema) {
+		Set<Completable> obs = new HashSet<>();
 		getIndices().forEach(index -> obs.add(setNodeIndexMapping(index, type, schema)));
-		obs.add(Observable.just(null));
-		return Observable.merge(obs).last();
+		// obs.add(Observable.just(null));
+		return Completable.merge(obs);
 	}
 
 	/**
@@ -634,7 +634,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            schema
 	 * @return observable
 	 */
-	protected Observable<Void> setNodeIndexMapping(String indexName, String type, Schema schema) {
+	protected Completable setNodeIndexMapping(String indexName, String type, Schema schema) {
 		// Check whether the search provider is a dummy provider or not
 		if (searchProvider.getNode() != null) {
 			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
@@ -665,25 +665,25 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				}
 				mappingRequestBuilder.setSource(mappingBuilder);
 
-				ObservableFuture<Void> obs = RxHelper.observableFuture();
-				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+				return Completable.create(sub -> {
+					mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
 
-					@Override
-					public void onResponse(PutMappingResponse response) {
-						obs.toHandler().handle(Future.succeededFuture());
-					}
+						@Override
+						public void onResponse(PutMappingResponse response) {
+							sub.onCompleted();
+						}
 
-					@Override
-					public void onFailure(Throwable e) {
-						obs.toHandler().handle(Future.failedFuture(e));
-					}
+						@Override
+						public void onFailure(Throwable e) {
+							sub.onError(e);
+						}
+					});
 				});
-				return obs;
 			} catch (Exception e) {
-				return Observable.error(e);
+				return Completable.error(e);
 			}
 		} else {
-			return Observable.just(null);
+			return Completable.complete();
 		}
 	}
 
@@ -694,9 +694,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return props;
 	}
 
-	//TODO Combine updateMapping with setNodeIndexMapping
+	// TODO Combine updateMapping with setNodeIndexMapping
 	@Override
-	public Observable<Void> init() {
+	public Completable init() {
 		// Omit regular mapping creation for now.
 		return createIndex();
 	}

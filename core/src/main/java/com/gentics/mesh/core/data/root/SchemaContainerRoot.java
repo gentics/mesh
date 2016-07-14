@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.error.MeshSchemaException;
 
-import rx.Observable;
+import rx.Single;
 
 public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 
@@ -53,5 +53,5 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 * @param reference reference
 	 * @return observable emitting the referenced version
 	 */
-	Observable<SchemaContainerVersion> fromReference(SchemaReference reference);
+	Single<SchemaContainerVersion> fromReference(SchemaReference reference);
 }

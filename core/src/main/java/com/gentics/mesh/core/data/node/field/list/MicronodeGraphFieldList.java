@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 
-import rx.Observable;
+import rx.Single;
 
 public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphField, MicronodeFieldList, Micronode> {
 
@@ -18,7 +18,7 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 	FieldTransformator MICRONODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		MicronodeGraphFieldList graphMicroschemaField = container.getMicronodeList(fieldKey);
 		if (graphMicroschemaField == null) {
-			return Observable.just(null);
+			return Single.just(null);
 		} else {
 			return graphMicroschemaField.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -50,7 +50,7 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 
 		// Handle Update
 		//TODO instead this method should also return an observable 
-		micronodeGraphFieldList.update(ac, micronodeList).toBlocking().last();
+		micronodeGraphFieldList.update(ac, micronodeList).toBlocking().value();
 	};
 
 	FieldGetter MICRONODE_LIST_GETTER = (container, fieldSchema) -> {
@@ -71,5 +71,5 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 	 * @param list
 	 * @return
 	 */
-	Observable<Boolean> update(InternalActionContext ac, MicronodeFieldList list);
+	Single<Boolean> update(InternalActionContext ac, MicronodeFieldList list);
 }

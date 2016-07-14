@@ -46,6 +46,7 @@ import com.gentics.mesh.util.CompareUtils;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
+import rx.Single;
 
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
@@ -55,10 +56,10 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Observable<MicronodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public Single<MicronodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		
 		NodeParameters parameters = new NodeParameters(ac);
-		List<Observable<MicronodeResponse>> obs = new ArrayList<>();
+		List<Single<MicronodeResponse>> obs = new ArrayList<>();
 		MicronodeResponse restMicronode = new MicronodeResponse();
 		MicroschemaContainerVersion microschemaContainer = getSchemaContainerVersion();
 		if (microschemaContainer == null) {
@@ -85,7 +86,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		// Fields
 		for (FieldSchema fieldEntry : microschema.getFields()) {
-			Observable<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level)
+			Single<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level)
 					.map(restField -> {
 						if (restField == null) {
 							log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
@@ -97,7 +98,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			obs.add(obsRestField);
 		}
 
-		return Observable.merge(obs).last();
+		return Single.merge(obs).last();
 	}
 
 	@Override
@@ -145,7 +146,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
+	public Single<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
 			java.util.List<String> languageTags, int level) {
 
 		// Filter out unsupported field types

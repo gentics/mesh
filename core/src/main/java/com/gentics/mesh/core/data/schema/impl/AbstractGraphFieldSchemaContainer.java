@@ -17,7 +17,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import rx.Observable;
+
+import rx.Single;
 
 /**
  * The {@link AbstractGraphFieldSchemaContainer} contains the abstract graph element implementation for {@link GraphFieldSchemaContainer} implementations (e.g.:
@@ -76,7 +77,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public Observable<? extends SC> update(InternalActionContext ac) {
+	public Single<? extends SC> update(InternalActionContext ac) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 
@@ -86,13 +87,13 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public Observable<R> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+	public Single<R> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		// Delegate transform call to latest version 
 		return getLatestVersion().transformToRest(ac, level, languageTags);
 	}
 
 	@Override
-	public Observable<R> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public Single<R> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		// Delegate transform call to latest version
 		return getLatestVersion().transformToRestSync(ac, level, languageTags);
 	}

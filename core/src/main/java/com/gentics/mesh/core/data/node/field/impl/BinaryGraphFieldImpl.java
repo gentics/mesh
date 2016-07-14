@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 
 import java.io.File;
 import java.util.Objects;
@@ -18,7 +17,7 @@ import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import rx.Observable;
+import rx.Single;
 
 public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
 
@@ -37,7 +36,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	private static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
 	@Override
-	public Observable<BinaryField> transformToRest(ActionContext ac) {
+	public Single<BinaryField> transformToRest(ActionContext ac) {
 
 		BinaryField restModel = new BinaryFieldImpl();
 		restModel.setFileName(getFileName());
@@ -47,7 +46,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		restModel.setDpi(getImageDPI());
 		restModel.setWidth(getImageWidth());
 		restModel.setHeight(getImageHeight());
-		return Observable.just(restModel);
+		return Single.just(restModel);
 
 	}
 

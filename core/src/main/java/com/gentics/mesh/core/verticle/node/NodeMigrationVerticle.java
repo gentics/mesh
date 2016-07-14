@@ -101,7 +101,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						if (release == null) {
 							throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
 						}
-						SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(schemaUuid).toBlocking().single();
+						SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(schemaUuid).toBlocking().value();
 						if (schemaContainer == null) {
 							throw error(BAD_REQUEST, "Schema container for uuid {" + schemaUuid + "} can't be found.");
 						}
@@ -116,8 +116,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.schema);
 						setRunning(statusBean, statusMBeanName);
-						nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).toBlocking()
-								.single();
+						nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
 						return null;
 					});
 					setDone(schemaUuid, statusMBeanName);
@@ -170,7 +169,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 							throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
 						}
 
-						MicroschemaContainer schemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().single();
+						MicroschemaContainer schemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().value();
 
 						if (schemaContainer == null) {
 							throw error(BAD_REQUEST, "Microschema container for uuid {" + microschemaUuid + "} can't be found.");

@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
-import rx.Observable;
+import rx.Single;
 
 public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContainer> {
 
@@ -50,7 +50,7 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 * @param reference reference
 	 * @return
 	 */
-	Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference);
+	Single<MicroschemaContainerVersion> fromReference(MicroschemaReference reference);
 
 	/**
 	 * Get the microschema container version from the given reference. Ignore
@@ -63,5 +63,5 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 *            release
 	 * @return
 	 */
-	Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference, Release release);
+	Single<MicroschemaContainerVersion> fromReference(MicroschemaReference reference, Release release);
 }

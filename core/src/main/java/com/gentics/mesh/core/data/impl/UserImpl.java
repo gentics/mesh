@@ -61,6 +61,7 @@ import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
+import rx.Single;
 import rx.subjects.AsyncSubject;
 
 /**
@@ -190,7 +191,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Observable<List<String>> getPermissionNamesAsync(InternalActionContext ac, MeshVertex node) {
+	public Single<List<String>> getPermissionNamesAsync(InternalActionContext ac, MeshVertex node) {
 
 		class PermResult {
 
@@ -205,7 +206,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		String mapKey = "permissions:" + node.getUuid();
 		List<String> permissions = (List<String>) ac.data().get(mapKey);
 		if (permissions != null) {
-			return Observable.just(permissions);
+			return Single.just(permissions);
 		} else {
 			List<Observable<PermResult>> futures = new ArrayList<>();
 
@@ -308,11 +309,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Observable<Boolean> hasPermissionAsync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission) {
+	public Single<Boolean> hasPermissionAsync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission) {
 		if (ac.data() != null) {
 			Boolean perm = (Boolean) ac.data().get(getPermissionMapKey(vertex, permission));
 			if (perm != null) {
-				return Observable.just(perm);
+				return Single.just(perm);
 			}
 		}
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -331,8 +332,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Observable<UserResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Observable<UserResponse>> obs = new HashSet<>();
+	public Single<UserResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		Set<Single<UserResponse>> obs = new HashSet<>();
 		UserResponse restUser = new UserResponse();
 
 		restUser.setUsername(getUsername());
@@ -350,20 +351,20 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// User's role permissions
 		obs.add(setRolePermissions(ac, restUser));
 
-		// User's common fields 
+		// User's common fields
 		obs.add(fillCommonRestFields(ac, restUser));
 
 		// Wait for all async processes to complete
-		return Observable.merge(obs).last();
-		//reduce(restUser, (a, b) -> restUser);
+		return Observable.merge(obs);
+		// reduce(restUser, (a, b) -> restUser);
 	}
 
-	private Observable<UserResponse> setGroups(InternalActionContext ac, UserResponse restUser) {
+	private Single<UserResponse> setGroups(InternalActionContext ac, UserResponse restUser) {
 		for (Group group : getGroups()) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
-		return Observable.just(restUser);
+		return Single.just(restUser);
 	}
 
 	/**
@@ -373,11 +374,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 * @param restUser
 	 * @return
 	 */
-	private Observable<UserResponse> setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
+	private Single<UserResponse> setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
 		NodeParameters parameters = new NodeParameters(ac);
 		Node node = getReferencedNode();
 		if (node == null) {
-			return Observable.empty();
+			return Single.just(null);
 		} else {
 			boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
 			if (expandReference) {
@@ -395,7 +396,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 					// TODO handle this case
 				}
 				restUser.setNodeReference(userNodeReference);
-				return Observable.just(restUser);
+				return Single.just(restUser);
 			}
 
 		}
@@ -424,8 +425,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode,
-			GraphPermission... toGrant) {
+	public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
 		// 1. Determine all roles that grant given permission on the source node.
 		List<? extends Role> rolesThatGrantPermission = sourceNode.getImpl().in(permission.label()).has(RoleImpl.class)
 				.toListExplicit(RoleImpl.class);
@@ -477,7 +477,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Observable<User> update(InternalActionContext ac) {
+	public Single<User> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		try {
@@ -521,20 +521,20 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 						String referencedNodeUuid = basicReference.getUuid();
 						String projectName = basicReference.getProjectName();
 						/* TODO decide whether we need to check perms on the project as well */
-						Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName).toBlocking().single();
+						Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName).toBlocking().value();
 						if (project == null) {
 							throw error(BAD_REQUEST, "project_not_found", projectName);
 						}
 						NodeRoot nodeRoot = project.getNodeRoot();
-						Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().last();
+						Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().value();
 						setReferencedNode(node);
 					}
 				}
 				return createIndexBatch(STORE_ACTION);
-			}).process().map(i -> this);
+			}).process().andThen(Single.just(this));
 
 		} catch (IOException e) {
-			return Observable.error(e);
+			return Single.error(e);
 		}
 
 	}

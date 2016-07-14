@@ -275,7 +275,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		try (NoTrx noTx = db.noTrx()) {
 			TagFamily basicTagFamily = tagFamily("basic");
 			String uuid = basicTagFamily.getUuid();
-			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid).toBlocking().single());
+			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid).toBlocking().value());
 
 			Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
 			latchFor(future);

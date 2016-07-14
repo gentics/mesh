@@ -55,7 +55,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.ext.web.RoutingContext;
-import rx.Observable;
+import rx.Single;
 
 public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
@@ -68,7 +68,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = content();
 			InternalActionContext ac = getMockedInternalActionContext("?version=draft");
-			NodeReference reference = node.transformToReference(ac).toBlocking().first();
+			NodeReference reference = node.transformToReference(ac).toBlocking().value();
 			assertNotNull(reference);
 			assertEquals(node.getUuid(), reference.getUuid());
 		}
@@ -79,13 +79,13 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node newsNode = content("news overview");
 			CountDownLatch latch = new CountDownLatch(2);
-			Observable<String> path = newsNode.getPath(project().getLatestRelease().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
+			Single<String> path = newsNode.getPath(project().getLatestRelease().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
 			path.subscribe(s -> {
 				assertEquals("/News/News+Overview.en.html", s);
 				latch.countDown();
 			});
 
-			Observable<String> pathSegementFieldValue = newsNode.getPathSegment(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
+			Single<String> pathSegementFieldValue = newsNode.getPathSegment(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
 					english().getLanguageTag());
 			pathSegementFieldValue.subscribe(s -> {
 				assertEquals("News Overview.en.html", s);
@@ -211,7 +211,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindByUUID() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
 			Node newsNode = content("news overview");
-			Node node = boot.nodeRoot().findByUuid(newsNode.getUuid()).toBlocking().first();
+			Node node = boot.nodeRoot().findByUuid(newsNode.getUuid()).toBlocking().value();
 			assertNotNull(node);
 			assertEquals(newsNode.getUuid(), node.getUuid());
 		}
@@ -225,7 +225,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			Node newsNode = content("concorde");
 
-			NodeResponse response = newsNode.transformToRest(ac, 0).toBlocking().first();
+			NodeResponse response = newsNode.transformToRest(ac, 0).toBlocking().value();
 			String json = JsonUtil.toJson(response);
 			assertNotNull(json);
 
@@ -261,10 +261,10 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = getMockedInternalActionContext("");
-			assertFalse(user().hasPermissionAsync(ac, node, GraphPermission.CREATE_PERM).toBlocking().first());
+			assertFalse(user().hasPermissionAsync(ac, node, GraphPermission.CREATE_PERM).toBlocking().value());
 			user().addCRUDPermissionOnRole(folder("2015"), GraphPermission.CREATE_PERM, node);
 			ac.data().clear();
-			assertTrue(user().hasPermissionAsync(ac, node, GraphPermission.CREATE_PERM).toBlocking().first());
+			assertTrue(user().hasPermissionAsync(ac, node, GraphPermission.CREATE_PERM).toBlocking().value());
 		}
 	}
 
@@ -470,7 +470,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 3. migrate nodes
-			nodeMigrationHandler.migrateNodes(newRelease).toBlocking().single();
+			nodeMigrationHandler.migrateNodes(newRelease).await();
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
@@ -616,7 +616,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 2. create new release and migrate nodes
 			db.noTrx(() -> {
 				Release newRelease = project.getReleaseRoot().create("newrelease", user());
-				nodeMigrationHandler.migrateNodes(newRelease).toBlocking().single();
+				nodeMigrationHandler.migrateNodes(newRelease).await();
 				return newRelease.getUuid();
 			});
 

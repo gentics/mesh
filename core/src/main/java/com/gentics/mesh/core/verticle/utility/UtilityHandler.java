@@ -10,7 +10,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 
 import io.vertx.ext.web.RoutingContext;
-import rx.Observable;
+import rx.Single;
 
 @Component
 public class UtilityHandler extends AbstractHandler {
@@ -28,7 +28,7 @@ public class UtilityHandler extends AbstractHandler {
 				projectName = "project";
 			}
 
-			return Observable.just(WebRootLinkReplacer.getInstance().replace(null, null, ac.getBodyAsString(),
+			return Single.just(WebRootLinkReplacer.getInstance().replace(null, null, ac.getBodyAsString(),
 					ac.getNodeParameters().getResolveLinks(), projectName, new NodeParameters(ac).getLanguageList()));
 		}).subscribe(body -> rc.response().putHeader("Content-Type", "text/plain").setStatusCode(OK.code()).end(body), ac::fail);
 	}

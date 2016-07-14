@@ -27,6 +27,7 @@ import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;
+import rx.Single;
 
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
 
@@ -60,7 +61,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 
-			List<Observable<NodeResponse>> obs = new ArrayList<>();
+			List<Single<NodeResponse>> obs = new ArrayList<>();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				obs.add(item.getNode().transformToRestSync(ac, level, lTagsArray));
 			}
@@ -83,7 +84,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 					listItem.setUrl(WebRootLinkReplacer.getInstance().resolve(releaseUuid, type, item.getNode(), ac.getNodeParameters().getResolveLinks(), lTagsArray)
-							.toBlocking().single());
+							.toBlocking().value());
 				}
 
 				restModel.add(listItem);

@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.parameter.impl.LinkType;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * The HtmlField Domain Model interface.
@@ -20,7 +20,7 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 	FieldTransformator HTML_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		HtmlGraphField graphHtmlField = container.getHtml(fieldKey);
 		if (graphHtmlField == null) {
-			return Observable.just(new HtmlFieldImpl());
+			return Single.just(new HtmlFieldImpl());
 		} else {
 			return graphHtmlField.transformToRest(ac).map(model -> {
 				// If needed resolve links within the html

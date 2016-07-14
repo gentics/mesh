@@ -411,7 +411,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		// 1. create new release and migrate nodes
 		db.noTrx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
-			nodeMigrationHandler.migrateNodes(newRelease).toBlocking().single();
+			nodeMigrationHandler.migrateNodes(newRelease).await();
 			return null;
 		});
 

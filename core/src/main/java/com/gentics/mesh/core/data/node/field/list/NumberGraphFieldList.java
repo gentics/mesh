@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 
-import rx.Observable;
+import rx.Single;
 
 public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, NumberFieldListImpl, Number> {
 
@@ -19,7 +19,7 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 	FieldTransformator NUMBER_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NumberGraphFieldList numberFieldList = container.getNumberList(fieldKey);
 		if (numberFieldList == null) {
-			return Observable.just(null);
+			return Single.just(null);
 		} else {
 			return numberFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}

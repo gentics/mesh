@@ -30,6 +30,7 @@ import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;
+import rx.Single;
 
 /**
  * @see MicronodeGraphFieldList
@@ -47,11 +48,11 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public Observable<MicronodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	public Single<MicronodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 
 		MicronodeFieldList restModel = new MicronodeFieldListImpl();
 
-		List<Observable<MicronodeResponse>> obs = new ArrayList<>();
+		List<Single<MicronodeResponse>> obs = new ArrayList<>();
 		for (MicronodeGraphField item : getList()) {
 			obs.add(item.getMicronode().transformToRestSync(ac, level));
 		}
@@ -72,7 +73,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public Observable<Boolean> update(InternalActionContext ac, MicronodeFieldList list) {
+	public Single<Boolean> update(InternalActionContext ac, MicronodeFieldList list) {
 		// Transform the list of micronodes into a hashmap. This way we can lookup micronode fields faster
 		Map<String, Micronode> existing = getList().stream().collect(Collectors.toMap(field -> {
 			return field.getMicronode().getUuid();
@@ -82,7 +83,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 			return a;
 		}));
 
-		return Observable.create(subscriber -> {
+		return Single.create(subscriber -> {
 			Observable.from(list.getItems()).flatMap(item -> {
 				if (item == null) {
 					throw error(BAD_REQUEST, "field_list_error_null_not_allowed", getFieldKey());
@@ -140,8 +141,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 			}, e -> {
 				subscriber.onError(e);
 			}, () -> {
-				subscriber.onNext(true);
-				subscriber.onCompleted();
+				subscriber.onSuccess(true);
 			});
 		});
 	}

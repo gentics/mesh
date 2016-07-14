@@ -8,11 +8,11 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
-import rx.Observable;
+import rx.Single;
 
 @FunctionalInterface
 public interface FieldTransformator {
 
-	Observable<? extends Field> transform(GraphFieldContainer container, InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level, Node parentNode);
+	Single<? extends Field> transform(GraphFieldContainer container, InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level, Node parentNode);
 
 }

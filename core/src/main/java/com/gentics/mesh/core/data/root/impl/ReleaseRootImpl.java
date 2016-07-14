@@ -41,7 +41,7 @@ import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.eventbus.DeliveryOptions;
-import rx.Observable;
+import rx.Single;
 
 public class ReleaseRootImpl extends AbstractRootVertex<Release> implements ReleaseRoot {
 
@@ -105,7 +105,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 	}
 
 	@Override
-	public Observable<Release> create(InternalActionContext ac) {
+	public Single<Release> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		ReleaseCreateRequest createRequest = ac.fromJson(ReleaseCreateRequest.class);

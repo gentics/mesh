@@ -57,6 +57,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
+import rx.Single;
 
 /**
  * @see Tag
@@ -112,8 +113,8 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public Observable<TagResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Observable<TagResponse>> obs = new HashSet<>();
+	public Single<TagResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		Set<Single<TagResponse>> obs = new HashSet<>();
 
 		TagResponse restTag = new TagResponse();
 
@@ -133,7 +134,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 		obs.add(setRolePermissions(ac, restTag));
 
 		// Merge and complete
-		return Observable.merge(obs).last();
+		return Single.merge(obs).last();
 	}
 
 	@Override
@@ -218,7 +219,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public Observable<Tag> update(InternalActionContext ac) {
+	public Single<Tag> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		return db.trx(() -> {
@@ -229,7 +230,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 				TagFamily tagFamily = getTagFamily();
 
 				// Check for conflicts
-				Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName).toBlocking().single();
+				Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName).toBlocking().value();
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
 							tagFamily.getName());
@@ -240,7 +241,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 				setName(requestModel.getFields().getName());
 			}
 			return createIndexBatch(STORE_ACTION);
-		}).process().map(i -> this);
+		}).process().toSingleDefault(this);
 
 	}
 

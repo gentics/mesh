@@ -16,7 +16,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.RoutingContext;
-import rx.Observable;
+import rx.Single;
 
 @Component
 public class AdminHandler extends AbstractHandler {
@@ -38,7 +38,7 @@ public class AdminHandler extends AbstractHandler {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrxExperimental(() -> {
 			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
-			return Observable.just(message(ac, "backup_finished"));
+			return Single.just(message(ac, "backup_finished"));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
@@ -47,7 +47,7 @@ public class AdminHandler extends AbstractHandler {
 		db.asyncNoTrxExperimental(() -> {
 			File backupFile = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory(), "");
 			db.restoreGraph(backupFile.getAbsolutePath());
-			return Observable.just(message(ac, "restore_finished"));
+			return Single.just(message(ac, "restore_finished"));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
@@ -55,7 +55,7 @@ public class AdminHandler extends AbstractHandler {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrxExperimental(() -> {
 			db.exportGraph(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
-			return Observable.just(message(ac, "export_finished"));
+			return Single.just(message(ac, "export_finished"));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
@@ -66,7 +66,7 @@ public class AdminHandler extends AbstractHandler {
 		db.asyncNoTrxExperimental(() -> {
 			File importFile = new File(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory(), "");
 			db.importGraph(importFile.getAbsolutePath());
-			return Observable.just(message(ac, "import_finished"));
+			return Single.just(message(ac, "import_finished"));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

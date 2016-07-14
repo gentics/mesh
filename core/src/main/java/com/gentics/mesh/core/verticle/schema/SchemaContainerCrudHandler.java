@@ -23,7 +23,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.json.JsonUtil;
 
-import rx.Observable;
+import rx.Single;
 
 @Component
 public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContainer, Schema> {
@@ -54,14 +54,14 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 					model.getChanges().addAll(SchemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
 					String schemaName = element.getName();
 					if (model.getChanges().isEmpty()) {
-						return Observable.just(message(ac, "schema_update_no_difference_detected", schemaName));
+						return Single.just(message(ac, "schema_update_no_difference_detected", schemaName));
 					} else {
 						return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
-							return Observable.just(message(ac, "migration_invoked", schemaName));
+							return Single.just(message(ac, "migration_invoked", schemaName));
 						});
 					}
 				} catch (Exception e) {
-					return Observable.error(e);
+					return Single.error(e);
 				}
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -69,7 +69,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			Single<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			return obsSchema.flatMap(schema -> schema.getLatestVersion().diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -85,10 +85,10 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
-			Observable<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), GraphPermission.UPDATE_PERM);
+			Single<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
+			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), GraphPermission.UPDATE_PERM);
 
-			return Observable.zip(obsPerm, obsSchema, (perm, schema) -> {
+			return Single.zip(obsPerm, obsSchema, (perm, schema) -> {
 				if (!perm.booleanValue()) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 				}
@@ -109,12 +109,12 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
-			Observable<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), GraphPermission.UPDATE_PERM);
+			Single<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
+			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), GraphPermission.UPDATE_PERM);
 
 			// TODO check whether schema is assigned to project
 
-			return Observable.zip(obsPerm, obsSchema, (perm, schema) -> {
+			return Single.zip(obsPerm, obsSchema, (perm, schema) -> {
 				if (!perm.booleanValue()) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 				}
@@ -135,7 +135,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		validateParameter(schemaUuid, "schemaUuid");
 
 		db.asyncNoTrxExperimental(() -> {
-			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+			Single<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
 			});

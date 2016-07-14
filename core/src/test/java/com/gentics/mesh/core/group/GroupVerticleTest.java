@@ -13,6 +13,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -142,7 +143,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupResponse restGroup = future.result();
 			test.assertGroup(request, restGroup);
 
-			Group foundGroup = boot.groupRoot().findByUuid(restGroup.getUuid()).toBlocking().single();
+			Group foundGroup = boot.groupRoot().findByUuid(restGroup.getUuid()).toBlocking().value();
 			assertNotNull("Group should have been created.", foundGroup);
 
 			Future<GroupResponse> readFuture = getClient().findGroupByUuid(restGroup.getUuid());
@@ -182,7 +183,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().revokePermissions(root, CREATE_PERM);
 			User user = user();
 			assertFalse("The create permission to the groups root node should have been revoked.",
-					user.hasPermissionAsync(ac, root, CREATE_PERM).toBlocking().single());
+					user.hasPermissionAsync(ac, root, CREATE_PERM).toBlocking().value());
 
 			Future<GroupResponse> future = getClient().createGroup(request);
 			latchFor(future);
@@ -348,7 +349,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			return restGroup;
 		});
 		try (Trx tx = db.trx()) {
-			Group reloadedGroup = boot.groupRoot().findByUuid(updatedGroup.getUuid()).toBlocking().single();
+			Group reloadedGroup = boot.groupRoot().findByUuid(updatedGroup.getUuid()).toBlocking().value();
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -383,7 +384,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
-			Group reloadedGroup = boot.groupRoot().findByUuid(group.getUuid()).toBlocking().single();
+			Group reloadedGroup = boot.groupRoot().findByUuid(group.getUuid()).toBlocking().value();
 			assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 		}
 	}
@@ -403,7 +404,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, CONFLICT, "group_conflicting_name", alreadyUsedName);
 
-			Group reloadedGroup = groupRoot.findByUuid(group().getUuid()).toBlocking().single();
+			Group reloadedGroup = groupRoot.findByUuid(group().getUuid()).toBlocking().value();
 			assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
 		}
 	}

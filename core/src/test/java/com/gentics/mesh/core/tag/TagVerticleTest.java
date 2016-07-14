@@ -325,10 +325,10 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(future);
 			expectResponseMessage(future, "tag_deleted", uuid + "/" + name);
 
-			tag = boot.tagRoot().findByUuid(uuid).toBlocking().single();
+			tag = boot.tagRoot().findByUuid(uuid).toBlocking().value();
 			assertNull("The tag should have been deleted", tag);
 
-			Project project = boot.projectRoot().findByName(PROJECT_NAME).toBlocking().single();
+			Project project = boot.projectRoot().findByName(PROJECT_NAME).toBlocking().value();
 			assertNotNull(project);
 		}
 	}
@@ -346,7 +346,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(messageFut);
 			expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
 
-			tag = boot.tagRoot().findByUuid(uuid).toBlocking().first();
+			tag = boot.tagRoot().findByUuid(uuid).toBlocking().value();
 			assertNotNull("The tag should not have been deleted", tag);
 		}
 	}
@@ -358,7 +358,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			TagCreateRequest tagCreateRequest = new TagCreateRequest();
 			tagCreateRequest.getFields().setName("red");
-			//tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest);
 			latchFor(future);
@@ -378,7 +378,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			tagCreateRequest.getFields().setName("SomeName");
-			//tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest);
 			latchFor(future);
@@ -386,9 +386,9 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals("SomeName", future.result().getFields().getName());
 
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
-					meshRoot().getTagRoot().findByUuid(future.result().getUuid()).toBlocking().first());
+					meshRoot().getTagRoot().findByUuid(future.result().getUuid()).toBlocking().value());
 			assertNotNull("The tag could not be found within the project.tagRoot node.",
-					project().getTagRoot().findByUuid(future.result().getUuid()).toBlocking().first());
+					project().getTagRoot().findByUuid(future.result().getUuid()).toBlocking().value());
 
 			future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), future.result().getUuid());
 			latchFor(future);
@@ -410,7 +410,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			TagFamily tagFamily = tagFamilies().get("colors");
 			tagFamilyName = tagFamily.getName();
-			//tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest);
 			latchFor(future);
 			expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
@@ -484,7 +484,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		for (int i = 0; i < nJobs; i++) {
 			TagCreateRequest request = new TagCreateRequest();
 			request.getFields().setName("newcolor_" + i);
-			//request.setTagFamily(new TagFamilyReference().setName("colors"));
+			// request.setTagFamily(new TagFamilyReference().setName("colors"));
 			set.add(getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), request));
 		}
 		validateCreation(set, null);
@@ -514,7 +514,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName("SomeName");
 		TagFamily tagFamily = tagFamilies().get("colors");
-		//		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 		try (NoTrx noTx = db.noTrx()) {
 			// Create

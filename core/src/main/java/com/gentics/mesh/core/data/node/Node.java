@@ -29,7 +29,9 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+import rx.Completable;
 import rx.Observable;
+import rx.Single;
 
 /**
  * The Node Domain Model interface.
@@ -324,14 +326,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param targetNode
 	 * @return
 	 */
-	Observable<Void> moveTo(InternalActionContext ac, Node targetNode);
+	Completable moveTo(InternalActionContext ac, Node targetNode);
 
 	/**
 	 * Transform the node into a node reference rest model.
 	 * 
 	 * @param ac
 	 */
-	Observable<NodeReferenceImpl> transformToReference(InternalActionContext ac);
+	Single<NodeReferenceImpl> transformToReference(InternalActionContext ac);
 
 	/**
 	 * Transform the node into a navigation response rest model.
@@ -339,7 +341,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return
 	 */
-	Observable<NavigationResponse> transformToNavigation(InternalActionContext ac);
+	Single<NavigationResponse> transformToNavigation(InternalActionContext ac);
 
 	/**
 	 * Transform the node into a publish status response rest model.
@@ -347,7 +349,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return
 	 */
-	Observable<PublishStatusResponse> transformToPublishStatus(InternalActionContext ac);
+	Single<PublishStatusResponse> transformToPublishStatus(InternalActionContext ac);
 
 	/**
 	 * Publish the node (all languages)
@@ -363,7 +365,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return
 	 */
-	Observable<Void> takeOffline(InternalActionContext ac);
+	Completable takeOffline(InternalActionContext ac);
 
 	/**
 	 * Transform the node language into a publish status response rest model.
@@ -372,7 +374,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTag
 	 * @return
 	 */
-	Observable<PublishStatusModel> transformToPublishStatus(InternalActionContext ac, String languageTag);
+	Single<PublishStatusModel> transformToPublishStatus(InternalActionContext ac, String languageTag);
 
 	/**
 	 * Publish a language of the node
@@ -381,7 +383,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTag
 	 * @return
 	 */
-	Observable<Void> publish(InternalActionContext ac, String languageTag);
+	Completable publish(InternalActionContext ac, String languageTag);
 
 	/**
 	 * Set the graph field container to be the (only) published for the given release
@@ -398,7 +400,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTag
 	 * @return
 	 */
-	Observable<Void> takeOffline(InternalActionContext ac, String languageTag);
+	Completable takeOffline(InternalActionContext ac, String languageTag);
 
 	/**
 	 * Delete the language container for the given language from the release This will not actually delete the container, but will remove the DRAFT and
@@ -416,7 +418,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @return
 	 */
-	Observable<String> getPathSegment(InternalActionContext ac);
+	Single<String> getPathSegment(InternalActionContext ac);
 
 	/**
 	 * Return the full path to this node.
@@ -424,7 +426,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return
 	 */
-	Observable<String> getPath(InternalActionContext ac);
+	Single<String> getPath(InternalActionContext ac);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -436,7 +438,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param pathStack
 	 * @return
 	 */
-	Observable<Path> resolvePath(String releaseUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
+	Single<Path> resolvePath(String releaseUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
 
 	/**
 	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
@@ -464,7 +466,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 * @throws UnsupportedEncodingException
 	 */
-	Observable<String> getPath(String releaseUuid, ContainerType type, String... languageTag) throws UnsupportedEncodingException;
+	Single<String> getPath(String releaseUuid, ContainerType type, String... languageTag) throws UnsupportedEncodingException;
 
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
@@ -478,7 +480,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	Observable<String> getPathSegment(String releaseUuid, ContainerType type, String... languageTag);
+	Single<String> getPathSegment(String releaseUuid, ContainerType type, String... languageTag);
 
 	/**
 	 * Delete the node and ignore any checks.
@@ -505,7 +507,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param restNode
 	 * @return
 	 */
-	Observable<NodeResponse> setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode);
+	Single<NodeResponse> setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode);
 
 	/**
 	 * Return the schema container for the node.

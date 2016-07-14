@@ -107,7 +107,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
-			Release foundRelease = releaseRoot.findByName(project.getName()).toBlocking().single();
+			Release foundRelease = releaseRoot.findByName(project.getName()).toBlocking().value();
 			assertThat(foundRelease).as("Release with name " + project.getName()).isNotNull().matches(project.getInitialRelease());
 		}
 	}
@@ -120,7 +120,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release initialRelease = project.getInitialRelease();
 
-			Release foundRelease = releaseRoot.findByUuid(initialRelease.getUuid()).toBlocking().single();
+			Release foundRelease = releaseRoot.findByUuid(initialRelease.getUuid()).toBlocking().value();
 			assertThat(foundRelease).as("Release with uuid " + initialRelease.getUuid()).isNotNull().matches(initialRelease);
 		}
 	}
@@ -223,7 +223,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
-			ReleaseResponse releaseResponse = release.transformToRestSync(ac, 0).toBlocking().first();
+			ReleaseResponse releaseResponse = release.transformToRestSync(ac, 0).toBlocking().value();
 			assertThat(releaseResponse).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive().isMigrated();
 		}
 	}
@@ -485,7 +485,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 		model.getChanges().addAll(SchemaComparator.getIntance().diff(schema, updatedSchema));
 
 		InternalActionContext ac = getMockedInternalActionContext();
-		schemaContainer.getLatestVersion().applyChanges(ac, model).toBlocking().last();
+		schemaContainer.getLatestVersion().applyChanges(ac, model).toBlocking().value();
 		schemaContainer.reload();
 	}
 
@@ -525,7 +525,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 		model.getChanges().addAll(MicroschemaComparator.getIntance().diff(microschema, updatedMicroschema));
 
 		InternalActionContext ac = getMockedInternalActionContext();
-		microschemaContainer.getLatestVersion().applyChanges(ac, model).toBlocking().last();
+		microschemaContainer.getLatestVersion().applyChanges(ac, model).toBlocking().value();
 		microschemaContainer.reload();
 	}
 }

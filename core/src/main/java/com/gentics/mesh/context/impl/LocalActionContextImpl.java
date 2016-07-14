@@ -188,7 +188,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		MeshSpringConfiguration.getInstance().database().noTrx(() -> {
 			BootstrapInitializer boot = BootstrapInitializer.getBoot();
 			boot.projectRoot().reload();
-			Project project = boot.projectRoot().findByName(projectName).toBlocking().single();
+			Project project = boot.projectRoot().findByName(projectName).toBlocking().value();
 			this.project = project;
 			return null;
 		});

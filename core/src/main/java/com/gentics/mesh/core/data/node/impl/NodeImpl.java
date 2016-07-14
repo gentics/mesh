@@ -103,7 +103,9 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Completable;
 import rx.Observable;
+import rx.Single;
 
 /**
  * @see Node
@@ -124,7 +126,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<String> getPathSegment(InternalActionContext ac) {
+	public Single<String> getPathSegment(InternalActionContext ac) {
 		NodeParameters parameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
@@ -133,18 +135,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
 			if (field != null) {
-				return Observable.just(field.getString());
+				return Single.just(field.getString());
 			}
 		}
-		return Observable.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid()));
+		return Single.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid()));
 	}
 
 	@Override
-	public Observable<String> getPathSegment(String releaseUuid, ContainerType type, String... languageTag) {
+	public Single<String> getPathSegment(String releaseUuid, ContainerType type, String... languageTag) {
 
 		// Check whether this node is the base node.
 		if (getParentNode(releaseUuid) == null) {
-			return Observable.just("");
+			return Single.just("");
 		}
 		NodeGraphFieldContainer container = null;
 		for (String tag : languageTag) {
@@ -157,26 +159,26 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// 1. Try to load the path segment using the string field
 			StringGraphField stringField = container.getString(fieldName);
 			if (stringField != null) {
-				return Observable.just(stringField.getString());
+				return Single.just(stringField.getString());
 			}
 
 			// 2. Try to load the path segment using the binary field since the string field could not be found
 			if (stringField == null) {
 				BinaryGraphField binaryField = container.getBinary(fieldName);
 				if (binaryField != null) {
-					return Observable.just(binaryField.getFileName());
+					return Single.just(binaryField.getFileName());
 				}
 			}
-			return Observable.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_field", fieldName, getUuid(),
+			return Single.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_field", fieldName, getUuid(),
 					Arrays.toString(languageTag), releaseUuid, type.getShortName()));
 		}
-		return Observable.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_container", getUuid(), Arrays.toString(languageTag),
+		return Single.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_container", getUuid(), Arrays.toString(languageTag),
 				releaseUuid, type.getShortName()));
 	}
 
 	@Override
-	public Observable<String> getPath(String releaseUuid, ContainerType type, String... languageTag) throws UnsupportedEncodingException {
-		List<Observable<String>> segments = new ArrayList<>();
+	public Single<String> getPath(String releaseUuid, ContainerType type, String... languageTag) throws UnsupportedEncodingException {
+		List<Single<String>> segments = new ArrayList<>();
 
 		segments.add(getPathSegment(releaseUuid, type, languageTag));
 		Node current = this;
@@ -258,8 +260,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<String> getPath(InternalActionContext ac) {
-		List<Observable<String>> segments = new ArrayList<>();
+	public Single<String> getPath(InternalActionContext ac) {
+		List<Single<String>> segments = new ArrayList<>();
 		segments.add(getPathSegment(ac));
 		Node current = this;
 		String releaseUuid = ac.getRelease(getProject()).getUuid();
@@ -526,7 +528,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public Single<NodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
@@ -534,7 +536,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeParameters nodeParameters = ac.getNodeParameters();
 			VersioningParameters versioiningParameters = ac.getVersioningParameters();
 
-			Set<Observable<NodeResponse>> obs = new HashSet<>();
+			Set<Single<NodeResponse>> obs = new HashSet<>();
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();
 			if (container == null) {
@@ -642,7 +644,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// Fields
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					// boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
-					Observable<NodeResponse> obsFields = fieldContainer
+					Single<NodeResponse> obsFields = fieldContainer
 							.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level).map(restField -> {
 								if (fieldEntry.isRequired() && restField == null) {
 									// TODO i18n
@@ -691,7 +693,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// Path
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
 				String path = linkReplacer.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
-						restNode.getLanguage()).toBlocking().single();
+						restNode.getLanguage()).toBlocking().value();
 				restNode.setPath(path);
 
 				// languagePaths
@@ -701,25 +703,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					Language currLanguage = currentFieldContainer.getLanguage();
 					languagePaths.put(currLanguage.getLanguageTag(),
 							linkReplacer.resolve(releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(), currLanguage.getLanguageTag())
-									.toBlocking().single());
+									.toBlocking().value());
 				}
 				restNode.setLanguagePaths(languagePaths);
 			}
 
 			// Merge and complete
-			return Observable.merge(obs).last();
+			return Single.merge(obs).last();
 		} catch (Exception e) {
-			return Observable.error(e);
+			return Single.error(e);
 		}
 	}
 
 	@Override
-	public Observable<NodeResponse> setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
+	public Single<NodeResponse> setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
 		String releaseUuid = ac.getRelease(getProject()).getUuid();
 		Node current = this.getParentNode(releaseUuid);
 		// The project basenode has no breadcrumb
 		if (current == null) {
-			return Observable.just(restNode);
+			return Single.just(restNode);
 		}
 
 		List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
@@ -737,18 +739,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-						getProject().getName(), restNode.getLanguage()).toBlocking().single();
+						getProject().getName(), restNode.getLanguage()).toBlocking().value();
 				reference.setPath(url);
 			}
 			breadcrumb.add(reference);
 			current = current.getParentNode(releaseUuid);
 		}
 		restNode.setBreadcrumb(breadcrumb);
-		return Observable.just(restNode);
+		return Single.just(restNode);
 	}
 
 	@Override
-	public Observable<NavigationResponse> transformToNavigation(InternalActionContext ac) {
+	public Single<NavigationResponse> transformToNavigation(InternalActionContext ac) {
 		NavigationParameters parameters = new NavigationParameters(ac);
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
@@ -786,10 +788,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            TODO
 	 * @return
 	 */
-	private Observable<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
+	private Single<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
 			NavigationResponse navigation, NavigationElement currentElement, String releaseUuid, ContainerType type) {
 		List<? extends Node> nodes = node.getChildren(ac.getUser(), releaseUuid, type);
-		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
+		List<Single<NavigationResponse>> obsResponses = new ArrayList<>();
 
 		obsResponses.add(node.transformToRest(ac, 0).map(response -> {
 			// Set current element data
@@ -800,7 +802,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Abort recursion when we reach the max level or when no more children can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
-			return Observable.merge(obsResponses).last();
+			return Single.merge(obsResponses).last();
 		}
 		NavigationParameters parameters = new NavigationParameters(ac);
 		// Add children
@@ -825,20 +827,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, releaseUuid, type));
 			}
 		}
-		return Observable.merge(obsResponses).last();
+		return Single.merge(obsResponses).last();
 	}
 
 	@Override
-	public Observable<NodeReferenceImpl> transformToReference(InternalActionContext ac) {
+	public Single<NodeReferenceImpl> transformToReference(InternalActionContext ac) {
 		NodeReferenceImpl nodeReference = new NodeReferenceImpl();
 		nodeReference.setUuid(getUuid());
 		nodeReference.setDisplayName(getDisplayName(ac));
 		nodeReference.setSchema(getSchemaContainer().transformToReference());
-		return Observable.just(nodeReference);
+		return Single.just(nodeReference);
 	}
 
 	@Override
-	public Observable<PublishStatusResponse> transformToPublishStatus(InternalActionContext ac) {
+	public Single<PublishStatusResponse> transformToPublishStatus(InternalActionContext ac) {
 		Release release = ac.getRelease(getProject());
 		PublishStatusResponse publishStatus = new PublishStatusResponse();
 		Map<String, PublishStatusModel> languages = new HashMap<>();
@@ -858,7 +860,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					languages.put(c.getLanguage().getLanguageTag(), status);
 				});
 
-		return Observable.just(publishStatus);
+		return Single.just(publishStatus);
 	}
 
 	@Override
@@ -871,7 +873,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				.filter(c -> !c.isPublished(releaseUuid)).collect(Collectors.toList());
 
 		// TODO check whether all required fields are filled
-		List<Observable<? extends SearchQueueBatch>> obs = new ArrayList<>();
+		List<Single<? extends SearchQueueBatch>> obs = new ArrayList<>();
 
 		obs.add(db.trx(() -> {
 			// publish all unpublished containers
@@ -894,7 +896,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<Void> takeOffline(InternalActionContext ac) {
+	public Completable takeOffline(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
@@ -911,7 +913,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			PublishParameters parameters = ac.getPublishParameters();
 			if (parameters.isRecursive()) {
 				for (Node node : getChildren()) {
-					node.takeOffline(ac).toBlocking().last();
+					node.takeOffline(ac).await();
 				}
 			}
 
@@ -919,24 +921,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Remove the published node from the index
 			return createIndexBatch(DELETE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
-		}).process().map(i -> {
-			return null;
-		});
+		}).process();
 	}
 
 	@Override
-	public Observable<PublishStatusModel> transformToPublishStatus(InternalActionContext ac, String languageTag) {
+	public Single<PublishStatusModel> transformToPublishStatus(InternalActionContext ac, String languageTag) {
 		Release release = ac.getRelease(getProject());
 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, release.getUuid(), ContainerType.PUBLISHED);
 		if (container != null) {
-			return Observable.just(new PublishStatusModel().setPublished(true)
+			return Single.just(new PublishStatusModel().setPublished(true)
 					.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()))
 					.setPublisher(container.getEditor().transformToReference()).setPublishTime(container.getLastEditedTimestamp()));
 		} else {
 			container = getGraphFieldContainer(languageTag, release.getUuid(), ContainerType.DRAFT);
 			if (container != null) {
-				return Observable.just(new PublishStatusModel().setPublished(false)
+				return Single.just(new PublishStatusModel().setPublished(false)
 						.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString())));
 			} else {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -945,7 +945,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<Void> publish(InternalActionContext ac, String languageTag) {
+	public Completable publish(InternalActionContext ac, String languageTag) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
@@ -960,7 +960,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// if published -> done
 		if (draftVersion.isPublished(releaseUuid)) {
-			return Observable.just(null);
+			return Completable.complete();
 		}
 
 		// check whether all required fields are filled, if not -> unable to publish
@@ -971,13 +971,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// reindex
 			return createIndexBatch(STORE_ACTION, Arrays.asList(published), release.getUuid(), ContainerType.PUBLISHED);
-		}).process().map(i -> {
-			return null;
-		});
+		}).process();
 	}
 
 	@Override
-	public Observable<Void> takeOffline(InternalActionContext ac, String languageTag) {
+	public Completable takeOffline(InternalActionContext ac, String languageTag) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
@@ -996,9 +994,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// reindex
 			return createIndexBatch(DELETE_ACTION, Arrays.asList(published), releaseUuid, ContainerType.PUBLISHED);
-		}).process().map(i -> {
-			return null;
-		});
+		}).process();
 	}
 
 	@Override
@@ -1235,7 +1231,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *
 	 */
 	@Override
-	public Observable<? extends Node> update(InternalActionContext ac) {
+	public Single<? extends Node> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		return db.trx(() -> {
@@ -1339,12 +1335,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 			}
 			return createIndexBatch(STORE_ACTION, Arrays.asList(latestDraftVersion), release.getUuid(), ContainerType.DRAFT);
-		}).process().map(i -> this);
+		}).process().toSingleDefault(this);
 
 	}
 
 	@Override
-	public Observable<Void> moveTo(InternalActionContext ac, Node targetNode) {
+	public Completable moveTo(InternalActionContext ac, Node targetNode) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		// TODO should we add a guard that terminates this loop when it runs to
@@ -1382,9 +1378,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			assertPublishConsistency(ac);
 			return createIndexBatch(STORE_ACTION);
-		}).process().map(i -> {
-			return null;
-		});
+		}).process();
 	}
 
 	@Override
@@ -1481,9 +1475,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<Path> resolvePath(String releaseUuid, ContainerType type, Path path, Stack<String> pathStack) {
+	public Single<Path> resolvePath(String releaseUuid, ContainerType type, Path path, Stack<String> pathStack) {
 		if (pathStack.isEmpty()) {
-			return Observable.just(path);
+			return Single.just(path);
 		}
 		String segment = pathStack.pop();
 

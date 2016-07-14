@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * A mesh core vertex is an vertex which can be manipulated via CRUD by the user. Thus this interface provides various methods that are needed to interact with
@@ -22,5 +22,5 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	 * 
 	 * @param ac
 	 */
-	Observable<? extends V> update(InternalActionContext ac);
+	Single<? extends V> update(InternalActionContext ac);
 }

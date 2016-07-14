@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
 
-import rx.Observable;
+import rx.Single;
 
 public interface ListGraphField<T extends ListableGraphField, RM extends Field, U> extends MicroschemaListableGraphField, MeshVertex {
 
@@ -67,6 +67,6 @@ public interface ListGraphField<T extends ListableGraphField, RM extends Field, 
 	 * @param languageTags list of language tags
 	 * @param level Level of transformation
 	 */
-	Observable<RM> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
+	Single<RM> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
 
 }

@@ -21,7 +21,7 @@ import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Completable;
 
 /**
  * @see SearchQueueBatch
@@ -118,12 +118,12 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public Observable<? extends SearchQueueBatch> process() {
+	public Completable process() {
 
 		MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
 		Database db = springConfiguration.database();
 
-		List<Observable<Void>> obs = new ArrayList<>();
+		List<Completable> obs = new ArrayList<>();
 		try (NoTrx noTrx = db.noTrx()) {
 			for (SearchQueueEntry entry : getEntries()) {
 				obs.add(entry.process());
@@ -137,9 +137,9 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 				delete(null);
 				return null;
 			});
-			return Observable.just(this);
+			return Completable.complete();
 		} else {
-			return Observable.concat(Observable.from(obs)).last().map(o -> this).doOnCompleted(() -> {
+			return Completable.merge(obs).doOnCompleted(() -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Handled all search queue items.");
 				}
@@ -169,7 +169,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public Observable<? extends SearchQueueBatch> process(InternalActionContext ac) {
+	public Completable process(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 

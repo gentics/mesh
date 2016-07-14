@@ -32,7 +32,7 @@ import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 public class TrxTest extends AbstractIsolatedBasicDBTest {
 
@@ -200,7 +200,7 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
 		db.asyncNoTrxExperimental(() -> {
 			throw new RuntimeException("error");
-		}).toBlocking().single();
+		}).toBlocking().value();
 		assertEquals("error", cf.get().getMessage());
 		throw cf.get();
 	}
@@ -211,8 +211,8 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 			TestUtils.run(() -> {
 				TestUtils.sleep(1000);
 			});
-			return Observable.just("OK");
-		}).toBlocking().last();
+			return Single.just("OK");
+		}).toBlocking().value();
 		assertEquals("OK", result);
 	}
 
@@ -230,8 +230,8 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 	@Test
 	public void testAsyncNoTrxSuccess() throws Throwable {
 		String result = db.asyncNoTrxExperimental(() -> {
-			return Observable.just("OK");
-		}).toBlocking().single();
+			return Single.just("OK");
+		}).toBlocking().value();
 		assertEquals("OK", result);
 	}
 

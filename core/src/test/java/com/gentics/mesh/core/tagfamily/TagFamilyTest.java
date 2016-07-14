@@ -83,7 +83,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 			TagFamilyRoot projectTagFamilyRoot = project().getTagFamilyRoot();
 			assertNotNull(projectTagFamilyRoot);
 
-			TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors").toBlocking().single();
+			TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors").toBlocking().value();
 			assertNotNull(projectTagFamily);
 
 			assertNotNull(projectTagFamilyRoot.create("bogus", user()));
@@ -110,7 +110,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			assertNotNull(root);
-			assertNotNull(root.findByName("colors").toBlocking().single());
+			assertNotNull(root.findByName("colors").toBlocking().value());
 		}
 	}
 
@@ -121,7 +121,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = tagFamily("colors");
 
-			TagFamily foundTagFamily = root.findByUuid(tagFamily.getUuid()).toBlocking().single();
+			TagFamily foundTagFamily = root.findByUuid(tagFamily.getUuid()).toBlocking().value();
 			assertNotNull(foundTagFamily);
 		}
 	}
@@ -144,7 +144,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTrx noTx = db.noTrx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily family = root.create("test", user());
-			TagFamily family2 = root.findByName(family.getName()).toBlocking().single();
+			TagFamily family2 = root.findByName(family.getName()).toBlocking().value();
 			assertNotNull(family2);
 			assertEquals("test", family2.getName());
 			assertEquals(family.getUuid(), family2.getUuid());
@@ -251,7 +251,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 			TagFamily tagFamily = tagFamily("colors");
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
-			TagFamilyResponse response = tagFamily.transformToRest(ac, 0).toBlocking().single();
+			TagFamilyResponse response = tagFamily.transformToRest(ac, 0).toBlocking().value();
 			assertNotNull(response);
 			assertEquals(tagFamily.getName(), response.getName());
 			assertEquals(tagFamily.getUuid(), response.getUuid());
@@ -266,12 +266,12 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 			TagFamily tagFamily = root.create("test123", user());
 			assertNotNull(tagFamily);
 			String uuid = tagFamily.getUuid();
-			TagFamily foundTagFamily = root.findByUuid(uuid).toBlocking().single();
+			TagFamily foundTagFamily = root.findByUuid(uuid).toBlocking().value();
 			assertNotNull(foundTagFamily);
 			SearchQueueBatch batch = createBatch();
 			tagFamily.delete(batch);
 			// TODO check for attached nodes
-			Project project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
+			Project project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().value();
 			assertNull(project);
 		}
 
@@ -284,10 +284,10 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
 			TagFamily tagFamily = root.create("test123", user());
-			assertFalse(user().hasPermissionAsync(ac, tagFamily, GraphPermission.CREATE_PERM).toBlocking().first());
+			assertFalse(user().hasPermissionAsync(ac, tagFamily, GraphPermission.CREATE_PERM).toBlocking().value());
 			user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, tagFamily);
 			ac.data().clear();
-			assertTrue(user().hasPermissionAsync(ac, tagFamily, GraphPermission.CREATE_PERM).toBlocking().first());
+			assertTrue(user().hasPermissionAsync(ac, tagFamily, GraphPermission.CREATE_PERM).toBlocking().value());
 		}
 	}
 

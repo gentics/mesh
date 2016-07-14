@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import rx.Observable;
+import rx.Single;
 
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
@@ -71,7 +71,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public Observable<Group> create(InternalActionContext ac) {
+	public Single<Group> create(InternalActionContext ac) {
 		MeshAuthUser requestUser = ac.getUser();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
@@ -85,7 +85,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		return db.noTrx(() -> {
 			MeshRoot root = boot.meshRoot();
 			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
-				Group groupWithSameName = findByName(requestModel.getName()).toBlocking().single();
+				Group groupWithSameName = findByName(requestModel.getName()).toBlocking().value();
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 				}
@@ -98,7 +98,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 				});
 				SearchQueueBatch batch = tuple.v1();
 				Group group = tuple.v2();
-				return batch.process().map(i -> group);
+				return batch.process().andThen(Single.just(group));
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 			}

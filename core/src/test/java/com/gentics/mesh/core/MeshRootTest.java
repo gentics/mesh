@@ -108,7 +108,7 @@ public class MeshRootTest extends AbstractBasicDBTest {
 	}
 
 	private MeshVertex resolve(String pathToElement) throws InterruptedException {
-		return MeshRoot.getInstance().resolvePathToElement(pathToElement).toBlocking().single();
+		return MeshRoot.getInstance().resolvePathToElement(pathToElement).toBlocking().value();
 	}
 
 }

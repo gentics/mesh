@@ -49,7 +49,7 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 	public void setupVerticleTest() throws Exception {
 		super.setupVerticleTest();
 		for (IndexHandler handler : registry.getHandlers()) {
-			handler.init().toBlocking().single();
+			handler.init().await();
 		}
 	}
 

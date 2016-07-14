@@ -2,7 +2,6 @@ package com.gentics.mesh.core.verticle.release;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -26,6 +25,7 @@ import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 
 import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Observable;
+import rx.Single;
 
 /**
  * CRUD Handler for Releases
@@ -73,7 +73,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				SchemaContainerRoot schemaContainerRoot = ac.getProject().getSchemaContainerRoot();
 
 				return db.trx(() -> {
-					Observable<SchemaContainerVersion> obs = Observable.from(schemaReferenceList)
+					Single<SchemaContainerVersion> obs = Single.from(schemaReferenceList)
 							.flatMap(reference -> schemaContainerRoot.fromReference(reference));
 					obs.toBlocking().forEach(version -> {
 						SchemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
@@ -129,7 +129,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
 				return db.trx(() -> {
-					Observable<MicroschemaContainerVersion> obs = Observable.from(microschemaReferenceList)
+					Single<MicroschemaContainerVersion> obs = Single.from(microschemaReferenceList)
 							.flatMap(reference -> microschemaContainerRoot.fromReference(reference));
 					obs.toBlocking().forEach(version -> {
 						MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
@@ -181,9 +181,9 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 *            release
 	 * @return observable emitting the rest model
 	 */
-	protected Observable<MicroschemaReferenceList> getMicroschemaVersions(Release release) {
+	protected Single<MicroschemaReferenceList> getMicroschemaVersions(Release release) {
 		try {
-			return Observable.from(release.findAllMicroschemaVersions()).map(MicroschemaContainerVersion::transformToReference).collect(() -> {
+			return Single.from(release.findAllMicroschemaVersions()).map(MicroschemaContainerVersion::transformToReference).collect(() -> {
 				return new MicroschemaReferenceList();
 			} , (x, y) -> {
 				x.add(y);

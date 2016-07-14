@@ -108,7 +108,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByName() {
 		try (NoTrx noTx = db.noTrx()) {
-			assertNotNull(boot.groupRoot().findByName("guests").toBlocking().single());
+			assertNotNull(boot.groupRoot().findByName("guests").toBlocking().value());
 		}
 	}
 
@@ -116,7 +116,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByUUID() {
 		try (NoTrx noTx = db.noTrx()) {
-			Group group = boot.groupRoot().findByUuid(group().getUuid()).toBlocking().single();
+			Group group = boot.groupRoot().findByUuid(group().getUuid()).toBlocking().value();
 			assertNotNull(group);
 		}
 	}
@@ -128,7 +128,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
-			GroupResponse response = group().transformToRest(ac, 0).toBlocking().first();
+			GroupResponse response = group().transformToRest(ac, 0).toBlocking().value();
 
 			assertNotNull(response);
 			assertEquals(group().getUuid(), response.getUuid());
@@ -145,7 +145,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(group);
 			String uuid = group.getUuid();
 			group.delete(batch);
-			group = meshRoot().getGroupRoot().findByUuid(uuid).toBlocking().single();
+			group = meshRoot().getGroupRoot().findByUuid(uuid).toBlocking().value();
 			assertNull(group);
 		}
 	}
@@ -158,10 +158,10 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 			User user = user();
 			InternalActionContext ac = getMockedInternalActionContext();
 			Group group = root.getGroupRoot().create("newGroup", user);
-			assertFalse(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().single());
+			assertFalse(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().value());
 			user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
 			ac.data().clear();
-			assertTrue(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().single());
+			assertTrue(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().value());
 		}
 	}
 

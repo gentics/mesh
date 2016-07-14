@@ -6,7 +6,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * A {@link TransformableElement} is a node that can be transformed into a rest model response.
@@ -26,7 +26,7 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * @param languageTags
 	 *            optional list of language tags to be used for language fallback
 	 */
-	default Observable<T> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+	default Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.asyncNoTrxExperimental(() -> {
 			return transformToRestSync(ac, level, languageTags);
@@ -44,5 +44,5 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 *            optional list of language tags to be used for language fallback
 	 * @return
 	 */
-	Observable<T> transformToRestSync(InternalActionContext ac, int level, String... languageTags);
+	Single<T> transformToRestSync(InternalActionContext ac, int level, String... languageTags);
 }

@@ -22,7 +22,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 
-import rx.Observable;
+import rx.Single;
 
 @Component
 public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> {
@@ -40,15 +40,15 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
+			Single<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			MeshAuthUser requestUser = ac.getUser();
-			Observable<RestModel> obs = obsGroup.flatMap(group -> {
+			Single<RestModel> obs = obsGroup.flatMap(group -> {
 				try {
 					PageImpl<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
 					return rolePage.transformToRest(ac, 0);
 				} catch (Exception e) {
-					return Observable.error(e);
+					return Single.error(e);
 				}
 			});
 			return obs;
@@ -67,10 +67,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 
 		db.asyncNoTrxExperimental(() -> {
-			Observable<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			Observable<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			Observable<Observable<GroupResponse>> obs = Observable.zip(obsGroup, obsRole, (group, role) -> {
+			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsRole, (group, role) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					group.addRole(role);
@@ -94,10 +94,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		db.asyncNoTrxExperimental(() -> {
 			// TODO check whether the role is actually part of the group
-			Observable<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			Observable<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Single<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			return Observable.zip(obsGroup, obsRole, (group, role) -> {
+			return Single.zip(obsGroup, obsRole, (group, role) -> {
 
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
@@ -128,13 +128,13 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.asyncNoTrxExperimental(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameters pagingInfo = new PagingParameters(ac);
-			Observable<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
+			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
 			return obsGroup.flatMap(group -> {
 				try {
 					PageImpl<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
 					return userPage.transformToRest(ac, 0);
 				} catch (Exception e) {
-					return Observable.error(e);
+					return Single.error(e);
 				}
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -155,9 +155,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		db.asyncNoTrxExperimental(() -> {
 
-			Observable<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			Observable<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			Observable<Observable<GroupResponse>> obs = Observable.zip(obsGroup, obsUser, (group, user) -> {
+			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsUser, (group, user) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
 					group.addUser(user);
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
@@ -165,7 +165,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				});
 				SearchQueueBatch batch = tuple.v1();
 				Group updatedGroup = tuple.v2();
-				return batch.process().flatMap(i -> updatedGroup.transformToRest(ac, 0));
+				return batch.process().toSingleDefault(updatedGroup.transformToRest(ac, 0));
 			});
 			return obs.flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -176,9 +176,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(userUuid, "userUuid");
 
 		db.asyncNoTrxExperimental(() -> {
-			Observable<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			Observable<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			return Observable.zip(obsUser, obsGroup, (user, group) -> {
+			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+			return Single.zip(obsUser, obsGroup, (user, group) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					batch.addEntry(user, STORE_ACTION);

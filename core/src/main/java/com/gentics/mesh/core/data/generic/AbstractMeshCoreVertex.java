@@ -7,10 +7,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.CreatorTrackingVertex;
-import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -24,7 +24,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertexImpl
 		implements MeshCoreVertex<T, R> {
@@ -38,10 +38,10 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @param model
 	 * @return
 	 */
-	protected <R extends AbstractGenericRestResponse> Observable<R> setRolePermissions(InternalActionContext ac, R model) {
+	protected <R extends AbstractGenericRestResponse> Single<R> setRolePermissions(InternalActionContext ac, R model) {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (isEmpty(roleUuid)) {
-			return Observable.empty();
+			return Single.just(null);
 		} else
 			return MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).map(role -> {
 				if (role != null) {
@@ -64,7 +64,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @param model
 	 * @param ac
 	 */
-	protected <R extends AbstractGenericRestResponse> Observable<R> fillCommonRestFields(InternalActionContext ac, R model) {
+	protected <R extends AbstractGenericRestResponse> Single<R> fillCommonRestFields(InternalActionContext ac, R model) {
 
 		model.setUuid(getUuid());
 
@@ -95,7 +95,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 		if (ac instanceof NodeMigrationActionContextImpl) {
 			// when this is a node migration, do not set user permissions
-			return Observable.just(model);
+			return Single.just(model);
 		} else {
 			return ac.getUser().getPermissionNamesAsync(ac, this).map(list -> {
 				String[] names = list.toArray(new String[list.size()]);

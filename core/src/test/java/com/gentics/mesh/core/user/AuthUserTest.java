@@ -21,11 +21,11 @@ public class AuthUserTest extends AbstractIsolatedBasicDBTest {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 			MeshAuthUser requestUser = ac.getUser();
 			Language targetNode = english();
-			assertTrue(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().first());
+			assertTrue(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().value());
 
 			role().revokePermissions(targetNode, GraphPermission.READ_PERM);
 			ac.data().clear();
-			assertFalse(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().first());
+			assertFalse(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().value());
 		}
 	}
 

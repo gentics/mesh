@@ -16,7 +16,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +51,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
+import rx.Single;
 
 public class UserTest extends AbstractBasicIsolatedObjectTest {
 
@@ -96,7 +96,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 				long start = System.currentTimeMillis();
 				int nChecks = 50000;
 				for (int i = 0; i < nChecks; i++) {
-					assertTrue(user.hasPermissionAsync(ac, language, READ_PERM).toBlocking().single());
+					assertTrue(user.hasPermissionAsync(ac, language, READ_PERM).toBlocking().value());
 				}
 				long duration = System.currentTimeMillis() - start;
 				System.out.println("Duration: " + duration);
@@ -112,16 +112,16 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			InternalActionContext ac = getMockedVoidInternalActionContext(user());
 			User user = user();
 			Language language = english();
-			Set<Observable<Boolean>> obs = new HashSet<>();
+			Set<Single<Boolean>> obs = new HashSet<>();
 			for (int e = 0; e < 10; e++) {
 				long start = System.currentTimeMillis();
 				int nChecks = 1000;
 				for (int i = 0; i < nChecks; i++) {
-					Observable<Boolean> permObs = user.hasPermissionAsync(ac, language, READ_PERM);
+					Single<Boolean> permObs = user.hasPermissionAsync(ac, language, READ_PERM);
 					obs.add(permObs);
 				}
 
-				Observable.merge(obs).subscribe(result -> {
+				Single.merge(obs).subscribe(result -> {
 					assertTrue(result);
 				}, error -> {
 					fail(error.getMessage());
@@ -204,7 +204,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 				// user.getPermissionNames(ac, node);
 				// latch.countDown();
 				// } else {
-				user.getPermissionNamesAsync(ac, node).toBlocking().single();
+				user.getPermissionNamesAsync(ac, node).toBlocking().value();
 				// }
 				// assertNotNull(permissionFuture.get(5, TimeUnit.SECONDS));
 			}
@@ -236,7 +236,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
-			List<Observable<Void>> obsList = new ArrayList<>();
+			List<Single<Void>> obsList = new ArrayList<>();
 			for (int i = 0; i < nChecks; i++) {
 				obsList.add(user().getPermissionNamesAsync(ac, language).map(list -> {
 					String[] loadedPerms = list.toArray(new String[list.size()]);
@@ -247,7 +247,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 					return null;
 				}));
 			}
-			Observable.merge(obsList).toBlocking().last();
+			Single.merge(obsList).toBlocking().last();
 			System.out.println("Duration: " + (System.currentTimeMillis() - start));
 			System.out.println("Duration per Check: " + (System.currentTimeMillis() - start) / (double) nChecks);
 		}
@@ -302,7 +302,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindByUUID() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
 			String uuid = user().getUuid();
-			User foundUser = boot.userRoot().findByUuid(uuid).toBlocking().single();
+			User foundUser = boot.userRoot().findByUuid(uuid).toBlocking().value();
 			assertNotNull(foundUser);
 			assertEquals(uuid, foundUser.getUuid());
 		}
@@ -315,7 +315,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
-			UserResponse restUser = user().transformToRest(ac, 0).toBlocking().single();
+			UserResponse restUser = user().transformToRest(ac, 0).toBlocking().value();
 
 			assertNotNull(restUser);
 			assertEquals(user().getUsername(), restUser.getUsername());
@@ -338,7 +338,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			String uuid = user.getUuid();
 			SearchQueueBatch batch = createBatch();
 			user.delete(batch);
-			User foundUser = root.getUserRoot().findByUuid(uuid).toBlocking().single();
+			User foundUser = root.getUserRoot().findByUuid(uuid).toBlocking().value();
 			assertNull(foundUser);
 		}
 	}
@@ -351,10 +351,10 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			User user = user();
 			InternalActionContext ac = getMockedInternalActionContext("");
 			User newUser = root.getUserRoot().create("Anton", user());
-			assertFalse(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().single());
+			assertFalse(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().value());
 			user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
 			ac.data().clear();
-			assertTrue(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().single());
+			assertTrue(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().value());
 		}
 	}
 
@@ -517,7 +517,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			user.setPasswordHash(PASSWDHASH);
 			assertTrue(user.isEnabled());
 
-			User reloadedUser = userRoot.findByUuid(user.getUuid()).toBlocking().single();
+			User reloadedUser = userRoot.findByUuid(user.getUuid()).toBlocking().value();
 			assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 			assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
 			assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
@@ -536,7 +536,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			assertTrue(user.isEnabled());
 			SearchQueueBatch batch = createBatch();
 			user.delete(batch);
-			User foundUser = meshRoot().getUserRoot().findByUuid(uuid).toBlocking().single();
+			User foundUser = meshRoot().getUserRoot().findByUuid(uuid).toBlocking().value();
 			assertNull(foundUser);
 		}
 	}

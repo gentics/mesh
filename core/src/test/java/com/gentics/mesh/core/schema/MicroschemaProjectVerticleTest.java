@@ -98,7 +98,7 @@ public class MicroschemaProjectVerticleTest extends AbstractRestVerticleTest {
 		extraProject.reload();
 		extraProject.getMicroschemaContainerRoot().reload();
 		assertNotNull("The microschema should be added to the extra project",
-				extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().single());
+				extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().value());
 	}
 
 	@Test

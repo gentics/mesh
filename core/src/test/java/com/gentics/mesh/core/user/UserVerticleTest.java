@@ -13,6 +13,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -459,7 +460,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTrx noTx = db.noTrx()) {
 			Node node = folder("2015");
 			InternalActionContext ac = getMockedInternalActionContext(user());
-			assertTrue(user().hasPermissionAsync(ac, node, READ_PERM).toBlocking().first());
+			assertTrue(user().hasPermissionAsync(ac, node, READ_PERM).toBlocking().value());
 
 			NodeReferenceImpl reference = new NodeReferenceImpl();
 			reference.setProjectName(PROJECT_NAME);
@@ -673,7 +674,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
-			User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().first();
+			User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().value();
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		}
 	}
@@ -695,7 +696,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser);
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
-			User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().first();
+			User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().value();
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 			assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 			assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
@@ -876,7 +877,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			try (NoTrx noTx2 = db.noTrx()) {
 				test.assertUser(request, restUser);
 
-				User user = boot.userRoot().findByUuid(restUser.getUuid()).toBlocking().single();
+				User user = boot.userRoot().findByUuid(restUser.getUuid()).toBlocking().value();
 				assertThat(restUser).matches(user);
 			}
 		}
@@ -977,7 +978,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			expectResponseMessage(future, "user_deleted", uuid + "/" + name);
 
 			try (Trx tx = db.trx()) {
-				User loadedUser = boot.userRoot().findByUuid(uuid).toBlocking().first();
+				User loadedUser = boot.userRoot().findByUuid(uuid).toBlocking().value();
 				assertNull("The user should have been deleted.", loadedUser);
 			}
 
@@ -1021,7 +1022,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 			userRoot = meshRoot().getUserRoot();
-			assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid).toBlocking().first());
+			assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid).toBlocking().value());
 		}
 	}
 
@@ -1050,7 +1051,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			assertTrue(role().hasPermission(DELETE_PERM, extraUser));
 
-			User user = userRoot.findByUuid(uuid).toBlocking().first();
+			User user = userRoot.findByUuid(uuid).toBlocking().value();
 			assertEquals(1, user.getGroups().size());
 			assertTrue("The user should be enabled", user.isEnabled());
 
@@ -1059,7 +1060,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(future);
 			expectResponseMessage(future, "user_deleted", uuid + "/" + name);
 			userRoot.reload();
-			assertNull("The user was not deleted.", userRoot.findByUuid(uuid).toBlocking().first());
+			assertNull("The user was not deleted.", userRoot.findByUuid(uuid).toBlocking().value());
 
 			// // Check whether the user was correctly disabled
 			// try (NoTrx noTx = db.noTrx()) {

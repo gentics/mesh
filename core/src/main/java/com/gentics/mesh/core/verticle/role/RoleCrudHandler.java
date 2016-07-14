@@ -31,7 +31,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 @Component
 public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
@@ -75,7 +75,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 						for (GraphPermission perm : role.getPermissions(targetElement)) {
 							response.getPermissions().add(perm.getSimpleName());
 						}
-						return Observable.just(response);
+						return Single.just(response);
 
 					});
 				});
@@ -98,11 +98,11 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			}
 
 			// 1. Load the role that should be used
-			Observable<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
+			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 			// 2. Resolve the path to element that is targeted
-			Observable<? extends MeshVertex> obsElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
+			Single<? extends MeshVertex> obsElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
 
-			return Observable.zip(obsRole, obsElement, (role, element) -> {
+			return Single.zip(obsRole, obsElement, (role, element) -> {
 
 				if (element == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
@@ -144,7 +144,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 						return role;
 					});
 
-					return Observable.just(message(ac, "role_updated_permission", updatedRole.getName()));
+					return Single.just(message(ac, "role_updated_permission", updatedRole.getName()));
 
 				});
 			}).flatMap(x -> x);

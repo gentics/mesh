@@ -34,6 +34,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
+import rx.Single;
 
 public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements TagFamilyRoot {
 
@@ -105,7 +106,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public Observable<TagFamily> create(InternalActionContext ac) {
+	public Single<TagFamily> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		return db.noTrx(() -> {
@@ -118,7 +119,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 			}
 
 			// Check whether the name is already in-use.
-			TagFamily conflictingTagFamily = findByName(name).toBlocking().single();
+			TagFamily conflictingTagFamily = findByName(name).toBlocking().value();
 			if (conflictingTagFamily != null) {
 				throw conflict(conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name", name);
 			}
@@ -137,7 +138,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 				SearchQueueBatch batch = tuple.v1();
 				TagFamily createdTagFamily = tuple.v2();
 
-				return batch.process().map(done -> createdTagFamily);
+				return batch.process().toSingleDefault(createdTagFamily);
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 			}
@@ -147,20 +148,20 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public Observable<? extends MeshVertex> resolveToElement(Stack<String> stack) {
+	public Single<? extends MeshVertex> resolveToElement(Stack<String> stack) {
 		if (stack.isEmpty()) {
-			return Observable.just(this);
+			return Single.just(this);
 		} else {
 			String uuidSegment = stack.pop();
 			return findByUuid(uuidSegment).flatMap(tagFamily -> {
 				if (stack.isEmpty()) {
-					return Observable.just(tagFamily);
+					return Single.just(tagFamily);
 				} else {
 					String nestedRootNode = stack.pop();
 					if ("tags".contentEquals(nestedRootNode)) {
 						return tagFamily.getTagRoot().resolveToElement(stack);
 					} else {
-						return Observable.error(new Exception("Unknown tagFamily element {" + nestedRootNode + "}"));
+						return Single.error(new Exception("Unknown tagFamily element {" + nestedRootNode + "}"));
 					}
 				}
 			});

@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * A {@link GraphFieldSchemaContainerVersion} stores the versioned data for a {@link GraphFieldSchemaContainer} element.
@@ -114,7 +114,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 *            Rest model of the container that should be compared
 	 * @return
 	 */
-	Observable<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator<?> comparator,
+	Single<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator<?> comparator,
 			FieldSchemaContainer restModel);
 
 	/**
@@ -124,7 +124,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 *            Action context that provides the migration request data
 	 * @return
 	 */
-	Observable<GenericMessageResponse> applyChanges(InternalActionContext ac);
+	Single<GenericMessageResponse> applyChanges(InternalActionContext ac);
 
 	/**
 	 * Apply the given list of changes to the schema container. This method will invoke the schema migration process.
@@ -132,7 +132,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @param ac
 	 * @param listOfChanges
 	 */
-	Observable<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges);
+	Single<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges);
 
 	/**
 	 * Return the parent schema container of the version.

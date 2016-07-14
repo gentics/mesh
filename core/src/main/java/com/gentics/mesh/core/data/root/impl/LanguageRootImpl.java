@@ -20,7 +20,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 
-import rx.Observable;
+import rx.Single;
 
 public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
 
@@ -55,7 +55,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
-	public Observable<Language> create(InternalActionContext rc) {
+	public Single<Language> create(InternalActionContext rc) {
 		throw new NotImplementedException("Languages can be created using REST");
 	}
 
@@ -90,7 +90,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
-	public Observable<? extends MeshVertex> resolveToElement(Stack<String> stack) {
+	public Single<? extends MeshVertex> resolveToElement(Stack<String> stack) {
 		throw new NotImplementedException();
 	}
 

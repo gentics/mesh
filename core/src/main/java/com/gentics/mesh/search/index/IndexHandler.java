@@ -6,7 +6,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 
-import rx.Observable;
+import rx.Completable;
 
 /**
  * Index handlers are used to interact with the search provider index on a type specific level. Each domain model in mesh which is searchable needs to implement
@@ -25,28 +25,28 @@ public interface IndexHandler {
 	 * 
 	 * @return
 	 */
-	Observable<Void> clearIndex();
+	Completable clearIndex();
 
 	/**
 	 * Initialize the search index by creating it first and setting the mapping afterwards.
 	 * 
 	 * @return
 	 */
-	Observable<Void> init();
+	Completable init();
 
 	/**
 	 * Create the search index.
 	 * 
 	 * @return
 	 */
-	Observable<Void> createIndex();
+	Completable createIndex();
 
 	/**
 	 * Update the index specific mapping.
 	 * 
 	 * @return
 	 */
-	Observable<Void> updateMapping();
+	Completable updateMapping();
 
 	/**
 	 * Update the mapping for the given index.
@@ -55,7 +55,7 @@ public interface IndexHandler {
 	 *            index name
 	 * @return
 	 */
-	Observable<Void> updateMapping(String indexName);
+	Completable updateMapping(String indexName);
 
 	/**
 	 * Handle search index action.
@@ -64,7 +64,7 @@ public interface IndexHandler {
 	 *            search queue entry
 	 * @return
 	 */
-	Observable<Void> handleAction(SearchQueueEntry entry);
+	Completable handleAction(SearchQueueEntry entry);
 
 	/**
 	 * Delete the document with the given UUID and document type from the search index.
@@ -75,7 +75,7 @@ public interface IndexHandler {
 	 *            search queue entry
 	 * @return
 	 */
-	Observable<Void> delete(String uuid, String documentType, SearchQueueEntry entry);
+	Completable delete(String uuid, String documentType, SearchQueueEntry entry);
 
 	/**
 	 * Load the given element and invoke store(T element) to store it in the index.
@@ -86,14 +86,14 @@ public interface IndexHandler {
 	 *            search queue entry
 	 * @return
 	 */
-	Observable<Void> store(String uuid, String documentType, SearchQueueEntry entry);
+	Completable store(String uuid, String documentType, SearchQueueEntry entry);
 
 	/**
 	 * Reindex all documents for the type which the handler is capable of.
 	 * 
 	 * @return
 	 */
-	Observable<Void> reindexAll();
+	Completable reindexAll();
 
 	/**
 	 * Get the name of all indices.

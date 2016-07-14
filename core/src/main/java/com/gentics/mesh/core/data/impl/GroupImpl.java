@@ -36,7 +36,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * @see Group
@@ -145,8 +145,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Observable<GroupResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Observable<GroupResponse>> obs = new HashSet<>();
+	public Single<GroupResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		Set<Single<GroupResponse>> obs = new HashSet<>();
 
 		GroupResponse restGroup = new GroupResponse();
 		restGroup.setName(getName());
@@ -178,7 +178,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		obs.add(setRolePermissions(ac, restGroup));
 
 		// Merge and complete
-		return Observable.merge(obs).last();
+		return Single.merge(obs);
 	}
 
 	@Override
@@ -190,7 +190,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Observable<? extends Group> update(InternalActionContext ac) {
+	public Single<? extends Group> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		return db.noTrx(() -> {
@@ -201,7 +201,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			}
 
 			if (shouldUpdate(requestModel.getName(),  getName())) {
-				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName()).toBlocking().single();
+				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName()).toBlocking().value();
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 				}
@@ -209,10 +209,10 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 				return db.trx(() -> {
 					setName(requestModel.getName());
 					return createIndexBatch(STORE_ACTION);
-				}).process().map(i -> this);
+				}).process().toSingleDefault(this);
 
 			} else {
-				return Observable.just(this);
+				return Single.just(this);
 			}
 		});
 

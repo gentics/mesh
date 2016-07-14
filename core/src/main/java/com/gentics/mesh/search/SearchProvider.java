@@ -5,7 +5,9 @@ import java.util.Map;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.node.Node;
 
+import rx.Completable;
 import rx.Observable;
+import rx.Single;
 
 /**
  * A search provider is a service this enables storage and retrieval of indexed documents.
@@ -25,7 +27,7 @@ public interface SearchProvider {
 	 * 
 	 * @param indexName
 	 */
-	Observable<Void> createIndex(String indexName);
+	Completable createIndex(String indexName);
 
 	// TODO add a good response instead of void. We need this in oder to handle correct logging?
 	/**
@@ -39,7 +41,7 @@ public interface SearchProvider {
 	 *            Uuid of the document
 	 * @param transformToDocumentMap
 	 */
-	Observable<Void> updateDocument(String index, String type, String uuid, Map<String, Object> transformToDocumentMap);
+	Completable updateDocument(String index, String type, String uuid, Map<String, Object> transformToDocumentMap);
 
 	/**
 	 * Delete the given document and invoke the handler when the document has been deleted or an error occurred.
@@ -51,7 +53,7 @@ public interface SearchProvider {
 	 * @param uuid
 	 *            Uuid for the document
 	 */
-	Observable<Void> deleteDocument(String index, String type, String uuid);
+	Completable deleteDocument(String index, String type, String uuid);
 
 	/**
 	 * Store the given document and invoke the handler when the document has been stored or an error occurred.
@@ -65,7 +67,7 @@ public interface SearchProvider {
 	 * @param map
 	 *            Map that holds the document properties
 	 */
-	Observable<Void> storeDocument(String index, String type, String uuid, Map<String, Object> map);
+	Completable storeDocument(String index, String type, String uuid, Map<String, Object> map);
 
 	/**
 	 * Get the given document and invoke the handler when the document has been loaded or an error occurred.
@@ -107,7 +109,7 @@ public interface SearchProvider {
 	 * 
 	 * @param indexName
 	 */
-	Observable<Void> clearIndex(String indexName);
+	Completable clearIndex(String indexName);
 
 	/**
 	 * Delete the given index.
@@ -115,7 +117,7 @@ public interface SearchProvider {
 	 * @param indexName
 	 * @return
 	 */
-	Observable<Void> deleteIndex(String indexName);
+	Completable deleteIndex(String indexName);
 
 	/**
 	 * Delete all documents which were found using the query.
@@ -126,7 +128,7 @@ public interface SearchProvider {
 	 *            Search query
 	 * @return Observable which emits the amount of deleted documents
 	 */
-	Observable<Integer> deleteDocumentsViaQuery(String index, String query);
+	Single<Integer> deleteDocumentsViaQuery(String index, String query);
 
 	/**
 	 * Delete all documents which were found using the query.
@@ -137,7 +139,7 @@ public interface SearchProvider {
 	 *            Search query
 	 * @return Observable which emits the amount of deleted nodes
 	 */
-	default Observable<Integer> deleteDocumentsViaQuery(String index, JSONObject query) {
+	default Single<Integer> deleteDocumentsViaQuery(String index, JSONObject query) {
 		return deleteDocumentsViaQuery(index, query.toString());
 	}
 

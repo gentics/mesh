@@ -15,7 +15,7 @@ import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTOptions;
-import rx.Observable;
+import rx.Single;
 
 public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvider {
 
@@ -59,13 +59,13 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	 * @param u
 	 * @return
 	 */
-	private Observable<User> getUserByJWT(User u) {
+	private Single<User> getUserByJWT(User u) {
 		return db.asyncNoTrxExperimental(() -> {
 			JsonObject authInfo = u.principal();
 			String userUuid = authInfo.getString(USERID_FIELD_NAME);
 			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
 			if (user != null) {
-				return Observable.just(user);
+				return Single.just(user);
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with UUID {" + userUuid + "}.");

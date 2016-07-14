@@ -15,8 +15,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.RxHelper;
-import rx.Observable;
 import rx.Scheduler;
+import rx.Single;
 
 public abstract class AbstractDatabase implements Database {
 
@@ -78,13 +78,12 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> Observable<T> asyncNoTrx(TrxHandler<T> txHandler) {
+	public <T> Single<T> asyncNoTrx(TrxHandler<T> txHandler) {
 		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
-		Observable<T> obs = Observable.create(sub -> {
+		Single<T> obs = Single.create(sub -> {
 			try {
 				T result = noTrx(txHandler);
-				sub.onNext(result);
-				sub.onCompleted();
+				sub.onSuccess(result);
 			} catch (Exception e) {
 				sub.onError(e);
 			}
@@ -124,15 +123,15 @@ public abstract class AbstractDatabase implements Database {
 	//	
 
 	@Override
-	public <T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler) {
-		return Observable.create(sub -> {
+	public <T> Single<T> asyncNoTrxExperimental(TrxHandler<Single<T>> trxHandler) {
+		return Single.create(sub -> {
 			Mesh.vertx().executeBlocking(bc -> {
 				try (NoTrx noTx = noTrx()) {
-					Observable<T> result = trxHandler.call();
+					Single<T> result = trxHandler.call();
 					if (result == null) {
 						bc.complete();
 					} else {
-						T ele = result.toBlocking().single();
+						T ele = result.toBlocking().value();
 						bc.complete(ele);
 					}
 				} catch (Exception e) {
@@ -143,8 +142,7 @@ public abstract class AbstractDatabase implements Database {
 				if (done.failed()) {
 					sub.onError(done.cause());
 				} else {
-					sub.onNext(done.result());
-					sub.onCompleted();
+					sub.onSuccess(done.result());
 				}
 			});
 		});

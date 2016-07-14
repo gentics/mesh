@@ -20,7 +20,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
@@ -52,8 +52,8 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public Observable<Tag> findByName(String name) {
-		return Observable.just(out(getRootLabel()).has(getPersistanceClass()).mark().out(HAS_FIELD_CONTAINER).has("name", name).back()
+	public Single<Tag> findByName(String name) {
+		return Single.just(out(getRootLabel()).has(getPersistanceClass()).mark().out(HAS_FIELD_CONTAINER).has("name", name).back()
 				.nextOrDefaultExplicit(TagImpl.class, null));
 	}
 
@@ -96,7 +96,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public Observable<Tag> create(InternalActionContext ac) {
+	public Single<Tag> create(InternalActionContext ac) {
 		throw new NotImplementedException("The tag family is the root element thus should be used for creation of tags.");
 	}
 

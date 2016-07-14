@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * @see Language
@@ -64,13 +64,13 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public Observable<LanguageResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public Single<LanguageResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		LanguageResponse model = new LanguageResponse();
 		model.setUuid(getUuid());
 		model.setLanguageTag(getLanguageTag());
 		model.setName(getName());
 		model.setNativeName(getNativeName());
-		return Observable.just(model);
+		return Single.just(model);
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public Observable<Language> update(InternalActionContext rc) {
+	public Single<Language> update(InternalActionContext rc) {
 		throw new NotImplementedException();
 	}
 

@@ -3,10 +3,8 @@ package com.gentics.mesh.core.verticle.node;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -48,6 +46,7 @@ import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
 import io.vertx.rxjava.core.file.FileSystem;
 import rx.Observable;
+import rx.Single;
 
 @Component
 public class NodeFieldAPIHandler extends AbstractHandler {
@@ -120,7 +119,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				Optional<FieldSchema> fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
+				Single<FieldSchema> fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
 				if (!fieldSchema.isPresent()) {
 					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}
@@ -156,7 +155,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					String fileName = ul.fileName();
 					String fieldUuid = field.getUuid();
 
-					Observable<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
+					Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
 					return obsHash.flatMap(sha512sum -> {
 						Tuple<SearchQueueBatch, String> tuple = db.trx(() -> {
 							field.setFileName(fileName);
@@ -317,7 +316,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					String fieldUuid = field.getUuid();
 					String fieldSegmentedPath = field.getSegmentedPath();
 
-					Observable<Tuple<String, Integer>> obsHashAndSize = imageManipulator
+					Single<Tuple<String, Integer>> obsHashAndSize = imageManipulator
 							.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
 						return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).map(hash -> {
 							return Tuple.tuple(hash, buffer.length());

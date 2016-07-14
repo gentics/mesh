@@ -36,6 +36,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
+import rx.Single;
 
 public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer> implements SchemaContainerRoot {
 
@@ -110,54 +111,53 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public Observable<SchemaContainer> create(InternalActionContext ac) {
+	public Single<SchemaContainer> create(InternalActionContext ac) {
 		MeshAuthUser requestUser = ac.getUser();
 		Database db = MeshSpringConfiguration.getInstance().database();
-		ObservableFuture<SchemaContainer> obsFut = RxHelper.observableFuture();
+		return Single.create(sub -> {
 
-		Schema requestModel;
-		try {
-			requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
-			requestModel.validate();
-			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
+			Schema requestModel;
+			try {
+				requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+				requestModel.validate();
+				if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
 
-				Tuple<SearchQueueBatch, SchemaContainer> tuple = db.trx(() -> {
+					Tuple<SearchQueueBatch, SchemaContainer> tuple = db.trx(() -> {
 
-					String schemaName = requestModel.getName();
-					SchemaContainer conflictingSchema = findByName(schemaName).toBlocking().single();
-					if (conflictingSchema != null) {
-						throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
-					}
+						String schemaName = requestModel.getName();
+						SchemaContainer conflictingSchema = findByName(schemaName).toBlocking().value();
+						if (conflictingSchema != null) {
+							throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
+						}
 
-					requestUser.reload();
-					SchemaContainer container = create(requestModel, requestUser);
-					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-					SearchQueueBatch batch = container.createIndexBatch(STORE_ACTION);
-					return Tuple.tuple(batch, container);
-				});
+						requestUser.reload();
+						SchemaContainer container = create(requestModel, requestUser);
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+						SearchQueueBatch batch = container.createIndexBatch(STORE_ACTION);
+						return Tuple.tuple(batch, container);
+					});
 
-				SearchQueueBatch batch = tuple.v1();
-				SchemaContainer createdContainer = tuple.v2();
-
-				return batch.process().map(done -> createdContainer);
+					SearchQueueBatch batch = tuple.v1();
+					SchemaContainer createdContainer = tuple.v2();
+					sub.onSuccess(batch.process().andThen(Single.just(createdContainer)));
+				}
+			} catch (Exception e1) {
+				sub.onError(e1);
 			}
-		} catch (Exception e1) {
-			return Observable.error(e1);
-		}
-		return obsFut;
+		});
 
 	}
 
 	@Override
-	public Observable<SchemaContainerVersion> fromReference(SchemaReference reference) {
+	public Single<SchemaContainerVersion> fromReference(SchemaReference reference) {
 		if (reference == null) {
-			return Observable.error(error(INTERNAL_SERVER_ERROR, "Missing schema reference"));
+			return Single.error(error(INTERNAL_SERVER_ERROR, "Missing schema reference"));
 		}
 		String schemaName = reference.getName();
 		String schemaUuid = reference.getUuid();
 		Integer schemaVersion = reference.getVersion();
 
-		Observable<SchemaContainer> obs = null;
+		Single<SchemaContainer> obs = null;
 		if (!isEmpty(schemaName)) {
 			obs = findByName(schemaName);
 		} else {

@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.parameter.impl.LinkType;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * The StringField Domain Model interface.
@@ -26,7 +26,7 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 		// fieldKey, this);
 		StringGraphField graphStringField = container.getString(fieldKey);
 		if (graphStringField == null) {
-			return Observable.just(null);
+			return Single.just(null);
 		} else {
 			return graphStringField.transformToRest(ac).map(stringField -> {
 				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {

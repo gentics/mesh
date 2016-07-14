@@ -329,8 +329,8 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			assertThat(responseList).isNotNull();
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
-					initialRelease.transformToRestSync(ac, 0).toBlocking().single(), firstRelease.transformToRestSync(ac, 0).toBlocking().single(),
-					secondRelease.transformToRestSync(ac, 0).toBlocking().single(), thirdRelease.transformToRestSync(ac, 0).toBlocking().single());
+					initialRelease.transformToRestSync(ac, 0).toBlocking().value(), firstRelease.transformToRestSync(ac, 0).toBlocking().value(),
+					secondRelease.transformToRestSync(ac, 0).toBlocking().value(), thirdRelease.transformToRestSync(ac, 0).toBlocking().value());
 		}
 	}
 
@@ -351,7 +351,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 			assertThat(responseList).isNotNull();
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
-					initialRelease.transformToRestSync(ac, 0).toBlocking().single(), secondRelease.transformToRestSync(ac, 0).toBlocking().single());
+					initialRelease.transformToRestSync(ac, 0).toBlocking().value(), secondRelease.transformToRestSync(ac, 0).toBlocking().value());
 		}
 	}
 

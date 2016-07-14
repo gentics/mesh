@@ -12,6 +12,7 @@ import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 import rx.Observable;
+import rx.Single;
 
 /**
  * @see Page
@@ -71,20 +72,20 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 	}
 
 	@Override
-	public Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level) {
+	public Single<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level) {
 
-		List<Observable<? extends RestModel>> obs = new ArrayList<>();
+		List<Single<? extends RestModel>> obs = new ArrayList<>();
 		for (T element : wrappedList) {
 			obs.add(element.transformToRest(ac, level));
 		}
 		ListResponse<RestModel> listResponse = new ListResponse<>();
 		if (obs.size() == 0) {
 			setPaging(listResponse);
-			return Observable.just(listResponse);
+			return Single.just(listResponse);
 		}
 
-		Observable<RestModel> merged = Observable.empty();
-		for (Observable<? extends RestModel> element : obs) {
+		Single<RestModel> merged = Single.just(null);
+		for (Single<? extends RestModel> element : obs) {
 			merged = merged.concatWith(element);
 		}
 

@@ -30,6 +30,7 @@ import com.tinkerpop.blueprints.Edge;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
+import rx.Single;
 
 /**
  * @see Role
@@ -96,8 +97,8 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Observable<RoleResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Observable<RoleResponse>> obs = new HashSet<>();
+	public Single<RoleResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		Set<Single<RoleResponse>> obs = new HashSet<>();
 
 		RoleResponse restRole = new RoleResponse();
 		restRole.setName(getName());
@@ -113,7 +114,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		obs.add(setRolePermissions(ac, restRole));
 
 		// Merge and complete
-		return Observable.merge(obs).last();
+		return Single.merge(obs);
 	}
 
 	@Override
@@ -134,14 +135,14 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Observable<? extends Role> update(InternalActionContext ac) {
+	public Single<? extends Role> update(InternalActionContext ac) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflict
-			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName()).toBlocking().single();
+			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName()).toBlocking().value();
 			if (roleWithSameName != null && !roleWithSameName.getUuid().equals(getUuid())) {
 				throw conflict(roleWithSameName.getUuid(), requestModel.getName(), "role_conflicting_name");
 			}
@@ -149,10 +150,10 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 			return db.trx(() -> {
 				setName(requestModel.getName());
 				return createIndexBatch(STORE_ACTION);
-			}).process().map(b -> this);
+			}).process().andThen(Single.just(this));
 		}
 		// No update required
-		return Observable.just(this);
+		return Single.just(this);
 	}
 
 	@Override

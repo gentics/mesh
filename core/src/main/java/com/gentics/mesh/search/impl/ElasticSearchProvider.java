@@ -38,7 +38,9 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Completable;
 import rx.Observable;
+import rx.Single;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -115,7 +117,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public void refreshIndex() {
-		//TODO it would be way better to only target specific indices
+		// TODO it would be way better to only target specific indices
 		getNode().client().admin().indices().refresh(refreshRequest()).actionGet();
 	}
 
@@ -124,9 +126,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Void> createIndex(String indexName) {
+	public Completable createIndex(String indexName) {
 		// TODO Add method which will be used to create an index and set a custom mapping
-		return Observable.create(sub -> {
+		return Completable.create(sub -> {
 			log.info("Creating ES Index {" + indexName + "}");
 			CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
 			Map<String, Object> indexSettings = new HashMap<>();
@@ -146,7 +148,6 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Create index {" + indexName + "}response: {" + response.toString() + "}");
 					}
-					sub.onNext(null);
 					sub.onCompleted();
 				}
 
@@ -156,7 +157,6 @@ public class ElasticSearchProvider implements SearchProvider {
 						sub.onError(e);
 						log.error("Error while creating index {" + indexName + "}", e);
 					} else {
-						sub.onNext(null);
 						sub.onCompleted();
 					}
 				}
@@ -189,15 +189,14 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Void> deleteDocument(String index, String type, String uuid) {
-		return Observable.create(sub -> {
+	public Completable deleteDocument(String index, String type, String uuid) {
+		return Completable.create(sub -> {
 			getSearchClient().prepareDelete(index, type, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
 				@Override
 				public void onResponse(DeleteResponse response) {
 					if (log.isDebugEnabled()) {
 						log.debug("Deleted object {" + uuid + ":" + type + "} from index {" + index + "}");
 					}
-					sub.onNext(null);
 					sub.onCompleted();
 				}
 
@@ -211,8 +210,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Void> updateDocument(String index, String type, String uuid, Map<String, Object> map) {
-		return Observable.create(sub -> {
+	public Completable updateDocument(String index, String type, String uuid, Map<String, Object> map) {
+		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
 				log.debug("Updating object {" + uuid + ":" + type + "} to index.");
@@ -226,7 +225,6 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Update object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 					}
-					sub.onNext(null);
 					sub.onCompleted();
 				}
 
@@ -242,8 +240,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Void> storeDocument(String index, String type, String uuid, Map<String, Object> map) {
-		return Observable.create(sub -> {
+	public Completable storeDocument(String index, String type, String uuid, Map<String, Object> map) {
+		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
 				log.debug("Adding object {" + uuid + ":" + type + "} to index.");
@@ -258,7 +256,6 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 					}
-					sub.onNext(null);
 					sub.onCompleted();
 				}
 
@@ -273,8 +270,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Void> deleteIndex(String indexName) {
-		return Observable.create(sub -> {
+	public Completable deleteIndex(String indexName) {
+		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			getSearchClient().admin().indices().prepareDelete(indexName).execute(new ActionListener<DeleteIndexResponse>() {
 
@@ -282,7 +279,6 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 					}
-					sub.onNext(null);
 					sub.onCompleted();
 				};
 
@@ -296,8 +292,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Void> clearIndex(String indexName) {
-		return Observable.create(sub -> {
+	public Completable clearIndex(String indexName) {
+		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			getSearchClient().prepareDeleteByQuery(indexName).setQuery(QueryBuilders.matchAllQuery()).execute()
 					.addListener(new ActionListener<DeleteByQueryResponse>() {
@@ -305,7 +301,6 @@ public class ElasticSearchProvider implements SearchProvider {
 							if (log.isDebugEnabled()) {
 								log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 							}
-							sub.onNext(null);
 							sub.onCompleted();
 						};
 
@@ -320,12 +315,12 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Integer> deleteDocumentsViaQuery(String index, String searchQuery) {
-		return Observable.create(sub -> {
+	public Single<Integer> deleteDocumentsViaQuery(String index, String searchQuery) {
+		return Single.create(sub -> {
 			Client client = getNode().client();
 			SearchRequestBuilder builder = client.prepareSearch(index).setSource(searchQuery);
 
-			Set<Observable<Void>> obs = new HashSet<>();
+			Set<Completable> obs = new HashSet<>();
 			builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
 			builder.execute().addListener(new ActionListener<SearchResponse>() {
 				@Override
@@ -334,9 +329,8 @@ public class ElasticSearchProvider implements SearchProvider {
 					for (SearchHit hit : response.getHits()) {
 						obs.add(deleteDocument(hit.getIndex(), hit.getType(), hit.getId()));
 					}
-					Observable.merge(obs).toBlocking().lastOrDefault(null);
-					sub.onNext(obs.size());
-					sub.onCompleted();
+					Completable.merge(obs).await();
+					sub.onSuccess(obs.size());
 				}
 
 				@Override

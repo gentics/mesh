@@ -37,7 +37,7 @@ import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
-import rx.Observable;
+import rx.Single;
 
 public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
@@ -123,7 +123,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public Observable<User> create(InternalActionContext ac) {
+	public Single<User> create(InternalActionContext ac) {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		Database db = MeshSpringConfiguration.getInstance().database();
 
@@ -159,7 +159,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 					SearchQueueBatch batch = user.createIndexBatch(STORE_ACTION);
 
 					if (!isEmpty(groupUuid)) {
-						Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM).toBlocking().single();
+						Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM).toBlocking().value();
 						parentGroup.addUser(user);
 						batch.addEntry(parentGroup, STORE_ACTION);
 						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
@@ -175,11 +175,11 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 						}
 
 						// TODO decide whether we need to check perms on the project as well
-						Project project = boot.projectRoot().findByName(projectName).toBlocking().single();
+						Project project = boot.projectRoot().findByName(projectName).toBlocking().value();
 						if (project == null) {
 							throw error(BAD_REQUEST, "project_not_found", projectName);
 						}
-						Node node = project.getNodeRoot().loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().single();
+						Node node = project.getNodeRoot().loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().value();
 						user.setReferencedNode(node);
 					} else if (reference != null) {
 						// TODO handle user create using full node rest model.
@@ -192,16 +192,14 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 				reload();
 				SearchQueueBatch batch = tuple.v1();
 				//				User createdUser = tuple.v2();
-				return batch.process().map(done -> {
-					return tuple.v2();
-				}).toBlocking().last();
+				return batch.process().toSingleDefault(tuple.v2());
 
 			});
 
-			return Observable.just(createdUser);
+			return Single.just(createdUser);
 
 		} catch (IOException e) {
-			return Observable.error(e);
+			return Single.error(e);
 		}
 
 	}

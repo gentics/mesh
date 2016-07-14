@@ -58,7 +58,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 /**
  * @see Project
@@ -170,8 +170,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Observable<ProjectResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Observable<ProjectResponse>> obsParts = new HashSet<>();
+	public Single<ProjectResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		Set<Single<ProjectResponse>> obsParts = new HashSet<>();
 
 		ProjectResponse restProject = new ProjectResponse();
 		restProject.setName(getName());
@@ -184,7 +184,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		obsParts.add(setRolePermissions(ac, restProject));
 
 		// Merge and complete
-		return Observable.merge(obsParts).last();
+		return Single.merge(obsParts);
 	}
 
 	@Override
@@ -227,14 +227,14 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Observable<? extends Project> update(InternalActionContext ac) {
+	public Single<? extends Project> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
 		return db.trx(() -> {
 			if (shouldUpdate(requestModel.getName(), getName())) {
 				// Check for conflicting project name
-				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()).toBlocking().single();
+				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()).toBlocking().value();
 				if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(projectWithSameName.getUuid(), requestModel.getName(), "project_conflicting_name");
 				}
@@ -243,7 +243,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
 			return createIndexBatch(STORE_ACTION);
-		}).process().map(i -> this);
+		}).process().toSingleDefault(this);
 	}
 
 	@Override

@@ -99,16 +99,16 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		try (NoTrx noTx = db.noTrx()) {
 			test.assertProject(request, restProject);
-			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().single());
+			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().value());
 
 			RoutingContext rc = getMockedRoutingContext();
 			InternalActionContext ac = InternalActionContext.create(rc);
-			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid()).toBlocking().first();
+			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid()).toBlocking().value();
 			assertNotNull(project);
-			assertTrue(user().hasPermissionAsync(ac, project, CREATE_PERM).toBlocking().first());
-			assertTrue(user().hasPermissionAsync(ac, project.getBaseNode(), CREATE_PERM).toBlocking().first());
-			assertTrue(user().hasPermissionAsync(ac, project.getTagFamilyRoot(), CREATE_PERM).toBlocking().first());
-			assertTrue(user().hasPermissionAsync(ac, project.getNodeRoot(), CREATE_PERM).toBlocking().first());
+			assertTrue(user().hasPermissionAsync(ac, project, CREATE_PERM).toBlocking().value());
+			assertTrue(user().hasPermissionAsync(ac, project.getBaseNode(), CREATE_PERM).toBlocking().value());
+			assertTrue(user().hasPermissionAsync(ac, project.getTagFamilyRoot(), CREATE_PERM).toBlocking().value());
+			assertTrue(user().hasPermissionAsync(ac, project.getNodeRoot(), CREATE_PERM).toBlocking().value());
 
 			assertEquals("folder", project.getBaseNode().getSchemaContainer().getLatestVersion().getName());
 		}
@@ -140,7 +140,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals(6, restProject.getPermissions().length);
 
 			meshRoot().getProjectRoot().reload();
-			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().single());
+			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().value());
 
 			// Read the project
 			Future<ProjectResponse> readFuture = getClient().findProjectByUuid(restProject.getUuid());
@@ -338,7 +338,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			test.assertProject(request, restProject);
 			assertTrue(searchProvider.getStoreEvents().size() != 0);
 
-			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
+			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().value();
 			reloadedProject.reload();
 			assertEquals("New Name", reloadedProject.getName());
 		}
@@ -373,7 +373,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().value();
 			assertEquals("The name should not have been changed", name, reloadedProject.getName());
 		}
 	}
@@ -414,7 +414,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-			project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
+			project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().value();
 			assertNotNull("The project should not have been deleted", project);
 		}
 	}

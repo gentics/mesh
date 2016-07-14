@@ -222,9 +222,7 @@ public abstract class AbstractDBTest {
 		RoutingContext rc = Mocks.getMockedRoutingContext("lang=en&version=draft", user());
 		InternalActionContext ac = InternalActionContext.create(rc);
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().single());
+		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
 	}
-
-
 
 }

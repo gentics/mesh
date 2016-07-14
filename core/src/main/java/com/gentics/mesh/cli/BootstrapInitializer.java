@@ -236,7 +236,7 @@ public class BootstrapInitializer {
 		db.asyncNoTrxExperimental(() -> {
 			initProjects();
 			return null;
-		}).toBlocking().single();
+		}).toBlocking().value();
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
 
@@ -277,7 +277,7 @@ public class BootstrapInitializer {
 	 */
 	public void initSearchIndex() {
 		for (IndexHandler handler : searchHandlerRegistry.getHandlers()) {
-			handler.init().toBlocking().single();
+			handler.init().await();
 		}
 	}
 
@@ -480,7 +480,7 @@ public class BootstrapInitializer {
 			}
 
 			// Content
-			SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content").toBlocking().single();
+			SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content").toBlocking().value();
 			if (contentSchemaContainer == null) {
 				Schema schema = new SchemaModel();
 				schema.setName("content");
@@ -514,7 +514,7 @@ public class BootstrapInitializer {
 			}
 
 			// Folder
-			SchemaContainer folderSchemaContainer = schemaContainerRoot.findByName("folder").toBlocking().single();
+			SchemaContainer folderSchemaContainer = schemaContainerRoot.findByName("folder").toBlocking().value();
 			if (folderSchemaContainer == null) {
 				Schema schema = new SchemaModel();
 				schema.setName("folder");
@@ -532,7 +532,7 @@ public class BootstrapInitializer {
 			}
 
 			// Binary content for images and other downloads
-			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary-content").toBlocking().single();
+			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary-content").toBlocking().value();
 			if (binarySchemaContainer == null) {
 
 				Schema schema = new SchemaModel();
@@ -555,14 +555,14 @@ public class BootstrapInitializer {
 				log.info("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 
-			Group adminGroup = groupRoot.findByName("admin").toBlocking().single();
+			Group adminGroup = groupRoot.findByName("admin").toBlocking().value();
 			if (adminGroup == null) {
 				adminGroup = groupRoot.create("admin", adminUser);
 				adminGroup.addUser(adminUser);
 				log.info("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
-			adminRole = roleRoot.findByName("admin").toBlocking().single();
+			adminRole = roleRoot.findByName("admin").toBlocking().value();
 			if (adminRole == null) {
 				adminRole = roleRoot.create("admin", adminUser);
 				adminGroup.addRole(adminRole);
@@ -583,7 +583,7 @@ public class BootstrapInitializer {
 	 */
 	public void initPermissions() {
 		try (Trx tx = db.trx()) {
-			Role adminRole = meshRoot().getRoleRoot().findByName("admin").toBlocking().single();
+			Role adminRole = meshRoot().getRoleRoot().findByName("admin").toBlocking().value();
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
@@ -618,7 +618,7 @@ public class BootstrapInitializer {
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			Language language = meshRoot().getLanguageRoot().findByName(languageName).toBlocking().single();
+			Language language = meshRoot().getLanguageRoot().findByName(languageName).toBlocking().value();
 			if (language == null) {
 				language = root.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);

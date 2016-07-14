@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * The TagFamily Domain Model interface.
@@ -101,5 +101,5 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * @param ac
 	 * @return
 	 */
-	Observable<Tag> create(InternalActionContext ac);
+	Single<Tag> create(InternalActionContext ac);
 }

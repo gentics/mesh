@@ -136,10 +136,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		dataProvider.set(englishContainer, removedFieldName);
 
 		// migrate the node
-		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
-		future.get(10, TimeUnit.SECONDS);
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
 
@@ -188,14 +185,15 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// create a micronode based on the old microschema
 		Node node = folder("2015").create(user(), schemaContainer("content").getLatestVersion(), project());
-		MicronodeGraphField micronodeField = createMicronodefield(node, micronodeFieldName, versionA, dataProvider, persistentFieldName, removedFieldName);
+		MicronodeGraphField micronodeField = createMicronodefield(node, micronodeFieldName, versionA, dataProvider, persistentFieldName,
+				removedFieldName);
 		NodeGraphFieldContainer oldContainer = node.getGraphFieldContainer("en");
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the node
 		CompletableFuture<Void> future = new CompletableFuture<>();
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
+		}, (e) -> future.completeExceptionally(e), () -> future.complete(null));
 		future.get(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
@@ -297,10 +295,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		dataProvider.set(englishContainer, oldFieldName);
 
 		// migrate the node
-		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
-		future.get(10, TimeUnit.SECONDS);
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
 
@@ -368,7 +363,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// migrate the micronode
 		CompletableFuture<Void> future = new CompletableFuture<>();
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
+		}, (e) -> future.completeExceptionally(e), () -> future.complete(null));
 		future.get(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
@@ -467,10 +462,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNotNull();
 
 		// migrate the node
-		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
-		future.get(10, TimeUnit.SECONDS);
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 		node.reload();
 		englishContainer.reload();
 		node.getGraphFieldContainer("en").reload();
@@ -548,7 +540,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// migrate the micronode
 		CompletableFuture<Void> future = new CompletableFuture<>();
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
+		}, (e) -> future.completeExceptionally(e), () -> future.complete(null));
 		future.get(10, TimeUnit.SECONDS);
 
 		// old container must be untouched
@@ -652,10 +644,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		dataProvider.set(englishContainer, fieldName);
 
 		// migrate the node
-		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
-		future.get(10, TimeUnit.SECONDS);
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
 
@@ -717,7 +706,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// migrate the micronode
 		CompletableFuture<Void> future = new CompletableFuture<>();
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
+		}, (e) -> future.completeExceptionally(e), () -> future.complete(null));
 		future.get(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
@@ -802,10 +791,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		dataProvider.set(englishContainer, fieldName);
 
 		// migrate the node
-		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
-		future.get(10, TimeUnit.SECONDS);
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 	}
 
 	/**
@@ -852,7 +838,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// migrate the node
 		CompletableFuture<Void> future = new CompletableFuture<>();
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
+		}, (e) -> future.completeExceptionally(e), () -> future.complete(null));
 		future.get(10, TimeUnit.SECONDS);
 	}
 
@@ -941,8 +927,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(schemaVersion.getName());
 		latestVersion.setSchema(schema);
 
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english,
-				node.getProject().getLatestRelease(), user());
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), user());
 		MicronodeGraphField micronodeField = englishContainer.createMicronode(micronodeFieldName, schemaVersion);
 		for (String fieldName : fieldNames) {
 			dataProvider.set(micronodeField.getMicronode(), fieldName);

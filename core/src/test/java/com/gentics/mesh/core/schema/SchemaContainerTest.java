@@ -53,7 +53,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testGetRoot() {
 		try (NoTrx noTx = db.noTrx()) {
-			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().single();
+			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().value();
 			RootVertex<SchemaContainer> root = schemaContainer.getRoot();
 			assertNotNull(root);
 		}
@@ -63,10 +63,10 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByName() throws IOException {
 		try (NoTrx noTx = db.noTrx()) {
-			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().single();
+			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().value();
 			assertNotNull(schemaContainer);
 			assertEquals("content", schemaContainer.getLatestVersion().getSchema().getName());
-			assertNull(meshRoot().getSchemaContainerRoot().findByName("content1235").toBlocking().single());
+			assertNull(meshRoot().getSchemaContainerRoot().findByName("content1235").toBlocking().value());
 		}
 	}
 
@@ -129,7 +129,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindByUUID() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
 			String uuid = getSchemaContainer().getUuid();
-			assertNotNull("The schema could not be found", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
+			assertNotNull("The schema could not be found", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().value());
 		}
 	}
 
@@ -143,7 +143,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 				node.delete(batch);
 			}
 			getSchemaContainer().delete(batch);
-			assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
+			assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().value());
 		}
 	}
 
@@ -172,7 +172,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			String uuid = newContainer.getUuid();
 			SearchQueueBatch batch = createBatch();
 			newContainer.delete(batch);
-			assertNull("The container should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
+			assertNull("The container should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().value());
 		}
 	}
 
@@ -213,7 +213,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testUpdate() throws IOException {
 		try (NoTrx noTx = db.noTrx()) {
-			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().single();
+			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().value();
 			SchemaContainerVersion currentVersion = schemaContainer.getLatestVersion();
 			Schema schema = currentVersion.getSchema();
 			schema.setName("changed");

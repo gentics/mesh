@@ -1,6 +1,9 @@
 package com.gentics.mesh.demo;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -57,7 +60,7 @@ public class DemoDumpGeneratorTest {
 		new RxDebugger().start();
 		generator.invokeDump(boot, dataProvider);
 		NoTrx tx = db.noTrx();
-		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().single().getNodeRoot().findAll().size() > 0);
+		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().value().getNodeRoot().findAll().size() > 0);
 		User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 		assertNotNull("The webclient user should have been created but could not be found.", user);
 		assertFalse("The webclient user should also have at least one group assigned to it.", user.getGroups().isEmpty());

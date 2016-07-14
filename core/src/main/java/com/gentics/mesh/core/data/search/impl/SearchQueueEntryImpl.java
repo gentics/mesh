@@ -8,7 +8,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.index.IndexHandler;
 
-import rx.Observable;
+import rx.Completable;
 
 /**
  * @see SearchQueueEntry
@@ -93,7 +93,7 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	}
 
 	@Override
-	public Observable<Void> process() {
+	public Completable process() {
 		return getIndexHandler(getElementType()).handleAction(this);
 	}
 

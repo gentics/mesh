@@ -48,6 +48,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
+import rx.Single;
 import rx.functions.Func0;
 
 /**
@@ -177,7 +178,7 @@ public class SearchRestHandler {
 						int upper = low + pagingInfo.getPerPage() - 1;
 
 						int n = 0;
-						List<Observable<TR>> transformedElements = new ArrayList<>();
+						List<Single<TR>> transformedElements = new ArrayList<>();
 						for (Tuple<T, String> objectAndLanguageTag : list) {
 
 							// Only transform elements that we want to list in our resultset
@@ -240,11 +241,11 @@ public class SearchRestHandler {
 		db.asyncNoTrxExperimental(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler handler : registry.getHandlers()) {
-					handler.clearIndex().toBlocking().single();
+					handler.clearIndex().await();
 				}
 				boot.meshRoot().getSearchQueue().addFullIndex();
 				boot.meshRoot().getSearchQueue().processAll();
-				return Observable.just(message(ac, "search_admin_reindex_invoked"));
+				return Single.just(message(ac, "search_admin_reindex_invoked"));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

@@ -26,7 +26,7 @@ import com.gentics.mesh.util.CompareUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 /**
  * See {@link MicronodeGraphField}
@@ -51,7 +51,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	}
 
 	@Override
-	public Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	public Single<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		Micronode micronode = getMicronode();
 		if (micronode == null) {
 			// TODO is this correct?

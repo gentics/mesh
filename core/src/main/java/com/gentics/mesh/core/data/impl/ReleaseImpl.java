@@ -38,6 +38,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import rx.Observable;
+import rx.Single;
 
 public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release> implements Release {
 
@@ -60,7 +61,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public Observable<? extends Release> update(InternalActionContext ac) {
+	public Single<? extends Release> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ReleaseUpdateRequest requestModel = ac.fromJson(ReleaseUpdateRequest.class);
 
@@ -80,7 +81,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 			}
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
-			return Observable.just(this);
+			return Single.just(this);
 		});
 	}
 
@@ -96,8 +97,8 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public Observable<ReleaseResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Observable<ReleaseResponse>> obsParts = new HashSet<>();
+	public Single<ReleaseResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		Set<Single<ReleaseResponse>> obsParts = new HashSet<>();
 
 		ReleaseResponse restRelease = new ReleaseResponse();
 		restRelease.setName(getName());

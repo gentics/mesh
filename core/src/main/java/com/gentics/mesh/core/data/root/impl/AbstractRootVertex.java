@@ -30,7 +30,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends RestModel, T>> extends MeshVertexImpl implements RootVertex<T> {
 
@@ -58,13 +58,13 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public Observable<T> findByName(String name) {
-		return Observable.just(out(getRootLabel()).has(getPersistanceClass()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null));
+	public Single<T> findByName(String name) {
+		return Single.just(out(getRootLabel()).has(getPersistanceClass()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null));
 	}
 
 	@Override
-	public Observable<T> findByUuid(String uuid) {
-		return Observable.just(findByUuidSync(uuid));
+	public Single<T> findByUuid(String uuid) {
+		return Single.just(findByUuidSync(uuid));
 	}
 	
 	@Override
@@ -84,7 +84,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public Observable<? extends MeshVertex> resolveToElement(Stack<String> stack) {
+	public Single<? extends MeshVertex> resolveToElement(Stack<String> stack) {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving for {" + getPersistanceClass().getSimpleName() + "}.");
 			if (stack.isEmpty()) {
@@ -94,13 +94,13 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			}
 		}
 		if (stack.isEmpty()) {
-			return Observable.just(this);
+			return Single.just(null);
 		} else {
 			String uuid = stack.pop();
 			if (stack.isEmpty()) {
 				return findByUuid(uuid);
 			} else {
-				return Observable.error(new Exception("Can't resolve remaining segments. Next segment would be: " + stack.peek()));
+				return Single.error(new Exception("Can't resolve remaining segments. Next segment would be: " + stack.peek()));
 			}
 		}
 	}
@@ -116,7 +116,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public Observable<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public Single<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		reload();
 		return findByUuid(uuid).map(element -> {

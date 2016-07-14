@@ -12,7 +12,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
@@ -29,14 +28,12 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.eventbus.DeliveryOptions;
-import rx.Observable;
+import rx.Single;
 
 /**
  * Abstract implementation for a graph field container version.
@@ -187,7 +184,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public Observable<? extends SCV> update(InternalActionContext ac) {
+	public Single<? extends SCV> update(InternalActionContext ac) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 
@@ -198,7 +195,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges) {
+	public Single<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges) {
 		if (listOfChanges.getChanges().isEmpty()) {
 			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
 		}
@@ -229,7 +226,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 			// Check for conflicting container names
 			String newName = resultingSchema.getName();
-			SC foundContainer = getSchemaContainer().getRoot().findByName(resultingSchema.getName()).toBlocking().single();
+			SC foundContainer = getSchemaContainer().getRoot().findByName(resultingSchema.getName()).toBlocking().value();
 			if (foundContainer != null && !foundContainer.getUuid().equals(getSchemaContainer().getUuid())) {
 				throw conflict(foundContainer.getUuid(), newName, "schema_conflicting_name", newName);
 			}
@@ -245,7 +242,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 			// Update the search index
 			return createIndexBatch(STORE_ACTION);
-		}).process().map(i -> {
+		}).process().toSingle(() -> {
 			return db.noTrx(() -> {
 				return message(ac, "migration_invoked", getName());
 			});
@@ -265,7 +262,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> applyChanges(InternalActionContext ac) {
+	public Single<GenericMessageResponse> applyChanges(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		try {
 			SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
@@ -279,20 +276,20 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 			});
 		} catch (Exception e) {
-			return Observable.error(e);
+			return Single.error(e);
 		}
 	}
 
 	@Override
-	public Observable<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator comparator,
+	public Single<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator comparator,
 			FieldSchemaContainer fieldContainerModel) {
 		try {
 			SchemaChangesListModel list = new SchemaChangesListModel();
 			fieldContainerModel.validate();
-			list.getChanges().addAll(comparator.diff(transformToRest(ac, 0, null).toBlocking().single(), fieldContainerModel));
-			return Observable.just(list);
+			list.getChanges().addAll(comparator.diff(transformToRest(ac, 0, null).toBlocking().value(), fieldContainerModel));
+			return Single.just(list);
 		} catch (Exception e) {
-			return Observable.error(e);
+			return Single.error(e);
 		}
 
 	}

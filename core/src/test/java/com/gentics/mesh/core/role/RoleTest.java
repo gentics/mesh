@@ -70,7 +70,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			Role createdRole = root.create(roleName, user());
 			assertNotNull(createdRole);
 			String uuid = createdRole.getUuid();
-			Role role = boot.roleRoot().findByUuid(uuid).toBlocking().single();
+			Role role = boot.roleRoot().findByUuid(uuid).toBlocking().value();
 			assertNotNull(role);
 			assertEquals(roleName, role.getName());
 		}
@@ -289,8 +289,8 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByName() {
 		try (NoTrx noTx = db.noTrx()) {
-			assertNotNull(boot.roleRoot().findByName(role().getName()).toBlocking().single());
-			assertNull(boot.roleRoot().findByName("bogus").toBlocking().single());
+			assertNotNull(boot.roleRoot().findByName(role().getName()).toBlocking().value());
+			assertNull(boot.roleRoot().findByName("bogus").toBlocking().value());
 		}
 	}
 
@@ -298,9 +298,9 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByUUID() {
 		try (NoTrx noTx = db.noTrx()) {
-			Role role = boot.roleRoot().findByUuid(role().getUuid()).toBlocking().single();
+			Role role = boot.roleRoot().findByUuid(role().getUuid()).toBlocking().value();
 			assertNotNull(role);
-			role = boot.roleRoot().findByUuid("bogus").toBlocking().single();
+			role = boot.roleRoot().findByUuid("bogus").toBlocking().value();
 			assertNull(role);
 		}
 	}
@@ -312,7 +312,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			Role role = role();
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
-			RoleResponse restModel = role.transformToRest(ac, 0).toBlocking().single();
+			RoleResponse restModel = role.transformToRest(ac, 0).toBlocking().value();
 
 			assertNotNull(restModel);
 			assertEquals(role.getName(), restModel.getName());
@@ -330,11 +330,11 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 			Role role = root.create(roleName, user());
 			String uuid = role.getUuid();
-			role = boot.roleRoot().findByUuid(uuid).toBlocking().single();
+			role = boot.roleRoot().findByUuid(uuid).toBlocking().value();
 			assertNotNull(role);
 			SearchQueueBatch batch = createBatch();
 			role.delete(batch);
-			Role foundRole = boot.roleRoot().findByUuid(uuid).toBlocking().single();
+			Role foundRole = boot.roleRoot().findByUuid(uuid).toBlocking().value();
 			assertNull(foundRole);
 		}
 
@@ -347,10 +347,10 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
 			Role role = root.getRoleRoot().create("SuperUser", user());
-			assertFalse(user().hasPermissionAsync(ac, role, GraphPermission.CREATE_PERM).toBlocking().first());
+			assertFalse(user().hasPermissionAsync(ac, role, GraphPermission.CREATE_PERM).toBlocking().value());
 			user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);
 			ac.data().clear();
-			assertTrue(user().hasPermissionAsync(ac, role, GraphPermission.CREATE_PERM).toBlocking().first());
+			assertTrue(user().hasPermissionAsync(ac, role, GraphPermission.CREATE_PERM).toBlocking().value());
 		}
 	}
 

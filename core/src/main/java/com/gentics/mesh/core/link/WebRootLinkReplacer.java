@@ -19,7 +19,7 @@ import com.gentics.mesh.parameter.impl.LinkType;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 
 /**
  * This class will resolve mesh link placeholders.
@@ -45,21 +45,27 @@ public class WebRootLinkReplacer {
 
 	/**
 	 * Replace the links in the content.
-	 * @param releaseUuid release Uuid
-	 * @param edgeType edge type
-	 * @param content content containing links to replace
-	 * @param type replacing type
-	 * @param projectName project name (used for 404 links)
-	 * @param languageTags optional language tags
+	 * 
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param edgeType
+	 *            edge type
+	 * @param content
+	 *            content containing links to replace
+	 * @param type
+	 *            replacing type
+	 * @param projectName
+	 *            project name (used for 404 links)
+	 * @param languageTags
+	 *            optional language tags
 	 * @return content with links (probably) replaced
 	 */
-	public String replace(String releaseUuid, ContainerType edgeType, String content, LinkType type,
-			String projectName, List<String> languageTags) {
+	public String replace(String releaseUuid, ContainerType edgeType, String content, LinkType type, String projectName, List<String> languageTags) {
 		if (isEmpty(content) || type == LinkType.OFF || type == null) {
 			return content;
 		}
 
-		List<Observable<String>> segments = new ArrayList<>();
+		List<Single<String>> segments = new ArrayList<>();
 		int pos = 0;
 		int lastPos = 0;
 		int length = content.length();
@@ -70,7 +76,7 @@ public class WebRootLinkReplacer {
 			if (pos == -1) {
 				// add last string segment
 				if (lastPos < length) {
-					segments.add(Observable.just(content.substring(lastPos)));
+					segments.add(Single.just(content.substring(lastPos)));
 				}
 				break;
 			}
@@ -78,14 +84,14 @@ public class WebRootLinkReplacer {
 			if (endPos == -1) {
 				// add last string segment
 				if (lastPos < length) {
-					segments.add(Observable.just(content.substring(lastPos)));
+					segments.add(Single.just(content.substring(lastPos)));
 				}
 				break;
 			}
 
 			// add intermediate string segment
 			if (lastPos < pos) {
-				segments.add(Observable.just(content.substring(lastPos, pos)));
+				segments.add(Single.just(content.substring(lastPos, pos)));
 			}
 
 			// 2. Parse the link and invoke resolving
@@ -99,7 +105,8 @@ public class WebRootLinkReplacer {
 			if (linkArguments.length == 2) {
 				segments.add(resolve(releaseUuid, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
 			} else if (languageTags != null) {
-				segments.add(resolve(releaseUuid, edgeType, linkArguments[0], type, projectName, languageTags.toArray(new String[languageTags.size()])));
+				segments.add(
+						resolve(releaseUuid, edgeType, linkArguments[0], type, projectName, languageTags.toArray(new String[languageTags.size()])));
 			} else {
 				segments.add(resolve(releaseUuid, edgeType, linkArguments[0], type, projectName));
 			}
@@ -109,26 +116,33 @@ public class WebRootLinkReplacer {
 
 		// 3.: Buildup the new content
 		StringBuilder renderedContent = new StringBuilder(length);
-		segments.stream().forEachOrdered(obs -> renderedContent.append(obs.toBlocking().last()));
+		segments.stream().forEachOrdered(obs -> renderedContent.append(obs.toBlocking().value()));
 
 		return renderedContent.toString();
 	}
 
 	/**
 	 * Resolve the link to the node with uuid (in the given language) into an observable
-	 * @param releaseUuid release Uuid
-	 * @param edgeType edge type
-	 * @param uuid target uuid
-	 * @param type link type
-	 * @param projectName project name (which is used for 404 links)
-	 * @param languageTags optional language tags
+	 * 
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param edgeType
+	 *            edge type
+	 * @param uuid
+	 *            target uuid
+	 * @param type
+	 *            link type
+	 * @param projectName
+	 *            project name (which is used for 404 links)
+	 * @param languageTags
+	 *            optional language tags
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(String releaseUuid, ContainerType edgeType, String uuid, LinkType type,
-			String projectName, String... languageTags) {
+	public Single<String> resolve(String releaseUuid, ContainerType edgeType, String uuid, LinkType type, String projectName,
+			String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().single();
+		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().value();
 
 		// check for null
 		if (node == null) {
@@ -137,13 +151,13 @@ public class WebRootLinkReplacer {
 			}
 			switch (type) {
 			case SHORT:
-				return Observable.just("/error/404");
+				return Single.just("/error/404");
 			case MEDIUM:
-				return Observable.just("/" + projectName + "/error/404");
+				return Single.just("/" + projectName + "/error/404");
 			case FULL:
-				return Observable.just(RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + projectName + "/webroot/error/404");
+				return Single.just(RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + projectName + "/webroot/error/404");
 			default:
-				return Observable.error(new Exception("Cannot render link with type " + type));
+				return Single.error(new Exception("Cannot render link with type " + type));
 			}
 		}
 		return resolve(releaseUuid, edgeType, node, type, languageTags);
@@ -151,8 +165,11 @@ public class WebRootLinkReplacer {
 
 	/**
 	 * Resolve the link to the given node
-	 * @param releaseUuid release Uuid
-	 * @param edgeType edge type
+	 * 
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param edgeType
+	 *            edge type
 	 * @param node
 	 *            target node
 	 * @param type
@@ -161,8 +178,7 @@ public class WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(String releaseUuid, ContainerType edgeType, Node node, LinkType type,
-			String... languageTag) {
+	public Single<String> resolve(String releaseUuid, ContainerType edgeType, Node node, LinkType type, String... languageTag) {
 		if (languageTag == null || languageTag.length == 0) {
 			String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
 			languageTag = new String[] { defaultLanguage };
@@ -187,15 +203,16 @@ public class WebRootLinkReplacer {
 			case SHORT:
 				return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404");
 			case MEDIUM:
-				return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404").map(path -> "/" + node.getProject().getName() + path);
+				return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404")
+						.map(path -> "/" + node.getProject().getName() + path);
 			case FULL:
 				return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404")
 						.map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path);
 			default:
-				return Observable.error(new Exception("Cannot render link with type " + type));
+				return Single.error(new Exception("Cannot render link with type " + type));
 			}
 		} catch (UnsupportedEncodingException e) {
-			return Observable.error(e);
+			return Single.error(e);
 		}
 	}
 

@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
@@ -32,7 +31,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
-import rx.Observable;
+import rx.Single;
 
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
@@ -84,7 +83,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public Observable<MicroschemaContainer> create(InternalActionContext ac) {
+	public Single<MicroschemaContainer> create(InternalActionContext ac) {
 		MeshAuthUser requestUser = ac.getUser();
 		Database db = MeshSpringConfiguration.getInstance().database();
 
@@ -103,24 +102,24 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 				SearchQueueBatch batch = tuple.v1();
 				MicroschemaContainer microschemaContainer = tuple.v2();
-				return batch.process().map(done -> microschemaContainer);
+				return batch.process().andThen(Single.just(microschemaContainer));
 			});
 		} catch (IOException e) {
-			return Observable.error(e);
+			return Single.error(e);
 		}
 	}
 
 	@Override
-	public Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference) {
+	public Single<MicroschemaContainerVersion> fromReference(MicroschemaReference reference) {
 		return fromReference(reference, null);
 	}
 
 	@Override
-	public Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference, Release release) {
+	public Single<MicroschemaContainerVersion> fromReference(MicroschemaReference reference, Release release) {
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
 		Integer version = release == null ? reference.getVersion() : null;
-		Observable<MicroschemaContainer> containerObs = null;
+		Single<MicroschemaContainer> containerObs = null;
 		if (!isEmpty(microschemaName)) {
 			containerObs = findByName(microschemaName);
 		} else {

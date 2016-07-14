@@ -90,7 +90,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 		assertEquals(db.noTrx(() -> user().getUuid()), map.get("uuid"));
 
 		for (IndexHandler handler : registry.getHandlers()) {
-			handler.clearIndex().toBlocking().single();
+			handler.clearIndex().await();
 		}
 
 		// Make sure the document is no longer stored within the search index.
@@ -111,7 +111,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 			}
 
 			String documentId = NodeIndexHandler.composeDocumentId(node, "en");
-			searchProvider.deleteDocument(Node.TYPE, indexType, documentId).toBlocking().single();
+			searchProvider.deleteDocument(Node.TYPE, indexType, documentId).await();
 			meshRoot().getSearchQueue().processAll();
 			assertNull(
 					"The document with uuid {" + uuid + "} could still be found within the search index. Used index type {" + indexType

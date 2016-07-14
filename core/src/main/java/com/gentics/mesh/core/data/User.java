@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * The User Domain Model interface.
@@ -142,7 +142,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param vertex
 	 * @param permission
 	 */
-	Observable<Boolean> hasPermissionAsync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
+	Single<Boolean> hasPermissionAsync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
 
 	/**
 	 * Return an array of human readable permissions for the given vertex.
@@ -162,7 +162,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param ac
 	 * @param node
 	 */
-	Observable<List<String>> getPermissionNamesAsync(InternalActionContext ac, MeshVertex node);
+	Single<List<String>> getPermissionNamesAsync(InternalActionContext ac, MeshVertex node);
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.

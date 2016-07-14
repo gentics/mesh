@@ -21,7 +21,7 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
 
-import rx.Observable;
+import rx.Single;
 
 public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
@@ -41,7 +41,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
-	public Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	public Single<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		// TODO handle null across all types
 		//if (getNode() != null) {
 		NodeParameters parameters = ac.getNodeParameters();
@@ -56,9 +56,9 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 				nodeField.setPath(WebRootLinkReplacer.getInstance()
 						.resolve(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), node,
 								ac.getNodeParameters().getResolveLinks(), languageTags.toArray(new String[languageTags.size()]))
-						.toBlocking().single());
+						.toBlocking().value());
 			}
-			return Observable.just(nodeField);
+			return Single.just(nodeField);
 		}
 	}
 
