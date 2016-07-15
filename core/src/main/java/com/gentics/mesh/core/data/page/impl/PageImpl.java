@@ -84,7 +84,7 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 			return Single.just(listResponse);
 		}
 
-		Observable<RestModel> merged = Observable.just(null);
+		Observable<RestModel> merged = Observable.empty();
 		for (Single<? extends RestModel> element : obs) {
 			merged = merged.concatWith(element.toObservable());
 		}
