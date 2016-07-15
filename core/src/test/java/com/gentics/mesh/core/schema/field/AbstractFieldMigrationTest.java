@@ -732,16 +732,18 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 *            data provider implementation
 	 * @param script
 	 *            migration script
-	 * @throws TimeoutException
-	 * @throws ExecutionException
-	 * @throws InterruptedException
+	 * @throws Throwable 
 	 */
 	protected void invalidMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script)
-			throws InterruptedException, ExecutionException, TimeoutException {
-		if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-			invalidMicroschemaMigrationScript(creator, dataProvider, script);
-		} else {
-			invalidSchemaMigrationScript(creator, dataProvider, script);
+			throws Throwable {
+		try {
+			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
+				invalidMicroschemaMigrationScript(creator, dataProvider, script);
+			} else {
+				invalidSchemaMigrationScript(creator, dataProvider, script);
+			}
+		} catch (RuntimeException e) {
+			throw e.getCause();
 		}
 	}
 

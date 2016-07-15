@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.schema.field;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
@@ -16,8 +15,9 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.ExecutionException;
+import javax.script.ScriptException;
 
 import org.junit.Test;
 
@@ -184,14 +184,14 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
-	public void testInvalidMigrationScript() throws Exception {
+	@Test(expected=ScriptException.class)
+	public void testInvalidMigrationScript() throws Throwable {
 		invalidMigrationScript(CREATEDATELIST, FILL, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
-	public void testSystemExit() throws Exception {
+	@Test(expected=ClassNotFoundException.class)
+	public void testSystemExit() throws Throwable {
 		invalidMigrationScript(CREATEDATELIST, FILL, KILLERSCRIPT);
 	}
 }
