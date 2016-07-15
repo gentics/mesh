@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACT
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -33,9 +34,6 @@ import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
-import rx.Observable;
 import rx.Single;
 
 public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer> implements SchemaContainerRoot {
@@ -114,11 +112,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	public Single<SchemaContainer> create(InternalActionContext ac) {
 		MeshAuthUser requestUser = ac.getUser();
 		Database db = MeshSpringConfiguration.getInstance().database();
-		return Single.create(sub -> {
-
-			Schema requestModel;
-			try {
-				requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+		return Single.defer(() -> {
+				Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 				requestModel.validate();
 				if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
 
@@ -139,11 +134,10 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 					SearchQueueBatch batch = tuple.v1();
 					SchemaContainer createdContainer = tuple.v2();
-					sub.onSuccess(batch.process().andThen(Single.just(createdContainer)));
+					return batch.process().toSingleDefault(createdContainer);
+				} else {
+					return Single.error(error(FORBIDDEN, "error_missing_perm", getUuid()));
 				}
-			} catch (Exception e1) {
-				sub.onError(e1);
-			}
 		});
 
 	}

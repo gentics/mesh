@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.handler;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -25,8 +26,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.UUIDUtil;
-
-import rx.Single;
 
 public final class HandlerUtilities {
 
@@ -66,15 +65,12 @@ public final class HandlerUtilities {
 			TrxHandler<RootVertex<T>> handler, String uuid, String responseMessage) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
+
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();
-			Single<T> obs = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
-			return obs.flatMap(element -> {
-
+			return root.loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(element -> {
 				return db.noTrx(() -> {
-
 					Tuple<String, SearchQueueBatch> tuple = db.trx(() -> {
-
 						String elementUuid = element.getUuid();
 						if (element instanceof IndexableElement) {
 							SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
@@ -90,14 +86,10 @@ public final class HandlerUtilities {
 						} else {
 							throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 						}
-
 					});
-
 					String id = tuple.v1();
 					SearchQueueBatch batch = tuple.v2();
-					return batch.process().andThen(done -> {
-						return message(ac, responseMessage, id);
-					});
+					return batch.process().toSingleDefault(message(ac, responseMessage, id));
 				});
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);

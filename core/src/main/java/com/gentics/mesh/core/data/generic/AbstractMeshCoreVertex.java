@@ -24,7 +24,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
+import rx.Completable;
 
 public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertexImpl
 		implements MeshCoreVertex<T, R> {
@@ -38,23 +38,25 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @param model
 	 * @return
 	 */
-	protected <R extends AbstractGenericRestResponse> Single<R> setRolePermissions(InternalActionContext ac, R model) {
-		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
-		if (isEmpty(roleUuid)) {
-			return Single.just(null);
-		} else
-			return MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).map(role -> {
-				if (role != null) {
-					Set<GraphPermission> permSet = role.getPermissions(this);
-					Set<String> humanNames = new HashSet<>();
-					for (GraphPermission permission : permSet) {
-						humanNames.add(permission.getSimpleName());
+	protected <R extends AbstractGenericRestResponse> Completable setRolePermissions(InternalActionContext ac, R model) {
+		return Completable.defer(() -> {
+			String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
+			if (isEmpty(roleUuid)) {
+				return Completable.complete();
+			} else
+				return MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).map(role -> {
+					if (role != null) {
+						Set<GraphPermission> permSet = role.getPermissions(this);
+						Set<String> humanNames = new HashSet<>();
+						for (GraphPermission permission : permSet) {
+							humanNames.add(permission.getSimpleName());
+						}
+						String[] names = humanNames.toArray(new String[humanNames.size()]);
+						model.setRolePerms(names);
 					}
-					String[] names = humanNames.toArray(new String[humanNames.size()]);
-					model.setRolePerms(names);
-				}
-				return model;
-			});
+					return model;
+				}).toCompletable();
+		});
 
 	}
 
@@ -64,45 +66,46 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @param model
 	 * @param ac
 	 */
-	protected <R extends AbstractGenericRestResponse> Single<R> fillCommonRestFields(InternalActionContext ac, R model) {
+	protected <R extends AbstractGenericRestResponse> Completable fillCommonRestFields(InternalActionContext ac, R model) {
+		return Completable.defer(() -> {
 
-		model.setUuid(getUuid());
+			model.setUuid(getUuid());
 
-		if (this instanceof EditorTrackingVertex) {
-			EditorTrackingVertex edited = (EditorTrackingVertex) this;
+			if (this instanceof EditorTrackingVertex) {
+				EditorTrackingVertex edited = (EditorTrackingVertex) this;
 
-			User editor = edited.getEditor();
-			if (editor != null) {
-				model.setEditor(editor.transformToReference());
-			} else {
-				// TODO throw error and log something
-			}
-			model.setEdited(edited.getLastEditedTimestamp() == null ? 0 : edited.getLastEditedTimestamp());
-		}
-
-		if (this instanceof CreatorTrackingVertex) {
-			CreatorTrackingVertex created = (CreatorTrackingVertex) this;
-			User creator = created.getCreator();
-			if (creator != null) {
-				model.setCreator(creator.transformToReference());
-			} else {
-				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
-				// TODO throw error and log something
+				User editor = edited.getEditor();
+				if (editor != null) {
+					model.setEditor(editor.transformToReference());
+				} else {
+					// TODO throw error and log something
+				}
+				model.setEdited(edited.getLastEditedTimestamp() == null ? 0 : edited.getLastEditedTimestamp());
 			}
 
-			model.setCreated(created.getCreationTimestamp() == null ? 0 : created.getCreationTimestamp());
-		}
+			if (this instanceof CreatorTrackingVertex) {
+				CreatorTrackingVertex created = (CreatorTrackingVertex) this;
+				User creator = created.getCreator();
+				if (creator != null) {
+					model.setCreator(creator.transformToReference());
+				} else {
+					log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
+					// TODO throw error and log something
+				}
 
-		if (ac instanceof NodeMigrationActionContextImpl) {
-			// when this is a node migration, do not set user permissions
-			return Single.just(model);
-		} else {
-			return ac.getUser().getPermissionNamesAsync(ac, this).map(list -> {
-				String[] names = list.toArray(new String[list.size()]);
-				model.setPermissions(names);
-				return model;
-			});
-		}
+				model.setCreated(created.getCreationTimestamp() == null ? 0 : created.getCreationTimestamp());
+			}
+
+			if (ac instanceof NodeMigrationActionContextImpl) {
+				// when this is a node migration, do not set user permissions
+				return Completable.complete();
+			} else {
+				return ac.getUser().getPermissionNamesAsync(ac, this).doOnSuccess(list -> {
+					String[] names = list.toArray(new String[list.size()]);
+					model.setPermissions(names);
+				}).toCompletable();
+			}
+		});
 	}
 
 	@Override

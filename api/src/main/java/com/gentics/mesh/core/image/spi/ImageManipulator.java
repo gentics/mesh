@@ -6,7 +6,7 @@ import java.io.InputStream;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.rxjava.core.buffer.Buffer;
-import rx.Observable;
+import rx.Single;
 
 /**
  * SPI provider interface for image manipulators.
@@ -21,7 +21,7 @@ public interface ImageManipulator {
 	 * @param imageRequestParameter
 	 * @return
 	 */
-	Observable<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters imageRequestParameter);
+	Single<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters imageRequestParameter);
 
 	/**
 	 * Read the inputstream and resize the image data.
@@ -31,7 +31,7 @@ public interface ImageManipulator {
 	 * @param parameters
 	 * @return
 	 */
-	Observable<Buffer> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters);
+	Single<Buffer> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters);
 
 	/**
 	 * Return the cache file for the given sha512 checksum and image manipulation parameters.

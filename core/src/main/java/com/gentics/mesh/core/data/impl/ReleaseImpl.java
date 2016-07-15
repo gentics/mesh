@@ -6,9 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_REL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Release;
@@ -37,7 +35,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import rx.Observable;
+import rx.Completable;
 import rx.Single;
 
 public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release> implements Release {
@@ -68,11 +66,9 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		return db.trx(() -> {
 			if (shouldUpdate(requestModel.getName(), getName())) {
 				// Check for conflicting project name
-				Release conflictingRelease = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this,
-						getRoot().getUniqueNameKey(requestModel.getName()));
+				Release conflictingRelease = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
 				if (conflictingRelease != null) {
-					throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(),
-							"release_conflicting_name", requestModel.getName());
+					throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", requestModel.getName());
 				}
 				setName(requestModel.getName());
 			}
@@ -98,7 +94,6 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Single<ReleaseResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Single<ReleaseResponse>> obsParts = new HashSet<>();
 
 		ReleaseResponse restRelease = new ReleaseResponse();
 		restRelease.setName(getName());
@@ -106,13 +101,14 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		restRelease.setMigrated(isMigrated());
 
 		// Add common fields
-		obsParts.add(fillCommonRestFields(ac, restRelease));
+		Completable common = fillCommonRestFields(ac, restRelease);
 
 		// Role permissions
-		obsParts.add(setRolePermissions(ac, restRelease));
+		Completable rolePerms = setRolePermissions(ac, restRelease);
 
 		// Merge and complete
-		return Observable.merge(obsParts).last();
+
+		return Completable.merge(common, rolePerms).andThen(Single.just(restRelease));
 	}
 
 	@Override
@@ -178,28 +174,26 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public boolean contains(SchemaContainer schemaContainer) {
-		SchemaContainer foundSchemaContainer = out(HAS_VERSION).has(SchemaContainerVersionImpl.class).in(HAS_PARENT_CONTAINER).has("name", schemaContainer.getName())
-				.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+		SchemaContainer foundSchemaContainer = out(HAS_VERSION).has(SchemaContainerVersionImpl.class).in(HAS_PARENT_CONTAINER)
+				.has("name", schemaContainer.getName()).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 		return foundSchemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
-		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_VERSION).has(SchemaContainerVersionImpl.class).has("uuid", schemaContainerVersion.getUuid())
-				.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_VERSION).has(SchemaContainerVersionImpl.class)
+				.has("uuid", schemaContainerVersion.getUuid()).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 		return foundSchemaContainerVersion != null;
 	}
 
 	@Override
 	public SchemaContainerVersion getVersion(SchemaContainer schemaContainer) {
-		return out(HAS_VERSION).has(SchemaContainerVersionImpl.class).mark().in(HAS_PARENT_CONTAINER)
-				.has("name", schemaContainer.getName()).back()
+		return out(HAS_VERSION).has(SchemaContainerVersionImpl.class).mark().in(HAS_PARENT_CONTAINER).has("name", schemaContainer.getName()).back()
 				.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
-	public List<? extends SchemaContainerVersion> findAllSchemaVersions()
-			throws InvalidArgumentException {
+	public List<? extends SchemaContainerVersion> findAllSchemaVersions() throws InvalidArgumentException {
 		return out(HAS_VERSION).has(SchemaContainerVersionImpl.class).toListExplicit(SchemaContainerVersionImpl.class);
 	}
 
@@ -215,24 +209,22 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public boolean contains(MicroschemaContainer microschema) {
-		MicroschemaContainer foundMicroschemaContainer = out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class).in(HAS_PARENT_CONTAINER).has("name", microschema.getName())
-				.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
+		MicroschemaContainer foundMicroschemaContainer = out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class).in(HAS_PARENT_CONTAINER)
+				.has("name", microschema.getName()).nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
 		return foundMicroschemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
-		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_VERSION)
-				.has(MicroschemaContainerVersionImpl.class).has("uuid", microschemaContainerVersion.getUuid())
-				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class)
+				.has("uuid", microschemaContainerVersion.getUuid()).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 		return foundMicroschemaContainerVersion != null;
 	}
 
 	@Override
 	public MicroschemaContainerVersion getVersion(MicroschemaContainer microschemaContainer) {
-		return out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class).mark().in(HAS_PARENT_CONTAINER)
-				.has("name", microschemaContainer.getName()).back()
-				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		return out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class).mark().in(HAS_PARENT_CONTAINER).has("name", microschemaContainer.getName())
+				.back().nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override
@@ -242,7 +234,9 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	/**
 	 * Assign the given schema container version to this release and unassign all other versions
-	 * @param version version to assign
+	 * 
+	 * @param version
+	 *            version to assign
 	 */
 	protected <R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void assign(
 			GraphFieldSchemaContainerVersion<R, RE, SCV, SC> version) {
@@ -264,6 +258,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	/**
 	 * Unassign all version of the container from the release
+	 * 
 	 * @param container
 	 */
 	protected <R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void unassign(

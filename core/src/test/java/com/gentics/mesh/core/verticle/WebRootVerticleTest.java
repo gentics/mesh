@@ -344,8 +344,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 		// 2. Publish nodes
 		try (NoTrx noTx = db.noTrx()) {
-			folder("news").publish(getMockedInternalActionContext(user())).toBlocking().single();
-			folder("2015").publish(getMockedInternalActionContext(user())).toBlocking().single();
+			folder("news").publish(getMockedInternalActionContext(user())).await();
+			folder("2015").publish(getMockedInternalActionContext(user())).await();
 		}
 
 		// 3. Assert that published path can be found
@@ -362,8 +362,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 		// 1. Publish nodes
 		db.noTrx(() -> {
-			folder("news").publish(getMockedInternalActionContext()).toBlocking().single();
-			folder("2015").publish(getMockedInternalActionContext()).toBlocking().single();
+			folder("news").publish(getMockedInternalActionContext()).await();
+			folder("2015").publish(getMockedInternalActionContext()).await();
 			return null;
 		});
 

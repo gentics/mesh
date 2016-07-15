@@ -51,7 +51,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public Observable<NodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	public Single<NodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 
 		// Check whether the list should be returned in a collapsed or expanded format
 		NodeParameters parameters = ac.getNodeParameters();
@@ -66,13 +66,16 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 				obs.add(item.getNode().transformToRestSync(ac, level, lTagsArray));
 			}
 
-			return RxUtil.concatList(obs).collect(() -> {
+			// Transform the list - otherwise we can't use Observable#from
+			List<Observable<NodeResponse>> list = obs.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+
+			return Observable.concat(Observable.from(list)).collect(() -> {
 				return restModel.getItems();
 			}, (x, y) -> {
 				x.add(y);
 			}).map(i -> {
 				return restModel;
-			});
+			}).toSingle();
 
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
@@ -83,13 +86,13 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 				NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(item.getNode().getUuid());
 
 				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-					listItem.setUrl(WebRootLinkReplacer.getInstance().resolve(releaseUuid, type, item.getNode(), ac.getNodeParameters().getResolveLinks(), lTagsArray)
-							.toBlocking().value());
+					listItem.setUrl(WebRootLinkReplacer.getInstance()
+							.resolve(releaseUuid, type, item.getNode(), ac.getNodeParameters().getResolveLinks(), lTagsArray).toBlocking().value());
 				}
 
 				restModel.add(listItem);
 			}
-			return Observable.just(restModel);
+			return Single.just(restModel);
 
 		}
 

@@ -23,7 +23,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestModelHelper;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * @see SchemaContainerVersion
@@ -64,8 +64,7 @@ public class SchemaContainerVersionImpl extends
 	public List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
 		return in(HAS_SCHEMA_CONTAINER_VERSION).mark().inE(HAS_FIELD_CONTAINER)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back()
-				.toListExplicit(NodeGraphFieldContainerImpl.class);
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back().toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -84,39 +83,42 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Observable<Schema> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		try {
-			// Load the schema and add/overwrite some properties 
-			Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);
-			restSchema.setUuid(getSchemaContainer().getUuid());
+	public Single<Schema> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
-			// TODO Get list of projects to which the schema was assigned
-			// for (Project project : getProjects()) {
-			// }
-			// ProjectResponse restProject = new ProjectResponse();
-			// restProje ct.setUuid(project.getUuid());
-			// restProject.setName(project.getName());
-			// schemaResponse.getProjects().add(restProject);
-			// }
+		return Single.create(sub -> {
+			try {
+				// Load the schema and add/overwrite some properties 
+				Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);
+				restSchema.setUuid(getSchemaContainer().getUuid());
 
-			// Sort the list by project name
-			// restSchema.getProjects()
-			// Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
-			// @Override
-			// public int compare(ProjectResponse o1, ProjectResponse o2) {
-			// return o1.getName().compareTo(o2.getName());
-			// };
-			// });
+				// TODO Get list of projects to which the schema was assigned
+				// for (Project project : getProjects()) {
+				// }
+				// ProjectResponse restProject = new ProjectResponse();
+				// restProje ct.setUuid(project.getUuid());
+				// restProject.setName(project.getName());
+				// schemaResponse.getProjects().add(restProject);
+				// }
 
-			// Role permissions
-			RestModelHelper.setRolePermissions(ac, getSchemaContainer(), restSchema);
+				// Sort the list by project name
+				// restSchema.getProjects()
+				// Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
+				// @Override
+				// public int compare(ProjectResponse o1, ProjectResponse o2) {
+				// return o1.getName().compareTo(o2.getName());
+				// };
+				// });
 
-			restSchema.setPermissions(ac.getUser().getPermissionNames(ac, getSchemaContainer()));
+				// Role permissions
+				RestModelHelper.setRolePermissions(ac, getSchemaContainer(), restSchema);
 
-			return Observable.just(restSchema);
-		} catch (IOException e) {
-			return Observable.error(e);
-		}
+				restSchema.setPermissions(ac.getUser().getPermissionNames(ac, getSchemaContainer()));
+				sub.onSuccess(restSchema);
+
+			} catch (IOException e) {
+				sub.onError(e);
+			}
+		});
 	}
 
 	@Override

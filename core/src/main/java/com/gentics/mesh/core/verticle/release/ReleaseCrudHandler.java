@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.release;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -73,8 +74,9 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				SchemaContainerRoot schemaContainerRoot = ac.getProject().getSchemaContainerRoot();
 
 				return db.trx(() -> {
-					Single<SchemaContainerVersion> obs = Single.from(schemaReferenceList)
-							.flatMap(reference -> schemaContainerRoot.fromReference(reference));
+					// Resolve the list of references to graph schema container versions
+					Observable<SchemaContainerVersion> obs = Observable.from(schemaReferenceList)
+							.flatMap(reference -> schemaContainerRoot.fromReference(reference).toObservable());
 					obs.toBlocking().forEach(version -> {
 						SchemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
 						if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
@@ -84,8 +86,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						release.assignSchemaVersion(version);
 
 						DeliveryOptions options = new DeliveryOptions();
-						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER,
-								release.getRoot().getProject().getUuid());
+						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
 						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
 						options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
 						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
@@ -129,8 +130,10 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
 				return db.trx(() -> {
-					Single<MicroschemaContainerVersion> obs = Single.from(microschemaReferenceList)
-							.flatMap(reference -> microschemaContainerRoot.fromReference(reference));
+					// Transform the list of references into microschema container version vertices
+					Observable<MicroschemaContainerVersion> obs = Observable.from(microschemaReferenceList)
+							.flatMap(reference -> microschemaContainerRoot.fromReference(reference).toObservable());
+
 					obs.toBlocking().forEach(version -> {
 						MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
 						if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
@@ -141,8 +144,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 						// start microschema migration
 						DeliveryOptions options = new DeliveryOptions();
-						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER,
-								release.getRoot().getProject().getUuid());
+						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
 						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
 						options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
 						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
@@ -156,19 +158,19 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	}
 
 	/**
-	 * Get the rest model of the schema versions of the release
+	 * Get the rest model of the schema versions of the release.
 	 * 
 	 * @param release
 	 *            release
-	 * @return observable emitting the rest model
+	 * @return single emitting the rest model
 	 */
-	protected Observable<SchemaReferenceList> getSchemaVersions(Release release) {
+	protected Single<SchemaReferenceList> getSchemaVersions(Release release) {
 		try {
 			return Observable.from(release.findAllSchemaVersions()).map(SchemaContainerVersion::transformToReference).collect(() -> {
 				return new SchemaReferenceList();
-			} , (x, y) -> {
+			}, (x, y) -> {
 				x.add(y);
-			});
+			}).toSingle();
 		} catch (Exception e) {
 			throw error(INTERNAL_SERVER_ERROR, "Unknown error while getting schema versions", e);
 		}
@@ -179,15 +181,15 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 * 
 	 * @param release
 	 *            release
-	 * @return observable emitting the rest model
+	 * @return single emitting the rest model
 	 */
 	protected Single<MicroschemaReferenceList> getMicroschemaVersions(Release release) {
 		try {
-			return Single.from(release.findAllMicroschemaVersions()).map(MicroschemaContainerVersion::transformToReference).collect(() -> {
+			return Observable.from(release.findAllMicroschemaVersions()).map(MicroschemaContainerVersion::transformToReference).collect(() -> {
 				return new MicroschemaReferenceList();
-			} , (x, y) -> {
+			}, (x, y) -> {
 				x.add(y);
-			});
+			}).toSingle();
 		} catch (Exception e) {
 			throw error(INTERNAL_SERVER_ERROR, "Unknown error while getting microschema versions", e);
 		}

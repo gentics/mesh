@@ -87,19 +87,17 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	@Override
 	public Completable store(SchemaContainer container, String type, SearchQueueEntry entry) {
-		return super.store(container, type, entry).flatMap(done -> {
+		return super.store(container, type, entry).andThen(Completable.defer(()-> {
 			if (db != null) {
-				Observable<Void> obs = db.noTrx(() -> {
+				return db.noTrx(() -> {
 					// update the mappings
 					Schema schema = container.getLatestVersion().getSchema();
 					return nodeIndexHandler.setNodeIndexMapping(NodeIndexHandler.getDocumentType(container.getLatestVersion()), schema);
 				});
-				return obs;
 			} else {
-				return Observable.just(done);
+				return Completable.complete();
 			}
-
-		});
+		}));
 	}
 
 	@Override

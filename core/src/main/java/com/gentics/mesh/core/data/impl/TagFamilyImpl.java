@@ -14,7 +14,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -53,7 +52,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Completable;
 import rx.Single;
 
 /**
@@ -201,19 +200,17 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Single<TagFamilyResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Single<TagFamilyResponse>> obs = new HashSet<>();
-
 		TagFamilyResponse restTagFamily = new TagFamilyResponse();
 		restTagFamily.setName(getName());
 
 		// Add common fields
-		obs.add(fillCommonRestFields(ac, restTagFamily));
+		Completable commonFields = fillCommonRestFields(ac, restTagFamily);
 
 		// Role permissions
-		obs.add(setRolePermissions(ac, restTagFamily));
+		Completable rolePerms = setRolePermissions(ac, restTagFamily);
 
 		// Merge and complete
-		return Observable.merge(obs).last();
+		return Completable.merge(rolePerms, commonFields).toSingleDefault(restTagFamily);
 	}
 
 	@Override

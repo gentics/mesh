@@ -90,9 +90,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		String releaseUuid = db.noTrx(release::getUuid);
 
 		// get the nodes, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainers = db
-				.noTrx(() -> fromVersion.getFieldContainers(releaseUuid));
-
+		List<? extends NodeGraphFieldContainer> fieldContainers = db.noTrx(() -> fromVersion.getFieldContainers(releaseUuid));
 
 		// no field containers -> no nodes, migration is done
 		if (fieldContainers.isEmpty()) {
@@ -140,8 +138,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().value();
 							restModel.getSchema().setVersion(newSchema.getVersion());
 
-							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(
-									oldPublished.getLanguage(), release, oldPublished.getEditor(), oldPublished);
+							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(oldPublished.getLanguage(), release,
+									oldPublished.getEditor(), oldPublished);
 							migrated.setVersion(oldPublished.getVersion().nextPublished());
 							node.setPublished(migrated, releaseUuid);
 							migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
@@ -158,8 +156,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 					restModel.getSchema().setVersion(newSchema.getVersion());
 
 					// Invoke the migration
-					NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release,
-							container.getEditor(), container);
+					NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(),
+							container);
 					if (publish) {
 						migrated.setVersion(container.getVersion().nextPublished());
 						node.setPublished(migrated, releaseUuid);
@@ -193,8 +191,10 @@ public class NodeMigrationHandler extends AbstractHandler {
 	/**
 	 * Migrate all micronodes referencing the given microschema container to the latest version
 	 *
-	 * @param project project
-	 * @param release release
+	 * @param project
+	 *            project
+	 * @param release
+	 *            release
 	 * @param fromVersion
 	 *            microschema container version to start from
 	 * @param toVersion
@@ -203,13 +203,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 *            JMX Status bean
 	 * @return
 	 */
-	public Observable<Void> migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
-			NodeMigrationStatus statusMBean) {
+	public Observable<Void> migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
+			MicroschemaContainerVersion toVersion, NodeMigrationStatus statusMBean) {
 		String releaseUuid = db.noTrx(release::getUuid);
 
 		// get the containers, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainers = db
-				.noTrx(() -> fromVersion.getFieldContainers(release.getUuid()));
+		List<? extends NodeGraphFieldContainer> fieldContainers = db.noTrx(() -> fromVersion.getFieldContainers(release.getUuid()));
 
 		// no field containers, migration is done
 		if (fieldContainers.isEmpty()) {
@@ -254,15 +253,14 @@ public class NodeMigrationHandler extends AbstractHandler {
 							ac.getVersioningParameters().setVersion("published");
 
 							// clone the field container
-							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(
-									oldPublished.getLanguage(), release, oldPublished.getEditor(), oldPublished);
+							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(oldPublished.getLanguage(), release,
+									oldPublished.getEditor(), oldPublished);
 
 							migrated.setVersion(oldPublished.getVersion().nextPublished());
 							node.setPublished(migrated, releaseUuid);
 
 							// migrate
-							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields,
-									migrationScripts);
+							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 
 							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.PUBLISHED);
 
@@ -270,16 +268,15 @@ public class NodeMigrationHandler extends AbstractHandler {
 						}
 					}
 
-					NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release,
-							container.getEditor(), container);
+					NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(),
+							container);
 					if (publish) {
 						migrated.setVersion(container.getVersion().nextPublished());
 						node.setPublished(migrated, releaseUuid);
 					}
 
 					// migrate
-					migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields,
-							migrationScripts);
+					migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 
 					migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
 					if (publish) {
@@ -306,7 +303,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 	/**
 	 * Migrate all nodes from one release to the other
-	 * @param newRelease new release
+	 * 
+	 * @param newRelease
+	 *            new release
 	 * @return
 	 */
 	public Completable migrateNodes(Release newRelease) {
@@ -321,8 +320,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 			}
 
 			if (!old.isMigrated()) {
-				throw error(BAD_REQUEST, "Cannot migrate nodes to release {" + newRelease.getName()
-						+ "}, because previous release {" + old.getName() + "} is not fully migrated yet.");
+				throw error(BAD_REQUEST, "Cannot migrate nodes to release {" + newRelease.getName() + "}, because previous release {" + old.getName()
+						+ "} is not fully migrated yet.");
 			}
 
 			return old;
@@ -340,14 +339,14 @@ public class NodeMigrationHandler extends AbstractHandler {
 					return null;
 				}
 				node.getGraphFieldContainers(oldRelease, ContainerType.DRAFT).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl initialEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER,
-							container.getImpl(), GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl initialEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
+							GraphFieldContainerEdgeImpl.class);
 					initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 					initialEdge.setType(ContainerType.INITIAL);
 					initialEdge.setReleaseUuid(newReleaseUuid);
 
-					GraphFieldContainerEdgeImpl draftEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER,
-							container.getImpl(), GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl draftEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
+							GraphFieldContainerEdgeImpl.class);
 					draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 					draftEdge.setType(ContainerType.DRAFT);
 					draftEdge.setReleaseUuid(newReleaseUuid);
@@ -356,8 +355,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 				});
 
 				node.getGraphFieldContainers(oldRelease, ContainerType.PUBLISHED).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl edge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER,
-							container.getImpl(), GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl edge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
+							GraphFieldContainerEdgeImpl.class);
 					edge.setLanguageTag(container.getLanguage().getLanguageTag());
 					edge.setType(ContainerType.PUBLISHED);
 					edge.setReleaseUuid(newReleaseUuid);
@@ -408,8 +407,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Class<T> clazz) throws Exception {
 		// collect the files for all binary fields (keys are the sha512sums,
 		// values are filepaths to the binary files)
-		Map<String, String> filePaths = container.getFields().stream().filter(f -> f instanceof BinaryGraphField)
-				.map(f -> (BinaryGraphField) f)
+		Map<String, String> filePaths = container.getFields().stream().filter(f -> f instanceof BinaryGraphField).map(f -> (BinaryGraphField) f)
 				.collect(Collectors.toMap(BinaryGraphField::getSHA512Sum, BinaryGraphField::getFilePath, (existingPath, newPath) -> existingPath));
 
 		// remove all touched fields (if necessary, they will be readded later)
@@ -462,7 +460,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			BinaryGraphField binaryField = container.getBinary(fieldName);
 			if (binaryField != null && !binaryField.getFile().exists() && filePaths.containsKey(sha512Sum)) {
 				Buffer buffer = Buffer.newInstance(Mesh.vertx().fileSystem().readFileBlocking(filePaths.get(sha512Sum)));
-				nodeFieldAPIHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath()).toBlocking().last();
+				nodeFieldAPIHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath()).toBlocking().value();
 				binaryField.setSHA512Sum(sha512Sum);
 			}
 		});
@@ -470,12 +468,19 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 	/**
 	 * Migrate all micronode fields from old schema version to new schema version
-	 * @param ac action context
-	 * @param container field container
-	 * @param fromVersion old schema version
-	 * @param toVersion new schema version
-	 * @param touchedFields touched fields
-	 * @param migrationScripts migration scripts
+	 * 
+	 * @param ac
+	 *            action context
+	 * @param container
+	 *            field container
+	 * @param fromVersion
+	 *            old schema version
+	 * @param toVersion
+	 *            new schema version
+	 * @param touchedFields
+	 *            touched fields
+	 * @param migrationScripts
+	 *            migration scripts
 	 * @throws Exception
 	 */
 	protected void migrateMicronodeFields(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container,

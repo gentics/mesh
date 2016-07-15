@@ -41,7 +41,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
 		sha512Sum = nodeFieldAPIHandler.hashAndStoreBinaryFile(Buffer.buffer(FILECONTENTS), field.getUuid(), field.getSegmentedPath()).toBlocking()
-				.last();
+				.value();
 		field.setSHA512Sum(sha512Sum);
 	};
 

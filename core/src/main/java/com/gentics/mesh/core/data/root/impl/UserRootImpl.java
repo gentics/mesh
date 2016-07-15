@@ -191,8 +191,9 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 				reload();
 				SearchQueueBatch batch = tuple.v1();
-				//				User createdUser = tuple.v2();
-				return batch.process().toSingleDefault(tuple.v2());
+				User createdUser2 = tuple.v2();
+				batch.process().await();
+				return createdUser2;
 
 			});
 

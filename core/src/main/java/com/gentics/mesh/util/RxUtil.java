@@ -3,10 +3,13 @@ package com.gentics.mesh.util;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import rx.Completable;
 import rx.Observable;
+import rx.Single;
 import rx.Observable.Transformer;
 import rx.Subscriber;
 import rx.functions.Func0;
+import rx.functions.Func1;
 import rx.functions.Func2;
 
 public final class RxUtil {
@@ -19,13 +22,19 @@ public final class RxUtil {
 	 * 
 	 * @param list
 	 * @return
+	 * @deprecated Use {@link Observable#concat(Observable)} in combination with {@link Observable#from(Iterable)}
 	 */
+	@Deprecated
 	public static <T> Observable<T> concatList(List<Observable<T>> list) {
 		Observable<T> merged = Observable.empty();
 		for (Observable<T> element : list) {
 			merged = merged.concatWith(element);
 		}
 		return merged;
+	}
+
+	public static <T> Completable andThenCompletable(Single<T> source, Func1<T, Completable> mappingFunction) {
+		return Observable.merge(source.toObservable().map(v -> mappingFunction.call(v).toObservable())).toCompletable();
 	}
 
 	//	/**

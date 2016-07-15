@@ -6,15 +6,12 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 
-import org.apache.commons.collections.bag.SynchronizedSortedBag;
-
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import rx.Observable;
+import rx.Single;
 
 /**
  * The BinaryField Domain Model interface.
@@ -24,7 +21,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	FieldTransformator BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		if (graphBinaryField == null) {
-			return Observable.just(null);
+			return Single.just(null);
 		} else {
 			return graphBinaryField.transformToRest(ac);
 		}

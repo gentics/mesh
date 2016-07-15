@@ -78,11 +78,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				});
 				SearchQueueBatch batch = tuple.v1();
 				Group updatedGroup = tuple.v2();
-				return batch.process().flatMap(done -> {
-					return updatedGroup.transformToRest(ac, 0);
-				});
+				return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
 			});
-
 			return obs.flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
@@ -97,8 +94,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Single<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			return Single.zip(obsGroup, obsRole, (group, role) -> {
-
+			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsRole, (group, role) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					group.removeRole(role);
@@ -107,11 +103,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 				SearchQueueBatch batch = tuple.v1();
 				Group updatedGroup = tuple.v2();
-
-				return batch.process().map(done -> {
-					return updatedGroup.transformToRest(ac, 0);
-				}).flatMap(x -> x).toBlocking().last();
+				return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
 			});
+			return Single.merge(obs);
+			//return obs.flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
@@ -165,10 +160,11 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				});
 				SearchQueueBatch batch = tuple.v1();
 				Group updatedGroup = tuple.v2();
-				return batch.process().toSingleDefault(updatedGroup.transformToRest(ac, 0));
+				return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
 			});
 			return obs.flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+
 	}
 
 	public void handleRemoveUserFromGroup(InternalActionContext ac, String groupUuid, String userUuid) {
@@ -185,8 +181,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 					group.removeUser(user);
 					return Tuple.tuple(batch, group);
 				});
-				// BUG Add SQB processing
-				return tuple.v2().transformToRest(ac, 0);
+				SearchQueueBatch batch = tuple.v1();
+				Group updatedGroup = tuple.v2();
+				return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

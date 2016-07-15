@@ -17,6 +17,7 @@ import com.gentics.mesh.path.PathSegment;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
+import rx.Single;
 
 @Component
 public class WebRootService {
@@ -30,7 +31,7 @@ public class WebRootService {
 	 * @param path
 	 * @return
 	 */
-	public Observable<Path> findByProjectPath(InternalActionContext ac, String path) {
+	public Single<Path> findByProjectPath(InternalActionContext ac, String path) {
 		Project project = ac.getProject();
 		Node baseNode = project.getBaseNode();
 		Path nodePath = new Path();
@@ -39,7 +40,7 @@ public class WebRootService {
 		// Handle path to project root (baseNode) 
 		if ("/".equals(path) || path.isEmpty()) {
 			nodePath.addSegment(new PathSegment(baseNode, null, null));
-			return Observable.just(nodePath);
+			return Single.just(nodePath);
 		}
 
 		// Prepare the stack which we use for resolving
@@ -51,7 +52,7 @@ public class WebRootService {
 		stack.addAll(list);
 
 		// Traverse the graph and buildup the result path while doing so
-		Observable<Path> obsNode = baseNode.resolvePath(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
+		Single<Path> obsNode = baseNode.resolvePath(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
 				nodePath, stack);
 		return obsNode;
 	}

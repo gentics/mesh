@@ -24,7 +24,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
-import rx.Observable;
+import rx.Single;
 
 public class ImgscalrImageManipulatorTest {
 
@@ -50,7 +50,7 @@ public class ImgscalrImageManipulatorTest {
 		for (String imageName : imageNames) {
 			System.out.println("Handling " + imageName);
 			InputStream ins = getClass().getResourceAsStream("/pictures/" + imageName);
-			Observable<Buffer> obs = manipulator.handleResize(ins, imageName, new ImageManipulationParameters().setWidth(150).setHeight(180));
+			Single<Buffer> obs = manipulator.handleResize(ins, imageName, new ImageManipulationParameters().setWidth(150).setHeight(180));
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				assertNotNull(buffer);

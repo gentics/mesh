@@ -29,7 +29,7 @@ import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Completable;
 import rx.Single;
 
 /**
@@ -98,7 +98,6 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public Single<RoleResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Single<RoleResponse>> obs = new HashSet<>();
 
 		RoleResponse restRole = new RoleResponse();
 		restRole.setName(getName());
@@ -108,13 +107,13 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		}
 
 		// Add common fields
-		obs.add(fillCommonRestFields(ac, restRole));
+		Completable commonFields = fillCommonRestFields(ac, restRole);
 
 		// Role permissions
-		obs.add(setRolePermissions(ac, restRole));
+		Completable rolePerms = setRolePermissions(ac, restRole);
 
 		// Merge and complete
-		return Single.merge(obs);
+		return Completable.merge(rolePerms, commonFields).toSingleDefault(restRole);
 	}
 
 	@Override

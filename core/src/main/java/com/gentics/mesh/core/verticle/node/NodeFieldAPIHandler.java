@@ -3,8 +3,10 @@ package com.gentics.mesh.core.verticle.node;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
+import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -37,6 +39,7 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.util.FileUtils;
+import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -45,7 +48,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
 import io.vertx.rxjava.core.file.FileSystem;
-import rx.Observable;
+import rx.Completable;
 import rx.Single;
 
 @Component
@@ -83,7 +86,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				handler.handle(binaryField);
 				return null;
 			});
-		} , ac::fail);
+		}, ac::fail);
 	}
 
 	/**
@@ -109,7 +112,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
-				
+
 				// Create new field container as clone of the existing
 				NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(language, release, ContainerType.DRAFT);
 
@@ -119,7 +122,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				Single<FieldSchema> fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
+				Optional<FieldSchema> fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
 				if (!fieldSchema.isPresent()) {
 					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}
@@ -178,9 +181,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 						SearchQueueBatch batch = tuple.v1();
 						String updatedNodeUuid = tuple.v2();
-						return batch.process().map(done -> {
-							return message(ac, "node_binary_field_updated", updatedNodeUuid);
-						});
+						return batch.process().andThen(Single.just(message(ac, "node_binary_field_updated", updatedNodeUuid)));
 					});
 
 				} catch (Exception e) {
@@ -268,7 +269,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Handle image transformation
+	 * Handle image transformation.
 	 * 
 	 * @param rc
 	 *            routing context
@@ -318,10 +319,10 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 					Single<Tuple<String, Integer>> obsHashAndSize = imageManipulator
 							.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
-						return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).map(hash -> {
-							return Tuple.tuple(hash, buffer.length());
-						});
-					});
+								return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).map(hash -> {
+									return Tuple.tuple(hash, buffer.length());
+								});
+							});
 
 					return obsHashAndSize.flatMap(hashAndSize -> {
 						Tuple<SearchQueueBatch, String> tuple = db.trx(() -> {
@@ -342,9 +343,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 						SearchQueueBatch batch = tuple.v1();
 						String updatedNodeUuid = tuple.v2();
-						return batch.process().map(done -> {
-							return message(ac, "node_binary_field_updated", updatedNodeUuid);
-						});
+						return batch.process().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
 					});
 				} catch (GenericRestException e) {
 					throw e;
@@ -381,18 +380,15 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param segmentedPath
 	 * @return
 	 */
-	protected Observable<String> hashAndMoveBinaryFile(FileUpload fileUpload, String uuid, String segmentedPath) {
+	protected Single<String> hashAndMoveBinaryFile(FileUpload fileUpload, String uuid, String segmentedPath) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
 		File targetFile = new File(uploadFolder, uuid + ".bin");
 		String targetPath = targetFile.getAbsolutePath();
 
 		return hashFileupload(fileUpload).flatMap(sha512sum -> {
-			return checkUploadFolderExists(uploadFolder).flatMap(e -> {
-				return deletePotentialUpload(targetPath).flatMap(e1 -> {
-					return moveUploadIntoPlace(fileUpload, targetPath).map(k -> sha512sum);
-				});
-			});
+			return checkUploadFolderExists(uploadFolder).andThen(deletePotentialUpload(targetPath))
+					.andThen(moveUploadIntoPlace(fileUpload, targetPath)).toSingleDefault(sha512sum);
 		});
 	}
 
@@ -405,20 +401,17 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 *            uuid of the binary field
 	 * @param segmentedPath
 	 *            path to store the binary data
-	 * @return observable emitting the sha512 checksum
+	 * @return single emitting the sha512 checksum
 	 */
-	public Observable<String> hashAndStoreBinaryFile(Buffer buffer, String uuid, String segmentedPath) {
+	public Single<String> hashAndStoreBinaryFile(Buffer buffer, String uuid, String segmentedPath) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
 		File targetFile = new File(uploadFolder, uuid + ".bin");
 		String targetPath = targetFile.getAbsolutePath();
 
 		return hashBuffer(buffer).flatMap(sha512sum -> {
-			return checkUploadFolderExists(uploadFolder).flatMap(e -> {
-				return deletePotentialUpload(targetPath).flatMap(e1 -> {
-					return storeBuffer(buffer, targetPath).map(k -> sha512sum);
-				});
-			});
+			return checkUploadFolderExists(uploadFolder).andThen(deletePotentialUpload(targetPath))
+					.andThen(storeBuffer(buffer, targetPath).toSingleDefault(sha512sum));
 		});
 	}
 
@@ -428,8 +421,8 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param fileUpload
 	 * @return
 	 */
-	protected Observable<String> hashFileupload(FileUpload fileUpload) {
-		Observable<String> obsHash = FileUtils.generateSha512Sum(fileUpload.uploadedFileName()).doOnError(error -> {
+	protected Single<String> hashFileupload(FileUpload fileUpload) {
+		Single<String> obsHash = FileUtils.generateSha512Sum(fileUpload.uploadedFileName()).doOnError(error -> {
 			log.error("Error while hashing fileupload {" + fileUpload.uploadedFileName() + "}", error);
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
@@ -441,10 +434,10 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * 
 	 * @param buffer
 	 *            buffer
-	 * @return observable emitting the sha512 checksum
+	 * @return single emitting the sha512 checksum
 	 */
-	protected Observable<String> hashBuffer(Buffer buffer) {
-		Observable<String> obsHash = FileUtils.generateSha512Sum(buffer).doOnError(error -> {
+	protected Single<String> hashBuffer(Buffer buffer) {
+		Single<String> obsHash = FileUtils.generateSha512Sum(buffer).doOnError(error -> {
 			log.error("Error while hashing data", error);
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
@@ -457,27 +450,24 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param targetPath
 	 * @return
 	 */
-	protected Observable<Void> deletePotentialUpload(String targetPath) {
+	protected Completable deletePotentialUpload(String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
 		// Deleting of existing binary file
-		Observable<Void> obsDeleteExisting = fileSystem.deleteObservable(targetPath).doOnError(error -> {
+		Completable obsDeleteExisting = fileSystem.deleteObservable(targetPath).toCompletable().doOnError(error -> {
 			log.error("Error while attempting to delete target file {" + targetPath + "}", error);
 		});
 
-		Observable<Boolean> obsUploadExistsCheck = fileSystem.existsObservable(targetPath).doOnError(error -> {
+		Single<Boolean> obsUploadExistsCheck = fileSystem.existsObservable(targetPath).toSingle().doOnError(error -> {
 			log.error("Unable to check existence of file at location {" + targetPath + "}");
 		});
 
-		Observable<Void> obsPotentialUploadDeleted = obsUploadExistsCheck.flatMap(uploadAlreadyExists -> {
+		return RxUtil.andThenCompletable(obsUploadExistsCheck, uploadAlreadyExists -> {
 			if (uploadAlreadyExists) {
-				return obsDeleteExisting.flatMap(e -> {
-					return Observable.just(null);
-				});
+				return obsDeleteExisting;
 			}
-			return Observable.just(null);
+			return Completable.complete();
 		});
-		return obsPotentialUploadDeleted;
 	}
 
 	/**
@@ -487,19 +477,17 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param targetPath
 	 * @return
 	 */
-	protected Observable<Void> moveUploadIntoPlace(FileUpload fileUpload, String targetPath) {
+	protected Completable moveUploadIntoPlace(FileUpload fileUpload, String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		return fileSystem.moveObservable(fileUpload.uploadedFileName(), targetPath).doOnError(error -> {
+		return fileSystem.moveObservable(fileUpload.uploadedFileName(), targetPath).toCompletable().doOnError(error -> {
 			log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
-		}).flatMap(e -> {
-			return Observable.just(null);
 		});
 	}
 
 	/**
-	 * Store the data in the buffer into the given place
+	 * Store the data in the buffer into the given place.
 	 * 
 	 * @param buffer
 	 *            buffer
@@ -507,10 +495,10 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 *            target path
 	 * @return empty observable
 	 */
-	protected Observable<Void> storeBuffer(Buffer buffer, String targetPath) {
+	protected Completable storeBuffer(Buffer buffer, String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		return fileSystem.writeFileObservable(targetPath, buffer).doOnError(error -> {
+		return fileSystem.writeFileObservable(targetPath, buffer).toCompletable().doOnError(error -> {
 			log.error("Failed to save file to {" + targetPath + "}", error);
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
@@ -522,22 +510,22 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param uploadFolder
 	 * @return
 	 */
-	protected Observable<Void> checkUploadFolderExists(File uploadFolder) {
+	protected Completable checkUploadFolderExists(File uploadFolder) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		return fileSystem.existsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
+		Single<Boolean> obs = fileSystem.existsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
 			log.error("Could not check whether target directory {" + uploadFolder.getAbsolutePath() + "} exists.", error);
 			throw error(BAD_REQUEST, "node_error_upload_failed", error);
-		}).flatMap(folderExists -> {
+		}).toSingle();
+
+		return RxUtil.andThenCompletable(obs, folderExists -> {
 			if (!folderExists) {
-				return fileSystem.mkdirsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
+				return fileSystem.mkdirsObservable(uploadFolder.getAbsolutePath()).toCompletable().doOnError(error -> {
 					log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
 					throw error(BAD_REQUEST, "node_error_upload_failed", error);
-				}).flatMap(e -> {
-					return Observable.just(null);
 				});
 			} else {
-				return Observable.just(null);
+				return Completable.complete();
 			}
 		});
 

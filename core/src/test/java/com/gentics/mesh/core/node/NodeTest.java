@@ -542,7 +542,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 				folder.applyPermissions(role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
 						Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
-				folder.publish(getMockedInternalActionContext(user())).toBlocking().single();
+				folder.publish(getMockedInternalActionContext(user())).await();
 				return folder.getUuid();
 			});
 
@@ -609,7 +609,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 				folder.applyPermissions(role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
 						Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
-				folder.publish(getMockedInternalActionContext(user())).toBlocking().single();
+				folder.publish(getMockedInternalActionContext(user())).await();
 				return folder.getUuid();
 			});
 

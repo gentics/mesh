@@ -30,7 +30,6 @@ import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import rx.Completable;
-import rx.Observable;
 import rx.Single;
 
 /**
@@ -357,7 +356,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return
 	 */
-	Observable<? extends SearchQueueBatch> publish(InternalActionContext ac);
+	Completable publish(InternalActionContext ac);
 
 	/**
 	 * Take the node offline (all languages)
@@ -507,7 +506,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param restNode
 	 * @return
 	 */
-	Single<NodeResponse> setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode);
+	Completable setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode);
 
 	/**
 	 * Return the schema container for the node.

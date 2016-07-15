@@ -16,6 +16,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Ignore;
@@ -50,6 +52,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
@@ -112,16 +115,16 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			InternalActionContext ac = getMockedVoidInternalActionContext(user());
 			User user = user();
 			Language language = english();
-			Set<Single<Boolean>> obs = new HashSet<>();
+			Set<Observable<Boolean>> obs = new HashSet<>();
 			for (int e = 0; e < 10; e++) {
 				long start = System.currentTimeMillis();
 				int nChecks = 1000;
 				for (int i = 0; i < nChecks; i++) {
 					Single<Boolean> permObs = user.hasPermissionAsync(ac, language, READ_PERM);
-					obs.add(permObs);
+					obs.add(permObs.toObservable());
 				}
 
-				Single.merge(obs).subscribe(result -> {
+				Observable.merge(obs).subscribe(result -> {
 					assertTrue(result);
 				}, error -> {
 					fail(error.getMessage());
@@ -236,7 +239,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
-			List<Single<Void>> obsList = new ArrayList<>();
+			List<Completable> obsList = new ArrayList<>();
 			for (int i = 0; i < nChecks; i++) {
 				obsList.add(user().getPermissionNamesAsync(ac, language).map(list -> {
 					String[] loadedPerms = list.toArray(new String[list.size()]);
@@ -245,9 +248,9 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 					assertArrayEquals("Permissions do not match", perms, loadedPerms);
 					assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 					return null;
-				}));
+				}).toCompletable());
 			}
-			Single.merge(obsList).toBlocking().last();
+			Completable.merge(obsList).await(20, TimeUnit.SECONDS);
 			System.out.println("Duration: " + (System.currentTimeMillis() - start));
 			System.out.println("Duration per Check: " + (System.currentTimeMillis() - start) / (double) nChecks);
 		}

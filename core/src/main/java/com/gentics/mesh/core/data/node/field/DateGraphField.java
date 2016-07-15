@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * The DateField Domain Model interface.
@@ -16,7 +16,7 @@ public interface DateGraphField extends ListableGraphField, BasicGraphField<Date
 	FieldTransformator DATE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		DateGraphField graphDateField = container.getDate(fieldKey);
 		if (graphDateField == null) {
-			return Observable.just(new DateFieldImpl());
+			return Single.just(new DateFieldImpl());
 		} else {
 			return graphDateField.transformToRest(ac);
 		}

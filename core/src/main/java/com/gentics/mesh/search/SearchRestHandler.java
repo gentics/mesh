@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
@@ -39,7 +40,6 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.Future;
@@ -200,8 +200,9 @@ public class SearchRestHandler {
 						metainfo.setPerPage(pagingInfo.getPerPage());
 						listResponse.setMetainfo(metainfo);
 
+						List<Observable<TR>> obsList = transformedElements.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 						// Populate the response data with the transformed elements and send the response
-						RxUtil.concatList(transformedElements).collect(() -> {
+						Observable.concat(Observable.from(obsList)).collect(() -> {
 							return listResponse.getData();
 						}, (x, y) -> {
 							x.add(y);

@@ -176,7 +176,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				throw error(BAD_REQUEST, "project_error_no_schema_reference");
 			}
 			SchemaContainerVersion schemaContainerVersion = BootstrapInitializer.getBoot().schemaContainerRoot()
-					.fromReference(requestModel.getSchemaReference()).toBlocking().single();
+					.fromReference(requestModel.getSchemaReference()).toBlocking().value();
 
 			Tuple<SearchQueueBatch, Project> tuple = db.trx(() -> {
 				requestUser.reload();

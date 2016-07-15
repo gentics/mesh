@@ -12,7 +12,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -58,6 +57,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Completable;
 import rx.Single;
 
 /**
@@ -171,20 +171,18 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Single<ProjectResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Single<ProjectResponse>> obsParts = new HashSet<>();
-
 		ProjectResponse restProject = new ProjectResponse();
 		restProject.setName(getName());
 		restProject.setRootNodeUuid(getBaseNode().getUuid());
 
 		// Add common fields
-		obsParts.add(fillCommonRestFields(ac, restProject));
+		Completable commonFields = fillCommonRestFields(ac, restProject);
 
 		// Role permissions
-		obsParts.add(setRolePermissions(ac, restProject));
+		Completable setRoles = setRolePermissions(ac, restProject);
 
 		// Merge and complete
-		return Single.merge(obsParts);
+		return Completable.merge(commonFields, setRoles).andThen(Single.just(restProject));
 	}
 
 	@Override

@@ -1653,7 +1653,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = node.getUuid();
 
 			// 2. Publish the node
-			node.publish(getMockedInternalActionContext()).toBlocking().single();
+			node.publish(getMockedInternalActionContext()).await();
 
 			// 3. create new release
 			Project project = project();

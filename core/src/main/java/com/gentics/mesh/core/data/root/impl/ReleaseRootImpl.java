@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.util.Tuple;
@@ -120,20 +121,17 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 			Project project = getProject();
 			String projectName = project.getName();
 			String projectUuid = project.getUuid();
-			NodeIndexHandler nodeIndexHandler = NodeIndexHandler.getInstance();
-
-			return requestUser.hasPermissionAsync(ac, project, GraphPermission.UPDATE_PERM).flatMap(hasPerm -> {
+			Single<Release> obsFlat = requestUser.hasPermissionAsync(ac, project, GraphPermission.UPDATE_PERM).flatMap(hasPerm -> {
 				if (hasPerm) {
-
 					Tuple<SearchQueueBatch, Release> tuple = db.trx(() -> {
 						requestUser.reload();
 
 						// check for uniqueness of release name (per project)
-						Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME,
-								ReleaseImpl.class, getUniqueNameKey(createRequest.getName()));
+						Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class,
+								getUniqueNameKey(createRequest.getName()));
 						if (conflictingRelease != null) {
-							throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(),
-									"release_conflicting_name", createRequest.getName());
+							throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name",
+									createRequest.getName());
 						}
 
 						Release release = create(createRequest.getName(), requestUser);
@@ -143,28 +141,32 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 						// Create index queue entries for creating indices
 						SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 						SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-						batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"),
-								Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
-						batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "published"),
-								Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+						batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"), Node.TYPE,
+								SearchQueueEntryAction.CREATE_INDEX);
+						batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "published"), Node.TYPE,
+								SearchQueueEntryAction.CREATE_INDEX);
 
 						return Tuple.tuple(batch, release);
 					});
 
-					return tuple.v1().process().map(i -> {
-						return db.noTrx(() -> {
+					SearchQueueBatch batch = tuple.v1();
+					Release release = tuple.v2();
+					Single<Release> result = batch.process().andThen(Single.create(sub -> {
+						try (NoTrx noTrx = db.noTrx()) {
 							// start the node migration
 							DeliveryOptions options = new DeliveryOptions();
 							options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
 							options.addHeader(NodeMigrationVerticle.UUID_HEADER, tuple.v2().getUuid());
 							Mesh.vertx().eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options);
-							return null;
-						});
-					}).map(i -> tuple.v2());
+						}
+						sub.onSuccess(release);
+					}));
+					return result;
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName);
 				}
 			});
+			return obsFlat;
 		});
 	}
 

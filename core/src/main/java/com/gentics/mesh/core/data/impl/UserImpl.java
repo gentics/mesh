@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.BooleanUtils;
 
@@ -60,6 +61,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Completable;
 import rx.Observable;
 import rx.Single;
 import rx.subjects.AsyncSubject;
@@ -208,11 +210,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (permissions != null) {
 			return Single.just(permissions);
 		} else {
-			List<Observable<PermResult>> futures = new ArrayList<>();
+			List<Single<PermResult>> permResults = new ArrayList<>();
 
 			for (GraphPermission perm : GraphPermission.values()) {
 				AsyncSubject<PermResult> obs = AsyncSubject.create();
-				futures.add(obs);
+				permResults.add(obs.toSingle());
 				// TODO Checking permissions asynchronously requires a reload of the user object and therefore the perm check is slower. We need to check
 				// whether we want to still reload the user.
 				// hasPermission(ac, node, perm, rh -> {
@@ -229,10 +231,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 			}
 
-			return Observable.merge(futures).filter(res -> res.flag).map(res -> res.perm.getSimpleName()).toList().map(list -> {
+			List<Observable<PermResult>> permResultsList = permResults.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+			return Observable.merge(permResultsList).filter(res -> res.flag).map(res -> res.perm.getSimpleName()).toList().map(list -> {
 				ac.data().put(mapKey, list);
 				return list;
-			});
+			}).toSingle();
 
 		}
 	}
@@ -333,7 +336,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Single<UserResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Single<UserResponse>> obs = new HashSet<>();
 		UserResponse restUser = new UserResponse();
 
 		restUser.setUsername(getUsername());
@@ -343,64 +345,68 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		restUser.setEnabled(isEnabled());
 
 		// Users's node reference
-		obs.add(setNodeReference(ac, restUser, level));
+		Completable nodeReference = setNodeReference(ac, restUser, level);
 
 		// User's groups
-		obs.add(setGroups(ac, restUser));
+		Completable userGroups = setGroups(ac, restUser);
 
 		// User's role permissions
-		obs.add(setRolePermissions(ac, restUser));
+		Completable rolePermissions = setRolePermissions(ac, restUser);
 
 		// User's common fields
-		obs.add(fillCommonRestFields(ac, restUser));
+		Completable commonFields = fillCommonRestFields(ac, restUser);
 
 		// Wait for all async processes to complete
-		return Observable.merge(obs);
-		// reduce(restUser, (a, b) -> restUser);
+		return Completable.merge(rolePermissions, commonFields, nodeReference, userGroups).andThen(Single.just(restUser));
 	}
 
-	private Single<UserResponse> setGroups(InternalActionContext ac, UserResponse restUser) {
-		for (Group group : getGroups()) {
-			GroupReference reference = group.transformToReference();
-			restUser.getGroups().add(reference);
-		}
-		return Single.just(restUser);
+	private Completable setGroups(InternalActionContext ac, UserResponse restUser) {
+		return Completable.create(sub -> {
+			for (Group group : getGroups()) {
+				GroupReference reference = group.transformToReference();
+				restUser.getGroups().add(reference);
+			}
+			sub.onCompleted();
+		});
 	}
 
 	/**
-	 * Add the node reference field to the user response (if required to)
+	 * Add the node reference field to the user response (if required to).
 	 * 
 	 * @param ac
 	 * @param restUser
+	 * @param level
 	 * @return
 	 */
-	private Single<UserResponse> setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
-		NodeParameters parameters = new NodeParameters(ac);
-		Node node = getReferencedNode();
-		if (node == null) {
-			return Single.just(null);
-		} else {
-			boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
-			if (expandReference) {
-				return node.transformToRest(ac, level).map(transformedNode -> {
-					restUser.setNodeReference(transformedNode);
-					return restUser;
-				});
+	private Completable setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
+		return Completable.defer(() -> {
+			NodeParameters parameters = new NodeParameters(ac);
+
+			Node node = getReferencedNode();
+			if (node == null) {
+				return Completable.complete();
 			} else {
-				NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
-				userNodeReference.setUuid(node.getUuid());
-				if (node.getProject() != null) {
-					userNodeReference.setProjectName(node.getProject().getName());
+				boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
+				if (expandReference) {
+					return node.transformToRest(ac, level).doOnSuccess(transformedNode -> {
+						restUser.setNodeReference(transformedNode);
+					}).toCompletable();
 				} else {
-					log.error("Project of node is null. Can't set project field of user nodeReference.");
-					// TODO handle this case
+					NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
+					userNodeReference.setUuid(node.getUuid());
+					if (node.getProject() != null) {
+						userNodeReference.setProjectName(node.getProject().getName());
+					} else {
+						log.error("Project of node is null. Can't set project field of user nodeReference.");
+						// TODO handle this case
+					}
+					restUser.setNodeReference(userNodeReference);
+					return Completable.complete();
 				}
-				restUser.setNodeReference(userNodeReference);
-				return Single.just(restUser);
+
 			}
 
-		}
-
+		});
 	}
 
 	@Override

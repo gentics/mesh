@@ -14,7 +14,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.buffer.Buffer;
-import rx.Observable;
+import rx.Single;
 
 /**
  * Abstract image manipulator implementation.
@@ -29,20 +29,19 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		this.options = options;
 	}
 
-	
 	@Override
-	public Observable<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters parameters) {
+	public Single<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters parameters) {
 		try {
-		parameters.validate();
-		parameters.validateLimits(options);
-		} catch(Exception e) {
-			return Observable.error(e);
+			parameters.validate();
+			parameters.validateLimits(options);
+		} catch (Exception e) {
+			return Single.error(e);
 		}
 		try (InputStream ins = new FileInputStream(binaryFile)) {
 			return handleResize(ins, sha512sum, parameters);
 		} catch (IOException e) {
 			log.error("Can't handle image. File can't be opened. {" + binaryFile.getAbsolutePath() + "}", e);
-			return Observable.error(error(BAD_REQUEST, "image_error_reading_failed", e));
+			return Single.error(error(BAD_REQUEST, "image_error_reading_failed", e));
 		}
 	}
 

@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * List of all graph field types.
@@ -144,7 +144,7 @@ public enum GraphFieldTypes {
 	 * @param parentNode
 	 * @return
 	 */
-	public Observable<? extends Field> getRestFieldFromGraph(GraphFieldContainer container, InternalActionContext ac, String fieldKey,
+	public Single<? extends Field> getRestFieldFromGraph(GraphFieldContainer container, InternalActionContext ac, String fieldKey,
 			FieldSchema fieldSchema, List<String> languageTags, int level, Node parentNode) {
 		return getTransformator().transform(container, ac, fieldKey, fieldSchema, languageTags, level, parentNode);
 	}

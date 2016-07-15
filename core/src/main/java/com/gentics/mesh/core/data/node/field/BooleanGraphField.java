@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 
-import rx.Observable;
+import rx.Single;
 
 /**
  * The BooleanField Domain Model interface.
@@ -16,7 +16,7 @@ public interface BooleanGraphField extends ListableGraphField, BasicGraphField<B
 	FieldTransformator BOOLEAN_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BooleanGraphField graphBooleanField = container.getBoolean(fieldKey);
 		if (graphBooleanField == null) {
-			return Observable.just(new BooleanFieldImpl());
+			return Single.just(new BooleanFieldImpl());
 		} else {
 			return graphBooleanField.transformToRest(ac);
 		}

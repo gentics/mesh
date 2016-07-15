@@ -93,7 +93,6 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
@@ -206,7 +205,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		Collections.reverse(segments);
-		return RxUtil.concatList(segments).toList().map(list -> {
+
+		List<Observable<String>> segmentsObs = new ArrayList<>();
+		for (Single<String> segment : segments) {
+			segmentsObs.add(segment.toObservable());
+		}
+		return Observable.concat(Observable.from(segmentsObs)).toList().map(list -> {
 			StringBuilder builder = new StringBuilder();
 			Iterator<String> it = list.iterator();
 			while (it.hasNext()) {
@@ -217,7 +221,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 			}
 			return builder.toString();
-		});
+		}).toSingle();
 	}
 
 	@Override
@@ -274,9 +278,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		Collections.reverse(segments);
-		return RxUtil.concatList(segments).reduce((a, b) -> {
+		List<Observable<String>> segmentsObs = new ArrayList<>();
+		for (Single<String> segment : segments) {
+			segmentsObs.add(segment.toObservable());
+		}
+		return Observable.concat(Observable.from(segmentsObs)).reduce((a, b) -> {
 			return "/" + a + "/" + b;
-		});
+		}).toSingle();
 	}
 
 	@Override
@@ -544,6 +552,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			Release release = ac.getRelease(getProject());
 
+			
 			// Parent node reference
 			Node parentNode = getParentNode(release.getUuid());
 			if (parentNode != null) {
@@ -557,7 +566,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Role permissions
-			obs.add(setRolePermissions(ac, restNode));
+			Completable rolePerms = setRolePermissions(ac, restNode);
 
 			// Languages
 			restNode.setAvailableLanguages(getAvailableLanguageNames(release, ContainerType.forVersion(versioiningParameters.getVersion())));
@@ -680,10 +689,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Add common fields
-			obs.add(fillCommonRestFields(ac, restNode));
+			Completable commonField = fillCommonRestFields(ac, restNode);
 
 			// breadcrumb
-			obs.add(setBreadcrumbToRest(ac, restNode));
+			Completable breadcrumb = setBreadcrumbToRest(ac, restNode);
 
 			// Add webroot path & lanuagePaths
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
@@ -709,19 +718,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Merge and complete
-			return Single.merge(obs).last();
+			List<Observable<NodeResponse>> obsList = obs.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+			return Observable.merge(obsList).last().toSingle();
 		} catch (Exception e) {
 			return Single.error(e);
 		}
 	}
 
 	@Override
-	public Single<NodeResponse> setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
+	public Completable setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
 		String releaseUuid = ac.getRelease(getProject()).getUuid();
 		Node current = this.getParentNode(releaseUuid);
 		// The project basenode has no breadcrumb
 		if (current == null) {
-			return Single.just(restNode);
+			return Completable.complete();
 		}
 
 		List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
@@ -746,7 +756,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			current = current.getParentNode(releaseUuid);
 		}
 		restNode.setBreadcrumb(breadcrumb);
-		return Single.just(restNode);
+		return Completable.complete();
 	}
 
 	@Override
@@ -800,9 +810,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return navigation;
 		}));
 
+		List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+		
 		// Abort recursion when we reach the max level or when no more children can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
-			return Single.merge(obsResponses).last();
+			return Observable.merge(obsList).last().toSingle();
 		}
 		NavigationParameters parameters = new NavigationParameters(ac);
 		// Add children
@@ -827,7 +839,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, releaseUuid, type));
 			}
 		}
-		return Single.merge(obsResponses).last();
+		
+		return Observable.merge(obsList).last().toSingle();
 	}
 
 	@Override
@@ -864,7 +877,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<? extends SearchQueueBatch> publish(InternalActionContext ac) {
+	public Completable publish(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
@@ -873,7 +886,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				.filter(c -> !c.isPublished(releaseUuid)).collect(Collectors.toList());
 
 		// TODO check whether all required fields are filled
-		List<Single<? extends SearchQueueBatch>> obs = new ArrayList<>();
+		List<Completable> obs = new ArrayList<>();
 
 		obs.add(db.trx(() -> {
 			// publish all unpublished containers
@@ -892,7 +905,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return createIndexBatch(STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
 		}).process());
 
-		return Observable.merge(obs).last();
+		return Completable.merge(obs);
 	}
 
 	@Override

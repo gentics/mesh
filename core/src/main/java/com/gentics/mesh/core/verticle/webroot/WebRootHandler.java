@@ -31,7 +31,7 @@ import com.gentics.mesh.path.PathSegment;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.RoutingContext;
-import rx.Observable;
+import rx.Single;
 
 @Component
 public class WebRootHandler {
@@ -60,8 +60,8 @@ public class WebRootHandler {
 		db.asyncNoTrxExperimental(() -> {
 
 			// Load all nodes for the given path
-			Observable<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
-			PathSegment lastSegment = nodePath.toBlocking().last().getLast();
+			Single<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
+			PathSegment lastSegment = nodePath.toBlocking().value().getLast();
 
 			// Check whether the path actually points to a valid node
 			if (lastSegment != null) {

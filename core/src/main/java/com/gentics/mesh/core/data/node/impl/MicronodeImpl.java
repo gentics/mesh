@@ -57,7 +57,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Single<MicronodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		
+
 		NodeParameters parameters = new NodeParameters(ac);
 		List<Single<MicronodeResponse>> obs = new ArrayList<>();
 		MicronodeResponse restMicronode = new MicronodeResponse();
@@ -98,7 +98,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			obs.add(obsRestField);
 		}
 
-		return Single.merge(obs).last();
+		List<Observable<MicronodeResponse>> obsList = obs.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+		return Observable.merge(obsList).last().toSingle();
 	}
 
 	@Override

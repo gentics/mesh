@@ -19,7 +19,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
-import rx.Observable;
+import rx.Single;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
@@ -110,12 +110,12 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Observable<Buffer> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters) {
+	public Single<Buffer> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters) {
 		File cacheFile = getCacheFile(sha512sum, parameters);
 
 		// 1. Check the cache file directory
 		if (cacheFile.exists()) {
-			return vertx.fileSystem().readFileObservable(cacheFile.getAbsolutePath());
+			return vertx.fileSystem().readFileObservable(cacheFile.getAbsolutePath()).toSingle();
 		}
 
 		// 2. Read the image
@@ -141,7 +141,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		}
 
 		// 5. Return buffer to written cache file
-		return vertx.fileSystem().readFileObservable(cacheFile.getAbsolutePath());
+		return vertx.fileSystem().readFileObservable(cacheFile.getAbsolutePath()).toSingle();
 	}
 
 }

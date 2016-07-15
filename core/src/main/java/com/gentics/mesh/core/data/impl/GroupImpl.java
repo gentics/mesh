@@ -10,7 +10,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +35,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
+import rx.Completable;
 import rx.Single;
 
 /**
@@ -146,7 +146,6 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public Single<GroupResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Single<GroupResponse>> obs = new HashSet<>();
 
 		GroupResponse restGroup = new GroupResponse();
 		restGroup.setName(getName());
@@ -172,13 +171,13 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		// }
 
 		// Add common fields
-		obs.add(fillCommonRestFields(ac, restGroup));
+		Completable fillCommonFields = fillCommonRestFields(ac, restGroup);
 
 		// Role permissions
-		obs.add(setRolePermissions(ac, restGroup));
+		Completable setRoles = setRolePermissions(ac, restGroup);
 
 		// Merge and complete
-		return Single.merge(obs);
+		return Completable.merge(setRoles, fillCommonFields).andThen(Single.just(restGroup));
 	}
 
 	@Override
@@ -200,7 +199,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 				throw error(BAD_REQUEST, "error_name_must_be_set");
 			}
 
-			if (shouldUpdate(requestModel.getName(),  getName())) {
+			if (shouldUpdate(requestModel.getName(), getName())) {
 				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName()).toBlocking().value();
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());

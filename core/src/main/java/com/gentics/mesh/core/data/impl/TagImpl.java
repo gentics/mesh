@@ -15,9 +15,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -56,7 +54,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
+import rx.Completable;
 import rx.Single;
 
 /**
@@ -114,7 +112,6 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public Single<TagResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Set<Single<TagResponse>> obs = new HashSet<>();
 
 		TagResponse restTag = new TagResponse();
 
@@ -128,13 +125,13 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 		restTag.getFields().setName(getName());
 
 		// Add common fields
-		obs.add(fillCommonRestFields(ac, restTag));
+		Completable filledFields = fillCommonRestFields(ac, restTag);
 
 		// Role permissions
-		obs.add(setRolePermissions(ac, restTag));
+		Completable setPerms = setRolePermissions(ac, restTag);
 
 		// Merge and complete
-		return Single.merge(obs).last();
+		return Completable.merge(filledFields, setPerms).andThen(Single.just(restTag));
 	}
 
 	@Override
@@ -183,8 +180,8 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, ContainerType type, PagingParameters pagingInfo)
-			throws InvalidArgumentException {
+	public PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, ContainerType type,
+			PagingParameters pagingInfo) throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(requestUser, release, languageTags, type);
 		VertexTraversal<?, ?, ?> countTraversal = getTaggedNodesTraversal(requestUser, release, languageTags, type);
@@ -193,26 +190,25 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	/**
-	 * Get traversal that finds all nodes that are tagged with this tag
-	 * The nodes will be restricted to
+	 * Get traversal that finds all nodes that are tagged with this tag The nodes will be restricted to
 	 * <ol>
 	 * <li><i>requestUser</i> may read the node</li>
 	 * <li>node is tagged for the <i>release</i></li>
 	 * <li>node has field container in one of the <i>languageTags</i> in the <i>release</i> with <i>type</i></li>
 	 * </ol>
+	 * 
 	 * @param requestUser
 	 * @param release
 	 * @param languageTags
 	 * @param type
 	 * @return
 	 */
-	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(MeshAuthUser requestUser, Release release,
-			List<String> languageTags, ContainerType type) {
-		
-		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release)
-				.mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back().mark()
-				.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(MeshAuthUser requestUser, Release release, List<String> languageTags,
+			ContainerType type) {
+
+		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release).mark().in(READ_PERM.label())
+				.out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back().mark().outE(HAS_FIELD_CONTAINER)
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 
 		traversal = GraphFieldContainerEdgeImpl.filterLanguages(traversal, languageTags);
 		return traversal.outV().back();
@@ -249,8 +245,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		batch.addEntry(this, action,
-				Arrays.asList(Tuple.tuple(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
+		batch.addEntry(this, action, Arrays.asList(Tuple.tuple(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
 		addRelatedEntries(batch, action);
 		return batch;
 	}
@@ -267,8 +262,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 				}
 			}
 		}
-		batch.addEntry(getTagFamily(), STORE_ACTION,
-				Arrays.asList(Tuple.tuple(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
+		batch.addEntry(getTagFamily(), STORE_ACTION, Arrays.asList(Tuple.tuple(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
 	}
 
 	@Override

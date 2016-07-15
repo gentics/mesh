@@ -27,7 +27,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
-import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;
 import rx.Single;
@@ -57,11 +56,12 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 			obs.add(item.getMicronode().transformToRestSync(ac, level));
 		}
 
-		return RxUtil.concatList(obs).collect(() -> {
+		List<Observable<MicronodeResponse>> obsList = obs.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+		return Observable.concat(Observable.from(obsList)).collect(() -> {
 			return restModel.getItems();
 		}, (x, y) -> {
 			x.add(y);
-		}).map(i -> restModel);
+		}).map(i -> restModel).toSingle();
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 			return a;
 		}));
 
-		return Single.create(subscriber -> {
+		return Observable.<Boolean> create(subscriber -> {
 			Observable.from(list.getItems()).flatMap(item -> {
 				if (item == null) {
 					throw error(BAD_REQUEST, "field_list_error_null_not_allowed", getFieldKey());
@@ -96,7 +96,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
 				}
 
-				return ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference, ac.getRelease(null));
+				return ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference, ac.getRelease(null)).toObservable();
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
 			}, (node, microschemaContainerVersion) -> {
 				// Load the micronode for the current field
@@ -141,9 +141,10 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 			}, e -> {
 				subscriber.onError(e);
 			}, () -> {
-				subscriber.onSuccess(true);
+				subscriber.onNext(true);
+				subscriber.onCompleted();
 			});
-		});
+		}).toSingle();
 	}
 
 	@Override

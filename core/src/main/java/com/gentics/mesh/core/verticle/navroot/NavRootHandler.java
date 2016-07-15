@@ -21,7 +21,7 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
 import io.vertx.ext.web.RoutingContext;
-import rx.Observable;
+import rx.Single;
 
 @Component
 public class NavRootHandler {
@@ -44,8 +44,8 @@ public class NavRootHandler {
 		MeshAuthUser requestUser = ac.getUser();
 
 		db.asyncNoTrxExperimental(() -> {
-			Observable<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
-			PathSegment lastSegment = nodePath.toBlocking().last().getLast();
+			Single<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
+			PathSegment lastSegment = nodePath.toBlocking().value().getLast();
 
 			if (lastSegment != null) {
 				Node node = lastSegment.getNode();

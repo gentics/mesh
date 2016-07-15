@@ -63,13 +63,13 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
 import rx.Observable;
-import rx.Single;
 
 /**
  * Handler for the node specific search index.
@@ -230,12 +230,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 		// TODO check consistency
 
-		Set<Single<Integer>> obs = new HashSet<>();
+		Set<Completable> obs = new HashSet<>();
 
 		// Store all containers if no language was specified
 		if (languageTag == null) {
 			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-				obs.add(storeContainer(container, indexName, releaseUuid).toSingleDefault(0));
+				obs.add(storeContainer(container, indexName, releaseUuid));
 			}
 		} else {
 
@@ -285,22 +285,23 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				log.error("Error while building deletion query", e);
 				throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
 			}
-			obs.add(searchProvider.deleteDocumentsViaQuery(indexName, query).flatMap(nDocumentsDeleted -> {
+
+			obs.add(RxUtil.andThenCompletable(searchProvider.deleteDocumentsViaQuery(indexName, query), nDocumentsDeleted -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted {" + nDocumentsDeleted + "} documents from index {" + indexName + "}");
 				}
 				// Don't store the container if it is null.
 				if (container == null) {
-					return Single.just(0);
+					return Completable.complete();
 				} else {
 					// 2. Try to store the updated document
 					return db.noTrx(() -> {
 						return storeContainer(container, indexName, releaseUuid);
-					}).toSingleDefault(0);
+					});
 				}
 			}));
 		}
-		return Single.merge(obs).doOnCompleted(() -> {
+		return Completable.merge(obs).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored node in index.");
 			}
