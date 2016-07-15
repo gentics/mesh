@@ -544,7 +544,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeParameters nodeParameters = ac.getNodeParameters();
 			VersioningParameters versioiningParameters = ac.getVersioningParameters();
 
-			Set<Single<NodeResponse>> obs = new HashSet<>();
+			Set<Completable> obs = new HashSet<>();
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();
 			if (container == null) {
@@ -552,14 +552,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			Release release = ac.getRelease(getProject());
 
-			
 			// Parent node reference
 			Node parentNode = getParentNode(release.getUuid());
 			if (parentNode != null) {
 				obs.add(parentNode.transformToReference(ac).map(transformedParentNode -> {
 					restNode.setParentNode(transformedParentNode);
 					return restNode;
-				}));
+				}).toCompletable());
 			} else {
 				// Only the base node of the project has no parent. Therefore this node must be a container.
 				restNode.setContainer(true);
@@ -567,6 +566,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Role permissions
 			Completable rolePerms = setRolePermissions(ac, restNode);
+			obs.add(rolePerms);
 
 			// Languages
 			restNode.setAvailableLanguages(getAvailableLanguageNames(release, ContainerType.forVersion(versioiningParameters.getVersion())));
@@ -668,7 +668,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 								return restNode;
 
 							});
-					obs.add(obsFields);
+					obs.add(obsFields.toCompletable());
 				}
 
 			}
@@ -690,10 +690,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Add common fields
 			Completable commonField = fillCommonRestFields(ac, restNode);
-
+			obs.add(commonField);
+		
 			// breadcrumb
 			Completable breadcrumb = setBreadcrumbToRest(ac, restNode);
-
+			obs.add(breadcrumb);
+			
 			// Add webroot path & lanuagePaths
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 				String releaseUuid = ac.getRelease(null).getUuid();
@@ -718,8 +720,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Merge and complete
-			List<Observable<NodeResponse>> obsList = obs.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-			return Observable.merge(obsList).last().toSingle();
+			return Completable.merge(obs).toSingleDefault(restNode);
 		} catch (Exception e) {
 			return Single.error(e);
 		}
@@ -811,7 +812,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}));
 
 		List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-		
+
 		// Abort recursion when we reach the max level or when no more children can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
 			return Observable.merge(obsList).last().toSingle();
@@ -839,7 +840,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, releaseUuid, type));
 			}
 		}
-		
+
 		return Observable.merge(obsList).last().toSingle();
 	}
 

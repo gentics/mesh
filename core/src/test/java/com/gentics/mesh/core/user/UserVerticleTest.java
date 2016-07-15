@@ -511,7 +511,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			UserListResponse userResponse = userListResponseFuture.result();
 			assertNotNull(userResponse);
 
-			UserResponse foundUser = userResponse.getData().parallelStream().filter(u -> u.getUuid().equals(userCreateResponse.getUuid())).findFirst()
+			UserResponse foundUser = userResponse.getData().stream().filter(u -> u.getUuid().equals(userCreateResponse.getUuid())).findFirst()
 					.get();
 
 			assertNotNull(foundUser.getNodeReference());

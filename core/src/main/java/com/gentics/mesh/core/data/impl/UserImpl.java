@@ -403,9 +403,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 					restUser.setNodeReference(userNodeReference);
 					return Completable.complete();
 				}
-
 			}
-
 		});
 	}
 
