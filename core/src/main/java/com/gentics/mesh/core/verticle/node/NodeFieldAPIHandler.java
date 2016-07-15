@@ -118,7 +118,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 				if (latestDraftVersion == null) {
 					// Create a new field container
-					//latestDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser());
+					// latestDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser());
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
@@ -127,7 +127,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}
 				if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
-					//TODO Add support for other field types
+					// TODO Add support for other field types
 					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 				}
 
@@ -165,7 +165,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							field.setFileSize(ul.size());
 							field.setMimeType(contentType);
 							field.setSHA512Sum(sha512sum);
-							//TODO handle image properties as well
+							// TODO handle image properties as well
 							// node.setBinaryImageDPI(dpi);
 							// node.setBinaryImageHeight(heigth);
 							// node.setBinaryImageWidth(width);
@@ -333,7 +333,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 							// TODO should we rename the image, if the extension is wrong?
 
-							//TODO handle image properties as well
+							// TODO handle image properties as well
 							// node.setBinaryImageDPI(dpi);
 							// node.setBinaryImageHeight(heigth);
 							// node.setBinaryImageWidth(width);
@@ -355,21 +355,21 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	//	// TODO abstract rc away
-	//	public void handleDownload(RoutingContext rc) {
-	//		InternalActionContext ac = InternalActionContext.create(rc);
-	//		BinaryFieldResponseHandler binaryHandler = new BinaryFieldResponseHandler(rc, imageManipulator);
-	//		db.asyncNoTrx(() -> {
-	//			Project project = ac.getProject();
-	//			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node-> {
-	//				db.noTrx(()-> {
-	//					Node node = rh.result();
-	//					binaryHandler.handle(node);
-	//				});
-	//			});
-	//		}).subscribe(binaryField -> {
-	//		}, ac::fail);
-	//	}
+	// // TODO abstract rc away
+	// public void handleDownload(RoutingContext rc) {
+	// InternalActionContext ac = InternalActionContext.create(rc);
+	// BinaryFieldResponseHandler binaryHandler = new BinaryFieldResponseHandler(rc, imageManipulator);
+	// db.asyncNoTrx(() -> {
+	// Project project = ac.getProject();
+	// return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node-> {
+	// db.noTrx(()-> {
+	// Node node = rh.result();
+	// binaryHandler.handle(node);
+	// });
+	// });
+	// }).subscribe(binaryField -> {
+	// }, ac::fail);
+	// }
 
 	/**
 	 * Hash the file upload data and move the temporary uploaded file to its final destination.
@@ -387,9 +387,17 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		String targetPath = targetFile.getAbsolutePath();
 
 		return hashFileupload(fileUpload).flatMap(sha512sum -> {
-			return checkUploadFolderExists(uploadFolder).andThen(deletePotentialUpload(targetPath))
-					.andThen(moveUploadIntoPlace(fileUpload, targetPath)).toSingleDefault(sha512sum);
+			checkUploadFolderExists(uploadFolder).await();
+			deletePotentialUpload(targetPath).await();
+			return moveUploadIntoPlace(fileUpload, targetPath).toSingleDefault(sha512sum);
 		});
+
+		// return hashFileupload(fileUpload).flatMap(sha512sum -> {
+		// return checkUploadFolderExists(uploadFolder)
+		// .andThen(deletePotentialUpload(targetPath).andThen(moveUploadIntoPlace(fileUpload, targetPath)).toSingleDefault(sha512sum));
+		// });
+		//
+
 	}
 
 	/**
@@ -483,6 +491,10 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		return fileSystem.moveObservable(fileUpload.uploadedFileName(), targetPath).toCompletable().doOnError(error -> {
 			log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
+		}).doOnCompleted(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Moved upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}");
+			}
 		});
 	}
 
@@ -523,6 +535,8 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				return fileSystem.mkdirsObservable(uploadFolder.getAbsolutePath()).toCompletable().doOnError(error -> {
 					log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
 					throw error(BAD_REQUEST, "node_error_upload_failed", error);
+				}).doOnCompleted(() -> {
+					System.out.println("Created folder " + uploadFolder.getAbsolutePath());
 				});
 			} else {
 				return Completable.complete();
