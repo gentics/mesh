@@ -16,7 +16,6 @@ import com.gentics.mesh.path.PathSegment;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
 import rx.Single;
 
 @Component

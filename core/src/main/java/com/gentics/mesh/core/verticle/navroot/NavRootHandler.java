@@ -57,7 +57,6 @@ public class NavRootHandler {
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
 				}
-
 			} else {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}

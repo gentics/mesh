@@ -811,10 +811,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return navigation;
 		}));
 
-		List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 
 		// Abort recursion when we reach the max level or when no more children can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
+			List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 			return Observable.merge(obsList).last().toSingle();
 		}
 		NavigationParameters parameters = new NavigationParameters(ac);
@@ -840,7 +840,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, releaseUuid, type));
 			}
 		}
-
+		List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 		return Observable.merge(obsList).last().toSingle();
 	}
 
