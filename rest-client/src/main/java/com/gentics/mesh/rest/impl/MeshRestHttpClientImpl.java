@@ -14,8 +14,6 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.error.AbstractRestException;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -80,7 +78,6 @@ import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.MeshResponseHandler;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -615,7 +612,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			log.debug("Invoking get request to {" + requestUri + "}");
 		}
 
-		authentication.addAuthenticationInformation(request).subscribe(x -> {
+		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "*/*");
 			request.end();
 		});
@@ -781,7 +778,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
-		authentication.addAuthenticationInformation(request).subscribe(x -> {
+		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "application/json");
 			request.end();
 		});
@@ -869,7 +866,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
 
-		authentication.addAuthenticationInformation(request).subscribe(x -> {
+		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "application/json");
 			request.end();
 		});

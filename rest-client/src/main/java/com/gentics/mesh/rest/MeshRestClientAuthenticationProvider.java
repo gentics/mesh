@@ -4,7 +4,8 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
-import rx.Observable;
+import rx.Completable;
+import rx.Single;
 
 public interface MeshRestClientAuthenticationProvider {
 	
@@ -20,17 +21,17 @@ public interface MeshRestClientAuthenticationProvider {
 	 * @param request
 	 * @return 
 	 */
-	public Observable<Void> addAuthenticationInformation(HttpClientRequest request);
+	public Completable addAuthenticationInformation(HttpClientRequest request);
 
 	/**
 	 * Logs the user in with the credentials that were set with {@link setLogin}
 	 * @return A future that completes when the login has completed.
 	 */
-	public Observable<GenericMessageResponse> login(HttpClient client);
+	public Single<GenericMessageResponse> login(HttpClient client);
 
 	/**
 	 * Logs out the user.
 	 * @return A future that completes when the logout has completed.
 	 */
-	public Observable<GenericMessageResponse> logout(HttpClient client);
+	public Single<GenericMessageResponse> logout(HttpClient client);
 }

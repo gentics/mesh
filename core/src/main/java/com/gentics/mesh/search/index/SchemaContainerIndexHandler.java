@@ -25,7 +25,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
-import rx.Observable;
 
 @Component
 public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaContainer> {

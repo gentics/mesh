@@ -191,10 +191,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the node
-		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		}, (e) -> future.completeExceptionally(e), () -> future.complete(null));
-		future.get(10, TimeUnit.SECONDS);
+		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
 		oldContainer.reload();
@@ -361,10 +358,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
-		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		}, (e) -> future.completeExceptionally(e), () -> future.complete(null));
-		future.get(10, TimeUnit.SECONDS);
+		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
 		oldContainer.reload();
@@ -539,9 +533,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// migrate the micronode
 		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		}, (e) -> future.completeExceptionally(e), () -> future.complete(null));
-		future.get(10, TimeUnit.SECONDS);
+		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
 		// old container must be untouched
 		oldContainer.reload();
@@ -705,9 +697,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// migrate the micronode
 		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		}, (e) -> future.completeExceptionally(e), () -> future.complete(null));
-		future.get(10, TimeUnit.SECONDS);
+		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
 		oldContainer.reload();
@@ -839,9 +829,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// migrate the node
 		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
-		}, (e) -> future.completeExceptionally(e), () -> future.complete(null));
-		future.get(10, TimeUnit.SECONDS);
+		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 	}
 
 	/**

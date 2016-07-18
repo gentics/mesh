@@ -58,7 +58,6 @@ import io.vertx.rxjava.core.buffer.Buffer;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import rx.Completable;
-import rx.Observable;
 
 /**
  * Handler for node migrations after schema updates
@@ -203,7 +202,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 *            JMX Status bean
 	 * @return
 	 */
-	public Observable<Void> migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
+	public Completable migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion, NodeMigrationStatus statusMBean) {
 		String releaseUuid = db.noTrx(release::getUuid);
 
@@ -212,7 +211,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 		// no field containers, migration is done
 		if (fieldContainers.isEmpty()) {
-			return Observable.just(null);
+			return Completable.complete();
 		}
 
 		if (statusMBean != null) {
@@ -225,7 +224,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		try (NoTrx noTrx = db.noTrx()) {
 			prepareMigration(fromVersion, migrationScripts, touchedFields);
 		} catch (IOException e) {
-			return Observable.error(e);
+			return Completable.error(e);
 		}
 
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
@@ -290,7 +289,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			});
 
 			if (e != null) {
-				return Observable.error(e);
+				return Completable.error(e);
 			}
 
 			if (statusMBean != null) {
@@ -298,7 +297,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			}
 		}
 
-		return Observable.just(null);
+		return Completable.complete();
 	}
 
 	/**

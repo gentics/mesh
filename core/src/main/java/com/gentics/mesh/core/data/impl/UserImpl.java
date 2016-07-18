@@ -168,7 +168,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public List<? extends Group> getGroups() {
-		// TODO add permission handling?
 		return out(HAS_USER).has(GroupImpl.class).toListExplicit(GroupImpl.class);
 	}
 

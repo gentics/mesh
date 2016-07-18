@@ -24,8 +24,6 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.CompareUtils;
-import com.gentics.mesh.util.RxUtil;
-
 import rx.Observable;
 import rx.Single;
 

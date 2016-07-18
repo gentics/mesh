@@ -15,8 +15,6 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
-
 import io.vertx.core.Future;
 
 public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {

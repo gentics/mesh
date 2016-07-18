@@ -49,7 +49,7 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 import io.vertx.core.Future;
-import rx.Observable;
+import rx.Single;
 
 public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
@@ -501,8 +501,8 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Ignore("not yet enabled")
 	public void testReadByUuidMultithreaded() throws Exception {
 
-		Observable<GenericMessageResponse> future = getClient().login();
-		future.toBlocking().single();
+		Single<GenericMessageResponse> future = getClient().login();
+		future.toBlocking().value();
 
 		int nJobs = 10;
 		String uuid = role().getUuid();
@@ -533,8 +533,8 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Ignore("not yet enabled")
 	public void testCreateMultithreaded() throws Exception {
 
-		Observable<GenericMessageResponse> future = getClient().login();
-		future.toBlocking().single();
+		Single<GenericMessageResponse> future = getClient().login();
+		future.toBlocking().value();
 
 		int nJobs = 20;
 		// CyclicBarrier barrier = prepareBarrier(1);
@@ -552,8 +552,8 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Ignore("disabled due to instability")
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		try (NoTrx noTx = db.noTrx()) {
-			Observable<GenericMessageResponse> observable = getClient().login();
-			observable.toBlocking().single();
+			Single<GenericMessageResponse> observable = getClient().login();
+			observable.toBlocking().value();
 
 			int nJobs = 400;
 			Set<Future<RoleResponse>> set = new HashSet<>();

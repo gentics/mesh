@@ -2,7 +2,6 @@ package com.gentics.mesh.core.rest.common;
 
 import java.util.Map;
 
-import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.handler.ActionContext;
 
 /**

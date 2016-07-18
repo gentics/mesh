@@ -33,7 +33,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
 import rx.Single;
 
 public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements TagFamilyRoot {

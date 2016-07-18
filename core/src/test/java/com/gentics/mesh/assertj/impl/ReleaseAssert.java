@@ -3,19 +3,13 @@ package com.gentics.mesh.assertj.impl;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.hazelcast.instance.Node;
 
 public class ReleaseAssert extends AbstractAssert<ReleaseAssert, Release> {
 	public ReleaseAssert(Release actual) {

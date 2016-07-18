@@ -11,7 +11,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
-import rx.Observable;
+import rx.Single;
 
 public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
@@ -60,12 +60,12 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> login() {
+	public Single<GenericMessageResponse> login() {
 		return authentication.login(getClient());
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> logout() {
+	public Single<GenericMessageResponse> logout() {
 		return authentication.logout(getClient());
 	}
 

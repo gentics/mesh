@@ -15,8 +15,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.rest.Endpoint;
 
-import io.vertx.ext.web.Route;
-
 /**
  * Verticle for REST endpoints to manage Releases
  */

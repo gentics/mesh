@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.rest.node.field.list.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

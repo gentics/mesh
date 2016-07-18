@@ -94,7 +94,7 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.WebSocket;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
-import rx.Observable;
+import rx.Single;
 
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests.
@@ -704,12 +704,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> login() {
-		return Observable.just(null);
+	public Single<GenericMessageResponse> login() {
+		return Single.just(null);
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> logout() {
+	public Single<GenericMessageResponse> logout() {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
 		ac.logout();
 		return null;

@@ -21,9 +21,8 @@ import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
-import rx.Observable;
+import rx.Single;
 
 public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 
@@ -48,9 +47,9 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx(),
 				Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
 		client.setLogin(username, password());
-		Observable<GenericMessageResponse> future = client.login();
+		Single<GenericMessageResponse> future = client.login();
 
-		GenericMessageResponse loginResponse = future.toBlocking().single();
+		GenericMessageResponse loginResponse = future.toBlocking().value();
 		assertNotNull(loginResponse);
 		assertEquals("OK", loginResponse.getMessage());
 
@@ -62,8 +61,8 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(me);
 		assertEquals(uuid, me.getUuid());
 
-		Observable<GenericMessageResponse> logoutFuture = client.logout();
-		logoutFuture.toBlocking().single();
+		Single<GenericMessageResponse> logoutFuture = client.logout();
+		logoutFuture.toBlocking().value();
 
 		// assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
 		meResponse = client.me();

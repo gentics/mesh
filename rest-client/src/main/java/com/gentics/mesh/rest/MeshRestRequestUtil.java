@@ -54,7 +54,7 @@ public final class MeshRestRequestUtil {
 		}
 
 		if (authentication != null) {
-			authentication.addAuthenticationInformation(request).subscribe(x -> {
+			authentication.addAuthenticationInformation(request).subscribe(() -> {
 				request.headers().add("Accept", "application/json");
 
 				if (bodyData.length() != 0) {

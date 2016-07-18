@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRA
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.lang.management.ManagementFactory;
-
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -188,8 +187,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.microschema);
 						setRunning(statusBean, statusMBeanName);
-						nodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean).toBlocking()
-								.single();
+						nodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
 						return null;
 					});
 					setDone(microschemaUuid, statusMBeanName);

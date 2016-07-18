@@ -8,14 +8,15 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
-import rx.Observable;
+import rx.Completable;
+import rx.Single;
 
-public class JWTAuthentication extends AbstractAuthenticationProvider{
+public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	private String token;
 	private String authHeader;
-	private Observable<GenericMessageResponse> loginRequest;
-	
+	private Single<GenericMessageResponse> loginRequest;
+
 	public JWTAuthentication() {
 	}
 
@@ -23,51 +24,49 @@ public class JWTAuthentication extends AbstractAuthenticationProvider{
 		super();
 		this.authHeader = context.request().getHeader("Authorization");
 	}
-	
+
 	@Override
-	public Observable<Void> addAuthenticationInformation(HttpClientRequest request) {
+	public Completable addAuthenticationInformation(HttpClientRequest request) {
 		//TODO: request new Token when old one expires
-		
+
 		if (authHeader != null) {
 			request.headers().add("Authorization", "Bearer " + token);
-			return Observable.just(null);
+			return Completable.complete();
 		} else if (loginRequest == null) {
-			return Observable.just(null);
+			return Completable.complete();
 		} else {
 			return loginRequest.map(x -> {
 				request.headers().add("Authorization", "Bearer " + token);
 				return null;
-			});
+			}).toCompletable();
 		}
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> login(HttpClient client) {
-		this.loginRequest = Observable.create(sub -> {
+	public Single<GenericMessageResponse> login(HttpClient client) {
+		this.loginRequest = Single.create(sub -> {
 			LoginRequest loginRequest = new LoginRequest();
 			loginRequest.setUsername(getUsername());
 			loginRequest.setPassword(getPassword());
-			
+
 			MeshRestRequestUtil.handleRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, client, null).setHandler(rh -> {
 				if (rh.failed()) {
 					sub.onError(rh.cause());
 				} else {
 					token = rh.result().getToken();
-					sub.onNext(new GenericMessageResponse("OK"));
-					sub.onCompleted();
+					sub.onSuccess(new GenericMessageResponse("OK"));
 				}
 			});
 		});
-		this.loginRequest = this.loginRequest.cache(1);
 		return this.loginRequest;
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> logout(HttpClient client) {
+	public Single<GenericMessageResponse> logout(HttpClient client) {
 		token = null;
 		loginRequest = null;
 		//No need call any endpoint in JWT
-		return Observable.just(new GenericMessageResponse("OK"));
+		return Single.just(new GenericMessageResponse("OK"));
 	}
 
 }

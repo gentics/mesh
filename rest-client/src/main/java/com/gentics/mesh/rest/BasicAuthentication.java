@@ -13,18 +13,20 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
+import rx.Completable;
 import rx.Observable;
+import rx.Single;
 
 public class BasicAuthentication extends AbstractAuthenticationProvider {
 
 	private String authHeader;
 	private String cookies;
-	
+
 	private static final Logger log = LoggerFactory.getLogger(BasicAuthentication.class);
-	
+
 	public BasicAuthentication() {
 	}
-	
+
 	public BasicAuthentication(RoutingContext context) {
 		super();
 		this.authHeader = context.request().getHeader("Authorization");
@@ -32,7 +34,7 @@ public class BasicAuthentication extends AbstractAuthenticationProvider {
 	}
 
 	@Override
-	public Observable<Void> addAuthenticationInformation(HttpClientRequest request) {
+	public Completable addAuthenticationInformation(HttpClientRequest request) {
 		if (cookies != null) {
 			request.putHeader("Cookie", cookies);
 		} else if (authHeader != null) {
@@ -41,25 +43,24 @@ public class BasicAuthentication extends AbstractAuthenticationProvider {
 			String authStringEnc = getUsername() + ":" + getPassword();
 			String authEnc = new String(Base64.encodeBase64(authStringEnc.getBytes()));
 			authHeader = "Basic " + authEnc;
-	
+
 			request.headers().add("Authorization", authHeader);
 		}
-		return Observable.just(null);
+		return Completable.complete();
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> login(HttpClient client) {
+	public Single<GenericMessageResponse> login(HttpClient client) {
 		//This calls the login endpoint and saves the session cookie which is used for future calls.
 		//That way, mesh doesn't have to check the password every time (which saves a lot of performance)
 
-		return Observable.create(sub -> {
+		return Single.create(sub -> {
 			JsonObject json = new JsonObject().put("username", this.getUsername()).put("password", this.getPassword());
-			
+
 			HttpClientRequest req = client.post(MeshRestRequestUtil.BASEURI + "/auth/login", resp -> {
 				if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
 					cookies = resp.headers().get("Set-Cookie");
-					sub.onNext(new GenericMessageResponse("OK"));
-					sub.onCompleted();
+					sub.onSuccess(new GenericMessageResponse("OK"));
 				} else {
 					resp.bodyHandler(buffer -> {
 						String body = buffer.toString();
@@ -81,17 +82,16 @@ public class BasicAuthentication extends AbstractAuthenticationProvider {
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> logout(HttpClient client) {
-		return Observable.create(sub -> {
+	public Single<GenericMessageResponse> logout(HttpClient client) {
+		return Single.create(sub -> {
 			MeshRestRequestUtil.handleRequest(HttpMethod.GET, "/auth/logout", GenericMessageResponse.class, client, this).setHandler(rh -> {
 				if (rh.failed()) {
 					sub.onError(rh.cause());
 				} else {
-					sub.onNext(rh.result());
-					sub.onCompleted();
+					sub.onSuccess(rh.result());
 				}
 			});
 		});
-		
+
 	}
 }
