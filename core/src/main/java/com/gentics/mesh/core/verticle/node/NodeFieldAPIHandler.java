@@ -390,13 +390,10 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			checkUploadFolderExists(uploadFolder).await();
 			deletePotentialUpload(targetPath).await();
 			return moveUploadIntoPlace(fileUpload, targetPath).toSingleDefault(sha512sum);
+		}).doOnError(error -> {
+			log.error("Failed to handle upload file from {" + fileUpload.uploadedFileName() + "} / {" + targetPath + "}", error);
+			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
-
-		// return hashFileupload(fileUpload).flatMap(sha512sum -> {
-		// return checkUploadFolderExists(uploadFolder)
-		// .andThen(deletePotentialUpload(targetPath).andThen(moveUploadIntoPlace(fileUpload, targetPath)).toSingleDefault(sha512sum));
-		// });
-		//
 
 	}
 
@@ -431,11 +428,9 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @return
 	 */
 	protected Single<String> hashFileupload(FileUpload fileUpload) {
-		Single<String> obsHash = FileUtils.generateSha512Sum(fileUpload.uploadedFileName()).doOnError(error -> {
+		return FileUtils.generateSha512Sum(fileUpload.uploadedFileName()).doOnError(error -> {
 			log.error("Error while hashing fileupload {" + fileUpload.uploadedFileName() + "}", error);
-			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
-		return obsHash;
 	}
 
 	/**
@@ -491,7 +486,6 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		FileSystem fileSystem = rxVertx.fileSystem();
 		return fileSystem.moveObservable(fileUpload.uploadedFileName(), targetPath).toCompletable().doOnError(error -> {
 			log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
-			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		}).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Moved upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}");
