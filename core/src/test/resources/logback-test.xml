@@ -34,8 +34,11 @@
 		<appender-ref ref="STDERR"/>
 	</logger>
  -->
+ <!-- 
+<logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG" />
 <logger name="com.gentics.mesh.rest.MeshResponseHandler" level="DEBUG"/>
 <logger name="com.gentics.mesh.rest.MeshRestRequestUtil" level="DEBUG"/>
+ -->
 <root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>

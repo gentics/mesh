@@ -78,6 +78,12 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			}
 			return a.compareTo(b);
 		}).toListExplicit(SearchQueueEntryImpl.class);
+
+		if (log.isDebugEnabled()) {
+			for (SearchQueueEntry entry : list) {
+				log.debug("Loaded entry {" + entry.toString() + "} for batch {" + getBatchId() + "}");
+			}
+		}
 		return list;
 	}
 
@@ -123,48 +129,38 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
 		Database db = springConfiguration.database();
 
-		List<Completable> obs = new ArrayList<>();
+		Completable obs = Completable.complete();
 		try (NoTrx noTrx = db.noTrx()) {
 			for (SearchQueueEntry entry : getEntries()) {
-				obs.add(entry.process());
+				obs = obs.andThen(entry.process());
 			}
 		}
-	
-		if (obs.isEmpty()) {
+
+		return obs.doOnCompleted(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Handled all search queue items.");
+			}
+
 			// We successfully finished this batch. Delete it.
 			db.trx(() -> {
 				reload();
 				delete(null);
 				return null;
 			});
-			return Completable.complete();
-		} else {
-			return Completable.merge(obs).doOnCompleted(() -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Handled all search queue items.");
-				}
+			// Refresh index
+			SearchProvider provider = springConfiguration.searchProvider();
+			if (provider != null) {
+				provider.refreshIndex();
+			} else {
+				log.error("Could not refresh index since the elasticsearch provider has not been initalized");
+			}
 
-				// We successfully finished this batch. Delete it.
-				db.trx(() -> {
-					reload();
-					delete(null);
-					return null;
-				});
-				// Refresh index
-				SearchProvider provider = springConfiguration.searchProvider();
-				if (provider != null) {
-					provider.refreshIndex();
-				} else {
-					log.error("Could not refresh index since the elasticsearch provider has not been initalized");
-				}
+			// TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
+			// mergedObs.doOnError(error -> {
+			// return null;
+			// });
 
-				// TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
-				// mergedObs.doOnError(error -> {
-				// return null;
-				// });
-
-			});
-		}
+		});
 
 	}
 

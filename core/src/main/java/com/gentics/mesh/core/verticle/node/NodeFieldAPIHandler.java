@@ -537,7 +537,9 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
 					throw error(BAD_REQUEST, "node_error_upload_failed", error);
 				}).doOnCompleted(() -> {
-					System.out.println("Created folder " + uploadFolder.getAbsolutePath());
+					if (log.isDebugEnabled()) {
+						log.debug("Created folder {" + uploadFolder.getAbsolutePath() + "}");
+					}
 				});
 			} else {
 				return Completable.complete();
