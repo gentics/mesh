@@ -17,12 +17,12 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 
-public class AdminGUIVerticleTest extends AbstractRestVerticleTest {
+public class AdminGUIVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private AdminGUIVerticle verticle;
@@ -51,7 +51,7 @@ public class AdminGUIVerticleTest extends AbstractRestVerticleTest {
 		});
 		request.end();
 
-		String response = future.get(1, TimeUnit.SECONDS);
+		String response = future.get(10, TimeUnit.SECONDS);
 //		String expectedUrl = "localhost:" + port;
 //		assertTrue("The meshConfig.js file did not contain the expected url {" + expectedUrl + "} Response {" + response + "}",
 //				response.contains(expectedUrl));
