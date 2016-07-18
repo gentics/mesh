@@ -188,6 +188,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateMultiple() {
+		//TODO migrate test to performance tests
 		try (NoTrx noTx = db.noTrx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
@@ -195,7 +196,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull(parentNode.getUuid());
 
 			long start = System.currentTimeMillis();
-			for (int i = 1; i < 500; i++) {
+			for (int i = 1; i < 100; i++) {
 				searchProvider.reset();
 				NodeCreateRequest request = new NodeCreateRequest();
 				request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
