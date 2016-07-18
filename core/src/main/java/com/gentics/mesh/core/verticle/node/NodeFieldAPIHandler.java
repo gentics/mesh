@@ -418,8 +418,9 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		String targetPath = targetFile.getAbsolutePath();
 
 		return hashBuffer(buffer).flatMap(sha512sum -> {
-			return checkUploadFolderExists(uploadFolder).andThen(deletePotentialUpload(targetPath))
-					.andThen(storeBuffer(buffer, targetPath).toSingleDefault(sha512sum));
+			checkUploadFolderExists(uploadFolder).await();
+			deletePotentialUpload(targetPath).await();
+			return storeBuffer(buffer, targetPath).toSingleDefault(sha512sum);
 		});
 	}
 

@@ -94,7 +94,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			}
 		}
 		if (stack.isEmpty()) {
-			return Single.just(null);
+			return Single.just(this);
 		} else {
 			String uuid = stack.pop();
 			if (stack.isEmpty()) {

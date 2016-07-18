@@ -60,30 +60,27 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 
 		// Handle Update / Create 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		Single<Node> obsNode = boot.nodeRoot().findByUuid(nodeField.getUuid());
-		obsNode.map(node -> {
-			if (node == null) {
-				// TODO We want to delete the field when the field has been explicitly set to null
-				if (log.isDebugEnabled()) {
-					log.debug("Node field {" + fieldKey + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
-				}
-				// TODO we need to fail here - the node could not be found.
-				// throw error(NOT_FOUND, "The field {, parameters)
-			} else {
-				// Check whether the container already contains a node field
-				// TODO check node permissions
-				if (graphNodeField == null) {
-					container.createNode(fieldKey, node);
-				} else {
-					// We can't update the graphNodeField since it is in
-					// fact an edge. We need to delete it and create a new
-					// one.
-					container.deleteFieldEdge(fieldKey);
-					container.createNode(fieldKey, node);
-				}
+		Node node = boot.nodeRoot().findByUuidSync(nodeField.getUuid());
+		if (node == null) {
+			// TODO We want to delete the field when the field has been explicitly set to null
+			if (log.isDebugEnabled()) {
+				log.debug("Node field {" + fieldKey + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
 			}
-			return null;
-		}).toBlocking().value();
+			// TODO we need to fail here - the node could not be found.
+			// throw error(NOT_FOUND, "The field {, parameters)
+		} else {
+			// Check whether the container already contains a node field
+			// TODO check node permissions
+			if (graphNodeField == null) {
+				container.createNode(fieldKey, node);
+			} else {
+				// We can't update the graphNodeField since it is in
+				// fact an edge. We need to delete it and create a new
+				// one.
+				container.deleteFieldEdge(fieldKey);
+				container.createNode(fieldKey, node);
+			}
+		}
 	};
 
 	FieldGetter NODE_GETTER = (container, fieldSchema) -> {
