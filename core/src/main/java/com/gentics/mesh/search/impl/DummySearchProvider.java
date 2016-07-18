@@ -101,6 +101,13 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public void clear() {
+		updateEvents.clear();
+		deleteEvents.clear();
+		storeEvents.clear();
+	}
+
+	@Override
 	public Completable deleteIndex(String indexName) {
 		return Completable.complete();
 	}

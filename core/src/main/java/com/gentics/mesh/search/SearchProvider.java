@@ -112,6 +112,11 @@ public interface SearchProvider {
 	Completable clearIndex(String indexName);
 
 	/**
+	 * Clear all data from search provider. This will also clear indices.
+	 */
+	void clear();
+
+	/**
 	 * Delete the given index.
 	 * 
 	 * @param indexName

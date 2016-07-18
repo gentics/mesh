@@ -231,6 +231,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		// TODO check consistency
 
 		Set<Completable> obs = new HashSet<>();
+		Completable deleteObs = Completable.complete();
 
 		// Store all containers if no language was specified
 		if (languageTag == null) {
@@ -286,7 +287,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
 			}
 
-			obs.add(RxUtil.andThenCompletable(searchProvider.deleteDocumentsViaQuery(indexName, query), nDocumentsDeleted -> {
+			deleteObs = RxUtil.andThenCompletable(searchProvider.deleteDocumentsViaQuery(indexName, query), nDocumentsDeleted -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted {" + nDocumentsDeleted + "} documents from index {" + indexName + "}");
 				}
@@ -299,9 +300,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						return storeContainer(container, indexName, releaseUuid);
 					});
 				}
-			}));
+			});
 		}
-		return Completable.merge(obs).doOnCompleted(() -> {
+		return Completable.merge(obs).andThen(deleteObs).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored node in index.");
 			}
@@ -620,7 +621,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Completable setNodeIndexMapping(String type, Schema schema) {
 		Set<Completable> obs = new HashSet<>();
 		getIndices().forEach(index -> obs.add(setNodeIndexMapping(index, type, schema)));
-		// obs.add(Observable.just(null));
 		return Completable.merge(obs);
 	}
 
@@ -638,35 +638,35 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	protected Completable setNodeIndexMapping(String indexName, String type, Schema schema) {
 		// Check whether the search provider is a dummy provider or not
 		if (searchProvider.getNode() != null) {
-			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
-			mappingRequestBuilder.setType(type);
+			return Completable.create(sub -> {
+				PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
+				mappingRequestBuilder.setType(type);
 
-			try {
-				XContentBuilder mappingBuilder = XContentFactory.jsonBuilder().startObject() // root object
-						.startObject(type) // type
-						.startObject("properties") // properties
-						.startObject("fields") // fields
-						.startObject("properties"); // properties
+				try {
+					XContentBuilder mappingBuilder = XContentFactory.jsonBuilder().startObject() // root object
+							.startObject(type) // type
+							.startObject("properties") // properties
+							.startObject("fields") // fields
+							.startObject("properties"); // properties
 
-				for (FieldSchema field : schema.getFields()) {
-					if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
-						if ("micronode".equals(((ListFieldSchema) field).getListType())) {
-							mappingBuilder.startObject(field.getName()).field("type", "nested").endObject();
+					for (FieldSchema field : schema.getFields()) {
+						if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
+							if ("micronode".equals(((ListFieldSchema) field).getListType())) {
+								mappingBuilder.startObject(field.getName()).field("type", "nested").endObject();
+							}
 						}
 					}
-				}
 
-				mappingBuilder.endObject() // properties
-						.endObject() // fields
-						.endObject() // properties
-						.endObject() // type
-						.endObject(); // root object
-				if (log.isDebugEnabled()) {
-					log.debug(mappingBuilder.string());
-				}
-				mappingRequestBuilder.setSource(mappingBuilder);
+					mappingBuilder.endObject() // properties
+							.endObject() // fields
+							.endObject() // properties
+							.endObject() // type
+							.endObject(); // root object
+					if (log.isDebugEnabled()) {
+						log.debug(mappingBuilder.string());
+					}
+					mappingRequestBuilder.setSource(mappingBuilder);
 
-				return Completable.create(sub -> {
 					mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
 
 						@Override
@@ -679,10 +679,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							sub.onError(e);
 						}
 					});
-				});
-			} catch (Exception e) {
-				return Completable.error(e);
-			}
+
+				} catch (Exception e) {
+					sub.onError(e);
+				}
+			});
 		} else {
 			return Completable.complete();
 		}

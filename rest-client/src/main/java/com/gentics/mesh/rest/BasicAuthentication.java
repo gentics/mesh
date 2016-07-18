@@ -14,7 +14,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import rx.Completable;
-import rx.Observable;
 import rx.Single;
 
 public class BasicAuthentication extends AbstractAuthenticationProvider {

@@ -219,7 +219,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	}
 
 	@Override
-	@Test(expected = ScriptException.class)
+	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
 		invalidMigrationScript(CREATEBINARY, FILL, KILLERSCRIPT);
 	}

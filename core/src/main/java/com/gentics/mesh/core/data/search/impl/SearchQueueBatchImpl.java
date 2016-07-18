@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.search.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 

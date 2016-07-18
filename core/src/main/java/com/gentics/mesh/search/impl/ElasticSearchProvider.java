@@ -111,6 +111,11 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public void clear() {
+		node.client().admin().indices().prepareDelete("_all").execute().actionGet();
+	}
+
+	@Override
 	public void stop() {
 		node.close();
 	}
@@ -129,7 +134,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	public Completable createIndex(String indexName) {
 		// TODO Add method which will be used to create an index and set a custom mapping
 		return Completable.create(sub -> {
-			log.info("Creating ES Index {" + indexName + "}");
+			if (log.isDebugEnabled()) {
+				log.debug("Creating ES Index {" + indexName + "}");
+			}
 			CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
 			Map<String, Object> indexSettings = new HashMap<>();
 			Map<String, Object> analysisSettings = new HashMap<>();
@@ -191,6 +198,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable deleteDocument(String index, String type, String uuid) {
 		return Completable.create(sub -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Deleting document {" + uuid + ":" + type + "} from index {" + index + "}.");
+			}
 			getSearchClient().prepareDelete(index, type, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
 				@Override
 				public void onResponse(DeleteResponse response) {
@@ -273,6 +283,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	public Completable deleteIndex(String indexName) {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
+			if (log.isDebugEnabled()) {
+				log.debug("Deleting index {" + indexName + "}");
+			}
 			getSearchClient().admin().indices().prepareDelete(indexName).execute(new ActionListener<DeleteIndexResponse>() {
 
 				public void onResponse(DeleteIndexResponse response) {
@@ -295,6 +308,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	public Completable clearIndex(String indexName) {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
+			if (log.isDebugEnabled()) {
+				log.debug("Clearing index {" + indexName + "}");
+			}
 			getSearchClient().prepareDeleteByQuery(indexName).setQuery(QueryBuilders.matchAllQuery()).execute()
 					.addListener(new ActionListener<DeleteByQueryResponse>() {
 						public void onResponse(DeleteByQueryResponse response) {
@@ -316,7 +332,11 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Single<Integer> deleteDocumentsViaQuery(String index, String searchQuery) {
-		return Single.create(sub -> {
+		return Single.defer(() -> {
+			long start = System.currentTimeMillis();
+			if (log.isDebugEnabled()) {
+				log.debug("Deleting documents from index {" + index + "} via query {" + searchQuery + "}");
+			}
 			Client client = getNode().client();
 			SearchRequestBuilder builder = client.prepareSearch(index).setSource(searchQuery);
 
@@ -325,19 +345,24 @@ public class ElasticSearchProvider implements SearchProvider {
 			builder.execute().addListener(new ActionListener<SearchResponse>() {
 				@Override
 				public void onResponse(SearchResponse response) {
+
+					if (log.isDebugEnabled()) {
+						log.debug("Found {" + response.getHits().totalHits() + "} which match the deletion query.");
+					}
 					// Invoke the deletion for each found document
 					for (SearchHit hit : response.getHits()) {
 						obs.add(deleteDocument(hit.getIndex(), hit.getType(), hit.getId()));
 					}
-					Completable.merge(obs).await();
-					sub.onSuccess(obs.size());
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
-					sub.onError(e);
+					log.error("Error deleting from index {" + index + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+					obs.clear();
+					obs.add(Completable.error(e));
 				}
 			});
+			return Completable.merge(obs).toSingleDefault(obs.size());
 		});
 	}
 }
