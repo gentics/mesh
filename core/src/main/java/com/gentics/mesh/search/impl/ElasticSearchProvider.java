@@ -332,14 +332,14 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Single<Integer> deleteDocumentsViaQuery(String index, String searchQuery) {
+	public Single<Integer> deleteDocumentsViaQuery(String indexName, String searchQuery) {
 		return Single.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
-				log.debug("Deleting documents from index {" + index + "} via query {" + searchQuery + "}");
+				log.debug("Deleting documents from index {" + indexName + "} via query {" + searchQuery + "}");
 			}
 			Client client = getNode().client();
-			SearchRequestBuilder builder = client.prepareSearch(index).setSource(searchQuery);
+			SearchRequestBuilder builder = client.prepareSearch(indexName).setSource(searchQuery);
 
 			Set<Completable> obs = new HashSet<>();
 			builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
@@ -356,12 +356,16 @@ public class ElasticSearchProvider implements SearchProvider {
 						obs.add(deleteDocument(hit.getIndex(), hit.getType(), hit.getId()));
 					}
 					Completable.merge(obs).await();
+
+					if (log.isDebugEnabled()) {
+						log.debug("Deleted {" + obs.size() + "} documents from index {" + indexName + "}");
+					}
 					sub.onSuccess(obs.size());
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Error deleting from index {" + index + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+					log.error("Error deleting from index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
 			});

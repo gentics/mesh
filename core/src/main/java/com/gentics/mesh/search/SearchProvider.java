@@ -33,7 +33,7 @@ public interface SearchProvider {
 	/**
 	 * Update the document and invoke the handler when the document has been updated or an error occurred.
 	 * 
-	 * @param index
+	 * @param indexName
 	 *            Index name of the document
 	 * @param type
 	 *            Index type of the document
@@ -41,24 +41,24 @@ public interface SearchProvider {
 	 *            Uuid of the document
 	 * @param transformToDocumentMap
 	 */
-	Completable updateDocument(String index, String type, String uuid, Map<String, Object> transformToDocumentMap);
+	Completable updateDocument(String indexName, String type, String uuid, Map<String, Object> transformToDocumentMap);
 
 	/**
 	 * Delete the given document and invoke the handler when the document has been deleted or an error occurred.
 	 * 
-	 * @param index
+	 * @param indexName
 	 *            Index name of the document
 	 * @param type
 	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid for the document
 	 */
-	Completable deleteDocument(String index, String type, String uuid);
+	Completable deleteDocument(String indexName, String type, String uuid);
 
 	/**
 	 * Store the given document and invoke the handler when the document has been stored or an error occurred.
 	 * 
-	 * @param index
+	 * @param indexName
 	 *            Index name of the document
 	 * @param type
 	 *            Index type of the document
@@ -67,19 +67,19 @@ public interface SearchProvider {
 	 * @param map
 	 *            Map that holds the document properties
 	 */
-	Completable storeDocument(String index, String type, String uuid, Map<String, Object> map);
+	Completable storeDocument(String indexName, String type, String uuid, Map<String, Object> map);
 
 	/**
 	 * Get the given document and invoke the handler when the document has been loaded or an error occurred.
 	 * 
-	 * @param index
+	 * @param indexName
 	 *            Index name of the document
 	 * @param type
 	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid for the document
 	 */
-	Observable<Map<String, Object>> getDocument(String index, String type, String uuid);
+	Observable<Map<String, Object>> getDocument(String indexName, String type, String uuid);
 
 	/**
 	 * Start the search provider.
@@ -127,25 +127,25 @@ public interface SearchProvider {
 	/**
 	 * Delete all documents which were found using the query.
 	 * 
-	 * @param index
+	 * @param indexName
 	 *            Index to be searched for documents
 	 * @param query
 	 *            Search query
 	 * @return Observable which emits the amount of deleted documents
 	 */
-	Single<Integer> deleteDocumentsViaQuery(String index, String query);
+	Single<Integer> deleteDocumentsViaQuery(String indexName, String query);
 
 	/**
 	 * Delete all documents which were found using the query.
 	 * 
-	 * @param index
+	 * @param indexName
 	 *            Index to be searched for documents
 	 * @param query
 	 *            Search query
 	 * @return Observable which emits the amount of deleted nodes
 	 */
-	default Single<Integer> deleteDocumentsViaQuery(String index, JSONObject query) {
-		return deleteDocumentsViaQuery(index, query.toString());
+	default Single<Integer> deleteDocumentsViaQuery(String indexName, JSONObject query) {
+		return deleteDocumentsViaQuery(indexName, query.toString());
 	}
 
 }

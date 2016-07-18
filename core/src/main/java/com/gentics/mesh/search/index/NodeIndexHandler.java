@@ -250,6 +250,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					if (container == null) {
 						log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + languageTag
 								+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
+						return Completable.complete();
 					}
 					// 1. Sanitize the search index for nodes.
 					// We'll need to delete all documents which match the given query:
@@ -260,7 +261,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					//
 					// This will ensure that only one version of the node document remains in the search index.
 					//
-					// A node migration for example requires old node documents to be removed from the index since the migration itself may create new node versions.
+					// A node migration for example requires old node documents to be removed from the index since the migration itself may create new node
+					// versions.
 					// Those documents are stored within a schema container version specific index type.
 					// We need to ensure that those documents are purged from the index.
 					JSONObject query = new JSONObject();
@@ -292,31 +294,20 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						log.error("Error while building deletion query", e);
 						throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
 					}
-
-					deleteObs = RxUtil.andThenCompletable(searchProvider.deleteDocumentsViaQuery(indexName, query), nDocumentsDeleted -> {
-						if (log.isDebugEnabled()) {
-							log.debug("Deleted {" + nDocumentsDeleted + "} documents from index {" + indexName + "}");
-						}
-						// Don't store the container if it is null.
-						if (container == null) {
-							return Completable.complete();
-						} else {
-							// 2. Try to store the updated document
-							return db.noTrx(() -> {
-								return storeContainer(container, indexName, releaseUuid);
-							});
-						}
-					});
+					// Don't store the container if it is null.
+					if (container != null) {
+						obs.add(storeContainer(container, indexName, releaseUuid));
+					}
+					deleteObs = searchProvider.deleteDocumentsViaQuery(indexName, query).toCompletable();
 				}
-				Completable.merge(obs).await();
-				MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
-				deleteObs.await();
-				return Completable.complete();
-//					if (log.isDebugEnabled()) {
-//						log.debug("Stored node in index.");
-//					}
-				
-				
+
+				if (log.isDebugEnabled()) {
+					log.debug("Stored node in index {" + indexName + "}");
+				}
+				return Completable.merge(obs).andThen(deleteObs).doOnCompleted(() -> {
+					MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+				});
+
 			}
 		});
 
