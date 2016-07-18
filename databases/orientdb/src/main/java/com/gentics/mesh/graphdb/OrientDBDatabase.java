@@ -131,7 +131,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.debug("Effective orientdb server configuration:" + configString);
 		}
 
-		String safeParentDirPath = StringEscapeUtils.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getParentFile().getAbsolutePath()));
+		String safeParentDirPath = StringEscapeUtils
+				.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getParentFile().getAbsolutePath()));
 		configString = configString.replaceAll("%MESH_DB_PARENT_PATH%", safeParentDirPath);
 		System.out.println(configString);
 		InputStream stream = new ByteArrayInputStream(configString.getBytes(StandardCharsets.UTF_8));
@@ -389,6 +390,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 			} catch (OConcurrentModificationException e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
+				}
+				try {
+					// Delay the retry by 50ms to give the other transaction a chance to finish
+					Thread.sleep(50);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
 				}
 				// Reset previous result
 				handlerFinished = false;
