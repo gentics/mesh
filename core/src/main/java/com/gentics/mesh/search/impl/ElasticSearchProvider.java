@@ -26,6 +26,7 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
@@ -332,7 +333,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Single<Integer> deleteDocumentsViaQuery(String index, String searchQuery) {
-		return Single.defer(() -> {
+		return Single.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
 				log.debug("Deleting documents from index {" + index + "} via query {" + searchQuery + "}");
@@ -351,18 +352,21 @@ public class ElasticSearchProvider implements SearchProvider {
 					}
 					// Invoke the deletion for each found document
 					for (SearchHit hit : response.getHits()) {
+						System.out.println("HIT");
 						obs.add(deleteDocument(hit.getIndex(), hit.getType(), hit.getId()));
 					}
+					Completable.merge(obs).await();
+					sub.onSuccess(obs.size());
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
 					log.error("Error deleting from index {" + index + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-					obs.clear();
-					obs.add(Completable.error(e));
+					sub.onError(e);
 				}
 			});
-			return Completable.merge(obs).toSingleDefault(obs.size());
+
 		});
 	}
+
 }

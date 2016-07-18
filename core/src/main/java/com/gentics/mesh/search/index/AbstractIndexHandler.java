@@ -125,14 +125,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable store(String uuid, String indexType, SearchQueueEntry entry) {
-		try (NoTrx noTx = db.noTrx()) {
-			T element = getRootVertex().findByUuidSync(uuid);
-			if (element == null) {
-				throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, indexType);
-			} else {
-				return store(element, indexType, entry);
+		return Completable.defer(() -> {
+			try (NoTrx noTx = db.noTrx()) {
+				T element = getRootVertex().findByUuidSync(uuid);
+				if (element == null) {
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, indexType);
+				} else {
+					return store(element, indexType, entry);
+				}
 			}
-		}
+		});
 	}
 
 	/**
@@ -360,7 +362,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable init() {
-		return createIndex().doOnCompleted(() -> updateMapping());
+		return createIndex().andThen(updateMapping());
 	}
 
 	@Override

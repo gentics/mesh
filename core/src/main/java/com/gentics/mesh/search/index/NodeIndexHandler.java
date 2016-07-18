@@ -61,6 +61,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RxUtil;
@@ -223,90 +224,100 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Completable store(Node node, String documentType, SearchQueueEntry entry) {
-		String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
-		String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
-		ContainerType type = ContainerType.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
-		String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, type.toString().toLowerCase());
+		return Completable.defer(() -> {
+			try (NoTrx noTrx = db.noTrx()) {
+				String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
+				String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
+				ContainerType type = ContainerType.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
+				String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, type.toString().toLowerCase());
 
-		// TODO check consistency
-
-		Set<Completable> obs = new HashSet<>();
-		Completable deleteObs = Completable.complete();
-
-		// Store all containers if no language was specified
-		if (languageTag == null) {
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-				obs.add(storeContainer(container, indexName, releaseUuid));
-			}
-		} else {
-
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag, releaseUuid, type);
-			if (container == null) {
-				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + languageTag
-						+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
-			}
-			// 1. Sanitize the search index for nodes.
-			// We'll need to delete all documents which match the given query:
-			// * match node documents with same UUID
-			// * match node documents with same language
-			// * exclude all documents which have the same document type in order to avoid deletion
-			// of the document which will be updated later on
-			//
-			// This will ensure that only one version of the node document remains in the search index.
-			//
-			// A node migration for example requires old node documents to be removed from the index since the migration itself may create new node versions.
-			// Those documents are stored within a schema container version specific index type.
-			// We need to ensure that those documents are purged from the index.
-			JSONObject query = new JSONObject();
-			try {
-				JSONObject queryObject = new JSONObject();
-
-				// Only handle selected language
-				JSONObject langTerm = new JSONObject().put("term", new JSONObject().put("language", languageTag));
-				// Only handle nodes with the same uuid
-				JSONObject uuidTerm = new JSONObject().put("term", new JSONObject().put("uuid", node.getUuid()));
-
-				JSONArray mustArray = new JSONArray();
-				mustArray.put(uuidTerm);
-				mustArray.put(langTerm);
-
-				JSONObject boolFilter = new JSONObject();
-				boolFilter.put("must", mustArray);
-
-				// Only limit the deletion if a container could be found. Otherwise delete all the documents in oder to sanitize the index
-				if (container != null) {
-					// Don't delete the document which is specific to the language container (via the document type)
-					JSONObject mustNotTerm = new JSONObject().put("term",
-							new JSONObject().put("_type", getDocumentType(container.getSchemaContainerVersion())));
-					boolFilter.put("must_not", mustNotTerm);
-				}
-				queryObject.put("bool", boolFilter);
-				query.put("query", queryObject);
-			} catch (Exception e) {
-				log.error("Error while building deletion query", e);
-				throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
-			}
-
-			deleteObs = RxUtil.andThenCompletable(searchProvider.deleteDocumentsViaQuery(indexName, query), nDocumentsDeleted -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Deleted {" + nDocumentsDeleted + "} documents from index {" + indexName + "}");
+					log.debug("Storing node {" + node.getUuid() + "} of type {" + type.name() + "} into index {" + indexName + "}");
 				}
-				// Don't store the container if it is null.
-				if (container == null) {
-					return Completable.complete();
+				// TODO check consistency
+
+				Set<Completable> obs = new HashSet<>();
+				Completable deleteObs = Completable.complete();
+
+				// Store all containers if no language was specified
+				if (languageTag == null) {
+					for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+						obs.add(storeContainer(container, indexName, releaseUuid));
+					}
 				} else {
-					// 2. Try to store the updated document
-					return db.noTrx(() -> {
-						return storeContainer(container, indexName, releaseUuid);
+
+					NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag, releaseUuid, type);
+					if (container == null) {
+						log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + languageTag
+								+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
+					}
+					// 1. Sanitize the search index for nodes.
+					// We'll need to delete all documents which match the given query:
+					// * match node documents with same UUID
+					// * match node documents with same language
+					// * exclude all documents which have the same document type in order to avoid deletion
+					// of the document which will be updated later on
+					//
+					// This will ensure that only one version of the node document remains in the search index.
+					//
+					// A node migration for example requires old node documents to be removed from the index since the migration itself may create new node versions.
+					// Those documents are stored within a schema container version specific index type.
+					// We need to ensure that those documents are purged from the index.
+					JSONObject query = new JSONObject();
+					try {
+						JSONObject queryObject = new JSONObject();
+
+						// Only handle selected language
+						JSONObject langTerm = new JSONObject().put("term", new JSONObject().put("language", languageTag));
+						// Only handle nodes with the same uuid
+						JSONObject uuidTerm = new JSONObject().put("term", new JSONObject().put("uuid", node.getUuid()));
+
+						JSONArray mustArray = new JSONArray();
+						mustArray.put(uuidTerm);
+						mustArray.put(langTerm);
+
+						JSONObject boolFilter = new JSONObject();
+						boolFilter.put("must", mustArray);
+
+						// Only limit the deletion if a container could be found. Otherwise delete all the documents in oder to sanitize the index
+						if (container != null) {
+							// Don't delete the document which is specific to the language container (via the document type)
+							JSONObject mustNotTerm = new JSONObject().put("term",
+									new JSONObject().put("_type", getDocumentType(container.getSchemaContainerVersion())));
+							boolFilter.put("must_not", mustNotTerm);
+						}
+						queryObject.put("bool", boolFilter);
+						query.put("query", queryObject);
+					} catch (Exception e) {
+						log.error("Error while building deletion query", e);
+						throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
+					}
+
+					deleteObs = RxUtil.andThenCompletable(searchProvider.deleteDocumentsViaQuery(indexName, query), nDocumentsDeleted -> {
+						if (log.isDebugEnabled()) {
+							log.debug("Deleted {" + nDocumentsDeleted + "} documents from index {" + indexName + "}");
+						}
+						// Don't store the container if it is null.
+						if (container == null) {
+							return Completable.complete();
+						} else {
+							// 2. Try to store the updated document
+							return db.noTrx(() -> {
+								return storeContainer(container, indexName, releaseUuid);
+							});
+						}
 					});
 				}
-			});
-		}
-		return Completable.merge(obs).andThen(deleteObs).doOnCompleted(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Stored node in index.");
+				Completable.merge(obs).await();
+				MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+				deleteObs.await();
+				return Completable.complete();
+//					if (log.isDebugEnabled()) {
+//						log.debug("Stored node in index.");
+//					}
+				
+				
 			}
-			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
 		});
 
 	}
