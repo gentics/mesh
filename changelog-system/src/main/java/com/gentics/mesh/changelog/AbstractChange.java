@@ -1,10 +1,15 @@
 package com.gentics.mesh.changelog;
 
 import java.util.Iterator;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
+import com.fasterxml.uuid.Generators;
+import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -97,6 +102,34 @@ public abstract class AbstractChange implements Change {
 		return graph;
 	}
 
+	public static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
+
+	private static Pattern p = Pattern.compile("^[A-Fa-f0-9]+$");
+
+	/**
+	 * Create a random UUID string which does not include dashes.
+	 * 
+	 * @return
+	 */
+	public String randomUUID() {
+		final UUID uuid = UUID_GENERATOR.generate();
+		return (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4)
+				+ digits(uuid.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4)
+				+ digits(uuid.getLeastSignificantBits(), 12));
+	}
+
+	/**
+	 * Returns val represented by the specified number of hex digits.
+	 * 
+	 * @param val
+	 * @param digits
+	 * @return
+	 */
+	private static String digits(long val, int digits) {
+		long hi = 1L << (digits * 4);
+		return Long.toHexString(hi | (val & (hi - 1))).substring(1);
+	}
+
 	/**
 	 * Return the mesh root vertex.
 	 * 
@@ -120,6 +153,12 @@ public abstract class AbstractChange implements Change {
 	@Override
 	public boolean validate() {
 		return true;
+	}
+
+	public void printEdges(Vertex vertex, Direction dir) {
+		for (Edge e : vertex.getEdges(dir)) {
+			System.out.println(e.getLabel());
+		}
 	}
 
 }

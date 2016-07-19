@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BASE_NODE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
@@ -141,7 +141,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Node getBaseNode() {
-		return out(HAS_BASE_NODE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
+		return out(HAS_ROOT_NODE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	@Override
@@ -166,7 +166,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void setBaseNode(Node baseNode) {
-		linkOut(baseNode.getImpl(), HAS_BASE_NODE);
+		linkOut(baseNode.getImpl(), HAS_ROOT_NODE);
 	}
 
 	@Override

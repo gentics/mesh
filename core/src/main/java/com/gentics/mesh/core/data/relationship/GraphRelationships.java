@@ -35,7 +35,7 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_LANGUAGE);
 			db.addEdgeType(HAS_FIELD_CONTAINER);
 			db.addEdgeType(HAS_PARENT_NODE);
-			db.addEdgeType(HAS_BASE_NODE);
+			db.addEdgeType(HAS_ROOT_NODE);
 
 			db.addEdgeType(HAS_SCHEMA_TYPE);
 			db.addEdgeType(HAS_SCHEMA_ROOT);
@@ -107,7 +107,11 @@ public class GraphRelationships {
 	public static final String HAS_FIELD_CONTAINER = "HAS_FIELD_CONTAINER";
 
 	public static final String HAS_PARENT_NODE = "HAS_PARENT_NODE";
-	public static final String HAS_BASE_NODE = "HAS_ROOT_NODE";
+	
+	/**
+	 * Edge type which is used to connect project and base node
+	 */
+	public static final String HAS_ROOT_NODE = "HAS_ROOT_NODE";
 
 	// Schemas
 	public static final String HAS_SCHEMA_TYPE = "HAS_SCHEMA_TYPE";

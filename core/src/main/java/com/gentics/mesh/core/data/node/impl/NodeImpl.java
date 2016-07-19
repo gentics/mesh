@@ -362,7 +362,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			previous = draftEdge.inV().has(NodeGraphFieldContainerImpl.class).nextOrDefault(NodeGraphFieldContainerImpl.class, null);
 		}
 
-		// create the new container
+		// Create the new container
 		NodeGraphFieldContainerImpl container = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		if (original != null) {
 			container.setEditor(original.getEditor());
@@ -544,7 +544,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeParameters nodeParameters = ac.getNodeParameters();
 			VersioningParameters versioiningParameters = ac.getVersioningParameters();
 
-			Set<Completable> obs = new HashSet<>();
+			Set<Completable> tasks = new HashSet<>();
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();
 			if (container == null) {
@@ -555,7 +555,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Parent node reference
 			Node parentNode = getParentNode(release.getUuid());
 			if (parentNode != null) {
-				obs.add(parentNode.transformToReference(ac).map(transformedParentNode -> {
+				tasks.add(parentNode.transformToReference(ac).map(transformedParentNode -> {
 					restNode.setParentNode(transformedParentNode);
 					return restNode;
 				}).toCompletable());
@@ -565,8 +565,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Role permissions
-			Completable rolePerms = setRolePermissions(ac, restNode);
-			obs.add(rolePerms);
+			tasks.add(setRolePermissions(ac, restNode));
 
 			// Languages
 			restNode.setAvailableLanguages(getAvailableLanguageNames(release, ContainerType.forVersion(versioiningParameters.getVersion())));
@@ -668,12 +667,32 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 								return restNode;
 
 							});
-					obs.add(obsFields.toCompletable());
+					tasks.add(obsFields.toCompletable());
 				}
 
 			}
 
 			// Tags
+			tasks.add(setTagsToRest(ac, restNode, release));
+
+			// Add common fields
+			tasks.add(fillCommonRestFields(ac, restNode));
+
+			// breadcrumb
+			tasks.add(setBreadcrumbToRest(ac, restNode));
+
+			// Add webroot path & lanuagePaths
+			tasks.add(setPathsToRest(ac, restNode, release));
+
+			// Merge and complete
+			return Completable.merge(tasks).toSingleDefault(restNode);
+		} catch (Exception e) {
+			return Single.error(e);
+		}
+	}
+
+	private Completable setTagsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
+		return Completable.create(sub -> {
 			for (Tag tag : getTags(release)) {
 				TagFamily tagFamily = tag.getTagFamily();
 				String tagFamilyName = tagFamily.getName();
@@ -687,16 +706,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 				group.getItems().add(reference);
 			}
+			sub.onCompleted();
+		});
+	}
 
-			// Add common fields
-			Completable commonField = fillCommonRestFields(ac, restNode);
-			obs.add(commonField);
-		
-			// breadcrumb
-			Completable breadcrumb = setBreadcrumbToRest(ac, restNode);
-			obs.add(breadcrumb);
-			
-			// Add webroot path & lanuagePaths
+	private Completable setPathsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
+		return Completable.create(sub -> {
+			VersioningParameters versioiningParameters = ac.getVersioningParameters();
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 				String releaseUuid = ac.getRelease(null).getUuid();
 				ContainerType type = ContainerType.forVersion(versioiningParameters.getVersion());
@@ -718,12 +734,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 				restNode.setLanguagePaths(languagePaths);
 			}
+			sub.onCompleted();
+		});
 
-			// Merge and complete
-			return Completable.merge(obs).toSingleDefault(restNode);
-		} catch (Exception e) {
-			return Single.error(e);
-		}
 	}
 
 	@Override
@@ -810,7 +823,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			currentElement.setNode(response);
 			return navigation;
 		}));
-
 
 		// Abort recursion when we reach the max level or when no more children can be found.
 		if (level == maxDepth || nodes.isEmpty()) {

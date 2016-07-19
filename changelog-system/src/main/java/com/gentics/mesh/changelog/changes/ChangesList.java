@@ -6,7 +6,8 @@ import java.util.List;
 import com.gentics.mesh.changelog.Change;
 
 /**
- * Stores a list of all changes in the system. Please note that the order of changes is very important and new changes should always be appended to the list.
+ * Stores a list of all changes in the system. Please note that the order of changes is very important and new changes should always be appended to the list
+ * (bottom).
  */
 public final class ChangesList {
 
@@ -15,6 +16,7 @@ public final class ChangesList {
 		list.add(new Change_093BEFB47FA4476FBE37FD27C613F7AA());
 		list.add(new Change_610A32F04FC7414E8A32F04FC7614EF5());
 		list.add(new Change_610A32F04FC7414E8A32F04FC7614EF3());
+		list.add(new Change_0A58BEF0E7E7488D98BEF0E7E7588D4D());
 		return list;
 	}
 }

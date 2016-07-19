@@ -68,7 +68,7 @@ public class ChangelogSystemTest {
 		Collection<Object[]> data = new ArrayList<Object[]>();
 		for (String version : metadata.getVersions()) {
 			// Only test mesh release dumps since a specific version
-			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.6.1")) >= 0) {
+			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.6.17")) >= 0) {
 				data.add(new Object[] { version });
 			}
 		}
@@ -79,7 +79,7 @@ public class ChangelogSystemTest {
 	public void downloadDump() throws IOException, ZipException {
 		// TODO use released version of demo dump
 		URL website = new URL(
-				"http://artifactory.office/repository/lan.snapshots.mesh/com/gentics/mesh/mesh-demo/0.6.3-SNAPSHOT/mesh-demo-0.6.3-20160318.101338-6-dump.zip");
+				"http://artifactory.office/repository/lan.releases/com/gentics/mesh/mesh-demo/0.6.18/mesh-demo-0.6.18-dump.zip");
 
 		FileUtils.deleteDirectory(targetDir);
 
@@ -100,7 +100,9 @@ public class ChangelogSystemTest {
 	public void testRunner() throws Exception {
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory("target/dump/graphdb");
+		options.getStorageOptions().setStartServer(true);
 		new ChangelogRunner().run(options);
+		System.out.println("done");
 	}
 
 	@Test
