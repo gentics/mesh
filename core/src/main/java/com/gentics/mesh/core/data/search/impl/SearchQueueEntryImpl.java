@@ -45,8 +45,7 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 
 	@Override
 	public String getElementActionName() {
-		String actionName = getProperty(ACTION_KEY);
-		return actionName;
+		return getProperty(ACTION_KEY);
 	}
 
 	@Override
@@ -125,6 +124,7 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 
 	@Override
 	public int compareTo(SearchQueueEntry o) {
+		//TODO impl compare check using time
 		return 0;
 	}
 
