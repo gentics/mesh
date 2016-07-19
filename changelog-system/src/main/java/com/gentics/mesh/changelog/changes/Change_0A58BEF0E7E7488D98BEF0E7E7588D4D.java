@@ -95,7 +95,7 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			fieldContainer.setProperty("last_edited_timestamp", node.getProperty("last_edited_timestamp"));
 			node.removeProperty("last_edited_timestamp");
 
-			if (!isPublished) {
+			if (isPublished) {
 
 				// Now duplicate the field container and create a published version 1.0
 				Vertex publishedContainer = getGraph().addVertex("class:NodeGraphFieldContainerImpl");
