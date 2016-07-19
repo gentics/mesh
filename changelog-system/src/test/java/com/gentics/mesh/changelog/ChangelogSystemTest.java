@@ -100,9 +100,9 @@ public class ChangelogSystemTest {
 	public void testRunner() throws Exception {
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory("target/dump/graphdb");
-		options.getStorageOptions().setStartServer(true);
+//		options.getStorageOptions().setStartServer(true);
 		new ChangelogRunner().run(options);
-		System.out.println("done");
+//		System.out.println("done");
 	}
 
 	@Test
