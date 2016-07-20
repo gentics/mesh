@@ -1,4 +1,4 @@
-package com.gentics.mesh.util;
+package com.gentics.mesh;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -45,6 +45,8 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Utility class that is commonly used for tests and the RAML generator.

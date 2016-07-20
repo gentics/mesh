@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -35,7 +36,6 @@ import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
-import com.gentics.mesh.util.FieldUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.UUIDUtil;
 

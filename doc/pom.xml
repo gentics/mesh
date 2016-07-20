@@ -68,7 +68,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>Generate RestModel JSON files</id>
+						<id>Generate RAML</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
@@ -78,7 +78,7 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath />
-								<argument>com.gentics.mesh.generator.RAMLExampleGenerator</argument>
+								<argument>com.gentics.mesh.generator.RAMLGenerator</argument>
 							</arguments>
 						</configuration>
 					</execution>

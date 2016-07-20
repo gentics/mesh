@@ -167,6 +167,12 @@
 			<version>${vertx.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.gentics.ferma</groupId>
+			<artifactId>ferma-extensions-api</artifactId>
+			<version>${ferma.extensions.version}</version>
+		</dependency>
+
 		<!-- Bcrypt -->
 		<dependency>
 			<groupId>org.springframework.security</groupId>

@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.field;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.util.FieldUtil;
 
 @FunctionalInterface
 public interface FieldSchemaCreator {

@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>com.gentics.ferma</groupId>
 			<artifactId>ferma-extensions-orientdb</artifactId>
-			<version>0.0.2</version>
+			<version>${ferma.extensions.version}</version>
 		</dependency>
 
 		<!-- Common Tools -->

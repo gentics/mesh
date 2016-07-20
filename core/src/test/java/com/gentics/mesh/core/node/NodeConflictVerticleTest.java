@@ -19,6 +19,7 @@ import java.util.Locale;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -40,7 +41,6 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-import com.gentics.mesh.util.FieldUtil;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.Future;

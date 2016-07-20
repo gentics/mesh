@@ -18,6 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
@@ -58,7 +59,6 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.search.impl.DummySearchProvider;
-import com.gentics.mesh.util.FieldUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;

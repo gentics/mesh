@@ -12,6 +12,9 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.example.GroupExamples;
+import com.gentics.mesh.example.MiscExamples;
+import com.gentics.mesh.example.RoleExamples;
 import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.Future;
@@ -30,6 +33,10 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	private static final Logger log = LoggerFactory.getLogger(AbstractWebVerticle.class);
 
 	private List<Endpoint> endpoints = new ArrayList<>();
+
+	protected GroupExamples groupExamples = new GroupExamples();
+	protected RoleExamples roleExamples = new RoleExamples();
+	protected MiscExamples miscExamples = new MiscExamples();
 
 	protected Router localRouter = null;
 	protected String basePath;

@@ -9,10 +9,10 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.util.FieldUtil;
 
 public abstract class AbstractComparatorMicronodeTest<C extends FieldSchemaContainer> extends AbstractSchemaComparatorTest<MicronodeFieldSchema, C> {
 

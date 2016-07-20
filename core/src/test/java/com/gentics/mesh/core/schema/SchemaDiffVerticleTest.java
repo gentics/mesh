@@ -16,6 +16,7 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 

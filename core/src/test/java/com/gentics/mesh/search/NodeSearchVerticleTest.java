@@ -28,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -73,7 +74,6 @@ import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
-import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
