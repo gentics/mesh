@@ -243,6 +243,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 					superClazz = superClazzOfEdge.getSimpleName();
 				}
 				e = tx.createEdgeType(label, superClazz);
+			} else {
+				// Update the existing edge type and set the super class
+				if (superClazzOfEdge != null) {
+					OrientVertexType superType = tx.getVertexType(superClazzOfEdge.getSimpleName());
+					if (superType == null) {
+						throw new RuntimeException("The supertype for edges with label {" + label + "} can't be set since the supertype {"
+								+ superClazzOfEdge.getSimpleName() + "} was not yet added to orientdb.");
+					}
+					e.setSuperClass(superType);
+				}
 			}
 
 			for (String key : stringPropertyKeys) {
@@ -270,6 +280,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 				e = tx.createVertexType(clazzOfVertex.getSimpleName(), superClazz);
 			} else {
+				// Update the existing vertex type and set the super class
 				if (superClazzOfVertex != null) {
 					OrientVertexType superType = tx.getVertexType(superClazzOfVertex.getSimpleName());
 					if (superType == null) {

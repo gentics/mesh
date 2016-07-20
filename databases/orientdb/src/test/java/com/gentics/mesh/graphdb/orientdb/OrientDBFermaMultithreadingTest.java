@@ -23,7 +23,7 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
 	@Before
 	public void setup() throws Exception {
-		db.init(null, Vertx.vertx());
+		db.init(null, Vertx.vertx(), "com.gentics.mesh.graphdb.orientdb.graph");
 	}
 
 	Person p;
