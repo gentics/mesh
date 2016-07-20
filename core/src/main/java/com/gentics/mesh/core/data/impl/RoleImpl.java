@@ -39,7 +39,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(RoleImpl.class, MeshVertexImpl.class);
 	}
 

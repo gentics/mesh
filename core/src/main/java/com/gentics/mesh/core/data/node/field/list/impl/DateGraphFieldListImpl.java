@@ -21,7 +21,7 @@ import rx.Single;
  */
 public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl, Long> implements DateGraphFieldList {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(DateGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 

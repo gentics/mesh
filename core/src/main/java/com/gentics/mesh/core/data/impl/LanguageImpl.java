@@ -22,7 +22,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public static final String LANGUAGE_NATIVE_NAME_PROPERTY_KEY = "nativeName";
 	public static final String LANGUAGE_NAME_PROPERTY_KEY = "name";
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(LanguageImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(LanguageImpl.class, true, LANGUAGE_TAG_PROPERTY_KEY);
 	}

@@ -21,7 +21,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Schema>
 		implements UpdateSchemaChange {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(UpdateSchemaChangeImpl.class, MeshVertexImpl.class);
 	}
 

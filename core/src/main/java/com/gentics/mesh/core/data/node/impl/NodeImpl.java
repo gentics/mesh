@@ -115,7 +115,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
 	}
 

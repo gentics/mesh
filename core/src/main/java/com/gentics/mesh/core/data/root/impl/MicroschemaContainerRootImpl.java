@@ -35,7 +35,7 @@ import rx.Single;
 
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 

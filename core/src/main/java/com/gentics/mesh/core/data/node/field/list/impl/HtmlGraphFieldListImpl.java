@@ -21,7 +21,7 @@ import rx.Single;
  */
 public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl, String> implements HtmlGraphFieldList {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(HtmlGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 

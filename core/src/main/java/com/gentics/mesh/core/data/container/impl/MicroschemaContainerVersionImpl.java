@@ -33,7 +33,7 @@ public class MicroschemaContainerVersionImpl
 		extends AbstractGraphFieldSchemaContainerVersion<Microschema, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
 		implements MicroschemaContainerVersion {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 

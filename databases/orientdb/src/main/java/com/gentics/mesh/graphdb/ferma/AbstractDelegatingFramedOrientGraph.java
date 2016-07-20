@@ -4,12 +4,13 @@ import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.DefaultClassInitializer;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 
 public abstract class AbstractDelegatingFramedOrientGraph<G extends OrientBaseGraph> extends DelegatingFramedGraph<G> {
 
-	public AbstractDelegatingFramedOrientGraph(G delegate, boolean typeResolution, boolean annotationsSupported) {
-		super(delegate, typeResolution, annotationsSupported);
+	public AbstractDelegatingFramedOrientGraph(G delegate, TypeResolver resolver) {
+		super(delegate, resolver);
 	}
 
 	@Override

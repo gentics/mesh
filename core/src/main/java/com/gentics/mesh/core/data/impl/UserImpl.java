@@ -85,7 +85,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	public static final String ENABLED_FLAG_PROPERTY_KEY = "enabledFlag";
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
 	}
 

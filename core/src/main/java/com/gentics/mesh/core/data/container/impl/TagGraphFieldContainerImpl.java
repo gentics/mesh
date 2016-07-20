@@ -7,7 +7,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 public class TagGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements TagGraphFieldContainer {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(TagGraphFieldContainerImpl.class, MeshVertexImpl.class);
 	}
 

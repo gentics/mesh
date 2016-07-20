@@ -16,7 +16,7 @@ import com.gentics.mesh.graphdb.spi.Database;
  */
 public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRootImpl {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(ProjectMicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 

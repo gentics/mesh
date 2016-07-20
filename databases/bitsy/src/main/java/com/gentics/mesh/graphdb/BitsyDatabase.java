@@ -34,8 +34,8 @@ public class BitsyDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void init(GraphStorageOptions options, Vertx vertx) throws Exception {
-		super.init(options, vertx);
+	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
+		super.init(options, vertx, basePaths);
 		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
@@ -70,6 +70,11 @@ public class BitsyDatabase extends AbstractDatabase {
 
 	@Override
 	public void addEdgeType(String label, String... stringPropertyKeys) {
+
+	}
+
+	@Override
+	public void addEdgeType(String label, Class<?> superClazzOfEdge, String... stringPropertyKeys) {
 
 	}
 

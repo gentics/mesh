@@ -42,8 +42,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 			v.remove();
 		});
 	}
-	
-	
+
 	@Override
 	public TransactionalGraph rawTx() {
 		return neo4jBlueprintGraph;
@@ -178,6 +177,12 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public void addEdgeType(String label, Class<?> superClazzOfEdge, String... stringPropertyKeys) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	public void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex) {
 		// TODO Auto-generated method stub
 	}
@@ -191,8 +196,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 	@Override
 	public void setVertexType(Element element, Class<?> classOfVertex) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
 
 }

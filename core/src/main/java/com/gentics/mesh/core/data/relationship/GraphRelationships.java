@@ -9,7 +9,7 @@ import com.gentics.mesh.graphdb.spi.Database;
  */
 public class GraphRelationships {
 
-	public static void checkIndices(Database db) {
+	public static void init(Database db) {
 
 		db.noTrx(() -> {
 			db.addEdgeIndexSource(ASSIGNED_TO_ROLE);
@@ -28,12 +28,10 @@ public class GraphRelationships {
 
 			db.addEdgeType(HAS_TAG_ROOT);
 			db.addEdgeType(HAS_TAG_FAMILY);
-			db.addEdgeType(HAS_TAG, TagEdgeImpl.RELEASE_UUID_KEY);
 
 			db.addEdgeType(HAS_CREATOR);
 			db.addEdgeType(HAS_EDITOR);
 			db.addEdgeType(HAS_LANGUAGE);
-			db.addEdgeType(HAS_FIELD_CONTAINER);
 			db.addEdgeType(HAS_PARENT_NODE);
 			db.addEdgeType(HAS_ROOT_NODE);
 

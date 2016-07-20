@@ -22,7 +22,7 @@ import rx.Single;
 public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl, String>
 		implements StringGraphFieldList {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(StringGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 

@@ -30,7 +30,7 @@ import rx.Single;
 
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(GroupRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_GROUP);
 	}

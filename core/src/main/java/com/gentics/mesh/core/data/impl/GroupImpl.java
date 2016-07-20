@@ -45,7 +45,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	public static final String NAME_KEY = "name";
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(GroupImpl.class, MeshVertexImpl.class);
 	}
 

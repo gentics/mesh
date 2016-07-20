@@ -115,7 +115,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			Node newsNode = content("news overview");
 			RoutingContext rc = getMockedRoutingContext("?version=draft");
 			InternalActionContext ac = InternalActionContext.create(rc);
-			assertNotNull(newsNode.getPathSegment(ac));
+			assertNotNull(newsNode.getPathSegment(ac).toBlocking().value());
 		}
 	}
 
@@ -125,7 +125,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			Node newsNode = content("news overview");
 			RoutingContext rc = getMockedRoutingContext("?version=draft");
 			InternalActionContext ac = InternalActionContext.create(rc);
-			System.out.println(newsNode.getPath(ac));
+			System.out.println(newsNode.getPath(ac).toBlocking().value());
 		}
 	}
 

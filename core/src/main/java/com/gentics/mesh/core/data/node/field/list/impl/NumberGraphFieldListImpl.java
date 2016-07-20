@@ -22,7 +22,7 @@ import rx.Single;
 public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl, Number>
 		implements NumberGraphFieldList {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(NumberGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 

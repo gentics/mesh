@@ -32,7 +32,7 @@ public class MicroschemaContainerImpl
 		return MicroschemaContainerVersionImpl.class;
 	}
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
 	}
 

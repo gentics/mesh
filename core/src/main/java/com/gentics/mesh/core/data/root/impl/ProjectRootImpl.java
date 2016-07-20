@@ -59,7 +59,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectRootImpl.class);
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
 	}
 

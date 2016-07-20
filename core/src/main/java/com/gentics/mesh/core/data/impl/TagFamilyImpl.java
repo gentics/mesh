@@ -62,7 +62,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
 	}
 

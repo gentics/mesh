@@ -4,14 +4,18 @@ import com.gentics.mesh.graphdb.ferma.DelegatingFramedTransactionalOrientGraph;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.syncleus.ferma.FramedTransactionalGraph;
+import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
+/**
+ * OrientDB specific implementation of an trx autoclosable.
+ */
 public class OrientDBTrx extends AbstractTrx {
 
-	public OrientDBTrx(OrientGraphFactory factory) {
+	public OrientDBTrx(OrientGraphFactory factory, TypeResolver resolver) {
 		OrientGraph tx = factory.getTx();
-		FramedTransactionalGraph transaction = new DelegatingFramedTransactionalOrientGraph(tx, true, false);
+		FramedTransactionalGraph transaction = new DelegatingFramedTransactionalOrientGraph(tx, resolver);
 		init(transaction);
 	}
 

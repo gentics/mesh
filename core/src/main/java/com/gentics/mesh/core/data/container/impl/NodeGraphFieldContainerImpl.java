@@ -76,7 +76,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, WEBROOT_PROPERTY_KEY);
 		database.addVertexIndex(PUBLISHED_WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, PUBLISHED_WEBROOT_PROPERTY_KEY);

@@ -29,7 +29,7 @@ import com.gentics.mesh.graphdb.spi.Database;
  */
 public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements AddFieldChange {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(AddFieldChangeImpl.class, MeshVertexImpl.class);
 	}
 

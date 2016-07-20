@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+
 import java.util.List;
 
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
@@ -13,9 +16,12 @@ import com.syncleus.ferma.traversals.Traversal;
 import com.syncleus.ferma.traversals.TraversalFunction;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
+import de.jotschi.ferma.annotation.GraphType;
+
 /**
  * @see GraphFieldContainerEdge
  */
+@GraphType
 public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements GraphFieldContainerEdge {
 
 	public static final String LANGUAGE_TAG_KEY = "languageTag";
@@ -24,9 +30,13 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 
 	public static final String EDGE_TYPE_KEY = "edgeType";
 
+	public static void init(Database db) {
+		db.addEdgeType(GraphFieldContainerEdgeImpl.class.getSimpleName());
+		db.addEdgeType(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
+	}
+
 	/**
-	 * Extend the given traversal to filter edges that have one of the given
-	 * language tags set (if languageTags is not null and not empty)
+	 * Extend the given traversal to filter edges that have one of the given language tags set (if languageTags is not null and not empty)
 	 * 
 	 * @param traversal
 	 * @param languageTags
@@ -100,4 +110,5 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 			return argument.traversal().has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
 		}
 	}
+
 }

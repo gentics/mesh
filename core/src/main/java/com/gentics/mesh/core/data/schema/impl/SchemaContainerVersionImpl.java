@@ -41,7 +41,7 @@ public class SchemaContainerVersionImpl extends
 		return new SchemaReference();
 	}
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 

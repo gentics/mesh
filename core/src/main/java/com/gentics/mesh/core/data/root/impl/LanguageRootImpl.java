@@ -24,7 +24,7 @@ import rx.Single;
 
 public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_LANGUAGE);
 		// TODO add unique index

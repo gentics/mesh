@@ -98,7 +98,7 @@ public class MeshSpringConfiguration {
 		}
 		try {
 			GraphStorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-			database.init(options, Mesh.vertx());
+			database.init(options, Mesh.vertx(), "com.gentics.mesh.core.data");
 			DatabaseHelper helper = new DatabaseHelper(database);
 			helper.init();
 			return database;

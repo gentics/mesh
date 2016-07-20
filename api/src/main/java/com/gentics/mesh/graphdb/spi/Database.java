@@ -143,10 +143,14 @@ public interface Database {
 	 * Initialize the database and store the settings.
 	 * 
 	 * @param options
+	 *            Graph database options
 	 * @param vertx
+	 *            Vertx instance used to execute blocking code
+	 * @param basePaths
+	 *            Base paths which will be scanned for graph element classes
 	 * @throws Exception
 	 */
-	void init(GraphStorageOptions options, Vertx vertx) throws Exception;
+	void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception;
 
 	/**
 	 * Reload the given mesh element.
@@ -261,6 +265,15 @@ public interface Database {
 	 * @return the conflicting element or null if no conflict exists
 	 */
 	<T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key);
+
+	/**
+	 * Create a new edge type for the given label.
+	 * 
+	 * @param label
+	 * @param superClazzOfEdge
+	 * @param stringPropertyKeys
+	 */
+	void addEdgeType(String label, Class<?> superClazzOfEdge, String... stringPropertyKeys);
 
 	/**
 	 * Create a new edge type for the given label.

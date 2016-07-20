@@ -1,13 +1,14 @@
 package com.gentics.mesh.graphdb.ferma;
 
 import com.syncleus.ferma.WrapperFramedTransactionalGraph;
+import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 public class DelegatingFramedTransactionalOrientGraph<G extends OrientGraph> extends AbstractDelegatingFramedOrientGraph<G>
 		implements WrapperFramedTransactionalGraph<G> {
 
-	public DelegatingFramedTransactionalOrientGraph(final G delegate, final boolean typeResolution, final boolean annotationsSupported) {
-		super(delegate, typeResolution, annotationsSupported);
+	public DelegatingFramedTransactionalOrientGraph(G delegate, TypeResolver resolver) {
+		super(delegate, resolver);
 	}
 
 	@Override

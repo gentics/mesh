@@ -51,7 +51,7 @@ import rx.Single;
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(MicronodeImpl.class, MeshVertexImpl.class);
 	}
 

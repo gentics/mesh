@@ -56,6 +56,11 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
 		</dependency>
+		<dependency>
+			<artifactId>ferma-extensions-orientdb</artifactId>
+			<groupId>de.jotschi</groupId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 
 		<!-- Common Tools -->
 		<dependency>

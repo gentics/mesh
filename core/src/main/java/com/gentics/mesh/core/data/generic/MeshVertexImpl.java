@@ -8,29 +8,37 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
+import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
+
+import de.jotschi.ferma.annotation.GraphType;
 
 /**
  * @see MeshVertex
  */
+@GraphType
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	private Object id;
 	// public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedVertex) getGraph().getVertex(id)).getBaseElement());
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(MeshVertexImpl.class, null);
 		database.addVertexIndex(MeshVertexImpl.class, true, "uuid");
 	}

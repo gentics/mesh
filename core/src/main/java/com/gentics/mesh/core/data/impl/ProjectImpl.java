@@ -67,7 +67,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		// TODO index to name + unique constraint
 		database.addVertexType(ProjectImpl.class, MeshVertexImpl.class);
 	}

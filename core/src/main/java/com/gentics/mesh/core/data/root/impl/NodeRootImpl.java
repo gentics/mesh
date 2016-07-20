@@ -59,7 +59,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeRootImpl.class);
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(NodeRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_NODE);
 	}

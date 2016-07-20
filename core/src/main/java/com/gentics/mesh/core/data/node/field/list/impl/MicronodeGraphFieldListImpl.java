@@ -37,7 +37,7 @@ import rx.Single;
 public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicronodeGraphField, MicronodeFieldList, Micronode>
 		implements MicronodeGraphFieldList {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(MicronodeGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 

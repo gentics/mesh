@@ -42,6 +42,8 @@ import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
 import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -54,6 +56,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
+import de.jotschi.ferma.orientdb.OrientDBTypeResolver;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -66,6 +69,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
 	private OrientGraphFactory factory;
+	private TypeResolver resolver;
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 	private int maxRetry = 25;
 
@@ -77,8 +81,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void init(GraphStorageOptions options, Vertx vertx) throws Exception {
+	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
 		super.init(options, vertx);
+		resolver = new OrientDBTypeResolver(basePaths);
+		//		resolver = new PolymorphicTypeResolver();
 		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
@@ -221,19 +227,32 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addEdgeType(String label, String... stringPropertyKeys) {
+		addEdgeType(label, null, stringPropertyKeys);
+	}
+
+	@Override
+	public void addEdgeType(String label, Class<?> superClazzOfEdge, String... stringPropertyKeys) {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding edge type for label {" + label + "}");
 		}
-		OrientBaseGraph tx = unwrapCurrentGraph();
-
-		OrientEdgeType e = tx.getEdgeType(label);
-		if (e == null) {
-			e = tx.createEdgeType(label);
-		}
-		for (String key : stringPropertyKeys) {
-			if (e.getProperty(key) == null) {
-				e.createProperty(key, OType.STRING);
+		OrientGraphNoTx tx = factory.getNoTx();
+		try {
+			OrientEdgeType e = tx.getEdgeType(label);
+			if (e == null) {
+				String superClazz = "E";
+				if (superClazzOfEdge != null) {
+					superClazz = superClazzOfEdge.getSimpleName();
+				}
+				e = tx.createEdgeType(label, superClazz);
 			}
+
+			for (String key : stringPropertyKeys) {
+				if (e.getProperty(key) == null) {
+					e.createProperty(key, OType.STRING);
+				}
+			}
+		} finally {
+			tx.shutdown();
 		}
 	}
 
@@ -365,7 +384,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public Trx trx() {
-		return new OrientDBTrx(factory);
+		return new OrientDBTrx(factory, resolver);
 	}
 
 	@Override
@@ -419,7 +438,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public NoTrx noTrx() {
-		return new OrientDBNoTrx(factory);
+		return new OrientDBNoTrx(factory, resolver);
 	}
 
 	@Override

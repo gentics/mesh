@@ -11,7 +11,7 @@ import com.gentics.mesh.graphdb.spi.Database;
  */
 public class UpdateMicroschemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Microschema> implements UpdateMicroschemaChange {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(UpdateMicroschemaChangeImpl.class, MeshVertexImpl.class);
 	}
 

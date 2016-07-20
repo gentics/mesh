@@ -29,7 +29,7 @@ import rx.Single;
 
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(NodeGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 

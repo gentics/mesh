@@ -41,7 +41,7 @@ import rx.Single;
 
 public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(UserRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_USER);
 	}

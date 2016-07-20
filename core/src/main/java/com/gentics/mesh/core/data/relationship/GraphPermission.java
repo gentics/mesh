@@ -19,7 +19,7 @@ public enum GraphPermission {
 
 	PUBLISH_PERM("HAS_PUBLISH_PERMISSION", "publish");
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		for (String label : GraphPermission.labels()) {
 			database.addEdgeIndex(label);
 		}

@@ -43,8 +43,8 @@ public class DatabaseTest extends AbstractIsolatedBasicDBTest {
 	@Test
 	public void testIndex() {
 		try (NoTrx noTrx = db.noTrx()) {
-			GroupRootImpl.checkIndices(db);
-			GroupRootImpl.checkIndices(db);
+			GroupRootImpl.init(db);
+			GroupRootImpl.init(db);
 			db.addVertexIndex(LanguageImpl.class, true, "languageTag");
 			db.addEdgeIndexSource(GraphRelationships.ASSIGNED_TO_ROLE);
 		}

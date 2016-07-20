@@ -70,7 +70,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		instance = meshRoot;
 	}
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(MeshRootImpl.class, MeshVertexImpl.class);
 	}
 

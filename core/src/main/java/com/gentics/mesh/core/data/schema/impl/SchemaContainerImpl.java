@@ -34,7 +34,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 		return SchemaContainerVersionImpl.class;
 	}
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
 	}
 

@@ -22,7 +22,7 @@ import rx.Single;
 public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl, Boolean>
 		implements BooleanGraphFieldList {
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(BooleanGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 

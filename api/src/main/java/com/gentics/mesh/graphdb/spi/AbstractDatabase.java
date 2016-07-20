@@ -24,6 +24,7 @@ public abstract class AbstractDatabase implements Database {
 
 	protected GraphStorageOptions options;
 	protected Vertx vertx;
+	protected String[] basePaths;
 
 	@Override
 	public void clear() {
@@ -41,9 +42,10 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public void init(GraphStorageOptions options, Vertx vertx) throws Exception {
+	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
 		this.options = options;
 		this.vertx = vertx;
+		this.basePaths = basePaths;
 		start();
 	}
 

@@ -66,7 +66,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
 
-	public static void checkIndices(Database database) {
+	public static void init(Database database) {
 		database.addVertexType(TagImpl.class, MeshVertexImpl.class);
 	}
 

@@ -67,66 +67,68 @@ public class DatabaseHelper {
 		log.info("Creating database indices. This may take a few seconds...");
 
 		// Base type for most vertices
-		MeshVertexImpl.checkIndices(database);
+		MeshVertexImpl.init(database);
 
 		// Edges
-		GraphRelationships.checkIndices(database);
-		GraphPermission.checkIndices(database);
+		GraphRelationships.init(database);
+		GraphPermission.init(database);
+		GraphFieldContainerEdgeImpl.init(database);
+		TagEdgeImpl.init(database);
 
 		// Aggregation nodes
-		MeshRootImpl.checkIndices(database);
-		GroupRootImpl.checkIndices(database);
-		UserRootImpl.checkIndices(database);
-		RoleRootImpl.checkIndices(database);
-		TagRootImpl.checkIndices(database);
-		NodeRootImpl.checkIndices(database);
-		TagFamilyRootImpl.checkIndices(database);
-		LanguageRootImpl.checkIndices(database);
-		ProjectRootImpl.checkIndices(database);
-		SchemaContainerRootImpl.checkIndices(database);
-		MicroschemaContainerRootImpl.checkIndices(database);
-		ProjectSchemaContainerRootImpl.checkIndices(database);
-		ProjectMicroschemaContainerRootImpl.checkIndices(database);
+		MeshRootImpl.init(database);
+		GroupRootImpl.init(database);
+		UserRootImpl.init(database);
+		RoleRootImpl.init(database);
+		TagRootImpl.init(database);
+		NodeRootImpl.init(database);
+		TagFamilyRootImpl.init(database);
+		LanguageRootImpl.init(database);
+		ProjectRootImpl.init(database);
+		SchemaContainerRootImpl.init(database);
+		MicroschemaContainerRootImpl.init(database);
+		ProjectSchemaContainerRootImpl.init(database);
+		ProjectMicroschemaContainerRootImpl.init(database);
 		ReleaseRootImpl.init(database);
 
 		// Nodes
-		SearchQueueImpl.checkIndices(database);
-		SearchQueueBatchImpl.checkIndices(database);
-		SearchQueueEntryImpl.checkIndices(database);
-		ProjectImpl.checkIndices(database);
+		SearchQueueImpl.init(database);
+		SearchQueueBatchImpl.init(database);
+		SearchQueueEntryImpl.init(database);
+		ProjectImpl.init(database);
 		ReleaseImpl.init(database);
 
 		// Fields
-		NodeGraphFieldContainerImpl.checkIndices(database);
-		StringGraphFieldListImpl.checkIndices(database);
-		BooleanGraphFieldListImpl.checkIndices(database);
-		DateGraphFieldListImpl.checkIndices(database);
-		NumberGraphFieldListImpl.checkIndices(database);
-		HtmlGraphFieldListImpl.checkIndices(database);
-		NodeGraphFieldListImpl.checkIndices(database);
-		TagGraphFieldContainerImpl.checkIndices(database);
-		MicronodeGraphFieldListImpl.checkIndices(database);
+		NodeGraphFieldContainerImpl.init(database);
+		StringGraphFieldListImpl.init(database);
+		BooleanGraphFieldListImpl.init(database);
+		DateGraphFieldListImpl.init(database);
+		NumberGraphFieldListImpl.init(database);
+		HtmlGraphFieldListImpl.init(database);
+		NodeGraphFieldListImpl.init(database);
+		TagGraphFieldContainerImpl.init(database);
+		MicronodeGraphFieldListImpl.init(database);
 
-		LanguageImpl.checkIndices(database);
-		GroupImpl.checkIndices(database);
-		RoleImpl.checkIndices(database);
-		UserImpl.checkIndices(database);
-		NodeImpl.checkIndices(database);
-		MicronodeImpl.checkIndices(database);
-		TagImpl.checkIndices(database);
-		TagFamilyImpl.checkIndices(database);
-		SchemaContainerImpl.checkIndices(database);
-		MicroschemaContainerImpl.checkIndices(database);
-		SchemaContainerVersionImpl.checkIndices(database);
-		MicroschemaContainerVersionImpl.checkIndices(database);
+		LanguageImpl.init(database);
+		GroupImpl.init(database);
+		RoleImpl.init(database);
+		UserImpl.init(database);
+		NodeImpl.init(database);
+		MicronodeImpl.init(database);
+		TagImpl.init(database);
+		TagFamilyImpl.init(database);
+		SchemaContainerImpl.init(database);
+		MicroschemaContainerImpl.init(database);
+		SchemaContainerVersionImpl.init(database);
+		MicroschemaContainerVersionImpl.init(database);
 
 		// Field changes
-		FieldTypeChangeImpl.checkIndices(database);
-		UpdateSchemaChangeImpl.checkIndices(database);
-		RemoveFieldChangeImpl.checkIndices(database);
-		UpdateFieldChangeImpl.checkIndices(database);
-		AddFieldChangeImpl.checkIndices(database);
-		UpdateMicroschemaChangeImpl.checkIndices(database);
+		FieldTypeChangeImpl.init(database);
+		UpdateSchemaChangeImpl.init(database);
+		RemoveFieldChangeImpl.init(database);
+		UpdateFieldChangeImpl.init(database);
+		AddFieldChangeImpl.init(database);
+		UpdateMicroschemaChangeImpl.init(database);
 
 	}
 
