@@ -57,9 +57,9 @@
 			<version>2.4</version>
 		</dependency>
 		<dependency>
+			<groupId>com.gentics.ferma</groupId>
 			<artifactId>ferma-extensions-orientdb</artifactId>
-			<groupId>de.jotschi</groupId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.2</version>
 		</dependency>
 
 		<!-- Common Tools -->

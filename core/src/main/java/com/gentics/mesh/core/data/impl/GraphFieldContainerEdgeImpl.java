@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 
 import java.util.List;
 
+import com.gentics.ferma.annotation.GraphElement;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
@@ -16,12 +17,10 @@ import com.syncleus.ferma.traversals.Traversal;
 import com.syncleus.ferma.traversals.TraversalFunction;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import de.jotschi.ferma.annotation.GraphType;
-
 /**
  * @see GraphFieldContainerEdge
  */
-@GraphType
+@GraphElement
 public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements GraphFieldContainerEdge {
 
 	public static final String LANGUAGE_TAG_KEY = "languageTag";
