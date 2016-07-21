@@ -27,9 +27,7 @@ public class UtilityVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		if (springConfiguration != null) {
-			route("/*").handler(springConfiguration.authHandler());
-		}
+		secureAll();
 		addResolveLinkHandler();
 	}
 

@@ -24,10 +24,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		if (springConfiguration != null) {
-			Endpoint endpoint = createEndpoint();
-			endpoint.path("/*").handler(springConfiguration.authHandler());
-		}
+		secureAll();
 		addErrorHandlers();
 		addPathHandler();
 	}

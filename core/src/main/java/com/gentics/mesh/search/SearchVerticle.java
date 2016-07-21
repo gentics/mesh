@@ -56,9 +56,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		if (springConfiguration != null) {
-			route("/*").handler(springConfiguration.authHandler());
-		}
+		secureAll();
 		addSearchEndpoints();
 	}
 
@@ -66,16 +64,19 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerSearchHandler("users", () -> boot.meshRoot().getUserRoot(), UserListResponse.class, User.TYPE);
-		registerSearchHandler("groups", () -> boot.meshRoot().getGroupRoot(), GroupListResponse.class, Group.TYPE);
-		registerSearchHandler("roles", () -> boot.meshRoot().getRoleRoot(), RoleListResponse.class, Role.TYPE);
-		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE);
-		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE);
-		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, TagFamily.TYPE);
-		registerSearchHandler("projects", () -> boot.meshRoot().getProjectRoot(), ProjectListResponse.class, Project.TYPE);
-		registerSearchHandler("schemas", () -> boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, SchemaContainer.TYPE);
-		registerSearchHandler("microschemas", () -> boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class,
-				MicroschemaContainer.TYPE);
+		registerHandler("users", () -> boot.meshRoot().getUserRoot(), UserListResponse.class, User.TYPE, userExamples.getUserListResponse());
+		registerHandler("groups", () -> boot.meshRoot().getGroupRoot(), GroupListResponse.class, Group.TYPE, groupExamples.getGroupListResponse());
+		registerHandler("roles", () -> boot.meshRoot().getRoleRoot(), RoleListResponse.class, Role.TYPE, roleExamples.getRoleListResponse());
+		registerHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE, nodeExamples.getNodeListResponse());
+		registerHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE, tagExamples.getTagListResponse());
+		registerHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, TagFamily.TYPE,
+				tagFamilyExamples.getTagFamilyListResponse());
+		registerHandler("projects", () -> boot.meshRoot().getProjectRoot(), ProjectListResponse.class, Project.TYPE,
+				projectExamples.getProjectListResponse());
+		registerHandler("schemas", () -> boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, SchemaContainer.TYPE,
+				schemaExamples.getSchemaListResponse());
+		registerHandler("microschemas", () -> boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class, MicroschemaContainer.TYPE,
+				microschemaExamples.getMicroschemaListResponse());
 		addAdminHandlers();
 	}
 
@@ -104,14 +105,16 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	 * @param indexHandlerKey
 	 *            key of the index handlers
 	 */
-	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
-			Func0<RootVertex<T>> root, Class<RL> classOfRL, String indexHandlerKey) {
+	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
+			Func0<RootVertex<T>> root, Class<RL> classOfRL, String indexHandlerKey, RL exampleListResponse) {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, exampleListResponse);
+		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {
 			try {
 				IndexHandler indexHandler = registry.get(indexHandlerKey);

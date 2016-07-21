@@ -29,9 +29,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		Endpoint endpoint = createEndpoint();
-		endpoint.path("/*");
-		endpoint.handler(getSpringConfiguration().authHandler());
+		secureAll();
 
 		addGroupUserHandlers();
 		addGroupRoleHandlers();
@@ -60,7 +58,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		addRole.method(PUT);
 		addRole.description("Add the specified role to the group.");
 		addRole.produces(APPLICATION_JSON);
-		addRole.exampleResponse(200, groupExamples.getGroupResponse1());
+		addRole.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
 		addRole.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -72,7 +70,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		removeRole.path("/:groupUuid/roles/:roleUuid");
 		removeRole.method(DELETE);
 		removeRole.description("Remove the given role from the group.");
-		removeRole.exampleResponse(200, groupExamples.getGroupResponse1());
+		removeRole.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
 		removeRole.produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -83,7 +81,12 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addGroupUserHandlers() {
 		Endpoint readUsers = createEndpoint();
-		readUsers.path("/:groupUuid/users").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		readUsers.path("/:groupUuid/users");
+		readUsers.method(GET);
+		readUsers.produces(APPLICATION_JSON);
+		readUsers.exampleResponse(200, userExamples.getUserListResponse());
+		readUsers.description("Load a list of users which have been assigned to the group");
+		readUsers.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			crudHandler.handleGroupUserList(ac, groupUuid);
@@ -94,7 +97,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		addUser.method(PUT);
 		addUser.description("Add the given user to the group");
 		addUser.produces(APPLICATION_JSON);
-		addUser.exampleResponse(200, groupExamples.getGroupResponse1());
+		addUser.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
 		addUser.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -105,7 +108,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		Endpoint removeUser = createEndpoint();
 		removeUser.path("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		removeUser.description("Remove the given user from the group.");
-		removeUser.exampleResponse(200, groupExamples.getGroupResponse1());
+		removeUser.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
 		removeUser.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -119,7 +122,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		deleteGroup.path("/:uuid");
 		deleteGroup.method(DELETE);
 		deleteGroup.description("Delete the given group.");
-		deleteGroup.exampleResponse(200, miscExamples.genericResponse());
+		deleteGroup.exampleResponse(200, miscExamples.getMessageResponse());
 		deleteGroup.produces(APPLICATION_JSON);
 		deleteGroup.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -131,12 +134,15 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO Determine what we should do about conflicting group names. Should we let neo4j handle those cases?
 	// TODO update timestamps
 	private void addUpdateHandler() {
-		Endpoint updateGroup = createEndpoint();
-		updateGroup.path("/:uuid");
-		updateGroup.method(PUT);
-		updateGroup.consumes(APPLICATION_JSON);
-		updateGroup.produces(APPLICATION_JSON);
-		updateGroup.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(PUT);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
+		endpoint.exampleResponse(200, groupExamples.getGroupResponse1("New group name"));
+		endpoint.description("Update the group with the given uuid.");
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -150,6 +156,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		readOne.method(GET);
 		readOne.description("Read the group with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
+		readOne.exampleResponse(200, groupExamples.getGroupResponse1("Admin Group"));
 		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -164,6 +171,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		readAll.method(GET);
 		readAll.description("Read multiple groups and return a paged list response.");
 		readAll.produces(APPLICATION_JSON);
+		readAll.exampleResponse(200, groupExamples.getGroupListResponse());
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
@@ -171,11 +179,13 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	// TODO handle conflicting group name: group_conflicting_name
 	private void addCreateHandler() {
-		Endpoint createGroup = createEndpoint();
-		createGroup.path("/");
-		createGroup.method(POST);
-		createGroup.description("Create a new group");
-		createGroup.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/");
+		endpoint.method(POST);
+		endpoint.description("Create a new group");
+		endpoint.exampleRequest(groupExamples.getGroupCreateRequest("New group"));
+		endpoint.exampleResponse(201, groupExamples.getGroupResponse1("New group"));
+		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 

@@ -30,7 +30,7 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		secureAll();
 		addReadHandlers();
 		addUpdateHandlers();
 		addDeleteHandlers();

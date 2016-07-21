@@ -33,10 +33,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		Endpoint endpoint = createEndpoint();
-		endpoint.path("/*");
-		endpoint.handler(getSpringConfiguration().authHandler());
-
+		secureAll();
 		addDiffHandler();
 		addChangesHandler();
 
@@ -47,20 +44,23 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addChangesHandler() {
-		Endpoint readChanges = createEndpoint();
-		readChanges.path("/:schemaUuid/changes");
-		readChanges.method(GET);
-		readChanges.description("Return a list of changes ");
-		readChanges.produces(APPLICATION_JSON);
-		readChanges.handler(rc -> {
-			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
-		});
+//		Endpoint readChanges = createEndpoint();
+//		readChanges.path("/:schemaUuid/changes");
+//		readChanges.method(GET);
+//		readChanges.description("Return a list of changes ");
+//		readChanges.produces(APPLICATION_JSON);
+//		readChanges.exampleResponse(200, schemaExamples.)
+//		readChanges.handler(rc -> {
+//			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
+//		});
 
 		Endpoint executeChanges = createEndpoint();
 		executeChanges.path("/:schemaUuid/changes");
 		executeChanges.method(POST);
 		executeChanges.description("Apply the posted changes to the schema.");
 		executeChanges.produces(APPLICATION_JSON);
+		executeChanges.exampleRequest(schemaExamples.getSchemaChangesListModel());
+		executeChanges.exampleResponse(200, miscExamples.getMessageResponse());
 		executeChanges.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
@@ -69,13 +69,15 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addCreateHandler() {
-		Endpoint createSchema = createEndpoint();
-		createSchema.path("/");
-		createSchema.method(POST);
-		createSchema.description("Create a new schema.");
-		createSchema.consumes(APPLICATION_JSON);
-		createSchema.produces(APPLICATION_JSON);
-		createSchema.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/");
+		endpoint.method(POST);
+		endpoint.description("Create a new schema.");
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(schemaExamples.getSchemaCreateRequest());
+		endpoint.exampleResponse(201, schemaExamples.getSchema());
+		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
@@ -87,6 +89,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		diffEndpoint.description("Compare the given schema with the stored schema and create a changeset");
 		diffEndpoint.consumes(APPLICATION_JSON);
 		diffEndpoint.produces(APPLICATION_JSON);
+		diffEndpoint.exampleRequest(schemaExamples.getSchema());
+		diffEndpoint.exampleResponse(200, schemaExamples.getSchemaChangesListModel());
 		diffEndpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -95,13 +99,15 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		Endpoint updateSchema = createEndpoint();
-		updateSchema.path("/:uuid");
-		updateSchema.method(PUT);
-		updateSchema.description("Update the schema.");
-		updateSchema.consumes(APPLICATION_JSON);
-		updateSchema.produces(APPLICATION_JSON);
-		updateSchema.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(PUT);
+		endpoint.description("Update the schema.");
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
+		endpoint.exampleResponse(200, schemaExamples.getSchema());
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -114,6 +120,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		deleteSchema.method(DELETE);
 		deleteSchema.description("Delete the schema with the given uuid.");
 		deleteSchema.produces(APPLICATION_JSON);
+		deleteSchema.exampleResponse(200, miscExamples.getMessageResponse());
 		deleteSchema.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -126,6 +133,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		readOne.path("/:uuid");
 		readOne.method(GET);
 		readOne.description("Load the schema with the given uuid.");
+		readOne.exampleResponse(200, schemaExamples.getSchema());
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
@@ -141,6 +149,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		readAll.method(GET);
 		readAll.description("Read multiple schemas and return a paged list response.");
 		readAll.produces(APPLICATION_JSON);
+		readAll.exampleResponse(200, schemaExamples.getSchemaListResponse());
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});

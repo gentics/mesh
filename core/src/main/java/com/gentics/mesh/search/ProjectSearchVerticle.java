@@ -47,9 +47,7 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		if (springConfiguration != null) {
-			route("/*").handler(springConfiguration.authHandler());
-		}
+		secureAll();
 		addSearchEndpoints();
 	}
 
@@ -57,9 +55,10 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE);
-		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE);
-		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, TagFamily.TYPE);
+		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE, nodeExamples.getNodeListResponse());
+		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE, tagExamples.getTagListResponse());
+		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, TagFamily.TYPE,
+				tagFamilyExamples.getTagFamilyListResponse());
 	}
 
 	/**
@@ -73,15 +72,19 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 	 *            Class of matching list response
 	 * @param indexHandlerKey
 	 *            index handler key
+	 * @param exampleResponse
+	 *            Example list response used for RAML generation
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
-			Func0<RootVertex<T>> root, Class<RL> classOfRL, String indexHandlerKey) {
+			Func0<RootVertex<T>> root, Class<RL> classOfRL, String indexHandlerKey, RL exampleResponse) {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, exampleResponse);
+		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {
 			try {
 				IndexHandler indexHandler = registry.get(indexHandlerKey);

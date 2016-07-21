@@ -9,10 +9,10 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 
 public class ProjectExamples extends AbstractExamples {
 
-	public ProjectResponse getProjectResponse() {
+	public ProjectResponse getProjectResponse(String name) {
 		ProjectResponse project = new ProjectResponse();
 		project.setUuid(randomUUID());
-		project.setName("Dummy Project");
+		project.setName(name);
 		project.setCreated(getTimestamp());
 		project.setCreator(getUserReference());
 		project.setEdited(getTimestamp());
@@ -37,21 +37,21 @@ public class ProjectExamples extends AbstractExamples {
 
 	public ProjectListResponse getProjectListResponse() {
 		ProjectListResponse projectList = new ProjectListResponse();
-		projectList.getData().add(getProjectResponse());
+		projectList.getData().add(getProjectResponse("Dummy project"));
 		projectList.getData().add(getProjectResponse2());
 		setPaging(projectList, 1, 10, 2, 20);
 		return projectList;
 	}
 
-	public ProjectUpdateRequest getProjectUpdateRequest() {
+	public ProjectUpdateRequest getProjectUpdateRequest(String name) {
 		ProjectUpdateRequest projectUpdate = new ProjectUpdateRequest();
-		projectUpdate.setName("Renamed project");
+		projectUpdate.setName(name);
 		return projectUpdate;
 	}
 
-	public ProjectCreateRequest getProjectCreateRequest() {
+	public ProjectCreateRequest getProjectCreateRequest(String name) {
 		ProjectCreateRequest projectCreate = new ProjectCreateRequest();
-		projectCreate.setName("New project");
+		projectCreate.setName(name);
 		return projectCreate;
 	}
 

@@ -74,6 +74,7 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 		if (log.isDebugEnabled()) {
 			log.debug(query);
 		}
+		System.out.println(query);
 		return query;
 	}
 

@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
@@ -73,6 +74,7 @@ public class DatabaseHelper {
 		GraphRelationships.init(database);
 		GraphPermission.init(database);
 		GraphFieldContainerEdgeImpl.init(database);
+		MicronodeGraphFieldImpl.init(database);
 		TagEdgeImpl.init(database);
 
 		// Aggregation nodes

@@ -18,13 +18,14 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.rest.MeshRestClient;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.Future;
 import rx.Single;
 
-public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
+public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private AuthenticationVerticle authenticationVerticle;
@@ -40,34 +41,36 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRestClient() throws Exception {
-		User user = user();
-		String username = user.getUsername();
-		String uuid = user.getUuid();
+		try (NoTrx noTrx = db.noTrx()) {
+			User user = user();
+			String username = user.getUsername();
+			String uuid = user.getUuid();
 
-		MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx(),
-				Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
-		client.setLogin(username, password());
-		Single<GenericMessageResponse> future = client.login();
+			MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx(),
+					Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
+			client.setLogin(username, password());
+			Single<GenericMessageResponse> future = client.login();
 
-		GenericMessageResponse loginResponse = future.toBlocking().value();
-		assertNotNull(loginResponse);
-		assertEquals("OK", loginResponse.getMessage());
+			GenericMessageResponse loginResponse = future.toBlocking().value();
+			assertNotNull(loginResponse);
+			assertEquals("OK", loginResponse.getMessage());
 
-		Future<UserResponse> meResponse = client.me();
-		latchFor(meResponse);
-		UserResponse me = meResponse.result();
-		assertFalse("The request failed.", meResponse.failed());
+			Future<UserResponse> meResponse = client.me();
+			latchFor(meResponse);
+			UserResponse me = meResponse.result();
+			assertFalse("The request failed.", meResponse.failed());
 
-		assertNotNull(me);
-		assertEquals(uuid, me.getUuid());
+			assertNotNull(me);
+			assertEquals(uuid, me.getUuid());
 
-		Single<GenericMessageResponse> logoutFuture = client.logout();
-		logoutFuture.toBlocking().value();
+			Single<GenericMessageResponse> logoutFuture = client.logout();
+			logoutFuture.toBlocking().value();
 
-		// assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
-		meResponse = client.me();
-		latchFor(meResponse);
-		expectException(meResponse, UNAUTHORIZED, "error_not_authorized");
+			// assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
+			meResponse = client.me();
+			latchFor(meResponse);
+			expectException(meResponse, UNAUTHORIZED, "error_not_authorized");
+		}
 	}
 
 }

@@ -25,7 +25,7 @@ public class LanguageVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		secureAll();
 
 		// TODO Add method that allows assigning languages from and to the project
 		Route createRoute = route("/:projectUuid/languages").method(POST).produces(APPLICATION_JSON);

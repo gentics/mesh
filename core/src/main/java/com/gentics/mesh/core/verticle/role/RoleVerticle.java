@@ -29,10 +29,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		Endpoint endpoint = createEndpoint();
-		endpoint.path("/*");
-		endpoint.handler(getSpringConfiguration().authHandler());
-
+		secureAll();
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
@@ -65,6 +62,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		endpoint.description("Delete the role with the given uuid");
 		endpoint.path("/:uuid");
 		endpoint.method(DELETE);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -78,6 +76,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		endpoint.path("/:uuid");
 		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
+		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
+		endpoint.exampleResponse(200, roleExamples.getRoleResponse1("New role name"));
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -91,6 +91,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		readOne.method(GET);
 		readOne.description("Load the role with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
+		readOne.exampleResponse(200, roleExamples.getRoleResponse1("Admin Role"));
 		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -105,6 +106,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		readAll.description("Load multiple roles and return a paged list response");
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
+		readAll.exampleResponse(200, roleExamples.getRoleListResponse());
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
@@ -117,6 +119,8 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(roleExamples.getRoleCreateRequest("New role"));
+		endpoint.exampleResponse(201, roleExamples.getRoleResponse1("New role"));
 		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});

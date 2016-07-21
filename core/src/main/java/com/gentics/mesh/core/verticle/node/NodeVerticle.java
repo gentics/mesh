@@ -21,8 +21,6 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.ext.web.Route;
-
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
@@ -46,7 +44,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(getSpringConfiguration().authHandler());
+		secureAll();
 		if (getCrudHandler() != null) {
 			route("/:uuid").handler(getCrudHandler().getUuidHandler("node_not_found_for_uuid"));
 		}
@@ -97,6 +95,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.path("/:uuid/languages/:languageTag");
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Delete the language specific content of the node.");
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -110,7 +110,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		fieldUpdate.path("/:uuid/languages/:languageTag/fields/:fieldName");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
-		fieldUpdate.traits("paged");
+		//TODO consumes json and upload
+		fieldUpdate.exampleResponse(200, miscExamples.getMessageResponse());
+		fieldUpdate.description("Update the field with the given name.");
 		fieldUpdate.handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			String languageTag = rc.request().getParam("languageTag");
@@ -122,6 +124,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint fieldGet = createEndpoint();
 		fieldGet.path("/:uuid/languages/:languageTag/fields/:fieldName");
 		fieldGet.method(GET);
+		fieldGet.description("Load the field with the given name.");
 		fieldGet.handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			String languageTag = rc.request().getParam("languageTag");
@@ -131,6 +134,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 		Endpoint fieldCreate = createEndpoint();
 		fieldCreate.path("/:uuid/languages/:languageTag/fields/:fieldName");
+		fieldCreate.description("Create a new field with the given name.");
 		fieldCreate.method(PUT).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			String languageTag = rc.request().getParam("languageTag");
@@ -143,6 +147,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		fieldDelete.path("/:uuid/languages/:languageTag/fields/:fieldName");
 		fieldDelete.method(DELETE);
 		fieldDelete.produces(APPLICATION_JSON);
+		fieldDelete.description("Delete the field with the given name");
+		fieldDelete.exampleResponse(200, miscExamples.getMessageResponse());
 		fieldDelete.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -156,6 +162,10 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		imageTransform.path("/:uuid/languages/:languageTag/fields/:fieldName/transform");
 		imageTransform.method(POST);
 		imageTransform.produces(APPLICATION_JSON);
+		imageTransform.consumes(APPLICATION_JSON);
+		imageTransform.description("Transform the image with the given field name and overwrite the stored image with the transformation result.");
+		imageTransform.exampleRequest(nodeExamples.getBinaryFieldTransformRequest());
+		imageTransform.exampleResponse(200, miscExamples.getMessageResponse());
 		imageTransform.handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			String languageTag = rc.request().getParam("languageTag");
@@ -168,6 +178,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		listItemDelete.path("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex");
 		listItemDelete.method(DELETE);
 		listItemDelete.produces(APPLICATION_JSON);
+		listItemDelete.exampleResponse(200, miscExamples.getMessageResponse());
+		listItemDelete.description("Delete the field list item at the given index position (Not yet implemented)");
 		listItemDelete.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = rc.request().getParam("uuid");
@@ -179,6 +191,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint listItemGet = createEndpoint();
 		listItemGet.path("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex");
 		listItemGet.method(GET);
+		listItemGet.exampleResponse(200, miscExamples.getMessageResponse());
+		listItemGet.description("Load the field list item at the given index position. (Not yet implemented)");
 		listItemGet.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = rc.request().getParam("uuid");
@@ -187,7 +201,11 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			fieldAPIHandler.handleReadFieldItem(ac, uuid);
 		});
 
-		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex").method(PUT).handler(rc -> {
+		Endpoint updateFieldItem = createEndpoint();
+		updateFieldItem.path("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex");
+		updateFieldItem.method(PUT);
+		updateFieldItem.description("Update the field list item at the given index position. (Not yet implemented)");
+		updateFieldItem.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = rc.request().getParam("uuid");
 			String languageTag = rc.request().getParam("languageTag");
@@ -195,7 +213,11 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			fieldAPIHandler.handleUpdateFieldItem(ac, uuid);
 		});
 
-		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex/move/:newItemIndex").method(POST).handler(rc -> {
+		Endpoint moveFieldItem = createEndpoint();
+		moveFieldItem.path("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex/move/:newItemIndex");
+		moveFieldItem.method(POST);
+		moveFieldItem.description("Move the field list item on a new index position. (Not yet implemented)");
+		moveFieldItem.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = rc.request().getParam("uuid");
 			String languageTag = rc.request().getParam("languageTag");
@@ -215,6 +237,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.path("/:uuid/moveTo/:toUuid");
 		endpoint.method(PUT);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Move the node into the target node.");
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -228,6 +252,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.path("/:uuid/children");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, nodeExamples.getNodeListResponse());
+		endpoint.description("Load all child nodes and return a paged list response.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -237,15 +263,25 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	// TODO filtering, sorting
 	private void addTagsHandler() {
-		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> {
+		Endpoint getTags = createEndpoint();
+		getTags.path("/:uuid/tags");
+		getTags.method(GET);
+		getTags.produces(APPLICATION_JSON);
+		getTags.exampleResponse(200, tagExamples.getTagListResponse());
+		getTags.description("Return a list of all tags which tag the node.");
+		getTags.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.readTags(ac, uuid);
 		});
 
-		Route postRoute = route("/:uuid/tags/:tagUuid").method(PUT).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
+		Endpoint addTag = createEndpoint();
+		addTag.path("/:uuid/tags/:tagUuid");
+		addTag.method(PUT);
+		addTag.produces(APPLICATION_JSON);
+		addTag.exampleResponse(200, nodeExamples.getNodeResponse2());
+		addTag.description("Assign the given tag to the node.");
+		addTag.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			String tagUuid = ac.getParameter("tagUuid");
@@ -253,8 +289,13 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		});
 
 		// TODO fix error handling. This does not fail when tagUuid could not be found
-		Route deleteRoute = route("/:uuid/tags/:tagUuid").method(DELETE).produces(APPLICATION_JSON);
-		deleteRoute.handler(rc -> {
+		Endpoint removeTag = createEndpoint();
+		removeTag.path("/:uuid/tags/:tagUuid");
+		removeTag.method(DELETE);
+		removeTag.produces(APPLICATION_JSON);
+		removeTag.description("Remove the given tag from the node.");
+		removeTag.exampleResponse(200, nodeExamples.getNodeResponse2());
+		removeTag.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			String tagUuid = ac.getParameter("tagUuid");
@@ -271,6 +312,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(POST);
 		endpoint.description("Create a new node.");
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(nodeExamples.getNodeCreateRequest());
+		endpoint.exampleResponse(201, nodeExamples.getNodeResponseWithAllFields());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			ac.getVersioningParameters().setVersion("draft");
@@ -281,12 +324,13 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	// TODO filter by project name
 	// TODO filtering
 	private void addReadHandler() {
-		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
-		endpoint.method(GET);
-		endpoint.description("Load the node with the given uuid.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.handler(rc -> {
+		Endpoint readOne = createEndpoint();
+		readOne.path("/:uuid");
+		readOne.method(GET);
+		readOne.description("Load the node with the given uuid.");
+		readOne.produces(APPLICATION_JSON);
+		readOne.exampleResponse(200, nodeExamples.getNodeResponseWithAllFields());
+		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			// TODO move if clause back into verticle
 			if (StringUtils.isEmpty(uuid)) {
@@ -296,12 +340,13 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			}
 		});
 
-		Endpoint readAllEndpoint = createEndpoint();
-		readAllEndpoint.path("/");
-		readAllEndpoint.description("Read all nodes and return a paged list response.");
-		readAllEndpoint.method(GET);
-		readAllEndpoint.produces(APPLICATION_JSON);
-		readAllEndpoint.handler(rc -> crudHandler.handleReadList(InternalActionContext.create(rc)));
+		Endpoint readAll = createEndpoint();
+		readAll.path("/");
+		readAll.description("Read all nodes and return a paged list response.");
+		readAll.method(GET);
+		readAll.produces(APPLICATION_JSON);
+		readAll.exampleResponse(200, nodeExamples.getNodeListResponse());
+		readAll.handler(rc -> crudHandler.handleReadList(InternalActionContext.create(rc)));
 
 	}
 
@@ -312,6 +357,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the node with the given uuid.");
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -332,6 +378,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
+		endpoint.exampleResponse(200, nodeExamples.getNodeResponse2());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -347,6 +395,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		getEndpoint.path("/:uuid/published");
 		getEndpoint.method(GET);
 		getEndpoint.produces(APPLICATION_JSON);
+		getEndpoint.exampleResponse(200, versioningExamples.getPublishStatusResponse());
 		getEndpoint.handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), uuid);
@@ -357,6 +406,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		putEndpoint.path("/:uuid/published");
 		putEndpoint.method(PUT);
 		putEndpoint.produces(APPLICATION_JSON);
+		putEndpoint.exampleResponse(200, versioningExamples.getPublishStatusResponse());
 		putEndpoint.handler(rc -> {
 			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("uuid"));
 		});
@@ -366,6 +416,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		deleteEndpoint.path("/:uuid/published");
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
+		deleteEndpoint.exampleResponse(200, nodeExamples.getNodeResponse2());
 		deleteEndpoint.handler(rc -> {
 			crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.request().getParam("uuid"));
 		});
@@ -375,6 +426,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		getLanguageRoute.path("/:uuid/languages/:languageTag/published");
 		getLanguageRoute.method(GET);
 		getLanguageRoute.produces(APPLICATION_JSON);
+		getLanguageRoute.exampleResponse(200, versioningExamples.getPublishStatusModel());
 		getLanguageRoute.handler(rc -> {
 			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), rc.request().getParam("uuid"), rc.request().getParam("languageTag"));
 		});
@@ -382,13 +434,17 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint putLanguageRoute = createEndpoint();
 		putLanguageRoute.path("/:uuid/languages/:languageTag/published").method(PUT).produces(APPLICATION_JSON);
 		putLanguageRoute.description("Publish the language of the node.");
+		putLanguageRoute.exampleResponse(200, versioningExamples.getPublishStatusModel());
+		putLanguageRoute.produces(APPLICATION_JSON);
 		putLanguageRoute.handler(rc -> {
 			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("uuid"), rc.request().getParam("languageTag"));
 		});
 
 		Endpoint deleteLanguageRoute = createEndpoint();
-		deleteEndpoint.description("Take the language of the node offline.");
+		deleteLanguageRoute.description("Take the language of the node offline.");
 		deleteLanguageRoute.path("/:uuid/languages/:languageTag/published").method(DELETE).produces(APPLICATION_JSON);
+		deleteLanguageRoute.exampleResponse(200, versioningExamples.getPublishStatusModel());
+		deleteLanguageRoute.produces(APPLICATION_JSON);
 		deleteLanguageRoute.handler(rc -> {
 			crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.request().getParam("uuid"), rc.request().getParam("languageTag"));
 		});

@@ -394,7 +394,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<MicroschemaListResponse> findMicroschemas(String projectName, ParameterProvider... parameters) {
 		LocalActionContextImpl<MicroschemaListResponse> ac = createContext(MicroschemaListResponse.class, parameters);
-		microschemaCrudHandler.handleReadProjectList(ac);
+		microschemaCrudHandler.handleReadMicroschemaList(ac);
 		return ac.getFuture();
 	}
 

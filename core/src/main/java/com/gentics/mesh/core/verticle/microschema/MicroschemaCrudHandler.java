@@ -99,7 +99,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	}
 
-	public void handleReadProjectList(InternalActionContext ac) {
+	public void handleReadMicroschemaList(InternalActionContext ac) {
 		HandlerUtilities.readElementList(ac, () -> ac.getProject().getMicroschemaContainerRoot());
 	}
 

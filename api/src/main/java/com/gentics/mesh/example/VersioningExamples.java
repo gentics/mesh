@@ -43,26 +43,19 @@ public class VersioningExamples extends AbstractExamples {
 		return releaseList;
 	}
 
-	public ReleaseCreateRequest getReleaseCreateRequest() {
+	public ReleaseCreateRequest getReleaseCreateRequest(String name) {
 		ReleaseCreateRequest create = new ReleaseCreateRequest();
-		create.setName("winter2016");
+		create.setName(name);
 		return create;
 	}
 
-	public ReleaseUpdateRequest getReleaseUpdateRequest() {
+	public ReleaseUpdateRequest getReleaseUpdateRequest(String name) {
 		ReleaseUpdateRequest update = new ReleaseUpdateRequest();
-		update.setName("spring2016");
+		update.setName(name);
 		update.setActive(false);
 		return update;
 	}
 
-	public SchemaReferenceList getSchemaReferenceList() {
-		SchemaReferenceList schemas = new SchemaReferenceList();
-		schemas.add(getSchemaReference("content"));
-		schemas.add(getSchemaReference("folder"));
-		schemas.add(getSchemaReference("binary-data"));
-		return schemas;
-	}
 
 	public PublishStatusModel getPublishStatusModel() {
 		return getPublishStatusModel(true, getUserReference(), getTimestamp(), getVersionReference("3.0"));

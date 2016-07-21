@@ -2,6 +2,7 @@ package com.gentics.mesh.example;
 
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -10,14 +11,14 @@ import com.gentics.mesh.core.rest.role.RoleReference;
 
 public class GroupExamples extends AbstractExamples {
 
-	public GroupResponse getGroupResponse1() {
+	public GroupResponse getGroupResponse1(String name) {
 		GroupResponse group = new GroupResponse();
 		group.setUuid(randomUUID());
 		group.setCreated(getTimestamp());
 		group.setCreator(getUserReference());
 		group.setEdited(getTimestamp());
 		group.setEditor(getUserReference());
-		group.setName("Admin Group");
+		group.setName(name);
 		group.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		group.getRoles().add(new RoleReference().setName("admin").setUuid(randomUUID()));
 		return group;
@@ -33,20 +34,21 @@ public class GroupExamples extends AbstractExamples {
 
 	public GroupListResponse getGroupListResponse() {
 		GroupListResponse groupList = new GroupListResponse();
-		groupList.getData().add(getGroupResponse1());
+		groupList.getData().add(getGroupResponse1("Admin Group"));
 		groupList.getData().add(getGroupResponse2());
 		setPaging(groupList, 1, 10, 2, 20);
 		return groupList;
 	}
 
-	public GroupUpdateRequest getGroupUpdateRequest() {
-		GroupUpdateRequest groupUpdate = new GroupUpdateRequest();
-		return groupUpdate;
+	public GroupUpdateRequest getGroupUpdateRequest(String name) {
+		GroupUpdateRequest request = new GroupUpdateRequest();
+		request.setName(name);
+		return request;
 	}
 
-	public GroupCreateRequest getGroupCreateRequest() {
+	public GroupCreateRequest getGroupCreateRequest(String name) {
 		GroupCreateRequest groupCreate = new GroupCreateRequest();
-		groupCreate.setName("new group");
+		groupCreate.setName(name);
 		return groupCreate;
 	}
 

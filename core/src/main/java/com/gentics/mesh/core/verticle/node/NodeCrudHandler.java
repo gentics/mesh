@@ -102,7 +102,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 				SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
-				return batch.process().andThen(Single.just(message(ac, "node_deleted_language", uuid, languageTag)));
+				return batch.process().toSingleDefault(message(ac, "node_deleted_language", uuid, languageTag));
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 

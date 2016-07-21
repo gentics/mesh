@@ -3,10 +3,6 @@ package com.gentics.mesh.example;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
@@ -14,6 +10,7 @@ import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -26,15 +23,16 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 public class SchemaExamples extends AbstractExamples {
-	public  Schema getSchemaUpdateRequest() {
-		Schema schemaUpdate = new SchemaModel();
+
+	public Schema getSchemaUpdateRequest() {
+		Schema schema = new SchemaModel();
 		// TODO should i allow changing the name?
-		schemaUpdate.setName("extended-content");
-		schemaUpdate.setDescription("New description");
-		return schemaUpdate;
+		schema.setName("extended-content");
+		schema.setDescription("New description");
+		return schema;
 	}
 
-	public  Schema getSchemaCreateRequest() {
+	public Schema getSchemaCreateRequest() {
 		Schema schemaUpdateRequest = new SchemaModel();
 		schemaUpdateRequest.setContainer(true);
 		schemaUpdateRequest.setDescription("Some description text");
@@ -47,7 +45,7 @@ public class SchemaExamples extends AbstractExamples {
 		return schemaUpdateRequest;
 	}
 
-	public  Schema getSchema() {
+	public Schema getSchema() {
 		Schema schema = new SchemaModel();
 		schema.setUuid(randomUUID());
 		schema.setName("Example Schema");
@@ -106,7 +104,7 @@ public class SchemaExamples extends AbstractExamples {
 		return schema;
 	}
 
-	public  SchemaListResponse getSchemaListResponse() throws JsonGenerationException, JsonMappingException, IOException {
+	public SchemaListResponse getSchemaListResponse() {
 		SchemaListResponse schemaList = new SchemaListResponse();
 		schemaList.getData().add(getSchema());
 		schemaList.getData().add(getSchema());
@@ -114,7 +112,7 @@ public class SchemaExamples extends AbstractExamples {
 		return schemaList;
 	}
 
-	public  SchemaChangesListModel getSchemaChangesListModel() {
+	public SchemaChangesListModel getSchemaChangesListModel() {
 		SchemaChangesListModel model = new SchemaChangesListModel();
 		// Add field
 		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("listFieldToBeAddedField", "list", "Field Label Value");
@@ -138,6 +136,14 @@ public class SchemaExamples extends AbstractExamples {
 		model.getChanges().add(updateSchemaChange);
 
 		return model;
+	}
+
+	public SchemaReferenceList getSchemaReferenceList() {
+		SchemaReferenceList schemas = new SchemaReferenceList();
+		schemas.add(getSchemaReference("content"));
+		schemas.add(getSchemaReference("folder"));
+		schemas.add(getSchemaReference("binary-data"));
+		return schemas;
 	}
 
 }

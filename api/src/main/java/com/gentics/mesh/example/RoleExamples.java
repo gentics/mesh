@@ -15,9 +15,9 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 
 public class RoleExamples extends AbstractExamples {
 
-	public RoleResponse getRoleResponse1() {
+	public RoleResponse getRoleResponse1(String name) {
 		RoleResponse role = new RoleResponse();
-		role.setName("Reader role");
+		role.setName(name);
 		role.setCreated(getTimestamp());
 		role.setCreator(getUserReference());
 		role.setEdited(getTimestamp());
@@ -64,21 +64,21 @@ public class RoleExamples extends AbstractExamples {
 
 	public RoleListResponse getRoleListResponse() {
 		RoleListResponse list = new RoleListResponse();
-		list.getData().add(getRoleResponse1());
+		list.getData().add(getRoleResponse1("Reader role"));
 		list.getData().add(getRoleResponse2());
 		setPaging(list, 1, 10, 2, 20);
 		return list;
 	}
 
-	public RoleUpdateRequest getRoleUpdateRequest() {
+	public RoleUpdateRequest getRoleUpdateRequest(String name) {
 		RoleUpdateRequest roleUpdate = new RoleUpdateRequest();
-		roleUpdate.setName("New name");
+		roleUpdate.setName(name);
 		return roleUpdate;
 	}
 
-	public RoleCreateRequest getRoleCreateRequest() {
+	public RoleCreateRequest getRoleCreateRequest(String name) {
 		RoleCreateRequest roleCreate = new RoleCreateRequest();
-		roleCreate.setName("super editors");
+		roleCreate.setName(name);
 		return roleCreate;
 	}
 

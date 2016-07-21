@@ -30,10 +30,7 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		Endpoint endpoint = createEndpoint();
-		endpoint.path("/*");
-		endpoint.handler(getSpringConfiguration().authHandler());
-
+		secureAll();
 		addDiffHandler();
 		addChangesHandler();
 
@@ -45,9 +42,16 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addDiffHandler() {
-		Endpoint diffEndpoint = createEndpoint();
-		diffEndpoint.path("/:uuid/diff").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		diffEndpoint.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid/diff");
+		endpoint.method(POST);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschema());
+		endpoint.exampleResponse(200, schemaExamples.getSchemaChangesListModel());
+		endpoint.description(
+				"Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected.");
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String schemaUuid = ac.getParameter("uuid");
 			crudHandler.handleDiff(ac, schemaUuid);
@@ -55,16 +59,27 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addChangesHandler() {
-		Endpoint readChanges = createEndpoint();
-		readChanges.path("/:schemaUuid/changes").method(GET).produces(APPLICATION_JSON);
-		readChanges.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
-			String schemaUuid = ac.getParameter("schemaUuid");
-			crudHandler.handleGetSchemaChanges(ac, schemaUuid);
-		});
+		//		Endpoint readChanges = createEndpoint();
+		//		readChanges.path("/:schemaUuid/changes");
+		//		readChanges.method(GET);
+		//		readChanges.produces(APPLICATION_JSON);
+		//		readChanges.description("Load all changes that have been applied to the schema.");
+		//		readChanges.exampleResponse(200, model)
+		//		readChanges.handler(rc -> {
+		//			InternalActionContext ac = InternalActionContext.create(rc);
+		//			String schemaUuid = ac.getParameter("schemaUuid");
+		//			crudHandler.handleGetSchemaChanges(ac, schemaUuid);
+		//		});
 
 		Endpoint executeChanges = createEndpoint();
-		executeChanges.path("/:schemaUuid/changes").method(POST).produces(APPLICATION_JSON);
+		executeChanges.path("/:schemaUuid/changes");
+		executeChanges.method(POST);
+		executeChanges.produces(APPLICATION_JSON);
+		executeChanges.consumes(APPLICATION_JSON);
+		executeChanges.description(
+				"Apply the provided changes on the latest version of the schema and migrate all nodes which are based on the schema. Please note that this operation is non-blocking and will continue to run in the background.");
+		executeChanges.exampleRequest(schemaExamples.getSchemaChangesListModel());
+		executeChanges.exampleResponse(200, miscExamples.getMessageResponse());
 		executeChanges.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
@@ -73,7 +88,13 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandlers() {
-		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint readOne = createEndpoint();
+		readOne.path("/:uuid");
+		readOne.method(GET);
+		readOne.produces(APPLICATION_JSON);
+		readOne.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());
+		readOne.description("Read the microschema with the given uuid.");
+		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -87,6 +108,7 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Read multiple microschemas and return a paged list response.");
+		readAll.exampleResponse(200, microschemaExamples.getMicroschemaListResponse());
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
@@ -94,8 +116,13 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addDeleteHandler() {
-		Endpoint deleteMicroschema = createEndpoint();
-		deleteMicroschema.path("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(DELETE);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.description("Delete the microschema with the given uuid.");
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -103,8 +130,15 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addUpdateHandler() {
-		Endpoint updateMicroschema = createEndpoint();
-		updateMicroschema.path("/:uuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(PUT);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschema());
+		endpoint.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());
+		endpoint.description("Update the microschema with the given uuid.");
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -112,12 +146,14 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addCreateHandler() {
-		Endpoint createMicroschema = createEndpoint();
-		createMicroschema.path("/");
-		createMicroschema.method(POST);
-		createMicroschema.description("Create a new microschema.");
-		createMicroschema.produces(APPLICATION_JSON);
-		createMicroschema.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/");
+		endpoint.method(POST);
+		endpoint.description("Create a new microschema.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
+		endpoint.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());
+		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 

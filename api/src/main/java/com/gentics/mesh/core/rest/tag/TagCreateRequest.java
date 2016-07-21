@@ -10,12 +10,23 @@ public class TagCreateRequest implements RestModel {
 	}
 
 	/**
-	 * Return the tag field container which holds tag values (eg. Tag name)
+	 * Return the tag field container which holds tag values (e.g.: Tag name)
 	 * 
 	 * @return Tag field container
 	 */
 	public TagFieldContainer getFields() {
 		return fields;
+	}
+
+	/**
+	 * Set the field container which hold the tag values (e.g.: Tag name)
+	 * 
+	 * @param fields
+	 * @return Fluent API
+	 */
+	public TagCreateRequest setFields(TagFieldContainer fields) {
+		this.fields = fields;
+		return this;
 	}
 
 }

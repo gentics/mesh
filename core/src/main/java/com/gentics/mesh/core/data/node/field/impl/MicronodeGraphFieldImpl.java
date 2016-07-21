@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
 import io.vertx.core.logging.Logger;
@@ -34,6 +35,11 @@ import rx.Single;
 public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGraphField {
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeGraphFieldImpl.class);
+
+	public static void init(Database db) {
+		db.addEdgeType(MicronodeGraphFieldImpl.class.getSimpleName());
+		db.addEdgeType(HAS_FIELD, MicronodeGraphFieldImpl.class);
+	}
 
 	@Override
 	public void setFieldKey(String key) {

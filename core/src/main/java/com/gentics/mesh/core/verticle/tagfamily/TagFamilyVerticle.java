@@ -39,10 +39,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		Endpoint endpoint = createEndpoint();
-		endpoint.path("/*");
-		endpoint.handler(getSpringConfiguration().authHandler());
-
+		secureAll();
 		if (tagFamilyCrudHandler != null) {
 			getRouter().routeWithRegex("\\/([^\\/]{32})\\/.*").handler(tagFamilyCrudHandler.getUuidHandler("tagfamily_not_found"));
 		}
@@ -68,9 +65,15 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	// TODO update other fields as well?
 	// TODO Update user information
 	private void addTagUpdateHandler() {
-		Endpoint addTag = createEndpoint();
-		addTag.path("/:tagFamilyUuid/tags/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		addTag.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:tagFamilyUuid/tags/:uuid");
+		endpoint.method(PUT);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Update the specified tag");
+		endpoint.exampleRequest(tagExamples.getTagUpdateRequest("Red"));
+		endpoint.exampleResponse(200, tagExamples.getTagResponse1("Red"));
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("uuid");
@@ -114,8 +117,13 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 
 	// TODO filter by projectName
 	private void addTagDeleteHandler() {
-		Route route = route("/:tagFamilyUuid/tags/:uuid").method(DELETE).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:tagFamilyUuid/tags/:uuid");
+		endpoint.method(DELETE);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Remove the tag from the tag family");
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("uuid");
@@ -124,9 +132,13 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addTaggedNodesHandler() {
-		Endpoint listTaggedNodes = createEndpoint();
-		listTaggedNodes.path("/:tagFamilyUuid/tags/:uuid/nodes").method(GET).produces(APPLICATION_JSON);
-		listTaggedNodes.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:tagFamilyUuid/tags/:uuid/nodes");
+		endpoint.method(GET);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Load all nodes that have been tagged with the tag and return a paged list response.");
+		endpoint.exampleResponse(200, nodeExamples.getNodeListResponse());
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("uuid");
@@ -135,9 +147,13 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addTagFamilyDeleteHandler() {
-		Endpoint deleteTagFamily = createEndpoint();
-		deleteTagFamily.path("/:uuid").method(DELETE).produces(APPLICATION_JSON);
-		deleteTagFamily.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(DELETE);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Delete the tag family.");
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			tagFamilyCrudHandler.handleDelete(ac, uuid);
@@ -150,6 +166,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		readOne.method(GET);
 		readOne.description("Read the tag family with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
+		readOne.exampleResponse(200, tagFamilyExamples.getTagFamilyResponse("Colors"));
 		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -161,31 +178,36 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
 		readAll.description("Load multiple tag families and return a paged list response.");
+		readAll.exampleResponse(200, tagFamilyExamples.getTagFamilyListResponse());
 		readAll.handler(rc -> {
 			tagFamilyCrudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addTagFamilyCreateHandler() {
-		Endpoint createTagFamily = createEndpoint();
-		createTagFamily.path("/");
-		createTagFamily.method(POST);
-		createTagFamily.description("Create a new tag family.");
-		createTagFamily.consumes(APPLICATION_JSON);
-		createTagFamily.produces(APPLICATION_JSON);
-		createTagFamily.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/");
+		endpoint.method(POST);
+		endpoint.description("Create a new tag family.");
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyCreateRequest("Colors"));
+		endpoint.exampleResponse(201, tagFamilyExamples.getTagFamilyResponse("Colors"));
+		endpoint.handler(rc -> {
 			tagFamilyCrudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addTagFamilyUpdateHandler() {
-		Endpoint updateTagFamily = createEndpoint();
-		updateTagFamily.path("/:uuid");
-		updateTagFamily.method(PUT);
-		updateTagFamily.description("Update the tagfamily with the given uuid.");
-		updateTagFamily.consumes(APPLICATION_JSON);
-		updateTagFamily.produces(APPLICATION_JSON);
-		updateTagFamily.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(PUT);
+		endpoint.description("Update the tagfamily with the given uuid.");
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
+		endpoint.exampleResponse(200, tagFamilyExamples.getTagFamilyResponse("Nicer colors"));
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			tagFamilyCrudHandler.handleUpdate(ac, uuid);

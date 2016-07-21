@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.relationship;
 
-import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
@@ -50,7 +49,7 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_PROJECT_ROOT);
 			db.addEdgeType(HAS_RELEASE_ROOT);
 
-			db.addEdgeType(HAS_FIELD);
+			//db.addEdgeType(HAS_FIELD);
 			db.addEdgeType(HAS_ITEM);
 			db.addEdgeType(HAS_BATCH);
 			db.addEdgeType(HAS_LIST);

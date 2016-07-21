@@ -34,7 +34,6 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-
 		addStatusHandler();
 		addMigrationStatusHandler();
 
@@ -54,6 +53,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(GET);
 		endpoint.description("Return the current schema migration status.");
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			handler.handleMigrationStatus(InternalActionContext.create(rc));
 		});
@@ -64,6 +64,8 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.path("/export");
 		endpoint.method(GET);
 		endpoint.description("Invoke a graph database export");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			handler.handleExport(rc);
 		});
@@ -74,6 +76,8 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.path("/import");
 		endpoint.method(GET);
 		endpoint.description("Invoke a graph database import");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			handler.handleImport(rc);
 		});
@@ -83,6 +87,8 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/restore");
 		endpoint.description("Invoke a graph database restore");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.method(GET);
 		endpoint.handler(rc -> {
 			handler.handleRestore(rc);
@@ -94,6 +100,8 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.path("/backup");
 		endpoint.method(GET);
 		endpoint.description("Invoke an incremental graph database backup.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			handler.handleBackup(rc);
 		});
@@ -107,8 +115,10 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.description("Return the mesh system status.");
 		endpoint.path("/status");
 		endpoint.method(GET);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
-			handler.handleStatus(rc);
+			InternalActionContext ac = InternalActionContext.create(rc);
+			handler.handleStatus(ac);
 		});
 
 	}

@@ -17,7 +17,7 @@ public class MicroschemaExamples extends AbstractExamples {
 		return microschemas;
 	}
 
-	private Microschema getMicroschema() {
+	public Microschema getGeolocationMicroschema() {
 		Microschema microschema = new MicroschemaModel();
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
@@ -47,13 +47,13 @@ public class MicroschemaExamples extends AbstractExamples {
 
 	public MicroschemaListResponse getMicroschemaListResponse() {
 		MicroschemaListResponse microschemaList = new MicroschemaListResponse();
-		microschemaList.getData().add(getMicroschema());
-		microschemaList.getData().add(getMicroschema());
+		microschemaList.getData().add(getGeolocationMicroschema());
+		microschemaList.getData().add(getGeolocationMicroschema());
 		setPaging(microschemaList, 1, 10, 2, 20);
 		return microschemaList;
 	}
 
-	public Microschema getMicroschemaCreateRequest() {
+	public Microschema getGeolocationMicroschemaCreateRequest() {
 		Microschema createRequest = new MicroschemaModel();
 		createRequest.setName("geolocation");
 		createRequest.setDescription("Microschema for Geolocations");

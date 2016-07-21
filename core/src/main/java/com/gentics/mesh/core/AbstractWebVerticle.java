@@ -13,8 +13,16 @@ import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.example.GroupExamples;
+import com.gentics.mesh.example.MicroschemaExamples;
 import com.gentics.mesh.example.MiscExamples;
+import com.gentics.mesh.example.NodeExamples;
+import com.gentics.mesh.example.ProjectExamples;
 import com.gentics.mesh.example.RoleExamples;
+import com.gentics.mesh.example.SchemaExamples;
+import com.gentics.mesh.example.TagExamples;
+import com.gentics.mesh.example.TagFamilyExamples;
+import com.gentics.mesh.example.UserExamples;
+import com.gentics.mesh.example.VersioningExamples;
 import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.Future;
@@ -34,9 +42,17 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
 	private List<Endpoint> endpoints = new ArrayList<>();
 
+	protected NodeExamples nodeExamples = new NodeExamples();
+	protected TagExamples tagExamples = new TagExamples();
+	protected TagFamilyExamples tagFamilyExamples = new TagFamilyExamples();
 	protected GroupExamples groupExamples = new GroupExamples();
 	protected RoleExamples roleExamples = new RoleExamples();
 	protected MiscExamples miscExamples = new MiscExamples();
+	protected VersioningExamples versioningExamples = new VersioningExamples();
+	protected SchemaExamples schemaExamples = new SchemaExamples();
+	protected ProjectExamples projectExamples = new ProjectExamples();
+	protected UserExamples userExamples = new UserExamples();
+	protected MicroschemaExamples microschemaExamples = new MicroschemaExamples();
 
 	protected Router localRouter = null;
 	protected String basePath;
@@ -95,6 +111,13 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			startFuture.complete();
 		});
 
+	}
+
+	/**
+	 * Add a route which will secure all endpoints.
+	 */
+	protected void secureAll() {
+		getRouter().route("/*").handler(getSpringConfiguration().authHandler());
 	}
 
 	/**

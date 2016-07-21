@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.rest.Endpoint;
 
 /**
  * Verticle for /api/v1/PROJECTNAME/microschemas
@@ -23,26 +24,38 @@ public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 	@Autowired
 	private MicroschemaCrudHandler crudHandler;
 
-	protected ProjectMicroschemaVerticle() {
+	public ProjectMicroschemaVerticle() {
 		super("microschemas");
 	}
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		route("/*").handler(springConfiguration.authHandler());
+		secureAll();
 		addReadHandlers();
 		addUpdateHandlers();
 		addDeleteHandlers();
 	}
 
 	private void addReadHandlers() {
-		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleReadProjectList(InternalActionContext.create(rc));
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/");
+		endpoint.method(GET);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Read all microschemas which are assigned to the project.");
+		endpoint.exampleResponse(200, microschemaExamples.getMicroschemaListResponse());
+		endpoint.handler(rc -> {
+			crudHandler.handleReadMicroschemaList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addUpdateHandlers() {
-		route("/:uuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(PUT);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Add the microschema to the project.");
+		endpoint.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleAddMicroschemaToProject(ac, uuid);
@@ -50,7 +63,12 @@ public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addDeleteHandlers() {
-		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(DELETE);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Remove the microschema from the project.");
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleRemoveMicroschemaFromProject(ac, uuid);

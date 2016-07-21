@@ -39,7 +39,7 @@ import com.gentics.mesh.util.Tuple;
 
 public class NodeExamples extends AbstractExamples {
 
-	private NodeResponse getNodeResponse1() {
+	public NodeResponse getNodeResponseWithAllFields() {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(randomUUID());
 		NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
@@ -105,7 +105,7 @@ public class NodeExamples extends AbstractExamples {
 		String rootUuid = randomUUID();
 
 		// Level 0
-		NodeResponse rootElement = getNodeResponse1();
+		NodeResponse rootElement = getNodeResponseWithAllFields();
 		rootElement.setUuid(rootUuid);
 		root.setUuid(rootUuid);
 		root.setNode(rootElement);
@@ -114,7 +114,7 @@ public class NodeExamples extends AbstractExamples {
 		// Level 1
 		NavigationElement navElement = new NavigationElement();
 		String navElementUuid = randomUUID();
-		NodeResponse navElementNode = getNodeResponse1();
+		NodeResponse navElementNode = getNodeResponseWithAllFields();
 		navElementNode.setUuid(navElementUuid);
 		navElement.setUuid(navElementUuid);
 		navElement.setNode(navElementNode);
@@ -238,7 +238,7 @@ public class NodeExamples extends AbstractExamples {
 
 	public NodeListResponse getNodeListResponse() {
 		NodeListResponse list = new NodeListResponse();
-		list.getData().add(getNodeResponse1());
+		list.getData().add(getNodeResponseWithAllFields());
 		list.getData().add(getNodeResponse2());
 		setPaging(list, 1, 10, 2, 20);
 		return list;

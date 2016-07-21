@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.navroot;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -24,9 +25,7 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		if (springConfiguration != null) {
-			route("/*").handler(springConfiguration.authHandler());
-		}
+		secureAll();
 		addPathHandler();
 	}
 
@@ -35,6 +34,8 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 		endpoint.pathRegex("\\/(.*)");
 		endpoint.method(GET);
 		endpoint.description("Return a navigation for the node which is located using the given path.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, nodeExamples.getNavigationResponse());
 		endpoint.handler(rc -> handler.handleGetPath(rc));
 	}
 }

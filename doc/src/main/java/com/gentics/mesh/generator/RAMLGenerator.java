@@ -9,6 +9,7 @@ import org.raml.emitter.RamlEmitter;
 import org.raml.model.Action;
 import org.raml.model.ActionType;
 import org.raml.model.MimeType;
+import org.raml.model.Protocol;
 import org.raml.model.Raml;
 import org.raml.model.Resource;
 import org.raml.model.Response;
@@ -16,8 +17,10 @@ import org.raml.model.Response;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
+import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
+import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaVerticle;
 import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
@@ -49,6 +52,13 @@ public class RAMLGenerator {
 
 	public void generator() throws Exception {
 
+		raml.setTitle("Gentics Mesh REST API");
+		raml.setVersion("1");
+		raml.setBaseUri("http://localhost:8080");
+		raml.getProtocols().add(Protocol.HTTP);
+		raml.getProtocols().add(Protocol.HTTPS);
+		raml.setMediaType("application/json");
+
 		raml.getResources().put("/api/v1", apiResource);
 
 		addCoreVerticles(raml);
@@ -70,7 +80,7 @@ public class RAMLGenerator {
 			action.setDescription(endpoint.getDescription());
 
 			// Add response examples
-			for (Entry<Integer, RestModel> entry : endpoint.getExampleResponses().entrySet()) {
+			for (Entry<Integer, Object> entry : endpoint.getExampleResponses().entrySet()) {
 				Response response = new Response();
 				HashMap<String, MimeType> map = new HashMap<>();
 				response.setBody(map);
@@ -161,6 +171,10 @@ public class RAMLGenerator {
 		initVerticle(projectSearchVerticle);
 		addEndpoints(apiResource, projectSearchVerticle);
 
+		ProjectMicroschemaVerticle projectMicroschemaVerticle = Mockito.spy(new ProjectMicroschemaVerticle());
+		initVerticle(projectMicroschemaVerticle);
+		addEndpoints(apiResource, projectMicroschemaVerticle);
+
 	}
 
 	private void addCoreVerticles(Raml raml) throws Exception {
@@ -199,6 +213,10 @@ public class RAMLGenerator {
 		UtilityVerticle utilityVerticle = Mockito.spy(new UtilityVerticle());
 		initVerticle(utilityVerticle);
 		addEndpoints(apiResource, utilityVerticle);
+
+		AuthenticationVerticle authVerticle = Mockito.spy(new AuthenticationVerticle());
+		initVerticle(authVerticle);
+		addEndpoints(apiResource, authVerticle);
 
 	}
 }

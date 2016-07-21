@@ -15,6 +15,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.rest.Endpoint;
 
+import io.vertx.ext.web.Route;
+
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -29,10 +31,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		Endpoint endpoint = createEndpoint();
-		endpoint.path("/*");
-		endpoint.handler(getSpringConfiguration().authHandler());
-
+		secureAll();
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
@@ -47,6 +46,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.description("Read the user permissions on the element/s that are located by the specified path.");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, userExamples.getUserPermissionResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String userUuid = ac.getParameter("param0");
@@ -56,12 +56,13 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandler() {
-		Endpoint readEndpoint = createEndpoint();
-		readEndpoint.path("/:uuid");
-		readEndpoint.description("Read the user with the given uuid");
-		readEndpoint.method(GET);
-		readEndpoint.produces(APPLICATION_JSON);
-		readEndpoint.handler(rc -> {
+		Endpoint readOne = createEndpoint();
+		readOne.path("/:uuid");
+		readOne.description("Read the user with the given uuid");
+		readOne.method(GET);
+		readOne.produces(APPLICATION_JSON);
+		readOne.exampleResponse(200, userExamples.getUserResponse1("jdoe"));
+		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleRead(ac, uuid);
@@ -70,12 +71,13 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		/*
 		 * List all users when no parameter was specified
 		 */
-		Endpoint readAllEndpoint = createEndpoint();
-		readAllEndpoint.path("/");
-		readAllEndpoint.description("Load multiple users and return a paged list response.");
-		readAllEndpoint.method(GET);
-		readAllEndpoint.produces(APPLICATION_JSON);
-		readAllEndpoint.handler(rc -> {
+		Endpoint readAll = createEndpoint();
+		readAll.path("/");
+		readAll.description("Load multiple users and return a paged list response.");
+		readAll.method(GET);
+		readAll.produces(APPLICATION_JSON);
+		readAll.exampleResponse(200, userExamples.getUserListResponse());
+		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
@@ -84,8 +86,10 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:uuid");
 		endpoint.method(DELETE);
-		endpoint.description("Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.");
+		endpoint.description(
+				"Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.");
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -100,6 +104,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
+		endpoint.exampleResponse(200, userExamples.getUserResponse1("jdoe42"));
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -114,6 +120,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(userExamples.getUserCreateRequest("newuser"));
+		endpoint.exampleResponse(201, userExamples.getUserResponse1("newuser"));
 		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});

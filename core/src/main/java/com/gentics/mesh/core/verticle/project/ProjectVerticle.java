@@ -30,10 +30,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		Endpoint endpoint = createEndpoint();
-		endpoint.path("/*");
-		endpoint.handler(getSpringConfiguration().authHandler());
-
+		secureAll();
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
@@ -47,6 +44,8 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		updateEndpoint.method(PUT);
 		updateEndpoint.consumes(APPLICATION_JSON);
 		updateEndpoint.produces(APPLICATION_JSON);
+		updateEndpoint.exampleRequest(projectExamples.getProjectUpdateRequest("New project name"));
+		updateEndpoint.exampleResponse(200, projectExamples.getProjectResponse("New project name"));
 		updateEndpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -63,18 +62,21 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		endpoint.description("Create a new project.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(projectExamples.getProjectCreateRequest("New project"));
+		endpoint.exampleResponse(201, projectExamples.getProjectResponse("New Project"));
 		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addReadHandler() {
-		Endpoint readItem = createEndpoint();
-		readItem.path("/:uuid");
-		readItem.method(GET);
-		readItem.description("Load the project with the given uuid.");
-		readItem.produces(APPLICATION_JSON);
-		readItem.handler(rc -> {
+		Endpoint readOne = createEndpoint();
+		readOne.path("/:uuid");
+		readOne.method(GET);
+		readOne.description("Load the project with the given uuid.");
+		readOne.produces(APPLICATION_JSON);
+		readOne.exampleResponse(200, projectExamples.getProjectResponse("Project name"));
+		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -88,6 +90,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		readAll.method(GET);
 		readAll.description("Load multiple projects and return a paged response.");
 		readAll.produces(APPLICATION_JSON);
+		readAll.exampleResponse(200, projectExamples.getProjectListResponse());
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
@@ -99,6 +102,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(DELETE);
 		endpoint.description("Delete the project and all attached nodes.");
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");

@@ -246,7 +246,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			} else {
 				// Update the existing edge type and set the super class
 				if (superClazzOfEdge != null) {
-					OrientVertexType superType = tx.getVertexType(superClazzOfEdge.getSimpleName());
+					OrientEdgeType superType = tx.getEdgeType(superClazzOfEdge.getSimpleName());
 					if (superType == null) {
 						throw new RuntimeException("The supertype for edges with label {" + label + "} can't be set since the supertype {"
 								+ superClazzOfEdge.getSimpleName() + "} was not yet added to orientdb.");

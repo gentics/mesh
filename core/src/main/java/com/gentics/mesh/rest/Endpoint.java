@@ -1,13 +1,21 @@
 package com.gentics.mesh.rest;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -17,21 +25,26 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class Endpoint implements Route {
 
+	private static final Logger log = LoggerFactory.getLogger(Endpoint.class);
+	
 	private Route route;
 
 	private String displayName;
 
 	private String description;
 
-	private Map<Integer, RestModel> exampleResponses = new HashMap<>();
+	private Map<Integer, Object> exampleResponses = new HashMap<>();
 
 	private String[] traits = new String[] {};
 
-	private RestModel exampleRequest = null;
+	private Object exampleRequest = null;
 
 	private String pathRegex;
 
 	private HttpMethod method;
+
+	private final Set<String> consumes = new LinkedHashSet<>();
+	private final Set<String> produces = new LinkedHashSet<>();
 
 	public Endpoint(Router router) {
 		this.route = router.route();
@@ -59,11 +72,13 @@ public class Endpoint implements Route {
 
 	@Override
 	public Route produces(String contentType) {
+		produces.add(contentType);
 		return route.produces(contentType);
 	}
 
 	@Override
 	public Route consumes(String contentType) {
+		consumes.add(contentType);
 		return route.consumes(contentType);
 	}
 
@@ -79,7 +94,26 @@ public class Endpoint implements Route {
 
 	@Override
 	public Route handler(Handler<RoutingContext> requestHandler) {
+		validate();
 		return route.handler(requestHandler);
+	}
+
+	/**
+	 * Validate that all mandatory fields have been set.
+	 */
+	private void validate() {
+		if (!produces.isEmpty() && exampleResponses.isEmpty()) {
+			log.error("Endpoint {" + getPath() +"} has no example response.");
+			throw new RuntimeException("Endpoint has no example responses.");
+		}
+		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequest == null) {
+			log.error("Endpoint {" + getPath() +"} has no example request.");
+			throw new RuntimeException("Endpoint has no example request.");
+		}
+		if (isEmpty(description)) {
+			log.error("Endpoint {" + getPath() +"} has no description.");
+			throw new RuntimeException("No description was set");
+		}
 	}
 
 	@Override
@@ -140,12 +174,12 @@ public class Endpoint implements Route {
 		return displayName;
 	}
 
-	public Endpoint exampleResponse(int code, RestModel model) {
+	public Endpoint exampleResponse(int code, Object model) {
 		exampleResponses.put(code, model);
 		return this;
 	}
 
-	public Endpoint exampleRequest(RestModel model) {
+	public Endpoint exampleRequest(Object model) {
 		this.exampleRequest = model;
 		return this;
 	}
@@ -170,11 +204,11 @@ public class Endpoint implements Route {
 		return traits;
 	}
 
-	public Map<Integer, RestModel> getExampleResponses() {
+	public Map<Integer, Object> getExampleResponses() {
 		return exampleResponses;
 	}
 
-	public RestModel getExampleRequest() {
+	public Object getExampleRequest() {
 		return exampleRequest;
 	}
 

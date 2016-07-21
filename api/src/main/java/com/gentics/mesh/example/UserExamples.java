@@ -13,8 +13,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 public class UserExamples extends AbstractExamples {
 
 	public UserResponse getUserResponse2() {
-		UserResponse user2 = getUserResponse1();
-		user2.setUsername("jroe");
+		UserResponse user2 = getUserResponse1("jroe");
 		user2.setFirstname("Jane");
 		user2.setLastname("Roe");
 		user2.setEmailAddress("j.roe@nowhere.com");
@@ -24,14 +23,14 @@ public class UserExamples extends AbstractExamples {
 		return user2;
 	}
 
-	public UserResponse getUserResponse1() {
+	public UserResponse getUserResponse1(String username) {
 		UserResponse user = new UserResponse();
 		user.setUuid(randomUUID());
 		user.setCreated(getTimestamp());
 		user.setCreator(getUserReference());
 		user.setEdited(getTimestamp());
 		user.setEditor(getUserReference());
-		user.setUsername("jdoe42");
+		user.setUsername(username);
 		user.setFirstname("Joe");
 		user.setLastname("Doe");
 		user.setEnabled(true);
@@ -48,26 +47,26 @@ public class UserExamples extends AbstractExamples {
 
 	public UserListResponse getUserListResponse() {
 		UserListResponse userList = new UserListResponse();
-		userList.getData().add(getUserResponse1());
+		userList.getData().add(getUserResponse1("jdoe"));
 		userList.getData().add(getUserResponse2());
 		setPaging(userList, 1, 10, 2, 20);
 		return userList;
 	}
 
-	public UserUpdateRequest getUserUpdateRequest() {
+	public UserUpdateRequest getUserUpdateRequest(String username) {
 		UserUpdateRequest userUpdate = new UserUpdateRequest();
-		userUpdate.setUsername("jdoe42");
+		userUpdate.setUsername(username);
 		userUpdate.setPassword("iesiech0eewinioghaRa");
 		userUpdate.setFirstname("Joe");
 		userUpdate.setLastname("Doe");
 		userUpdate.setEmailAddress("j.doe@nowhere.com");
-		userUpdate.setNodeReference(getUserResponse1().getNodeReference());
+		userUpdate.setNodeReference(getUserResponse1("jdoe").getNodeReference());
 		return userUpdate;
 	}
 
-	public UserCreateRequest getUserCreateRequest() {
+	public UserCreateRequest getUserCreateRequest(String name) {
 		UserCreateRequest userCreate = new UserCreateRequest();
-		userCreate.setUsername("jdoe42");
+		userCreate.setUsername(name);
 		userCreate.setPassword("iesiech0eewinioghaRa");
 		userCreate.setFirstname("Joe");
 		userCreate.setLastname("Doe");

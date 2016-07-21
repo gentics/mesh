@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.generic;
 
+import com.gentics.ferma.annotation.GraphElement;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -15,6 +16,7 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 /**
  * @see MeshEdge
  */
+@GraphElement
 public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	private Object id;

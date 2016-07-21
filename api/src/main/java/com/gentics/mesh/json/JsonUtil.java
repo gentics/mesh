@@ -5,6 +5,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.io.IOException;
 
+import org.codehaus.jettison.json.JSONObject;
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -97,6 +99,9 @@ public final class JsonUtil {
 	}
 
 	public static <T> String toJson(T obj) throws GenericRestException {
+		if (obj instanceof JSONObject) {
+			return ((JSONObject) obj).toString();
+		}
 		try {
 			return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
 		} catch (IOException e) {
