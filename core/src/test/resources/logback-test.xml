@@ -38,9 +38,10 @@
 <logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG" />
 <logger name="com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl" level="DEBUG" />
 <logger name="com.gentics.mesh.search.index.NodeIndexHandler" level="DEBUG" />
- -->
+
 <logger name="com.gentics.mesh.rest.MeshResponseHandler" level="DEBUG"/>
 <logger name="com.gentics.mesh.rest.MeshRestRequestUtil" level="DEBUG"/>
+ -->
 <root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>

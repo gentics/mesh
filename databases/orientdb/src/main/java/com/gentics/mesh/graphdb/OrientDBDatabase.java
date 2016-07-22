@@ -20,7 +20,6 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import com.gentics.ferma.orientdb.OrientDBTypeResolver;
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -43,6 +42,7 @@ import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
 import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -82,8 +82,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
 		super.init(options, vertx);
-		resolver = new OrientDBTypeResolver(basePaths);
-		//		resolver = new PolymorphicTypeResolver();
+		//resolver = new OrientDBTypeResolver(basePaths);
+		resolver = new PolymorphicTypeResolver();
 		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
