@@ -68,6 +68,7 @@ public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Remove the microschema from the project.");
+		endpoint.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
