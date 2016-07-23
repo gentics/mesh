@@ -83,7 +83,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
 		super.init(options, vertx);
 		//resolver = new OrientDBTypeResolver(basePaths);
-		resolver = new PolymorphicTypeResolver();
+		resolver = new MeshTypeResolver(basePaths);
 		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
