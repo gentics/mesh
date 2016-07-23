@@ -1,5 +1,9 @@
 package com.gentics.mesh.graphdb;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.gentics.ferma.orientdb.ElementTypeClassCache;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.AbstractVertexFrame;
@@ -10,6 +14,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.gremlin.Tokens;
 
 /**
  * This type resolver will use the Java class stored in the 'java_class' on the element.
@@ -31,8 +36,7 @@ public class MeshTypeResolver implements TypeResolver {
 		}
 
 		final Class<T> nodeKind = (Class<T>) this.elementTypCache.forName(nodeClazz);
-		if (kind.isAssignableFrom(nodeKind) || kind.equals(VertexFrame.class) || kind.equals(EdgeFrame.class)
-				|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class)) {
+		if (nodeKind != null) {
 			return nodeKind;
 		} else {
 			return kind;
@@ -42,8 +46,9 @@ public class MeshTypeResolver implements TypeResolver {
 	@Override
 	public Class<?> resolve(final Element element) {
 		final String typeResolutionName = element.getProperty(this.typeResolutionKey);
-		if (typeResolutionName == null)
+		if (typeResolutionName == null) {
 			return null;
+		}
 
 		return this.elementTypCache.forName(typeResolutionName);
 	}
@@ -60,23 +65,26 @@ public class MeshTypeResolver implements TypeResolver {
 
 	@Override
 	public VertexTraversal<?, ?, ?> hasType(final VertexTraversal<?, ?, ?> traverser, final Class<?> type) {
-
-		return null;
+		final Set<? extends String> allAllowedValues = new HashSet<>(Arrays.asList(type.getSimpleName()));
+		return traverser.has(typeResolutionKey, Tokens.T.in, allAllowedValues);
 	}
 
 	@Override
 	public EdgeTraversal<?, ?, ?> hasType(final EdgeTraversal<?, ?, ?> traverser, final Class<?> type) {
-		return null;
+		final Set<? extends String> allAllowedValues = new HashSet<>(Arrays.asList(type.getSimpleName()));
+		return traverser.has(typeResolutionKey, Tokens.T.in, allAllowedValues);
 	}
 
 	@Override
 	public VertexTraversal<?, ?, ?> hasNotType(VertexTraversal<?, ?, ?> traverser, Class<?> type) {
-		return null;
+		final Set<? extends String> allAllowedValues = new HashSet<>(Arrays.asList(type.getSimpleName()));
+		return traverser.has(typeResolutionKey, Tokens.T.notin, allAllowedValues);
 	}
 
 	@Override
 	public EdgeTraversal<?, ?, ?> hasNotType(EdgeTraversal<?, ?, ?> traverser, Class<?> type) {
-		return null;
+		final Set<? extends String> allAllowedValues = new HashSet<>(Arrays.asList(type.getSimpleName()));
+		return traverser.has(typeResolutionKey, Tokens.T.notin, allAllowedValues);
 	}
 
 }
