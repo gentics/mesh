@@ -1,17 +1,13 @@
 package com.gentics.mesh.graphdb;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
-import com.gentics.ferma.orientdb.ElementTypeClassCache;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.gremlin.Tokens;
@@ -20,37 +16,39 @@ import com.tinkerpop.gremlin.Tokens;
  * This type resolver will use the Java class stored in the 'java_class' on the element.
  */
 public class MeshTypeResolver implements TypeResolver {
+	public final static String TYPE_RESOLUTION_KEY = "ferma_type";
 
-	private ElementTypeClassCache elementTypCache;
-	private String typeResolutionKey = PolymorphicTypeResolver.TYPE_RESOLUTION_KEY;
+	private final SimpleReflectionCache reflectionCache;
+	private final String typeResolutionKey;
 
-	public MeshTypeResolver(String... packagePaths) {
-		this.elementTypCache = new ElementTypeClassCache(packagePaths);
+	public MeshTypeResolver(String... basePaths) {
+		this.reflectionCache = new SimpleReflectionCache(basePaths);
+		this.typeResolutionKey = TYPE_RESOLUTION_KEY;
 	}
+
 
 	@Override
 	public <T> Class<? extends T> resolve(final Element element, final Class<T> kind) {
 		final String nodeClazz = element.getProperty(this.typeResolutionKey);
-		if (nodeClazz == null) {
+		if (nodeClazz == null)
 			return kind;
-		}
 
-		final Class<T> nodeKind = (Class<T>) this.elementTypCache.forName(nodeClazz);
-		if (nodeKind != null) {
+		final Class<T> nodeKind = (Class<T>) this.reflectionCache.forName(nodeClazz);
+
+		if (kind.isAssignableFrom(nodeKind) || kind.equals(VertexFrame.class) || kind.equals(EdgeFrame.class)
+				|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class))
 			return nodeKind;
-		} else {
+		else
 			return kind;
-		}
 	}
 
 	@Override
 	public Class<?> resolve(final Element element) {
 		final String typeResolutionName = element.getProperty(this.typeResolutionKey);
-		if (typeResolutionName == null) {
+		if (typeResolutionName == null)
 			return null;
-		}
 
-		return this.elementTypCache.forName(typeResolutionName);
+		return this.reflectionCache.forName(typeResolutionName);
 	}
 
 	@Override
@@ -65,25 +63,25 @@ public class MeshTypeResolver implements TypeResolver {
 
 	@Override
 	public VertexTraversal<?, ?, ?> hasType(final VertexTraversal<?, ?, ?> traverser, final Class<?> type) {
-		final Set<? extends String> allAllowedValues = new HashSet<>(Arrays.asList(type.getSimpleName()));
+		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
 		return traverser.has(typeResolutionKey, Tokens.T.in, allAllowedValues);
 	}
 
 	@Override
 	public EdgeTraversal<?, ?, ?> hasType(final EdgeTraversal<?, ?, ?> traverser, final Class<?> type) {
-		final Set<? extends String> allAllowedValues = new HashSet<>(Arrays.asList(type.getSimpleName()));
+		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
 		return traverser.has(typeResolutionKey, Tokens.T.in, allAllowedValues);
 	}
 
 	@Override
 	public VertexTraversal<?, ?, ?> hasNotType(VertexTraversal<?, ?, ?> traverser, Class<?> type) {
-		final Set<? extends String> allAllowedValues = new HashSet<>(Arrays.asList(type.getSimpleName()));
+		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
 		return traverser.has(typeResolutionKey, Tokens.T.notin, allAllowedValues);
 	}
 
 	@Override
 	public EdgeTraversal<?, ?, ?> hasNotType(EdgeTraversal<?, ?, ?> traverser, Class<?> type) {
-		final Set<? extends String> allAllowedValues = new HashSet<>(Arrays.asList(type.getSimpleName()));
+		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
 		return traverser.has(typeResolutionKey, Tokens.T.notin, allAllowedValues);
 	}
 

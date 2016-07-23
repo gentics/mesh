@@ -43,7 +43,6 @@ public class HtmlFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		assertThat(field.getItems()).containsExactly("A", "B", "C");
 	}
 
-	
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
@@ -63,7 +62,7 @@ public class HtmlFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		listField.add(null);
 		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
-	
+
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
@@ -96,7 +95,7 @@ public class HtmlFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		listField.add("C");
 		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
-		//2. Read the node
+		// 2. Read the node
 		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
 		HtmlFieldListImpl deserializedField = response.getFields().getHtmlFieldList(FIELD_NAME);
 		assertNotNull(deserializedField);
@@ -148,7 +147,8 @@ public class HtmlFieldListVerticleTest extends AbstractListFieldVerticleTest {
 					response.getVersion().getNumber());
 			assertEquals("We expected container {" + container.getVersion().toString() + "} to contain the old value.", newValue,
 					getListValues(updatedContainer, HtmlGraphFieldListImpl.class, FIELD_NAME));
-			//assertEquals("We expected container {" + updatedContainer.getVersion().toString() +"} to contain the old value.", oldValue, getListValues(updatedContainer, HtmlGraphFieldListImpl.class, FIELD_NAME));
+			// assertEquals("We expected container {" + updatedContainer.getVersion().toString() +"} to contain the old value.", oldValue,
+			// getListValues(updatedContainer, HtmlGraphFieldListImpl.class, FIELD_NAME));
 			container = updatedContainer;
 		}
 	}
@@ -170,8 +170,9 @@ public class HtmlFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
 		assertThat(latest.getHTMLList(FIELD_NAME)).isNull();
 		assertThat(latest.getPreviousVersion().getHTMLList(FIELD_NAME)).isNotNull();
-		List<String> oldValueList = latest.getPreviousVersion().getHTMLList(FIELD_NAME).getList().stream().map(item -> item.getHTML()).collect(Collectors.toList());
-		assertThat(oldValueList).containsExactly("A","B");
+		List<String> oldValueList = latest.getPreviousVersion().getHTMLList(FIELD_NAME).getList().stream().map(item -> item.getHTML())
+				.collect(Collectors.toList());
+		assertThat(oldValueList).containsExactly("A", "B");
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
