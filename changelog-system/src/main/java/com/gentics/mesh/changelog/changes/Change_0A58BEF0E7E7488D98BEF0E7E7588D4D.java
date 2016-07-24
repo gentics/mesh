@@ -1,8 +1,11 @@
 package com.gentics.mesh.changelog.changes;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
 public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
@@ -25,11 +28,13 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 		// Iterate over all projects
 		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {
 			Vertex releaseRoot = getGraph().addVertex("class:ReleaseRootImpl");
+			releaseRoot.setProperty("ferma_type", "ReleaseRootImpl");
 			releaseRoot.setProperty("uuid", randomUUID());
 			project.addEdge("HAS_RELEASE_ROOT", releaseRoot);
 
 			// Create release and edges
 			Vertex release = getGraph().addVertex("class:ReleaseImpl");
+			release.setProperty("ferma_type", "ReleaseImpl");
 			release.setProperty("uuid", randomUUID());
 			release.setProperty("name", project.getProperty("name"));
 			release.setProperty("active", true);
@@ -49,8 +54,31 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			migrateNode(baseNode, release.getProperty("uuid"));
 		}
 
+		// Strip all package paths from all ferma type properties
+		for (Vertex vertex : getGraph().getVertices()) {
+			migrateType(vertex);
+		}
+		for (Edge edge : getGraph().getEdges()) {
+			migrateType(edge);
+		}
+
 	}
 
+	/**
+	 * Change type: com.gentics.mesh.core.data.impl.UserImpl to UserImpl
+	 * 
+	 * @param element
+	 */
+	private void migrateType(Element element) {
+		String type = element.getProperty("ferma_type");
+		if (!StringUtils.isEmpty(type)) {
+			int idx = type.lastIndexOf(".");
+			if (idx != -1) {
+				type = type.substring(idx + 1);
+				element.setProperty("ferma_type", type);
+			}
+		}
+	}
 
 	/**
 	 * Migrate the node and assign it's field containers to the release.
@@ -86,12 +114,12 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			draftEdge.setProperty("edgeType", "D");
 			draftEdge.setProperty("languageTag", containerEdge.getProperty("languageTag"));
 
-			//Migrate editor
+			// Migrate editor
 			Edge editorEdge = node.getEdges(Direction.OUT, "HAS_EDITOR").iterator().next();
 			fieldContainer.addEdge("HAS_EDITOR", editorEdge.getVertex(Direction.IN));
 			editorEdge.remove();
 
-			//Migrate last edited
+			// Migrate last edited
 			fieldContainer.setProperty("last_edited_timestamp", node.getProperty("last_edited_timestamp"));
 			node.removeProperty("last_edited_timestamp");
 
@@ -99,6 +127,7 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 				// Now duplicate the field container and create a published version 1.0
 				Vertex publishedContainer = getGraph().addVertex("class:NodeGraphFieldContainerImpl");
+				publishedContainer.setProperty("ferma_type", "NodeGraphFieldContainerImpl");
 
 				// Copy properties
 				for (String key : fieldContainer.getPropertyKeys()) {
@@ -109,16 +138,20 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 				publishedContainer.setProperty("publishedWebrootPathInfo", fieldContainer.getProperty("webrootPathInfo"));
 				publishedContainer.removeProperty("webrootPathInfo");
 
-				// Copy edges
+				// Copy edges (OUT)
 				for (Edge edge : fieldContainer.getEdges(Direction.OUT)) {
-					publishedContainer.addEdge(edge.getLabel(), edge.getVertex(Direction.IN));
+					Edge newEdge = publishedContainer.addEdge(edge.getLabel(), edge.getVertex(Direction.IN));
+					// TODO copy edge properties?
+
 				}
+				// Copy edges (IN)
 				for (Edge edge : fieldContainer.getEdges(Direction.IN)) {
 					// Skip field container edges. We'll create our own
 					if ("HAS_FIELD_CONTAINER".equals(edge.getLabel())) {
 						continue;
 					}
-					edge.getVertex(Direction.OUT).addEdge(edge.getLabel(), publishedContainer);
+					Edge newEdge = edge.getVertex(Direction.OUT).addEdge(edge.getLabel(), publishedContainer);
+					// TODO copy edge properties?
 				}
 
 				// Create the published edge. No need to remove the old HAS_FIELD_CONTAINER because it was not cloned
@@ -130,7 +163,7 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 		}
 
-		//Migrate tagging
+		// Migrate tagging
 		Iterable<Edge> tagEdges = node.getEdges(Direction.OUT, "HAS_TAG");
 		for (Edge tagEdge : tagEdges) {
 			tagEdge.setProperty("releaseUuid", releaseUuid);
