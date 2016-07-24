@@ -81,13 +81,23 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addAdminHandlers() {
-		Route statusRoute = route("/status").method(GET).produces(APPLICATION_JSON);
-		statusRoute.handler(rc -> {
+		Endpoint statusEndpoint = createEndpoint();
+		statusEndpoint.path("/status");
+		statusEndpoint.method(GET);
+		statusEndpoint.description("Returns the search index status.");
+		statusEndpoint.produces(APPLICATION_JSON);
+		statusEndpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		statusEndpoint.handler(rc -> {
 			searchHandler.handleStatus(InternalActionContext.create(rc));
 		});
 
-		Route reindexRoute = route("/reindex").method(GET).produces(APPLICATION_JSON);
-		reindexRoute.handler(rc -> {
+		Endpoint reindexEndpoint = createEndpoint();
+		reindexEndpoint.path("/reindex");
+		reindexEndpoint.method(GET);
+		reindexEndpoint.produces(APPLICATION_JSON);
+		reindexEndpoint.description("Invokes a full reindex of the search indices.");
+		reindexEndpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		reindexEndpoint.handler(rc -> {
 			searchHandler.handleReindex(InternalActionContext.create(rc));
 		});
 

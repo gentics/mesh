@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -57,6 +58,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
@@ -109,7 +111,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@BeforeClass
 	public static void debug() {
-		//		new RxDebugger().start();
+		// new RxDebugger().start();
 	}
 
 	@Override
@@ -613,11 +615,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		failingLatch(latch);
 
 		searchProvider.refreshIndex();
-		
+
 		// 6. Assert that the two migrated language variations can be found
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid),
 				new PagingParameters().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
-		assertEquals("We only expect to find the two language versions while searching for uuid {" +uuid +"}", 2, response.getData().size());
+		assertEquals("We only expect to find the two language versions while searching for uuid {" + uuid + "}", 2, response.getData().size());
 	}
 
 	@Test
@@ -755,6 +757,49 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		// search globally for published version
 		response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde")));
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
+	}
+
+	@Test
+	public void testReindexNodeIndex() throws InterruptedException {
+
+		try (NoTrx noTx = db.noTrx()) {
+			fullIndex();
+		}
+
+		String oldContent = "supersonic";
+		String newContent = "urschnell";
+		// "urschnell" not found in published nodes
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
+		assertThat(response.getData()).as("Published search result").isEmpty();
+
+		String uuid = db.noTrx(() -> content("concorde").getUuid());
+
+		// publish the Concorde
+		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
+		call(() -> getClient().publishNode(PROJECT_NAME, uuid));
+
+		// "supersonic" found in published nodes
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+
+		// Now clar all data
+		searchProvider.clear();
+
+		// // Add the user to the admin group - this way the user is in fact an admin.
+		try (NoTrx noTrx = db.noTrx()) {
+			user().addGroup(groups().get("admin"));
+		}
+
+		searchProvider.clear();
+
+		Future<GenericMessageResponse> future = getClient().invokeReindex();
+		latchFor(future);
+		assertSuccess(future);
+		expectResponseMessage(future, "search_admin_reindex_invoked");
+
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+
 	}
 
 	@Test

@@ -17,6 +17,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -79,8 +80,10 @@ public class SearchRestHandler {
 	 *            Root Vertex of the elements that should be searched
 	 * @param classOfRL
 	 *            Class of the rest model list that should be used when creating the response
-	 * @param indices index names to search
-	 * @param permission required permission
+	 * @param indices
+	 *            index names to search
+	 * @param permission
+	 *            required permission
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 * @throws InvalidArgumentException
@@ -88,7 +91,7 @@ public class SearchRestHandler {
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
 			Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
-					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
+			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
 		PagingParameters pagingInfo = ac.getPagingParameters();
 		if (pagingInfo.getPage() < 1) {
@@ -120,8 +123,7 @@ public class SearchRestHandler {
 			 */
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()]))
-					.setSource(queryStringObject.toString());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
@@ -146,18 +148,18 @@ public class SearchRestHandler {
 						ObservableFuture<Tuple<T, String>> obsResult = RxHelper.observableFuture();
 						obs.add(obsResult);
 
-						//TODO check permissions without loading the vertex
+						// TODO check permissions without loading the vertex
 
 						// Locate the node
 						rootVertex.call().findByUuid(uuid).subscribe(element -> {
 							if (element == null) {
-								log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.call().getImpl().getFermaType()
-										+ "}");
+								log.error("Object could not be found for uuid {" + uuid + "} in root vertex {"
+										+ rootVertex.call().getImpl().getFermaType() + "}");
 								obsResult.toHandler().handle(Future.succeededFuture());
 							} else {
 								obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
 							}
-						} , error -> {
+						}, error -> {
 							obsResult.toHandler().handle(Future.failedFuture(error));
 						});
 					}
@@ -242,7 +244,14 @@ public class SearchRestHandler {
 		db.asyncNoTrxExperimental(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler handler : registry.getHandlers()) {
-					handler.clearIndex().await();
+					handler.clearIndex().onErrorComplete(error -> {
+						if (error instanceof IndexMissingException) {
+							return true;
+						} else {
+							log.error("Can't clear index for {" + handler.getKey() + "}", error);
+							return false;
+						}
+					}).await();
 				}
 				boot.meshRoot().getSearchQueue().addFullIndex();
 				boot.meshRoot().getSearchQueue().processAll();
