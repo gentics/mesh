@@ -240,6 +240,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		if (indexType == null) {
 			indexType = getType();
 		}
+		if (log.isDebugEnabled()) {
+			log.debug("Handling action {" + actionName + "} for element {" + uuid + "} of type {" + indexType + "}");
+		}
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
 		switch (action) {
 		case DELETE_ACTION:

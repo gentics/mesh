@@ -27,7 +27,6 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
@@ -57,7 +56,6 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public void start() {
-
 		if (log.isDebugEnabled()) {
 			log.debug("Creating elasticsearch node");
 		}

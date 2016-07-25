@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BAT
 import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -101,9 +102,9 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		for (TagFamily tagFamily : boot.tagFamilyRoot().findAll()) {
 			tagFamily.createIndexBatch(STORE_ACTION);
 		}
-		for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
-			schema.createIndexBatch(STORE_ACTION);
-		}
+//		for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
+//			schema.createIndexBatch(STORE_ACTION);
+//		}
 		// TODO add support for microschemas
 		// for (Microschema microschema : boot.microschemaContainerRoot().findAll()) {
 		// searchQueue.put(microschema, CREATE_ACTION);
@@ -131,6 +132,14 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
 		}
 		return count;
+	}
+
+	@Override
+	public void clear() {
+		List<? extends SearchQueueBatchImpl> batches = out(HAS_BATCH).toListExplicit(SearchQueueBatchImpl.class);
+		for (SearchQueueBatchImpl batch : batches) {
+			batch.delete();
+		}
 	}
 
 }

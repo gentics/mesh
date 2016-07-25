@@ -120,4 +120,9 @@ public interface SearchQueueEntry extends MeshVertex {
 	 * @return
 	 */
 	long getTime();
+
+	/**
+	 * Delete the entry.
+	 */
+	void delete();
 }

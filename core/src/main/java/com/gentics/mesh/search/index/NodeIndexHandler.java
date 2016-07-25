@@ -64,7 +64,6 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;

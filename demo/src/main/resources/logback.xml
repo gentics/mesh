@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-	<conversionRule conversionWord="meshName"
-		converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
+	<conversionRule conversionWord="meshName" converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
 
 	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
 		<target>System.err</target>
@@ -28,11 +27,10 @@
 	<logger name="com.gentics.mesh" level="INFO"/>
 	<logger name="org.elasticsearch" level="INFO"/>
 	<logger name="com.gentics.mesh.rest.MeshResponseHandler" level="INFO"/>
-<!-- 
-	<logger name="com.gentics" level="ERROR" additivity="false">
-		<appender-ref ref="STDERR"/>
-	</logger>
- -->
+	<logger name="com.gentics.mesh.search.index.NodeIndexHandler" level="DEBUG"/>
+	<logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/>
+	<logger name="com.gentics.mesh.search.index.AbstractIndexHandler" level="DEBUG"/>
+	<!-- <logger name="com.gentics" level="ERROR" additivity="false"> <appender-ref ref="STDERR"/> </logger> -->
 	<root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>

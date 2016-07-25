@@ -199,4 +199,14 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 	}
 
+	/**
+	 * Delete the batch and all connected entries.
+	 */
+	public void delete() {
+		for (SearchQueueEntry entry : getEntries()) {
+			entry.delete();
+		}
+		getElement().remove();
+	}
+
 }

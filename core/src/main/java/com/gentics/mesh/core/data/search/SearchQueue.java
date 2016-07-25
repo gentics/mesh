@@ -66,4 +66,9 @@ public interface SearchQueue extends MeshVertex {
 	 */
 	void add(SearchQueueBatch batch);
 
+	/**
+	 * Clear the search queue and remove all batches and the connected entries.
+	 */
+	void clear();
+
 }

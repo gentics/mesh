@@ -253,6 +253,7 @@ public class SearchRestHandler {
 						}
 					}).await();
 				}
+				boot.meshRoot().getSearchQueue().clear();
 				boot.meshRoot().getSearchQueue().addFullIndex();
 				boot.meshRoot().getSearchQueue().processAll();
 				return Single.just(message(ac, "search_admin_reindex_invoked"));
