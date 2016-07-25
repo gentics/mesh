@@ -52,6 +52,7 @@ import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
+import com.gentics.mesh.core.verticle.admin.RestInfoVerticle;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
@@ -119,6 +120,9 @@ public class BootstrapInitializer {
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryWorkerVerticles = new HashMap<>();
 
 	public BootstrapInitializer() {
+		
+		// Add API Info Verticle
+		addMandatoryVerticle(RestInfoVerticle.class);
 
 		// User Group Role verticles
 		addMandatoryVerticle(UserVerticle.class);

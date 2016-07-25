@@ -7,6 +7,7 @@ import java.util.Iterator;
 import org.apache.commons.lang.NotImplementedException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.kernel.Version;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -196,7 +197,16 @@ public class Neo4jDatabase extends AbstractDatabase {
 	@Override
 	public void setVertexType(Element element, Class<?> classOfVertex) {
 		// TODO Auto-generated method stub
+	}
 
+	@Override
+	public String getVendorName() {
+		return "neo4j";
+	}
+
+	@Override
+	public String getVersion() {
+		return Version.getKernel().getVersion();
 	}
 
 }

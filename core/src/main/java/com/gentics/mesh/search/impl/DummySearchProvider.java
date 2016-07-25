@@ -116,4 +116,14 @@ public class DummySearchProvider implements SearchProvider {
 	public Single<Integer> deleteDocumentsViaQuery(String index, String query) {
 		return Single.just(0);
 	}
+
+	@Override
+	public String getVendorName() {
+		return "dummy";
+	}
+
+	@Override
+	public String getVersion() {
+		return "1.0";
+	}
 }

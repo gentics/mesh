@@ -23,8 +23,8 @@ public abstract class AbstractChange implements Change {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractChange.class);
 
-	private static final String MESH_ROOT_TYPE = "com.gentics.mesh.core.data.root.impl.MeshRootImpl";
-	private static final String MESH_SEARCH_QUEUE_ENTRY_TYPE = "com.gentics.mesh.core.data.search.impl.SearchQueueEntryImpl";
+	private static final String MESH_ROOT_TYPE = "MeshRootImpl";
+	private static final String MESH_SEARCH_QUEUE_ENTRY_TYPE = "SearchQueueEntryImpl";
 
 	private TransactionalGraph graph;
 

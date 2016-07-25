@@ -148,4 +148,18 @@ public interface SearchProvider {
 		return deleteDocumentsViaQuery(indexName, query.toString());
 	}
 
+	/**
+	 * Returns the search provider vendor name.
+	 * 
+	 * @return
+	 */
+	String getVendorName();
+
+	/**
+	 * Returns the version of the used search engine.
+	 * 
+	 * @return
+	 */
+	String getVersion();
+
 }

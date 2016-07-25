@@ -107,11 +107,10 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	public void addEdgeType(String label, String... stringPropertyKeys) {
 		// TODO Auto-generated method stub
 	}
-	
+
 	@Override
 	public void addEdgeType(String label, Class<?> superClazzOfEdge, String... stringPropertyKeys) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -121,13 +120,21 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 
 	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void setVertexType(Element element, Class<?> classOfVertex) {
 		// TODO Auto-generated method stub
+	}
 
+	@Override
+	public String getVendorName() {
+		return "tinkergraph";
+	}
+
+	@Override
+	public String getVersion() {
+		return null;
 	}
 }

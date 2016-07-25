@@ -12,6 +12,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -985,6 +986,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
 		return handleRequest(PUT, "/" + projectName + "/releases/" + releaseUuid, ReleaseResponse.class, request);
+	}
+
+	@Override
+	public Future<MeshServerInfoModel> getApiInfo() {
+		return handleRequest(GET, "/", MeshServerInfoModel.class);
 	}
 
 	@Override

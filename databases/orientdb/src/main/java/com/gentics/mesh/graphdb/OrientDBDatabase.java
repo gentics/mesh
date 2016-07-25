@@ -42,7 +42,6 @@ import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
 import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -540,5 +539,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 			element = ((WrappedVertex) element).getBaseElement();
 		}
 		((OrientVertex) element).moveToClass(classOfVertex.getSimpleName());
+	}
+
+	@Override
+	public String getVendorName() {
+		return "orientdb";
+	}
+
+	@Override
+	public String getVersion() {
+		return "2.2.x";
 	}
 }

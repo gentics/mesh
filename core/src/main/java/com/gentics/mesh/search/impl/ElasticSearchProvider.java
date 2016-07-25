@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
@@ -371,6 +372,17 @@ public class ElasticSearchProvider implements SearchProvider {
 			});
 
 		});
+	}
+
+	@Override
+	public String getVendorName() {
+		return "elasticsearch";
+	}
+
+	@Override
+	public String getVersion() {
+		NodesInfoResponse info = getNode().client().admin().cluster().prepareNodesInfo().all().get();
+		return info.getAt(0).getVersion().number();
 	}
 
 }

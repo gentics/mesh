@@ -154,4 +154,14 @@ public class BitsyDatabase extends AbstractDatabase {
 		throw new NotImplementedException();
 	}
 
+	@Override
+	public String getVendorName() {
+		return "bitsy";
+	}
+
+	@Override
+	public String getVersion() {
+		throw new NotImplementedException();
+	}
+
 }

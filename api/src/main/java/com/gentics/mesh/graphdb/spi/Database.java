@@ -304,4 +304,18 @@ public interface Database {
 
 	TransactionalGraph rawTx();
 
+	/**
+	 * Return the vendor name.
+	 * 
+	 * @return
+	 */
+	String getVendorName();
+
+	/**
+	 * Return the database product version.
+	 * 
+	 * @return
+	 */
+	String getVersion();
+
 }

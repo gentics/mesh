@@ -12,6 +12,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -1036,6 +1037,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		ac.setProject(projectName);
 		nodeCrudHandler.handleTakeOffline(ac, nodeUuid, languageTag);
 		return ac.getFuture();
+	}
+
+	@Override
+	public Future<MeshServerInfoModel> getApiInfo() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
