@@ -1,8 +1,11 @@
 package com.gentics.mesh.changelog.changes;
 
+import java.util.Iterator;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.changelog.MeshGraphHelper;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -22,7 +25,7 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 	@Override
 	public void apply() {
-		Vertex meshRoot = getMeshRootVertex();
+		Vertex meshRoot = MeshGraphHelper.getMeshRootVertex(getGraph());
 		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
 
 		// Iterate over all projects
@@ -33,9 +36,10 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			project.addEdge("HAS_RELEASE_ROOT", releaseRoot);
 
 			// Create release and edges
+			String releaseUuid = randomUUID();
 			Vertex release = getGraph().addVertex("class:ReleaseImpl");
 			release.setProperty("ferma_type", "ReleaseImpl");
-			release.setProperty("uuid", randomUUID());
+			release.setProperty("uuid", releaseUuid);
 			release.setProperty("name", project.getProperty("name"));
 			release.setProperty("active", true);
 			releaseRoot.addEdge("HAS_LATEST_RELEASE", release);
@@ -51,7 +55,8 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 			// Migrate all nodes of the project
 			Vertex baseNode = project.getVertices(Direction.OUT, "HAS_ROOT_NODE").iterator().next();
-			migrateNode(baseNode, release.getProperty("uuid"));
+			migrateBaseNode(baseNode);
+			migrateNode(baseNode, releaseUuid);
 		}
 
 		// Strip all package paths from all ferma type properties
@@ -60,6 +65,45 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 		}
 		for (Edge edge : getGraph().getEdges()) {
 			migrateType(edge);
+		}
+
+		// Migrate TranslatedImpl edges to GraphFieldContainerEdgeImpl
+		for (Edge edge : getGraph().getEdges("ferma_type", "TranslatedImpl")) {
+			edge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
+		}
+
+	}
+
+	/**
+	 * Migrate the basenode and create a new NodeGraphFieldContainer for it.
+	 * 
+	 * @param baseNode
+	 */
+	private void migrateBaseNode(Vertex baseNode) {
+
+		log.info("Migrating basenode {" + baseNode.getProperty("uuid") + "}");
+		Vertex schemaContainer = baseNode.getVertices(Direction.OUT, "HAS_SCHEMA_CONTAINER").iterator().next();
+		Vertex schemaVersion = schemaContainer.getVertices(Direction.OUT, "HAS_LATEST_VERSION").iterator().next();
+		Iterator<Edge> it = baseNode.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER").iterator();
+
+		Vertex english = getGraph().getVertices("languageTag", "en").iterator().next();
+
+		// The base node has no field containers. Lets create the default one
+		if (!it.hasNext()) {
+			Vertex container = getGraph().addVertex("class:NodeGraphFieldContainerImpl");
+			container.setProperty("ferma_type", "NodeGraphFieldContainerImpl");
+			container.setProperty("uuid", randomUUID());
+
+			// Fields
+			container.setProperty("name-field", "name");
+			container.setProperty("name-string", "");
+
+			// field container edge which will later be migrated
+			Edge edge = baseNode.addEdge("HAS_FIELD_CONTAINER", container);
+			edge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
+			edge.setProperty("languageTag", "en");
+			container.addEdge("HAS_SCHEMA_CONTAINER_VERSION", schemaVersion);
+			container.addEdge("HAS_LANGUAGE", english);
 		}
 
 	}
@@ -91,6 +135,7 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 		// Extract and remove the published property. We'll use it later on to create a published version if needed.
 		boolean isPublished = Boolean.valueOf(node.getProperty("published"));
 		node.removeProperty("published");
+		log.info("Migrating node: " + node.getProperty("uuid") + " published: " + String.valueOf(isPublished));
 
 		Iterable<Edge> containerEdges = node.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER");
 		for (Edge containerEdge : containerEdges) {
@@ -103,16 +148,21 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 			// Migrate webroot path
 			String oldPathInfo = fieldContainer.getProperty("webrootPathInfo");
-			int lastIdx = oldPathInfo.lastIndexOf("-");
-			String name = oldPathInfo.substring(0, lastIdx);
-			String folderUuid = oldPathInfo.substring(lastIdx + 1);
-			fieldContainer.setProperty("webrootPathInfo", name + "-" + releaseUuid + "-" + folderUuid);
+			if (oldPathInfo != null) {
+				int lastIdx = oldPathInfo.lastIndexOf("-");
+				String name = oldPathInfo.substring(0, lastIdx);
+				String folderUuid = oldPathInfo.substring(lastIdx + 1);
+				fieldContainer.setProperty("webrootPathInfo", name + "-" + releaseUuid + "-" + folderUuid);
+			}
 
 			// Create additional draft edge
-			Edge draftEdge = node.addEdge("HAS_FIELD_CONTAINER", fieldContainer);
-			draftEdge.setProperty("releaseUuid", releaseUuid);
-			draftEdge.setProperty("edgeType", "D");
-			draftEdge.setProperty("languageTag", containerEdge.getProperty("languageTag"));
+			if (!isPublished) {
+				Edge draftEdge = node.addEdge("HAS_FIELD_CONTAINER", fieldContainer);
+				draftEdge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
+				draftEdge.setProperty("releaseUuid", releaseUuid);
+				draftEdge.setProperty("edgeType", "D");
+				draftEdge.setProperty("languageTag", containerEdge.getProperty("languageTag"));
+			}
 
 			// Migrate editor
 			Edge editorEdge = node.getEdges(Direction.OUT, "HAS_EDITOR").iterator().next();
@@ -123,9 +173,10 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			fieldContainer.setProperty("last_edited_timestamp", node.getProperty("last_edited_timestamp"));
 			node.removeProperty("last_edited_timestamp");
 
+			// The node is published. Lets Create a published version 1.0 
 			if (isPublished) {
 
-				// Now duplicate the field container and create a published version 1.0
+				// Now duplicate the field container for version 1.0
 				Vertex publishedContainer = getGraph().addVertex("class:NodeGraphFieldContainerImpl");
 				publishedContainer.setProperty("ferma_type", "NodeGraphFieldContainerImpl");
 
@@ -133,16 +184,23 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 				for (String key : fieldContainer.getPropertyKeys()) {
 					publishedContainer.setProperty(key, fieldContainer.getProperty(key));
 				}
+				String oldPath = fieldContainer.getProperty("webrootPathInfo");
+				if (oldPath != null) {
+					publishedContainer.setProperty("publishedWebrootPathInfo", oldPath);
+					publishedContainer.removeProperty("webrootPathInfo");
+				}
+
+				// Overwrite the previously copied properties
 				publishedContainer.setProperty("uuid", randomUUID());
 				publishedContainer.setProperty("version", "1.0");
-				publishedContainer.setProperty("publishedWebrootPathInfo", fieldContainer.getProperty("webrootPathInfo"));
-				publishedContainer.removeProperty("webrootPathInfo");
 
 				// Copy edges (OUT)
 				for (Edge edge : fieldContainer.getEdges(Direction.OUT)) {
-					Edge newEdge = publishedContainer.addEdge(edge.getLabel(), edge.getVertex(Direction.IN));
-					// TODO copy edge properties?
 
+					Edge newEdge = publishedContainer.addEdge(edge.getLabel(), edge.getVertex(Direction.IN));
+					for (String key : edge.getPropertyKeys()) {
+						newEdge.setProperty(key, edge.getProperty(key));
+					}
 				}
 				// Copy edges (IN)
 				for (Edge edge : fieldContainer.getEdges(Direction.IN)) {
@@ -151,14 +209,17 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 						continue;
 					}
 					Edge newEdge = edge.getVertex(Direction.OUT).addEdge(edge.getLabel(), publishedContainer);
-					// TODO copy edge properties?
+					for (String key : edge.getPropertyKeys()) {
+						newEdge.setProperty(key, edge.getProperty(key));
+					}
 				}
 
 				// Create the published edge. No need to remove the old HAS_FIELD_CONTAINER because it was not cloned
 				Edge publishedEdge = node.addEdge("HAS_FIELD_CONTAINER", publishedContainer);
+				publishedEdge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
+				publishedEdge.setProperty("languageTag", containerEdge.getProperty("languageTag"));
 				publishedEdge.setProperty("releaseUuid", releaseUuid);
 				publishedEdge.setProperty("edgeType", "P");
-				publishedEdge.setProperty("languageTag", containerEdge.getProperty("languageTag"));
 			}
 
 		}
@@ -176,6 +237,18 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			migrateNode(childEdge.getVertex(Direction.OUT), releaseUuid);
 		}
 
+		log.info("Granting permissions to node {" + node.getProperty("uuid") + "}");
+		// Grant publish permission to all roles+objects which grant update
+		for (Edge edge : node.getEdges(Direction.IN, "HAS_UPDATE_PERMISSION")) {
+			Vertex role = edge.getVertex(Direction.OUT);
+			role.addEdge("HAS_PUBLISH_PERMISSION", node);
+		}
+
+		// Grant read published permission to all roles+objects which grant read
+		for (Edge edge : node.getEdges(Direction.IN, "HAS_READ_PERMISSION")) {
+			Vertex role = edge.getVertex(Direction.OUT);
+			role.addEdge("HAS_READ_PUBLISHED_PERMISSION", node);
+		}
 	}
 
 }

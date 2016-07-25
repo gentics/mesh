@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.ChangelogSystem;
+import com.gentics.mesh.changelog.MeshGraphHelper;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -83,6 +84,7 @@ import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.ProjectSearchVerticle;
 import com.gentics.mesh.search.SearchVerticle;
 import com.gentics.mesh.search.index.IndexHandler;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -119,8 +121,18 @@ public class BootstrapInitializer {
 
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryWorkerVerticles = new HashMap<>();
 
+	@Autowired
+	private MeshSpringConfiguration springConfiguration;
+
+	@Autowired
+	private RouterStorage routerStorage;
+
+	private static MeshRoot meshRoot;
+
+	public static boolean isInitialSetup = true;
+
 	public BootstrapInitializer() {
-		
+
 		// Add API Info Verticle
 		addMandatoryVerticle(RestInfoVerticle.class);
 
@@ -223,9 +235,11 @@ public class BootstrapInitializer {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
-		initMandatoryData();
-		initPermissions();
 		invokeChangelog();
+		initMandatoryData();
+		markChangelogApplied();
+
+		//		initPermissions();
 		initSearchIndex();
 		try {
 			invokeSearchQueueProcessing();
@@ -266,14 +280,21 @@ public class BootstrapInitializer {
 	public void invokeChangelog() {
 		log.info("Invoking database changelog check...");
 		ChangelogSystem cls = new ChangelogSystem(db);
-		if (isInitialSetup) {
-			// Marking all changes as applied since this is an initial mesh setup
-			cls.markAllAsApplied();
-		} else {
-			if (!cls.applyChanges()) {
-				throw new RuntimeException("The changelog could not be applied successfully. See log above.");
-			}
+		if (!cls.applyChanges()) {
+			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
+	}
+
+	/***
+	 * Marking all changes as applied since this is an initial mesh setup
+	 */
+	private void markChangelogApplied() {
+		if (isInitialSetup) {
+			log.info("This is the initial setup.. marking all found changelog entries as applied");
+			ChangelogSystem cls = new ChangelogSystem(db);
+			cls.markAllAsApplied();
+		}
+
 	}
 
 	/**
@@ -350,16 +371,6 @@ public class BootstrapInitializer {
 	public static BootstrapInitializer getBoot() {
 		return instance;
 	}
-
-	@Autowired
-	private MeshSpringConfiguration springConfiguration;
-
-	@Autowired
-	private RouterStorage routerStorage;
-
-	private static MeshRoot meshRoot;
-
-	public static boolean isInitialSetup = true;
 
 	/**
 	 * Return the mesh root node. This method will also create the node if it could not be found within the graph.

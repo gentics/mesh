@@ -230,6 +230,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters parameters = new NodeParameters(ac);
 
 		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		// Check whether the node got a published version and thus is published
 		boolean isPublished = findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid, "published") != null;
 
 		// A published node must have also a published parent node.
@@ -416,7 +417,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	/**
-	 * Get an existing edge
+	 * Get an existing edge.
 	 * 
 	 * @param languageTag
 	 *            language tag
@@ -437,7 +438,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	/**
-	 * Get all graph field
+	 * Get all graph field.
 	 * 
 	 * @param releaseUuid
 	 * @param type
@@ -601,8 +602,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				if (ContainerType.forVersion(versioiningParameters.getVersion()) == ContainerType.PUBLISHED
 						&& getGraphFieldContainers(release, ContainerType.PUBLISHED).isEmpty()) {
 					log.error("Could not find field container for languages {" + requestedLanguageTags + "} and release {" + release.getUuid()
-							+ "} and version params version {" + versioiningParameters.getVersion() + "}, release {"
-							+ versioiningParameters.getRelease() + "}");
+							+ "} and version params version {" + versioiningParameters.getVersion() + "}, release {" + release.getUuid() + "}");
 					throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", getUuid(), release.getUuid());
 				}
 
@@ -890,6 +890,47 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public List<Completable> publish(InternalActionContext ac, Release release) {
+		String releaseUuid = release.getUuid();
+
+		List<Completable> obs = new ArrayList<>();
+		// publish all unpublished containers
+
+		PublishParameters parameters = ac.getPublishParameters();
+
+		List<? extends NodeGraphFieldContainer> unpublishedContainers = getGraphFieldContainers(release, ContainerType.DRAFT).stream()
+				.filter(c -> !c.isPublished(releaseUuid)).collect(Collectors.toList());
+
+		List<NodeGraphFieldContainer> published = unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser()))
+				.collect(Collectors.toList());
+		obs.add(createIndexBatch(STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED).process());
+
+		// Handle recursion
+		if (parameters.isRecursive()) {
+			for (Node child : getChildren()) {
+				obs.add(Completable.merge(child.publish(ac, release)));
+			}
+		}
+
+		assertPublishConsistency(ac);
+		return obs;
+	}
+
+//	@Override
+//	public Completable publish(InternalActionContext ac) {
+//		Database db = MeshSpringConfiguration.getInstance().database();
+//
+//		// TODO check whether all required fields are filled
+//		return db.trx(() -> {
+//			Release release = ac.getRelease(getProject());
+//			List<Completable> obs = publish(ac, release);
+//			return Completable.merge(obs);
+//		});
+//
+//	}
+	
+	
+	@Override
 	public Completable publish(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Release release = ac.getRelease(getProject());
@@ -920,6 +961,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		return Completable.merge(obs);
 	}
+	
 
 	@Override
 	public Completable takeOffline(InternalActionContext ac) {

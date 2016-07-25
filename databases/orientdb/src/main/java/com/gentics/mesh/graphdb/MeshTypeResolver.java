@@ -26,20 +26,21 @@ public class MeshTypeResolver implements TypeResolver {
 		this.typeResolutionKey = TYPE_RESOLUTION_KEY;
 	}
 
-
 	@Override
 	public <T> Class<? extends T> resolve(final Element element, final Class<T> kind) {
 		final String nodeClazz = element.getProperty(this.typeResolutionKey);
-		if (nodeClazz == null)
+		if (nodeClazz == null) {
 			return kind;
+		}
 
 		final Class<T> nodeKind = (Class<T>) this.reflectionCache.forName(nodeClazz);
 
 		if (kind.isAssignableFrom(nodeKind) || kind.equals(VertexFrame.class) || kind.equals(EdgeFrame.class)
-				|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class))
+				|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class)) {
 			return nodeKind;
-		else
+		} else {
 			return kind;
+		}
 	}
 
 	@Override

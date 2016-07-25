@@ -537,7 +537,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void assertPublishConsistency(InternalActionContext ac);
 
 	/**
-	 * Create a new published version of the given language in the release
+	 * Create a new published version of the given language in the release.
 	 * 
 	 * @param language
 	 *            language
@@ -548,5 +548,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return published field container
 	 */
 	NodeGraphFieldContainer publish(Language language, Release release, User user);
+
+	/**
+	 * Publish the node for the specified create.
+	 * 
+	 * @param ac
+	 * @param release
+	 * @return
+	 */
+	List<Completable> publish(InternalActionContext ac, Release release);
 
 }
