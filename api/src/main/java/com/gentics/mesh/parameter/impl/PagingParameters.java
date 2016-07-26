@@ -3,6 +3,12 @@ package com.gentics.mesh.parameter.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.raml.model.ParamType;
+import org.raml.model.parameter.QueryParameter;
+
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.ActionContext;
@@ -17,6 +23,8 @@ public class PagingParameters extends AbstractParameters {
 	public static final String PER_PAGE_PARAMETER_KEY = "perPage";
 	public static final String SORT_BY_PARAMETER_KEY = "sortBy";
 	public static final String SORT_ORDER_PARAMETER_KEY = "order";
+
+	public static final int DEFAULT_PAGE = 1;
 
 	public PagingParameters(ActionContext ac) {
 		super(ac);
@@ -76,7 +84,7 @@ public class PagingParameters extends AbstractParameters {
 	 * @return Current page number
 	 */
 	public int getPage() {
-		return NumberUtils.toInt(getParameter(PAGE_PARAMETER_KEY), 1);
+		return NumberUtils.toInt(getParameter(PAGE_PARAMETER_KEY), DEFAULT_PAGE);
 	}
 
 	/**
@@ -164,6 +172,29 @@ public class PagingParameters extends AbstractParameters {
 
 	@Override
 	public void validate() {
+	}
+
+	@Override
+	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+		Map<String, QueryParameter> parameters = new HashMap<>();
+		// page
+		QueryParameter pageParameter = new QueryParameter();
+		pageParameter.setDefaultValue(String.valueOf(DEFAULT_PAGE));
+		pageParameter.setDescription("Number of page to be loaded.");
+		pageParameter.setExample("42");
+		pageParameter.setRequired(false);
+		pageParameter.setType(ParamType.NUMBER);
+		parameters.put(PAGE_PARAMETER_KEY, pageParameter);
+
+		// perPage
+		QueryParameter perPageParameter = new QueryParameter();
+		perPageParameter.setDefaultValue(String.valueOf(MeshOptions.DEFAULT_PAGE_SIZE));
+		perPageParameter.setDescription("Number of elements per page.");
+		perPageParameter.setExample("42");
+		perPageParameter.setRequired(false);
+		perPageParameter.setType(ParamType.NUMBER);
+		parameters.put(PER_PAGE_PARAMETER_KEY, perPageParameter);
+		return parameters;
 	}
 
 }

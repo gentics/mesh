@@ -14,11 +14,11 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.Route;
 
 @Component
 @Scope("singleton")
@@ -98,16 +98,27 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 
 	// TODO filtering, sorting
 	private void addTagReadHandler() {
-		Route route = route("/:tagFamilyUuid/tags/:uuid").method(GET).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		Endpoint readOne = createEndpoint();
+		readOne.path("/:tagFamilyUuid/tags/:uuid");
+		readOne.method(GET);
+		readOne.description("Read the specified tag from the tag family.");
+		readOne.exampleResponse(200, tagExamples.getTagResponse1("red"));
+		readOne.produces(APPLICATION_JSON);
+		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("uuid");
 			tagCrudHandler.handleRead(ac, tagFamilyUuid, uuid);
 		});
 
-		Route readAllRoute = route("/:tagFamilyUuid/tags").method(GET).produces(APPLICATION_JSON);
-		readAllRoute.handler(rc -> {
+		Endpoint readAll = createEndpoint();
+		readAll.path("/:tagFamilyUuid/tags");
+		readAll.method(GET);
+		readAll.description("Load tags which were assigned to this tag family and return a paged list response.");
+		readAll.exampleResponse(200, tagExamples.getTagListResponse());
+		readAll.produces(APPLICATION_JSON);
+		readAll.addQueryParameters(PagingParameters.class);
+		readAll.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			tagCrudHandler.handleReadTagList(ac, tagFamilyUuid);
@@ -137,6 +148,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Load all nodes that have been tagged with the tag and return a paged list response.");
+		endpoint.addQueryParameters(PagingParameters.class);
 		endpoint.exampleResponse(200, nodeExamples.getNodeListResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -178,6 +190,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
 		readAll.description("Load multiple tag families and return a paged list response.");
+		readAll.addQueryParameters(PagingParameters.class);
 		readAll.exampleResponse(200, tagFamilyExamples.getTagFamilyListResponse());
 		readAll.handler(rc -> {
 			tagFamilyCrudHandler.handleReadList(InternalActionContext.create(rc));

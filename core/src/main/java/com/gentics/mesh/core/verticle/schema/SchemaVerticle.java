@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 
 /**
@@ -149,6 +150,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		readAll.method(GET);
 		readAll.description("Read multiple schemas and return a paged list response.");
 		readAll.produces(APPLICATION_JSON);
+		readAll.addQueryParameters(PagingParameters.class);
 		readAll.exampleResponse(200, schemaExamples.getSchemaListResponse());
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));

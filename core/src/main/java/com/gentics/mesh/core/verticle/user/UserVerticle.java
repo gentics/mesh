@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.ext.web.Route;
@@ -77,6 +78,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(200, userExamples.getUserListResponse());
+		readAll.addQueryParameters(PagingParameters.class);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});

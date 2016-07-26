@@ -9,7 +9,9 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.gentics.mesh.core.rest.common.RestModel;
+import org.raml.model.parameter.QueryParameter;
+
+import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
@@ -26,7 +28,7 @@ import io.vertx.ext.web.RoutingContext;
 public class Endpoint implements Route {
 
 	private static final Logger log = LoggerFactory.getLogger(Endpoint.class);
-	
+
 	private Route route;
 
 	private String displayName;
@@ -45,6 +47,8 @@ public class Endpoint implements Route {
 
 	private final Set<String> consumes = new LinkedHashSet<>();
 	private final Set<String> produces = new LinkedHashSet<>();
+
+	private Map<String, QueryParameter> parameters = new HashMap<>();
 
 	public Endpoint(Router router) {
 		this.route = router.route();
@@ -103,15 +107,15 @@ public class Endpoint implements Route {
 	 */
 	private void validate() {
 		if (!produces.isEmpty() && exampleResponses.isEmpty()) {
-			log.error("Endpoint {" + getPath() +"} has no example response.");
+			log.error("Endpoint {" + getPath() + "} has no example response.");
 			throw new RuntimeException("Endpoint has no example responses.");
 		}
 		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequest == null) {
-			log.error("Endpoint {" + getPath() +"} has no example request.");
+			log.error("Endpoint {" + getPath() + "} has no example request.");
 			throw new RuntimeException("Endpoint has no example request.");
 		}
 		if (isEmpty(description)) {
-			log.error("Endpoint {" + getPath() +"} has no description.");
+			log.error("Endpoint {" + getPath() + "} has no description.");
 			throw new RuntimeException("No description was set");
 		}
 	}
@@ -218,6 +222,20 @@ public class Endpoint implements Route {
 
 	public HttpMethod getMethod() {
 		return method;
+	}
+
+	public Map<String, QueryParameter> getQueryParameters() {
+		return parameters;
+	}
+
+	public void addQueryParameters(Class<? extends ParameterProvider> clazz) {
+		try {
+			ParameterProvider provider = clazz.newInstance();
+			parameters.putAll(provider.getRAMLParameters());
+		} catch (InstantiationException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

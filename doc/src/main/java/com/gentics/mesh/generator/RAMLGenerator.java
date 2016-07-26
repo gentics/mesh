@@ -79,6 +79,8 @@ public class RAMLGenerator {
 			action.setDisplayName(endpoint.getDisplayName());
 			action.setDescription(endpoint.getDescription());
 
+			action.setQueryParameters(endpoint.getQueryParameters());
+			
 			// Add response examples
 			for (Entry<Integer, Object> entry : endpoint.getExampleResponses().entrySet()) {
 				Response response = new Response();

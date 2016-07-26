@@ -19,11 +19,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.raml</groupId>
-			<artifactId>raml-parser</artifactId>
-			<version>0.8.14</version>
-		</dependency>
-		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>

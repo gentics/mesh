@@ -4,6 +4,12 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.NumberUtils.toInteger;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.raml.model.ParamType;
+import org.raml.model.parameter.QueryParameter;
+
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.handler.ActionContext;
 
@@ -23,7 +29,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 
 	public ImageManipulationParameters(ActionContext ac) {
 		super(ac);
-		//TODO validate parameters
+		// TODO validate parameters
 	}
 
 	public ImageManipulationParameters() {
@@ -266,7 +272,61 @@ public class ImageManipulationParameters extends AbstractParameters {
 		if (getHeight() != null && options.getMaxHeight() != null && options.getMaxHeight() > 0 && getHeight() > options.getMaxHeight()) {
 			throw error(BAD_REQUEST, "image_error_height_limit_exceeded", String.valueOf(options.getMaxHeight()), String.valueOf(getHeight()));
 		}
+	}
 
+	@Override
+	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+		Map<String, QueryParameter> parameters = new HashMap<>();
+
+		// width
+		QueryParameter widthParameter = new QueryParameter();
+		widthParameter.setDescription("Set image target width. The height will automatically be calculated if the width was omitted.");
+		widthParameter.setExample("1280");
+		widthParameter.setRequired(false);
+		widthParameter.setType(ParamType.NUMBER);
+		parameters.put(WIDTH_QUERY_PARAM_KEY, widthParameter);
+
+		// height
+		QueryParameter heightParameter = new QueryParameter();
+		heightParameter.setDescription("Set image target height. The width will automatically be calculated if the height was omitted.");
+		heightParameter.setExample("720");
+		heightParameter.setRequired(false);
+		heightParameter.setType(ParamType.NUMBER);
+		parameters.put(HEIGHT_QUERY_PARAM_KEY, heightParameter);
+
+		// cropx
+		QueryParameter cropxParameter = new QueryParameter();
+		cropxParameter.setDescription("Set image crop area x coordinate.");
+		cropxParameter.setExample("260");
+		cropxParameter.setRequired(false);
+		cropxParameter.setType(ParamType.NUMBER);
+		parameters.put(CROP_X_QUERY_PARAM_KEY, cropxParameter);
+
+		// cropy
+		QueryParameter cropyParameter = new QueryParameter();
+		cropyParameter.setDescription("Set image crop area y coordinate.");
+		cropyParameter.setExample("260");
+		cropyParameter.setRequired(false);
+		cropyParameter.setType(ParamType.NUMBER);
+		parameters.put(CROP_Y_QUERY_PARAM_KEY, cropyParameter);
+
+		// croph
+		QueryParameter crophParameter = new QueryParameter();
+		crophParameter.setDescription("Set image crop area height.");
+		crophParameter.setExample("35");
+		crophParameter.setType(ParamType.NUMBER);
+		crophParameter.setRequired(false);
+		parameters.put(CROP_HEIGHT_QUERY_PARAM_KEY, crophParameter);
+
+		// cropw
+		QueryParameter cropwParameter = new QueryParameter();
+		cropwParameter.setDescription("Set image crop area width.");
+		cropwParameter.setExample("35");
+		cropwParameter.setRequired(false);
+		cropwParameter.setType(ParamType.NUMBER);
+		parameters.put(CROP_WIDTH_QUERY_PARAM_KEY, cropwParameter);
+
+		return parameters;
 	}
 
 }

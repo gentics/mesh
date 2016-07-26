@@ -18,6 +18,11 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.parameter.impl.NavigationParameters;
+import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -83,6 +88,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.displayName("Navigation");
 		endpoint.exampleRequest(new GenericMessageResponse("test"));
 		endpoint.exampleResponse(200, responseExample);
+		endpoint.addQueryParameters(NavigationParameters.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -110,7 +116,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		fieldUpdate.path("/:uuid/languages/:languageTag/fields/:fieldName");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
-		//TODO consumes json and upload
+		// TODO consumes json and upload
 		fieldUpdate.exampleResponse(200, miscExamples.getMessageResponse());
 		fieldUpdate.description("Update the field with the given name.");
 		fieldUpdate.handler(rc -> {
@@ -330,6 +336,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		readOne.description("Load the node with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(200, nodeExamples.getNodeResponseWithAllFields());
+		readOne.addQueryParameters(VersioningParameters.class);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			// TODO move if clause back into verticle
@@ -346,6 +353,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(200, nodeExamples.getNodeListResponse());
+		readAll.addQueryParameters(VersioningParameters.class);
+		readAll.addQueryParameters(NodeParameters.class);
+		readAll.addQueryParameters(PagingParameters.class);
 		readAll.handler(rc -> crudHandler.handleReadList(InternalActionContext.create(rc)));
 
 	}
@@ -407,6 +417,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		putEndpoint.method(PUT);
 		putEndpoint.produces(APPLICATION_JSON);
 		putEndpoint.exampleResponse(200, versioningExamples.getPublishStatusResponse());
+		putEndpoint.addQueryParameters(PublishParameters.class);
 		putEndpoint.handler(rc -> {
 			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("uuid"));
 		});
@@ -417,9 +428,12 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
 		deleteEndpoint.exampleResponse(200, nodeExamples.getNodeResponse2());
+		deleteEndpoint.addQueryParameters(PublishParameters.class);
 		deleteEndpoint.handler(rc -> {
 			crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.request().getParam("uuid"));
 		});
+
+		// Language specific
 
 		Endpoint getLanguageRoute = createEndpoint();
 		getLanguageRoute.description("Return the published status for the given language of the node.");

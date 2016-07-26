@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.Endpoint;
 
 @Component
@@ -33,7 +34,8 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.pathRegex("\\/(.*)");
 		endpoint.method(GET);
-		endpoint.description("Load the node which is located using the provided path.");
+		endpoint.description("Load the node or the node's binary data which is located using the provided path.");
+		endpoint.addQueryParameters(ImageManipulationParameters.class);
 		endpoint.handler(rc -> {
 			handler.handleGetPath(rc);
 		});
