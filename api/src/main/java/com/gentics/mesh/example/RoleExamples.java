@@ -28,22 +28,22 @@ public class RoleExamples extends AbstractExamples {
 	}
 
 	public RolePermissionRequest getRolePermissionRequest() {
-		RolePermissionRequest rolePermission = new RolePermissionRequest();
-		rolePermission.setRecursive(false);
-		rolePermission.getPermissions().add("create");
-		rolePermission.getPermissions().add("read");
-		rolePermission.getPermissions().add("update");
-		rolePermission.getPermissions().add("delete");
-		return rolePermission;
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(false);
+		request.getPermissions().add("create");
+		request.getPermissions().add("read");
+		request.getPermissions().add("update");
+		request.getPermissions().add("delete");
+		return request;
 	}
 
-	public static RolePermissionResponse getRolePermissionResponse() {
-		RolePermissionResponse rolePermissionResponse = new RolePermissionResponse();
-		rolePermissionResponse.getPermissions().add("create");
-		rolePermissionResponse.getPermissions().add("read");
-		rolePermissionResponse.getPermissions().add("update");
-		rolePermissionResponse.getPermissions().add("delete");
-		return rolePermissionResponse;
+	public RolePermissionResponse getRolePermissionResponse() {
+		RolePermissionResponse response = new RolePermissionResponse();
+		response.getPermissions().add("create");
+		response.getPermissions().add("read");
+		response.getPermissions().add("update");
+		response.getPermissions().add("delete");
+		return response;
 	}
 
 	public RoleResponse getRoleResponse2() {

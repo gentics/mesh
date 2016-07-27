@@ -44,6 +44,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addReadPermissionHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
+		endpoint.setRAMLPath("/:uuid/permissions/:path");
 		endpoint.description("Read the user permissions on the element/s that are located by the specified path.");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);

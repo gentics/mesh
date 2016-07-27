@@ -41,7 +41,14 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addPermissionHandler() {
 		Endpoint permissionSetEndpoint = createEndpoint();
-		permissionSetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON)
+		permissionSetEndpoint.setRAMLPath("/:uuid/permissions/:path");
+		permissionSetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
+		permissionSetEndpoint.method(PUT);
+		permissionSetEndpoint.description("Set the permissions between role and the targeted element.");
+		permissionSetEndpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		permissionSetEndpoint.exampleRequest(roleExamples.getRolePermissionRequest());
+		permissionSetEndpoint.consumes(APPLICATION_JSON);
+		permissionSetEndpoint.produces(APPLICATION_JSON)
 				.handler(rc -> {
 					InternalActionContext ac = InternalActionContext.create(rc);
 					String roleUuid = ac.getParameter("param0");
@@ -50,7 +57,13 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				});
 
 		Endpoint permissionGetEndpoint = createEndpoint();
-		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		permissionGetEndpoint.setRAMLPath("/:uuid/permissions/:path");
+		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
+		permissionGetEndpoint.description("Load the permissions between given role and the targeted element.");
+		permissionGetEndpoint.method(GET);
+		permissionGetEndpoint.produces(APPLICATION_JSON);
+		permissionGetEndpoint.exampleResponse(200, roleExamples.getRolePermissionResponse());
+		permissionGetEndpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
@@ -60,9 +73,9 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.description("Delete the role with the given uuid");
 		endpoint.path("/:uuid");
 		endpoint.method(DELETE);
+		endpoint.description("Delete the role with the given uuid");
 		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -73,10 +86,10 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addUpdateHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.description("Update the role with the given uuid.");
 		endpoint.path("/:uuid");
 		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
+		endpoint.description("Update the role with the given uuid.");
 		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
 		endpoint.exampleResponse(200, roleExamples.getRoleResponse1("New role name"));
 		endpoint.handler(rc -> {

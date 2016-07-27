@@ -45,6 +45,8 @@ public class Endpoint implements Route {
 
 	private HttpMethod method;
 
+	private String ramlPath;
+
 	private final Set<String> consumes = new LinkedHashSet<>();
 	private final Set<String> produces = new LinkedHashSet<>();
 
@@ -107,8 +109,8 @@ public class Endpoint implements Route {
 	 */
 	private void validate() {
 		if (!produces.isEmpty() && exampleResponses.isEmpty()) {
-			log.error("Endpoint {" + getPath() + "} has no example response.");
-			throw new RuntimeException("Endpoint has no example responses.");
+			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
+			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
 		}
 		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequest == null) {
 			log.error("Endpoint {" + getPath() + "} has no example request.");
@@ -158,6 +160,13 @@ public class Endpoint implements Route {
 	@Override
 	public @Nullable String getPath() {
 		return route.getPath();
+	}
+
+	public String getRamlPath() {
+		if (ramlPath == null) {
+			return route.getPath();
+		}
+		return ramlPath;
 	}
 
 	public Endpoint displayName(String name) {
@@ -236,6 +245,10 @@ public class Endpoint implements Route {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public void setRAMLPath(String path) {
+		this.ramlPath = path;
 	}
 
 }
