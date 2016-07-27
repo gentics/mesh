@@ -31,7 +31,6 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 	@Override
 	public Observable<BinaryField> transformToRest(com.gentics.mesh.handler.ActionContext ac) {
-
 		BinaryField restModel = new BinaryFieldImpl();
 		restModel.setFileName(getFileName());
 		restModel.setMimeType(getMimeType());
@@ -41,7 +40,6 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		restModel.setWidth(getImageWidth());
 		restModel.setHeight(getImageHeight());
 		return Observable.just(restModel);
-
 	}
 
 	@Override

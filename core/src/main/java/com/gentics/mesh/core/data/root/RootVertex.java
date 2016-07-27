@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 
 import com.gentics.mesh.context.InternalActionContext;

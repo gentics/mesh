@@ -215,9 +215,11 @@ public class BootstrapInitializer {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
-		initMandatoryData();
-		initPermissions();
 		invokeChangelog();
+		initMandatoryData();
+		markChangelogApplied();
+
+		//initPermissions();
 		initSearchIndex();
 		try {
 			invokeSearchQueueProcessing();
@@ -236,6 +238,17 @@ public class BootstrapInitializer {
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
 
+	}
+
+	/***
+	 * Marking all changes as applied since this is an initial mesh setup
+	 */
+	private void markChangelogApplied() {
+		if (isInitialSetup) {
+			log.info("This is the initial setup.. marking all found changelog entries as applied");
+			ChangelogSystem cls = new ChangelogSystem(db);
+			cls.markAllAsApplied();
+		}
 	}
 
 	/**
@@ -258,13 +271,8 @@ public class BootstrapInitializer {
 	public void invokeChangelog() {
 		log.info("Invoking database changelog check...");
 		ChangelogSystem cls = new ChangelogSystem(db);
-		if (isInitialSetup) {
-			// Marking all changes as applied since this is an initial mesh setup
-			cls.markAllAsApplied();
-		} else {
-			if (!cls.applyChanges()) {
-				throw new RuntimeException("The changelog could not be applied successfully. See log above.");
-			}
+		if (!cls.applyChanges()) {
+			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
 	}
 

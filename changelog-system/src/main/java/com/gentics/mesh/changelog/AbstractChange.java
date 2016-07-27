@@ -1,9 +1,11 @@
 package com.gentics.mesh.changelog;
 
 import java.util.Iterator;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
-import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.fasterxml.uuid.Generators;
+import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -17,9 +19,6 @@ import io.vertx.core.logging.LoggerFactory;
 public abstract class AbstractChange implements Change {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractChange.class);
-
-	private static final String MESH_ROOT_TYPE = "com.gentics.mesh.core.data.root.impl.MeshRootImpl";
-	private static final String MESH_SEARCH_QUEUE_ENTRY_TYPE = "com.gentics.mesh.core.data.search.impl.SearchQueueEntryImpl";
 
 	private TransactionalGraph graph;
 
@@ -44,7 +43,11 @@ public abstract class AbstractChange implements Change {
 	 * @return
 	 */
 	private ChangelogRootWrapper changelogRoot() {
+
 		Vertex meshRoot = getMeshRootVertex();
+		if (meshRoot == null) {
+			throw new RuntimeException("Could not find mesh root node. The change can't be applied without the mesh root vertex.");
+		}
 		Iterator<Vertex> it = meshRoot.getVertices(Direction.OUT, ChangelogRootWrapper.HAS_CHANGELOG_ROOT).iterator();
 		Vertex changelogRoot = null;
 		if (it.hasNext()) {
@@ -66,20 +69,7 @@ public abstract class AbstractChange implements Change {
 	 * @param elementType
 	 */
 	protected void addFullReindexEntry(String elementType) {
-		Vertex meshRootVertex = getMeshRootVertex();
-		Vertex searchQueueRoot = meshRootVertex.getVertices(Direction.OUT, "HAS_SEARCH_QUEUE_ROOT").iterator().next();
-
-		// 1. Add batch
-		Vertex batch = getGraph().addVertex(null);
-		batch.setProperty("batch_id", UUIDUtil.randomUUID());
-		searchQueueRoot.addEdge("HAS_BATCH", batch);
-
-		// 2. Add entry to batch 
-		Vertex entry = getGraph().addVertex(null);
-		entry.setProperty("element_type", elementType);
-		entry.setProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, MESH_SEARCH_QUEUE_ENTRY_TYPE);
-		entry.setProperty("element_action", "reindex_all");
-		batch.addEdge("HAS_ITEM", entry);
+		MeshGraphHelper.addFullReindexEntry(getGraph(), elementType);
 	}
 
 	@Override
@@ -97,14 +87,42 @@ public abstract class AbstractChange implements Change {
 		return graph;
 	}
 
+	public static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
+
+	private static Pattern p = Pattern.compile("^[A-Fa-f0-9]+$");
+
+	/**
+	 * Create a random UUID string which does not include dashes.
+	 * 
+	 * @return
+	 */
+	public String randomUUID() {
+		final UUID uuid = UUID_GENERATOR.generate();
+		String randomUuid = (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4)
+				+ digits(uuid.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4)
+				+ digits(uuid.getLeastSignificantBits(), 12));
+		return randomUuid;
+	}
+
+	/**
+	 * Returns val represented by the specified number of hex digits.
+	 * 
+	 * @param val
+	 * @param digits
+	 * @return
+	 */
+	private static String digits(long val, int digits) {
+		long hi = 1L << (digits * 4);
+		return Long.toHexString(hi | (val & (hi - 1))).substring(1);
+	}
+
 	/**
 	 * Return the mesh root vertex.
 	 * 
 	 * @return
 	 */
 	protected Vertex getMeshRootVertex() {
-		Vertex meshRoot = graph.getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, MESH_ROOT_TYPE).iterator().next();
-		return meshRoot;
+		return MeshGraphHelper.getMeshRootVertex(getGraph());
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
