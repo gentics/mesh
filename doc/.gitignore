@@ -3,3 +3,4 @@ node_modules
 /target/
 bower_components
 src/main/changelog/test.html
+api.raml
