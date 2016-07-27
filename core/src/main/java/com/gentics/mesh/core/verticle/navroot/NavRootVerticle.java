@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.rest.Endpoint;
 
 @Component
@@ -35,6 +36,7 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(GET);
 		endpoint.description("Return a navigation for the node which is located using the given path.");
 		endpoint.setRAMLPath("/:path");
+		endpoint.addQueryParameters(NavigationParameters.class);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(200, nodeExamples.getNavigationResponse());
 		endpoint.handler(rc -> handler.handleGetPath(rc));

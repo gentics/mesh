@@ -213,16 +213,19 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			 <plugin>
+              <groupId>org.owasp</groupId>
+              <artifactId>dependency-check-maven</artifactId>
+              <version>1.4.0</version>
+              <executions>
+                  <execution>
+                      <goals>
+                          <goal>check</goal>
+                      </goals>
+                  </execution>
+              </executions>
+            </plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>io.fabric8</groupId>
-					<artifactId>docker-maven-plugin</artifactId>
-					<version>0.14.2</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 
 	<repositories>

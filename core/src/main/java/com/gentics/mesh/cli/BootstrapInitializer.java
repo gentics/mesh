@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.ChangelogSystem;
-import com.gentics.mesh.changelog.MeshGraphHelper;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -84,7 +83,6 @@ import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.ProjectSearchVerticle;
 import com.gentics.mesh.search.SearchVerticle;
 import com.gentics.mesh.search.index.IndexHandler;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
