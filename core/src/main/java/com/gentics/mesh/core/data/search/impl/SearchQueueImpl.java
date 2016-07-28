@@ -102,9 +102,9 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		for (TagFamily tagFamily : boot.tagFamilyRoot().findAll()) {
 			tagFamily.createIndexBatch(STORE_ACTION);
 		}
-//		for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
-//			schema.createIndexBatch(STORE_ACTION);
-//		}
+		for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
+			schema.createIndexBatch(STORE_ACTION);
+		}
 		// TODO add support for microschemas
 		// for (Microschema microschema : boot.microschemaContainerRoot().findAll()) {
 		// searchQueue.put(microschema, CREATE_ACTION);

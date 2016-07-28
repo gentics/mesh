@@ -84,9 +84,6 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				.build();
 
-		//		NodeBuilder builder = NodeBuilder.nodeBuilder();
-		//		node = builder.settings(settings).node();
-
 		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();
 		classpathPlugins.add(DeleteByQueryPlugin.class);
 		// TODO configure ES cluster options
