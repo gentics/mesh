@@ -6,12 +6,10 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.elasticsearch.index.query.BaseFilterBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.RangeFilterBuilder;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -55,10 +53,9 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 
 	@After
 	public void resetElasticSearch() {
-//		searchProvider.reset();
+		//		searchProvider.reset();
 		searchProvider.clear();
 	}
-
 
 	@BeforeClass
 	@AfterClass
@@ -107,18 +104,8 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 	}
 
 	protected String getRangeQuery(String fieldName, double from, double to) throws JSONException {
-		RangeFilterBuilder range = FilterBuilders.rangeFilter(fieldName).gte(from).lte(to);
-		return filterWrapper(range);
-	}
-
-	private String filterWrapper(BaseFilterBuilder filter) throws JSONException {
-		JSONObject request = new JSONObject();
-		request.put("filter", new JSONObject(filter.toString()));
-		String query = request.toString();
-		if (log.isDebugEnabled()) {
-			log.debug(query);
-		}
-		return query;
+		RangeQueryBuilder range = QueryBuilders.rangeQuery(fieldName).from(from).to(to);
+		return "{ \"query\": " + range.toString() + "}";
 	}
 
 	protected void fullIndex() throws InterruptedException {

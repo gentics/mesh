@@ -9,7 +9,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
-import org.elasticsearch.common.joda.time.DateTime;
+import org.joda.time.DateTime;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

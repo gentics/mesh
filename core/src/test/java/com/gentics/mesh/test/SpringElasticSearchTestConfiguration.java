@@ -18,7 +18,7 @@ public class SpringElasticSearchTestConfiguration extends SpringTestConfiguratio
 	public SearchProvider searchProvider() {
 		ElasticSearchOptions options = new ElasticSearchOptions();
 		options.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
-//		options.setHttpEnabled(true);
+		//options.setHttpEnabled(true);
 		SearchProvider provider = new ElasticSearchProvider().init(options);
 		return provider;
 	}

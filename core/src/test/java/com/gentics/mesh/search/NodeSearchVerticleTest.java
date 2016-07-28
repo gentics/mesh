@@ -5,7 +5,6 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -58,7 +57,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
@@ -424,13 +422,13 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSearchNumberRange() throws Exception {
 		int numberValue = 1200;
 		try (NoTrx noTx = db.noTrx()) {
-			addNumberSpeedField(numberValue);
+			addNumberSpeedFieldToOneNode(numberValue);
 			fullIndex();
 		}
 
-		// from 1 to 9
+		// from 100 to 9000
 		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 100, 9000), new VersioningParameters().draft()));
+				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 100, 9000), new VersioningParameters().draft()));
 		assertEquals(1, response.getData().size());
 	}
 
@@ -438,13 +436,13 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSearchNumberRange2() throws Exception {
 		int numberValue = 1200;
 		try (NoTrx noTx = db.noTrx()) {
-			addNumberSpeedField(numberValue);
+			addNumberSpeedFieldToOneNode(numberValue);
 			fullIndex();
 		}
 
 		// from 9 to 1
 		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 900, 1500), new VersioningParameters().draft()));
+				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 900, 1500), new VersioningParameters().draft()));
 		assertEquals("We could expect to find the node with the given seed number field since the value {" + numberValue
 				+ "} is between the search range.", 1, response.getData().size());
 	}
@@ -453,13 +451,13 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSearchNumberRange3() throws Exception {
 		int numberValue = 1200;
 		try (NoTrx noTx = db.noTrx()) {
-			addNumberSpeedField(numberValue);
+			addNumberSpeedFieldToOneNode(numberValue);
 			fullIndex();
 		}
 
 		// out of bounds
 		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 1000, 90), new VersioningParameters().draft()));
+				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 1000, 90), new VersioningParameters().draft()));
 		assertEquals("No node should be found since the range is invalid.", 0, response.getData().size());
 	}
 
@@ -923,9 +921,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
-	private void addNumberSpeedField(int number) {
+	private void addNumberSpeedFieldToOneNode(int number) {
 		Node node = content("concorde");
-
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);

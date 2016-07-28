@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.release;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 public class ReleaseCreateRequest implements RestModel {
+
 	private String name;
 
 	public ReleaseCreateRequest() {

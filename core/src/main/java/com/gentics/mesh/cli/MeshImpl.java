@@ -9,8 +9,8 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.common.joda.time.DateTime;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
+import org.joda.time.DateTime;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.AbstractEnvironment;
 

@@ -17,7 +17,6 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -245,12 +244,12 @@ public class SearchRestHandler {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler handler : registry.getHandlers()) {
 					handler.clearIndex().onErrorComplete(error -> {
-						if (error instanceof IndexMissingException) {
-							return true;
-						} else {
+//						if (error instanceof IndexMissingException) {
+//							return true;
+//						} else {
 							log.error("Can't clear index for {" + handler.getKey() + "}", error);
 							return false;
-						}
+//						}
 					}).await();
 				}
 				boot.meshRoot().getSearchQueue().clear();

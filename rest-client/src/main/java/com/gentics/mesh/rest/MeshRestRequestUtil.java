@@ -140,6 +140,9 @@ public final class MeshRestRequestUtil {
 	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData, HttpClient client,
 			MeshRestClientAuthenticationProvider authentication) {
 
+		if (log.isDebugEnabled()) {
+			log.debug("Posting json {" + jsonBodyData + "}");
+		}
 		Buffer buffer = Buffer.buffer();
 		if (!StringUtils.isEmpty(jsonBodyData)) {
 			buffer.appendString(jsonBodyData);
