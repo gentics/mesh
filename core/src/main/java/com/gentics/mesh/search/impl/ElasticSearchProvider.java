@@ -29,11 +29,12 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
+import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.cli.MeshNameProvider;
@@ -63,7 +64,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.debug("Creating elasticsearch node");
 		}
 		long start = System.currentTimeMillis();
-		Settings elasticsearchSettings = Settings.settingsBuilder()
+		Settings settings = Settings.settingsBuilder()
 
 				.put("threadpool.index.queue_size", -1)
 
@@ -77,13 +78,19 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				.put("plugin.types", DeleteByQueryPlugin.class.getName())
 
+				.put("node.local", true)
+
 				.put("index.max_result_window", Integer.MAX_VALUE)
 
 				.build();
 
-		NodeBuilder builder = NodeBuilder.nodeBuilder();
+		//		NodeBuilder builder = NodeBuilder.nodeBuilder();
+		//		node = builder.settings(settings).node();
+
+		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();
+		classpathPlugins.add(DeleteByQueryPlugin.class);
 		// TODO configure ES cluster options
-		node = builder.local(true).settings(elasticsearchSettings).node();
+		node = new MeshNode(settings, classpathPlugins).start();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}
@@ -326,37 +333,27 @@ public class ElasticSearchProvider implements SearchProvider {
 			if (log.isDebugEnabled()) {
 				log.debug("Clearing index {" + indexName + "}");
 			}
-			//			DeleteByQueryRequestBuilder builder = new DeleteByQueryRequestBuilder(getSearchClient(), DeleteByQueryAction.INSTANCE);
-			//			DeleteByQueryRequest request = builder.setIndices(indexName).setQuery(QueryBuilders.matchAllQuery()).request();
-			//			getNode().client().execute(DeleteByQueryAction.INSTANCE, request, new ActionListener<DeleteByQueryResponse>() {
-			//
-			//				public void onResponse(DeleteByQueryResponse response) {
-			//					if (log.isDebugEnabled()) {
-			//						log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
-			//					}
-			//					sub.onCompleted();
-			//				};
-			//
-			//				@Override
-			//				public void onFailure(Throwable e) {
-			//					log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-			//					sub.onError(e);
-			//				}
-			//			});
 
 			DeleteByQueryRequestBuilder builder = new DeleteByQueryRequestBuilder(getSearchClient(), DeleteByQueryAction.INSTANCE);
 			builder.setIndices(indexName).setQuery(QueryBuilders.matchAllQuery()).execute().addListener(new ActionListener<DeleteByQueryResponse>() {
 				public void onResponse(DeleteByQueryResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+						log.debug("Clearing index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onCompleted();
 				};
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-					sub.onError(e);
+					if (e instanceof IndexNotFoundException) {
+						if (log.isDebugEnabled()) {
+							log.debug("Clearing index failed since the index does not exists. We ignore this error", e);
+						}
+						sub.onCompleted();
+					} else {
+						log.error("Clearing index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+						sub.onError(e);
+					}
 				}
 			});
 
@@ -384,7 +381,6 @@ public class ElasticSearchProvider implements SearchProvider {
 					}
 					// Invoke the deletion for each found document
 					for (SearchHit hit : response.getHits()) {
-						System.out.println("HIT");
 						obs.add(deleteDocument(hit.getIndex(), hit.getType(), hit.getId()));
 					}
 					Completable.merge(obs).await();
