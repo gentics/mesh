@@ -91,7 +91,8 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToDate() throws Exception {
 		changeType(CREATEHTMLLIST, FILLNUMBERS, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1L);
+			//Internally timestamps are stored in miliseconds
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1000L);
 		});
 
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEDATE, (container, name) -> {
@@ -104,7 +105,8 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATEHTMLLIST, FILLNUMBERS, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1L, 0L);
+			//Internally timestamps are stored in miliseconds
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1000L, 0L);
 		});
 
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEDATELIST, (container, name) -> {

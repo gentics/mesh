@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.CREATE_
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FILL;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -64,7 +65,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Test cases for fields of type "micronode"
  */
-//TODO: add tests for all types of fields that can be put into a micronode
+// TODO: add tests for all types of fields that can be put into a micronode
 public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> {
 
 	private static final String MICRONODE_FIELD = "micronodeField";
@@ -112,16 +113,16 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testFieldTransformation() throws Exception {
 		Node newOverview = content("news overview");
-		Long date = System.currentTimeMillis();
+		Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
 
 		Microschema fullMicroschema = new MicroschemaModel();
 		fullMicroschema.setName("full");
 
-		//		fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
+		// fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
 		fullMicroschema.addField(new BooleanFieldSchemaImpl().setName("booleanfield").setLabel("Boolean Field"));
 		fullMicroschema.addField(new DateFieldSchemaImpl().setName("datefield").setLabel("Date Field"));
 		fullMicroschema.addField(new HtmlFieldSchemaImpl().setName("htmlfield").setLabel("HTML Field"));
-		//		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("binary").setName("listfield-binary").setLabel("Binary List Field"));
+		// fullMicroschema.addField(new ListFieldSchemaImpl().setListType("binary").setName("listfield-binary").setLabel("Binary List Field"));
 		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("boolean").setName("listfield-boolean").setLabel("Boolean List Field"));
 		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("date").setName("listfield-date").setLabel("Date List Field"));
 		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("html").setName("listfield-html").setLabel("Html List Field"));
@@ -143,7 +144,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		MicronodeGraphField micronodeField = container.createMicronode("micronodefield", microschemaContainer.getLatestVersion());
 		Micronode micronode = micronodeField.getMicronode();
 		assertNotNull("Micronode must not be null", micronode);
-		//		micronode.createBinary("binaryfield");
+		// micronode.createBinary("binaryfield");
 		micronode.createBoolean("booleanfield").setBoolean(true);
 		micronode.createDate("datefield").setDate(date);
 		micronode.createHTML("htmlfield").setHtml("<b>HTML</b> value");
@@ -177,7 +178,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 		micronode.createNode("nodefield", newOverview);
 		micronode.createNumber("numberfield").setNumber(4711);
-		//		micronode.createSelect("selectfield");
+		// micronode.createSelect("selectfield");
 		micronode.createString("stringfield").setString("String Value");
 
 		JsonObject jsonObject = new JsonObject(getJson(node));
@@ -189,11 +190,11 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		assertNotNull("Micronode must contain fields", micronodeFields);
 		// TODO check binary field
 		assertEquals("Boolean Field", Boolean.TRUE, micronodeFields.getBoolean("booleanfield"));
-		assertEquals("Date Field", date, micronodeFields.getLong("datefield"));
+		assertEquals("Date Field", toISO8601(date), micronodeFields.getString("datefield"));
 		assertEquals("HTML Field", "<b>HTML</b> value", micronodeFields.getString("htmlfield"));
 		// TODO check binary list field
 		assertThat(micronodeFields.getJsonArray("listfield-boolean")).as("Boolean List Field").matches(true, false);
-		assertThat(micronodeFields.getJsonArray("listfield-date")).as("Date List Field").matches(date, 0);
+		assertThat(micronodeFields.getJsonArray("listfield-date")).as("Date List Field").matches(toISO8601(date), toISO8601(0));
 		assertThat(micronodeFields.getJsonArray("listfield-html")).as("HTML List Field").matches("<b>first</b>", "<i>second</i>");
 		assertThat(micronodeFields.getJsonArray("listfield-node")).as("Node List Field").key("uuid").matches(node.getUuid(), newOverview.getUuid());
 		assertThat(micronodeFields.getJsonArray("listfield-number")).as("Number List Field").matches(47, 11);
@@ -339,7 +340,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
 		// rest set - graph set - different values
-		Long date = System.currentTimeMillis();
+		Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
 		fieldA.getMicronode().createString("string").setString("someString");
 		fieldA.getMicronode().createDate("date").setDate(date);
 		restField.getFields().put("string", FieldUtil.createStringField("someOtherString"));
@@ -397,7 +398,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			field.getFields().put("firstName", FieldUtil.createStringField("vcard_firstname_value"));
 			field.getFields().put("lastName", FieldUtil.createStringField("vcard_lastname_value"));
 			updateContainer(ac, container, MICRONODE_FIELD, field);
-		} , (container) -> {
+		}, (container) -> {
 			MicronodeGraphField field = container.getMicronode(MICRONODE_FIELD);
 			assertNotNull("The graph field {" + MICRONODE_FIELD + "} could not be found.", field);
 			assertEquals("The micronode of the field was not updated.", "vcard_firstname_value",
