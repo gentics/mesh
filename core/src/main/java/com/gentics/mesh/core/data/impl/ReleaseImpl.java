@@ -63,7 +63,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ReleaseUpdateRequest requestModel = ac.fromJson(ReleaseUpdateRequest.class);
 
-		return db.trx(() -> {
+		return db.tx(() -> {
 			if (shouldUpdate(requestModel.getName(), getName())) {
 				// Check for conflicting project name
 				Release conflictingRelease = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));

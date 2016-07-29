@@ -53,7 +53,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.MeshRestClient;
@@ -90,7 +90,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	@Autowired
 	protected AuthenticationVerticle authenticationVerticle;
 
-	protected NoTrx trx;
+	protected NoTx trx;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -121,7 +121,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		failingLatch(latch);
 
 		client = MeshRestClient.create("localhost", getPort(), vertx, Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
-		trx = db.noTrx();
+		trx = db.noTx();
 		client.setLogin(user().getUsername(), getUserInfo().getPassword());
 		client.login();
 	}

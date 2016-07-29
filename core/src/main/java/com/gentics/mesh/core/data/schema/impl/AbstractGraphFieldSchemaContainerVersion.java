@@ -200,7 +200,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
 		}
 		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.trx(() -> {
+		return db.tx(() -> {
 			SchemaChange<?> current = null;
 			for (SchemaChangeModel restChange : listOfChanges.getChanges()) {
 				SchemaChange<?> graphChange = createChange(restChange);
@@ -267,7 +267,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		try {
 			SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
 
-			return db.trx(() -> {
+			return db.tx(() -> {
 				if (getNextChange() != null) {
 					throw error(INTERNAL_SERVER_ERROR, "migration_error_version_already_contains_changes", String.valueOf(getVersion()), getName());
 				}

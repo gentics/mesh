@@ -10,13 +10,13 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class OrientDBNoTrx extends AbstractNoTrx {
+public class OrientDBNoTx extends AbstractNoTx {
 
-	private static final Logger log = LoggerFactory.getLogger(OrientDBNoTrx.class);
+	private static final Logger log = LoggerFactory.getLogger(OrientDBNoTx.class);
 
 	OrientGraphNoTx noTx = null;
 
-	public OrientDBNoTrx(OrientGraphFactory factory, TypeResolver resolver) {
+	public OrientDBNoTx(OrientGraphFactory factory, TypeResolver resolver) {
 		this.noTx = factory.getNoTx();
 		FramedGraph graph = new DelegatingFramedOrientGraph(noTx, resolver);
 		init(graph);

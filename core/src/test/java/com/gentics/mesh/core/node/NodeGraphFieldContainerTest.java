@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
@@ -13,7 +13,7 @@ public class NodeGraphFieldContainerTest extends AbstractDBTest {
 
 	@Test(expected = ORecordDuplicatedException.class)
 	public void testConflictingWebRootPath() {
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			NodeGraphFieldContainer containerA = Database.getThreadLocalGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldContainer containerB = Database.getThreadLocalGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			containerA.getElement().setProperty(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY, "test");
@@ -24,7 +24,7 @@ public class NodeGraphFieldContainerTest extends AbstractDBTest {
 
 	@Test(expected = ORecordDuplicatedException.class)
 	public void testConflictingPublishWebRootPath() {
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			NodeGraphFieldContainer containerA = Database.getThreadLocalGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldContainer containerB = Database.getThreadLocalGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			containerA.getElement().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, "test");

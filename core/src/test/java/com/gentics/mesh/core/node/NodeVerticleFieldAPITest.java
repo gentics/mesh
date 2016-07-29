@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -45,7 +45,7 @@ public class NodeVerticleFieldAPITest extends AbstractBinaryVerticleTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 

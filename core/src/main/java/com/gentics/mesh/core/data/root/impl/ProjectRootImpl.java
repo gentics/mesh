@@ -178,7 +178,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			SchemaContainerVersion schemaContainerVersion = BootstrapInitializer.getBoot().schemaContainerRoot()
 					.fromReference(requestModel.getSchemaReference()).toBlocking().value();
 
-			Tuple<SearchQueueBatch, Project> tuple = db.trx(() -> {
+			Tuple<SearchQueueBatch, Project> tuple = db.tx(() -> {
 				requestUser.reload();
 				Project project = create(requestModel.getName(), requestUser, schemaContainerVersion);
 

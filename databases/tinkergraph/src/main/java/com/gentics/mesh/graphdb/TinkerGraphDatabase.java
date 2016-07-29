@@ -5,7 +5,7 @@ import java.util.Iterator;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
-import com.gentics.mesh.graphdb.spi.TrxHandler;
+import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.tinkerpop.blueprints.Element;
@@ -26,12 +26,12 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public NoTrx noTrx() {
+	public NoTx noTx() {
 		return new TinkergraphNoTrx(new DelegatingFramedGraph<>(mockedGraph, true, false));
 	}
 
 	@Override
-	public Trx trx() {
+	public Tx tx() {
 		return new TinkergraphTrx(new DelegatingFramedTransactionalGraph<>(mockedGraph, true, false));
 	}
 
@@ -66,7 +66,7 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T> T trx(TrxHandler<T> txHandler) {
+	public <T> T tx(TxHandler<T> txHandler) {
 		// TODO Auto-generated method stub
 		return null;
 	}

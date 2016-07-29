@@ -124,7 +124,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 			}
 
 			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
-				Tuple<SearchQueueBatch, TagFamily> tuple = db.trx(() -> {
+				Tuple<SearchQueueBatch, TagFamily> tuple = db.tx(() -> {
 					requestUser.reload();
 					this.reload();
 					this.setElement(null);

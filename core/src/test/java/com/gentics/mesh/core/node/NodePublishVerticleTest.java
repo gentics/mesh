@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -64,7 +64,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 		// 1. Take the parent folder offline
 		String parentFolderUuid;
 		String subFolderUuid;
-		try (NoTrx notrx = db.noTrx()) {
+		try (NoTx notrx = db.noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext("recursive=true", user());
 			Node subFolder = folder("2015");
 			Node parentFolder = folder("news");
@@ -99,7 +99,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testGetPublishStatusForEmptyLanguage() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("products");
 			call(() -> getClient().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "fr"), NOT_FOUND, "error_language_not_found", "fr");
 		}
@@ -107,7 +107,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testPublishNode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			PublishStatusResponse statusResponse = call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
@@ -117,7 +117,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testGetPublishStatus() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 
@@ -143,7 +143,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testGetPublishStatusForRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -171,7 +171,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testGetPublishStatusNoPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("news");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
@@ -188,7 +188,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testGetPublishStatusForLanguage() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("products");
 
 			// 1. Take everything offline
@@ -207,7 +207,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testPublishNodeForRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			project.getReleaseRoot().create("newrelease", user());
@@ -228,7 +228,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testPublishNodeNoPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, PUBLISH_PERM);
@@ -269,7 +269,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testPublishLanguage() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 
@@ -309,7 +309,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testPublishEmptyLanguage() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
@@ -318,7 +318,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testPublishLanguageForRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -354,7 +354,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testPublishLanguageNoPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, PUBLISH_PERM);

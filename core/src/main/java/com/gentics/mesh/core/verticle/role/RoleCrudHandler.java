@@ -111,7 +111,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 					RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 
 					// Prepare the sets for revoke and grant actions
-					Role updatedRole = db.trx(() -> {
+					Role updatedRole = db.tx(() -> {
 						Set<GraphPermission> permissionsToGrant = new HashSet<>();
 						Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 						permissionsToRevoke.add(CREATE_PERM);

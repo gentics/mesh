@@ -77,7 +77,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshVerticleConfiguration;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.ProjectSearchVerticle;
@@ -264,7 +264,7 @@ public class BootstrapInitializer {
 	 * @throws InterruptedException
 	 */
 	private void invokeSearchQueueProcessing() throws InterruptedException {
-		db.trx(() -> {
+		db.tx(() -> {
 			log.info("Starting search queue processing of remaining entries...");
 			long processed = meshRoot().getSearchQueue().processAll();
 			log.info("Processed {" + processed + "} elements.");
@@ -456,7 +456,7 @@ public class BootstrapInitializer {
 		Role adminRole;
 		MeshRoot meshRoot;
 
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			meshRoot = meshRoot();
 			MeshRootImpl.setInstance(meshRoot);
 
@@ -595,7 +595,7 @@ public class BootstrapInitializer {
 	 * Grant CRUD to all objects within the graph to the Admin Role.
 	 */
 	public void initPermissions() {
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			Role adminRole = meshRoot().getRoleRoot().findByName("admin").toBlocking().value();
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;

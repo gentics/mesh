@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
@@ -54,7 +54,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 		});
 
 		// assert that the containers have both webrootpath properties set
-		try (NoTrx noTx1 = db.noTrx()) {
+		try (NoTx noTx1 = db.noTx()) {
 			for (String language : Arrays.asList("en", "de")) {
 				for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
 						NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
@@ -68,7 +68,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 				.as("Publish Status after take offline").isNotPublished("en").isNotPublished("de");
 
 		// assert that the containers have only the draft webrootpath properties set
-		try (NoTrx noTx2 = db.noTrx()) {
+		try (NoTx noTx2 = db.noTx()) {
 			for (String language : Arrays.asList("en", "de")) {
 				String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
 				assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
@@ -85,7 +85,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testTakeNodeLanguageOffline() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -115,13 +115,13 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testTakeNodeOfflineNoPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
 			assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
-			db.trx(() -> {
+			db.tx(() -> {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
@@ -131,13 +131,13 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testTakeNodeLanguageOfflineNoPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
 			assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
-			db.trx(() -> {
+			db.tx(() -> {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
@@ -147,7 +147,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testTakeOfflineNodeOffline() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -161,7 +161,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testTakeOfflineNodeLanguageOffline() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -182,7 +182,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testTakeOfflineEmptyLanguage() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -192,7 +192,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testTakeOfflineWithOnlineChild() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node news = folder("news");
 			Node news2015 = folder("2015");
 
@@ -220,7 +220,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testTakeOfflineForRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());

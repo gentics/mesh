@@ -16,14 +16,14 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class AtomicTagTest extends AbstractDBTest {
 
 	@Test
 	public void testTagCreation() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MeshRoot meshRoot = boot.meshRoot();
 			User user = meshRoot.getUserRoot().create("test", null);
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();

@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
@@ -45,7 +45,7 @@ public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 	 */
 	@Test
 	public void testReadMultithreaded() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			int nJobs = 200;
 			String path = "/";
 
@@ -67,7 +67,7 @@ public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 	 */
 	@Test
 	public void testReadNavWithValidPath() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String path = "/News/2015";
 			Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10));
 			latchFor(future);
@@ -81,7 +81,7 @@ public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 	 */
 	@Test
 	public void testReadNavWithValidPath2() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String path = "/News/2015/";
 			Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10));
 			latchFor(future);
@@ -95,7 +95,7 @@ public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 	 */
 	@Test
 	public void testReadNavForBasenode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 
 //			for (NodeGraphFieldContainer container : project().getBaseNode().getGraphFieldContainers()) {
 //				System.out.println(container.isPublished(project().getLatestRelease().getUuid()));
@@ -115,7 +115,7 @@ public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 	 */
 	@Test
 	public void testReadNavWithInvalidPath() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String path = "/blub";
 			Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path);
 			latchFor(future);
@@ -128,7 +128,7 @@ public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 	 */
 	@Test
 	public void testReadNavWithPathToContent() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String path = "/News/2015/News_2015.en.html";
 			Future<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NodeParameters().setLanguages("en", "de"));
 			latchFor(future);

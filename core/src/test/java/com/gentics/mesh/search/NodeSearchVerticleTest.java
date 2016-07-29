@@ -66,7 +66,7 @@ import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -138,7 +138,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchAndSort() throws InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -175,7 +175,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -197,7 +197,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testCustomQuery() throws InterruptedException, JSONException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -210,7 +210,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchForChildNodes() throws JSONException, InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -230,7 +230,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	@Override
 	public void testDocumentCreation() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -271,7 +271,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	@Override
 	public void testDocumentUpdate() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -299,7 +299,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchContent() throws InterruptedException, JSONException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -316,7 +316,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchContentResolveLinksAndLangFallback() throws InterruptedException, JSONException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -333,7 +333,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchContentResolveLinks() throws InterruptedException, JSONException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -391,7 +391,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	 * @throws JSONException
 	 */
 	protected void searchWithLanguages(String... expectedLanguages) throws InterruptedException, JSONException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -421,7 +421,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testSearchNumberRange() throws Exception {
 		int numberValue = 1200;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			fullIndex();
 		}
@@ -435,7 +435,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testSearchNumberRange2() throws Exception {
 		int numberValue = 1200;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			fullIndex();
 		}
@@ -450,7 +450,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testSearchNumberRange3() throws Exception {
 		int numberValue = 1200;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			fullIndex();
 		}
@@ -463,7 +463,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchMicronode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			addMicronodeField();
 			fullIndex();
 		}
@@ -474,7 +474,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			for (NodeResponse nodeResponse : response.getData()) {
 				assertNotNull("Returned node must not be null", nodeResponse);
 				assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
@@ -484,7 +484,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchMicronodeResolveLinks() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			addMicronodeField();
 			fullIndex();
 		}
@@ -496,7 +496,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			for (NodeResponse nodeResponse : response.getData()) {
 				assertNotNull("Returned node must not be null", nodeResponse);
 				assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
@@ -506,7 +506,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchListOfMicronodes() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			addMicronodeListField();
 			fullIndex();
 		}
@@ -536,7 +536,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchListOfMicronodesResolveLinks() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			addMicronodeListField();
 			fullIndex();
 		}
@@ -569,7 +569,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSchemaMigrationNodeSearchTest() throws Exception {
 
 		// 1. Index all existing contents
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -583,7 +583,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		// 3. Prepare an updated schema
 		String schemaUuid;
 		Schema schema;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node concorde = content("concorde");
 			SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 			schema = schemaVersion.getSchema();
@@ -593,7 +593,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		// Clear the schema storage in order to purge the reference from the storage which we would otherwise modify.
 		ServerSchemaStorage.getInstance().clear();
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			meshRoot().getSearchQueue().reload();
 			assertEquals("No more entries should remain in the search queue", 0, meshRoot().getSearchQueue().getSize());
 		}
@@ -622,7 +622,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			int numAdditionalNodes = 99;
 			addMicronodeField();
@@ -661,11 +661,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	 */
 	@Test
 	public void testTagCount() throws JSONException, InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = content("concorde");
 			int previousTagCount = node.getTags(project().getLatestRelease()).size();
 			// Create tags:
@@ -689,11 +689,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testGlobalNodeSearch() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeResponse oldNode = call(
 					() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
 
@@ -726,7 +726,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testGlobalPublishedNodeSearch() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -760,7 +760,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testReindexNodeIndex() throws InterruptedException {
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -784,7 +784,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		searchProvider.clear();
 
 		// // Add the user to the admin group - this way the user is in fact an admin.
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			user().addGroup(groups().get("admin"));
 		}
 
@@ -802,7 +802,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchPublishedNodes() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -847,7 +847,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchDraftNodes() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -878,7 +878,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchPublishedInRelease() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -900,7 +900,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchDraftInRelease() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 

@@ -45,8 +45,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -65,7 +65,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			InternalActionContext ac = getMockedInternalActionContext("?version=draft");
 			NodeReference reference = node.transformToReference(ac).toBlocking().value();
@@ -76,7 +76,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGetPath() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			CountDownLatch latch = new CountDownLatch(2);
 			Single<String> path = newsNode.getPath(project().getLatestRelease().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
@@ -97,7 +97,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testMeshNodeStructure() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			assertNotNull(newsNode);
 			Node newSubNode;
@@ -111,7 +111,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGetSegmentPath() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			RoutingContext rc = getMockedRoutingContext("?version=draft");
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -121,7 +121,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGetFullSegmentPath() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			RoutingContext rc = getMockedRoutingContext("?version=draft");
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -131,7 +131,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testTaggingOfMeshNode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			assertNotNull(newsNode);
 
@@ -149,7 +149,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext("version=draft", user());
 			PageImpl<? extends Node> page = boot.nodeRoot().findAll(ac, new PagingParameters(1, 10));
 
@@ -164,7 +164,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testMeshNodeFields() throws IOException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			Language german = german();
 			InternalActionContext ac = Mocks.getMockedInternalActionContext("lang=de,en&version=draft", user());
@@ -180,7 +180,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			List<String> languageTags = new ArrayList<>();
 			languageTags.add("de");
 			languageTags.add("en");
@@ -192,7 +192,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Node root = project.getBaseNode();
 			assertNotNull(root);
@@ -209,7 +209,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			Node node = boot.nodeRoot().findByUuid(newsNode.getUuid()).toBlocking().value();
 			assertNotNull(node);
@@ -220,7 +220,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext("lang=en&version=draft", user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			Node newsNode = content("concorde");
@@ -246,7 +246,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node folder = folder("2015");
 			Node subNode = folder.create(user(), getSchemaContainer().getLatestVersion(), project());
 			assertNotNull(subNode.getUuid());
@@ -258,7 +258,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = getMockedInternalActionContext("");
 			assertFalse(user().hasPermissionAsync(ac, node, GraphPermission.CREATE_PERM).toBlocking().value());
@@ -271,7 +271,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			assertEquals("folder", node.getSchemaContainer().getLatestVersion().getSchema().getName());
 			assertTrue(node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
@@ -282,7 +282,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			Node parentNode = folder("2015");
 			SchemaContainerVersion schemaVersion = schemaContainer("content").getLatestVersion();
@@ -322,7 +322,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
 			String uuid;
 			Node node = folder("news");
@@ -345,7 +345,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			uuid = node.getUuid();
 			MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
 			SearchQueueBatch batch = createBatch();
-			try (Trx tx = db.trx()) {
+			try (Tx tx = db.tx()) {
 				node.delete(batch);
 				tx.success();
 			}
@@ -359,9 +359,9 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = content();
-			try (Trx tx = db.trx()) {
+			try (Tx tx = db.tx()) {
 				User newUser = meshRoot().getUserRoot().create("newUser", user());
 				newUser.addGroup(group());
 				assertEquals(user().getUuid(), node.getCreator().getUuid());
@@ -378,7 +378,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.READ_PERM, content());
 		}
 	}
@@ -386,7 +386,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.DELETE_PERM, content());
 		}
 	}
@@ -394,7 +394,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.UPDATE_PERM, content());
 		}
 	}
@@ -402,14 +402,14 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.CREATE_PERM, content());
 		}
 	}
 
 	@Test
 	public void testDeleteWithChildren() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
@@ -450,7 +450,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testDeleteWithChildrenInRelease() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
@@ -531,7 +531,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testDeletePublished() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
@@ -598,7 +598,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testDeletePublishedFromRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();

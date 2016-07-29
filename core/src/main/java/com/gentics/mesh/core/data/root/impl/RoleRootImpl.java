@@ -95,7 +95,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 		}
 
-		Tuple<SearchQueueBatch, Role> tuple = db.trx(() -> {
+		Tuple<SearchQueueBatch, Role> tuple = db.tx(() -> {
 			requestUser.reload();
 			Role role = create(requestModel.getName(), requestUser);
 			requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);

@@ -54,8 +54,8 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -80,7 +80,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
@@ -100,7 +100,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		TagFamily tagFamily;
 		User user;
 		String pathToElement;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			user = user();
 			tagFamily = tagFamily("colors");
 
@@ -110,7 +110,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily.getUuid();
 		}
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement);
 			latchFor(future);
 			assertSuccess(future);
@@ -119,12 +119,12 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertThat(response.getPermissions()).containsOnly("read", "readpublished", "publish", "update", "create", "delete");
 		}
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Revoke single permission and check again
 			role().revokePermissions(tagFamily, GraphPermission.UPDATE_PERM);
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
 		}
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement);
 			latchFor(future);
 			assertSuccess(future);
@@ -136,7 +136,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			String uuid = user.getUuid();
 
@@ -150,7 +150,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadUserWithMultipleGroups() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			assertEquals(1, user.getGroups().size());
 
@@ -171,7 +171,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreaded() throws InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			int nJobs = 10;
 			String uuid = user().getUuid();
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
@@ -186,7 +186,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			int nJobs = 200;
 			Set<Future<UserResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
@@ -202,7 +202,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			String uuid = user.getUuid();
 			assertNotNull("The username of the user must not be null.", user.getUsername());
@@ -217,7 +217,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserRoot root = meshRoot().getUserRoot();
 
 			int nUsers = 20;
@@ -341,7 +341,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		String oldName = db.trx(() -> user().getUsername());
+		String oldName = db.tx(() -> user().getUsername());
 
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
@@ -349,14 +349,14 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		updateRequest.setLastname("Epic Stark");
 		updateRequest.setUsername("dummy_user_changed");
 
-		UserResponse restUser = db.trx(() -> {
+		UserResponse restUser = db.tx(() -> {
 			User user = user();
 			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
 			latchFor(future);
 			assertSuccess(future);
 			return future.result();
 		});
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			test.assertUser(updateRequest, restUser);
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldName));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
@@ -372,7 +372,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testUpdateWithSpecialCharacters() throws Exception {
 		String uuid;
 		String oldUsername;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			uuid = user.getUuid();
 			oldUsername = user.getUsername();
@@ -393,7 +393,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 		test.assertUser(updateRequest, restUser);
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldUsername));
 			User reloadedUser = boot.userRoot().findByUsername(username);
 			assertNotNull(reloadedUser);
@@ -418,7 +418,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateUserAndSetNodeReference() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String nodeUuid = folder("2015").getUuid();
 			User user = user();
 			String username = user.getUsername();
@@ -457,7 +457,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateUserWithNodeReference() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			InternalActionContext ac = getMockedInternalActionContext(user());
 			assertTrue(user().hasPermissionAsync(ac, node, READ_PERM).toBlocking().value());
@@ -502,7 +502,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			return future.result();
 		});
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			Future<UserListResponse> userListResponseFuture = getClient().findUsers(new PagingParameters().setPerPage(100),
 					new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en"));
@@ -525,7 +525,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadUserWithExpandedNodeReference() {
 		String folderUuid;
 		UserCreateRequest newUser;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			folderUuid = node.getUuid();
 
@@ -560,7 +560,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateUserWithBogusProjectNameInNodeReference() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 
 			NodeReferenceImpl reference = new NodeReferenceImpl();
@@ -581,7 +581,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateUserWithBogusUuidInNodeReference() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeReferenceImpl reference = new NodeReferenceImpl();
 			reference.setProjectName(PROJECT_NAME);
 			reference.setUuid("bogus_uuid");
@@ -600,7 +600,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateUserWithMissingProjectNameInNodeReference() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeReferenceImpl reference = new NodeReferenceImpl();
 			reference.setUuid("bogus_uuid");
 
@@ -619,7 +619,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testCreateUserWithMissingUuidNameInNodeReference() {
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeReferenceImpl reference = new NodeReferenceImpl();
 			reference.setProjectName(PROJECT_NAME);
 			UserCreateRequest newUser = new UserCreateRequest();
@@ -639,7 +639,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		String username;
 		String uuid;
 		String oldHash;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			username = user.getUsername();
 			uuid = user.getUuid();
@@ -655,7 +655,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		test.assertUser(updateRequest, restUser);
 
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			User reloadedUser = boot.userRoot().findByUsername(username);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
@@ -663,7 +663,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			String oldHash = user.getPasswordHash();
 			role().revokePermissions(user, UPDATE_PERM);
@@ -682,7 +682,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			String oldHash = user.getPasswordHash();
 			role().revokePermissions(user, UPDATE_PERM);
@@ -705,7 +705,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Create an user with a conflicting username
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("existing_username", user());
@@ -723,7 +723,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateUserWithSameUsername() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 
 			UserUpdateRequest request = new UserUpdateRequest();
@@ -739,7 +739,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateUserWithConflictingUsername() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Create an user with a conflicting username
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("existing_username", user());
@@ -761,7 +761,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateUserWithNoPassword() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -777,7 +777,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateUserWithNoUsername() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -822,7 +822,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateUpdate() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Create a user with minimal properties
 			UserCreateRequest request = new UserCreateRequest();
 			request.setEmailAddress("n.user@spam.gentics.com");
@@ -861,7 +861,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserCreateRequest request = new UserCreateRequest();
 			request.setEmailAddress("n.user@spam.gentics.com");
 			request.setFirstname("Joe");
@@ -874,7 +874,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			UserResponse restUser = future.result();
-			try (NoTrx noTx2 = db.noTrx()) {
+			try (NoTx noTx2 = db.noTx()) {
 				test.assertUser(request, restUser);
 
 				User user = boot.userRoot().findByUuid(restUser.getUuid()).toBlocking().value();
@@ -912,7 +912,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -954,7 +954,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -977,7 +977,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(future);
 			expectResponseMessage(future, "user_deleted", uuid + "/" + name);
 
-			try (Trx tx = db.trx()) {
+			try (Tx tx = db.tx()) {
 				User loadedUser = boot.userRoot().findByUuid(uuid).toBlocking().value();
 				assertNull("The user should have been deleted.", loadedUser);
 			}
@@ -1008,7 +1008,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("extraUser", user());
 			user.addGroup(group());
@@ -1041,7 +1041,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testDeleteByUUID2() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String name = "extraUser";
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create(name, user());

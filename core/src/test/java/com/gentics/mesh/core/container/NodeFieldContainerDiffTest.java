@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 
@@ -27,7 +27,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	@Override
 	public void testNoDiffByValue() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
@@ -40,7 +40,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	@Override
 	public void testDiffByValue() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
@@ -52,7 +52,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 
 	@Test
 	public void testNoDiffStringFieldList() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listA = containerA.createStringList("dummy");
 			listA.addItem(listA.createString("test123"));
@@ -68,7 +68,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 
 	@Test
 	public void testDiffStringFieldList() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
 			StringGraphFieldList listA = containerA.createStringList("dummy");
 			listA.addItem(listA.createString("test123"));
@@ -87,7 +87,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 
 	@Test
 	public void testDiffMicronodeField() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(
 					FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
 
@@ -125,7 +125,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	@Override
 	public void testNoDiffByValuesNull() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
@@ -138,7 +138,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	@Override
 	public void testDiffByValueNonNull() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
@@ -151,7 +151,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	@Override
 	public void testDiffByValueNonNull2() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue2");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
@@ -164,7 +164,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	@Override
 	public void testDiffBySchemaFieldRemoved() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(null);
@@ -176,7 +176,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	@Override
 	public void testDiffBySchemaFieldAdded() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(null);
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue");
@@ -188,7 +188,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	@Override
 	public void testDiffBySchemaFieldTypeChanged() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createHtmlFieldSchema("dummy"));

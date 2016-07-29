@@ -73,7 +73,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				SchemaReferenceList schemaReferenceList = ac.fromJson(SchemaReferenceList.class);
 				SchemaContainerRoot schemaContainerRoot = ac.getProject().getSchemaContainerRoot();
 
-				return db.trx(() -> {
+				return db.tx(() -> {
 					// Resolve the list of references to graph schema container versions
 					Observable<SchemaContainerVersion> obs = Observable.from(schemaReferenceList)
 							.flatMap(reference -> schemaContainerRoot.fromReference(reference).toObservable());
@@ -129,7 +129,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				MicroschemaReferenceList microschemaReferenceList = ac.fromJson(MicroschemaReferenceList.class);
 				MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
-				return db.trx(() -> {
+				return db.tx(() -> {
 					// Transform the list of references into microschema container version vertices
 					Observable<MicroschemaContainerVersion> obs = Observable.from(microschemaReferenceList)
 							.flatMap(reference -> microschemaContainerRoot.fromReference(reference).toObservable());

@@ -61,7 +61,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -224,7 +224,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	@Override
 	public Completable store(Node node, String documentType, SearchQueueEntry entry) {
 		return Completable.defer(() -> {
-			try (NoTrx noTrx = db.noTrx()) {
+			try (NoTx noTrx = db.noTx()) {
 				String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
 				String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
 				ContainerType type = ContainerType.forVersion(entry.getCustomProperty(CUSTOM_VERSION));

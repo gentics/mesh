@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
@@ -41,7 +41,7 @@ public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest
 
 	@Test
 	public void testRestClient() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			User user = user();
 			String username = user.getUsername();
 			String uuid = user.getUuid();

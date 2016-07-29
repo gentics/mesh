@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -30,7 +30,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testLinkReplacerTypeOff() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
@@ -43,7 +43,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testLinkReplacerTypeShort() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
@@ -56,7 +56,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testLinkReplacerTypeMedium() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
@@ -69,7 +69,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testLinkReplacerTypeFull() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
@@ -82,7 +82,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testLinkAtStart() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}} postfix";
@@ -95,7 +95,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testLinkAtEnd() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "prefix {{mesh.link('" + uuid + "')}}";
@@ -108,7 +108,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testLinkInMiddle() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "prefix {{mesh.link('" + uuid + "')}} postfix";
@@ -121,7 +121,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testAdjacentLinks() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}{{mesh.link('" + uuid + "')}}";
@@ -135,7 +135,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testNonAdjacentLinks() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}} in between {{mesh.link('" + uuid + "')}}";
@@ -149,7 +149,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testInvalidLinks() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}";
@@ -162,7 +162,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testSingleQuote() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link('" + uuid + "')}}\"'";
@@ -175,7 +175,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testDoubleQuote() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link(\"" + uuid + "\")}}\"'";
@@ -188,7 +188,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testGerman() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link(\"" + uuid + "\", \"de\")}}";
@@ -201,7 +201,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testEnglish() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
@@ -214,7 +214,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Language german = german();
 			Language english = english();
 			Node parentNode = folder("2015");
@@ -237,7 +237,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testBinaryFieldLinkResolving() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = content("news overview");
 			String uuid = node.getUuid();
 
@@ -259,7 +259,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testResolving() throws InterruptedException, ExecutionException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "some bla START<a href=\"{{mesh.link('" + uuid + "','en')}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid
@@ -272,7 +272,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testRendering() throws IOException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String uuid = UUIDUtil.randomUUID();
 			final String content = "some bla START<a href=\"{{mesh.link(\"" + uuid + "\")}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid
 					+ "\")}}\">Test</a>DEN";

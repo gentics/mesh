@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -32,7 +32,7 @@ public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 	public JsonObject principal() {
 		JsonObject user = new JsonObject();
 		Database db = MeshSpringConfiguration.getInstance().database();
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			user.put("uuid", getUuid());
 			user.put("username", getUsername());
 			user.put("firstname", getFirstname());

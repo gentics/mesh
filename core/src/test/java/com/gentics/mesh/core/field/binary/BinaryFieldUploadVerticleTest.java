@@ -32,7 +32,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -56,7 +56,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 			role().revokePermissions(node, UPDATE_PERM);
@@ -75,7 +75,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			String whitelistRegex = "image/.*";
 			prepareSchema(node, whitelistRegex, "binary");
@@ -91,7 +91,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
@@ -130,7 +130,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
@@ -149,7 +149,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 
 			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "nonBinary", binaryLen, contentType, fileName);
@@ -176,7 +176,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
@@ -188,7 +188,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testPathSegmentation() throws IOException {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			node.setUuid(UUIDUtil.randomUUID());
 
@@ -218,7 +218,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
@@ -259,7 +259,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 10;
 		String fileName = "somefile.dat";
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node folder2014 = folder("2014");
 			Node folder2015 = folder("2015");
 			prepareSchema(folder2014, "", "binary");
@@ -289,7 +289,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.png";
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldName);
 

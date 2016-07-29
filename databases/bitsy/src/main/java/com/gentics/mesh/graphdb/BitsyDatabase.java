@@ -9,7 +9,7 @@ import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.TrxHandler;
+import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.lambdazen.bitsy.BitsyGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -110,17 +110,17 @@ public class BitsyDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Trx trx() {
+	public Tx tx() {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public <T> T trx(TrxHandler<T> txHandler) {
+	public <T> T tx(TxHandler<T> txHandler) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public NoTrx noTrx() {
+	public NoTx noTx() {
 		throw new NotImplementedException();
 	}
 

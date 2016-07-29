@@ -13,7 +13,7 @@ import org.neo4j.test.TestGraphDatabaseFactory;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.TrxHandler;
+import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.tinkerpop.blueprints.Element;
@@ -50,12 +50,12 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public NoTrx noTrx() {
+	public NoTx noTx() {
 		return new Neo4jNoTrx(new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false));
 	}
 
 	@Override
-	public Trx trx() {
+	public Tx tx() {
 		return new Neo4jTrx(new DelegatingFramedTransactionalGraph<>(neo4jBlueprintGraph, true, false));
 	}
 
@@ -133,7 +133,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T> T trx(TrxHandler<T> txHandler) {
+	public <T> T tx(TxHandler<T> txHandler) {
 		// TODO Auto-generated method stub
 		return null;
 	}

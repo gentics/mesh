@@ -40,7 +40,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
@@ -62,7 +62,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Test
 	@Override
 	public void testReadByUUID() throws UnknownHostException, InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			assertNotNull(tagFamily);
 
@@ -79,7 +79,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
 
@@ -96,7 +96,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Role role = role();
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
@@ -111,7 +111,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 
 	@Test
 	public void testReadMultiple2() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			String uuid = tagFamily.getUuid();
 			Future<TagListResponse> future = getClient().findTags(PROJECT_NAME, uuid);
@@ -123,7 +123,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Test
 	@Override
 	public void testReadMultiple() throws UnknownHostException, InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
 			String noPermTagUUID = noPermTagFamily.getUuid();
@@ -249,7 +249,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 
 	@Test
 	public void testCreateWithoutPerm() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName("SuperDoll");
@@ -272,7 +272,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily basicTagFamily = tagFamily("basic");
 			String uuid = basicTagFamily.getUuid();
 			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid).toBlocking().value());
@@ -288,7 +288,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily basicTagFamily = tagFamily("basic");
 			Role role = role();
 			role.revokePermissions(basicTagFamily, DELETE_PERM);
@@ -306,7 +306,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 
 	@Test
 	public void testUpdateWithConflictingName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String newName = "colors";
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName(newName);
@@ -320,7 +320,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Test
 	@Override
 	public void testUpdate() throws UnknownHostException, InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			String uuid = tagFamily.getUuid();
 			String name = tagFamily.getName();
@@ -373,7 +373,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			String uuid = tagFamily.getUuid();
 			String name = tagFamily.getName();
@@ -399,7 +399,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("New Name");
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
@@ -414,7 +414,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Ignore("Not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String uuid = tagFamily("colors").getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<?>> set = new HashSet<>();
@@ -430,7 +430,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Ignore("Not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String uuid = project().getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<GenericMessageResponse>> set = new HashSet<>();
@@ -460,7 +460,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			int nJobs = 200;
 			Set<Future<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {

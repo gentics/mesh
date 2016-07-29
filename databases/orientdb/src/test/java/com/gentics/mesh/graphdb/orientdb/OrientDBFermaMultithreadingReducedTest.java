@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import static com.gentics.mesh.graphdb.orientdb.ThreadUtils.*;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -26,13 +26,13 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 	}
 
 	private void setupData() {
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			String name = "SomeName";
 			p = addPersonWithFriends(tx.getGraph(), name);
 //			tx.getGraph().commit();
 			tx.success();
 			runAndWait(() -> {
-				try (Trx tx2 = db.trx()) {
+				try (Tx tx2 = db.tx()) {
 					readPerson(p);
 					manipulatePerson(tx2.getGraph(), p);
 				}
@@ -40,7 +40,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 		}
 
 		runAndWait(() -> {
-			try (Trx tx2 = db.trx()) {
+			try (Tx tx2 = db.tx()) {
 				readPerson(p);
 				manipulatePerson(tx2.getGraph(), p);
 			}
@@ -54,7 +54,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 		//		fg.commit();
 		runAndWait(() -> {
 			Person reloaded;
-			try (Trx tx = db.trx()) {
+			try (Tx tx = db.tx()) {
 				manipulatePerson(tx.getGraph(), p);
 				String name = "newName";
 				p.setName(name);
@@ -65,7 +65,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 				tx.success();
 			}
 			runAndWait(() -> {
-				try (Trx tx2 = db.trx()) {
+				try (Tx tx2 = db.tx()) {
 					readPerson(reloaded);
 				}
 			});

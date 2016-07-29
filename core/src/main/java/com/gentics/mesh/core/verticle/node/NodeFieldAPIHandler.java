@@ -160,7 +160,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 					Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
 					return obsHash.flatMap(sha512sum -> {
-						Tuple<SearchQueueBatch, String> tuple = db.trx(() -> {
+						Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
 							field.setFileName(fileName);
 							field.setFileSize(ul.size());
 							field.setMimeType(contentType);
@@ -325,7 +325,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							});
 
 					return obsHashAndSize.flatMap(hashAndSize -> {
-						Tuple<SearchQueueBatch, String> tuple = db.trx(() -> {
+						Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
 							field.setSHA512Sum(hashAndSize.v1());
 							field.setFileSize(hashAndSize.v2());
 							// resized images will always be jpeg

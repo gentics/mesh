@@ -32,7 +32,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
@@ -46,7 +46,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer vcard = microschemaContainer("vcard");
 			MicroschemaReference reference = vcard.transformToReference();
 			assertNotNull(reference);
@@ -65,7 +65,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
@@ -90,7 +90,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String invalidName = "thereIsNoMicroschemaWithThisName";
 
 			for (String name : microschemaContainers().keySet()) {
@@ -109,7 +109,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String invalidUUID = UUIDUtil.randomUUID();
 
 			MicroschemaContainerRoot root = boot.microschemaContainerRoot();
@@ -131,7 +131,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testRoot() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer vcard = microschemaContainer("vcard");
 			assertNotNull(vcard.getRoot());
 		}
@@ -140,7 +140,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Microschema schema = new MicroschemaModel();
 			schema.setName("test");
 			MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
@@ -155,7 +155,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	 */
 	@Test
 	public void testVersionSync() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			assertNotNull(microschemaContainer("vcard"));
 			assertEquals("The microschema container and schema rest model version must always be in sync",
 					microschemaContainer("vcard").getLatestVersion().getVersion(),
@@ -167,7 +167,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws MeshJsonException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Microschema schema = new MicroschemaModel();
 			schema.setName("test");
 			MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
@@ -188,7 +188,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() throws MeshJsonException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Microschema microschema = new MicroschemaModel();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
@@ -199,7 +199,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() throws MeshJsonException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Microschema microschema = new MicroschemaModel();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
@@ -211,7 +211,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() throws MeshJsonException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Microschema microschema = new MicroschemaModel();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
@@ -222,7 +222,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() throws MeshJsonException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Microschema microschema = new MicroschemaModel();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
@@ -233,7 +233,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws IOException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
@@ -253,7 +253,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() throws MeshJsonException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainerRoot root = meshRoot().getMicroschemaContainerRoot();
 
 			Microschema microschema = new MicroschemaModel();
@@ -274,7 +274,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	 */
 	@Test
 	public void testGetContainerUsingMicroschemaVersion() throws IOException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainerVersion vcard = microschemaContainer("vcard").getLatestVersion();
 
 			Microschema microschema = vcard.getSchema();

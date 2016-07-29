@@ -146,7 +146,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 				throw conflict(roleWithSameName.getUuid(), requestModel.getName(), "role_conflicting_name");
 			}
 
-			return db.trx(() -> {
+			return db.tx(() -> {
 				setName(requestModel.getName());
 				return createIndexBatch(STORE_ACTION);
 			}).process().andThen(Single.just(this));

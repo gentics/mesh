@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
@@ -45,7 +45,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testReadNodeTags() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -61,7 +61,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testAddTagToNode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -92,7 +92,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testAddTagToNoPermNode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -107,7 +107,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -123,7 +123,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testRemoveTagFromNode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
@@ -143,7 +143,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testRemoveBogusTagFromNode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -155,7 +155,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testRemoveTagFromNoPermNode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
@@ -171,7 +171,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));

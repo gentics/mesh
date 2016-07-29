@@ -49,7 +49,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
@@ -103,7 +103,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 		Set<String> touchedFields = new HashSet<>();
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			prepareMigration(fromVersion, migrationScripts, touchedFields);
 		} catch (IOException e) {
 			return Completable.error(e);
@@ -119,7 +119,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 		// Iterate over all containers and invoke a migration for each one
 		for (NodeGraphFieldContainer container : fieldContainers) {
-			Exception e = db.trx(() -> {
+			Exception e = db.tx(() -> {
 				try {
 					Node node = container.getParentNode();
 					String languageTag = container.getLanguage().getLanguageTag();
@@ -221,7 +221,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 		Set<String> touchedFields = new HashSet<>();
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			prepareMigration(fromVersion, migrationScripts, touchedFields);
 		} catch (IOException e) {
 			return Completable.error(e);
@@ -235,7 +235,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		ac.setRelease(release);
 
 		for (NodeGraphFieldContainer container : fieldContainers) {
-			Exception e = db.trx(() -> {
+			Exception e = db.tx(() -> {
 				try {
 					Node node = container.getParentNode();
 					String languageTag = container.getLanguage().getLanguageTag();
@@ -333,7 +333,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		for (Node node : nodes) {
-			db.trx(() -> {
+			db.tx(() -> {
 				if (!node.getGraphFieldContainers(newRelease, ContainerType.INITIAL).isEmpty()) {
 					return null;
 				}
@@ -374,7 +374,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			});
 		}
 
-		db.trx(() -> {
+		db.tx(() -> {
 			newRelease.setMigrated(true);
 			return null;
 		});

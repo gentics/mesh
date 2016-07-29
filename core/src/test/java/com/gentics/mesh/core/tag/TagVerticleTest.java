@@ -41,7 +41,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
@@ -66,7 +66,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadMultiple() throws Exception {
 
 		final int nBasicTags = 9;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
@@ -146,7 +146,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			Future<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParameters(1, 0));
@@ -158,7 +158,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			TagFamily parentTagFamily = tagFamily("colors");
 
@@ -172,7 +172,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			String uuid = tag.getUuid();
 			TagFamily parentTagFamily = tagFamily("colors");
@@ -185,7 +185,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("basic");
 			Tag tag = tag("vehicle");
 			String uuid = tag.getUuid();
@@ -201,7 +201,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("vehicle");
 			TagFamily parentTagFamily = tagFamily("basic");
 
@@ -246,7 +246,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateTagWithConflictingName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			TagFamily parentTagFamily = tagFamily("colors");
 
@@ -268,7 +268,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateTagWithNoName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			TagFamily parentTagFamily = tagFamily("colors");
 
@@ -284,7 +284,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("vehicle");
 			TagFamily parentTagFamily = tagFamily("basic");
 
@@ -313,7 +313,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("vehicle");
 			TagFamily parentTagFamily = tagFamily("basic");
 
@@ -336,7 +336,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("basic");
 			Tag tag = tag("vehicle");
 			String uuid = tag.getUuid();
@@ -353,7 +353,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateConflictingName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 
 			TagCreateRequest tagCreateRequest = new TagCreateRequest();
@@ -374,7 +374,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testCreate() {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			tagCreateRequest.getFields().setName("SomeName");
@@ -400,7 +400,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateTagWithSameNameInSameTagFamily() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			TagCreateRequest tagCreateRequest = new TagCreateRequest();
@@ -422,7 +422,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Ignore("Not yet supported")
 	public void testUpdateMultithreaded() throws Exception {
 		int nJobs = 5;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			TagUpdateRequest request = new TagUpdateRequest();
@@ -442,7 +442,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 100;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			String uuid = tag("red").getUuid();
@@ -460,7 +460,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Ignore("Not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			String uuid = tag("red").getUuid();
@@ -494,7 +494,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			Set<Future<TagResponse>> set = new HashSet<>();
@@ -516,7 +516,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		TagFamily tagFamily = tagFamilies().get("colors");
 		// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Create
 			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest);
 			latchFor(future);
@@ -540,7 +540,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			TagFamily parentTagFamily = tagFamily("colors");
 
@@ -560,7 +560,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setFields(new TagFieldContainer().setName("newName"));
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			Future<TagResponse> future = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), "bogus", request);

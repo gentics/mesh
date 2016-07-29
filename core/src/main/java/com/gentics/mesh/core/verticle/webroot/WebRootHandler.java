@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
@@ -73,7 +73,7 @@ public class WebRootHandler {
 					GraphField field = lastSegment.getPathField();
 					if (field instanceof BinaryGraphField) {
 						BinaryGraphField binaryField = (BinaryGraphField) field;
-						try (NoTrx tx = db.noTrx()) {
+						try (NoTx tx = db.noTx()) {
 							// TODO move binary handler outside of event loop scope to avoid bogus object creation
 							BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
 							handler.handle(binaryField);

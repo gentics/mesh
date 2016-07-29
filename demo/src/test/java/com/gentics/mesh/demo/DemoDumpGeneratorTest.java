@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.NodeIndexHandler;
@@ -59,7 +59,7 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		new RxDebugger().start();
 		generator.invokeDump(boot, dataProvider);
-		NoTrx tx = db.noTrx();
+		NoTx tx = db.noTx();
 		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().value().getNodeRoot().findAll().size() > 0);
 		User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 		assertNotNull("The webclient user should have been created but could not be found.", user);

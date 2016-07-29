@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import com.gentics.mesh.etc.GraphStorageOptions;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
@@ -83,16 +83,16 @@ public interface Database {
 	 * 
 	 * @return
 	 */
-	Trx trx();
+	Tx tx();
 
 	/**
 	 * Execute the txHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
 	 * 
-	 * @param trxHandler
+	 * @param txHandler
 	 *            Handler that will be executed within the scope of the transaction.
 	 * @return Object which was returned by the handler
 	 */
-	<T> T trx(TrxHandler<T> trxHandler);
+	<T> T tx(TxHandler<T> txHandler);
 
 	/**
 	 * Return a autocloseable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
@@ -101,7 +101,7 @@ public interface Database {
 	 * <pre>
 	 * {
 	 * 	&#64;code
-	 * 	try(NoTrx tx = db.noTrx()) {
+	 * 	try(NoTx tx = db.noTx()) {
 	 * 	  // interact with graph db here
 	 *  }
 	 * }
@@ -109,7 +109,7 @@ public interface Database {
 	 * 
 	 * @return
 	 */
-	NoTrx noTrx();
+	NoTx noTx();
 
 	/**
 	 * Execute the given handler within the scope of a no transaction.
@@ -118,17 +118,17 @@ public interface Database {
 	 *            handler that is invoked within the scope of the no-transaction.
 	 * @return
 	 */
-	<T> T noTrx(TrxHandler<T> txHandler);
+	<T> T noTrx(TxHandler<T> txHandler);
 
 	/**
 	 * Asynchronously execute the trxHandler within the scope of a non transaction.
 	 * 
 	 * @param trxHandler
 	 * @return
-	 * @deprecated Use {@link #asyncNoTrxExperimental(TrxHandler)} instead
+	 * @deprecated Use {@link #asyncNoTrxExperimental(TxHandler)} instead
 	 */
 	@Deprecated
-	<T> Single<T> asyncNoTrx(TrxHandler<T> trxHandler);
+	<T> Single<T> asyncNoTrx(TxHandler<T> trxHandler);
 
 	/**
 	 * Asynchronously execute the trxHandler within the scope of a non transaction. Experimental implementation. This version will use RxJava schedulers to
@@ -137,7 +137,7 @@ public interface Database {
 	 * @param trxHandler
 	 * @return
 	 */
-	<T> Single<T> asyncNoTrxExperimental(TrxHandler<Single<T>> trxHandler);
+	<T> Single<T> asyncNoTrxExperimental(TxHandler<Single<T>> trxHandler);
 
 	/**
 	 * Initialize the database and store the settings.

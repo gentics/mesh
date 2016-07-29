@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.UUIDUtil;
@@ -121,7 +121,7 @@ public class RestModelTest extends AbstractDBTest {
 	@Test
 	public void testNodeList() throws Exception {
 		setupData();
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Schema folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
 			Schema contentSchema = schemaContainer("content").getLatestVersion().getSchema();
 

@@ -7,8 +7,8 @@ import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.GraphStorageOptions;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
@@ -31,7 +31,7 @@ public abstract class AbstractDatabase implements Database {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		try (Trx tx = trx()) {
+		try (Tx tx = tx()) {
 			tx.getGraph().e().removeAll();
 			tx.getGraph().v().removeAll();
 			tx.success();
@@ -69,8 +69,8 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> T noTrx(TrxHandler<T> txHandler) {
-		try (NoTrx noTx = noTrx()) {
+	public <T> T noTrx(TxHandler<T> txHandler) {
+		try (NoTx noTx = noTx()) {
 			T result = txHandler.call();
 			return result;
 		} catch (Exception e) {
@@ -80,7 +80,7 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> Single<T> asyncNoTrx(TrxHandler<T> txHandler) {
+	public <T> Single<T> asyncNoTrx(TxHandler<T> txHandler) {
 		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
 		Single<T> obs = Single.create(sub -> {
 			try {
@@ -125,10 +125,10 @@ public abstract class AbstractDatabase implements Database {
 	//	
 
 	@Override
-	public <T> Single<T> asyncNoTrxExperimental(TrxHandler<Single<T>> trxHandler) {
+	public <T> Single<T> asyncNoTrxExperimental(TxHandler<Single<T>> trxHandler) {
 		return Single.create(sub -> {
 			Mesh.vertx().executeBlocking(bc -> {
-				try (NoTrx noTx = noTrx()) {
+				try (NoTx noTx = noTx()) {
 					Single<T> result = trxHandler.call();
 					if (result == null) {
 						bc.complete();

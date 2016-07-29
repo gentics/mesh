@@ -92,7 +92,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 			microschema.validate();
 
 			return requestUser.hasPermissionAsync(ac, this, GraphPermission.CREATE_PERM).flatMap(hasPerm -> {
-				Tuple<SearchQueueBatch, MicroschemaContainer> tuple = db.trx(() -> {
+				Tuple<SearchQueueBatch, MicroschemaContainer> tuple = db.tx(() -> {
 					requestUser.reload();
 					MicroschemaContainer container = create(microschema, requestUser);
 					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);

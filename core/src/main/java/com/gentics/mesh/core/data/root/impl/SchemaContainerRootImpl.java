@@ -117,7 +117,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				requestModel.validate();
 				if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
 
-					Tuple<SearchQueueBatch, SchemaContainer> tuple = db.trx(() -> {
+					Tuple<SearchQueueBatch, SchemaContainer> tuple = db.tx(() -> {
 
 						String schemaName = requestModel.getName();
 						SchemaContainer conflictingSchema = findByName(schemaName).toBlocking().value();

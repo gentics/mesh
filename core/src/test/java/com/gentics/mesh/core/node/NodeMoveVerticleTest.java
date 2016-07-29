@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -108,7 +108,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		expectResponseMessage(future, "node_moved_to", sourceNode.getUuid(), targetNode.getUuid());
 
 		sourceNode.reload();
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId, sourceNode.getParentNode(releaseUuid).getUuid());
 			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
 					targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());

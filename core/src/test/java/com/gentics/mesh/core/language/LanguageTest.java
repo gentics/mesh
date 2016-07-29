@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -32,7 +32,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 
 			int nLanguagesBefore = languageRoot.findAll().size();
@@ -48,7 +48,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testLanguageIndex() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			stopWatch("languageindex.read", 50000, (step) -> {
 				Iterable<Vertex> it = Database.getThreadLocalGraph().getVertices("LanguageImpl.languageTag", "en");
 				assertTrue(it.iterator().hasNext());
@@ -72,7 +72,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			List<? extends Language> languages = meshRoot().getLanguageRoot().findAll();
 			assertEquals(4, languages.size());
 		}
@@ -80,7 +80,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testFindByLanguageTag() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// for (int e = 0; e < 15; e++) {
 			int nChecks = 50000;
 			long start = System.currentTimeMillis();
@@ -100,7 +100,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Language language = meshRoot().getLanguageRoot().findByName("German").toBlocking().value();
 			assertNotNull(language);
 
@@ -116,7 +116,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Language language = meshRoot().getLanguageRoot().findByName("German").toBlocking().value();
 			Language foundLanguage = meshRoot().getLanguageRoot().findByUuid(language.getUuid()).toBlocking().value();
 			assertNotNull(foundLanguage);
@@ -148,7 +148,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Language language = english();
 			assertNotNull(language.getName());
 			assertEquals("English", language.getName());
@@ -162,7 +162,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 			final String languageTag = "tlh";
 			final String languageName = "klingon";
@@ -191,7 +191,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.READ_PERM, english());
 		}
 	}
@@ -199,7 +199,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.DELETE_PERM, english());
 		}
 	}
@@ -207,7 +207,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.UPDATE_PERM, english());
 		}
 	}
@@ -215,7 +215,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.CREATE_PERM, english());
 		}
 	}

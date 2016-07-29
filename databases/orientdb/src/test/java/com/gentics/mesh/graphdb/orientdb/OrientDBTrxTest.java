@@ -13,7 +13,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
@@ -55,7 +55,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 	public void testAsyncTrxRetryHandling2() throws Exception {
 		// Test creation of user in current thread
 		int nFriendsBefore;
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			p = addPersonWithFriends(tx.getGraph(), "Person2");
 			manipulatePerson(tx.getGraph(), p);
 			tx.success();
@@ -66,7 +66,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 		AtomicInteger i = new AtomicInteger(0);
 
 		run(() -> {
-			db.trx(() -> {
+			db.tx(() -> {
 				i.incrementAndGet();
 
 				System.out.println("Trx1");
@@ -79,7 +79,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 		});
 
 		run(() -> {
-			db.trx(() -> {
+			db.tx(() -> {
 				i.incrementAndGet();
 
 				System.out.println("Trx2");
@@ -94,7 +94,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 		b.await();
 		Thread.sleep(1000);
 		System.out.println("Asserting");
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.getId());
 			int nFriendsAfter = p.getFriends().size();
 			assertEquals(nFriendsBefore + 2, nFriendsAfter);
@@ -107,7 +107,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 	public void testTrxConflictHandling() throws InterruptedException, BrokenBarrierException, TimeoutException {
 		// Test creation of user in current thread
 		int nFriendsBefore;
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			p = addPersonWithFriends(tx.getGraph(), "Person2");
 			manipulatePerson(tx.getGraph(), p);
 			tx.success();
@@ -121,7 +121,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 
 		b.await();
 		Thread.sleep(1000);
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.getId());
 			int nFriendsAfter = p.getFriends().size();
 			assertEquals(nFriendsBefore + 2, nFriendsAfter);
@@ -135,7 +135,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 				System.out.println("Try: " + retry);
 				boolean doRetry = false;
 				//				try {
-				try (Trx tx = db.trx()) {
+				try (Tx tx = db.tx()) {
 					addFriend(tx.getGraph(), p);
 					tx.success();
 					if (retry == 0) {

@@ -42,7 +42,7 @@ public class DatabaseTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testIndex() {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			GroupRootImpl.init(db);
 			GroupRootImpl.init(db);
 			db.addVertexIndex(LanguageImpl.class, true, "languageTag");
@@ -76,23 +76,23 @@ public class DatabaseTest extends AbstractIsolatedBasicDBTest {
 	@Ignore
 	public void testRestore() throws IOException {
 		String name = "username";
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			user().setUsername(name);
 			tx.success();
 		}
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			assertEquals(name, user().getUsername());
 		}
 		db.backupGraph(outputDirectory.getAbsolutePath());
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			user().setUsername("changed");
 			tx.success();
 		}
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			assertEquals("changed", user().getUsername());
 		}
 		db.restoreGraph(outputDirectory.listFiles()[0].getAbsolutePath());
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			assertEquals("username", user().getUsername());
 		}
 

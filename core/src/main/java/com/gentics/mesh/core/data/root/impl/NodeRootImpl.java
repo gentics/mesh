@@ -182,7 +182,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				project.reload();
 				// Load the parent node in order to create the node
 				return project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM).map(parentNode -> {
-					return db.trx(() -> {
+					return db.tx(() -> {
 						Release release = ac.getRelease(project);
 						Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release);
 						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);

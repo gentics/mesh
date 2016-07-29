@@ -205,7 +205,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 				}
 
-				return db.trx(() -> {
+				return db.tx(() -> {
 					setName(requestModel.getName());
 					return createIndexBatch(STORE_ACTION);
 				}).process().toSingleDefault(this);

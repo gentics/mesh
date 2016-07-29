@@ -178,7 +178,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
 			}
 
-			Tuple<SearchQueueBatch, Tag> tuple = db.trx(() -> {
+			Tuple<SearchQueueBatch, Tag> tuple = db.tx(() -> {
 				this.reload();
 				requestUser.reload();
 				project.reload();
@@ -231,7 +231,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public Single<TagFamily> update(InternalActionContext ac) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.trx(() -> {
+		return db.tx(() -> {
 			Project project = ac.getProject();
 			String newName = requestModel.getName();
 
@@ -244,7 +244,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
 					throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 				}
-				SearchQueueBatch batch = db.trx(() -> {
+				SearchQueueBatch batch = db.tx(() -> {
 					this.setName(newName);
 					return createIndexBatch(STORE_ACTION);
 				});

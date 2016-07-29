@@ -48,7 +48,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
@@ -90,7 +90,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 	@Test
 	@Ignore("Unstable test")
 	public void testEmptyMigration() throws Throwable {
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
@@ -123,7 +123,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 
 	@Test
 	public void testStartSchemaMigration() throws Throwable {
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 
 			String fieldName = "changedfield";
 
@@ -167,7 +167,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 
 	@Test
 	public void testMigrateAgain() throws Throwable {
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 
 			String fieldName = "changedfield";
 
@@ -202,7 +202,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 
 	@Test
 	public void testMigratePublished() throws Throwable {
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 
 			String fieldName = "changedfield";
 
@@ -236,7 +236,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 		SchemaContainerVersion versionB = null;
 		SchemaContainer container = null;
 
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 			container = createDummySchemaWithChanges(fieldName);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
@@ -249,12 +249,12 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 			englishContainer.createString("name").setString("someName");
 			englishContainer.createString(fieldName).setString("content");
 		}
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 			node.reload();
 			node.publish(InternalActionContext.create(getMockedRoutingContext(user())), "en").await();
 		}
 
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 			node.reload();
 			NodeGraphFieldContainer updatedEnglishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			updatedEnglishContainer.getString(fieldName).setString("new content");
@@ -352,7 +352,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 	@Test
 	public void testStartMicroschemaMigration() throws Throwable {
 
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 
 			String fieldName = "changedfield";
 			String micronodeFieldName = "micronodefield";
@@ -460,7 +460,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 		String fieldName = "changedfield";
 		String micronodeFieldName = "micronodefield";
 
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
@@ -584,7 +584,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 		String fieldName = "changedfield";
 		String micronodeFieldName = "micronodefield";
 
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);

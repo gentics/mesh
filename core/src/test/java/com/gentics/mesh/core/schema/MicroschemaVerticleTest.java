@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
@@ -62,7 +62,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
@@ -102,7 +102,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
@@ -146,7 +146,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			Future<Microschema> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid());
@@ -161,7 +161,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
@@ -177,7 +177,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 
@@ -209,7 +209,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
 			role().revokePermissions(microschema, UPDATE_PERM);
@@ -226,7 +226,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 	@Test
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
 			String oldName = microschema.getName();
@@ -245,7 +245,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
 
@@ -262,7 +262,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
 

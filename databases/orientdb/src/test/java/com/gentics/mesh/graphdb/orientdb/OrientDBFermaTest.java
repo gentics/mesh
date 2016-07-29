@@ -8,9 +8,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.ferma.DelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.ferma.DelegatingFramedTransactionalOrientGraph;
 import com.gentics.mesh.graphdb.orientdb.graph.Group;
@@ -40,7 +40,7 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 
 	@Test
 	public void testOrientVerticleClass() {
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			Person p = tx.getGraph().addFramedVertex(Person.class);
 			p.setName("personName");
 			System.out.println(p.getId());
@@ -55,14 +55,14 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 	}
 
 	private void setupTypesAndIndices() {
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 			OrientGraphNoTx g = ((OrientGraphNoTx) ((DelegatingFramedOrientGraph<?>) tx.getGraph()).getBaseGraph());
 			// g.setUseClassForEdgeLabel(true);
 			g.setUseLightweightEdges(false);
 			g.setUseVertexFieldsForEdgeLabels(false);
 		}
 
-		try (NoTrx tx = db.noTrx()) {
+		try (NoTx tx = db.noTx()) {
 			OrientGraphNoTx g = ((OrientGraphNoTx) ((DelegatingFramedOrientGraph<?>) tx.getGraph()).getBaseGraph());
 			System.out.println(g.getClass().getName());
 
@@ -89,7 +89,7 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 
 		List<Person> persons = new ArrayList<>();
 		Group g;
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			g = tx.getGraph().addFramedVertex(Group.class);
 			g.setName("groupName");
 			for (int i = 0; i < nMembers; i++) {
@@ -101,7 +101,7 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 			tx.success();
 		}
 
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			long start = System.currentTimeMillis();
 			OrientGraph graph = ((OrientGraph) ((DelegatingFramedTransactionalOrientGraph<?>) tx.getGraph()).getBaseGraph());
 			// assertEquals(nMembers, g.getMembers().size());

@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data;
 import org.junit.After;
 import org.junit.Before;
 
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 /**
@@ -13,12 +13,12 @@ import com.gentics.mesh.test.AbstractDBTest;
 @Deprecated
 public class AbstractBasicDBTest extends AbstractDBTest {
 
-	protected NoTrx tx;
+	protected NoTx tx;
 
 	@Before
 	public void setup() throws Exception {
 		setupData();
-		tx = db.noTrx();
+		tx = db.noTx();
 	}
 
 	@After

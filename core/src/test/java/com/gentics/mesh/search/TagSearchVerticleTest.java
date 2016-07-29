@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.util.RxDebugger;
 
@@ -49,7 +49,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String tagName = "newtag";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
 		}
 
@@ -64,7 +64,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		String tagUuid;
 		String parentTagFamilyUuid;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			TagFamily parentTagFamily = tagFamily("colors");
 			tagUuid = tag.getUuid();
@@ -80,7 +80,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 		updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, newName + "2");
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 
 			assertEquals(newName + "2", tag("red").getName());
 			assertEquals(0, meshRoot().getSearchQueue().getSize());
@@ -98,14 +98,14 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	@Test
 	@Override
 	public void testDocumentDeletion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
 		String name;
 		String uuid;
 		String parentTagFamilyUuid;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			TagFamily parentTagFamily = tagFamily("colors");
 

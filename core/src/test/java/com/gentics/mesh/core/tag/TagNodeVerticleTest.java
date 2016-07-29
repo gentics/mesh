@@ -18,7 +18,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
@@ -37,7 +37,7 @@ public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testReadNodesForTag() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeListResponse nodeList = call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParameters().draft()));
 			NodeResponse concorde = new NodeResponse();
@@ -48,7 +48,7 @@ public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testReadPublishedNodesForTag() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 			NodeListResponse nodeList = call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
@@ -68,7 +68,7 @@ public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testReadNodesForTagInRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeResponse concorde = new NodeResponse();
 			concorde.setUuid(content("concorde").getUuid());
 

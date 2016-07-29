@@ -42,7 +42,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
-				return db.trx(() -> {
+				return db.tx(() -> {
 					try {
 						Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 						SchemaChangesListModel model = new SchemaChangesListModel();
@@ -116,7 +116,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				if (!perm.booleanValue()) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 				}
-				return db.trx(() -> {
+				return db.tx(() -> {
 					project.getMicroschemaContainerRoot().addMicroschema(microschema);
 					return microschema.transformToRest(ac, 0);
 				});
@@ -139,7 +139,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				if (!perm.booleanValue()) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 				}
-				return db.trx(() -> {
+				return db.tx(() -> {
 					project.getMicroschemaContainerRoot().removeMicroschema(microschema);
 					return microschema.transformToRest(ac, 0);
 				});

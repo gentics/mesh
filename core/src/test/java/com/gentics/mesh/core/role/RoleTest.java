@@ -38,8 +38,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -53,7 +53,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			RoleReference reference = role().transformToReference();
 			assertNotNull(reference);
 			assertEquals(role().getUuid(), reference.getUuid());
@@ -64,7 +64,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String roleName = "test";
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role createdRole = root.create(roleName, user());
@@ -78,7 +78,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGrantPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Role role = role();
 			Node node = content("news overview");
 			role.grantPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
@@ -103,7 +103,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGrantDuplicates() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Role role = meshRoot().getRoleRoot().create("testRole", user());
 			group().addRole(role);
 			NodeImpl extraNode = noTx.getGraph().addFramedVertex(NodeImpl.class);
@@ -126,7 +126,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testIsPermitted() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			InternalActionContext ac = getMockedInternalActionContext();
 			int nRuns = 2000;
@@ -138,7 +138,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGrantPermissionTwice() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Role role = role();
 			Node node = content("news overview");
 
@@ -156,7 +156,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGetPermissions() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Role role = role();
 			Node node = content("news overview");
 			assertEquals(6, role.getPermissions(node).size());
@@ -165,7 +165,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testRevokePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Role role = role();
 			Node node = content("news overview");
 			role.revokePermissions(node, CREATE_PERM);
@@ -181,7 +181,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testRevokePermissionOnGroupRoot() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 			InternalActionContext ac = getMockedInternalActionContext();
 			User user = user();
@@ -193,7 +193,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			int nRolesBefore = root.findAll().size();
 
@@ -207,7 +207,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testRoleAddCrudPermissions() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MeshAuthUser requestUser = user().getImpl().reframe(MeshAuthUserImpl.class);
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 			Node parentNode = folder("2015");
@@ -230,7 +230,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			ac.data().clear();
 			assertEquals(6, requestUser.getPermissions(ac, node).size());
 
-			try (Trx tx = db.trx()) {
+			try (Tx tx = db.tx()) {
 				for (Role role : roles().values()) {
 					for (GraphPermission permission : GraphPermission.values()) {
 						assertTrue(
@@ -246,7 +246,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testRolesOfGroup() throws InvalidArgumentException {
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
 			group().addRole(extraRole);
@@ -272,7 +272,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			PageImpl<? extends Role> page = boot.roleRoot().findAll(ac, new PagingParameters(1, 5));
@@ -288,7 +288,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			assertNotNull(boot.roleRoot().findByName(role().getName()).toBlocking().value());
 			assertNull(boot.roleRoot().findByName("bogus").toBlocking().value());
 		}
@@ -297,7 +297,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Role role = boot.roleRoot().findByUuid(role().getUuid()).toBlocking().value();
 			assertNotNull(role);
 			role = boot.roleRoot().findByUuid("bogus").toBlocking().value();
@@ -308,7 +308,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Role role = role();
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -324,7 +324,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String roleName = "test";
 			RoleRoot root = meshRoot().getRoleRoot();
 
@@ -343,7 +343,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
 			Role role = root.getRoleRoot().create("SuperUser", user());
@@ -357,7 +357,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			List<? extends Role> roles = boot.roleRoot().findAll();
 			assertNotNull(roles);
 			assertEquals(roles().size(), roles.size());
@@ -367,7 +367,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Role role = role();
 			assertEquals("joe1_role", role.getName());
 			assertNotNull(role.getUuid());
@@ -383,10 +383,10 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String uuid;
 			SearchQueueBatch batch = createBatch();
-			try (Trx tx = db.trx()) {
+			try (Tx tx = db.tx()) {
 				Role role = role();
 				uuid = role.getUuid();
 				role.delete(batch);
@@ -411,7 +411,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Role role = role();
 			role.setName("newName");
 			assertEquals("newName", role.getName());
@@ -423,7 +423,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.READ_PERM, role());
 		}
 	}
@@ -431,7 +431,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.DELETE_PERM, role());
 		}
 	}
@@ -439,7 +439,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.UPDATE_PERM, role());
 		}
 	}
@@ -447,7 +447,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.CREATE_PERM, role());
 		}
 	}

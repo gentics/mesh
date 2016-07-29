@@ -9,11 +9,11 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
 /**
- * OrientDB specific implementation of an trx autoclosable.
+ * OrientDB specific implementation of an tx autoclosable.
  */
-public class OrientDBTrx extends AbstractTrx {
+public class OrientDBTx extends AbstractTx {
 
-	public OrientDBTrx(OrientGraphFactory factory, TypeResolver resolver) {
+	public OrientDBTx(OrientGraphFactory factory, TypeResolver resolver) {
 		OrientGraph tx = factory.getTx();
 		FramedTransactionalGraph transaction = new DelegatingFramedTransactionalOrientGraph(tx, resolver);
 		init(transaction);

@@ -218,7 +218,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	public Single<Tag> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
-		return db.trx(() -> {
+		return db.tx(() -> {
 			String newTagName = requestModel.getFields().getName();
 			if (isEmpty(newTagName)) {
 				throw error(BAD_REQUEST, "tag_name_not_set");

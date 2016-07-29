@@ -71,7 +71,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsRole, (group, role) -> {
-				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
+				Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					group.addRole(role);
 					return Tuple.tuple(batch, group);
@@ -95,7 +95,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsRole, (group, role) -> {
-				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
+				Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					group.removeRole(role);
 					return Tuple.tuple(batch, group);
@@ -153,7 +153,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsUser, (group, user) -> {
-				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
+				Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 					group.addUser(user);
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					return Tuple.tuple(batch, group);
@@ -175,7 +175,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			return Single.zip(obsUser, obsGroup, (user, group) -> {
-				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
+				Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					batch.addEntry(user, STORE_ACTION);
 					group.removeUser(user);

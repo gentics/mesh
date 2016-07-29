@@ -10,14 +10,14 @@ import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.mock.Mocks;
 
 public class AuthUserTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testAuthorization() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 			MeshAuthUser requestUser = ac.getUser();
 			Language targetNode = english();

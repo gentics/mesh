@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 
@@ -23,7 +23,7 @@ public class NodeIndexHandlerTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testReindexAll() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			assertThat(meshRoot().getNodeRoot().findAll()).as("Node list").isNotEmpty();
 			searchProvider.reset();
 			assertEquals("Initially no store event should have been recorded.", 0, searchProvider.getStoreEvents().size());

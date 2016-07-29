@@ -42,8 +42,8 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -72,7 +72,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testCreate() throws Exception {
 		final String name = "test12345";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
 			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
@@ -88,7 +88,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testBatchCreation() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			for (int i = 0; i < 10; i++) {
 				System.out.println(i);
 				final String name = "test_" + i;
@@ -113,7 +113,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 			Future<GroupResponse> future = getClient().createGroup(request);
 			latchFor(future);
@@ -131,7 +131,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Create the group
 			final String name = "test12345";
 			GroupCreateRequest request = new GroupCreateRequest();
@@ -160,7 +160,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateGroupWithMissingName() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			role().grantPermissions(group(), CREATE_PERM);
 		}
 		GroupCreateRequest request = new GroupCreateRequest();
@@ -172,7 +172,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateGroupWithNoPerm() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			final String name = "test12345";
 			GroupCreateRequest request = new GroupCreateRequest();
 			InternalActionContext ac = getMockedInternalActionContext();
@@ -197,7 +197,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			int totalGroups = 0;
 			String extraGroupName = "no_perm_group";
 			GroupRoot root = meshRoot().getGroupRoot();
@@ -282,7 +282,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Group group = group();
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
 
@@ -296,7 +296,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Group group = group();
 			String uuid = group.getUuid();
 
@@ -311,7 +311,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Group group = group();
 			role().revokePermissions(group, READ_PERM);
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
@@ -348,7 +348,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			test.assertGroup(request, restGroup);
 			return restGroup;
 		});
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			Group reloadedGroup = boot.groupRoot().findByUuid(updatedGroup.getUuid()).toBlocking().value();
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
@@ -357,7 +357,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(group(), UPDATE_PERM);
 			String uuid = group().getUuid();
 			GroupUpdateRequest request = new GroupUpdateRequest();
@@ -371,7 +371,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateGroupWithEmptyName() throws GenericRestException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 
 			Group group = group();
 
@@ -391,7 +391,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateGroupWithConflictingName() throws GenericRestException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			final String alreadyUsedName = "extraGroup";
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
 			// Create a group which occupies the name
@@ -414,7 +414,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	 */
 	@Test
 	public void testReadWithRolePermsSync() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Create a lot of groups
 			int groupCount = 100;
 			GroupCreateRequest createReq = new GroupCreateRequest();
@@ -458,7 +458,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Group group = group();
 			String name = group.getName();
 			String uuid = group.getUuid();
@@ -475,7 +475,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Group group = group();
 			String uuid = group.getUuid();
 			assertNotNull(uuid);
@@ -557,7 +557,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		Set<Future<GroupResponse>> set = new HashSet<>();
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			int nJobs = 200;
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking findGroupByUuid REST call");

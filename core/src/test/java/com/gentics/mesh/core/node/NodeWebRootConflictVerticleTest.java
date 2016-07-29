@@ -23,7 +23,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
@@ -56,7 +56,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 	public void testDuplicateDueMove() {
 
 		String conflictingName = "conflictName";
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			Node folderA = folder("2014");
 			// 1. Create nodeA
 			NodeCreateRequest requestA = new NodeCreateRequest();

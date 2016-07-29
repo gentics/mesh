@@ -63,7 +63,7 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -97,7 +97,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeWithNoLanguageCode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			SchemaReference schemaReference = new SchemaReference();
 			schemaReference.setName("content");
@@ -119,7 +119,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeWithBogusLanguageCode() throws GenericRestException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			SchemaReference schemaReference = new SchemaReference();
 			schemaReference.setName("content");
@@ -142,7 +142,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeInBaseNode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setSchema(new SchemaReference().setVersion(1).setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
@@ -164,7 +164,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateFolder() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -189,7 +189,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testCreateMultiple() {
 		//TODO migrate test to performance tests
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -219,7 +219,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -255,7 +255,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateForReleaseByName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getReleaseRoot().getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -286,7 +286,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateForReleaseByUuid() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getReleaseRoot().getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -317,7 +317,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateForLatestRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getReleaseRoot().getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -349,7 +349,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateForBogusRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			project.getReleaseRoot().create("newrelease", user());
 
@@ -378,7 +378,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeResponse restNode2;
 
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -422,7 +422,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeWithMissingParentNodeUuid() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			SchemaReference schemaReference = new SchemaReference();
 			schemaReference.setName("node");
@@ -440,7 +440,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeWithMissingSchemaPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			role().revokePermissions(schemaContainer("content"), READ_PERM);
@@ -464,12 +464,12 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testCreateNodeWithMissingPermission() throws Exception {
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Revoke create perm
 			role().revokePermissions(folder("news"), CREATE_PERM);
 		}
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -509,7 +509,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMultipleAndAssertOrder() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("2015");
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
@@ -535,7 +535,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("2015");
 			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 			Node noPermNode = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
@@ -629,7 +629,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadNodesForRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -661,7 +661,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadPublishedNodes() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// 1. Take all nodes offline
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 
@@ -684,7 +684,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadPublishedNodesNoPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 
 			// Take all nodes offline
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
@@ -698,7 +698,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// revoke permission on one folder after the other
 			while (!nodes.isEmpty()) {
 				Node folder = nodes.remove(0);
-				db.trx(() -> {
+				db.tx(() -> {
 					role().revokePermissions(folder, READ_PUBLISHED_PERM);
 					return null;
 				});
@@ -727,7 +727,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testCreateUpdateReadDeleteMultithreaded() throws Exception {
 
 		int nJobs = 200;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			CountDownLatch latch = new CountDownLatch(nJobs);
 
 			Node parentNode = folder("news");
@@ -812,7 +812,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	@Ignore("Disabled since test is unstable - CL-246")
 	public void testCreateMultithreaded() throws InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -897,7 +897,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testDeleteByUUIDMultithreaded() {
 
 		int nJobs = 3;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String uuid = folder("2015").getUuid();
 			// CyclicBarrier barrier = new CyclicBarrier(nJobs);
 			// Trx.enableDebug();
@@ -917,7 +917,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 50;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Set<Future<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking findNodeByUuid REST call");
@@ -934,7 +934,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Set<Future<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking findNodeByUuid REST call");
@@ -950,7 +950,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -963,7 +963,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node node = folder("2015");
 			String uuid = node.getUuid();
@@ -982,7 +982,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadVersionByNumber() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1054,7 +1054,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadBogusVersion() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1065,7 +1065,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadInexistentVersion() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1076,7 +1076,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadPublishedVersion() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1098,7 +1098,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadNodeForRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			Project project = project();
@@ -1121,7 +1121,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadNodeVersionForRelease() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			Project project = project();
@@ -1171,7 +1171,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	 */
 	@Test
 	public void testReadByUUIDWithLinkPathsAndNoSegmentFieldRef() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("news");
 			// Update the schema
 			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -1189,7 +1189,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadByUUIDWithLinkPaths() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("news");
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft(),
 					new NodeParameters().setResolveLinks(LinkType.FULL)));
@@ -1201,7 +1201,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadByUUIDBreadcrumb() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = content("news_2014");
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
 					new NodeParameters().setResolveLinks(LinkType.FULL), new VersioningParameters().draft()));
@@ -1226,7 +1226,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadBaseNode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 
@@ -1245,7 +1245,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDLanguageFallback() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("products");
 			SearchQueueBatch batch = createBatch();
 			node.getLatestDraftFieldContainer(english()).delete(batch);
@@ -1268,7 +1268,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
@@ -1286,7 +1286,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Create node with nl language
 			Node parentNode = folder("products");
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
@@ -1313,7 +1313,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 
 			Node node = folder("2015");
 			String uuid = node.getUuid();
@@ -1335,7 +1335,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
@@ -1394,7 +1394,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				.hasStringField("title", "Concorde english title");
 
 		//5. Assert graph changes
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			node = content("concorde");
 			node.reload();
 			origContainer.reload();
@@ -1435,7 +1435,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			role().revokePermissions(node, UPDATE_PERM);
 			String uuid = node.getUuid();
@@ -1455,7 +1455,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			NodeUpdateRequest request = new NodeUpdateRequest();
 			SchemaReference schemaReference = new SchemaReference();
 			schemaReference.setName("folder");
@@ -1474,7 +1474,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeWithExtraField() throws UnknownHostException, InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -1498,7 +1498,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeWithMissingRequiredField() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -1523,7 +1523,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeWithMissingField() throws UnknownHostException, InterruptedException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -1548,7 +1548,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateNodeWithExtraField2() throws GenericRestException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1578,7 +1578,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testDeleteBaseNode() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 
@@ -1592,7 +1592,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = content("concorde");
 			String uuid = node.getUuid();
 			GenericMessageResponse response = call(() -> getClient().deleteNode(PROJECT_NAME, uuid));
@@ -1614,7 +1614,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testDeleteForRelease() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// 1. get the node
 			Node node = content("concorde");
 			String uuid = node.getUuid();
@@ -1644,7 +1644,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testDeletePublishedForRelease() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// 1. get the node
 			Node node = content("concorde");
 			String uuid = node.getUuid();
@@ -1681,7 +1681,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			role().revokePermissions(node, DELETE_PERM);
@@ -1696,7 +1696,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testConflictByUpdateAdditionalLanguage() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 

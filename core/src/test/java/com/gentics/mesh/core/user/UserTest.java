@@ -44,8 +44,8 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -60,7 +60,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testCreatedUser() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			assertNotNull("The uuid of the user should not be null since the entity was reloaded.", user().getUuid());
 		}
 	}
@@ -68,7 +68,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			UserReference reference = user.transformToReference();
 			assertNotNull(reference);
@@ -80,7 +80,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserRoot root = meshRoot().getUserRoot();
 			int nUserBefore = root.findAll().size();
 			assertNotNull(root.create("dummy12345", user()));
@@ -91,7 +91,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testHasPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			InternalActionContext ac = getMockedVoidInternalActionContext(user());
 			User user = user();
 			Language language = english();
@@ -111,7 +111,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Ignore
 	public void testHasPermissionAsync() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			InternalActionContext ac = getMockedVoidInternalActionContext(user());
 			User user = user();
 			Language language = english();
@@ -141,7 +141,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
@@ -158,7 +158,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			PageImpl<? extends User> page = boot.userRoot().findAll(getMockedInternalActionContext(null, user()), new PagingParameters(1, 25));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
@@ -167,13 +167,13 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGetPrincipal() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			io.vertx.ext.auth.User user = rc.user();
 			assertNotNull(user);
 			JsonObject json = user.principal();
 			assertNotNull(json);
-			try (Trx tx = db.trx()) {
+			try (Tx tx = db.tx()) {
 				assertEquals(user().getUuid(), json.getString("uuid"));
 				assertEquals(user().getUsername(), json.getString("username"));
 				assertEquals(user().getFirstname(), json.getString("firstname"));
@@ -190,7 +190,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGetPermissionNamesViaHandler() throws InterruptedException, ExecutionException, TimeoutException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			RoutingContext rc = getMockedRoutingContext("");
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -222,7 +222,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testSetNameAlias() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			user.setName("test123");
 			assertEquals("test123", user.getName());
@@ -232,7 +232,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGetPermissionsViaHandle() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Language language = english();
 			String[] perms = { "create", "update", "delete", "read", "publish", "readpublished" };
 			RoutingContext rc = getMockedRoutingContext(user());
@@ -258,7 +258,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGetPermissions() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Language language = english();
 			String[] perms = { "create", "update", "delete", "read", "readpublished", "publish" };
 			RoutingContext rc = getMockedRoutingContext(user());
@@ -277,7 +277,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			group().addUser(extraUser);
@@ -294,7 +294,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			assertNull(boot.userRoot().findByUsername("bogus"));
 			boot.userRoot().findByUsername(user().getUsername());
 		}
@@ -303,7 +303,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String uuid = user().getUuid();
 			User foundUser = boot.userRoot().findByUuid(uuid).toBlocking().value();
 			assertNotNull(foundUser);
@@ -314,7 +314,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
@@ -333,7 +333,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MeshRoot root = meshRoot();
 			User user = root.getUserRoot().create("Anton", user());
 			assertTrue(user.isEnabled());
@@ -349,7 +349,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MeshRoot root = meshRoot();
 			User user = user();
 			InternalActionContext ac = getMockedInternalActionContext("");
@@ -363,7 +363,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testInheritPermissions() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
 			User newUser;
@@ -466,7 +466,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			assertEquals("joe1", user.getUsername());
 			assertNotNull(user.getPasswordHash());
@@ -485,7 +485,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testUserGroup() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			assertEquals(1, user.getGroups().size());
 
@@ -505,7 +505,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			final String USERNAME = "test";
 			final String EMAIL = "joe@nowhere.org";
 			final String FIRSTNAME = "joe";
@@ -532,7 +532,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			String uuid = user.getUuid();
 			assertEquals(1, user.getGroups().size());
@@ -546,7 +546,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testOwnRolePerm() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			assertTrue("The user should have update permissions on his role", user().hasPermission(role(), GraphPermission.UPDATE_PERM));
 		}
 	}
@@ -554,7 +554,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User newUser = meshRoot().getUserRoot().create("newUser", user());
 
 			User user = user();
@@ -592,7 +592,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = meshRoot().getUserRoot().create("Anton", user());
 			testPermission(GraphPermission.READ_PERM, user);
 		}
@@ -601,7 +601,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = meshRoot().getUserRoot().create("Anton", user());
 			testPermission(GraphPermission.DELETE_PERM, user);
 		}
@@ -610,7 +610,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = meshRoot().getUserRoot().create("Anton", user());
 			testPermission(GraphPermission.UPDATE_PERM, user);
 		}
@@ -619,7 +619,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			User user = meshRoot().getUserRoot().create("Anton", user());
 			testPermission(GraphPermission.CREATE_PERM, user);
 		}

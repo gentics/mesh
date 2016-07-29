@@ -23,7 +23,7 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 
 import io.vertx.core.Future;
@@ -49,7 +49,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSimpleQuerySearch() {
 
 		String username = "testuser42a";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			createUser(username);
 		}
 
@@ -68,7 +68,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testEmptyResult() {
 		String username = "testuser42a";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			createUser(username);
 		}
 
@@ -87,7 +87,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 
 		String username = "testuser42a";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			createUser(username);
 		}
 
@@ -102,7 +102,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testTokenzierIssueQuery() throws InterruptedException, JSONException {
 
 		String impossibleName = "Jöhä@sRe2";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			user().setLastname(impossibleName);
 			fullIndex();
 		}
@@ -119,7 +119,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testTokenzierIssueQuery2() throws InterruptedException, JSONException {
 		String impossibleName = "Jöhä@sRe";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			user().setLastname(impossibleName);
 			fullIndex();
 		}
@@ -136,7 +136,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testTokenzierIssueLowercasedQuery() throws InterruptedException, JSONException {
 		String impossibleName = "Jöhä@sRe";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			user().setLastname(impossibleName);
 			fullIndex();
 		}
@@ -175,7 +175,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		String username = "extrauser42a";
 		String groupName = db.noTrx(() -> group().getName());
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			createUser(username);
 		}
 
@@ -299,7 +299,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		String groupName = db.noTrx(() -> group().getName());
 		String username = "extrauser42a";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			createUser(username);
 		}
 
@@ -316,7 +316,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String userName = "testuser42a";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserResponse user = createUser(userName);
 			deleteUser(user.getUuid());
 		}
@@ -332,7 +332,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		String userName = "testuser42a";
 		String newUserName = "testgrouprenamed";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			UserResponse user = createUser(userName);
 			user = updateUser(user.getUuid(), newUserName);
 		}

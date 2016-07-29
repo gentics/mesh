@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
@@ -42,7 +42,7 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 
 	@Test
 	public void testDeleteLanguage() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			String uuid = node.getUuid();
 			int nLanguagesBefore = node.getAvailableLanguageNames().size();
@@ -90,7 +90,7 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 
 	@Test
 	public void testDeleteBogusLanguage() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "blub");
 			latchFor(future);
@@ -100,7 +100,7 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 
 	@Test
 	public void testDeleteLanguageNoPerm() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			role().revokePermissions(node, DELETE_PERM);
 			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en");

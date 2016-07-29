@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.util.Tuple;
@@ -123,7 +123,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 			String projectUuid = project.getUuid();
 			Single<Release> obsFlat = requestUser.hasPermissionAsync(ac, project, GraphPermission.UPDATE_PERM).flatMap(hasPerm -> {
 				if (hasPerm) {
-					Tuple<SearchQueueBatch, Release> tuple = db.trx(() -> {
+					Tuple<SearchQueueBatch, Release> tuple = db.tx(() -> {
 						requestUser.reload();
 
 						// check for uniqueness of release name (per project)
@@ -152,7 +152,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 					SearchQueueBatch batch = tuple.v1();
 					Release release = tuple.v2();
 					Single<Release> result = batch.process().andThen(Single.create(sub -> {
-						try (NoTrx noTrx = db.noTrx()) {
+						try (NoTx noTrx = db.noTx()) {
 							// start the node migration
 							DeliveryOptions options = new DeliveryOptions();
 							options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);

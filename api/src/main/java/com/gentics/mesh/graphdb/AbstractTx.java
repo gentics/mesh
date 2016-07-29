@@ -9,9 +9,9 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * An abstract class that can be used to implement vendor specific graph database Trx classes.
  */
-public abstract class AbstractTrx extends AbstractTrxBase<FramedTransactionalGraph>implements Trx {
+public abstract class AbstractTx extends AbstractTrxBase<FramedTransactionalGraph>implements Tx {
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractTrx.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractTx.class);
 
 	private boolean isSuccess = false;
 

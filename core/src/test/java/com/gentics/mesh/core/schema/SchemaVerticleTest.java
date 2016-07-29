@@ -39,7 +39,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
@@ -63,7 +63,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws GenericRestException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
 			assertThat(searchProvider).recordedStoreEvents(0);
@@ -87,7 +87,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			assertThat(searchProvider).recordedStoreEvents(0);
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
@@ -120,7 +120,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			int totalSchemas;
 			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 			final int nSchemas = 22;
@@ -211,7 +211,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schemaContainer = schemaContainer("content");
 			Future<Schema> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
 			latchFor(future);
@@ -237,7 +237,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		SchemaContainer schema;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			schema = schemaContainer("content");
 
 			role().grantPermissions(schema, DELETE_PERM);
@@ -246,7 +246,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().revokePermissions(schema, READ_PERM);
 		}
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Future<Schema> future = getClient().findSchemaByUuid(schema.getUuid());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
@@ -285,7 +285,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			String oldName = schema.getName();
 			Schema request = new SchemaModel();
@@ -305,7 +305,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			assertThat(schema.getNodes()).isNotEmpty();
 
@@ -340,7 +340,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			role().revokePermissions(schema, DELETE_PERM);
 
@@ -356,7 +356,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	@Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = new SchemaModel();
 			request.setName("new-name");
@@ -376,7 +376,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Ignore("not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			String uuid = schema.getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
@@ -393,7 +393,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Ignore("not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<GenericMessageResponse>> set = new HashSet<>();
@@ -425,7 +425,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Set<Future<Schema>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
@@ -442,13 +442,13 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String schemaUuid;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			role().revokePermissions(schema, UPDATE_PERM);
 			schemaUuid = schema.getUuid();
 		}
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Schema request = new SchemaModel();
 			request.setName("new-name");
 

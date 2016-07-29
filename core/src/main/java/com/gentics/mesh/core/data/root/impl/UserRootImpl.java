@@ -146,7 +146,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 					throw conflict(conflictingUser.getUuid(), userName, "user_conflicting_username");
 				}
 
-				Tuple<SearchQueueBatch, User> tuple = db.trx(() -> {
+				Tuple<SearchQueueBatch, User> tuple = db.tx(() -> {
 					MeshAuthUser requestUser = ac.getUser();
 					User user = create(requestModel.getUsername(), requestUser);
 					user.setFirstname(requestModel.getFirstname());

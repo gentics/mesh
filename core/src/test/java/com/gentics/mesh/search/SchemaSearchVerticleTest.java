@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
@@ -66,7 +66,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 
 	@Test
 	public void testSearchSchema() throws InterruptedException, JSONException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -94,7 +94,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	public void testDocumentCreation() throws Exception {
 		final String newName = "newschema";
 		Schema schema = createSchema(newName);
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		}
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName),

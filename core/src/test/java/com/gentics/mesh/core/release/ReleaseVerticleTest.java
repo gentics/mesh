@@ -42,7 +42,7 @@ import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
@@ -84,7 +84,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 200;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String projectName = project().getName();
 			String uuid = project().getInitialRelease().getUuid();
 
@@ -110,7 +110,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		String releaseName = "Release V";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			int nJobs = 100;
 
@@ -157,7 +157,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Set<Future<ReleaseResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().findReleaseByUuid(project().getName(), project().getInitialRelease().getUuid()));
@@ -173,7 +173,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testCreate() throws Exception {
 		String releaseName = "Release V1";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
@@ -187,7 +187,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testCreateWithoutPerm() throws Exception {
 		String releaseName = "Release V1";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			String name = project.getName();
@@ -203,7 +203,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateWithoutName() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			call(() -> getClient().createRelease(project.getName(), new ReleaseCreateRequest()), BAD_REQUEST, "release_missing_name");
 		}
@@ -211,7 +211,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateWithConflictingName1() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(project.getName());
@@ -222,7 +222,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateWithConflictingName2() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String releaseName = "New Release";
 			Project project = project();
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
@@ -262,7 +262,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release firstRelease = project.getReleaseRoot().create("One", user());
@@ -278,7 +278,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadByBogusUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			call(() -> getClient().findReleaseByUuid(project.getName(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
@@ -287,7 +287,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String projectName = project.getName();
 			String uuid = project.getInitialRelease().getUuid();
@@ -301,7 +301,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String releaseUuid = project.getInitialRelease().getUuid();
 			String name = project.getName();
@@ -314,7 +314,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release firstRelease = project.getReleaseRoot().create("One", user());
@@ -334,7 +334,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMultipleWithRestrictedPermissions() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release firstRelease = project.getReleaseRoot().create("One", user());
@@ -358,7 +358,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testUpdate() throws Exception {
 		String newName = "New Release Name";
 		String anotherNewName = "Another New Release Name";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String projectName = project.getName();
 			String uuid = project.getInitialRelease().getUuid();
@@ -387,7 +387,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testUpdateWithNameConflict() throws Exception {
 		String newName = "New Release Name";
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			project.getReleaseRoot().create(newName, user());
 
@@ -401,7 +401,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String projectName = project.getName();
 			role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
@@ -416,7 +416,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
 			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
@@ -441,7 +441,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadSchemaVersions() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 
@@ -456,7 +456,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignSchemaVersion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a schema
 			Schema schema = createSchema("schemaname");
 			Project project = project();
@@ -488,7 +488,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignBogusSchemaVersion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
 			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
@@ -499,7 +499,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignBogusSchemaUuid() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
 			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
@@ -510,7 +510,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignBogusSchemaName() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
 			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
@@ -521,7 +521,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignUnassignedSchemaVersion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Schema schema = createSchema("schemaname");
 			Project project = project();
 
@@ -533,7 +533,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignOlderSchemaVersion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a schema
 			Schema schema = createSchema("schemaname");
 			Project project = project();
@@ -553,7 +553,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignSchemaVersionNoPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
 
@@ -564,7 +564,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignLatestSchemaVersion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a schema
 			Schema schema = createSchema("schemaname");
 			Project project = project();
@@ -598,7 +598,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMicroschemaVersions() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			MicroschemaReferenceList list = call(
 					() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -613,7 +613,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignMicroschemaVersion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a microschema
 			Microschema microschema = createMicroschema("microschemaname");
 			Project project = project();
@@ -646,7 +646,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignBogusMicroschemaVersion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
 			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
@@ -657,7 +657,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignBogusMicroschemaUuid() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
 			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
@@ -668,7 +668,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignBogusMicroschemaName() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
 			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
@@ -679,7 +679,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignUnassignedMicroschemaVersion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Schema schema = createSchema("microschemaname");
 			Project project = project();
 
@@ -691,7 +691,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignOlderMicroschemaVersion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a microschema
 			Microschema microschema = createMicroschema("microschemaname");
 			Project project = project();
@@ -711,7 +711,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignMicroschemaVersionNoPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
 
@@ -723,7 +723,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testAssignLatestMicroschemaVersion() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a microschema
 			Microschema microschema = createMicroschema("microschemaname");
 			Project project = project();

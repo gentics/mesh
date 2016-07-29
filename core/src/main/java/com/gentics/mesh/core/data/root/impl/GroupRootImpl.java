@@ -89,7 +89,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 				}
-				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
+				Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 					requestUser.reload();
 					Group group = create(requestModel.getName(), requestUser);
 					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);

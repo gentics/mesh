@@ -29,7 +29,7 @@ import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -79,7 +79,7 @@ public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testDiffDisplayField() throws GenericRestException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer container = schemaContainer("content");
 			Schema request = getSchema();
 			request.setDisplayField("name");
@@ -97,7 +97,7 @@ public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testNoDiff() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
 			Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
@@ -111,7 +111,7 @@ public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testAddField() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binary");
@@ -131,7 +131,7 @@ public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testDefaultMigration() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
 			request.removeField("content");

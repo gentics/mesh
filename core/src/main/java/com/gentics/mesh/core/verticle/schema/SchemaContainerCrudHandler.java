@@ -92,7 +92,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 				if (!perm.booleanValue()) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 				}
-				return db.trx(() -> {
+				return db.tx(() -> {
 					//TODO SQB ?
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
 					return schema.transformToRest(ac, 0);
@@ -118,7 +118,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 				if (!perm.booleanValue()) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 				}
-				return db.trx(() -> {
+				return db.tx(() -> {
 					project.getSchemaContainerRoot().removeSchemaContainer(schema);
 					return schema.transformToRest(ac, 0);
 				});

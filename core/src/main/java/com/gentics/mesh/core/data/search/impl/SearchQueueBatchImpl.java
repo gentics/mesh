@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.Tuple;
@@ -129,7 +129,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		Database db = springConfiguration.database();
 
 		Completable obs = Completable.complete();
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			for (SearchQueueEntry entry : getEntries()) {
 				obs = obs.andThen(entry.process());
 			}
@@ -141,7 +141,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			}
 
 			// We successfully finished this batch. Delete it.
-			db.trx(() -> {
+			db.tx(() -> {
 				reload();
 				delete(null);
 				return null;
@@ -169,7 +169,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		// 1. Remove the batch from the queue
-		SearchQueueBatch removedBatch = db.trx(() -> {
+		SearchQueueBatch removedBatch = db.tx(() -> {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			searchQueue.reload();
 			searchQueue.remove(this);
@@ -180,7 +180,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		return db.noTrx(() -> {
 			return removedBatch.process().doOnError(error -> {
 				// Add the batch back to the queue when an error occurs
-				db.trx(() -> {
+				db.tx(() -> {
 					SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 					this.reload();
 					log.error("Error while processing batch {" + this.getBatchId() + "}. Adding batch {" + this.getBatchId() + "} back to queue.",

@@ -942,7 +942,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// TODO check whether all required fields are filled
 		List<Completable> obs = new ArrayList<>();
 
-		obs.add(db.trx(() -> {
+		obs.add(db.tx(() -> {
 			// publish all unpublished containers
 			List<NodeGraphFieldContainer> published = unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser()))
 					.collect(Collectors.toList());
@@ -969,7 +969,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
-		return db.trx(() -> {
+		return db.tx(() -> {
 			List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, ContainerType.PUBLISHED);
 
 			// Remove the published edge for each found container
@@ -1034,7 +1034,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// check whether all required fields are filled, if not -> unable to publish
 		// TODO
 
-		return db.trx(() -> {
+		return db.tx(() -> {
 			NodeGraphFieldContainer published = publish(draftVersion.getLanguage(), release, ac.getUser());
 
 			// reindex
@@ -1048,7 +1048,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
-		return db.trx(() -> {
+		return db.tx(() -> {
 			NodeGraphFieldContainer published = getGraphFieldContainer(languageTag, releaseUuid, ContainerType.PUBLISHED);
 
 			if (published == null) {
@@ -1302,7 +1302,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Single<? extends Node> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		return db.trx(() -> {
+		return db.tx(() -> {
 			NodeUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), NodeUpdateRequest.class);
 			if (isEmpty(requestModel.getLanguage())) {
 				throw error(BAD_REQUEST, "error_language_not_set");
@@ -1432,7 +1432,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			throw error(BAD_REQUEST, "node_move_error_same_nodes");
 		}
 
-		return db.trx(() -> {
+		return db.tx(() -> {
 			setParentNode(releaseUuid, targetNode);
 			// update the webroot path info for every field container to ensure
 

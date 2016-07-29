@@ -485,7 +485,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 		try {
 			UserUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserUpdateRequest.class);
-			return db.trx(() -> {
+			return db.tx(() -> {
 				if (shouldUpdate(requestModel.getUsername(), getUsername())) {
 					User conflictingUser = BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername());
 					if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {

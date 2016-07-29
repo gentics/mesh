@@ -3,9 +3,9 @@ package com.gentics.mesh.graphdb;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
 /**
- * A {@link Trx} is an interface for autoclosable transactions.
+ * A {@link Tx} is an interface for autoclosable transactions.
  */
-public interface Trx extends AutoCloseable {
+public interface Tx extends AutoCloseable {
 
 	/**
 	 * Mark the transaction as succeeded. The autoclosable will invoke a commit when completing.

@@ -34,7 +34,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.spi.TrxHandler;
+import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -192,7 +192,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 			Single<Single<NodeResponse>> obs = Single.zip(obsNode, obsTag, (node, tag) -> {
-				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
+				Tuple<SearchQueueBatch, Node> tuple = db.tx(() -> {
 					node.addTag(tag, release);
 					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 					return Tuple.tuple(batch, node);
@@ -228,7 +228,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Single<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			Single<Single<NodeResponse>> obs = Single.zip(obsNode, obsTag, (node, tag) -> {
-				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
+				Tuple<SearchQueueBatch, Node> tuple = db.tx(() -> {
 					// TODO get release specific containers
 					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 					node.removeTag(tag, release);
@@ -363,7 +363,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	protected void readElement(InternalActionContext ac, String uuid, TrxHandler<RootVertex<?>> handler) {
+	protected void readElement(InternalActionContext ac, String uuid, TxHandler<RootVertex<?>> handler) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<?> root = handler.call();

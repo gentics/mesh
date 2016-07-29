@@ -229,7 +229,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
-		return db.trx(() -> {
+		return db.tx(() -> {
 			if (shouldUpdate(requestModel.getName(), getName())) {
 				// Check for conflicting project name
 				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()).toBlocking().value();

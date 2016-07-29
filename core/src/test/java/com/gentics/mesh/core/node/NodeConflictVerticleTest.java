@@ -37,7 +37,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
@@ -80,7 +80,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	@Test
 	public void testNoConflictUpdate() {
 
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
@@ -106,7 +106,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	@Test
 	public void testConflictDetection() {
 
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 
 			// Invoke an initial update on the node - Update Version 1.0 Name  -> 1.1
 			Node node = getTestNode();
@@ -146,7 +146,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	@Test
 	public void testDeduplicationDuringUpdate() {
 
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", origContainer.getString("name").getString());
@@ -169,7 +169,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	private void initialRequest() {
 
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer oldContainer = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.0");
@@ -204,7 +204,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	}
 
 	private NodeUpdateRequest modifingRequest() {
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			Node node = getTestNode();
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
@@ -235,7 +235,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	 * @param request
 	 */
 	private void repeatRequest(NodeUpdateRequest request) {
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			Node node = getTestNode();
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
@@ -245,7 +245,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertThat(restNode).hasVersion("1.3");
 		}
 
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer createdVersion = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.3");
@@ -274,7 +274,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	}
 
 	private void deletingRequest() {
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			Node node = getTestNode();
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
@@ -284,7 +284,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			NodeResponse restNode4 = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request4, parameters));
 			assertThat(restNode4).hasVersion("1.4");
 		}
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer createdVersion = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.4");
@@ -318,7 +318,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 	 */
 	@Test
 	public void testConflictInMicronode() {
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", origContainer.getString("name").getString());
@@ -330,7 +330,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 		initialRequest();
 
 		// Modify 1.1 and update micronode
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			Node node = getTestNode();
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
@@ -352,7 +352,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 		}
 
 		// Another update request based on 1.1 which also updates the micronode - A conflict should be detected
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 			Node node = getTestNode();
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
@@ -382,7 +382,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testBogusVersionNumber() {
-		try (Trx trx = db.trx()) {
+		try (Tx trx = db.tx()) {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "42.1");

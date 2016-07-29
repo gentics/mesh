@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -40,7 +40,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testRevokeAllPermissionFromProject() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
@@ -58,7 +58,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testAddPermissionToProjectTagFamily() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
@@ -80,7 +80,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testAddPermissionToMicroschema() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
@@ -108,7 +108,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testAddPermissionsOnGroup() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String pathToElement = "groups";
 
 			RolePermissionRequest request = new RolePermissionRequest();
@@ -129,7 +129,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testReadPermissionsOnProjectTagFamily() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
@@ -146,7 +146,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testAddPermissionToNode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			role().revokePermissions(node, GraphPermission.UPDATE_PERM);
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, node));

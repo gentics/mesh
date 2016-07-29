@@ -19,7 +19,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 
@@ -60,7 +60,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	public void testReindex() {
 		// Add the user to the admin group - this way the user is in fact an admin.
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			user().addGroup(groups().get("admin"));
 			searchProvider.refreshIndex();
 		}
@@ -80,7 +80,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testClearIndex() throws InterruptedException {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -101,7 +101,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testAsyncSearchQueueUpdates() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 
 			Node node = folder("2015");
 			String uuid = node.getUuid();

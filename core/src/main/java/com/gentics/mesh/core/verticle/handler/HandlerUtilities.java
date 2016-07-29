@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.TrxHandler;
+import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -36,7 +36,7 @@ public final class HandlerUtilities {
 	 * @param handler
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac,
-			TrxHandler<RootVertex<?>> handler) {
+			TxHandler<RootVertex<?>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<?> root = handler.call();
@@ -62,7 +62,7 @@ public final class HandlerUtilities {
 	 *            Response message to be returned on success
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac,
-			TrxHandler<RootVertex<T>> handler, String uuid, String responseMessage) {
+			TxHandler<RootVertex<T>> handler, String uuid, String responseMessage) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 
@@ -70,7 +70,7 @@ public final class HandlerUtilities {
 			RootVertex<T> root = handler.call();
 			return root.loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(element -> {
 				return db.noTrx(() -> {
-					Tuple<String, SearchQueueBatch> tuple = db.trx(() -> {
+					Tuple<String, SearchQueueBatch> tuple = db.tx(() -> {
 						String elementUuid = element.getUuid();
 						if (element instanceof IndexableElement) {
 							SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
@@ -107,7 +107,7 @@ public final class HandlerUtilities {
 	 * 
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
-			TrxHandler<RootVertex<T>> handler) {
+			TxHandler<RootVertex<T>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();
@@ -134,7 +134,7 @@ public final class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
-			TrxHandler<RootVertex<?>> handler) {
+			TxHandler<RootVertex<?>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<?> root = handler.call();
@@ -152,7 +152,7 @@ public final class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac,
-			TrxHandler<RootVertex<T>> handler) {
+			TxHandler<RootVertex<T>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();

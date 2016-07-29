@@ -25,7 +25,7 @@ import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.TrxHandler;
+import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
@@ -143,6 +143,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return stream;
 	}
 
+	/**
+	 * Start the orientdb studio server by extracting the studio plugin zipfile.
+	 * 
+	 * @throws Exception
+	 */
 	private void startOrientServer() throws Exception {
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
@@ -392,12 +397,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Trx trx() {
-		return new OrientDBTrx(factory, resolver);
+	public Tx tx() {
+		return new OrientDBTx(factory, resolver);
 	}
 
 	@Override
-	public <T> T trx(TrxHandler<T> txHandler) {
+	public <T> T tx(TxHandler<T> txHandler) {
 		/**
 		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
 		 * {@link OConcurrentModificationException} is thrown.
@@ -406,7 +411,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		boolean handlerFinished = false;
 		for (int retry = 0; retry < maxRetry; retry++) {
 
-			try (Trx tx = trx()) {
+			try (Tx tx = tx()) {
 				handlerResult = txHandler.call();
 				handlerFinished = true;
 				tx.success();
@@ -446,8 +451,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public NoTrx noTrx() {
-		return new OrientDBNoTrx(factory, resolver);
+	public NoTx noTx() {
+		return new OrientDBNoTx(factory, resolver);
 	}
 
 	@Override
@@ -548,6 +553,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public String getVersion() {
+		//TODO determine correct version
 		return "2.2.x";
 	}
 }

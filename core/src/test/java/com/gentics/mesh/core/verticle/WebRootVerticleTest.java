@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
@@ -71,7 +71,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = content("news_2015");
 
 			// 1. Transform the node into a binary content
@@ -102,7 +102,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node folder = folder("2015");
 			String path = "/News/2015";
 
@@ -113,7 +113,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testReadFolderByPathAndResolveLinks() {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node content = content("news_2015");
 
 			content.getLatestDraftFieldContainer(english()).getHtml("content")
@@ -137,7 +137,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		WebRootResponse restNode = call(
 				() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = content("news_2015");
 			assertThat(restNode.getNodeResponse()).is(node).hasLanguage("en");
 		}
@@ -146,7 +146,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node parentNode = folder("2015");
 			// Update content schema and add node field
 			SchemaContainer folderSchema = schemaContainer("folder");
@@ -225,7 +225,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testReadProjectBaseNode() {
 		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, "/", new VersioningParameters().draft()));
 		assertFalse(response.isBinary());
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
 	}
@@ -234,7 +234,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testReadDoubleSlashes() {
 		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, "//", new VersioningParameters().draft()));
 		assertFalse(response.isBinary());
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
 	}
@@ -261,7 +261,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "/News/2015";
 		String uuid;
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			role().revokePermissions(newsFolder, READ_PERM);
@@ -306,7 +306,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testRead404Node() {
 		String notFoundPath = "/error/404";
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			NodeCreateRequest createErrorFolder = new NodeCreateRequest();
 			createErrorFolder.setSchema(new SchemaReference().setName("folder"));
 			createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
@@ -334,22 +334,22 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testReadPublished() {
 		String path = "/News/2015";
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 		}
 		// 1. Assert that published path cannot be found
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			call(() -> getClient().webroot(PROJECT_NAME, path, new NodeParameters()), NOT_FOUND, "node_not_found_for_path", path);
 		}
 
 		// 2. Publish nodes
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			folder("news").publish(getMockedInternalActionContext(user())).await();
 			folder("2015").publish(getMockedInternalActionContext(user())).await();
 		}
 
 		// 3. Assert that published path can be found
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new NodeParameters()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("2.0").hasLanguage("en");
 		}

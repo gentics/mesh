@@ -37,7 +37,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 
 public class MicronodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
 	protected final static String FIELD_NAME = "micronodeListField";
@@ -385,7 +385,7 @@ public class MicronodeListFieldVerticleTest extends AbstractListFieldVerticleTes
 	 *            field
 	 */
 	protected void assertMicronodes(FieldList<MicronodeField> field) {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Set<? extends MicronodeImpl> unboundMicronodes = noTx.getGraph().v().has(MicronodeImpl.class).toList(MicronodeImpl.class).stream()
 					.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
 			assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();

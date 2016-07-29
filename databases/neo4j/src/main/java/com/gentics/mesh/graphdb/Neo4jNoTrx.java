@@ -4,7 +4,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
-public class Neo4jNoTrx extends AbstractNoTrx {
+public class Neo4jNoTrx extends AbstractNoTx {
 
 	public Neo4jNoTrx(FramedGraph noTransaction) {
 		init(noTransaction);

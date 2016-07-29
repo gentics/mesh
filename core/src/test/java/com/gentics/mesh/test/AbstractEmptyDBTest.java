@@ -4,7 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 
 /**
  * @deprecated Use {@link AbstractDBTest} instead
@@ -12,11 +12,11 @@ import com.gentics.mesh.graphdb.NoTrx;
 @Deprecated
 public class AbstractEmptyDBTest extends AbstractDBTest {
 
-	protected NoTrx tx;
+	protected NoTx tx;
 
 	@Before
 	public void setup() throws Exception {
-		tx = db.noTrx();
+		tx = db.noTx();
 	}
 
 	@After

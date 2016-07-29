@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.Tx;
 
 public class SearchQueueTest extends AbstractBasicDBTest {
 
@@ -67,7 +67,7 @@ public class SearchQueueTest extends AbstractBasicDBTest {
 		for (int i = 0; i <= size; i++) {
 			Runnable r = () -> {
 				while (true) {
-					try (Trx txTake = db.trx()) {
+					try (Tx txTake = db.tx()) {
 						try {
 							SearchQueueBatch currentBatch = searchQueue.take();
 							assertNotNull("Batch was null.", currentBatch);
@@ -95,7 +95,7 @@ public class SearchQueueTest extends AbstractBasicDBTest {
 		AtomicReference<AssertionError> errorReference = new AtomicReference<>();
 		for (int i = 0; i < 10; i++) {
 			Runnable r = () -> {
-				try (Trx tx2 = db.trx()) {
+				try (Tx tx2 = db.tx()) {
 					try {
 						SearchQueueBatch currentBatch = searchQueue.take();
 						latch2.countDown();

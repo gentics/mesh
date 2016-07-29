@@ -43,8 +43,8 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -97,7 +97,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		ProjectResponse restProject = call(() -> getClient().createProject(request));
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			test.assertProject(request, restProject);
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().value());
 
@@ -117,7 +117,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
@@ -130,7 +130,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		request.setSchemaReference(new SchemaReference().setName("folder"));
 
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Create a new project
 			Future<ProjectResponse> createFuture = getClient().createProject(request);
 			latchFor(createFuture);
@@ -160,10 +160,10 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			role().grantPermissions(project(), READ_PERM);
 		}
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			final int nProjects = 142;
 			String noPermProjectName;
 			for (int i = 0; i < nProjects; i++) {
@@ -251,7 +251,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
@@ -273,7 +273,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 
@@ -288,7 +288,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
@@ -304,7 +304,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateWithConflicitingName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MeshRoot.getInstance().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
 
 			Project project = project();
@@ -322,7 +322,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			role().grantPermissions(project, UPDATE_PERM);
@@ -359,7 +359,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws JsonProcessingException, Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			String name = project.getName();
@@ -383,11 +383,11 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			role().grantPermissions(project(), DELETE_PERM);
 		}
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			String name = project.getName();
@@ -405,7 +405,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			role().revokePermissions(project, DELETE_PERM);
@@ -423,7 +423,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	@Ignore("not yet enabled")
 	public void testUpdateMultithreaded() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			int nJobs = 5;
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("New Name");
@@ -441,7 +441,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			String uuid = project().getUuid();
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<?>> set = new HashSet<>();
@@ -482,7 +482,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		}
 		validateCreation(set, null);
 
-		try (Trx tx = db.trx()) {
+		try (Tx tx = db.tx()) {
 			int n = 0;
 			for (Vertex vertex : tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())) {
 				n++;
@@ -496,7 +496,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			int nJobs = 200;
 			Set<Future<ProjectResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {

@@ -39,7 +39,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -64,7 +64,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			TagReference reference = tag.transformToReference();
 			assertNotNull(reference);
@@ -75,7 +75,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testTagFamilyTagCreation() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			final String TAG_FAMILY_NAME = "mycustomtagFamily";
 			TagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME, user());
 			assertNotNull(tagFamily);
@@ -91,7 +91,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testReadFieldContainer() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tags().get("red");
 			assertEquals(1, tag.getFieldContainers().size());
 		}
@@ -99,7 +99,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testSimpleTag() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily root = tagFamily("basic");
 			Tag tag = root.create("test", project(), user());
 			assertEquals("test", tag.getName());
@@ -110,7 +110,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testProjectTag() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily root = tagFamily("basic");
 			Tag tag = root.create("test", project(), user());
 			assertEquals(project(), tag.getProject());
@@ -119,7 +119,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testNodeTagging() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
@@ -162,7 +162,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testNodeTaggingInRelease() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
@@ -208,7 +208,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testMigrateTagsForRelease() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
@@ -245,7 +245,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testNodeUntaggingInRelease() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Release initialRelease = null;
 			Release newRelease = null;
 			Node node = null;
@@ -289,7 +289,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 			PageImpl<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParameters(1, 10));
 			assertEquals(12, tagPage.getTotalElements());
@@ -304,7 +304,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
@@ -344,7 +344,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagRoot root = meshRoot().getTagRoot();
 			assertEquals(tags().size(), root.findAll().size());
 			Tag tag = tag("red");
@@ -365,7 +365,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("car");
 			Tag foundTag = meshRoot().getTagRoot().findByName("Car").toBlocking().value();
 			assertNotNull(foundTag);
@@ -378,7 +378,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("car");
 			assertNotNull("The tag with the uuid could not be found", meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().value());
 			assertNull("A tag with the a bogus uuid should not be found but it was.",
@@ -389,7 +389,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create(GERMAN_NAME, project(), user());
 			assertNotNull(tag);
@@ -410,7 +410,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			List<String> languageTags = new ArrayList<>();
@@ -438,7 +438,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create("someTag", project(), user());
 			String uuid = tag.getUuid();
@@ -451,7 +451,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			InternalActionContext ac = getMockedInternalActionContext("");
 			Tag tag = tagFamily.create("someTag", project(), user());
@@ -466,7 +466,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("car");
 			assertEquals("Car", tag.getName());
 			assertNotNull(tag.getCreationTimestamp());
@@ -480,7 +480,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			Map<String, ElementEntry> expectedEntries = new HashMap<>();
 			String uuid = tag.getUuid();
@@ -497,7 +497,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("red");
 			tag.setName("Blue");
 			assertEquals("Blue", tag.getName());
@@ -507,7 +507,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.READ_PERM, tag("red"));
 		}
 	}
@@ -515,7 +515,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.DELETE_PERM, tag("red"));
 		}
 	}
@@ -523,7 +523,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.UPDATE_PERM, tag("red"));
 		}
 	}
@@ -531,7 +531,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			testPermission(GraphPermission.CREATE_PERM, tag("red"));
 		}
 	}

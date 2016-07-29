@@ -15,7 +15,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.MeshAssert;
 
@@ -41,7 +41,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 
 	@Test
 	public void testSearchProject() throws InterruptedException, JSONException {
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
 
@@ -70,7 +70,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 
 		final String newName = "newproject";
 		ProjectResponse project = createProject(newName);
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			MeshAssert.assertElement(boot.projectRoot(), project.getUuid(), true);
 		}
 		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", newName),

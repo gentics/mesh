@@ -34,7 +34,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.core.Future;
@@ -59,7 +59,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testImageResize() throws Exception {
 
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 
 			// 1. Upload image
@@ -79,7 +79,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testImageResizeOverLimit() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
 			// 1. Upload image
@@ -94,7 +94,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testImageExactLimit() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
 			// 1. Upload image
@@ -113,7 +113,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testTransformImage() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			// 1. Upload image
 			uploadImage(node, "en", "image");
@@ -137,7 +137,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testTransformImageNoParameters() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			// 1. Upload image
 			uploadImage(node, "en", "image");
@@ -153,7 +153,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testTransformNonBinary() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 
 			// try to transform the "name"
@@ -166,7 +166,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testTransformNonImage() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 
 			prepareSchema(node, "*/*", "image");
@@ -188,7 +188,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testTransformEmptyField() throws Exception {
-		try (NoTrx noTrx = db.noTrx()) {
+		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 
 			prepareSchema(node, "image/.*", "image");

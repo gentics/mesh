@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -45,7 +45,7 @@ public class OrientDBServerTest {
 		db.start();
 
 		for (int i = 0; i < 100; i++) {
-			try (Trx tx = db.trx()) {
+			try (Tx tx = db.tx()) {
 				Person p = tx.getGraph().addFramedVertex(Person.class);
 				p.setName("personName_" + i);
 				tx.success();

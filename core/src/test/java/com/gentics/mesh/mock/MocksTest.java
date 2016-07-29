@@ -8,7 +8,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 import io.vertx.core.MultiMap;
@@ -27,7 +27,7 @@ public class MocksTest extends AbstractDBTest {
 		assertTrue("The routing context request parameters did not contain the lang parameter. Size {" + params.size() + "}",
 				params.contains("lang"));
 
-		try (NoTrx noTx = db.noTrx()) {
+		try (NoTx noTx = db.noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext("lang=de,en");
 			assertThat(ac.getNodeParameters().getLanguages()).containsExactly("de", "en");
 		}
