@@ -15,6 +15,8 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.util.DateUtils.fromISO8601;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.script.ScriptException;
@@ -107,14 +109,20 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Override
 	@Test
 	public void testChangeToDate() throws Exception {
-		changeType(CREATESTRING, FILL0, FETCH, CREATEDATE, (container, name) -> {
+		changeType(CREATESTRING, FILL_DATE, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(0L);
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(fromISO8601(EXAMPLE_DATE));
 		});
 
 		changeType(CREATESTRING, FILL1, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1L);
+			// Internally timestamp with miliseconds is stored
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1000L);
+		});
+
+		changeType(CREATESTRING, FILL0, FETCH, CREATEDATE, (container, name) -> {
+			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(0L);
 		});
 
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATEDATE, (container, name) -> {
@@ -132,7 +140,8 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 
 		changeType(CREATESTRING, FILL1, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1L);
+			// Internally timestamps are stored with miliseconds
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1000L);
 		});
 
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATEDATELIST, (container, name) -> {

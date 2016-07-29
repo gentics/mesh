@@ -15,6 +15,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.script.ScriptException;
@@ -87,7 +88,7 @@ public class DateFieldMigrationTest extends AbstractFieldMigrationTest implement
 	public void testChangeToHtml() throws Exception {
 		changeType(CREATEDATE, FILL, FETCH, CREATEHTML, (container, name) -> {
 			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo(Long.toString(DATEVALUE));
+			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo(toISO8601(DATEVALUE));
 		});
 	}
 
@@ -96,7 +97,7 @@ public class DateFieldMigrationTest extends AbstractFieldMigrationTest implement
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATEDATE, FILL, FETCH, CREATEHTMLLIST, (container, name) -> {
 			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE).containsExactly(Long.toString(DATEVALUE));
+			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE).containsExactly(toISO8601(DATEVALUE));
 		});
 	}
 
@@ -150,31 +151,31 @@ public class DateFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToString() throws Exception {
 		changeType(CREATEDATE, FILL, FETCH, CREATESTRING, (container, name) -> {
 			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo(Long.toString(DATEVALUE));
+			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo(toISO8601(DATEVALUE));
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATEDATE, FILL, FETCH, CREATESTRINGLIST, (container, name) -> {
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(Long.toString(DATEVALUE));
+			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(toISO8601(DATEVALUE));
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testCustomMigrationScript() throws Exception {
 		customMigrationScript(CREATEDATE, FILL, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[fieldname] + 86400; return node;}", (container, name) -> {
+				"function migrate(node, fieldname) {node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); return node;}", (container, name) -> {
 					assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(DATEVALUE + 86400L);
+					assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(DATEVALUE + 864000L);
 				});
 	}
 
