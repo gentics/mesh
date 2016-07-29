@@ -114,7 +114,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 		changeType(CREATEHTML, FILL1, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1L);
+			//Internally timestamps are stored in miliseconds
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1000L);
 		});
 
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEDATE, (container, name) -> {
@@ -132,7 +133,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 		changeType(CREATEHTML, FILL1, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1L);
+			//Internally timestamps are stored in miliseconds
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1000L);
 		});
 
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEDATELIST, (container, name) -> {

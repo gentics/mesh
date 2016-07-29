@@ -89,7 +89,8 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	public void testChangeToDate() throws Exception {
 		changeType(CREATENUMBER, FILL, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
+			// Internally values are stored as miliseconds
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE * 1000);
 		});
 	}
 
@@ -98,7 +99,7 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATENUMBER, FILL, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE);
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE * 1000);
 		});
 	}
 
@@ -191,20 +192,21 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATENUMBER, FILL, FETCH, "function migrate(node, fieldname) {node.fields[fieldname] = node.fields[fieldname] * 12; return node;}", (container, name) -> {
-			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE * 12L);
-		});
+		customMigrationScript(CREATENUMBER, FILL, FETCH,
+				"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[fieldname] * 12; return node;}", (container, name) -> {
+					assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
+					assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE * 12L);
+				});
 	}
 
 	@Override
-	@Test(expected=ScriptException.class)
+	@Test(expected = ScriptException.class)
 	public void testInvalidMigrationScript() throws Throwable {
 		invalidMigrationScript(CREATENUMBER, FILL, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ClassNotFoundException.class)
+	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
 		invalidMigrationScript(CREATENUMBER, FILL, KILLERSCRIPT);
 	}

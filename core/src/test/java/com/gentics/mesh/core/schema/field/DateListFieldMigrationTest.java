@@ -15,6 +15,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.script.ScriptException;
@@ -89,8 +90,7 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToHtml() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATEHTML, (container, name) -> {
 			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE)
-					.isEqualTo(Long.toString(DATEVALUE) + "," + Long.toString(OTHERDATEVALUE));
+			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo(toISO8601(DATEVALUE) + "," + toISO8601(OTHERDATEVALUE));
 		});
 	}
 
@@ -99,7 +99,7 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATEHTMLLIST, (container, name) -> {
 			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELD).containsExactly(Long.toString(DATEVALUE), Long.toString(OTHERDATEVALUE));
+			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELD).containsExactly(toISO8601(DATEVALUE), toISO8601(OTHERDATEVALUE));
 		});
 	}
 
@@ -158,8 +158,7 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToString() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATESTRING, (container, name) -> {
 			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE)
-					.isEqualTo(Long.toString(DATEVALUE) + "," + Long.toString(OTHERDATEVALUE));
+			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo(toISO8601(DATEVALUE) + "," + toISO8601(OTHERDATEVALUE));
 		});
 	}
 
@@ -168,29 +167,30 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATESTRINGLIST, (container, name) -> {
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(Long.toString(DATEVALUE), Long.toString(OTHERDATEVALUE));
+			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(toISO8601(DATEVALUE), toISO8601(OTHERDATEVALUE));
 		});
 	}
 
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEDATELIST, FILL, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-			DateGraphFieldList field = container.getDateList(name);
-			assertThat(field).as(NEWFIELD).isNotNull();
-			field.reload();
-			assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(OTHERDATEVALUE, DATEVALUE);
-		});
+		customMigrationScript(CREATEDATELIST, FILL, FETCH,
+				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
+					DateGraphFieldList field = container.getDateList(name);
+					assertThat(field).as(NEWFIELD).isNotNull();
+					field.reload();
+					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(OTHERDATEVALUE, DATEVALUE);
+				});
 	}
 
 	@Override
-	@Test(expected=ScriptException.class)
+	@Test(expected = ScriptException.class)
 	public void testInvalidMigrationScript() throws Throwable {
 		invalidMigrationScript(CREATEDATELIST, FILL, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ClassNotFoundException.class)
+	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
 		invalidMigrationScript(CREATEDATELIST, FILL, KILLERSCRIPT);
 	}

@@ -143,9 +143,10 @@ public class TypeConverter {
 		if (isJSArray(value)) {
 			return getJSArray(value).stream().findFirst().map(e -> toDate(e)).orElse(null);
 		} else if (value instanceof Number) {
-			return toISO8601(((Number) value).longValue());
+			// We assume that the input string is timestamp in seconds. Thus we need to multiple by 1000
+			return toISO8601(((Number) value).longValue() * 1000);
 		} else {
-			// 1. Try to parse value as with ISO-8601 format  
+			// 1. Try to parse value as with ISO-8601 format
 			try {
 				Date date = Date.from(Instant.parse(value.toString()));
 				return Instant.from(date.toInstant()).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_INSTANT);

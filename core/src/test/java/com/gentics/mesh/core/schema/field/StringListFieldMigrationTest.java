@@ -91,7 +91,8 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	public void testChangeToDate() throws Exception {
 		changeType(CREATESTRINGLIST, FILLNUMBERS, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1L);
+			// Internally timestamps are stored in miliseconds
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1000L);
 		});
 
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEDATE, (container, name) -> {
@@ -104,7 +105,8 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATESTRINGLIST, FILLNUMBERS, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1L, 0L);
+			//Internally timestamps are stored in miliseconds
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1000L, 0L);
 		});
 
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEDATELIST, (container, name) -> {
@@ -212,22 +214,23 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATESTRINGLIST, FILLTEXT, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-			StringGraphFieldList field = container.getStringList(name);
-			assertThat(field).as(NEWFIELD).isNotNull();
-			field.reload();
-			assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(TEXT3, TEXT2, TEXT1);
-		});
+		customMigrationScript(CREATESTRINGLIST, FILLTEXT, FETCH,
+				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
+					StringGraphFieldList field = container.getStringList(name);
+					assertThat(field).as(NEWFIELD).isNotNull();
+					field.reload();
+					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(TEXT3, TEXT2, TEXT1);
+				});
 	}
 
 	@Override
-	@Test(expected=ScriptException.class)
+	@Test(expected = ScriptException.class)
 	public void testInvalidMigrationScript() throws Throwable {
 		invalidMigrationScript(CREATESTRINGLIST, FILLTEXT, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ClassNotFoundException.class)
+	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
 		invalidMigrationScript(CREATESTRINGLIST, FILLTEXT, KILLERSCRIPT);
 	}

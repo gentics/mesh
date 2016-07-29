@@ -24,7 +24,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.field.number.NumberListFieldTestHelper;
 
-public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest  implements NumberListFieldTestHelper {
+public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest implements NumberListFieldTestHelper {
 
 	@Override
 	@Test
@@ -81,7 +81,8 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest  im
 	public void testChangeToDate() throws Exception {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
+			// Internally timestamps are stored in miliseconds
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE * 1000);
 		});
 	}
 
@@ -90,7 +91,8 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest  im
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE, OTHERNUMBERVALUE);
+			// Internally timestamps are stored in miliseconds
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE * 1000, OTHERNUMBERVALUE * 1000);
 		});
 	}
 
@@ -179,30 +181,31 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest  im
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATESTRINGLIST, (container, name) -> {
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE)
-					.containsExactly(Long.toString(NUMBERVALUE), Long.toString(OTHERNUMBERVALUE));
+			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(Long.toString(NUMBERVALUE),
+					Long.toString(OTHERNUMBERVALUE));
 		});
 	}
 
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATENUMBERLIST, FILLNUMBERS, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-			NumberGraphFieldList field = container.getNumberList(name);
-			assertThat(field).as(NEWFIELD).isNotNull();
-			field.reload();
-			assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(OTHERNUMBERVALUE, NUMBERVALUE);
-		});
+		customMigrationScript(CREATENUMBERLIST, FILLNUMBERS, FETCH,
+				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
+					NumberGraphFieldList field = container.getNumberList(name);
+					assertThat(field).as(NEWFIELD).isNotNull();
+					field.reload();
+					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(OTHERNUMBERVALUE, NUMBERVALUE);
+				});
 	}
 
 	@Override
-	@Test(expected=ScriptException.class)
+	@Test(expected = ScriptException.class)
 	public void testInvalidMigrationScript() throws Throwable {
 		invalidMigrationScript(CREATENUMBERLIST, FILLNUMBERS, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ClassNotFoundException.class)
+	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
 		invalidMigrationScript(CREATENUMBERLIST, FILLNUMBERS, KILLERSCRIPT);
 	}

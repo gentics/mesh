@@ -7,21 +7,22 @@ import com.gentics.mesh.core.schema.field.AbstractFieldMigrationTest.Microschema
 
 @MicroschemaTest
 public class DateListMicroFieldMigrationTest extends DateListFieldMigrationTest {
+
+	@Test
 	@Override
 	@Ignore("Not applicable for micronodes")
-	@Test
 	public void testChangeToBinary() throws Exception {
 	}
 
+	@Test
 	@Override
 	@Ignore("Not applicable for micronodes")
-	@Test
 	public void testChangeToMicronode() throws Exception {
 	}
 
+	@Test
 	@Override
 	@Ignore("Not applicable for micronodes")
-	@Test
 	public void testChangeToMicronodeList() throws Exception {
 	}
 }
