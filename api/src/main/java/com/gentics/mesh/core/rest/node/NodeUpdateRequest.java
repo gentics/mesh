@@ -13,7 +13,7 @@ public class NodeUpdateRequest implements RestModel, FieldContainer {
 
 	private String language;
 
-	private FieldMap fields = new FieldMapJsonImpl();
+	private FieldMap fields = new FieldMapImpl();
 
 	private VersionReference version;
 

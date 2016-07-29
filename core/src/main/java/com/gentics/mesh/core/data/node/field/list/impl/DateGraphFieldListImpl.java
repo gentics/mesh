@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import static com.gentics.mesh.util.DateUtils.toISO8601;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,7 +58,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	public Single<DateFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		DateFieldListImpl restModel = new DateFieldListImpl();
 		for (DateGraphField item : getList()) {
-			restModel.add(item.getDate());
+			restModel.add(toISO8601(item.getDate()));
 		}
 		return Single.just(restModel);
 	}
@@ -70,9 +72,9 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	public boolean equals(Object obj) {
 		if (obj instanceof DateFieldListImpl) {
 			DateFieldListImpl restField = (DateFieldListImpl) obj;
-			List<Long> restList = restField.getItems();
+			List<String> restList = restField.getItems();
 			List<? extends DateGraphField> graphList = getList();
-			List<Long> graphStringList = graphList.stream().map(e -> e.getDate()).collect(Collectors.toList());
+			List<String> graphStringList = graphList.stream().map(e -> toISO8601(e.getDate())).collect(Collectors.toList());
 			return CompareUtils.equals(restList, graphStringList);
 		}
 		return super.equals(obj);

@@ -5,15 +5,15 @@ import com.gentics.mesh.core.rest.node.field.DateField;
 
 public class DateFieldImpl implements DateField {
 
-	private Long date;
+	private String date;
 
 	@Override
-	public Long getDate() {
+	public String getDate() {
 		return date;
 	}
 
 	@Override
-	public DateField setDate(Long date) {
+	public DateField setDate(String date) {
 		this.date = date;
 		return this;
 	}

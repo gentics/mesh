@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -16,7 +17,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -51,13 +52,13 @@ public class FieldMapTest {
 
 	@Test
 	public void testJsonMapNullHandling() throws JsonParseException, JsonMappingException, IOException {
-		FieldMap fieldMap = new FieldMapJsonImpl();
+		FieldMap fieldMap = new FieldMapImpl();
 
 		fieldMap.put("stringField", new StringFieldImpl().setString("text"));
 		fieldMap.put("stringFieldNull", null);
 		fieldMap.put("stringFieldNullValue", new StringFieldImpl().setString(null));
 
-		fieldMap.put("dateField", new DateFieldImpl().setDate(100L));
+		fieldMap.put("dateField", new DateFieldImpl().setDate(toISO8601(100L)));
 		fieldMap.put("dateFieldNull", null);
 		fieldMap.put("dateFieldNullValue", new DateFieldImpl().setDate(null));
 
@@ -115,9 +116,9 @@ public class FieldMapTest {
 		fieldMap.put("stringListField", stringList);
 
 		DateFieldListImpl dateList = new DateFieldListImpl();
-		dateList.add(10L);
-		dateList.add(42L);
-		dateList.add(System.currentTimeMillis());
+		dateList.add(toISO8601(1000L));
+		dateList.add(toISO8601(4200L));
+		dateList.add(toISO8601(System.currentTimeMillis()));
 		fieldMap.put("dateListField", dateList);
 
 		BooleanFieldListImpl booleanList = new BooleanFieldListImpl();
@@ -169,7 +170,7 @@ public class FieldMapTest {
 
 	@Test
 	public void testEmptyMap() {
-		FieldMap map = new FieldMapJsonImpl();
+		FieldMap map = new FieldMapImpl();
 		assertTrue("The map should be empty.", map.isEmpty());
 		assertEquals("No field should be stored in the map.", 0, map.size());
 	}

@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
@@ -189,7 +189,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 * @return
 	 */
 	protected void updateContainer(InternalActionContext ac, NodeGraphFieldContainer container, String fieldKey, Field field) {
-		FieldMap fieldMap = new FieldMapJsonImpl();
+		FieldMap fieldMap = new FieldMapImpl();
 		fieldMap.put(fieldKey, field);
 		container.updateFieldsFromRest(ac, fieldMap);
 	}

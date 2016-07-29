@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import static com.gentics.mesh.util.DateUtils.fromISO8601;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
+
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -43,7 +46,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 	@Override
 	public Single<DateField> transformToRest(ActionContext ac) {
 		DateFieldImpl dateField = new DateFieldImpl();
-		dateField.setDate(getDate());
+		dateField.setDate(toISO8601(getDate()));
 		return Single.just(dateField);
 	}
 
@@ -69,7 +72,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 		}
 		if (obj instanceof DateField) {
 			Long dateA = getDate();
-			Long dateB = ((DateField) obj).getDate();
+			Long dateB = fromISO8601(((DateField) obj).getDate());
 			return CompareUtils.equals(dateA, dateB);
 		}
 		return false;

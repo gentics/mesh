@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.micronode;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -322,10 +323,10 @@ public class MicronodeFieldVerticleTest extends AbstractFieldVerticleTest {
 		MicronodeResponse field = new MicronodeResponse();
 		field.setMicroschema(new MicroschemaReference().setName("full"));
 		field.getFields().put("booleanfield", FieldUtil.createBooleanField(true));
-		field.getFields().put("datefield", FieldUtil.createDateField(date));
+		field.getFields().put("datefield", FieldUtil.createDateField(toISO8601(date)));
 		field.getFields().put("htmlfield", FieldUtil.createHtmlField("<b>HTML</b> value"));
 		field.getFields().put("listfield-boolean", FieldUtil.createBooleanListField(true, false));
-		field.getFields().put("listfield-date", FieldUtil.createDateListField(date, 0L));
+		field.getFields().put("listfield-date", FieldUtil.createDateListField(toISO8601(date), toISO8601(0)));
 		field.getFields().put("listfield-html", FieldUtil.createHtmlListField("<b>first</b>", "<i>second</i>", "<u>third</u>"));
 		field.getFields().put("listfield-node", FieldUtil.createNodeListField(newsOverview.getUuid(), newsFolder.getUuid()));
 		field.getFields().put("listfield-number", FieldUtil.createNumberListField(47, 11));

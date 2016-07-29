@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.CREATE_
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FILL;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -40,7 +41,7 @@ import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
@@ -246,7 +247,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		InternalActionContext ac = getMockedInternalActionContext();
 		ServerSchemaStorage.getInstance().clear();
 
-		FieldMap restFields = new FieldMapJsonImpl();
+		FieldMap restFields = new FieldMapImpl();
 		restFields.put("stringfield", new StringFieldImpl().setString("test"));
 		field.getMicronode().updateFieldsFromRest(ac, restFields);
 
@@ -342,7 +343,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		fieldA.getMicronode().createString("string").setString("someString");
 		fieldA.getMicronode().createDate("date").setDate(date);
 		restField.getFields().put("string", FieldUtil.createStringField("someOtherString"));
-		restField.getFields().put("date", FieldUtil.createDateField(date));
+		restField.getFields().put("date", FieldUtil.createDateField(toISO8601(date)));
 		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 
 		// rest set - graph set - same value

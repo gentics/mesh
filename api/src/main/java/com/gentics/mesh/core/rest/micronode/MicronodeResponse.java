@@ -5,7 +5,7 @@ import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
@@ -16,7 +16,7 @@ public class MicronodeResponse extends AbstractResponse implements MicronodeFiel
 
 	private MicroschemaReference microschema;
 
-	private FieldMap fields = new FieldMapJsonImpl();
+	private FieldMap fields = new FieldMapImpl();
 
 	/**
 	 * Get the microschema reference of the micronode

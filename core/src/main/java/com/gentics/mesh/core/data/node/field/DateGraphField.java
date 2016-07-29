@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field;
 
+import static com.gentics.mesh.util.DateUtils.fromISO8601;
+
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
@@ -43,9 +45,9 @@ public interface DateGraphField extends ListableGraphField, BasicGraphField<Date
 
 		// Handle Update / Create
 		if (dateGraphField == null) {
-			container.createDate(fieldKey).setDate(dateField.getDate());
+			container.createDate(fieldKey).setDate(fromISO8601(dateField.getDate()));
 		} else {
-			dateGraphField.setDate(dateField.getDate());
+			dateGraphField.setDate(fromISO8601(dateField.getDate()));
 		}
 	};
 

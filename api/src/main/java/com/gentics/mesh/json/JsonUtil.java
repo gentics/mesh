@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
@@ -71,9 +71,9 @@ public final class JsonUtil {
 		module.addSerializer(DateFieldImpl.class, new BasicFieldSerializer<DateFieldImpl>());
 		module.addSerializer(BooleanFieldImpl.class, new BasicFieldSerializer<BooleanFieldImpl>());
 		module.addSerializer(FieldList.class, new FieldListSerializer());
-		module.addSerializer(FieldMapJsonImpl.class, new JsonSerializer<FieldMapJsonImpl>() {
+		module.addSerializer(FieldMapImpl.class, new JsonSerializer<FieldMapImpl>() {
 			@Override
-			public void serialize(FieldMapJsonImpl value, JsonGenerator gen, SerializerProvider serializers)
+			public void serialize(FieldMapImpl value, JsonGenerator gen, SerializerProvider serializers)
 					throws IOException, JsonProcessingException {
 				gen.writeObject(value.getNode());
 			}
@@ -137,6 +137,8 @@ public final class JsonUtil {
 				column = String.valueOf(e.getLocation().getColumnNr());
 			}
 			throw new GenericRestException(BAD_REQUEST, "error_json_malformed", line, column, msg);
+		} catch (Exception e) {
+			throw new GenericRestException(BAD_REQUEST, "error_json_parse", e);
 		}
 	}
 

@@ -116,9 +116,9 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static DateField createDateField(Long date) {
+	public static DateField createDateField(String iso8601Date) {
 		DateField field = new DateFieldImpl();
-		field.setDate(date);
+		field.setDate(iso8601Date);
 		return field;
 	}
 
@@ -144,9 +144,9 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static DateFieldListImpl createDateListField(Long... values) {
+	public static DateFieldListImpl createDateListField(String... values) {
 		DateFieldListImpl field = new DateFieldListImpl();
-		for (Long value : values) {
+		for (String value : values) {
 			field.add(value);
 		}
 		return field;

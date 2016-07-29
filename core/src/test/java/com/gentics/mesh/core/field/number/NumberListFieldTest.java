@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.CREAT
 import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.FILLNUMBERS;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -114,7 +115,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		Long dummyValue = 42L;
+		Long dummyValue = 4200L;
 
 		// rest null - graph null
 		NumberGraphFieldList fieldA = container.createNumberList(NUMBER_LIST);
@@ -133,7 +134,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
 
 		DateFieldListImpl otherTypeRestField = new DateFieldListImpl();
-		otherTypeRestField.add(dummyValue);
+		otherTypeRestField.add(toISO8601(dummyValue));
 		// rest set - graph set - same value different type
 		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(otherTypeRestField));
 
@@ -178,7 +179,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			field.getItems().add(42L);
 			field.getItems().add(43L);
 			updateContainer(ac, container, NUMBER_LIST, field);
-		} , (container) -> {
+		}, (container) -> {
 			NumberGraphFieldList field = container.getNumberList(NUMBER_LIST);
 			assertNotNull("The graph field {" + NUMBER_LIST + "} could not be found.", field);
 			assertEquals("The list of the field was not updated.", 2, field.getList().size());

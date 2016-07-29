@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.field.date;
 
+import static com.gentics.mesh.util.DateUtils.fromISO8601;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,13 +50,13 @@ public class DateFieldVerticleTest extends AbstractFieldVerticleTest {
 	public void testUpdateNodeFieldWithField() {
 		Node node = folder("2015");
 		for (int i = 0; i < 20; i++) {
-			Long nowEpoch = System.currentTimeMillis() / 1000 + i;
+			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis() + (i * 10000)));
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			Long oldValue = getDateValue(container, FIELD_NAME);
 
-			NodeResponse response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+			NodeResponse response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 			DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
-			assertEquals(nowEpoch, field.getDate());
+			assertEquals("The timestamp did not match up.", toISO8601(nowEpoch), field.getDate());
 
 			node.reload();
 			container.reload();
@@ -66,19 +68,19 @@ public class DateFieldVerticleTest extends AbstractFieldVerticleTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		Long nowEpoch = System.currentTimeMillis() / 1000;
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 		String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		Long nowEpoch = System.currentTimeMillis() / 1000;
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 		String oldVersion = firstResponse.getVersion().getNumber();
 
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
@@ -93,7 +95,7 @@ public class DateFieldVerticleTest extends AbstractFieldVerticleTest {
 		assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
 		Long oldValue = latest.getPreviousVersion().getDate(FIELD_NAME).getDate();
 		assertThat(oldValue).isEqualTo(nowEpoch);
-		
+
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
 				secondResponse.getVersion().getNumber());
@@ -103,8 +105,8 @@ public class DateFieldVerticleTest extends AbstractFieldVerticleTest {
 	@Override
 	public void testUpdateSetEmpty() {
 
-		Long nowEpoch = System.currentTimeMillis() / 1000;
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 		String oldVersion = firstResponse.getVersion().getNumber();
 
 		// Date fields can't be set to empty.
@@ -131,16 +133,16 @@ public class DateFieldVerticleTest extends AbstractFieldVerticleTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		Long nowEpoch = System.currentTimeMillis() / 1000;
-		NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(nowEpoch));
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 		DateField field = response.getFields().getDateField(FIELD_NAME);
-		assertEquals(nowEpoch, field.getDate());
+		assertEquals(toISO8601(nowEpoch), field.getDate());
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		Long nowEpoch = System.currentTimeMillis() / 1000;
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
 		Node node = folder("2015");
 		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
@@ -149,6 +151,6 @@ public class DateFieldVerticleTest extends AbstractFieldVerticleTest {
 		NodeResponse response = readNode(node);
 		DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);
 		assertNotNull(deserializedDateField);
-		assertEquals(nowEpoch, deserializedDateField.getDate());
+		assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());
 	}
 }

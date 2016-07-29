@@ -52,17 +52,23 @@ import com.google.common.collect.Lists;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class FieldMapJsonImpl implements FieldMap {
+/**
+ * Implementation of a fieldmap which uses a central JsonNode to access the field specific data. Fields will be mapped during runtime.
+ * 
+ * @see {@link FieldMap}
+ *
+ */
+public class FieldMapImpl implements FieldMap {
 
-	private static final Logger log = LoggerFactory.getLogger(FieldMapJsonImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(FieldMapImpl.class);
 
 	private JsonNode node;
 
-	public FieldMapJsonImpl(JsonNode node) {
+	public FieldMapImpl(JsonNode node) {
 		this.node = node;
 	}
 
-	public FieldMapJsonImpl() {
+	public FieldMapImpl() {
 		this(JsonNodeFactory.instance.objectNode());
 	}
 
@@ -173,8 +179,8 @@ public class FieldMapJsonImpl implements FieldMap {
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, DateFieldListImpl.class, key);
 			}
-			Long[] itemsDateArray = mapper.treeToValue(jsonNode, Long[].class);
-			return (FieldList) getBasicList(key, Long[].class, new DateFieldListImpl(), Long.class, itemsDateArray);
+			String[] itemsDateArray = mapper.treeToValue(jsonNode, String[].class);
+			return (FieldList) getBasicList(key, String[].class, new DateFieldListImpl(), String.class, itemsDateArray);
 		case "number":
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
@@ -271,11 +277,11 @@ public class FieldMapJsonImpl implements FieldMap {
 		}
 
 		DateField dateField = new DateFieldImpl();
-		if (!jsonNode.isNull() && jsonNode.isNumber()) {
-			dateField.setDate(jsonNode.numberValue().longValue());
+		if (!jsonNode.isNull() && jsonNode.isTextual()) {
+			dateField.setDate(jsonNode.textValue());
 		}
-		if (!jsonNode.isNull() && !jsonNode.isNumber()) {
-			throw error(BAD_REQUEST, "The field value for {" + key + "} is not a number value. The value was {" + jsonNode.asText() + "}");
+		if (!jsonNode.isNull() && !jsonNode.isTextual()) {
+			throw error(BAD_REQUEST, "The field value for date field {" + key + "} is not a string value. The value was {" + jsonNode.asText() + "}");
 		}
 		return dateField;
 	}

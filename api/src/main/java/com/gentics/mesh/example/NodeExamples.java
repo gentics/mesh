@@ -66,7 +66,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField(100.1));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
+		fields.put("release-dateField", createDateField(getTimestamp()));
 		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
@@ -164,7 +164,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField(100.1));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
+		fields.put("release-dateField", createDateField(getTimestamp()));
 		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
@@ -220,7 +220,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField(100.1));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
+		fields.put("release-dateField", createDateField(getTimestamp()));
 		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));

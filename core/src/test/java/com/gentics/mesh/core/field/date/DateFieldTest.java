@@ -3,6 +3,8 @@ package com.gentics.mesh.core.field.date;
 import static com.gentics.mesh.core.field.date.DateFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.date.DateFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.date.DateFieldTestHelper.FILL;
+import static com.gentics.mesh.util.DateUtils.fromISO8601;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,6 +31,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
+import com.gentics.mesh.util.DateUtils;
 
 public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
@@ -100,18 +103,17 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
 		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 		DateGraphField field = container.createDate(DATE_FIELD);
-		long date = System.currentTimeMillis();
+		long date = fromISO8601(toISO8601(System.currentTimeMillis()));
 		field.setDate(date);
 
 		String json = getJson(node);
-		assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf(String.valueOf(date)) > 1);
 		assertNotNull(json);
 		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(response);
 
 		com.gentics.mesh.core.rest.node.field.DateField deserializedNodeField = response.getFields().getDateField("dateField");
 		assertNotNull(deserializedNodeField);
-		assertEquals(Long.valueOf(date), deserializedNodeField.getDate());
+		assertEquals(Long.valueOf(date), fromISO8601(deserializedNodeField.getDate()));
 	}
 
 	@Test
@@ -147,12 +149,12 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
 		// rest set - graph set - different values
-		fieldA.setDate(date);
-		restField.setDate(date + 1L);
+		fieldA.setDate(fromISO8601(toISO8601(date)));
+		restField.setDate(DateUtils.toISO8601(date + 1000L));
 		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 
 		// rest set - graph set - same value
-		restField.setDate(date);
+		restField.setDate(toISO8601(date));
 		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
 
 		// rest set - graph set - same value different type
@@ -197,9 +199,9 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 		InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
 		invokeUpdateFromRestValidSimpleValueTestcase(DATE_FIELD, FILL, (container) -> {
 			DateField field = new DateFieldImpl();
-			field.setDate(0L);
+			field.setDate(DateUtils.toISO8601(0L, 0));
 			updateContainer(ac, container, DATE_FIELD, field);
-		} , (container) -> {
+		}, (container) -> {
 			DateGraphField field = container.getDate(DATE_FIELD);
 			assertNotNull("The graph field {" + DATE_FIELD + "} could not be found.", field);
 			assertEquals("The date of the field was not updated.", 0L, field.getDate().longValue());

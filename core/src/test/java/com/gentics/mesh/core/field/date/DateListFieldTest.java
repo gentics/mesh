@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.field.date.DateListFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.date.DateListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.date.DateListFieldHelper.FILL;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -116,7 +117,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		Long dummyValue = 42L;
+		Long dummyValue = 4200L;
 
 		// rest null - graph null
 		DateGraphFieldList fieldA = container.createDateList(DATE_LIST);
@@ -126,12 +127,12 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 		// rest set - graph set - different values
 		fieldA.addItem(fieldA.createDate(dummyValue));
-		restField.add(dummyValue + 1L);
+		restField.add(toISO8601(dummyValue + 1000L));
 		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 
 		// rest set - graph set - same value
 		restField.getItems().clear();
-		restField.add(dummyValue);
+		restField.add(toISO8601(dummyValue));
 		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
 
 		NumberFieldListImpl otherTypeRestField = new NumberFieldListImpl();
@@ -177,15 +178,15 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		InternalActionContext ac = getMockedInternalActionContext();
 		invokeUpdateFromRestValidSimpleValueTestcase(DATE_LIST, FILL, (container) -> {
 			DateFieldListImpl field = new DateFieldListImpl();
-			field.getItems().add(42L);
-			field.getItems().add(43L);
+			field.getItems().add(toISO8601(42000L));
+			field.getItems().add(toISO8601(43000L));
 			updateContainer(ac, container, DATE_LIST, field);
-		} , (container) -> {
+		}, (container) -> {
 			DateGraphFieldList field = container.getDateList(DATE_LIST);
 			assertNotNull("The graph field {" + DATE_LIST + "} could not be found.", field);
 			assertEquals("The list of the field was not updated.", 2, field.getList().size());
-			assertEquals("The list item of the field was not updated.", 42L, field.getList().get(0).getDate().longValue());
-			assertEquals("The list item of the field was not updated.", 43L, field.getList().get(1).getDate().longValue());
+			assertEquals("The list item of the field was not updated.", 42000L, field.getList().get(0).getDate().longValue());
+			assertEquals("The list item of the field was not updated.", 43000L, field.getList().get(1).getDate().longValue());
 		});
 	}
 

@@ -44,7 +44,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private String displayField;
 
-	private FieldMap fields = new FieldMapJsonImpl();
+	private FieldMap fields = new FieldMapImpl();
 
 	private String path;
 

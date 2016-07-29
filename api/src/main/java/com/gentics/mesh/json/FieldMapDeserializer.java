@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 
 /**
  * The {@link FieldMapDeserializer} is used to deserialize the fieldmap within a node response/update request.
@@ -21,7 +21,7 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 	public FieldMap deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
-		FieldMap map = new FieldMapJsonImpl(node);
+		FieldMap map = new FieldMapImpl(node);
 		return map;
 	}
 

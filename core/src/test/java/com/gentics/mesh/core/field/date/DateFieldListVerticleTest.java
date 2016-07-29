@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.date;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -33,20 +34,22 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 	@Override
 	public void testCreateNodeWithField() {
 		DateFieldListImpl listField = new DateFieldListImpl();
-		listField.add(42L);
-		listField.add(41L);
+		String dateA = toISO8601(4200L);
+		String dateB = toISO8601(4100L);
+		listField.add(dateA);
+		listField.add(dateB);
 
 		NodeResponse response = createNode(FIELD_NAME, listField);
 		DateFieldListImpl field = response.getFields().getDateFieldList(FIELD_NAME);
-		assertThat(field.getItems()).as("List with valid values").containsExactly(42L, 41L);
+		assertThat(field.getItems()).as("List with valid values").containsExactly(dateA, dateB);
 	}
 
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
 		DateFieldListImpl listField = new DateFieldListImpl();
-		listField.add(42L);
-		listField.add(41L);
+		listField.add(toISO8601(4200L));
+		listField.add(toISO8601(4100L));
 		listField.add(null);
 		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
@@ -55,8 +58,10 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 	@Override
 	public void testNullValueInListOnUpdate() {
 		DateFieldListImpl listField = new DateFieldListImpl();
-		listField.add(42L);
-		listField.add(41L);
+		String dateA = toISO8601(4200L);
+		String dateB = toISO8601(4100L);
+		listField.add(dateA);
+		listField.add(dateB);
 		listField.add(null);
 		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
@@ -72,8 +77,8 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 	@Override
 	public void testUpdateSameValue() {
 		DateFieldListImpl listField = new DateFieldListImpl();
-		listField.add(42L);
-		listField.add(41L);
+		listField.add(toISO8601(4200L));
+		listField.add(toISO8601(4100L));
 
 		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 		String oldVersion = firstResponse.getVersion().getNumber();
@@ -87,15 +92,15 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 	public void testReadNodeWithExistingField() {
 		// 1. Update an existing node
 		DateFieldListImpl listField = new DateFieldListImpl();
-		listField.add(42L);
-		listField.add(41L);
+		listField.add(toISO8601(4200L));
+		listField.add(toISO8601(4100L));
 		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
 		//2. Read the node
 		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
 		DateFieldListImpl deserializedField = response.getFields().getDateFieldList(FIELD_NAME);
 		assertNotNull(deserializedField);
-		assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly(42L, 41L);
+		assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly(toISO8601(4200L), toISO8601(4100L));
 	}
 
 	@Test
@@ -103,16 +108,17 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 	public void testUpdateNodeFieldWithField() throws IOException {
 		Node node = folder("2015");
 
-		List<List<Long>> valueCombinations = Arrays.asList(Arrays.asList(1L, 2L, 3L), Arrays.asList(3L, 2L, 1L), Collections.emptyList(),
-				Arrays.asList(4711L, 815L), Arrays.asList(3L));
+		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList(toISO8601(1000L), toISO8601(2000L), toISO8601(3000L)),
+				Arrays.asList(toISO8601(3000L), toISO8601(2000L), toISO8601(1000L)), Collections.emptyList(),
+				Arrays.asList(toISO8601(471100L), toISO8601(81500L)), Arrays.asList(toISO8601(3000L)));
 
 		for (int i = 0; i < 20; i++) {
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			List<Long> oldValue = getListValues(container, DateGraphFieldListImpl.class, FIELD_NAME);
-			List<Long> newValue = valueCombinations.get(i % valueCombinations.size());
+			List<String> newValue = valueCombinations.get(i % valueCombinations.size());
 
 			DateFieldListImpl list = new DateFieldListImpl();
-			for (Long value : newValue) {
+			for (String value : newValue) {
 				list.add(value);
 			}
 			NodeResponse response = updateNode(FIELD_NAME, list);
@@ -130,8 +136,11 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 	@Override
 	public void testUpdateSetNull() {
 		DateFieldListImpl list = new DateFieldListImpl();
-		list.add(42L);
-		list.add(41L);
+		String dateA = toISO8601(42000L);
+		String dateB = toISO8601(41000L);
+		list.add(dateA);
+		list.add(dateB);
+
 		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
 		String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -147,7 +156,7 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 		assertThat(latest.getPreviousVersion().getDateList(FIELD_NAME)).isNotNull();
 		List<Number> oldValueList = latest.getPreviousVersion().getDateList(FIELD_NAME).getList().stream().map(item -> item.getDate())
 				.collect(Collectors.toList());
-		assertThat(oldValueList).containsExactly(42L, 41L);
+		assertThat(oldValueList).containsExactly(42000L, 41000L);
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
@@ -159,8 +168,11 @@ public class DateFieldListVerticleTest extends AbstractListFieldVerticleTest {
 	@Override
 	public void testUpdateSetEmpty() {
 		DateFieldListImpl list = new DateFieldListImpl();
-		list.add(42L);
-		list.add(41L);
+		String dateA = toISO8601(4200L);
+		String dateB = toISO8601(4100L);
+		list.add(dateA);
+		list.add(dateB);
+
 		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
 		String oldVersion = firstResponse.getVersion().getNumber();
 
