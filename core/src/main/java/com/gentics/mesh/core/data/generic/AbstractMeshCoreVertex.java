@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.generic;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,6 +23,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
@@ -80,7 +84,10 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 				} else {
 					// TODO throw error and log something
 				}
-				model.setEdited(edited.getLastEditedTimestamp() == null ? 0 : edited.getLastEditedTimestamp());
+
+				// Convert unixtime to iso-8601
+				String date = DateUtils.toISO8601(edited.getLastEditedTimestamp(), 0);
+				model.setEdited(date);
 			}
 
 			if (this instanceof CreatorTrackingVertex) {
@@ -93,7 +100,8 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 					// TODO throw error and log something
 				}
 
-				model.setCreated(created.getCreationTimestamp() == null ? 0 : created.getCreationTimestamp());
+				String date = DateUtils.toISO8601(created.getCreationTimestamp(), 0);
+				model.setCreated(date);
 			}
 
 			if (ac instanceof NodeMigrationActionContextImpl) {

@@ -405,7 +405,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		getEndpoint.path("/:uuid/published");
 		getEndpoint.method(GET);
 		getEndpoint.produces(APPLICATION_JSON);
-		getEndpoint.exampleResponse(200, versioningExamples.getPublishStatusResponse());
+		getEndpoint.exampleResponse(200, versioningExamples.createPublishStatusResponse());
 		getEndpoint.handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), uuid);
@@ -416,7 +416,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		putEndpoint.path("/:uuid/published");
 		putEndpoint.method(PUT);
 		putEndpoint.produces(APPLICATION_JSON);
-		putEndpoint.exampleResponse(200, versioningExamples.getPublishStatusResponse());
+		putEndpoint.exampleResponse(200, versioningExamples.createPublishStatusResponse());
 		putEndpoint.addQueryParameters(PublishParameters.class);
 		putEndpoint.handler(rc -> {
 			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("uuid"));
@@ -440,7 +440,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		getLanguageRoute.path("/:uuid/languages/:languageTag/published");
 		getLanguageRoute.method(GET);
 		getLanguageRoute.produces(APPLICATION_JSON);
-		getLanguageRoute.exampleResponse(200, versioningExamples.getPublishStatusModel());
+		getLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
 		getLanguageRoute.handler(rc -> {
 			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), rc.request().getParam("uuid"), rc.request().getParam("languageTag"));
 		});
@@ -448,7 +448,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint putLanguageRoute = createEndpoint();
 		putLanguageRoute.path("/:uuid/languages/:languageTag/published").method(PUT).produces(APPLICATION_JSON);
 		putLanguageRoute.description("Publish the language of the node.");
-		putLanguageRoute.exampleResponse(200, versioningExamples.getPublishStatusModel());
+		putLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
 		putLanguageRoute.produces(APPLICATION_JSON);
 		putLanguageRoute.handler(rc -> {
 			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("uuid"), rc.request().getParam("languageTag"));
@@ -457,7 +457,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint deleteLanguageRoute = createEndpoint();
 		deleteLanguageRoute.description("Take the language of the node offline.");
 		deleteLanguageRoute.path("/:uuid/languages/:languageTag/published").method(DELETE).produces(APPLICATION_JSON);
-		deleteLanguageRoute.exampleResponse(200, versioningExamples.getPublishStatusModel());
+		deleteLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
 		deleteLanguageRoute.produces(APPLICATION_JSON);
 		deleteLanguageRoute.handler(rc -> {
 			crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.request().getParam("uuid"), rc.request().getParam("languageTag"));

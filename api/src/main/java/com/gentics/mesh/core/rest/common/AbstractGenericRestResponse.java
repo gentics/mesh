@@ -9,10 +9,11 @@ public class AbstractGenericRestResponse extends AbstractResponse {
 
 	private UserReference creator;
 
-	private long created;
+	private String created;
 
 	private UserReference editor;
-	private long edited;
+
+	private String edited;
 
 	private String[] permissions = {};
 
@@ -37,21 +38,21 @@ public class AbstractGenericRestResponse extends AbstractResponse {
 	}
 
 	/**
-	 * Return the creation date.
+	 * Return the creation date in an ISO-8601 format.
 	 * 
 	 * @return Creation date
 	 */
-	public long getCreated() {
+	public String getCreated() {
 		return created;
 	}
 
 	/**
-	 * Set the creation date.
+	 * Set the creation date in an ISO-8601 format.
 	 * 
 	 * @param created
 	 *            Creation date
 	 */
-	public void setCreated(long created) {
+	public void setCreated(String created) {
 		this.created = created;
 	}
 
@@ -74,20 +75,20 @@ public class AbstractGenericRestResponse extends AbstractResponse {
 	}
 
 	/**
-	 * Return the last edited date.
+	 * Return the last edited date in an ISO-8601 format.
 	 * 
 	 * @return
 	 */
-	public long getEdited() {
+	public String getEdited() {
 		return edited;
 	}
 
 	/**
-	 * Set the last edited date.
+	 * Set the last edited date in an ISO-8601 format.
 	 * 
 	 * @param edited
 	 */
-	public void setEdited(long edited) {
+	public void setEdited(String edited) {
 		this.edited = edited;
 	}
 

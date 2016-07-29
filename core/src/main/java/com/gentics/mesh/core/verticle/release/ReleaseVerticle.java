@@ -43,8 +43,8 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(POST);
 		endpoint.description("Create a new release.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(versioningExamples.getReleaseCreateRequest("Winter 2016"));
-		endpoint.exampleResponse(201, versioningExamples.getReleaseResponse("Winter 2016"));
+		endpoint.exampleRequest(versioningExamples.createReleaseCreateRequest("Winter 2016"));
+		endpoint.exampleResponse(201, versioningExamples.createReleaseResponse("Winter 2016"));
 		endpoint.handler(rc -> crudHandler.handleCreate(InternalActionContext.create(rc)));
 	}
 
@@ -76,7 +76,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		readOne.method(GET);
 		readOne.description("Load the release with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(200, versioningExamples.getReleaseResponse("Summer Collection Release"));
+		readOne.exampleResponse(200, versioningExamples.createReleaseResponse("Summer Collection Release"));
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
@@ -90,7 +90,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Load multiple releases and return a paged list response.");
-		readAll.exampleResponse(200, versioningExamples.getReleaseListResponse());
+		readAll.exampleResponse(200, versioningExamples.createReleaseListResponse());
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
@@ -130,8 +130,8 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		updateRelease.description("Update the release with the given uuid.");
 		updateRelease.consumes(APPLICATION_JSON);
 		updateRelease.produces(APPLICATION_JSON);
-		updateRelease.exampleRequest(versioningExamples.getReleaseUpdateRequest("Winter Collection Release"));
-		updateRelease.exampleResponse(200, versioningExamples.getReleaseResponse("Winter Collection Release"));
+		updateRelease.exampleRequest(versioningExamples.createReleaseUpdateRequest("Winter Collection Release"));
+		updateRelease.exampleResponse(200, versioningExamples.createReleaseResponse("Winter Collection Release"));
 		updateRelease.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			crudHandler.handleUpdate(InternalActionContext.create(rc), uuid);

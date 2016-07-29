@@ -12,56 +12,54 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 public class VersioningExamples extends AbstractExamples {
 
-	public PublishStatusModel getPublishStatusModel(boolean published, UserReference publisher, Long publishTime, VersionReference version) {
-		return new PublishStatusModel().setPublished(published).setPublisher(publisher).setPublishTime(publishTime).setVersion(version);
+	public PublishStatusModel createPublishStatusModel(boolean published, UserReference publisher, String publishDate, VersionReference version) {
+		return new PublishStatusModel().setPublished(published).setPublisher(publisher).setPublishTime(publishDate).setVersion(version);
 	}
 
 	public VersionReference getVersionReference(String number) {
 		return new VersionReference(randomUUID(), number);
 	}
 
-	public PublishStatusResponse getPublishStatusResponse() {
+	public PublishStatusResponse createPublishStatusResponse() {
 		PublishStatusResponse response = new PublishStatusResponse();
 		Map<String, PublishStatusModel> languages = new HashMap<>();
-		languages.put("en", getPublishStatusModel(true, getUserReference(), getTimestamp(), getVersionReference("3.0")));
-		languages.put("de", getPublishStatusModel(false, null, null, getVersionReference("0.4")));
-		languages.put("fr", getPublishStatusModel(false, null, null, getVersionReference("5.2")));
+		languages.put("en", createPublishStatusModel(true, getUserReference(), getTimestamp(), getVersionReference("3.0")));
+		languages.put("de", createPublishStatusModel(false, null, null, getVersionReference("0.4")));
+		languages.put("fr", createPublishStatusModel(false, null, null, getVersionReference("5.2")));
 		response.setAvailableLanguages(languages);
 		return response;
 	}
 
-	public ReleaseListResponse getReleaseListResponse() {
+	public ReleaseListResponse createReleaseListResponse() {
 		ReleaseListResponse releaseList = new ReleaseListResponse();
-		releaseList.getData().add(getReleaseResponse("summer2016"));
-		releaseList.getData().add(getReleaseResponse("autumn2016"));
+		releaseList.getData().add(createReleaseResponse("summer2016"));
+		releaseList.getData().add(createReleaseResponse("autumn2016"));
 		setPaging(releaseList, 1, 10, 2, 20);
 		return releaseList;
 	}
 
-	public ReleaseCreateRequest getReleaseCreateRequest(String name) {
+	public ReleaseCreateRequest createReleaseCreateRequest(String name) {
 		ReleaseCreateRequest create = new ReleaseCreateRequest();
 		create.setName(name);
 		return create;
 	}
 
-	public ReleaseUpdateRequest getReleaseUpdateRequest(String name) {
+	public ReleaseUpdateRequest createReleaseUpdateRequest(String name) {
 		ReleaseUpdateRequest update = new ReleaseUpdateRequest();
 		update.setName(name);
 		update.setActive(false);
 		return update;
 	}
 
-
-	public PublishStatusModel getPublishStatusModel() {
-		return getPublishStatusModel(true, getUserReference(), getTimestamp(), getVersionReference("3.0"));
+	public PublishStatusModel createPublishStatusModel() {
+		return createPublishStatusModel(true, getUserReference(), getTimestamp(), getVersionReference("3.0"));
 	}
 
-	public ReleaseResponse getReleaseResponse(String name) {
+	public ReleaseResponse createReleaseResponse(String name) {
 		ReleaseResponse response = new ReleaseResponse();
 		response.setName(name);
 		response.setUuid(randomUUID());

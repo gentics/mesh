@@ -13,8 +13,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -162,11 +164,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		long lastCreated = 0;
 		for (NodeResponse nodeResponse : response.getData()) {
-			if (lastCreated > nodeResponse.getCreated()) {
+			Date date = Date.from(Instant.parse(nodeResponse.getCreated()));
+			if (lastCreated > date.getTime()) {
 				fail("Found entry that was not sorted by create timestamp. Last entry: {" + lastCreated + "} current entry: {"
 						+ nodeResponse.getCreated() + "}");
 			} else {
-				lastCreated = nodeResponse.getCreated();
+				lastCreated = date.getTime();
 			}
 			assertEquals("content", nodeResponse.getSchema().getName());
 		}

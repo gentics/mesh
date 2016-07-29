@@ -92,6 +92,7 @@ import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
@@ -647,7 +648,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				} else {
 					// TODO throw error and log something
 				}
-				restNode.setEdited(fieldContainer.getLastEditedTimestamp() == null ? 0 : fieldContainer.getLastEditedTimestamp());
+
+				// Convert unixtime to iso-8601
+				String date = DateUtils.toISO8601(fieldContainer.getLastEditedTimestamp(), 0);
+				restNode.setEdited(date);
 
 				// Fields
 				for (FieldSchema fieldEntry : schema.getFields()) {
@@ -873,9 +877,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		publishStatus.setAvailableLanguages(languages);
 
 		getGraphFieldContainers(release, ContainerType.PUBLISHED).stream().forEach(c -> {
+
+			String date = DateUtils.toISO8601(c.getLastEditedTimestamp(), 0);
+
 			PublishStatusModel status = new PublishStatusModel().setPublished(true)
 					.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString())).setPublisher(c.getEditor().transformToReference())
-					.setPublishTime(c.getLastEditedTimestamp());
+					.setPublishTime(date);
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
 
@@ -916,20 +923,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return obs;
 	}
 
-//	@Override
-//	public Completable publish(InternalActionContext ac) {
-//		Database db = MeshSpringConfiguration.getInstance().database();
-//
-//		// TODO check whether all required fields are filled
-//		return db.trx(() -> {
-//			Release release = ac.getRelease(getProject());
-//			List<Completable> obs = publish(ac, release);
-//			return Completable.merge(obs);
-//		});
-//
-//	}
-	
-	
+	//	@Override
+	//	public Completable publish(InternalActionContext ac) {
+	//		Database db = MeshSpringConfiguration.getInstance().database();
+	//
+	//		// TODO check whether all required fields are filled
+	//		return db.trx(() -> {
+	//			Release release = ac.getRelease(getProject());
+	//			List<Completable> obs = publish(ac, release);
+	//			return Completable.merge(obs);
+	//		});
+	//
+	//	}
+
 	@Override
 	public Completable publish(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -961,7 +967,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		return Completable.merge(obs);
 	}
-	
 
 	@Override
 	public Completable takeOffline(InternalActionContext ac) {
@@ -998,9 +1003,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, release.getUuid(), ContainerType.PUBLISHED);
 		if (container != null) {
+			String date = DateUtils.toISO8601(container.getLastEditedTimestamp(), 0);
 			return Single.just(new PublishStatusModel().setPublished(true)
 					.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()))
-					.setPublisher(container.getEditor().transformToReference()).setPublishTime(container.getLastEditedTimestamp()));
+					.setPublisher(container.getEditor().transformToReference()).setPublishTime(date));
 		} else {
 			container = getGraphFieldContainer(languageTag, release.getUuid(), ContainerType.DRAFT);
 			if (container != null) {

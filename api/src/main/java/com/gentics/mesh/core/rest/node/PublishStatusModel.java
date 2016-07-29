@@ -7,12 +7,14 @@ import com.gentics.mesh.core.rest.user.UserReference;
  * POJO for the rest model of the publish status of a single language of a node
  */
 public class PublishStatusModel implements RestModel {
+
 	private boolean published;
 
 	private VersionReference version;
 
 	private UserReference publisher;
-	private Long publishTime;
+
+	private String publishDate;
 
 	public PublishStatusModel() {
 	}
@@ -44,12 +46,12 @@ public class PublishStatusModel implements RestModel {
 		return this;
 	}
 
-	public Long getPublishTime() {
-		return publishTime;
+	public String getPublishDate() {
+		return publishDate;
 	}
 
-	public PublishStatusModel setPublishTime(Long publishTime) {
-		this.publishTime = publishTime;
+	public PublishStatusModel setPublishTime(String publishDate) {
+		this.publishDate = publishDate;
 		return this;
 	}
 }

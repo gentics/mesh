@@ -2,7 +2,8 @@ package com.gentics.mesh.example;
 
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -12,8 +13,8 @@ import com.gentics.mesh.core.rest.user.UserReference;
 
 public abstract class AbstractExamples {
 
-	public long getTimestamp() {
-		return new Date().getTime();
+	public String getTimestamp() {
+		return ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT);
 	}
 
 	public void setPaging(ListResponse<?> response, long currentPage, long pageCount, long perPage, long totalCount) {
