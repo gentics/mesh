@@ -484,7 +484,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadUserListWithExpandedNodeReference() {
-		UserResponse userCreateResponse = db.noTrx(() -> {
+		UserResponse userCreateResponse = db.noTx(() -> {
 			Node node = folder("2015");
 
 			NodeReferenceImpl reference = new NodeReferenceImpl();

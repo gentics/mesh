@@ -361,42 +361,42 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		String draftPath = "/News_draft/2015_draft";
 
 		// 1. Publish nodes
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			folder("news").publish(getMockedInternalActionContext()).await();
 			folder("2015").publish(getMockedInternalActionContext()).await();
 			return null;
 		});
 
 		// 2. Change names
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			updateName(folder("news"), "en", "News_draft");
 			updateName(folder("2015"), "en", "2015_draft");
 			return null;
 		});
 
 		// 3. Assert published path in published
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, publishedPath, new NodeParameters()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 			return null;
 		});
 
 		// 4. Assert published path in draft
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			call(() -> getClient().webroot(PROJECT_NAME, publishedPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
 					publishedPath);
 			return null;
 		});
 
 		// 5. Assert draft path in draft
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, draftPath, new VersioningParameters().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
 			return null;
 		});
 
 		// 6. Assert draft path in published
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			call(() -> getClient().webroot(PROJECT_NAME, draftPath, new NodeParameters()), NOT_FOUND, "node_not_found_for_path", draftPath);
 			return null;
 		});
@@ -409,28 +409,28 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		String newPath = "/News_new/2015_new";
 
 		// 1. create new release and migrate nodes
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
 			nodeMigrationHandler.migrateNodes(newRelease).await();
 			return null;
 		});
 
 		// 2. update nodes in new release
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			updateName(folder("news"), "en", "News_new");
 			updateName(folder("2015"), "en", "2015_new");
 			return null;
 		});
 
 		// 3. Assert new names in new release
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, newPath, new VersioningParameters().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
 			return null;
 		});
 
 		// 4. Assert new names in initial release
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			call(() -> getClient().webroot(PROJECT_NAME, newPath,
 					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())), NOT_FOUND, "node_not_found_for_path",
 					newPath);
@@ -438,7 +438,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		});
 
 		// 5. Assert old names in initial release
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, initialPath,
 					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
@@ -446,7 +446,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		});
 
 		// 6. Assert old names in new release
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			call(() -> getClient().webroot(PROJECT_NAME, initialPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
 					initialPath);
 			return null;

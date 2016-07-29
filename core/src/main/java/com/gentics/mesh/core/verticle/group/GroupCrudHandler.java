@@ -39,7 +39,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	}
 
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Single<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			MeshAuthUser requestUser = ac.getUser();
@@ -66,7 +66,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(roleUuid, "roleUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
@@ -89,7 +89,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 		validateParameter(groupUuid, "groupUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			// TODO check whether the role is actually part of the group
 			Single<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -120,7 +120,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupUserList(InternalActionContext ac, String groupUuid) {
 		validateParameter(groupUuid, "groupUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
@@ -148,7 +148,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 
 			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
@@ -171,7 +171,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			return Single.zip(obsUser, obsGroup, (user, group) -> {

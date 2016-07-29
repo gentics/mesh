@@ -57,9 +57,9 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		if (log.isDebugEnabled()) {
 			log.debug("Handling permission request for element on path {" + pathToElement + "}");
 		}
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 
-			return db.noTrx(() -> {
+			return db.noTx(() -> {
 				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
 				Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
@@ -68,7 +68,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 				Single<UserPermissionResponse> respObs = Single.zip(obsUser, resolvedElement, (user, targetElement) -> {
 
-					return db.noTrx(() -> {
+					return db.noTx(() -> {
 						if (targetElement == null) {
 							throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 						}

@@ -132,7 +132,7 @@ public class SearchRestHandler {
 
 			@Override
 			public void onResponse(SearchResponse response) {
-				db.noTrx(() -> {
+				db.noTx(() -> {
 					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
 					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 
@@ -231,7 +231,7 @@ public class SearchRestHandler {
 	}
 
 	public void handleStatus(InternalActionContext ac) {
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			SearchQueue queue = MeshRoot.getInstance().getSearchQueue();
 			SearchStatusResponse statusResponse = new SearchStatusResponse();
 			statusResponse.setBatchCount(queue.getSize());
@@ -240,7 +240,7 @@ public class SearchRestHandler {
 	}
 
 	public void handleReindex(InternalActionContext ac) {
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler handler : registry.getHandlers()) {
 					handler.clearIndex().onErrorComplete(error -> {

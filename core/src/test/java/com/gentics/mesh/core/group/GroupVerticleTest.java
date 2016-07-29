@@ -338,7 +338,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
 
-		GroupResponse updatedGroup = db.noTrx(() -> {
+		GroupResponse updatedGroup = db.noTx(() -> {
 			Group group = group();
 
 			Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);

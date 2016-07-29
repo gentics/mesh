@@ -86,10 +86,10 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 */
 	public Completable migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
 			NodeMigrationStatus statusMBean) {
-		String releaseUuid = db.noTrx(release::getUuid);
+		String releaseUuid = db.noTx(release::getUuid);
 
 		// get the nodes, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainers = db.noTrx(() -> fromVersion.getFieldContainers(releaseUuid));
+		List<? extends NodeGraphFieldContainer> fieldContainers = db.noTx(() -> fromVersion.getFieldContainers(releaseUuid));
 
 		// no field containers -> no nodes, migration is done
 		if (fieldContainers.isEmpty()) {
@@ -204,10 +204,10 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 */
 	public Completable migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion, NodeMigrationStatus statusMBean) {
-		String releaseUuid = db.noTrx(release::getUuid);
+		String releaseUuid = db.noTx(release::getUuid);
 
 		// get the containers, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainers = db.noTrx(() -> fromVersion.getFieldContainers(release.getUuid()));
+		List<? extends NodeGraphFieldContainer> fieldContainers = db.noTx(() -> fromVersion.getFieldContainers(release.getUuid()));
 
 		// no field containers, migration is done
 		if (fieldContainers.isEmpty()) {
@@ -308,7 +308,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @return
 	 */
 	public Completable migrateNodes(Release newRelease) {
-		Release oldRelease = db.noTrx(() -> {
+		Release oldRelease = db.noTx(() -> {
 			if (newRelease.isMigrated()) {
 				throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} is already migrated");
 			}
@@ -326,9 +326,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return old;
 		});
 
-		String oldReleaseUuid = db.noTrx(() -> oldRelease.getUuid());
-		String newReleaseUuid = db.noTrx(() -> newRelease.getUuid());
-		List<? extends Node> nodes = db.noTrx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
+		String oldReleaseUuid = db.noTx(() -> oldRelease.getUuid());
+		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
+		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
 
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());

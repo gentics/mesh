@@ -28,7 +28,7 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 */
 	default Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrxExperimental(() -> {
+		return db.asyncNoTx(() -> {
 			return transformToRestSync(ac, level, languageTags);
 		});
 	}

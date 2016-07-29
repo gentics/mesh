@@ -1368,9 +1368,9 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		final String newName = "english renamed name";
 
 		// 1. Load Ids / Objects
-		String uuid = db.noTrx(() -> content("concorde").getUuid());
-		Node node = db.noTrx(() -> content("concorde"));
-		NodeGraphFieldContainer origContainer = db.noTrx(() -> {
+		String uuid = db.noTx(() -> content("concorde").getUuid());
+		Node node = db.noTx(() -> content("concorde"));
+		NodeGraphFieldContainer origContainer = db.noTx(() -> {
 			Node prod = content("concorde");
 			NodeGraphFieldContainer container = prod.getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", container.getString("name").getString());

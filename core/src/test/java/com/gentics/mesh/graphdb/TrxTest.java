@@ -144,7 +144,7 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testMultiThreadedModifications() throws InterruptedException {
-		User user = db.noTrx(() -> user());
+		User user = db.noTx(() -> user());
 
 		Runnable task2 = () -> {
 			try (Tx tx = db.tx()) {
@@ -198,7 +198,7 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 	@Test(expected = RuntimeException.class)
 	public void testAsyncNoTrxWithError() throws Throwable {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			throw new RuntimeException("error");
 		}).toBlocking().value();
 		assertEquals("error", cf.get().getMessage());
@@ -207,7 +207,7 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
-		String result = db.asyncNoTrxExperimental(() -> {
+		String result = db.asyncNoTx(() -> {
 			TestUtils.run(() -> {
 				TestUtils.sleep(1000);
 			});
@@ -229,7 +229,7 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testAsyncNoTrxSuccess() throws Throwable {
-		String result = db.asyncNoTrxExperimental(() -> {
+		String result = db.asyncNoTx(() -> {
 			return Single.just("OK");
 		}).toBlocking().value();
 		assertEquals("OK", result);

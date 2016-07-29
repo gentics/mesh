@@ -155,7 +155,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Set<String> getIndices() {
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			Set<String> indexNames = new HashSet<>();
 			BootstrapInitializer.getBoot().meshRoot().getProjectRoot().reload();
 			List<? extends Project> projects = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findAll();
@@ -172,7 +172,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			Project project = ac.getProject();
 			if (project != null) {
 				return Collections

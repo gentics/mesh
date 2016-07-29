@@ -82,7 +82,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
 
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			MeshRoot root = boot.meshRoot();
 			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
 				Group groupWithSameName = findByName(requestModel.getName()).toBlocking().value();

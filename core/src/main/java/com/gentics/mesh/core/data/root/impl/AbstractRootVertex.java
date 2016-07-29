@@ -124,7 +124,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 			}
 
-			T result = db.noTrx(() -> {
+			T result = db.noTx(() -> {
 				MeshAuthUser requestUser = ac.getUser();
 				String elementUuid = element.getUuid();
 				if (requestUser.hasPermissionSync(ac, element, perm)) {

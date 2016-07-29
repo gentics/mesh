@@ -45,7 +45,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
 				try {
@@ -68,7 +68,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	}
 
 	public void handleDiff(InternalActionContext ac, String uuid) {
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Single<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			return obsSchema.flatMap(schema -> schema.getLatestVersion().diff(ac, comparator, requestModel));
@@ -82,7 +82,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleAddSchemaToProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			Single<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
@@ -106,7 +106,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleRemoveSchemaFromProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			Single<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
@@ -134,7 +134,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Single<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);

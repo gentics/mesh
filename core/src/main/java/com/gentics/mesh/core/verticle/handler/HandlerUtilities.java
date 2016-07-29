@@ -38,11 +38,11 @@ public final class HandlerUtilities {
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac,
 			TxHandler<RootVertex<?>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			RootVertex<?> root = handler.call();
 			return root.create(ac).flatMap(created -> {
 				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				return db.noTrx(() -> {
+				return db.noTx(() -> {
 					// created.reload();
 					return created.transformToRest(ac, 0);
 				});
@@ -66,10 +66,10 @@ public final class HandlerUtilities {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			RootVertex<T> root = handler.call();
 			return root.loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(element -> {
-				return db.noTrx(() -> {
+				return db.noTx(() -> {
 					Tuple<String, SearchQueueBatch> tuple = db.tx(() -> {
 						String elementUuid = element.getUuid();
 						if (element instanceof IndexableElement) {
@@ -109,12 +109,12 @@ public final class HandlerUtilities {
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 			TxHandler<RootVertex<T>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			RootVertex<T> root = handler.call();
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
 				return element.update(ac).flatMap(updatedElement -> {
 					// Transform the vertex using a fresh transaction in order to start with a clean cache
-					return db.noTrx(() -> {
+					return db.noTx(() -> {
 						updatedElement.reload();
 						return updatedElement.transformToRest(ac, 0);
 					});
@@ -136,7 +136,7 @@ public final class HandlerUtilities {
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 			TxHandler<RootVertex<?>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			RootVertex<?> root = handler.call();
 			return root.loadObjectByUuid(ac, uuid, READ_PERM).flatMap(node -> {
 				return node.transformToRest(ac, 0);
@@ -154,7 +154,7 @@ public final class HandlerUtilities {
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac,
 			TxHandler<RootVertex<T>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			RootVertex<T> root = handler.call();
 
 			PagingParameters pagingInfo = new PagingParameters(ac);

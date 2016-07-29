@@ -100,10 +100,10 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 	@Test
 	public void testCreateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
-		Node parent = db.noTrx(() -> folder("2015"));
-		SchemaContainer contentSchema = db.noTrx(() -> schemaContainer("content"));
+		Node parent = db.noTx(() -> folder("2015"));
+		SchemaContainer contentSchema = db.noTx(() -> schemaContainer("content"));
 
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			// create the initial content
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -137,10 +137,10 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 	public void testUpdateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
 		String nonConflictingName = "otherfilename.html";
-		Node parent = db.noTrx(() -> folder("2015"));
-		SchemaContainer contentSchema = db.noTrx(() -> schemaContainer("content"));
+		Node parent = db.noTx(() -> folder("2015"));
+		SchemaContainer contentSchema = db.noTx(() -> schemaContainer("content"));
 
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			// create the initial content
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -184,10 +184,10 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 	@Test
 	public void testTranslateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
-		Node parent = db.noTrx(() -> folder("2015"));
-		SchemaContainer contentSchema = db.noTrx(() -> schemaContainer("content"));
+		Node parent = db.noTx(() -> folder("2015"));
+		SchemaContainer contentSchema = db.noTx(() -> schemaContainer("content"));
 
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			// create the initial content
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -221,10 +221,10 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 	public void testMoveDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
 
-		Node parent = db.noTrx(() -> folder("2015"));
-		Node otherParent = db.noTrx(() -> folder("news"));
-		SchemaContainer contentSchema = db.noTrx(() -> schemaContainer("content"));
-		db.noTrx(() -> {
+		Node parent = db.noTx(() -> folder("2015"));
+		Node otherParent = db.noTx(() -> folder("news"));
+		SchemaContainer contentSchema = db.noTx(() -> schemaContainer("content"));
+		db.noTx(() -> {
 			// create the initial content
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -260,18 +260,18 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 
 		String conflictingName = "filename.html";
 		String newReleaseName = "newrelease";
-		SchemaContainer contentSchema = db.noTrx(() -> {
+		SchemaContainer contentSchema = db.noTx(() -> {
 			return schemaContainer("content");
 		});
 		// 1. Create new release and migrate nodes
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
 			nodeMigrationHandler.migrateNodes(newRelease);
 			return null;
 		});
 
 		// 2. Create content in new release
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -286,7 +286,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		});
 
 		// 3. Create "conflicting" content in initial release
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -306,12 +306,12 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		String conflictingName = "filename.html";
 		String newName = "changed.html";
 
-		SchemaContainer contentSchema = db.noTrx(() -> {
+		SchemaContainer contentSchema = db.noTx(() -> {
 			return schemaContainer("content");
 		});
 
 		// 1. Create initial content
-		String nodeUuid = db.noTrx(() -> {
+		String nodeUuid = db.noTx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -324,7 +324,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		});
 
 		// 2. Modify initial content
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
@@ -334,7 +334,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		});
 
 		// 3. Create "conflicting" content
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -351,12 +351,12 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 	public void testDuplicateWithDrafts() {
 		String initialName = "filename.html";
 		String conflictingName = "changed.html";
-		SchemaContainer contentSchema = db.noTrx(() -> {
+		SchemaContainer contentSchema = db.noTx(() -> {
 			return schemaContainer("content");
 		});
 
 		// 1. Create and publish initial content
-		String nodeUuid = db.noTrx(() -> {
+		String nodeUuid = db.noTx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -370,7 +370,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		});
 
 		// 2. Modify initial content
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
@@ -380,7 +380,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		});
 
 		// 3. Create content. The filename should not cause a conflict since the other node was just updated.
-		String otherNodeUuid = db.noTrx(() -> {
+		String otherNodeUuid = db.noTx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -393,7 +393,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		});
 
 		// 4. Modify the second node in order to cause a conflict
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
@@ -410,12 +410,12 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		String conflictingName = "filename.html";
 		String newName = "changed.html";
 
-		SchemaContainer contentSchema = db.noTrx(() -> {
+		SchemaContainer contentSchema = db.noTx(() -> {
 			return schemaContainer("content");
 		});
 
 		// 1. Create and publish initial content
-		String nodeUuid = db.noTrx(() -> {
+		String nodeUuid = db.noTx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -432,7 +432,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		});
 
 		// 2. Modify initial content
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
@@ -442,7 +442,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		});
 
 		// 3. Create conflicting content
-		String otherNodeUuid = db.noTrx(() -> {
+		String otherNodeUuid = db.noTx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -455,7 +455,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		});
 
 		// 4. Publish conflicting content
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			call(() -> getClient().publishNode(PROJECT_NAME, otherNodeUuid), CONFLICT, "node_conflicting_segmentfield_publish", "filename",
 					conflictingName);
 

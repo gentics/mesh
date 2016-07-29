@@ -88,7 +88,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	public Completable store(SchemaContainer container, String type, SearchQueueEntry entry) {
 		return super.store(container, type, entry).andThen(Completable.defer(()-> {
 			if (db != null) {
-				return db.noTrx(() -> {
+				return db.noTx(() -> {
 					// update the mappings
 					Schema schema = container.getLatestVersion().getSchema();
 					return nodeIndexHandler.setNodeIndexMapping(NodeIndexHandler.getDocumentType(container.getLatestVersion()), schema);

@@ -61,7 +61,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				Language language = boot.languageRoot().findByLanguageTag(languageTag);
@@ -81,7 +81,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				return binaryField;
 			});
 		}).subscribe(binaryField -> {
-			db.noTrx(() -> {
+			db.noTx(() -> {
 				BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
 				handler.handle(binaryField);
 				return null;
@@ -104,7 +104,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		validateParameter(uuid, "uuid");
 		validateParameter(languageTag, "languageTag");
 		validateParameter(fieldName, "fieldName");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
@@ -220,7 +220,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		validateParameter(uuid, "uuid");
 		validateParameter(languageTag, "languageTag");
 		validateParameter(fieldName, "fieldName");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
@@ -230,7 +230,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleRemoveFieldItem(InternalActionContext ac, String uuid) {
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
@@ -240,7 +240,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleUpdateFieldItem(InternalActionContext ac, String uuid) {
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
@@ -250,7 +250,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleReadFieldItem(InternalActionContext ac, String uuid) {
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return new GenericMessageResponse("Not yet implemented");
@@ -259,7 +259,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleMoveFieldItem(InternalActionContext ac, String uuid) {
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
@@ -276,7 +276,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 */
 	public void handleTransformImage(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB

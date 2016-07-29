@@ -537,7 +537,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
-			String folderUuid = db.noTrx(() -> {
+			String folderUuid = db.noTx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				folder.applyPermissions(role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
 						Collections.emptySet());
@@ -547,7 +547,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			});
 
 			// 2. assert published and draft node
-			db.noTrx(() -> {
+			db.noTx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot()
 						.findAll(getMockedInternalActionContext("version=draft", user()), new PagingParameters(1, 10000, null, SortOrder.UNSORTED))
@@ -561,14 +561,14 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			});
 
 			// 3. delete
-			SearchQueueBatch batch = db.noTrx(() -> {
+			SearchQueueBatch batch = db.noTx(() -> {
 				SearchQueueBatch innerBatch = createBatch();
 				meshRoot().getNodeRoot().findByUuidSync(folderUuid).deleteFromRelease(initialRelease, innerBatch);
 				return innerBatch;
 			});
 
 			// 4. assert published and draft gone
-			db.noTrx(() -> {
+			db.noTx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot()
 						.findAll(getMockedInternalActionContext("version=draft", user()), new PagingParameters(1, 10000, null, SortOrder.UNSORTED))
@@ -583,7 +583,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			});
 
 			// 5. assert searchqueuebatch
-			db.noTrx(() -> {
+			db.noTx(() -> {
 				Map<String, ElementEntry> affectedElements = new HashMap<>();
 				affectedElements.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
 						initialRelease.getUuid(), ContainerType.DRAFT, "en"));
@@ -604,7 +604,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
-			String folderUuid = db.noTrx(() -> {
+			String folderUuid = db.noTx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				folder.applyPermissions(role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
 						Collections.emptySet());
@@ -614,21 +614,21 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			});
 
 			// 2. create new release and migrate nodes
-			db.noTrx(() -> {
+			db.noTx(() -> {
 				Release newRelease = project.getReleaseRoot().create("newrelease", user());
 				nodeMigrationHandler.migrateNodes(newRelease).await();
 				return newRelease.getUuid();
 			});
 
 			// 3. delete from initial release
-			SearchQueueBatch batch = db.noTrx(() -> {
+			SearchQueueBatch batch = db.noTx(() -> {
 				SearchQueueBatch innerBatch = createBatch();
 				meshRoot().getNodeRoot().findByUuidSync(folderUuid).deleteFromRelease(initialRelease, innerBatch);
 				return innerBatch;
 			});
 
 			// 4. assert published and draft gone from initial release
-			db.noTrx(() -> {
+			db.noTx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot().findAll(getMockedInternalActionContext("version=draft&release=" + initialRelease.getUuid(), user()),
 						new PagingParameters(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
@@ -642,7 +642,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			});
 
 			// 5. assert published and draft still there for new release
-			db.noTrx(() -> {
+			db.noTx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot()
 						.findAll(getMockedInternalActionContext("version=draft", user()), new PagingParameters(1, 10000, null, SortOrder.UNSORTED))
@@ -657,7 +657,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			});
 
 			// 6. assert searchqueuebatch
-			db.noTrx(() -> {
+			db.noTx(() -> {
 				Map<String, ElementEntry> affectedElements = new HashMap<>();
 				affectedElements.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
 						initialRelease.getUuid(), ContainerType.DRAFT, "en"));

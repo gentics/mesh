@@ -53,7 +53,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM).flatMap((release) -> getSchemaVersions(release));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
@@ -67,7 +67,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleAssignSchemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(release -> {
 				SchemaReferenceList schemaReferenceList = ac.fromJson(SchemaReferenceList.class);
@@ -109,7 +109,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM).flatMap((release) -> getMicroschemaVersions(release));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
@@ -123,7 +123,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleAssignMicroschemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(release -> {
 				MicroschemaReferenceList microschemaReferenceList = ac.fromJson(MicroschemaReferenceList.class);

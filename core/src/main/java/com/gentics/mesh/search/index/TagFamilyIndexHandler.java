@@ -52,7 +52,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	public Set<String> getIndices() {
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			ProjectRoot root = BootstrapInitializer.getBoot().meshRoot().getProjectRoot();
 			root.reload();
 			List<? extends Project> projects = root.findAll();
@@ -62,7 +62,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			Project project = ac.getProject();
 			if (project != null) {
 				return Collections.singleton(getIndexName(project.getUuid()));

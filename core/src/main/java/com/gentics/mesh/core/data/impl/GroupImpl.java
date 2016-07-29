@@ -192,7 +192,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	public Single<? extends Group> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 			if (isEmpty(requestModel.getName())) {

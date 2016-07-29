@@ -39,7 +39,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
 				return db.tx(() -> {
@@ -77,7 +77,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 * @param ac
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Single<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			return obsSchema.flatMap(microschema -> microschema.getLatestVersion().diff(ac, comparator, requestModel));
@@ -90,7 +90,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	}
 
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Single<MicroschemaContainer> obsSchema = boot.microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
@@ -106,7 +106,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleAddMicroschemaToProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), UPDATE_PERM);
@@ -128,7 +128,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleRemoveMicroschemaFromProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), UPDATE_PERM);

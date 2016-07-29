@@ -40,7 +40,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTx(() -> {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
 			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);

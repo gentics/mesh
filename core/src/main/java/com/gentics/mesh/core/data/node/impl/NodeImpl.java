@@ -780,7 +780,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
 		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrxExperimental(() -> {
+		return db.asyncNoTx(() -> {
 			// TODO assure that the schema version is correct
 			if (!getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");

@@ -168,7 +168,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		return obsSchemaContainer.flatMap(schemaContainer -> {
 
-			Single<Tuple<SearchQueueBatch, Node>> obsTuple = db.noTrx(() -> {
+			Single<Tuple<SearchQueueBatch, Node>> obsTuple = db.noTx(() -> {
 				String body = ac.getBodyAsString();
 
 				NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
@@ -215,7 +215,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 
 			Project project = ac.getProject();
 			MeshAuthUser requestUser = ac.getUser();

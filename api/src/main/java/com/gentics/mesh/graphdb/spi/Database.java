@@ -118,17 +118,7 @@ public interface Database {
 	 *            handler that is invoked within the scope of the no-transaction.
 	 * @return
 	 */
-	<T> T noTrx(TxHandler<T> txHandler);
-
-	/**
-	 * Asynchronously execute the trxHandler within the scope of a non transaction.
-	 * 
-	 * @param trxHandler
-	 * @return
-	 * @deprecated Use {@link #asyncNoTrxExperimental(TxHandler)} instead
-	 */
-	@Deprecated
-	<T> Single<T> asyncNoTrx(TxHandler<T> trxHandler);
+	<T> T noTx(TxHandler<T> txHandler);
 
 	/**
 	 * Asynchronously execute the trxHandler within the scope of a non transaction. Experimental implementation. This version will use RxJava schedulers to
@@ -137,7 +127,7 @@ public interface Database {
 	 * @param trxHandler
 	 * @return
 	 */
-	<T> Single<T> asyncNoTrxExperimental(TxHandler<Single<T>> trxHandler);
+	<T> Single<T> asyncNoTx(TxHandler<Single<T>> trxHandler);
 
 	/**
 	 * Initialize the database and store the settings.

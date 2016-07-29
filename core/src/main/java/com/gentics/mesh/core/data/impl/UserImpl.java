@@ -319,7 +319,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			}
 		}
 		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrx(() -> hasPermission(vertex, permission));
+		return db.asyncNoTx(() -> Single.just(hasPermission(vertex, permission)));
 	}
 
 	/**

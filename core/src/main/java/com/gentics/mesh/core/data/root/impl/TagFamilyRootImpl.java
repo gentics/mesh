@@ -108,7 +108,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	public Single<TagFamily> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 

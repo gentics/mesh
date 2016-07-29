@@ -38,7 +38,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM).flatMap(tag -> {
@@ -77,9 +77,9 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getTagFamily(ac, tagFamilyUuid).create(ac).flatMap(tag -> {
-				return db.noTrx(() -> {
+				return db.noTx(() -> {
 					// created.reload();
 					return tag.transformToRest(ac, 0);
 				});

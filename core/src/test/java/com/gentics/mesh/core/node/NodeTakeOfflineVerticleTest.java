@@ -43,7 +43,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 	@Test
 	public void testTakeNodeOffline() {
 
-		String nodeUuid = db.noTrx(() -> {
+		String nodeUuid = db.noTx(() -> {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
@@ -205,8 +205,8 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testTakeOfflineLastLanguageWithOnlineChild() {
-		String newsUuid = db.noTrx(() -> folder("news").getUuid());
-		String news2015Uuid = db.noTrx(() -> folder("2015").getUuid());
+		String newsUuid = db.noTx(() -> folder("news").getUuid());
+		String news2015Uuid = db.noTx(() -> folder("2015").getUuid());
 
 		call(() -> getClient().publishNode(PROJECT_NAME, newsUuid));
 		call(() -> getClient().publishNode(PROJECT_NAME, news2015Uuid));
@@ -258,7 +258,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 	public void testTakeNodeOfflineConsistency() {
 
 		//1. Publish /news  & /news/2015
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			System.out.println(project().getBaseNode().getUuid());
 			System.out.println(folder("news").getUuid());
 			System.out.println(folder("2015").getUuid());
@@ -266,7 +266,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 		});
 
 		// 2. Take folder /news offline - This should fail since folder /news/2015 is still published
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			// 1. Take folder offline
 			Node node = folder("news");
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, node.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published");
@@ -274,7 +274,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 		});
 
 		//3. Take sub nodes offline
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new PublishParameters().setRecursive(false)));
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new PublishParameters().setRecursive(true)));
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, folder("2014").getUuid(), new PublishParameters().setRecursive(true)));
@@ -282,7 +282,7 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 		});
 
 		// 4. Take folder /news offline - It should work since all child nodes have been taken offline
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			// 1. Take folder offline
 			Node node = folder("news");
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, node.getUuid()));

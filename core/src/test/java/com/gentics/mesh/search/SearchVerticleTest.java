@@ -85,16 +85,16 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 		}
 
 		// Make sure the document was added to the index.
-		Map<String, Object> map = searchProvider.getDocument("user", "user", db.noTrx(() -> user().getUuid())).toBlocking().single();
+		Map<String, Object> map = searchProvider.getDocument("user", "user", db.noTx(() -> user().getUuid())).toBlocking().single();
 		assertNotNull("The user document should be stored within the index since we invoked a full index but it could not be found.", map);
-		assertEquals(db.noTrx(() -> user().getUuid()), map.get("uuid"));
+		assertEquals(db.noTx(() -> user().getUuid()), map.get("uuid"));
 
 		for (IndexHandler handler : registry.getHandlers()) {
 			handler.clearIndex().await();
 		}
 
 		// Make sure the document is no longer stored within the search index.
-		map = searchProvider.getDocument("user", "user", db.noTrx(() -> user().getUuid())).toBlocking().single();
+		map = searchProvider.getDocument("user", "user", db.noTx(() -> user().getUuid())).toBlocking().single();
 		assertNull("The user document should no longer be part of the search index.", map);
 
 	}

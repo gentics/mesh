@@ -22,7 +22,7 @@ public class UtilityHandler extends AbstractHandler {
 	 */
 	public void handleResolveLinks(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			String projectName = ac.getParameter("project");
 			if (projectName == null) {
 				projectName = "project";

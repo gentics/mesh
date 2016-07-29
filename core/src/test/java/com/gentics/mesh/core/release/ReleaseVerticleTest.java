@@ -238,7 +238,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testCreateWithConflictingName3() throws Exception {
 		String releaseName = "New Release";
 		String newProjectName = "otherproject";
-		String projectName = db.noTrx(() -> project().getName());
+		String projectName = db.noTx(() -> project().getName());
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(releaseName);
 

@@ -163,7 +163,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_missing_name");
 		}
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			if (!requestUser.hasPermissionSync(ac, boot.projectRoot(), CREATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid());
 			}

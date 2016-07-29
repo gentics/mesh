@@ -158,7 +158,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		request.setUsername("testuser42a");
 		request.setPassword("test1234");
 		request.setEmailAddress(email);
-		request.setGroupUuid(db.noTrx(() -> group().getUuid()));
+		request.setGroupUuid(db.noTx(() -> group().getUuid()));
 
 		Future<UserResponse> future = getClient().createUser(request);
 		latchFor(future);
@@ -174,7 +174,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSearchUserForGroup() throws InterruptedException, JSONException {
 
 		String username = "extrauser42a";
-		String groupName = db.noTrx(() -> group().getName());
+		String groupName = db.noTx(() -> group().getName());
 		try (NoTx noTx = db.noTx()) {
 			createUser(username);
 		}
@@ -297,7 +297,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testSearchUserWithPerPageZero() throws InterruptedException, JSONException {
 
-		String groupName = db.noTrx(() -> group().getName());
+		String groupName = db.noTx(() -> group().getName());
 		String username = "extrauser42a";
 		try (NoTx noTx = db.noTx()) {
 			createUser(username);

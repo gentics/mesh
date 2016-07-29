@@ -60,7 +60,7 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	 * @return
 	 */
 	private Single<User> getUserByJWT(User u) {
-		return db.asyncNoTrxExperimental(() -> {
+		return db.asyncNoTx(() -> {
 			JsonObject authInfo = u.principal();
 			String userUuid = authInfo.getString(USERID_FIELD_NAME);
 			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);

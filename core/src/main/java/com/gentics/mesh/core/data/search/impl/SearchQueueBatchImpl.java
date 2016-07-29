@@ -177,7 +177,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		});
 
 		// 2. Process the batch
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			return removedBatch.process().doOnError(error -> {
 				// Add the batch back to the queue when an error occurs
 				db.tx(() -> {

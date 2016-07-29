@@ -91,7 +91,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 					fail(message, "Migration for schema {" + schemaUuid + "} is already running");
 					return;
 				} else {
-					db.noTrx(() -> {
+					db.noTx(() -> {
 						Project project = boot.projectRoot().findByUuidSync(projectUuid);
 						if (project == null) {
 							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
@@ -158,7 +158,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 				if (isRunning(statusMBeanName)) {
 					message.fail(0, "Migration for microschema " + microschemaUuid + " is already running");
 				} else {
-					db.noTrx(() -> {
+					db.noTx(() -> {
 						Project project = boot.projectRoot().findByUuidSync(projectUuid);
 						if (project == null) {
 							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
@@ -210,7 +210,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 				log.debug("Release migration for release {" + releaseUuid + "} was requested");
 			}
 
-			Throwable error = db.noTrx(() -> {
+			Throwable error = db.noTx(() -> {
 				try {
 					Project project = boot.projectRoot().findByUuidSync(projectUuid);
 					if (project == null) {

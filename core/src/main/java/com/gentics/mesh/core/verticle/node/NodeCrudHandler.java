@@ -54,7 +54,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(node -> {
 				if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
 					throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
@@ -90,7 +90,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handleDeleteLanguage(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(node -> {
 				// TODO Don't we need a trx here?!
 
@@ -121,7 +121,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(toUuid, "toUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			// Load the node that should be moved
 
@@ -139,7 +139,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	public void handleNavigation(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToNavigation(ac);
 			}).flatMap(x -> x);
@@ -149,7 +149,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleReadChildren(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			NodeParameters nodeParams = ac.getNodeParameters();
 			PagingParameters pagingParams = ac.getPagingParameters();
 			VersioningParameters versionParams = ac.getVersioningParameters();
@@ -168,7 +168,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Tag> tagPage = node.getTags(ac.getRelease(null), ac.getPagingParameters());
@@ -184,7 +184,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
 			Single<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -220,7 +220,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
@@ -256,7 +256,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToPublishStatus(ac);
 			}).flatMap(x -> x);
@@ -272,10 +272,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handlePublish(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
 				return node.publish(ac).andThen(Single.defer(() -> {
-					return db.noTrx(() -> {
+					return db.noTx(() -> {
 						node.reload();
 						return node.transformToPublishStatus(ac);
 					});
@@ -293,10 +293,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handleTakeOffline(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
 				return node.takeOffline(ac).andThen(Single.defer(() -> {
-					return db.noTrx(() -> {
+					return db.noTx(() -> {
 						node.reload();
 						return node.transformToPublishStatus(ac);
 					});
@@ -314,7 +314,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToPublishStatus(ac, languageTag);
 			}).flatMap(x -> x);
@@ -330,10 +330,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
 				return node.publish(ac, languageTag).andThen(Single.defer(() -> {
-					return db.noTrx(() -> {
+					return db.noTx(() -> {
 						node.reload();
 						return node.transformToPublishStatus(ac, languageTag);
 					});
@@ -351,10 +351,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
 				return node.takeOffline(ac, languageTag).toSingle(() -> {
-					return db.noTrx(() -> {
+					return db.noTx(() -> {
 						node.reload();
 						return node.transformToPublishStatus(ac, languageTag);
 					});
@@ -365,7 +365,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	protected void readElement(InternalActionContext ac, String uuid, TxHandler<RootVertex<?>> handler) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			RootVertex<?> root = handler.call();
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			return root.loadObjectByUuid(ac, uuid, requiredPermission).flatMap(node -> {

@@ -10,7 +10,7 @@ public class GraphRelationships {
 
 	public static void init(Database db) {
 
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			db.addEdgeIndexSource(ASSIGNED_TO_ROLE);
 			db.addEdgeType(HAS_SEARCH_QUEUE_ROOT);
 			db.addEdgeType(HAS_PROJECT);

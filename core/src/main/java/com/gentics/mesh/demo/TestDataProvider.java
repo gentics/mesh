@@ -114,7 +114,7 @@ public class TestDataProvider {
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		long start = System.currentTimeMillis();
 
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			bootstrapInitializer.initMandatoryData();
 			schemaContainers.clear();
 			microschemaContainers.clear();
@@ -159,7 +159,7 @@ public class TestDataProvider {
 	}
 
 	private void updatePermissions() {
-		db.noTrx(() -> {
+		db.noTx(() -> {
 			Role role = userInfo.getRole();
 			for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;

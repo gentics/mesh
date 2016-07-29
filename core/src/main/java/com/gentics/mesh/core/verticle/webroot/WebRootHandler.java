@@ -57,7 +57,7 @@ public class WebRootHandler {
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 
 			// Load all nodes for the given path
 			Single<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);

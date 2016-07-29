@@ -67,7 +67,7 @@ public class BinaryFieldVerticleTest extends AbstractFieldVerticleTest {
 	@Override
 	public void testUpdateSameValue() {
 		//1. Upload a binary field
-		String uuid = db.noTrx(() -> folder("2015").getUuid());
+		String uuid = db.noTx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
 
@@ -87,7 +87,7 @@ public class BinaryFieldVerticleTest extends AbstractFieldVerticleTest {
 	public void testUpdateSetNull() {
 
 		//1. Upload a binary field
-		String uuid = db.noTrx(() -> folder("2015").getUuid());
+		String uuid = db.noTx(() -> folder("2015").getUuid());
 		String filename = "filename.txt";
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, filename, "application/binary"));
@@ -120,7 +120,7 @@ public class BinaryFieldVerticleTest extends AbstractFieldVerticleTest {
 	@Override
 	public void testUpdateSetEmpty() {
 		//1. Upload a binary field
-		String uuid = db.noTrx(() -> folder("2015").getUuid());
+		String uuid = db.noTx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
 
@@ -137,7 +137,7 @@ public class BinaryFieldVerticleTest extends AbstractFieldVerticleTest {
 	@Test
 	public void testUpdateSetEmptyFilename() {
 		//1. Upload a binary field
-		String uuid = db.noTrx(() -> folder("2015").getUuid());
+		String uuid = db.noTx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
 

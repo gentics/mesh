@@ -117,7 +117,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 			throw error(BAD_REQUEST, "release_missing_name");
 		}
 
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			Project project = getProject();
 			String projectName = project.getName();
 			String projectUuid = project.getUuid();

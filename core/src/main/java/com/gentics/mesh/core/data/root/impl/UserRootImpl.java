@@ -139,7 +139,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 				throw error(BAD_REQUEST, "user_missing_username");
 			}
 			String groupUuid = requestModel.getGroupUuid();
-			User createdUser = db.noTrx(() -> {
+			User createdUser = db.noTx(() -> {
 				String userName = requestModel.getUsername();
 				User conflictingUser = findByUsername(userName);
 				if (conflictingUser != null) {

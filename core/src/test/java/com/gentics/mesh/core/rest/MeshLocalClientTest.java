@@ -35,8 +35,8 @@ public class MeshLocalClientTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testClientParameterHandling() {
-		String newsNodeUuid = db.noTrx(() -> folder("news").getUuid());
-		MeshAuthUser user = db.noTrx(() -> {
+		String newsNodeUuid = db.noTx(() -> folder("news").getUuid());
+		MeshAuthUser user = db.noTx(() -> {
 			return MeshRoot.getInstance().getUserRoot().findMeshAuthUserByUsername(user().getUsername());
 		});
 		client.setUser(user);

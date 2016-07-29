@@ -2,6 +2,7 @@ package com.gentics.mesh.graphdb;
 
 import com.gentics.mesh.graphdb.ferma.DelegatingFramedTransactionalOrientGraph;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.typeresolvers.TypeResolver;

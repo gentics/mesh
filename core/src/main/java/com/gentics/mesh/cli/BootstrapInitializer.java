@@ -249,7 +249,7 @@ public class BootstrapInitializer {
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			initProjects();
 			return null;
 		}).toBlocking().value();

@@ -41,7 +41,7 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 	
 	@Test
 	public void testReadSingleNode() {
-		String uuid = db.noTrx(() -> folder("news").getUuid());
+		String uuid = db.noTx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.read-by-uuid", 200, (step) -> {
 			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new PagingParameters().setPerPage(100)));
 		});
@@ -49,7 +49,7 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testCreatePerformance() throws Exception {
-		String uuid = db.noTrx(() -> folder("news").getUuid());
+		String uuid = db.noTx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.create", 200, (step) -> {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setSchema(new SchemaReference().setName("content"));

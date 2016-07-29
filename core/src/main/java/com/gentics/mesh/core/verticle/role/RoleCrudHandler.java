@@ -57,14 +57,14 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
 			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
 			return boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).flatMap(role -> {
-				return db.noTrx(() -> {
+				return db.noTx(() -> {
 					// 2. Resolve the path to element that is targeted
 					return MeshRoot.getInstance().resolvePathToElement(pathToElement).flatMap(targetElement -> {
 						if (targetElement == null) {
@@ -84,7 +84,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	}
 
 	public void handlePermissionUpdate(InternalActionContext ac, String roleUuid, String pathToElement) {
-		db.asyncNoTrxExperimental(() -> {
+		db.asyncNoTx(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
@@ -107,7 +107,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 				}
 
-				return db.noTrx(() -> {
+				return db.noTx(() -> {
 					RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 
 					// Prepare the sets for revoke and grant actions

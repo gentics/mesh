@@ -245,7 +245,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testRepublishUnchanged() {
-		String nodeUuid = db.noTrx(() -> folder("2015").getUuid());
+		String nodeUuid = db.noTx(() -> folder("2015").getUuid());
 		PublishStatusResponse statusResponse = call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
 
@@ -259,11 +259,11 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 	@Test
 	public void testMoveConsistency() {
 		// 1. Take the target folder offline
-		String newsFolderUuid = db.noTrx(() -> folder("news").getUuid());
+		String newsFolderUuid = db.noTx(() -> folder("news").getUuid());
 		call(() -> getClient().takeNodeOffline(PROJECT_NAME, newsFolderUuid, new PublishParameters().setRecursive(true)));
 
 		// 2. Move the published node into the offline target node
-		String publishedNode = db.noTrx(() -> content("concorde").getUuid());
+		String publishedNode = db.noTx(() -> content("concorde").getUuid());
 		call(() -> getClient().moveNode(PROJECT_NAME, publishedNode, newsFolderUuid), BAD_REQUEST, "node_error_parent_containers_not_published", newsFolderUuid);
 	}
 
@@ -365,21 +365,21 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testPublishInOfflineContainer() {
-		String nodeUuid = db.noTrx(() -> folder("2015").getUuid());
+		String nodeUuid = db.noTx(() -> folder("2015").getUuid());
 
 		// 1. Take a node subtree offline
 		call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
 
 		// 2. Try to publish a node from within that subtree structure
-		String contentUuid = db.noTrx(() -> content("news_2015").getUuid());
+		String contentUuid = db.noTx(() -> content("news_2015").getUuid());
 		call(() -> getClient().publishNode(PROJECT_NAME, contentUuid), BAD_REQUEST, "node_error_parent_containers_not_published", nodeUuid);
 
 	}
 
 	@Test
 	public void testPublishRecursively() {
-		String nodeUuid = db.noTrx(() -> project().getBaseNode().getUuid());
-		String contentUuid = db.noTrx(() -> content("news_2015").getUuid());
+		String nodeUuid = db.noTx(() -> project().getBaseNode().getUuid());
+		String contentUuid = db.noTx(() -> content("news_2015").getUuid());
 
 		// 1. Check initial status
 		assertPublishStatus("Node should be published.", nodeUuid, true);
@@ -398,8 +398,8 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testPublishNoRecursion() {
-		String nodeUuid = db.noTrx(() -> project().getBaseNode().getUuid());
-		String contentUuid = db.noTrx(() -> content("news_2015").getUuid());
+		String nodeUuid = db.noTx(() -> project().getBaseNode().getUuid());
+		String contentUuid = db.noTx(() -> content("news_2015").getUuid());
 
 		// 1. Check initial status
 		assertPublishStatus("Node should be published.", nodeUuid, true);

@@ -34,7 +34,7 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String roleName = "rolename42a";
-		createRole(roleName, db.noTrx(() -> group().getUuid()));
+		createRole(roleName, db.noTx(() -> group().getUuid()));
 
 		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
 		latchFor(searchFuture);
@@ -46,7 +46,7 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String roleName = "rolename42a";
-		RoleResponse role = createRole(roleName, db.noTrx(() -> group().getUuid()));
+		RoleResponse role = createRole(roleName, db.noTx(() -> group().getUuid()));
 
 		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
 		latchFor(searchFuture);
@@ -66,7 +66,7 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		String roleName = "rolename42a";
-		RoleResponse role = createRole(roleName, db.noTrx(() -> group().getUuid()));
+		RoleResponse role = createRole(roleName, db.noTx(() -> group().getUuid()));
 
 		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
 		latchFor(searchFuture);

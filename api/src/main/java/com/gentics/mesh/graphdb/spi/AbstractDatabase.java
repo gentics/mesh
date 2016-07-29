@@ -69,7 +69,7 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> T noTrx(TxHandler<T> txHandler) {
+	public <T> T noTx(TxHandler<T> txHandler) {
 		try (NoTx noTx = noTx()) {
 			T result = txHandler.call();
 			return result;
@@ -79,20 +79,20 @@ public abstract class AbstractDatabase implements Database {
 		}
 	}
 
-	@Override
-	public <T> Single<T> asyncNoTrx(TxHandler<T> txHandler) {
-		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
-		Single<T> obs = Single.create(sub -> {
-			try {
-				T result = noTrx(txHandler);
-				sub.onSuccess(result);
-			} catch (Exception e) {
-				sub.onError(e);
-			}
-
-		});
-		return obs.observeOn(scheduler);
-	}
+//	@Override
+//	public <T> Single<T> asyncNoTrx(TxHandler<T> txHandler) {
+//		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
+//		Single<T> obs = Single.create(sub -> {
+//			try {
+//				T result = noTx(txHandler);
+//				sub.onSuccess(result);
+//			} catch (Exception e) {
+//				sub.onError(e);
+//			}
+//
+//		});
+//		return obs.observeOn(scheduler);
+//	}
 
 	//	@Override
 	//	public <T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler) {
@@ -125,7 +125,7 @@ public abstract class AbstractDatabase implements Database {
 	//	
 
 	@Override
-	public <T> Single<T> asyncNoTrxExperimental(TxHandler<Single<T>> trxHandler) {
+	public <T> Single<T> asyncNoTx(TxHandler<Single<T>> trxHandler) {
 		return Single.create(sub -> {
 			Mesh.vertx().executeBlocking(bc -> {
 				try (NoTx noTx = noTx()) {

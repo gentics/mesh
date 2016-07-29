@@ -139,7 +139,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public Single<Tag> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		return db.noTrx(() -> {
+		return db.noTx(() -> {
 			Project project = ac.getProject();
 			TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 			String tagName = requestModel.getFields().getName();

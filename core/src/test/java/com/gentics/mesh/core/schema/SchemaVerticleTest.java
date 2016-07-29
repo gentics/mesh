@@ -224,9 +224,9 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		String uuid = db.noTrx(() -> schemaContainer("content").getUuid());
+		String uuid = db.noTx(() -> schemaContainer("content").getUuid());
 
-		Future<Schema> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTrx(() -> role().getUuid())));
+		Future<Schema> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTx(() -> role().getUuid())));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull(future.result().getRolePerms());
