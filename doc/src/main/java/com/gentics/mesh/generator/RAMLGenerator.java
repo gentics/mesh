@@ -1,6 +1,7 @@
 package com.gentics.mesh.generator;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,9 +46,14 @@ import io.vertx.ext.web.Router;
 
 public class RAMLGenerator {
 
-	Raml raml = new Raml();
+	private Raml raml = new Raml();
+
+	private static File outputFolder = new File("target", "api");
 
 	public static void main(String[] args) throws Exception {
+		if (outputFolder.exists()) {
+			FileUtils.deleteDirectory(outputFolder);
+		}
 		new RAMLGenerator().generator();
 	}
 
@@ -65,15 +71,14 @@ public class RAMLGenerator {
 
 		RamlEmitter emitter = new RamlEmitter();
 		String dumpFromRaml = emitter.dump(raml);
-		FileUtils.writeStringToFile(new File("api.raml"), dumpFromRaml);
-		System.out.println(dumpFromRaml);
+		writeJson("api.raml", dumpFromRaml);
 	}
 
-	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractWebVerticle vericle) {
+	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractWebVerticle vericle) throws IOException {
 
 		Resource verticleResource = new Resource();
 		for (Endpoint endpoint : vericle.getEndpoints()) {
-
+			String fullPath = "api/v1" + basePath + "/" + vericle.getBasePath() + endpoint.getRamlPath();
 			Action action = new Action();
 			action.setIs(Arrays.asList(endpoint.getTraits()));
 			action.setDisplayName(endpoint.getDisplayName());
@@ -88,18 +93,31 @@ public class RAMLGenerator {
 				response.setBody(map);
 
 				MimeType mimeType = new MimeType();
-				mimeType.setExample(JsonUtil.toJson(entry.getValue()));
+				String json = JsonUtil.toJson(entry.getValue());
+				mimeType.setExample(json);
 				map.put("application/json", mimeType);
-				action.getResponses().put(String.valueOf(entry.getKey()), response);
+				String key = String.valueOf(entry.getKey());
+				action.getResponses().put(key, response);
+
+				//write example response to dedicated file
+				String filename = "response-" + fullPath + "#" + key + "-" + entry.getValue().getClass().getSimpleName() + ".json";
+				filename = filename.replaceAll("\\/", "-");
+				writeJson(filename, json);
 			}
 
 			// Add request example
 			if (endpoint.getExampleRequest() != null) {
 				HashMap<String, MimeType> bodyMap = new HashMap<>();
 				MimeType mimeType = new MimeType();
-				mimeType.setExample(JsonUtil.toJson(endpoint.getExampleRequest()));
+				String json = JsonUtil.toJson(endpoint.getExampleRequest());
+				mimeType.setExample(json);
 				bodyMap.put("application/json", mimeType);
 				action.setBody(bodyMap);
+
+				//write example request to dedicated file
+				String filename = "request-" + fullPath + "#" + endpoint.getExampleRequest().getClass().getSimpleName() + ".json";
+				filename = filename.replaceAll("\\/", "-");
+				writeJson(filename, json);
 			}
 
 			String path = endpoint.getRamlPath();
@@ -121,6 +139,10 @@ public class RAMLGenerator {
 		//verticleResource.setDisplayName("D:" + System.currentTimeMillis());
 		resources.put(basePath + "/" + vericle.getBasePath(), verticleResource);
 
+	}
+
+	private void writeJson(String filename, String json) throws IOException {
+		FileUtils.writeStringToFile(new File(outputFolder, filename), json);
 	}
 
 	/**

@@ -138,7 +138,7 @@ public class SchemaExamples extends AbstractExamples {
 		return model;
 	}
 
-	public SchemaReferenceList getSchemaReferenceList() {
+	public SchemaReferenceList createSchemaReferenceList() {
 		SchemaReferenceList schemas = new SchemaReferenceList();
 		schemas.add(getSchemaReference("content"));
 		schemas.add(getSchemaReference("folder"));

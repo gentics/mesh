@@ -102,8 +102,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Override
 	public void testDeleteByUUIDMultithreaded() throws Exception {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Test

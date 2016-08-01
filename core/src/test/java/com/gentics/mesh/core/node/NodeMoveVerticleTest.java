@@ -23,13 +23,14 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.Future;
 
-public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
+public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private NodeVerticle verticle;
@@ -43,110 +44,122 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
-		String releaseUuid = project().getLatestRelease().getUuid();
-		Node sourceNode = folder("news");
-		Node targetNode = content("concorde");
-		String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
-		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
-		assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
+		try (NoTx noTx = db.noTx()) {
+			String releaseUuid = project().getLatestRelease().getUuid();
+			Node sourceNode = folder("news");
+			Node targetNode = content("concorde");
+			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
+		}
 	}
 
 	@Test
 	public void testMoveNodesSame() {
-		String releaseUuid = project().getLatestRelease().getUuid();
-		Node sourceNode = folder("news");
-		String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
-		assertNotEquals(sourceNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid());
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_move_error_same_nodes");
-		assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
+		try (NoTx noTx = db.noTx()) {
+			String releaseUuid = project().getLatestRelease().getUuid();
+			Node sourceNode = folder("news");
+			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
+			assertNotEquals(sourceNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid());
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "node_move_error_same_nodes");
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
+		}
 	}
 
 	@Test
 	public void testMoveNodeIntoChildNode() {
-		String releaseUuid = project().getLatestRelease().getUuid();
-		Node sourceNode = folder("news");
-		Node targetNode = folder("2015");
-		String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
-		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+		try (NoTx noTx = db.noTx()) {
+			String releaseUuid = project().getLatestRelease().getUuid();
+			Node sourceNode = folder("news");
+			Node targetNode = folder("2015");
+			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
 
-		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_move_error_not_allowed_to_move_node_into_one_of_its_children");
+			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "node_move_error_not_allowed_to_move_node_into_one_of_its_children");
 
-		assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode(releaseUuid).getUuid());
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode(releaseUuid).getUuid());
+		}
 	}
 
 	@Test
 	public void testMoveNodeWithoutPerm() {
-		String releaseUuid = project().getLatestRelease().getUuid();
-		Node sourceNode = folder("deals");
-		Node targetNode = folder("2015");
-		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-		role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
+		try (NoTx noTx = db.noTx()) {
+			String releaseUuid = project().getLatestRelease().getUuid();
+			Node sourceNode = folder("deals");
+			Node targetNode = folder("2015");
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
 
-		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", sourceNode.getUuid());
-		assertNotEquals("The source node should not have been moved.", targetNode.getUuid(), folder("deals").getParentNode(releaseUuid).getUuid());
+			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", sourceNode.getUuid());
+			assertNotEquals("The source node should not have been moved.", targetNode.getUuid(),
+					folder("deals").getParentNode(releaseUuid).getUuid());
+		}
 	}
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		String releaseUuid = project().getLatestRelease().getUuid();
-		Node sourceNode = folder("deals");
-		Node targetNode = folder("2015");
-		String oldSourceParentId = sourceNode.getParentNode(releaseUuid).getUuid();
-		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "node_moved_to", sourceNode.getUuid(), targetNode.getUuid());
+		try (NoTx noTx = db.noTx()) {
+			String releaseUuid = project().getLatestRelease().getUuid();
+			Node sourceNode = folder("deals");
+			Node targetNode = folder("2015");
+			String oldSourceParentId = sourceNode.getParentNode(releaseUuid).getUuid();
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			expectResponseMessage(future, "node_moved_to", sourceNode.getUuid(), targetNode.getUuid());
 
-		sourceNode.reload();
-		try (Tx tx = db.tx()) {
-			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId, sourceNode.getParentNode(releaseUuid).getUuid());
-			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
-					targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			assertEquals("A store event for each language variation per version should occure",4, searchProvider.getStoreEvents().size());
+			sourceNode.reload();
+			try (Tx tx = db.tx()) {
+				assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
+						sourceNode.getParentNode(releaseUuid).getUuid());
+				assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
+						targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+				assertEquals("A store event for each language variation per version should occure", 4, searchProvider.getStoreEvents().size());
+			}
+			// TODO assert entries
 		}
-		// TODO assert entries
 	}
 
 	@Test
 	public void testMoveInRelease() {
-		Project project = project();
-		Node movedNode = folder("deals");
-		Node targetNode = folder("2015");
+		try (NoTx noTx = db.noTx()) {
+			Project project = project();
+			Node movedNode = folder("deals");
+			Node targetNode = folder("2015");
 
-		// get original parent uuid
-		String oldParentUuid = call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft()))
-						.getParentNode().getUuid();
+			// 1. Get original parent uuid
+			String oldParentUuid = call(() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft()))
+					.getParentNode().getUuid();
 
-		Release initialRelease = project.getInitialRelease();
-		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			Release initialRelease = project.getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
-		NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialRelease.getName(), newRelease.getName());
-		assertThat(migrated.getParentNode()).as("Migrated node parent").isNotNull();
-		assertThat(migrated.getParentNode().getUuid()).as("Migrated node parent").isEqualTo(oldParentUuid);
+			NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialRelease.getName(), newRelease.getName());
+			assertThat(migrated.getParentNode()).as("Migrated node parent").isNotNull();
+			assertThat(migrated.getParentNode().getUuid()).as("Migrated node parent").isEqualTo(oldParentUuid);
 
-		// move in initial release
-		call(() -> getClient().moveNode(PROJECT_NAME, movedNode.getUuid(), targetNode.getUuid(),
-				new VersioningParameters().setRelease(initialRelease.getName())));
+			// 2. Move in initial release
+			call(() -> getClient().moveNode(PROJECT_NAME, movedNode.getUuid(), targetNode.getUuid(),
+					new VersioningParameters().setRelease(initialRelease.getName())));
 
-		// old parent for new release
-		assertThat(call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft()))
-						.getParentNode().getUuid()).as("Parent Uuid in new release").isEqualTo(oldParentUuid);
+			// 3. Assert that the node still uses the old parent for the new release
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft())).getParentNode()
+					.getUuid()).as("Parent Uuid in new release").isEqualTo(oldParentUuid);
 
-		// new parent for initial release
-		assertThat(call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().setRelease(initialRelease.getName()).draft()))
-						.getParentNode().getUuid()).as("Parent Uuid in initial release").isEqualTo(targetNode.getUuid());
+			// 4. Assert that the node uses the new parent for the initial release
+			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(),
+					new VersioningParameters().setRelease(initialRelease.getName()).draft())).getParentNode().getUuid())
+							.as("Parent Uuid in initial release").isEqualTo(targetNode.getUuid());
+		}
 	}
 }

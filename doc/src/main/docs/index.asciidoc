@@ -16,7 +16,7 @@ Gentics Mesh will also provide you a lot of powerful tools build around and for 
  * Tagging system
  * Schema system for documents
  * Clustering (in development)
- * Versioning of your documents (in development)
+ * Versioning of your documents
 
 == Changelog
 
@@ -1059,8 +1059,6 @@ include::json/updateschema.json[]
 include::json/updatemicroschema.json[]
 ----
 
-=== Description
-
 Each change may also provide a migration script. The migration script can be used to modify nodes that were affected by the migration.
 
 Typical usecases for migration scripts are for example dynamic field removal or even custom reformatting of field data.
@@ -1079,6 +1077,82 @@ Sending a schema to ```/api/v1/schemas:uuid``` using the ```PUT``` method will c
 
 Please note that by default conflicting data will be removed and this action can only be avoided by specifying a custom migration script.
 
+=== Versioning
+
+Versioning within Gentics Mesh only applies to nodes and their referenced fields. Other elements such as Users, groups, roles are not versioned. 
+Various interactions have different effects for versioning in Mesh. Below is a list of actions which involve versioning.
+
+==== Node Creation
+
+Once a node has been created the initial start version 0.1 will be assigned to it.
+
+==== Node Updates
+
+Updating a node may create version 0.2 if changes have been detected within the posted request fields. It is not required to handle locks in Gentics Mesh.
+Instead it is required to specify the version in the update request which identifies the node version on which the update request was based upon.
+Mesh will check whether new versions have been created in the meanwhile. Long running edit operations or multiple concurrent editors may create additional versions.
+The detected changes will automatically compared in order to determine whether the current update request causes a conflict with a newer edit request.
+Mesh will return a response which contains information about the conflict in those cases. Other update operations which do not cause a conflict will be stored and the changed fields will be updated.
+The latest version which was created using a update request is called the draft version. Only a single draft version per language exists.
+
+==== Publishing Nodes
+
+Nodes can be published and taken offline. This is especially useful if you want to first work on a draft and review it and later publish it.
+Publishing a node just requires a ```PUT``` request on ```/api/v1/:projectName/nodes/:uuid/published``` or on ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published``` to publish a specific language. 
+Mesh will automatically create a new major version when publishing a node (e.g.: 1.0, 2.0). The the draft reference will also be updated to point to version 1.0.
+It is also possible to retrieve detailed information about the published status via a ```GET``` request on ```/api/v1/:/nodes/:uuid/published```.
+
+[source,json]
+----
+include::json/response-api-v1-:projectName-nodes-:uuid-published#200-PublishStatusResponse.json[]
+----
+
+==== Taking Nodes Offline
+
+A node can be taken offline  via a DELETE request on ```/api/v1/:projectName/nodes/:uuid/published```. Taking a node with version 1.0 offline will just change the node's publish state. Version 1.0 will still be available.
+
+====  Reading Nodes
+
+It is possible to load older version by specifying the ```?version``` parameter. Similarly the published version of a node can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
+
+==== Releases
+
+So far we learned that nodes can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Releases`. A release is very similar to branches in a versioning control system.
+
+Releases can be used to restructure your nodes and change the contents within a specific release without affecting a different release which provide a different structure/content.
+
+Typical usecases are:
+
+* Updating an existing installation to a new app version. The new app version has new schema versions. By creating a release and migrating the nodes to the new release (new schema versions), it is possible to serve content for both app versions. Each frontend app versions chooses the correct release for getting nodes.
+* Prepare new content (with possibly changed structure and tagging) while still serving the old content. E.g. the release "winter collection 2016" is currently online and served with the frontend app, while editors prepare new content and new structure for the release "spring collection 2016". The process of going live just means that the frontend app must be switched from the old release to the new release. Or the frontend app fetches content for the release alias "live" and going live just means to change the alias name to point to the "spring collection 2016"
+* Schema versions must be assigned to the release. Each project can have multiple releases. An initial release will automatically be created when creating a project.
+
+Most of the operations to nodes can be scoped to a specific release by adding the `?release=name` query parameter. If omitted the latest release release will be used to execute the operation.
+
+TIP: Implementations which use mesh should always reference a specific release. Otherwise the document structure could change without the implementation being aware of these changes. 
+
+==== Creating a Release
+
+A release requires a unique name. Existing nodes within the project will automatically be migrated into the release. Please note the node migration will be processed asynchronously and thus not all nodes may be directly accessible within the scope of the release.
+
+You can use the eventbus bridge or the dedicated ```/api/v1/admin/migrationStatus``` endpoint to query the migration status.
+
+==== Updating a Release
+
+Releases can be renamed and disabled. Additionally it is also possible to assign new schema versions to a release.
+All nodes which reference the release via the updated schema version will automatically be migrated to use the newer schema version.
+
+NOTE: It is note worthy that updating a schema will not automatically affect the release. Each schema update created a new schema version. This new version must first be assigned to the release.
+
+==== Moving Nodes
+
+Releases enable Gentics Mesh to setup multiple content project tree structures. Moving nodes can be scoped to a specific release using the ```?release``` request parameter. The project's initial release will be used to execute the move operation if no release has been selected. 
+
+==== Tagging Nodes
+
+Similar to moving nodes versioning also applies to tagging of nodes. The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release. 
+
+Note: Tags and tag families themself are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
 
 === Eventbus Bridge / Websocket
 

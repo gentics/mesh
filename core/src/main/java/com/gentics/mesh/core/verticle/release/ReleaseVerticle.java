@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 
 /**
@@ -41,7 +42,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.method(POST);
-		endpoint.description("Create a new release.");
+		endpoint.description("Create a new release and automatically invoke a node migration.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(versioningExamples.createReleaseCreateRequest("Winter 2016"));
 		endpoint.exampleResponse(201, versioningExamples.createReleaseResponse("Winter 2016"));
@@ -53,8 +54,9 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		readSchemas.path("/:uuid/schemas");
 		readSchemas.method(GET);
 		readSchemas.description("Load schemas that are assigned to the release and return a paged list response.");
+		readSchemas.addQueryParameters(PagingParameters.class);
 		readSchemas.produces(APPLICATION_JSON);
-		readSchemas.exampleResponse(200, schemaExamples.getSchemaReferenceList());
+		readSchemas.exampleResponse(200, schemaExamples.createSchemaReferenceList());
 		readSchemas.handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			crudHandler.handleGetSchemaVersions(InternalActionContext.create(rc), uuid);
@@ -65,7 +67,8 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		readMicroschemas.method(GET);
 		readMicroschemas.description("Load schemas that are assigned to the release and return a paged list response.");
 		readMicroschemas.produces(APPLICATION_JSON);
-		readMicroschemas.exampleResponse(200, microschemaExamples.getMicroschemaReferenceList());
+		readMicroschemas.exampleResponse(200, microschemaExamples.createMicroschemaReferenceList());
+		readMicroschemas.addQueryParameters(PagingParameters.class);
 		readMicroschemas.handler(rc -> {
 			String uuid = rc.request().getParam("uuid");
 			crudHandler.handleGetMicroschemaVersions(InternalActionContext.create(rc), uuid);
@@ -91,6 +94,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		readAll.method(GET);
 		readAll.description("Load multiple releases and return a paged list response.");
 		readAll.exampleResponse(200, versioningExamples.createReleaseListResponse());
+		readAll.addQueryParameters(PagingParameters.class);
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
@@ -104,8 +108,8 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		addSchema.description("Assign a schema version to the release.");
 		addSchema.consumes(APPLICATION_JSON);
 		addSchema.produces(APPLICATION_JSON);
-		addSchema.exampleRequest(schemaExamples.getSchemaReferenceList());
-		addSchema.exampleResponse(200, schemaExamples.getSchemaReferenceList());
+		addSchema.exampleRequest(schemaExamples.createSchemaReferenceList());
+		addSchema.exampleResponse(200, schemaExamples.createSchemaReferenceList());
 		addSchema.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			crudHandler.handleAssignSchemaVersion(InternalActionContext.create(rc), uuid);
@@ -117,8 +121,8 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		addMicroschema.description("Assign a microschema version to the release.");
 		addMicroschema.consumes(APPLICATION_JSON);
 		addMicroschema.produces(APPLICATION_JSON);
-		addMicroschema.exampleRequest(microschemaExamples.getMicroschemaReferenceList());
-		addMicroschema.exampleResponse(200, microschemaExamples.getMicroschemaReferenceList());
+		addMicroschema.exampleRequest(microschemaExamples.createMicroschemaReferenceList());
+		addMicroschema.exampleResponse(200, microschemaExamples.createMicroschemaReferenceList());
 		addMicroschema.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			crudHandler.handleAssignMicroschemaVersion(InternalActionContext.create(rc), uuid);

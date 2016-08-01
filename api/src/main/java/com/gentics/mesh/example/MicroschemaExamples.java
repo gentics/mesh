@@ -10,7 +10,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 public class MicroschemaExamples extends AbstractExamples {
 	
-	public  MicroschemaReferenceList getMicroschemaReferenceList() {
+	public  MicroschemaReferenceList createMicroschemaReferenceList() {
 		MicroschemaReferenceList microschemas = new MicroschemaReferenceList();
 		microschemas.add(getMicroschemaReference("vcard", 2));
 		microschemas.add(getMicroschemaReference("geolocation", 1));

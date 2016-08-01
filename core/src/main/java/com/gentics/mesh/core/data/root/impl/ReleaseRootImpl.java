@@ -126,7 +126,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 					Tuple<SearchQueueBatch, Release> tuple = db.tx(() -> {
 						requestUser.reload();
 
-						// check for uniqueness of release name (per project)
+						// Check for uniqueness of release name (per project)
 						Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class,
 								getUniqueNameKey(createRequest.getName()));
 						if (conflictingRelease != null) {
@@ -135,7 +135,6 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 						}
 
 						Release release = create(createRequest.getName(), requestUser);
-
 						NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft");
 
 						// Create index queue entries for creating indices

@@ -44,7 +44,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	public NodeVerticle() {
 		super("nodes");
-
 	}
 
 	@Override
@@ -245,6 +244,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Move the node into the target node.");
 		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.addQueryParameters(VersioningParameters.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -327,8 +327,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		});
 	}
 
-	// TODO filter by project name
-	// TODO filtering
 	private void addReadHandler() {
 		Endpoint readOne = createEndpoint();
 		readOne.path("/:uuid");
@@ -337,9 +335,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(200, nodeExamples.getNodeResponseWithAllFields());
 		readOne.addQueryParameters(VersioningParameters.class);
+		readOne.addQueryParameters(NodeParameters.class);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			// TODO move if clause back into verticle
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
@@ -360,7 +358,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	}
 
-	// TODO filter project name
 	private void addDeleteHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:uuid");
@@ -383,13 +380,16 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	// within the schema.
 	private void addUpdateHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.description("Update the node with the given uuid.");
+		endpoint.description("Update the node with the given uuid. It is mandatory to specify the version within the update request. "
+				+ "Mesh will automatically check for version conflicts and return a 409 error if a conflict has been detected. "
+				+ "Additional conflict checks for webrootpath conflicts will also be performed.");
 		endpoint.path("/:uuid");
 		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
 		endpoint.exampleResponse(200, nodeExamples.getNodeResponse2());
+		endpoint.exampleResponse(409, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -436,7 +436,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		// Language specific
 
 		Endpoint getLanguageRoute = createEndpoint();
-		getLanguageRoute.description("Return the published status for the given language of the node.");
+		getLanguageRoute.description("Return the publish status for the given language of the node.");
 		getLanguageRoute.path("/:uuid/languages/:languageTag/published");
 		getLanguageRoute.method(GET);
 		getLanguageRoute.produces(APPLICATION_JSON);
@@ -447,7 +447,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 		Endpoint putLanguageRoute = createEndpoint();
 		putLanguageRoute.path("/:uuid/languages/:languageTag/published").method(PUT).produces(APPLICATION_JSON);
-		putLanguageRoute.description("Publish the language of the node.");
+		putLanguageRoute.description("Publish the language of the node. This will automatically assign a new major version to the node and update the draft version to the published version.");
 		putLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
 		putLanguageRoute.produces(APPLICATION_JSON);
 		putLanguageRoute.handler(rc -> {

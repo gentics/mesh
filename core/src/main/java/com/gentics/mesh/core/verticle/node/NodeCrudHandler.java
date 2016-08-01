@@ -129,7 +129,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Single<Node> obsTargetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 
 			Single<Single<GenericMessageResponse>> obs = Single.zip(obsSourceNode, obsTargetNode, (sourceNode, targetNode) -> {
-				// TODO Update SQB
 				return sourceNode.moveTo(ac, targetNode).andThen(Single.just(message(ac, "node_moved_to", uuid, toUuid)));
 			});
 			return Single.merge(obs);

@@ -9,7 +9,7 @@
 		<!-- Include the raml files -->
 		<fileSet>
 			<outputDirectory>/</outputDirectory>
-			<directory>${basedir}/src/main/raml</directory>
+			<directory>${basedir}/target/api</directory>
 			<includes>
 				<include>**/*.raml</include>
 				<include>**/*.json</include>

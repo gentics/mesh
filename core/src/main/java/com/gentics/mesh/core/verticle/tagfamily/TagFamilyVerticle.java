@@ -132,7 +132,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		endpoint.path("/:tagFamilyUuid/tags/:uuid");
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.description("Remove the tag from the tag family");
+		endpoint.description("Remove the tag from the tag family.");
 		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -215,7 +215,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:uuid");
 		endpoint.method(PUT);
-		endpoint.description("Update the tagfamily with the given uuid.");
+		endpoint.description("Update the tag family with the given uuid.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
