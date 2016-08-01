@@ -30,6 +30,11 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	@Autowired
 	private TagFamilyCrudHandler tagFamilyCrudHandler;
 
+	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow the manipulation of tag families and tags.";
+	}
+
 	@Autowired
 	private TagCrudHandler tagCrudHandler;
 

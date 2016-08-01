@@ -33,6 +33,11 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow the manipulation of schemas.";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		addDiffHandler();
@@ -45,15 +50,15 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addChangesHandler() {
-//		Endpoint readChanges = createEndpoint();
-//		readChanges.path("/:schemaUuid/changes");
-//		readChanges.method(GET);
-//		readChanges.description("Return a list of changes ");
-//		readChanges.produces(APPLICATION_JSON);
-//		readChanges.exampleResponse(200, schemaExamples.)
-//		readChanges.handler(rc -> {
-//			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
-//		});
+		//		Endpoint readChanges = createEndpoint();
+		//		readChanges.path("/:schemaUuid/changes");
+		//		readChanges.method(GET);
+		//		readChanges.description("Return a list of changes ");
+		//		readChanges.produces(APPLICATION_JSON);
+		//		readChanges.exampleResponse(200, schemaExamples.)
+		//		readChanges.handler(rc -> {
+		//			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
+		//		});
 
 		Endpoint executeChanges = createEndpoint();
 		executeChanges.path("/:schemaUuid/changes");

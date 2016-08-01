@@ -55,6 +55,11 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Provides search endpoints which can be used to invoke global searches";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		addSearchEndpoints();

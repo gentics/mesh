@@ -153,7 +153,7 @@ Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
 Content-Type: application/json
 Accept: application/json
 
-include::{raml-json}/demo.NodeCreateRequest.json[]
+include::json/request/api/v1/:projectName/nodes/NodeCreateRequest.json[]
 ----
 
 *Update an existing node*
@@ -168,7 +168,7 @@ Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
 Content-Type: application/json
 Accept: application/json
 
-include::{raml-json}/demo.NodeUpdateRequest.json[]
+include::json/request/api/v1/:projectName/nodes/:uuid/NodeUpdateRequest.json[]
 ----
 
 *Add a tag to a node*
@@ -194,7 +194,7 @@ image:overview.png[]
 
 Users can log into Gentics Mesh in order to interact with other elements.
 
-Endpoint: ```/api/v1/users```
+Endpoint: ```/api/v1/users/:uuid```
 
 
 [options="header"]
@@ -221,7 +221,7 @@ Endpoint: ```/api/v1/users```
 
 [source,json]
 ----
-include::{raml-json}/UserResponse.example.json[]
+include::json/response/api/v1/users/:uuid/200/UserResponse.json[]
 ----
 
 === Groups
@@ -229,7 +229,7 @@ include::{raml-json}/UserResponse.example.json[]
 Groups are used to organize users. Roles can be assigned to groups. A user in a group with roles inherits those roles and the permissions that are bound to those roles.
 Groups can't be nested.
 
-Endpoint: ```/api/v1/groups```
+Endpoint: ```/api/v1/groups/:uuid```
 
 [options="header"]
 |======
@@ -249,7 +249,7 @@ Endpoint: ```/api/v1/groups```
 
 [source,json]
 ----
-include::{raml-json}/GroupResponse.example.json[]
+include::json/response/api/v1/groups/:uuid/200/GroupResponse.json[]
 ----
 
 === Roles
@@ -258,7 +258,7 @@ Roles are used to assign permissions to objects. A role can be assigned to multi
 Users can only assign permissions to roles to which they have access.
 Roles can't be nested.
 
-Endpoint: ```/api/v1/roles```
+Endpoint: ```/api/v1/roles/:uuid```
 
 [options="header"]
 |======
@@ -278,7 +278,7 @@ Endpoint: ```/api/v1/roles```
 
 [source,json]
 ----
-include::{raml-json}/RoleResponse.example.json[]
+include::json/response/api/v1/roles/:uuid/200/RoleResponse.json[]
 ----
 
 === Projects
@@ -286,7 +286,7 @@ include::{raml-json}/RoleResponse.example.json[]
 A project is the base element your content structure which includes tagfamilies and your node tree.
 Schemas can be assigned to projects in order to allow creation of nodes which use one of the assigned schemas.
 
-Endpoint: ```/api/v1/projects```
+Endpoint: ```/api/v1/projects/:uuid```
 
 [options="header"]
 |======
@@ -306,7 +306,7 @@ Endpoint: ```/api/v1/projects```
 
 [source,json]
 ----
-include::{raml-json}/ProjectResponse.example.json[]
+include::json/response/api/v1/projects/:uuid/200/ProjectResponse.json[]
 ----
 
 === Tag Families
@@ -314,7 +314,7 @@ include::{raml-json}/ProjectResponse.example.json[]
 Tag families are base elements for tags which are bound to single project.
 Tag families can't be nested.
 
-Endpoint: ```/api/v1/:YOURPROJECT/tagfamilies```
+Endpoint: ```/api/v1/:projectName/tagfamilies/:uuid```
 
 [options="header"]
 |======
@@ -334,7 +334,7 @@ Endpoint: ```/api/v1/:YOURPROJECT/tagfamilies```
 
 [source,json]
 ----
-include::{raml-json}/TagFamilyResponse.example.json[]
+include::json/response/api/v1/:projectName/tagFamilies/:uuid/200/TagFamilyResponse.json[]
 ----
 
 === Tags
@@ -362,7 +362,7 @@ Endpoint: ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags```
 
 [source,json]
 ----
-include::{raml-json}/TagResponse.example.json[]
+include::json/response/api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags/:uuid/200/TagResponse.json[]
 ----
 
 === Nodes
@@ -370,7 +370,10 @@ include::{raml-json}/TagResponse.example.json[]
 Nodes are the main structural building blocks for your content. You may create different schemas to create multiple types of nodes.
 Nodes can be hierarchically structured if the schema is allowing this. The type of a node is always defined by the assigned schema. Nodes can be tagged by any number of tags.
 
-Endpoint: ```/api/v1/:YOURPROJECT/nodes```
+NOTE: It is important to understand that a node is just a container for language variants. These language variants will store your fields. 
+You can query individual language variants by appending the ```?lang``` request parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
+
+Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=de,en&expand=field&version=draft&release=winter2016```
 
 
 [options="header"]
@@ -403,7 +406,7 @@ Endpoint: ```/api/v1/:YOURPROJECT/nodes```
 
 [source,json]
 ----
-include::{raml-json}/NodeResponse.example.json[]
+include::json/response/api/v1/:projectName/nodes/:uuid/200/NodeResponse.json[]
 ----
 
 ==== Query Parameters
@@ -420,7 +423,7 @@ include::{raml-json}/NodeResponse.example.json[]
 | role
 | The role query parameter may be used in order to add permission information related to the specified role to the response.
 This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role.
-Endpoint: ```/api/v1/:YOURPROJECT/nodes?role=:ROLE_UUID```
+Endpoint: ```/api/v1/:projectName/nodes?role=:roleUuid```
 
 | expand
 | A comma separated list of fields to expand on the node. When not set various fields may only contain element references.
@@ -428,6 +431,12 @@ It is possible to expand node fields.
 
 | expandAll
 | The ```expandAll``` query parameter is a boolean flag which can be used to expand all expandable fields.
+
+| release
+| The specific ```release``` to be used for loading the node.
+
+| version
+| The version of the node's language variant. E.g.: 0.1, 1.0, draft, published 
 
 |======
 
@@ -439,27 +448,28 @@ Depending on the used schema it may also be mandatory to add fields to the reque
 
 [source,json]
 ----
-include::{raml-json}/NodeCreateRequest.example.json[]
+include::json/request/api/v1/:projectName/nodes/NodeCreateRequest.json[]
 ----
+
+==== Updating
+
+It is mandatory to set the ```language``` and ```version``` parameter within the JSON request. Updating may fail if a segment path conflict was detected. The request could also fail if a unresolvable version conflict has been detected. See versioning for more information.
 
 === Schemas
 
 A schema defines the type and name of each field for a node. You can think of a schema as a blueprint for new nodes.
 
-Endpoint: ```/api/v1/schemas```
+Endpoint: ```/api/v1/schemas/:uuid```
 
 [source,json]
 ----
-include::{raml-json}/SchemaResponse.example.json[]
+include::json/response/api/v1/schemas/:uuid/200/SchemaModel.json[]
 ----
 
 ==== Configuration properties
 
 The following configuration properties may be specified:
 
-* **`binary`** Set to `true` to mark the schema as a binary schema. This will cause a file upload input to appear
-when creating/editing a node using this schema, and also add additional binary-specific properties to the response object
-of such nodes.
 * **`container`** Set to `true` to indicate that this schema can contain child nodes. This will cause the response
 object for such nodes to have a `childrenInfo` property.
 * **`displayField`** Used to specify which field (as defined in the "fields" list) should be considered the title for
@@ -549,7 +559,7 @@ Since the JSON standard does not have a special regex type, it would need to be 
 
 == Installation
 
-There is no dedicated installation procedure for mesh. You just http://getmesh.io/Download[download the mesh jar] file and start it using java.
+There is no dedicated installation procedure for Gentics Mesh. You just http://getmesh.io/Download[download the mesh jar] file and start it using Java.
 
 Oracle Java Runtime 1.8.0_40 or newer is required to run Gentics Mesh.
 
@@ -581,14 +591,13 @@ docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
 ----
 
 
-
 === System Requirements
 
  * Oracle Java Runtime (JRE) 8u60+
 
 === System Configuration
 
-The max open file limit on linux has to be raised on most linux systems since the embedded graph database and elasticsearch server often exceed the amount of concurrent open files.
+The max open file limit on Linux has to be raised on most Linux systems since the embedded graph database and elasticsearch server often exceed the amount of concurrent open files.
 
 Edit _/etc/security/limits.conf_ and add these two lines:
 
@@ -679,7 +688,7 @@ By default all specified directories are relative to the current working directo
 
 Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying graph database cache settings.
 
-== Concepts
+== Features
 
 === Permissions
 
@@ -1067,7 +1076,7 @@ It is also possible to split a single field value into values for two new fields
 The ```/api/v1/schemas/:uuid/diff``` and ```/api/v1/microschemas/:uuid/diff``` endpoints can be used to generate a list of changes by comparing the stored and posted schema.
 
 This list of changes can be modified and posted to ```/api/v1/schemas/:uuid/changes``` for schemas or ```/api/v1/microschemas/:uuid/changes``` for microschemas.
-The posted list of changes will be validated and stored when valid. A schema migration process will be stared which runs in the background.
+The posted list of changes will be validated and stored when valid. A schema migration process will be started which runs in the background.
 
 The https://github.com/sockjs[SockJS] compliant ```/api/v1/eventbus``` endpoint can be used to register to migration specific messages.
 
@@ -1079,61 +1088,86 @@ Please note that by default conflicting data will be removed and this action can
 
 === Versioning
 
-Versioning within Gentics Mesh only applies to nodes and their referenced fields. Other elements such as Users, groups, roles are not versioned. 
+In order to grasp the concept of versioning in Gentics Mesh it is important to remember that Nodes are containers for language variants. The language variant of a node contains the fields and thus stores all the content. 
+Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as Users, groups, roles and even Nodes are not versioned. 
 Various interactions have different effects for versioning in Mesh. Below is a list of actions which involve versioning.
 
 ==== Node Creation
 
-Once a node has been created the initial start version 0.1 will be assigned to it.
+Once a node has been created the initial start version 0.1 will be assigned to its language variant.
 
 ==== Node Updates
 
-Updating a node may create version 0.2 if changes have been detected within the posted request fields. It is not required to handle locks in Gentics Mesh.
-Instead it is required to specify the version in the update request which identifies the node version on which the update request was based upon.
+Updating a node's language variant may create version 0.2 of that language variant if changes have been detected within the posted request fields. 
+
+* No Locks and Conflict detection
+
+It is not required to handle locks in Gentics Mesh. Instead it is required to specify the version in the update request which identifies the version on which the update request was based upon.
 Mesh will check whether new versions have been created in the meanwhile. Long running edit operations or multiple concurrent editors may create additional versions.
 The detected changes will automatically compared in order to determine whether the current update request causes a conflict with a newer edit request.
 Mesh will return a response which contains information about the conflict in those cases. Other update operations which do not cause a conflict will be stored and the changed fields will be updated.
+
 The latest version which was created using a update request is called the draft version. Only a single draft version per language exists.
 
 ==== Publishing Nodes
 
-Nodes can be published and taken offline. This is especially useful if you want to first work on a draft and review it and later publish it.
-Publishing a node just requires a ```PUT``` request on ```/api/v1/:projectName/nodes/:uuid/published``` or on ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published``` to publish a specific language. 
-Mesh will automatically create a new major version when publishing a node (e.g.: 1.0, 2.0). The the draft reference will also be updated to point to version 1.0.
+Node language variant can be published and taken offline. This is especially useful if you want to first work on a draft and review it and later publish it.
+Publishing a just requires a ```PUT``` request on ```/api/v1/:projectName/nodes/:uuid/published``` which will publish all language variants of the node. 
+It is also possible to just publish specific language variants via ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```. 
+Mesh will automatically create a new major version when publishing a node language variant (e.g.: 1.0, 2.0). The draft reference will also be updated to point to version 1.0.
 It is also possible to retrieve detailed information about the published status via a ```GET``` request on ```/api/v1/:/nodes/:uuid/published```.
+
+NOTE: Publishing node language variations requires the user to be assigned to a role which provides the ```publish``` permission.
 
 [source,json]
 ----
-include::json/response-api-v1-:projectName-nodes-:uuid-published#200-PublishStatusResponse.json[]
+include::json/response/api/v1/:projectName/nodes/:uuid/published/200/PublishStatusResponse.json[]
 ----
 
 ==== Taking Nodes Offline
 
-A node can be taken offline  via a DELETE request on ```/api/v1/:projectName/nodes/:uuid/published```. Taking a node with version 1.0 offline will just change the node's publish state. Version 1.0 will still be available.
+Similarly the language variants of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```. 
+Taking a node language variant with version 1.0 offline will just change the node's publish state. Version 1.0 will still be available.
 
 ====  Reading Nodes
 
-It is possible to load older version by specifying the ```?version``` parameter. Similarly the published version of a node can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
+It is possible to load older version by specifying the ```?version``` parameter. Similarly the published version of can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
 
-==== Releases
+NOTE: By default nodes will be loaded using ```?version=published```. A nodes list thus may not contain your previously created node because it was not yet published.
 
-So far we learned that nodes can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Releases`. A release is very similar to branches in a versioning control system.
+NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readpublished``` permission.
+
+=== Releases
+
+So far we learned that node language variants can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Releases`. A release is very similar to branches in a versioning control system.
 
 Releases can be used to restructure your nodes and change the contents within a specific release without affecting a different release which provide a different structure/content.
 
+Structural references for nodes always contain release information. This applies to parent/child relationship or taggings of nodes. This way releases are completely isolated from each other.
+
 Typical usecases are:
 
-* Updating an existing installation to a new app version. The new app version has new schema versions. By creating a release and migrating the nodes to the new release (new schema versions), it is possible to serve content for both app versions. Each frontend app versions chooses the correct release for getting nodes.
-* Prepare new content (with possibly changed structure and tagging) while still serving the old content. E.g. the release "winter collection 2016" is currently online and served with the frontend app, while editors prepare new content and new structure for the release "spring collection 2016". The process of going live just means that the frontend app must be switched from the old release to the new release. Or the frontend app fetches content for the release alias "live" and going live just means to change the alias name to point to the "spring collection 2016"
-* Schema versions must be assigned to the release. Each project can have multiple releases. An initial release will automatically be created when creating a project.
+* Updating an existing application installation which uses Gentics Mesh to a new version. The new application version requires new schema versions. 
+  By creating a release and migrating the nodes to the new release (new schema versions), it is possible to serve content for both application versions.
+  Each application versions chooses the correct release for getting nodes.
 
-Most of the operations to nodes can be scoped to a specific release by adding the `?release=name` query parameter. If omitted the latest release release will be used to execute the operation.
+* Schema versions must be assigned to the release.
+  Each project can have multiple releases.
+  An initial release will automatically be created when creating a project.
+
+All operations to nodes can be scoped to a specific release by adding the ```?release=name``` query parameter. If omitted the latest release release will be used to execute the operation. 
 
 TIP: Implementations which use mesh should always reference a specific release. Otherwise the document structure could change without the implementation being aware of these changes. 
 
+Gentics Mesh currently does not provide any means of automatically merging releases or nodes from one specific release to another.  
+
 ==== Creating a Release
 
-A release requires a unique name. Existing nodes within the project will automatically be migrated into the release. Please note the node migration will be processed asynchronously and thus not all nodes may be directly accessible within the scope of the release.
+A release requires an unique name. Existing nodes within the project will automatically be migrated into the release. 
+Please note the started *node migration* will be processed asynchronously and thus not all nodes may be directly accessible within the scope of the release.
+
+This migration is different from a schema version migration. The release node migration just takes care of making all nodes from the previous release available in the newly created release.
+Unlike the schema migration the node migration will not create new language variant versions.
 
 You can use the eventbus bridge or the dedicated ```/api/v1/admin/migrationStatus``` endpoint to query the migration status.
 
@@ -1141,18 +1175,25 @@ You can use the eventbus bridge or the dedicated ```/api/v1/admin/migrationStatu
 
 Releases can be renamed and disabled. Additionally it is also possible to assign new schema versions to a release.
 All nodes which reference the release via the updated schema version will automatically be migrated to use the newer schema version.
+Please note the started *schema migration* will be processed asynchronously and thus not all node language variants may be directly accessible within the scope of the release.
 
-NOTE: It is note worthy that updating a schema will not automatically affect the release. Each schema update created a new schema version. This new version must first be assigned to the release.
+The migration will create new versions for the affected node language variants.
+
+NOTE: It is note worthy that updating a schema and thus creating new schema version will not automatically affect the release. Each schema update created a new schema version. This new version must first be assigned to the release.
 
 ==== Moving Nodes
 
-Releases enable Gentics Mesh to setup multiple content project tree structures. Moving nodes can be scoped to a specific release using the ```?release``` request parameter. The project's initial release will be used to execute the move operation if no release has been selected. 
+Releases enable Gentics Mesh to setup multiple content project tree structures. 
+Moving nodes can be scoped to a specific release using the ```?release``` request parameter. 
+The project's initial release will be used to execute the move operation if no release has been selected.
 
 ==== Tagging Nodes
 
-Similar to moving nodes versioning also applies to tagging of nodes. The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release. 
+The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release. 
 
-Note: Tags and tag families themself are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
+NOTE: Tags and tag families themself are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
+
+NOTE: Taggings to nodes are not versioned.
 
 === Eventbus Bridge / Websocket
 
@@ -1209,11 +1250,13 @@ same language as the node (if possible), otherwise the normal language fallback 
 
 === Search
 
-Search requests are handled by the _/search endpoints_.
+Search requests are handled by the ```/api/v1/search``` or ```/api/v1/:projectName/search``` endpoints.
 
 Elasticsearch is used in order to provide the search functionality. This way elasticsearch queries can be posted to the search endpoints.
 
 The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Gentics Mesh endpoints. Thus it is important to know the elasticsearch document format when building an elasticsearch query. Below is a list of various example documents.
+
+NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per release are stored in the search index.
 
 ==== Users
 

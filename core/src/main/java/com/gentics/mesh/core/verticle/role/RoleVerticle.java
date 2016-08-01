@@ -29,6 +29,11 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow the manipulation of roles.";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		addCreateHandler();
@@ -48,13 +53,12 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		permissionSetEndpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		permissionSetEndpoint.exampleRequest(roleExamples.getRolePermissionRequest());
 		permissionSetEndpoint.consumes(APPLICATION_JSON);
-		permissionSetEndpoint.produces(APPLICATION_JSON)
-				.handler(rc -> {
-					InternalActionContext ac = InternalActionContext.create(rc);
-					String roleUuid = ac.getParameter("param0");
-					String pathToElement = ac.getParameter("param1");
-					crudHandler.handlePermissionUpdate(ac, roleUuid, pathToElement);
-				});
+		permissionSetEndpoint.produces(APPLICATION_JSON).handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String roleUuid = ac.getParameter("param0");
+			String pathToElement = ac.getParameter("param1");
+			crudHandler.handlePermissionUpdate(ac, roleUuid, pathToElement);
+		});
 
 		Endpoint permissionGetEndpoint = createEndpoint();
 		permissionGetEndpoint.setRAMLPath("/:uuid/permissions/:path");

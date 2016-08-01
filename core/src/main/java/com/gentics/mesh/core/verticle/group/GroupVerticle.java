@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
 
 @Component
@@ -26,6 +27,11 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	public GroupVerticle() {
 		super("groups");
+	}
+	
+	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow the manipulation of groups.";
 	}
 
 	@Override
@@ -48,6 +54,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		readRoles.description("Load multiple roles that are assigned to the group. Return a paged list response.");
 		readRoles.produces(APPLICATION_JSON);
 		readRoles.exampleResponse(200, roleExamples.getRoleListResponse());
+		readRoles.addQueryParameters(PagingParameters.class);
+		readRoles.addQueryParameters(RolePermissionParameters.class);
 		readRoles.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -158,6 +166,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		readOne.description("Read the group with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(200, groupExamples.getGroupResponse1("Admin Group"));
+		readOne.addQueryParameters(RolePermissionParameters.class);
 		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -174,6 +183,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(200, groupExamples.getGroupListResponse());
 		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});

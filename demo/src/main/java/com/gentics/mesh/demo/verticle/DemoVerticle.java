@@ -36,6 +36,11 @@ public class DemoVerticle extends AbstractWebVerticle {
 		super("demo");
 	}
 
+	@Override
+	public String getDescription() {
+		return "Provides endpoints which serve the demo application";
+	}
+
 	private void addRedirectionHandler() {
 		route().method(GET).handler(rc -> {
 			if ("/demo".equals(rc.request().path())) {
@@ -58,7 +63,7 @@ public class DemoVerticle extends AbstractWebVerticle {
 				} catch (Exception e) {
 					log.error("Error while generating demo data.", e);
 				}
-			} , rh -> {
+			}, rh -> {
 				System.out.println("Done");
 			});
 		} else {

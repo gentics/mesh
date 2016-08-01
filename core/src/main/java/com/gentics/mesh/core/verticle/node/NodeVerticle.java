@@ -22,6 +22,7 @@ import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
@@ -41,6 +42,11 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private NodeFieldAPIHandler fieldAPIHandler;
+
+	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow the manipulation of nodes.";
+	}
 
 	public NodeVerticle() {
 		super("nodes");
@@ -260,6 +266,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(200, nodeExamples.getNodeListResponse());
 		endpoint.description("Load all child nodes and return a paged list response.");
+		endpoint.addQueryParameters(PagingParameters.class);
+		endpoint.addQueryParameters(NodeParameters.class);
+		endpoint.addQueryParameters(VersioningParameters.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -275,6 +284,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		getTags.produces(APPLICATION_JSON);
 		getTags.exampleResponse(200, tagExamples.getTagListResponse());
 		getTags.description("Return a list of all tags which tag the node.");
+		getTags.addQueryParameters(VersioningParameters.class);
 		getTags.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -283,10 +293,14 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 		Endpoint addTag = createEndpoint();
 		addTag.path("/:uuid/tags/:tagUuid");
+		addTag.setRAMLPath("/{uuid}/tags/{tagUuid}");
+		addTag.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
+		addTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
 		addTag.method(PUT);
 		addTag.produces(APPLICATION_JSON);
 		addTag.exampleResponse(200, nodeExamples.getNodeResponse2());
 		addTag.description("Assign the given tag to the node.");
+		addTag.addQueryParameters(VersioningParameters.class);
 		addTag.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
@@ -297,6 +311,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		// TODO fix error handling. This does not fail when tagUuid could not be found
 		Endpoint removeTag = createEndpoint();
 		removeTag.path("/:uuid/tags/:tagUuid");
+		removeTag.setRAMLPath("/{uuid}/tags/{tagUuid}");
+		removeTag.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
+		removeTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
 		removeTag.method(DELETE);
 		removeTag.produces(APPLICATION_JSON);
 		removeTag.description("Remove the given tag from the node.");
@@ -330,11 +347,14 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addReadHandler() {
 		Endpoint readOne = createEndpoint();
 		readOne.path("/:uuid");
+		readOne.setRAMLPath("/{uuid}");
+		readOne.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.description("Load the node with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(200, nodeExamples.getNodeResponseWithAllFields());
 		readOne.addQueryParameters(VersioningParameters.class);
+		readOne.addQueryParameters(RolePermissionParameters.class);
 		readOne.addQueryParameters(NodeParameters.class);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
@@ -352,6 +372,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(200, nodeExamples.getNodeListResponse());
 		readAll.addQueryParameters(VersioningParameters.class);
+		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.addQueryParameters(NodeParameters.class);
 		readAll.addQueryParameters(PagingParameters.class);
 		readAll.handler(rc -> crudHandler.handleReadList(InternalActionContext.create(rc)));
@@ -361,6 +382,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:uuid");
+		endpoint.setRAMLPath("/{uuid}");
+		endpoint.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the node with the given uuid.");
@@ -384,6 +407,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 				+ "Mesh will automatically check for version conflicts and return a 409 error if a conflict has been detected. "
 				+ "Additional conflict checks for webrootpath conflicts will also be performed.");
 		endpoint.path("/:uuid");
+		endpoint.setRAMLPath("/{uuid}");
+		endpoint.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
 		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
@@ -403,6 +428,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint getEndpoint = createEndpoint();
 		getEndpoint.description("Return the published status of the node.");
 		getEndpoint.path("/:uuid/published");
+		getEndpoint.setRAMLPath("/{uuid}/published");
+		getEndpoint.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
 		getEndpoint.method(GET);
 		getEndpoint.produces(APPLICATION_JSON);
 		getEndpoint.exampleResponse(200, versioningExamples.createPublishStatusResponse());
@@ -414,6 +441,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint putEndpoint = createEndpoint();
 		putEndpoint.description("Publish the node with the given uuid.");
 		putEndpoint.path("/:uuid/published");
+		putEndpoint.setRAMLPath("/{uuid}/published");
+		putEndpoint.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
 		putEndpoint.method(PUT);
 		putEndpoint.produces(APPLICATION_JSON);
 		putEndpoint.exampleResponse(200, versioningExamples.createPublishStatusResponse());
@@ -425,6 +454,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint deleteEndpoint = createEndpoint();
 		deleteEndpoint.description("Unpublish the given node.");
 		deleteEndpoint.path("/:uuid/published");
+		deleteEndpoint.setRAMLPath("/{uuid}/published");
+		deleteEndpoint.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
 		deleteEndpoint.exampleResponse(200, nodeExamples.getNodeResponse2());
@@ -438,6 +469,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint getLanguageRoute = createEndpoint();
 		getLanguageRoute.description("Return the publish status for the given language of the node.");
 		getLanguageRoute.path("/:uuid/languages/:languageTag/published");
+		getLanguageRoute.setRAMLPath("/{uuid}/languages/{languageTag}/published");
+		getLanguageRoute.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
+		getLanguageRoute.addUriParameter("languageTag", "Name of the language tag", "en");
 		getLanguageRoute.method(GET);
 		getLanguageRoute.produces(APPLICATION_JSON);
 		getLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
@@ -447,7 +481,11 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 		Endpoint putLanguageRoute = createEndpoint();
 		putLanguageRoute.path("/:uuid/languages/:languageTag/published").method(PUT).produces(APPLICATION_JSON);
-		putLanguageRoute.description("Publish the language of the node. This will automatically assign a new major version to the node and update the draft version to the published version.");
+		putLanguageRoute.setRAMLPath("/{uuid}/languages/{languageTag}/published");
+		putLanguageRoute.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
+		putLanguageRoute.addUriParameter("languageTag", "Name of the language tag", "en");
+		putLanguageRoute.description(
+				"Publish the language of the node. This will automatically assign a new major version to the node and update the draft version to the published version.");
 		putLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
 		putLanguageRoute.produces(APPLICATION_JSON);
 		putLanguageRoute.handler(rc -> {
@@ -457,6 +495,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint deleteLanguageRoute = createEndpoint();
 		deleteLanguageRoute.description("Take the language of the node offline.");
 		deleteLanguageRoute.path("/:uuid/languages/:languageTag/published").method(DELETE).produces(APPLICATION_JSON);
+		deleteLanguageRoute.setRAMLPath("/{uuid}/languages/{languageTag}/published");
+		deleteLanguageRoute.addUriParameter("uuid", "Uuid of the node", UUIDUtil.randomUUID());
+		deleteLanguageRoute.addUriParameter("languageTag", "Name of the language tag", "en");
 		deleteLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
 		deleteLanguageRoute.produces(APPLICATION_JSON);
 		deleteLanguageRoute.handler(rc -> {

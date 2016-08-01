@@ -30,6 +30,11 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Endpoint which provides methods to manipulate microschemas.";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		addDiffHandler();

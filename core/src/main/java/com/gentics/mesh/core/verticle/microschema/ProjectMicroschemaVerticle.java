@@ -21,11 +21,17 @@ import com.gentics.mesh.rest.Endpoint;
 @Scope("singleton")
 @SpringVerticle
 public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
+
 	@Autowired
 	private MicroschemaCrudHandler crudHandler;
 
 	public ProjectMicroschemaVerticle() {
 		super("microschemas");
+	}
+
+	@Override
+	public String getDescription() {
+		return "Contains endpoints which allow microschemas to be assigned to projects.";
 	}
 
 	@Override

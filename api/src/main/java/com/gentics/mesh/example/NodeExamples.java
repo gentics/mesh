@@ -34,6 +34,8 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.util.Tuple;
 
@@ -49,6 +51,9 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setCreated(getTimestamp());
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setCreator(getUserReference());
+		TagFamilyTagGroup tagGroup = new TagFamilyTagGroup().setUuid(randomUUID());
+		tagGroup.getItems().add(new TagReference().setName("red").setUuid(randomUUID()));
+		nodeResponse.getTags().put("colors",tagGroup);
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
 		nodeResponse.setAvailableLanguages(Arrays.asList("en", "de"));
 		HashMap<String, String> languagePaths = new HashMap<>();

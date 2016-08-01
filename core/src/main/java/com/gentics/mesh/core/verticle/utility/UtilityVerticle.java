@@ -26,6 +26,11 @@ public class UtilityVerticle extends AbstractCoreApiVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Provides endpoints for various utility actions";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		addResolveLinkHandler();

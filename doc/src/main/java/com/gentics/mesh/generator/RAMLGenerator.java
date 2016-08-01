@@ -21,6 +21,7 @@ import org.raml.model.Response;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
+import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaVerticle;
@@ -72,18 +73,19 @@ public class RAMLGenerator {
 		RamlEmitter emitter = new RamlEmitter();
 		String dumpFromRaml = emitter.dump(raml);
 		writeJson("api.raml", dumpFromRaml);
+		System.out.println(dumpFromRaml);
 	}
 
 	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractWebVerticle vericle) throws IOException {
 
 		Resource verticleResource = new Resource();
 		for (Endpoint endpoint : vericle.getEndpoints()) {
+						
 			String fullPath = "api/v1" + basePath + "/" + vericle.getBasePath() + endpoint.getRamlPath();
 			Action action = new Action();
 			action.setIs(Arrays.asList(endpoint.getTraits()));
 			action.setDisplayName(endpoint.getDisplayName());
 			action.setDescription(endpoint.getDescription());
-
 			action.setQueryParameters(endpoint.getQueryParameters());
 
 			// Add response examples
@@ -100,8 +102,7 @@ public class RAMLGenerator {
 				action.getResponses().put(key, response);
 
 				//write example response to dedicated file
-				String filename = "response-" + fullPath + "#" + key + "-" + entry.getValue().getClass().getSimpleName() + ".json";
-				filename = filename.replaceAll("\\/", "-");
+				String filename = "response/" + fullPath + "/" + key + "/" + entry.getValue().getClass().getSimpleName() + ".json";
 				writeJson(filename, json);
 			}
 
@@ -115,8 +116,7 @@ public class RAMLGenerator {
 				action.setBody(bodyMap);
 
 				//write example request to dedicated file
-				String filename = "request-" + fullPath + "#" + endpoint.getExampleRequest().getClass().getSimpleName() + ".json";
-				filename = filename.replaceAll("\\/", "-");
+				String filename = "request/" + fullPath + "/" + endpoint.getExampleRequest().getClass().getSimpleName() + ".json";
 				writeJson(filename, json);
 			}
 
@@ -132,11 +132,13 @@ public class RAMLGenerator {
 				continue;
 			}
 			pathResource.getActions().put(getActionType(endpoint.getMethod()), action);
-
+			pathResource.setUriParameters(endpoint.getUriParameters());
 			verticleResource.getResources().put(path, pathResource);
 
 		}
-		//verticleResource.setDisplayName("D:" + System.currentTimeMillis());
+		verticleResource.setDisplayName(basePath + "/" +vericle.getBasePath());
+		verticleResource.setDescription(vericle.getDescription());
+		//action.setBaseUriParameters(endpoint.getUriParameters());
 		resources.put(basePath + "/" + vericle.getBasePath(), verticleResource);
 
 	}
@@ -244,6 +246,10 @@ public class RAMLGenerator {
 		AuthenticationVerticle authVerticle = Mockito.spy(new AuthenticationVerticle());
 		initVerticle(authVerticle);
 		addEndpoints(coreBasePath, resources, authVerticle);
+		
+		EventbusVerticle eventbusVerticle = Mockito.spy(new EventbusVerticle());
+		initVerticle(eventbusVerticle);
+		addEndpoints(coreBasePath, resources, eventbusVerticle);
 
 	}
 }

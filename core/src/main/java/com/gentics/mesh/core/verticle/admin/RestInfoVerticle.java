@@ -23,13 +23,17 @@ import io.vertx.ext.web.Router;
 @Scope(value = "singleton")
 @SpringVerticle
 public class RestInfoVerticle extends AbstractWebVerticle {
-	
+
 	@Autowired
 	SearchProvider searchProvider;
-	
 
 	protected RestInfoVerticle() {
 		super(null);
+	}
+
+	@Override
+	public String getDescription() {
+		return "Provides endpoints that return information about the currently used REST Api";
 	}
 
 	@Override

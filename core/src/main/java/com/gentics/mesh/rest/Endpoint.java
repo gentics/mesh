@@ -4,12 +4,14 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.raml.model.parameter.QueryParameter;
+import org.raml.model.parameter.UriParameter;
 
 import com.gentics.mesh.parameter.ParameterProvider;
 
@@ -34,6 +36,11 @@ public class Endpoint implements Route {
 	private String displayName;
 
 	private String description;
+
+	/**
+	 * Uri Parameters which map to the used path segments
+	 */
+	private Map<String, UriParameter> uriParameters = new HashMap<>();
 
 	private Map<Integer, Object> exampleResponses = new HashMap<>();
 
@@ -249,6 +256,17 @@ public class Endpoint implements Route {
 
 	public void setRAMLPath(String path) {
 		this.ramlPath = path;
+	}
+
+	public Map<String, UriParameter> getUriParameters() {
+		return uriParameters;
+	}
+
+	public void addUriParameter(String key, String description, String example) {
+		UriParameter param = new UriParameter(key);
+		param.setDescription(description);
+		param.setExample(example);
+		uriParameters.put(key, param);
 	}
 
 }

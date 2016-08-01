@@ -25,6 +25,11 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Provides an endpoint which can be used to retrieve a navigation response";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		addPathHandler();

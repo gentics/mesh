@@ -31,6 +31,11 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow the manipulation of releases.";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		addCreateHandler();

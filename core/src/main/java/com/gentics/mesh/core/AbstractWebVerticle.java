@@ -128,6 +128,13 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	public abstract void registerEndPoints() throws Exception;
 
 	/**
+	 * Description of the endpoints in a broader scope.
+	 * 
+	 * @return
+	 */
+	public abstract String getDescription();
+
+	/**
 	 * Setup the local router.
 	 * 
 	 * @return

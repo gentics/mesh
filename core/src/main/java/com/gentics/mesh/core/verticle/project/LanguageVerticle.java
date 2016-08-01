@@ -24,6 +24,11 @@ public class LanguageVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow the manipulation of languages.";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
 

@@ -26,6 +26,11 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Endpoint which contains login and logout methods.";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 
 		// Only secure /me

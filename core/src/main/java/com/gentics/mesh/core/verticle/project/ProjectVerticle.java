@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
 
 @Component
@@ -27,6 +28,11 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	public ProjectVerticle() {
 		super("projects");
+	}
+
+	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow the manipulation of projects.";
 	}
 
 	@Override
@@ -77,6 +83,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		readOne.description("Load the project with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(200, projectExamples.getProjectResponse("Project name"));
+		readOne.addQueryParameters(RolePermissionParameters.class);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
@@ -93,6 +100,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(200, projectExamples.getProjectListResponse());
 		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});

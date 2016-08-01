@@ -24,6 +24,11 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow loading nodes via a webroot path.";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		addErrorHandlers();
@@ -33,8 +38,9 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 	private void addPathHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.pathRegex("\\/(.*)");
-		endpoint.setRAMLPath("/:path");
+		endpoint.setRAMLPath("/{path}");
 		endpoint.method(GET);
+		endpoint.addUriParameter("path", "Path to the node", "/News/2015/somefile.dat");
 		endpoint.description("Load the node or the node's binary data which is located using the provided path.");
 		endpoint.addQueryParameters(ImageManipulationParameters.class);
 		endpoint.handler(rc -> {

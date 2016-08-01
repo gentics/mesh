@@ -29,6 +29,11 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Provides endpoints which can be used to assign schemas to projects.";
+	}
+
+	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		addReadHandlers();

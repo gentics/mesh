@@ -29,9 +29,11 @@ public class TagFamilyTagGroup {
 	 * 
 	 * @param uuid
 	 *            Uuid to be set
+	 * @return Fluent API
 	 */
-	public void setUuid(String uuid) {
+	public TagFamilyTagGroup setUuid(String uuid) {
 		this.uuid = uuid;
+		return this;
 	}
 
 	/**

@@ -28,6 +28,12 @@ public class TagCloudVerticle extends AbstractProjectRestVerticle {
 	public TagCloudVerticle() {
 		super("page");
 	}
+	
+	
+	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow generation of tag clouds.";
+	}
 
 	@Override
 	public void registerEndPoints() throws Exception {

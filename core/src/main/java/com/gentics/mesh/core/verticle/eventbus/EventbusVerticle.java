@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -26,25 +27,36 @@ public class EventbusVerticle extends AbstractCoreApiVerticle {
 		super("eventbus");
 	}
 
+	public String getDescription() {
+		return "This endpoint is a SockJS compliant websocket that creates a bridge to the mesh eventbus. It allows handling of various mesh specific events.";
+	}
+
 	@Override
 	public void registerEndPoints() throws Exception {
 		addEventBusHandler();
 	}
 
 	private void addEventBusHandler() {
-		SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
-		SockJSHandler handler = SockJSHandler.create(vertx, sockJSoptions);
-		BridgeOptions bridgeOptions = new BridgeOptions();
-		bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
-		bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
-//		handler.bridge(bridgeOptions);
-		handler.bridge(bridgeOptions, event -> {
-			//			if (event.type() == BridgeEventType.SOCKET_CREATED) {
-			//				log.info("A socket was created");
-			//			}
-			event.complete(true);
-		});
-		route("/*").handler(handler);
+		SockJSHandler handler = null;
+		if (localRouter != null) {
+			SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
+			handler = SockJSHandler.create(vertx, sockJSoptions);
+			BridgeOptions bridgeOptions = new BridgeOptions();
+			bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
+			bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
+			//		handler.bridge(bridgeOptions);
+			handler.bridge(bridgeOptions, event -> {
+				//	if (event.type() == BridgeEventType.SOCKET_CREATED) {
+				//		log.info("A socket was created");
+				//	}
+				event.complete(true);
+			});
+		}
+
+		Endpoint endpoint = createEndpoint();
+		endpoint.setRAMLPath("/");
+		endpoint.description("This endpoint provides a sockjs complient websocket which can be used to interface with the vert.x eventbus.");
+		endpoint.path("/*").handler(handler);
 
 	}
 

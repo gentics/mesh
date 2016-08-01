@@ -30,16 +30,6 @@ traits:
         Accept-Language:
           description: The response messages are localized according to the set header value. English and german translations can be provided. Unsupported languages will fallback to english.
 
-  - expandable:
-      queryParameters:
-        expandAll:
-          description: Expand all fields which can be expanded.
-          type: boolean
-          required: false
-        expand:
-          description: Expand the fields with the given name. It is possible to specify multiple field names by separating with a ',' character.
-          type: string
-          required: false
 
   - translatable:
       queryParameters:
@@ -47,20 +37,7 @@ traits:
           description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
           example: ?lang=de,en
 
-  - imagehandler:
-      queryParameters:
-        width:
-          description: Set image target width. The height is automatically calculated when the width is omitted.
-        height:
-          description: Set image target height. The width is automatically calculated when the height is omitted.
-        cropx:
-          description: Set image crop area x coordinate.
-        cropy:
-          description: Set image crop area y coordinate.
-        cropw:
-          description: Set image crop area width.
-        croph:
-          description: Set image crop area height.
+
 
   - sortable:
       queryParameters:
@@ -81,90 +58,7 @@ traits:
           description: The page size. A page size of 25 will be used when this parameter is omitted.
           type: number
 
-  - linkresolver:
-      queryParameters:
-        resolveLinks:
-          description: Set whether links shall be resolved. "off" means no link resolving. "full" will contain the webroot prefix and project name, "medium" will contain the project name and "short" neither webroot prefix nor project name.
-          type: string
-          enum: ["off", "short", "medium", "full"]
-          default: off
 
-  - fullversioned:
-      queryParameters:
-        version:
-          description: Requested version.
-          type: string
-          enum: ["published", "draft", "[major].[minor]"]
-          default: published
-
-  - versioned:
-      queryParameters:
-        version:
-          description: Requested version.
-          type: string
-          enum: ["published", "draft"]
-          default: published
-
-  - release:
-      queryParameters:
-        release:
-          description: Name of the Release that is requested. The default is the latest release of the project.
-          type: string
-
-#------------------------------------------------------------------------------
-# User Verticle
-#------------------------------------------------------------------------------
-/users:
-  displayName: Users
-  is: [ localized ]
-  description: The users rest endpoint is used for CRUD operations on user objects. 
-  get:
-    is: [ include_role_perms, paged ]
-    description: Retrieves a list of users.
-    responses:
-      200:
-        body:
-          application/json:
-            example: !include json/UserListResponse.example.json
-
-  post:
-    description: Create a new user. Please note that users create requests may also contain a node reference which is useful when storing additional data next to the user is required.
-    body:
-      application/json:
-        example: !include json/UserCreateRequest.example.json
-    responses:
-      200:
-        body:
-          application/json:
-            example: !include json/UserResponse.example.json
-
-
-  /{uuid}:
-    get:
-      is: [ include_role_perms ]
-      description: Retrieves a single user with the given uuid.
-      responses:
-        200:
-          body:
-            application/json:
-              example: !include json/UserResponse.example.json
-    put:
-      description: Updates the user with the given uuid.
-      body:
-          application/json:
-              example: !include json/UserUpdateRequest.example.json
-      responses:
-        200:
-          body:
-            application/json:
-              example: !include json/UserResponse.example.json
-    delete:
-      description: Deletes the user with the given uuid.
-      responses:
-        200:
-          body:
-            application/json:
-              example: !include json/GenericMessageResponse.example.json
 
     /{uuid}/permissions/{pathToElement}:
         uriParameters:
@@ -1240,21 +1134,6 @@ traits:
     description: This endpoint is a SockJS compliant websocket that creates a bridge to the mesh eventbus. It allows handling of various mesh specific events.
   /websocket:
     description: Direct access to a websocket. This way the SockJS specific fallback is not used. 
-
-#------------------------------------------------------------------------------
-# Admin Verticle
-#------------------------------------------------------------------------------
-
-/admin:
-  displayName: Administration
-  /migrationStatus:
-    get:
-      description: Fetch the current migration status.
-      responses:
-        200:
-          body:
-            application/json:
-              example: !include json/GenericMessageResponse.example.json
 
 #------------------------------------------------------------------------------
 # Utility Verticle

@@ -38,6 +38,11 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 	@Autowired
 	private IndexHandlerRegistry registry;
 
+	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow project wide search.";
+	}
+
 	/**
 	 * Create an instance
 	 */

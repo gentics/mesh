@@ -31,6 +31,12 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	public AdminVerticle() {
 		super("admin");
 	}
+	
+	@Override
+	public String getDescription() {
+		//TODO what is a admin permission?
+		return "Collection of administrative endpoints which usually require admin permission";
+	}
 
 	@Override
 	public void registerEndPoints() throws Exception {
@@ -38,10 +44,10 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		addMigrationStatusHandler();
 
 		// TODO secure handlers below
-		addBackupHandler();
-		addRestoreHandler();
-		addImportHandler();
-		addExportHandler();
+//		addBackupHandler();
+//		addRestoreHandler();
+//		addImportHandler();
+//		addExportHandler();
 		// addVerticleHandler();
 		// addServiceHandler();
 
@@ -51,7 +57,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/migrationStatus");
 		endpoint.method(GET);
-		endpoint.description("Return the current schema migration status.");
+		endpoint.description("Return the current schema or node migration status.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {

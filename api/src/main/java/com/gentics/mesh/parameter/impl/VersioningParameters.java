@@ -12,6 +12,7 @@ import org.raml.model.parameter.QueryParameter;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.VersionNumber;
 
+//TODO split this class into two since some actions are not versioing specific but release specific 
 public class VersioningParameters extends AbstractParameters {
 
 	public static final String RELEASE_QUERY_PARAM_KEY = "release";
