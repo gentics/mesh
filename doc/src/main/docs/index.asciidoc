@@ -549,10 +549,10 @@ Since the JSON standard does not have a special regex type, it would need to be 
 [options="header"]
 |======
 | Component                                                    | Type                | Version
-| http://orientdb.com/[OrientDB]                               | Graph Database      | 2.1.x
+| http://orientdb.com/[OrientDB]                               | Graph Database      | 2.2.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                 | 2.2.x
-| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine       | 1.7.x
-| http://vertx.io/[Vert.x]                                     | Core Framework      | 3.1.x
+| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine       | 2.3.x
+| http://vertx.io/[Vert.x]                                     | Core Framework      | 3.3.x
 | https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid | 3.5.x
 |======
 
@@ -932,6 +932,8 @@ Recursive permission changes on ```/projects/:uuid/tagFamilies/:uuid/tags/:uuid`
 | ```/api/v1/:projectName/tags/:uuid```  | Publish        | _Not used_
 |======
 
+===== Nodes
+
 Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect children of the node.
 
 [options="header"]
@@ -954,8 +956,8 @@ Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect
 | ```/api/v1/:projectName/nodes/:uuid``` | Read           | Node can be read.
 | ```/api/v1/:projectName/nodes/:uuid``` | Update         | Node can be updated.
 | ```/api/v1/:projectName/nodes/:uuid``` | Delete         | Node can be deleted.
-| ```/api/v1/:projectName/nodes/:uuid``` | Read Published | _Not used_
-| ```/api/v1/:projectName/nodes/:uuid``` | Publish        | _Not used_
+| ```/api/v1/:projectName/nodes/:uuid``` | Read Published | Published version can be read.
+| ```/api/v1/:projectName/nodes/:uuid``` | Publish        | Node can be published.
 |======
 
 ==== Releases
@@ -963,7 +965,7 @@ Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect
 [options="header"]
 |======
 | Element                              | Permission     | Description
-| ```/api/v1/:projectName/releases```  | Create         | _Not used_
+| ```/api/v1/:projectName/releases```  | Create         | Releases can be created.
 | ```/api/v1/:projectName/releases```  | Read           | _Not used_
 | ```/api/v1/:projectName/releases```  | Update         | _Not used_
 | ```/api/v1/:projectName/releases```  | Delete         | _Not used_
@@ -974,10 +976,10 @@ Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect
 [options="header"]
 |======
 | Element                                    | Permission     | Description
-| ```/api/v1/:projectName/releases/:uuid```  | Create         | _Not used_
-| ```/api/v1/:projectName/releases/:uuid```  | Read           | _Not used_
-| ```/api/v1/:projectName/releases/:uuid```  | Update         | _Not used_
-| ```/api/v1/:projectName/releases/:uuid```  | Delete         | _Not used_
+| ```/api/v1/:projectName/releases/:uuid```  | Create         | _Nod used_
+| ```/api/v1/:projectName/releases/:uuid```  | Read           | Release can be read.
+| ```/api/v1/:projectName/releases/:uuid```  | Update         | Release can be updated.
+| ```/api/v1/:projectName/releases/:uuid```  | Delete         | Permission does not apply. Releases can't be deleted.
 | ```/api/v1/:projectName/releases/:uuid```  | Read Published | _Not used_
 | ```/api/v1/:projectName/releases/:uuid```  | Publish        | _Not used_
 |======
@@ -1258,11 +1260,15 @@ Taking a node language variant with version 1.0 offline will just change the nod
 
 ====  Reading Nodes
 
-It is possible to load older version by specifying the ```?version``` parameter. Similarly the published version of can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
+It is possible to load older versions by specifying the ```?version``` parameter. Similarly the published version of can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
 
 NOTE: By default nodes will be loaded using ```?version=published```. A nodes list thus may not contain your previously created node because it was not yet published.
 
 NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readpublished``` permission.
+
+==== Permissions
+
+Permissions are not version specific. Permissions apply to nodes and not to language variants.
 
 ==== Limitations
 
@@ -1307,7 +1313,7 @@ Note: Migrated nodes will still have the same _uuid_ as before.
 
 ==== Updating a Release
 
-A releases can be _renamed_ and new schema/microschema versions can be _assigned_ to it.
+A release can be _renamed_ and new schema/microschema versions can be _assigned_ to it.
 
 Renaming is useful if you want to change your development release to be the current production release.
 
@@ -1346,7 +1352,7 @@ The project's initial release will be used to execute the move operation if no r
 
 The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release. 
 
-NOTE: Tags and tag families themself are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
+NOTE: Tags and tag families are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
 
 NOTE: Taggings to nodes are not versioned.
 
@@ -1373,6 +1379,10 @@ Release _summer2016_ will reference node language variant 1.1 and _winter2016_ w
 NOTE: It is currently not possible to migrate _1.1_ from _summer2016_ to _winter2016_.
 
 Additionally creating new nodes in _summer2016_ will not be available in release _winter2016_.
+
+=== Permissions
+
+Permissions are not release specific.
 
 === Eventbus Bridge / Websocket
 
