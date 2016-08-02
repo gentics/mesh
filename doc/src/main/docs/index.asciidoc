@@ -401,7 +401,6 @@ Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=de,en&expand=field&version=dr
 | permissions                    | User permissions on the element
 |======
 
-
 *Response Sample*
 
 [source,json]
@@ -652,12 +651,12 @@ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
 [options="header"]
 |======
 | Configuration                                     | Type      | Description
-| ```httpServerOptions.port```                      | Number    | Http Port number
-| ```httpServerOptions.ssl```                       | Boolean   | Enable or disable SSL support
-| ```httpServerOptions.corsAllowedOriginPattern```  | RegEx     | Regex which will validate the origin CORS header
-| ```httpServerOptions.enableCors```                | Boolean   | Enable CORS support
-| ```httpServerOptions.certPath```                  | Path      | SSL certificate path
-| ```httpServerOptions.keyPath```                   | Path      | SSL key path
+| ```httpServerOptions.port```                      | Number    | Http Port number.
+| ```httpServerOptions.ssl```                       | Boolean   | Enable or disable SSL support.
+| ```httpServerOptions.corsAllowedOriginPattern```  | RegEx     | Regex which will validate the origin CORS header.
+| ```httpServerOptions.enableCors```                | Boolean   | Enable CORS support.
+| ```httpServerOptions.certPath```                  | Path      | SSL certificate path.
+| ```httpServerOptions.keyPath```                   | Path      | SSL key path.
 |======
 
 === Storage Options
@@ -668,9 +667,9 @@ By default all specified directories are relative to the current working directo
 |======
 | Configuration                        | Type      | Description
 | ```storageOptions.directory```       | Path      | Path to the graph database storage location.
-| ```storageOptions.backupDirectory``` | Path      | Backup directory
-| ```storageOptions.exportDirectory``` | Path      | Export directory
-| ```storageOptions.startServer```     | Boolean   | Flag that indicated whether the graph database server component should be started. By default only an embedded graph database is used which does not start a graph server.
+| ```storageOptions.backupDirectory``` | Path      | Backup directory.
+| ```storageOptions.exportDirectory``` | Path      | Export directory.
+| ```storageOptions.startServer```     | Boolean   | Flag that indicates whether the graph database server component should be started. By default only an embedded graph database is used which does not start a graph server.
 | ```storageOptions.parameters```      | JSON      | Additional JSON parameters that will be passed on to the used graph database implementation.
 |======
 
@@ -679,8 +678,8 @@ By default all specified directories are relative to the current working directo
 [options="header"]
 |======
 | Configuration                      | Type   | Description
-| ```uploadOptions.byteLimit```      | Number | Upload limit in bytes
-| ```uploadOptions.directory```      | Path   | Filesystem directory for uploaded binary data
+| ```uploadOptions.byteLimit```      | Number | Upload limit in bytes.
+| ```uploadOptions.directory```      | Path   | Filesystem directory for uploaded binary data.
 | ```uploadOptions.tempDirectory```  | Path   | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
 |======
 
@@ -1354,7 +1353,7 @@ NOTE: Taggings to nodes are not versioned.
 ==== Deleting Nodes
 
 Deleting nodes is also release specific. Deleting a node via ```DELETE``` to ```/api/v1/:projectName/node/:uuid?release=winter2016``` will delete the node and all its sub nodes from the _winter2016_ release.
-The node will be completely removed from the system if node more language variants are referenced within any release.
+The node will be completely removed from the system if no more language variants are referenced within any release.
 
 It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?release=winter2016``` from release _winter2016_.
 
@@ -1594,6 +1593,11 @@ The mesh-ui can be configured using the mesh-ui-config.js file.
     var meshUiConfig = {
         // The URL to the Mesh API
         apiUrl: '/api/v1/',
+
+        // The ISO-639-1 code of the default language
+        defaultLanguage: 'en',
+        // The ISO-639-1 codes of the available languages
+        availableLanguages: ['en', 'de'],
 
         // Provide an array or URLs for previewing nodes, in the following format:
         //
