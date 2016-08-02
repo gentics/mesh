@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -98,9 +99,9 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		for (TagFamily tagFamily : boot.tagFamilyRoot().findAll()) {
 			tagFamily.createIndexBatch(STORE_ACTION);
 		}
-//		for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
-//			schema.createIndexBatch(STORE_ACTION);
-//		}
+		for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
+			schema.createIndexBatch(STORE_ACTION);
+		}
 		// TODO add support for microschemas
 		// for (Microschema microschema : boot.microschemaContainerRoot().findAll()) {
 		// searchQueue.put(microschema, CREATE_ACTION);
