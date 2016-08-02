@@ -3,10 +3,14 @@ package com.gentics.mesh.core.image.spi;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
@@ -64,6 +68,35 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 			log.debug("Using cache file {" + cacheFile + "}");
 		}
 		return cacheFile;
+	}
+
+	@Override
+	public Single<ImageInfo> readImageInfo(InputStream ins) {
+		return Single.create(sub -> {
+			// 1. Read the image
+			BufferedImage bi = null;
+			try {
+				bi = ImageIO.read(ins);
+			} catch (Exception e) {
+				throw error(BAD_REQUEST, "image_error_reading_failed", e);
+			}
+			if (bi == null) {
+				throw error(BAD_REQUEST, "image_error_reading_failed");
+			}
+			ImageInfo info = new ImageInfo();
+			info.setWidth(bi.getWidth());
+			info.setHeight(bi.getHeight());
+			int[] rgb = calculateDominantColor(bi);
+
+			// TODO The colorthief implementation which selectively samples the image is about 30% faster and will be even faster for bigger images
+			// CMap result = ColorThief.getColorMap(bi, 5);
+			// VBox vbox = result.vboxes.get(0);
+			// int[] rgb = vbox.avg(false);
+			String colorHex = "#" + Integer.toHexString(rgb[0]) + Integer.toHexString(rgb[1]) + Integer.toHexString(rgb[2]);
+			info.setDominantColor(colorHex);
+			sub.onSuccess(info);
+		});
+
 	}
 
 }

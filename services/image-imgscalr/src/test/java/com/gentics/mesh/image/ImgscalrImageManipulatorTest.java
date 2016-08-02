@@ -8,16 +8,19 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
@@ -25,6 +28,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Single;
+import rx.functions.Action5;
 
 public class ImgscalrImageManipulatorTest {
 
@@ -46,19 +50,48 @@ public class ImgscalrImageManipulatorTest {
 	@Test
 	public void testResize() throws Exception {
 
-		List<String> imageNames = IOUtils.readLines(getClass().getResourceAsStream("/pictures/images.lst"));
-		for (String imageName : imageNames) {
+		checkImages((imageName, width, height, color, ins) -> {
 			System.out.println("Handling " + imageName);
-			InputStream ins = getClass().getResourceAsStream("/pictures/" + imageName);
 			Single<Buffer> obs = manipulator.handleResize(ins, imageName, new ImageManipulationParameters().setWidth(150).setHeight(180));
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				assertNotNull(buffer);
 				latch.countDown();
 			});
-			if (!latch.await(5, TimeUnit.SECONDS)) {
-				fail("Timeout reached");
+			try {
+				if (!latch.await(5, TimeUnit.SECONDS)) {
+					fail("Timeout reached");
+				}
+			} catch (Exception e) {
+				throw new RuntimeException(e);
 			}
+		});
+
+	}
+
+	@Test
+	public void testExtractImageInfo() throws IOException, JSONException {
+		checkImages((imageName, width, height, color, ins) -> {
+			Single<ImageInfo> obs = manipulator.readImageInfo(ins);
+			ImageInfo info = obs.toBlocking().value();
+			assertEquals("The width or image {" + imageName + "} did not match.", width.intValue(), info.getWidth());
+			assertEquals("The height or image {" + imageName + "} did not match.", height.intValue(), info.getHeight());
+			assertEquals("The dominant color of the image did not match {" + imageName + "}", color, info.getDominantColor());
+		});
+	}
+
+	private void checkImages(Action5<String, Integer, Integer, String, InputStream> action) throws JSONException, IOException {
+		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json")));
+		JSONArray array = json.getJSONArray("images");
+		for (int i = 0; i < array.length(); i++) {
+			JSONObject image = array.getJSONObject(i);
+			String imageName = image.getString("name");
+			System.out.println("Handling " + imageName);
+			InputStream ins = getClass().getResourceAsStream("/pictures/" + imageName);
+			int width = image.getInt("w");
+			int height = image.getInt("h");
+			String color = image.getString("dominantColor");
+			action.call(imageName, width, height, color, ins);
 		}
 	}
 

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.image.spi;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
 
@@ -41,5 +42,21 @@ public interface ImageManipulator {
 	 * @return
 	 */
 	File getCacheFile(String sha512sum, ImageManipulationParameters parameters);
+
+	/**
+	 * Read the image information from the given image data stream.
+	 * 
+	 * @param ins
+	 * @return
+	 */
+	Single<ImageInfo> readImageInfo(InputStream ins);
+
+	/**
+	 * Return the dominant color in the image.
+	 * 
+	 * @param image
+	 * @return
+	 */
+	int[] calculateDominantColor(BufferedImage image);
 
 }

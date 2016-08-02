@@ -14,6 +14,7 @@ import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
+import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
@@ -142,6 +143,15 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		// 5. Return buffer to written cache file
 		return vertx.fileSystem().readFileObservable(cacheFile.getAbsolutePath()).toSingle();
+	}
+
+	@Override
+	public int[] calculateDominantColor(BufferedImage image) {
+		// Resize the image to 1x1 and sample the pixel
+		BufferedImage pixel = Scalr.resize(image, Mode.FIT_EXACT, 1, 1);
+		image.flush();
+		int[] color = pixel.getData().getPixel(0, 0, (int[]) null);
+		return color;
 	}
 
 }
