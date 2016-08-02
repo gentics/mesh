@@ -18,18 +18,7 @@ public class BinaryFieldImpl implements BinaryField {
 	private String sha512sum;
 	private long fileSize;
 	private String mimeType;
-	private Integer dpi;
-
-	@Override
-	public Integer getDpi() {
-		return dpi;
-	}
-
-	@Override
-	public BinaryField setDpi(Integer dpi) {
-		this.dpi = dpi;
-		return this;
-	}
+	private String dominantColor;
 
 	@Override
 	public long getFileSize() {
@@ -94,6 +83,17 @@ public class BinaryFieldImpl implements BinaryField {
 	@Override
 	public BinaryField setFileName(String fileName) {
 		this.fileName = fileName;
+		return this;
+	}
+
+	@Override
+	public String getDominantColor() {
+		return dominantColor;
+	}
+
+	@Override
+	public BinaryField setDominantColor(String dominantColor) {
+		this.dominantColor = dominantColor;
 		return this;
 	}
 }

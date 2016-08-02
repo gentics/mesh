@@ -50,9 +50,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 		// Always create a new binary field since each update must create a new field instance. The old field must be detached from the given container.
 		BinaryGraphField newGraphBinaryField = container.createBinary(fieldKey);
 
-		// Handle Update - DPI
-		if (binaryField.getDpi() != null) {
-			newGraphBinaryField.setImageDPI(binaryField.getDpi());
+		// Handle Update - Dominant Color
+		if (binaryField.getDominantColor() != null) {
+			newGraphBinaryField.setImageDominantColor(binaryField.getDominantColor());
 		}
 
 		// Handle Update - Filename
@@ -163,18 +163,18 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	String getSHA512Sum();
 
 	/**
-	 * Set the binary image DPI.
+	 * Set the binary image dominant color.
 	 * 
-	 * @param dpi
+	 * @param dominantColor
 	 */
-	void setImageDPI(Integer dpi);
+	void setImageDominantColor(String dominantColor);
 
 	/**
-	 * Return the binary image DPI.
+	 * Return the binary image dominant color.
 	 * 
 	 * @return
 	 */
-	Integer getImageDPI();
+	String getImageDominantColor();
 
 	/**
 	 * Return the binary image height.

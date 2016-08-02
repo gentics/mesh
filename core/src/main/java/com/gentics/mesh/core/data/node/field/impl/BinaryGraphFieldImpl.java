@@ -29,7 +29,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 	private static final String BINARY_CONTENT_TYPE_PROPERTY_KEY = "binaryContentType";
 
-	private static final String BINARY_IMAGE_DPI_PROPERTY_KEY = "binaryImageDPI";
+	private static final String BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY = "binaryImageDominantColor";
 
 	private static final String BINARY_IMAGE_WIDTH_PROPERTY_KEY = "binaryImageWidth";
 
@@ -43,7 +43,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		restModel.setMimeType(getMimeType());
 		restModel.setFileSize(getFileSize());
 		restModel.setSha512sum(getSHA512Sum());
-		restModel.setDpi(getImageDPI());
+		restModel.setDominantColor(getImageDominantColor());
 		restModel.setWidth(getImageWidth());
 		restModel.setHeight(getImageHeight());
 		return Single.just(restModel);
@@ -120,13 +120,13 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public Integer getImageDPI() {
-		return getProperty(BINARY_IMAGE_DPI_PROPERTY_KEY);
+	public String getImageDominantColor() {
+		return getProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY);
 	}
 
 	@Override
-	public void setImageDPI(Integer dpi) {
-		setProperty(BINARY_IMAGE_DPI_PROPERTY_KEY, dpi);
+	public void setImageDominantColor(String dominantColor) {
+		setProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
 	}
 
 	@Override

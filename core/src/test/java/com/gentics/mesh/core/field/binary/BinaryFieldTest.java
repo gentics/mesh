@@ -86,7 +86,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		field.setFileName("blume.jpg");
 		field.setMimeType("image/jpg");
 		field.setFileSize(220);
-		field.setImageDPI(200);
+		field.setImageDominantColor("#22A7F0");
 		field.setImageHeight(133);
 		field.setImageWidth(7);
 		field.setSHA512Sum(
@@ -100,7 +100,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		assertEquals("blume.jpg", loadedField.getFileName());
 		assertEquals("image/jpg", loadedField.getMimeType());
 		assertEquals(220, loadedField.getFileSize());
-		assertEquals(200, loadedField.getImageDPI().intValue());
+		assertEquals("#22A7F0", loadedField.getImageDominantColor());
 		assertEquals(133, loadedField.getImageHeight().intValue());
 		assertEquals(7, loadedField.getImageWidth().intValue());
 		assertEquals(
@@ -121,7 +121,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		field.setFileName("blume.jpg");
 		field.setMimeType("image/jpg");
 		field.setFileSize(220);
-		field.setImageDPI(200);
+		field.setImageDominantColor("#22A7F0");
 		field.setImageHeight(133);
 		field.setImageWidth(7);
 		field.setSHA512Sum(

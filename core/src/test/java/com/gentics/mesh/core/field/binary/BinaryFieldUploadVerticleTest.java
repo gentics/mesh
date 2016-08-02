@@ -236,7 +236,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
 			assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());
 			assertNotNull("The hashsum was not found in the response.", binaryField.getSha512sum());
-			assertNull("The data did not contain image information.", binaryField.getDpi());
+			assertNull("The data did not contain image information.", binaryField.getDominantColor());
 			assertNull("The data did not contain image information.", binaryField.getWidth());
 			assertNull("The data did not contain image information.", binaryField.getHeight());
 
@@ -307,7 +307,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
 			assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());
 			assertNotNull("The hashsum was not found in the response.", binaryField.getSha512sum());
-			assertNotNull("The data did not contain image information.", binaryField.getDpi());
+			assertNotNull("The data did not contain image information.", binaryField.getDominantColor());
 			assertNotNull("The data did not contain image information.", binaryField.getWidth());
 			assertNotNull("The data did not contain image information.", binaryField.getHeight());
 

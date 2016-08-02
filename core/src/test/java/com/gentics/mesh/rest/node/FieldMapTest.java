@@ -72,7 +72,7 @@ public class FieldMapTest {
 
 		BinaryFieldImpl field = new BinaryFieldImpl();
 		field.setFileName("name");
-		field.setDpi(42);
+		field.setDominantColor("#22A7F0");
 		fieldMap.put("binaryField", field);
 
 		fieldMap.put("binaryFieldNull", null);

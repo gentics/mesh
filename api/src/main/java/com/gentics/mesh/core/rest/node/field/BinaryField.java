@@ -6,22 +6,6 @@ package com.gentics.mesh.core.rest.node.field;
 public interface BinaryField extends Field {
 
 	/**
-	 * Return the image DPI.
-	 * 
-	 * @return Image DPI
-	 */
-	Integer getDpi();
-
-	/**
-	 * Set the image DPI.
-	 * 
-	 * @param dpi
-	 *            Image DPI
-	 * @return Fluent API
-	 */
-	BinaryField setDpi(Integer dpi);
-
-	/**
 	 * Return the binary filesize.
 	 * 
 	 * @return Filesize in bytes
@@ -109,12 +93,27 @@ public interface BinaryField extends Field {
 	String getFileName();
 
 	/**
-	 * Set the binary filename
+	 * Set the binary filename.
 	 * 
 	 * @param fileName
 	 *            Filename
 	 * @return Fluent API
 	 */
 	BinaryField setFileName(String fileName);
+
+	/**
+	 * Return the dominant color of the image.
+	 * 
+	 * @return
+	 */
+	String getDominantColor();
+
+	/**
+	 * Set the dominant color of the image.
+	 * 
+	 * @param dominantColor
+	 * @return
+	 */
+	BinaryField setDominantColor(String dominantColor);
 
 }

@@ -93,7 +93,7 @@ public class NodeExamples extends AbstractExamples {
 	public static Field createBinaryField() {
 		BinaryField binaryField = new BinaryFieldImpl();
 		binaryField.setFileName("flower.jpg");
-		binaryField.setDpi(200);
+		binaryField.setDominantColor("#22a7f0");
 		binaryField.setFileSize(95365);
 		binaryField.setWidth(800);
 		binaryField.setHeight(600);
