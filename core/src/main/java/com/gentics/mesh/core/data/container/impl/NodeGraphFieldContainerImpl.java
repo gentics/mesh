@@ -124,8 +124,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		getElement().remove();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
+	@SuppressWarnings("unchecked")
 	public void deleteFromRelease(Release release, SearchQueueBatch batch) {
 		String releaseUuid = release.getUuid();
 

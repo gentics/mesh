@@ -63,7 +63,7 @@ public class VersioningExamples extends AbstractExamples {
 		ReleaseResponse response = new ReleaseResponse();
 		response.setName(name);
 		response.setUuid(randomUUID());
-		response.setActive(true);
+//		response.setActive(true);
 		response.setCreated(getTimestamp());
 		response.setCreator(getUserReference());
 		response.setEdited(getTimestamp());

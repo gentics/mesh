@@ -341,7 +341,7 @@ include::json/response/api/v1/:projectName/tagFamilies/:uuid/200/TagFamilyRespon
 
 Tags can be added to nodes. Tags can not be hierarchically structured.
 
-Endpoint: ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags```
+Endpoint: ```/api/v1/:projectName/tagFamilies/:uuid/tags```
 
 
 [options="header"]
@@ -692,19 +692,23 @@ Gentics Mesh does not manage any cache structure but it is possible to tweak the
 
 === Permissions
 
-Permissions exist between roles and other elements (including other roles). Most responses within Gentics Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way.
+Permissions exist between roles and other elements (including other roles). 
+Most responses within Gentics Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way.
 
-The ```/api/v1/roles/:roleUuid/permissions``` endpoint can be used to assign or revoke permissions to/from a role. This endpoint can also be used to apply recursive permissions.
+The ```/api/v1/roles/:roleUuid/permissions``` endpoint can be used to assign or revoke permissions to/from a role. 
+This endpoint can also be used to apply recursive permissions.
 It is important to note that permissions can be applied to individual elements and onto the set of elements which is identified by the endpoint name (e.g: /groups).
 
 
-For newly created objects CRUD permissions are assigned to those roles that would be able to also create the object in the first place. By this we ensure that roles that would also be able to create the object are now able to invoke CRUD on the newly created object.
+For newly created objects CRUD permissions are assigned to those roles that would be able to also create the object in the first place. 
+By this we ensure that roles that would also be able to create the object are now able to invoke CRUD on the newly created object.
 
 Example:
 
 * User John is assigned to Role A. Role A grants him to create a new child Node in a parent Node.
 * User Mary is assigned to Role B. Role B grants her to also create a new child Node in the same parent Node.
-* When John creates a new Node the permission system identifies Role B as a role that would also be able to create the object. Therefore CRUD permissions are assigned in between Role A and B and the newly created object.
+* When John creates a new Node the permission system identifies Role B as a role that would also be able to create the object. 
+  Therefore CRUD permissions are assigned in between Role A and B and the newly created object.
 
 ==== Users
 
@@ -712,22 +716,26 @@ Recursive permission changes on ```/users``` will also affect all listed users.
 
 [options="header"]
 |======
-| Element             | Permission  | Description
-| ```/api/v1/users``` | Create      | New users can be created.
-| ```/api/v1/users``` | Read        |  _Not used_
-| ```/api/v1/users``` | Update      |  _Not used_
-| ```/api/v1/users``` | Delete      |  _Not used_
+| Element             | Permission     | Description
+| ```/api/v1/users``` | Create         | New users can be created.
+| ```/api/v1/users``` | Read           | _Not used_
+| ```/api/v1/users``` | Update         | _Not used_
+| ```/api/v1/users``` | Delete         | _Not used_
+| ```/api/v1/users``` | Read Published | _Not used_
+| ```/api/v1/users``` | Publish        | _Not used_
 |======
 
-Recursive permission changes on ```/users/:uuid``` have no effect on referenced elements.
+Recursive permission changes on ```/users/:uuid``` have no effect on referenced elements such as node references.
 
 [options="header"]
 |======
-| Element                   | Permission  | Description
-| ```/api/v1/users/:uuid``` | Create      | _Not used_
-| ```/api/v1/users/:uuid``` | Read        | User can be read.
-| ```/api/v1/users/:uuid``` | Update      | User can be updated.
-| ```/api/v1/users/:uuid``` | Delete      | User can be deleted.
+| Element                   | Permission     | Description
+| ```/api/v1/users/:uuid``` | Create         | _Not used_
+| ```/api/v1/users/:uuid``` | Read           | User can be read.
+| ```/api/v1/users/:uuid``` | Update         | User can be updated.
+| ```/api/v1/users/:uuid``` | Delete         | User can be deleted.
+| ```/api/v1/users/:uuid``` | Read Published | _Not used_
+| ```/api/v1/users/:uuid``` | Publish        | _Not used_
 |======
 
 ==== Groups
@@ -736,44 +744,52 @@ Recursive permission changes on ```/groups``` will affect all groups.
 
 [options="header"]
 |======
-| Element              | Permission  | Description
-| ```/api/v1/groups``` | Create      | New roles can be created.
-| ```/api/v1/groups``` | Read        |  _Not used_
-| ```/api/v1/groups``` | Update      |  _Not used_
-| ```/api/v1/groups``` | Delete      |  _Not used_
+| Element              | Permission     | Description
+| ```/api/v1/groups``` | Create         | New roles can be created.
+| ```/api/v1/groups``` | Read           | _Not used_
+| ```/api/v1/groups``` | Update         | _Not used_
+| ```/api/v1/groups``` | Delete         | _Not used_
+| ```/api/v1/groups``` | Read Published | _Not used_
+| ```/api/v1/groups``` | Publish        | _Not used_
 |======
 
 Recursive permission changes on ```/groups/:uuid``` will also affect users of the group but not roles that are linked to the group.
 
 [options="header"]
 |======
-| Element                    | Permission  | Description
-| ```/api/v1/groups/:uuid``` | Create      | _Not used_
-| ```/api/v1/groups/:uuid``` | Read        | Group can be read.
-| ```/api/v1/groups/:uuid``` | Update      | Group can be updated.
-| ```/api/v1/groups/:uuid``` | Delete      | Group can be deleted.
+| Element                    | Permission     | Description
+| ```/api/v1/groups/:uuid``` | Create         | _Not used_
+| ```/api/v1/groups/:uuid``` | Read           | Group can be read.
+| ```/api/v1/groups/:uuid``` | Update         | Group can be updated.
+| ```/api/v1/groups/:uuid``` | Delete         | Group can be deleted.
+| ```/api/v1/groups/:uuid``` | Read Published | _Not used_
+| ```/api/v1/groups/:uuid``` | Publish        | _Not used_
 |======
 
 ==== Roles
 
 [options="header"]
 |======
-| Element             | Permission  | Description
-| ```/api/v1/roles``` | Create      | New roles can be created.
-| ```/api/v1/roles``` | Read        |  _Not used_
-| ```/api/v1/roles``` | Update      |  _Not used_
-| ```/api/v1/roles``` | Delete      |  _Not used_
+| Element             | Permission     | Description
+| ```/api/v1/roles``` | Create         | New roles can be created.
+| ```/api/v1/roles``` | Read           | _Not used_
+| ```/api/v1/roles``` | Update         | _Not used_
+| ```/api/v1/roles``` | Delete         | _Not used_
+| ```/api/v1/roles``` | Read Published | _Not used_
+| ```/api/v1/roles``` | Publish        | _Not used_
 |======
 
 Recursive permission changes on ```/roles/:uuid``` have no effect.
 
 [options="header"]
 |======
-| Element            | Permission  | Description
-| ```/api/v1/roles/:uuid``` | Create      | _Not used_
-| ```/api/v1/roles/:uuid``` | Read        | Role can be read.
-| ```/api/v1/roles/:uuid``` | Update      | Role can be updated.
-| ```/api/v1/roles/:uuid``` | Delete      | Role can be deleted.
+| Element                   | Permission     | Description
+| ```/api/v1/roles/:uuid``` | Create         | _Not used_
+| ```/api/v1/roles/:uuid``` | Read           | Role can be read.
+| ```/api/v1/roles/:uuid``` | Update         | Role can be updated.
+| ```/api/v1/roles/:uuid``` | Delete         | Role can be deleted.
+| ```/api/v1/roles/:uuid``` | Read Published | _Not used_
+| ```/api/v1/roles/:uuid``` | Publish        | _Not used_
 |======
 
 
@@ -783,22 +799,26 @@ Recursive permission changes on ```/schemas``` will also affect schemas.
 
 [options="header"]
 |======
-| Element               | Permission  | Description
-| ```/api/v1/schemas``` | Create      | New schemas can be created.
-| ```/api/v1/schemas``` | Read        | _Not used_
-| ```/api/v1/schemas``` | Update      | _Not used_
-| ```/api/v1/schemas``` | Delete      | _Not used_
+| Element               | Permission     | Description
+| ```/api/v1/schemas``` | Create         | New schemas can be created.
+| ```/api/v1/schemas``` | Read           | _Not used_
+| ```/api/v1/schemas``` | Update         | _Not used_
+| ```/api/v1/schemas``` | Delete         | _Not used_
+| ```/api/v1/schemas``` | Read Published | _Not used_
+| ```/api/v1/schemas``` | Publish        | _Not used_
 |======
 
 Recursive permission changes on ```/schemas/:uuid``` have no effect on referenced elements.
 
 [options="header"]
 |======
-| Element                     | Permission  | Description
-| ```/api/v1/schemas/:uuid``` | Create      | _Not used_
-| ```/api/v1/schemas/:uuid``` | Read        | The schema can be read. Read permission on the schema is also needed to be able to create new nodes that are based upon the schema.
-| ```/api/v1/schemas/:uuid``` | Update      | The schema can be updated.
-| ```/api/v1/schemas/:uuid``` | Delete      | The schema can be deleted.
+| Element                     | Permission     | Description
+| ```/api/v1/schemas/:uuid``` | Create         | _Not used_
+| ```/api/v1/schemas/:uuid``` | Read           | The schema can be read. Read permission on the schema is also needed to be able to create new nodes that are based upon the schema.
+| ```/api/v1/schemas/:uuid``` | Update         | The schema can be updated.
+| ```/api/v1/schemas/:uuid``` | Delete         | The schema can be deleted.
+| ```/api/v1/schemas/:uuid``` | Read Published | _Not used_
+| ```/api/v1/schemas/:uuid``` | Publish        | _Not used_
 |======
 
 ==== Microschemas
@@ -807,22 +827,26 @@ Recursive permission changes on ```/schemas``` will also affect schemas.
 
 [options="header"]
 |======
-| Element                    | Permission  | Description
-| ```/api/v1/microschemas``` | Create      | New microschemas can be created.
-| ```/api/v1/microschemas``` | Read        | _Not used_
-| ```/api/v1/microschemas``` | Update      | _Not used_
-| ```/api/v1/microschemas``` | Delete      | _Not used_
+| Element                    | Permission     | Description
+| ```/api/v1/microschemas``` | Create         | New microschemas can be created.
+| ```/api/v1/microschemas``` | Read           | _Not used_
+| ```/api/v1/microschemas``` | Update         | _Not used_
+| ```/api/v1/microschemas``` | Delete         | _Not used_
+| ```/api/v1/microschemas``` | Read Published | _Not used_
+| ```/api/v1/microschemas``` | Publish        | _Not used_
 |======
 
 Recursive permission changes on ```/microschemas/:uuid``` have no effect on referenced elements.
 
 [options="header"]
 |======
-| Element                          | Permission  | Description
-| ```/api/v1/microschemas/:uuid``` | Create      | _Not used_
-| ```/api/v1/microschemas/:uuid``` | Read        | The microschema can be read.
-| ```/api/v1/microschemas/:uuid``` | Update      | The microschema can be updated.
-| ```/api/v1/microschemas/:uuid``` | Delete      | The microschema can be deleted.
+| Element                          | Permission     | Description
+| ```/api/v1/microschemas/:uuid``` | Create         | _Not used_
+| ```/api/v1/microschemas/:uuid``` | Read           | The microschema can be read.
+| ```/api/v1/microschemas/:uuid``` | Update         | The microschema can be updated.
+| ```/api/v1/microschemas/:uuid``` | Delete         | The microschema can be deleted.
+| ```/api/v1/microschemas/:uuid``` | Read Published |  _Not used_
+| ```/api/v1/microschemas/:uuid``` | Publish        |  _Not used_
 |======
 
 ==== Projects
@@ -831,46 +855,54 @@ Recursive permission changes on ```/projects``` will also affect all projects an
 
 [options="header"]
 |======
-| Element                | Permission  | Description
-| ```/api/v1/projects``` | Create      | Create new projects.
-| ```/api/v1/projects``` | Read        | _Not used_
-| ```/api/v1/projects``` | Update      | _Not used_
-| ```/api/v1/projects``` | Delete      | _Not used_
+| Element                    | Permission     | Description
+| ```/api/v1/projects```     | Create         | Create new projects.
+| ```/api/v1/projects```     | Read           | _Not used_
+| ```/api/v1/projects```     | Update         | _Not used_
+| ```/api/v1/projects```     | Delete         | _Not used_
+| ```/api/v1/projects```     | Read Published | _Not used_
+| ```/api/v1/projects```     | Publish        | _Not used_
 |======
 
 Recursive permission changes on ```/projects/:uuid``` will also affect schemas, tagfamilies (and tags), nodes and subnodes.
 
 [options="header"]
 |======
-| Element                      | Permission  | Description
-| ```/api/v1/projects/:uuid``` | Create      | _Not used_
-| ```/api/v1/projects/:uuid``` | Read        | Project can be read.
-| ```/api/v1/projects/:uuid``` | Update      | Project can be updated.
-| ```/api/v1/projects/:uuid``` | Delete      | Project can be deleted.
+| Element                      | Permission     | Description
+| ```/api/v1/projects/:uuid``` | Create         | _Not used_
+| ```/api/v1/projects/:uuid``` | Read           | Project can be read.
+| ```/api/v1/projects/:uuid``` | Update         | Project can be updated.
+| ```/api/v1/projects/:uuid``` | Delete         | Project can be deleted.
+| ```/api/v1/projects/:uuid``` | Read Published | Affected node publish versions can be read.
+| ```/api/v1/projects/:uuid``` | Publish        | Affected node can be published.
 |======
 
 ==== Tag Families
 
-Recursive permission changes on ```/project/:uuid/tagFamilies``` will also all tagfamiles and those tags.
+Recursive permission changes on ```/projects/:uuid/tagFamilies``` will also all tagfamiles and those tags.
 
 [options="header"]
 |======
-| Element                                 | Permission  | Description
-| ```/api/v1/project/:uuid/tagFamilies``` | Create      | Create new tag families.
-| ```/api/v1/project/:uuid/tagFamilies``` | Read        |  _Not used_
-| ```/api/v1/project/:uuid/tagFamilies``` | Update      |  _Not used_
-| ```/api/v1/project/:uuid/tagFamilies``` | Delete      |  _Not used_
+| Element                                  | Permission     | Description
+| ```/api/v1/projects/:uuid/tagFamilies``` | Create         | Create new tag families.
+| ```/api/v1/projects/:uuid/tagFamilies``` | Read           | _Not used_
+| ```/api/v1/projects/:uuid/tagFamilies``` | Update         | _Not used_
+| ```/api/v1/projects/:uuid/tagFamilies``` | Delete         | _Not used_
+| ```/api/v1/projects/:uuid/tagFamilies``` | Read Published | _Not used_
+| ```/api/v1/projects/:uuid/tagFamilies``` | Publish        | _Not used_
 |======
 
-Recursive permission changes on ```/project/:uuid/tagFamilies/:uuid``` will also affect tags.
+Recursive permission changes on ```/projects/:uuid/tagFamilies/:uuid``` will also affect tags.
 
 [options="header"]
 |======
-| Element                                       | Permission  | Description
-| ```/api/v1/project/:uuid/tagFamilies/:uuid``` | Create      | Tags can be created within the tag family.
-| ```/api/v1/project/:uuid/tagFamilies/:uuid``` | Read        | Tag family can be read.
-| ```/api/v1/project/:uuid/tagFamilies/:uuid``` | Update      | Tag family can be updated.
-| ```/api/v1/project/:uuid/tagFamilies/:uuid``` | Delete      | Tag family can be deleted.
+| Element                                       | Permission     | Description
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Create         | Tags can be created within the tag family.
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Read           | Tag family can be read.
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Update         | Tag family can be updated.
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Delete         | Tag family can be deleted.
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Read Published | _Not used_
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Publish        | _Not used_
 |======
 
 ==== Tags
@@ -879,49 +911,82 @@ Recursive permission on ```/api/v1/projects/:uuid/tagFamilies/:uuid/tags``` chan
 
 [options="header"]
 |======
-| Element                                            | Permission  | Description
-| ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags``` | Create      | Create new tags.
-| ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags``` | Read        | _Not used_
-| ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags``` | Update      | _Not used_
-| ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags``` | Delete      | _Not used_
+| Element                                           | Permission    | Description
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Create         | Create new tags.
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Read           | _Not used_
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Update         | _Not used_
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Delete         | _Not used_
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Read Published | _Not used_
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Publish        | _Not used_
 |======
 
 Recursive permission changes on ```/projects/:uuid/tagFamilies/:uuid/tags/:uuid``` have no effect.
 
 [options="header"]
 |======
-| Element                                | Permission  | Description
-| ```/api/v1/:YOUR_PROJECT/tags/:uuid``` | Create      | _Not used_
-| ```/api/v1/:YOUR_PROJECT/tags/:uuid``` | Read        | Tag can be read.
-| ```/api/v1/:YOUR_PROJECT/tags/:uuid``` | Update      | Tag can be updated.
-| ```/api/v1/:YOUR_PROJECT/tags/:uuid``` | Delete      | Tag can be deleted.
+| Element                                | Permission     | Description
+| ```/api/v1/:projectName/tags/:uuid```  | Create         | _Not used_
+| ```/api/v1/:projectName/tags/:uuid```  | Read           | Tag can be read.
+| ```/api/v1/:projectName/tags/:uuid```  | Update         | Tag can be updated.
+| ```/api/v1/:projectName/tags/:uuid```  | Delete         | Tag can be deleted.
+| ```/api/v1/:projectName/tags/:uuid```  | Read Published | _Not used_
+| ```/api/v1/:projectName/tags/:uuid```  | Publish        | _Not used_
 |======
 
-Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affect children of the node.
-
-[options="header"]
-|======
-| Element                           | Permission  | Description
-| ```/api/v1/:YOUR_PROJECT/nodes``` | Create      |  _Not used_
-| ```/api/v1/:YOUR_PROJECT/nodes``` | Read        |  _Not used_
-| ```/api/v1/:YOUR_PROJECT/nodes``` | Update      |  _Not used_
-| ```/api/v1/:YOUR_PROJECT/nodes``` | Delete      |  _Not used_
-|======
-
-Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affect children of the node.
+Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect children of the node.
 
 [options="header"]
 |======
-| Element                                 | Permission  | Description
-| ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Create      | Create new nodes within the node
-| ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Read        | Node can be read.
-| ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Update      | Node can be updated.
-| ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Delete      | Node can be deleted.
+| Element                           | Permission     | Description
+| ```/api/v1/:projectName/nodes```  | Create         | _Not used_
+| ```/api/v1/:projectName/nodes```  | Read           | _Not used_
+| ```/api/v1/:projectName/nodes```  | Update         | _Not used_
+| ```/api/v1/:projectName/nodes```  | Delete         | _Not used_
+| ```/api/v1/:projectName/nodes```  | Read Published | _Not used_
+| ```/api/v1/:projectName/nodes```  | Publish        | _Not used_
 |======
+
+Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect children of the node.
+
+[options="header"]
+|======
+| Element                                | Permission     | Description
+| ```/api/v1/:projectName/nodes/:uuid``` | Create         | Create new nodes within the node
+| ```/api/v1/:projectName/nodes/:uuid``` | Read           | Node can be read.
+| ```/api/v1/:projectName/nodes/:uuid``` | Update         | Node can be updated.
+| ```/api/v1/:projectName/nodes/:uuid``` | Delete         | Node can be deleted.
+| ```/api/v1/:projectName/nodes/:uuid``` | Read Published | _Not used_
+| ```/api/v1/:projectName/nodes/:uuid``` | Publish        | _Not used_
+|======
+
+==== Releases
+
+[options="header"]
+|======
+| Element                              | Permission     | Description
+| ```/api/v1/:projectName/releases```  | Create         | _Not used_
+| ```/api/v1/:projectName/releases```  | Read           | _Not used_
+| ```/api/v1/:projectName/releases```  | Update         | _Not used_
+| ```/api/v1/:projectName/releases```  | Delete         | _Not used_
+| ```/api/v1/:projectName/releases```  | Read Published | _Not used_
+| ```/api/v1/:projectName/releases```  | Publish        | _Not used_
+|======
+
+[options="header"]
+|======
+| Element                                    | Permission     | Description
+| ```/api/v1/:projectName/releases/:uuid```  | Create         | _Not used_
+| ```/api/v1/:projectName/releases/:uuid```  | Read           | _Not used_
+| ```/api/v1/:projectName/releases/:uuid```  | Update         | _Not used_
+| ```/api/v1/:projectName/releases/:uuid```  | Delete         | _Not used_
+| ```/api/v1/:projectName/releases/:uuid```  | Read Published | _Not used_
+| ```/api/v1/:projectName/releases/:uuid```  | Publish        | _Not used_
+|======
+
 
 === WebRoot
 
-The ```/api/v1/:YOUR_PROJECT/webroot/:path``` endpoint can be used to access nodes via a regular web path instead of using uuids.
+The ```/api/v1/:projectName/webroot/:path``` endpoint can be used to access nodes via a regular web path instead of using uuids.
 
 Example: ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg?width=1000```
 
@@ -951,7 +1016,7 @@ The router implementation can use this in order to be able to to decide whether 
 
 === Navigations
 
-There are two ways of generating a nested navigation response. You can either use ```/api/v1/:YOUR_PROJECT/nodes/:uuid/navigation``` or ```/api/v1/:YOUR_PROJECT/navroot/:path``` endpoints.
+There are two ways of generating a nested navigation response. You can either use ```/api/v1/:projectName/nodes/:uuid/navigation``` or ```/api/v1/:projectName/navroot/:path``` endpoints.
 
 Each endpoint will return a navigation response which contains the nested navigation tree structure. The ```maxDepth``` parameter may be used to limit the navigation depth (default: 10).
 
@@ -1084,7 +1149,68 @@ Additionally to websocket it is possible to query whether a migration is running
 
 Sending a schema to ```/api/v1/schemas:uuid``` using the ```PUT``` method will conveniently combine the diff generation and invocation of the schema migration.
 
-Please note that by default conflicting data will be removed and this action can only be avoided by specifying a custom migration script.
+Please note that by default conflicting data will be *removed* and this action can only be avoided by specifying a custom migration script.
+
+==== Custom Migration Scripts
+
+Sometimes it is desired to overwrite the default migration behaviour. 
+
+The following migration script converts the number value from field ```node.fields[fieldname]``` into a _ISO-8601_ date string which is then stored within the ```node.fields[fieldname]``` field. 
+
+[source,javascript]
+----
+function migrate(node, fieldname, convert) {
+    node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); 
+    return node;
+}
+----
+
+Migration scripts also allow you to split up a field value into two different fields.
+
+[source,javascript]
+----
+function migrate(node, fieldname, convert) {
+    node.fields["fieldA"] = "First field set";
+    node.fields["fieldB"] = "Second field set"; 
+    return node;
+}
+----
+
+The provided converter can be used to convert in between field types. This converter will be used if no custom migration script was specified.
+
+
+[source,javascript]
+----
+function migrate(node, fieldname, convert) {
+    var stringValue = convert.toString(node.fields[fieldname]);
+
+    // It is important to use the Java.from method to convert the java list object into a number array.
+    var numberArray    = Java.from(convert.toNumberList(node.fields[fieldname]));
+    var micronodeArray = Java.from(convert.toMicronodeList(node.fields[fieldname]));
+    var dateArray      = Java.from(convert.toDateList(node.fields[fieldname]));
+    var booleanArray   = Java.from(convert.toBooleanList(node.fields[fieldname]));
+
+    var numberValue    = convert.toNumber(node.fields[fieldname]);
+    var nodeValue      = convert.toNode(node.fields[fieldname]);
+    var micronodeValue = convert.toMicronode(node.fields[fieldname]);
+    var dateValue      = convert.toDate(node.fields[fieldname]);
+    var booleanValue   = convert.toBoolean(node.fields[fieldname]);
+    var binaryValue    = convert.toBinary(node.fields[fieldname]);
+
+    // Delete the field
+    delete node.fields[fieldname];
+    return node;
+}
+----
+
+
+Finally the changes can be applied by sending the request to ```/api/v1/schemas/:uuid/changes```.
+
+[source,json]
+----
+include::json/request/api/v1/schemas/:schemaUuid/changes/SchemaChangesListModel.json[]
+----
+
 
 === Versioning
 
@@ -1124,6 +1250,8 @@ NOTE: Publishing node language variations requires the user to be assigned to a 
 include::json/response/api/v1/:projectName/nodes/:uuid/published/200/PublishStatusResponse.json[]
 ----
 
+It is not possible to publish a specific version. Publish always affects the latest draft version of the language variant.
+
 ==== Taking Nodes Offline
 
 Similarly the language variants of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```. 
@@ -1137,13 +1265,19 @@ NOTE: By default nodes will be loaded using ```?version=published```. A nodes li
 
 NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readpublished``` permission.
 
+==== Limitations
+
+At the moment it is not possible to delete older versions.
+
 === Releases
 
 So far we learned that node language variants can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Releases`. A release is very similar to branches in a versioning control system.
 
 Releases can be used to restructure your nodes and change the contents within a specific release without affecting a different release which provide a different structure/content.
 
-Structural references for nodes always contain release information. This applies to parent/child relationship or taggings of nodes. This way releases are completely isolated from each other.
+Structural references for nodes always contain release information. This applies to parent/child relationship or taggings, publish states of nodes. This way releases are completely isolated from each other.
+
+NOTE: It is current not possible to migrate from one release to another. There is currently no way to invoke an automatic merge of nodes from one specific release to another.
 
 Typical usecases are:
 
@@ -1159,8 +1293,6 @@ All operations to nodes can be scoped to a specific release by adding the ```?re
 
 TIP: Implementations which use mesh should always reference a specific release. Otherwise the document structure could change without the implementation being aware of these changes. 
 
-Gentics Mesh currently does not provide any means of automatically merging releases or nodes from one specific release to another.  
-
 ==== Creating a Release
 
 A release requires an unique name. Existing nodes within the project will automatically be migrated into the release. 
@@ -1170,16 +1302,40 @@ This migration is different from a schema version migration. The release node mi
 Unlike the schema migration the node migration will not create new language variant versions.
 
 You can use the eventbus bridge or the dedicated ```/api/v1/admin/migrationStatus``` endpoint to query the migration status.
+The ```migrated``` JSON property within the release response also indicates whether the node migration has been completed.
+
+Note: Migrated nodes will still have the same _uuid_ as before.
 
 ==== Updating a Release
 
-Releases can be renamed and disabled. Additionally it is also possible to assign new schema versions to a release.
+A releases can be _renamed_ and new schema/microschema versions can be _assigned_ to it.
+
+Renaming is useful if you want to change your development release to be the current production release.
+
+Assigning schema versions to the release via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes language variants within the release.
+
+[source,json]
+----
+include::json/request/api/v1/:projectName/releases/:uuid/schemas/SchemaReferenceList.json[]
+----
+
+It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/microschemas``` to the release.
+
+[source,json]
+----
+include::json/request/api/v1/:projectName/releases/:uuid/microschemas/MicroschemaReferenceList.json[]
+----
+
 All nodes which reference the release via the updated schema version will automatically be migrated to use the newer schema version.
 Please note the started *schema migration* will be processed asynchronously and thus not all node language variants may be directly accessible within the scope of the release.
 
 The migration will create new versions for the affected node language variants.
 
 NOTE: It is note worthy that updating a schema and thus creating new schema version will not automatically affect the release. Each schema update created a new schema version. This new version must first be assigned to the release.
+
+==== Deleting a Release
+
+At the moment it is not possible to delete a release.
 
 ==== Moving Nodes
 
@@ -1194,6 +1350,30 @@ The tag operation is also scoped to a specific release. This way new tags can be
 NOTE: Tags and tag families themself are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
 
 NOTE: Taggings to nodes are not versioned.
+
+==== Deleting Nodes
+
+Deleting nodes is also release specific. Deleting a node via ```DELETE``` to ```/api/v1/:projectName/node/:uuid?release=winter2016``` will delete the node and all its sub nodes from the _winter2016_ release.
+The node will be completely removed from the system if node more language variants are referenced within any release.
+
+It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?release=winter2016``` from release _winter2016_.
+
+==== Updating Nodes
+
+Releases are completely isolated from each other as explained earlier. This also applies to a node's language variant versions.
+
+Example:
+
+* Create release _summer2016_
+* Create node with language variant _de_ at version _1.0_ in release _summer2016_
+* Create release _winter2016_
+* Update previously created node in release _summer2016_ and thus create version _1.1_
+
+Release _summer2016_ will reference node language variant 1.1 and _winter2016_ will still reference version 1.0 since the _winder2016_ release was created at the specific point of time in which the language variant in release _summer2016_ was still at version _1.0_.
+
+NOTE: It is currently not possible to migrate _1.1_ from _summer2016_ to _winter2016_.
+
+Additionally creating new nodes in _summer2016_ will not be available in release _winter2016_.
 
 === Eventbus Bridge / Websocket
 
@@ -1212,13 +1392,11 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 
 Images can be resized by appending the image manipulation query parameters on the binary node endpoint:
 
-
-Endpoint: ```/api/v1/:YOUR_PROJECT/nodes/:uuid/languages/:languageTag/fields/:fieldname?width=220```
+Endpoint: ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/fields/:fieldname?width=220```
 
 It is also possible to use the image manipulation in combination with the webroot endpoint:
 
-Endpoint: ```/api/v1/:YOUR_PROJECT/webroot/:path?width=220```
-
+Endpoint: ```/api/v1/:projectName/webroot/:path?width=220```
 
 It is mandatory to specify all four crop parameters when cropping an image.
 
@@ -1238,7 +1416,7 @@ It is mandatory to specify all four crop parameters when cropping an image.
 
 Nodes are translated into different languages. Requests for nodes should contain the requested languages (as comma separated list) as query parameter:
 
-Endpoint: ```/api/v1/:YOUR_PROJECT/nodes/:uuid?lang=en,de```
+Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
 
 If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
 Otherwise, the node will still be returned, but without fields.

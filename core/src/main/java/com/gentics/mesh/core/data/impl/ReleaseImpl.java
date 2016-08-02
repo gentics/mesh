@@ -97,7 +97,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 		ReleaseResponse restRelease = new ReleaseResponse();
 		restRelease.setName(getName());
-		restRelease.setActive(isActive());
+//		restRelease.setActive(isActive());
 		restRelease.setMigrated(isMigrated());
 
 		// Add common fields

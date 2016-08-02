@@ -59,22 +59,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
 					throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 				}
+				return db.tx(() -> {
+					// Create the batch first since we can't delete the container and access it later in batch creation
+					SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+					SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 
-				// Create the batch first since we can't delete the container and access it later in batch creation
-				SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-
-				Release release = ac.getRelease(null);
-				node.getGraphFieldContainers(ac.getRelease(null), ContainerType.DRAFT)
-						.forEach(container -> node.deleteLanguageContainer(release, container.getLanguage(), batch));
-
-				// if the node has no more field containers in any release, it will be deleted
-				if (node.getGraphFieldContainerCount() == 0) {
-					node.delete(batch);
-				}
-
-				return batch.process().andThen(Single.just(message(ac, "node_deleted", uuid)));
-
+					node.deleteFromRelease(ac.getRelease(null), batch);
+					return batch;
+				}).process().andThen(Single.just(message(ac, "node_deleted", uuid)));
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

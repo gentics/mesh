@@ -77,7 +77,6 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testUpdateMultithreaded() throws Exception {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Test
