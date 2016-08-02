@@ -202,6 +202,11 @@ public abstract class AbstractDBTest {
 		return meshRoot().getSearchQueue().createBatch(UUIDUtil.randomUUID());
 	}
 
+	/**
+	 * Returns the news overview node which has no tags.
+	 * 
+	 * @return
+	 */
 	public Node content() {
 		Node content = dataProvider.getContent("news overview");
 		content.reload();

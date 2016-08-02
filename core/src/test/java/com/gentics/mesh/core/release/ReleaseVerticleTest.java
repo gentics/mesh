@@ -50,6 +50,7 @@ import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import io.vertx.core.Future;
 
 public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
+
 	@Autowired
 	private ReleaseVerticle releaseVerticle;
 
@@ -369,13 +370,13 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			// change active
 			ReleaseUpdateRequest request2 = new ReleaseUpdateRequest();
-			request2.setActive(false);
+//			request2.setActive(false);
 			response = call(() -> getClient().updateRelease(projectName, uuid, request2));
 			assertThat(response).as("Updated Release").isNotNull().hasName(newName).isInactive();
 
 			// change active and name
 			ReleaseUpdateRequest request3 = new ReleaseUpdateRequest();
-			request3.setActive(true);
+//			request3.setActive(true);
 			request3.setName(anotherNewName);
 			response = call(() -> getClient().updateRelease(projectName, uuid, request3));
 			assertThat(response).as("Updated Release").isNotNull().hasName(anotherNewName).isActive();
@@ -405,7 +406,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
 
 			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
-			request.setActive(false);
+			//request.setActive(false);
 			call(() -> getClient().updateRelease(projectName, project.getInitialRelease().getUuid(), request), FORBIDDEN, "error_missing_perm",
 					project.getInitialRelease().getUuid());
 		}
@@ -418,7 +419,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Project project = project();
 
 			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
-			request.setActive(false);
+//			request.setActive(false);
 			call(() -> getClient().updateRelease(project.getName(), "bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
 	}

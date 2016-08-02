@@ -231,6 +231,10 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 			if (error != null) {
 				message.fail(0, error.getLocalizedMessage());
 			} else {
+				JsonObject msg = new JsonObject();
+				msg.put("type", "completed");
+				//TODO maybe a different address should be used
+				vertx.eventBus().publish(MESH_MIGRATION.toString(), msg);
 				message.reply(null);
 			}
 		});

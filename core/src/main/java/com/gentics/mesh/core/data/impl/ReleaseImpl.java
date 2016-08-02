@@ -72,9 +72,10 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 				}
 				setName(requestModel.getName());
 			}
-			if (requestModel.getActive() != null) {
-				setActive(requestModel.getActive());
-			}
+			// TODO: Not yet fully implemented 
+//			if (requestModel.getActive() != null) {
+//				setActive(requestModel.getActive());
+//			}
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
 			return Single.just(this);

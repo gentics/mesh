@@ -51,7 +51,7 @@ public class VersioningExamples extends AbstractExamples {
 	public ReleaseUpdateRequest createReleaseUpdateRequest(String name) {
 		ReleaseUpdateRequest update = new ReleaseUpdateRequest();
 		update.setName(name);
-		update.setActive(false);
+//		update.setActive(false);
 		return update;
 	}
 

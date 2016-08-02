@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -15,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +24,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.Future;
 
@@ -36,10 +47,26 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 	@Autowired
 	private NodeVerticle verticle;
 
+	@Autowired
+	private ReleaseVerticle releaseVerticle;
+
+	@Autowired
+	private NodeMigrationVerticle migrationVerticle;
+
+	@Autowired
+	private EventbusVerticle eventbusVerticle;
+
+	@Autowired
+	private TagFamilyVerticle tagFamilyVerticle;
+
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
+		list.add(releaseVerticle);
+		list.add(migrationVerticle);
+		list.add(eventbusVerticle);
+		list.add(tagFamilyVerticle);
 		return list;
 	}
 
@@ -167,6 +194,169 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
 		}
+	}
+
+	@Test
+	public void testTaggingAcrossMultipleReleases() throws Exception {
+		String releaseOne = "ReleaseV1";
+		String releaseTwo = "ReleaseV2";
+
+		// 1. Create release v1 
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+		try (NoTx noTx = db.noTx()) {
+			ReleaseCreateRequest request = new ReleaseCreateRequest();
+			request.setName(releaseOne);
+			ReleaseResponse releaseResponse = call(() -> getClient().createRelease(PROJECT_NAME, request));
+			assertThat(releaseResponse).as("Release Response").isNotNull().hasName(releaseOne).isActive().isNotMigrated();
+		}
+		failingLatch(latch);
+
+		// 2. Tag a node in release v1 with tag "red"
+		try (NoTx noTx = db.noTx()) {
+			Node node = content();
+			Tag tag = tag("red");
+			NodeResponse tagResponse = call(
+					() -> getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+		}
+
+		// Assert that the node is tagged with red in release one
+		try (NoTx noTx = db.noTx()) {
+			Node node = content();
+			// via /nodes/:uuid/tags
+			TagListResponse tagsForNode = call(
+					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
+					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("red")).count());
+
+			// via /nodes/:uuid
+			NodeResponse response = call(
+					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+			assertEquals("We expected to find the red tag in the node response", 1,
+					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
+
+			// via /tagFamilies/:uuid/tags/:uuid/nodes
+			Tag tag = tag("red");
+			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
+					new VersioningParameters().setRelease(releaseOne)));
+			assertEquals("We expected to find the node in the list response but it was not included.", 1,
+					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+
+		}
+
+		// 3. Create release v2
+		latch = TestUtils.latchForMigrationCompleted(getClient());
+		try (NoTx noTx = db.noTx()) {
+			ReleaseCreateRequest request = new ReleaseCreateRequest();
+			request.setName(releaseTwo);
+			ReleaseResponse releaseResponse = call(() -> getClient().createRelease(PROJECT_NAME, request));
+			assertThat(releaseResponse).as("Release Response").isNotNull().hasName(releaseTwo).isActive().isNotMigrated();
+		}
+
+		failingLatch(latch);
+		// 4. Tag a node in release v2 with tag "blue"
+		try (NoTx noTx = db.noTx()) {
+			Node node = content();
+			Tag tag = tag("blue");
+			call(() -> getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+		}
+
+		// Assert that the node is tagged with both tags in releaseTwo
+		try (NoTx noTx = db.noTx()) {
+			Node node = content();
+			// via /nodes/:uuid/tags
+			TagListResponse tagsForNode = call(
+					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
+					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("red")).count());
+			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
+					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("blue")).count());
+
+			// via /nodes/:uuid
+			NodeResponse response = call(
+					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+			assertEquals("We expected to find the red tag in the node response", 1,
+					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
+			assertEquals("We expected to find the red tag in the node response", 1,
+					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("blue")).count());
+
+			// via /tagFamilies/:uuid/tags/:uuid/nodes
+			Tag tag1 = tag("red");
+			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
+					new VersioningParameters().setRelease(releaseTwo)));
+			assertEquals("We expected to find the node in the list response but it was not included.", 1,
+					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+
+			Tag tag2 = tag("blue");
+			taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
+					new VersioningParameters().setRelease(releaseTwo)));
+			assertEquals("We expected to find the node in the list response but it was not included.", 1,
+					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+
+		}
+
+		// 5. Remove the tag "red" in release v1
+		try (NoTx noTx = db.noTx()) {
+			Node node = content();
+			Tag tag = tag("red");
+			call(() -> getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+		}
+
+		// Assert that the node is still tagged with both tags in releaseTwo
+		try (NoTx noTx = db.noTx()) {
+			Node node = content();
+			// via /nodes/:uuid/tags
+			TagListResponse tagsForNode = call(
+					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
+					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("red")).count());
+			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
+					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("blue")).count());
+
+			// via /nodes/:uuid
+			NodeResponse response = call(
+					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+			assertEquals("We expected to find the red tag in the node response", 1,
+					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
+			assertEquals("We expected to find the red tag in the node response", 1,
+					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("blue")).count());
+
+			// via /tagFamilies/:uuid/tags/:uuid/nodes
+			Tag tag1 = tag("red");
+			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
+					new VersioningParameters().setRelease(releaseTwo)));
+			assertEquals("We expected to find the node in the list response but it was not included.", 1,
+					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+
+			Tag tag2 = tag("blue");
+			taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
+					new VersioningParameters().setRelease(releaseTwo)));
+			assertEquals("We expected to find the node in the list response but it was not included.", 1,
+					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+
+		}
+
+		// Assert that the node is tagged with no tag in release one
+		try (NoTx noTx = db.noTx()) {
+			Node node = content();
+			// via /nodes/:uuid/tags
+			TagListResponse tagsForNode = call(
+					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+			assertEquals("We expected to find no tags for the node in release one.", 0, tagsForNode.getData().size());
+
+			// via /nodes/:uuid
+			NodeResponse response = call(
+					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+			assertEquals("We expected to find no tags for the node in release one.", 0, response.getTags().size());
+
+			// via /tagFamilies/:uuid/tags/:uuid/nodes
+			Tag tag = tag("red");
+			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
+					new VersioningParameters().setRelease(releaseOne)));
+			assertEquals("We expected to find the node not be tagged by tag red.", 0,
+					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
+
+		}
+
 	}
 
 	@Test

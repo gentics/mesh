@@ -1,13 +1,11 @@
 package com.gentics.mesh.core.rest.release;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 
 public class ReleaseResponse extends AbstractGenericRestResponse {
 	private String name;
 
-	private boolean active;
+//	private boolean active;
 
 	private boolean migrated;
 
@@ -23,14 +21,14 @@ public class ReleaseResponse extends AbstractGenericRestResponse {
 	}
 
 	// Active flag is currently not supported
-	@JsonIgnore
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
+//	@JsonIgnore
+//	public boolean isActive() {
+//		return active;
+//	}
+//
+//	public void setActive(boolean active) {
+//		this.active = active;
+//	}
 
 	public boolean isMigrated() {
 		return migrated;
