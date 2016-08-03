@@ -10,6 +10,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -20,6 +21,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.field.AbstractFieldTest;
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.FieldFetcher;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -28,6 +32,8 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
+
+import rx.functions.Action1;
 
 public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 
@@ -185,6 +191,14 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	}
 
 	@Test
+	public void testRemoveSegmentField() {
+		InternalActionContext ac = getMockedInternalActionContext();
+		invokeRemoveSegmentFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
+			updateContainer(ac, container, STRING_FIELD, null);
+		});
+	}
+
+	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		InternalActionContext ac = getMockedInternalActionContext();
@@ -192,7 +206,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 			StringField field = new StringFieldImpl();
 			field.setString("someValue");
 			updateContainer(ac, container, STRING_FIELD, field);
-		} , (container) -> {
+		}, (container) -> {
 			StringGraphField field = container.getString(STRING_FIELD);
 			assertNotNull("The graph field {" + STRING_FIELD + "} could not be found.", field);
 			assertEquals("The string of the field was not updated.", "someValue", field.getString());

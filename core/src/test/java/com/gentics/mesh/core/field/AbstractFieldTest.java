@@ -43,7 +43,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	@Autowired
 	protected ServerSchemaStorage schemaStorage;
 
-	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField) {
+	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
 		SchemaContainer container = tx.getGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaContainerVersionImpl version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		version.setSchemaContainer(container);
@@ -51,6 +51,9 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		Schema schema = new SchemaModel();
 		schema.setName("dummySchema");
 		schema.addField(createFieldSchema(isRequiredField));
+		if (segmentField != null) {
+			schema.setSegmentField(segmentField);
+		}
 		version.setSchema(schema);
 		Node node = meshRoot().getNodeRoot().create(user(), version, project());
 		Release release = tx.getGraph().addFramedVertex(ReleaseImpl.class);
@@ -87,7 +90,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 
 	protected void invokeRemoveFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider dummyFieldCreator,
 			Action1<NodeGraphFieldContainer> updater) {
-		NodeGraphFieldContainer container = createNode(false).v2();
+		NodeGraphFieldContainer container = createNode(false, null).v2();
 		dummyFieldCreator.set(container, fieldName);
 		updater.call(container);
 		container.reload();
@@ -96,7 +99,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 
 	protected void invokeUpdateFromRestTestcase(String fieldName, FieldFetcher fetcher, DataProvider createEmpty) {
 		InternalActionContext ac = getMockedInternalActionContext();
-		NodeGraphFieldContainer container = createNode(false).v2();
+		NodeGraphFieldContainer container = createNode(false, null).v2();
 		updateContainer(ac, container, fieldName, null);
 		container.reload();
 		assertNull("No field should have been created", fetcher.fetch(container, fieldName));
@@ -113,7 +116,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 */
 	protected void invokeRemoveRequiredFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
 			Action1<NodeGraphFieldContainer> updater) {
-		NodeGraphFieldContainer container = createNode(true).v2();
+		NodeGraphFieldContainer container = createNode(true, null).v2();
 		createDummyData.set(container, fieldName);
 		try {
 			updater.call(container);
@@ -122,6 +125,13 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 			assertEquals("node_error_required_field_not_deletable", e.getI18nKey());
 			assertThat(e.getI18nParameters()).containsExactly(fieldName, "dummySchema");
 		}
+	}
+
+	protected void invokeRemoveSegmentFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
+			Action1<NodeGraphFieldContainer> updater) {
+		NodeGraphFieldContainer container = createNode(false, fieldName).v2();
+		createDummyData.set(container, fieldName);
+		updater.call(container);
 	}
 
 	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher) {
@@ -136,9 +146,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 * @param fetcher
 	 * @param expectError
 	 */
-	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher,
-			boolean expectError) {
-		NodeGraphFieldContainer container = createNode(true).v2();
+	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher, boolean expectError) {
+		NodeGraphFieldContainer container = createNode(true, null).v2();
 		try {
 			InternalActionContext ac = getMockedInternalActionContext();
 			updateContainer(ac, container, fieldName, null);
@@ -169,7 +178,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 */
 	protected void invokeUpdateFromRestValidSimpleValueTestcase(String fieldName, DataProvider createDummyData,
 			Action1<NodeGraphFieldContainer> updater, Action1<NodeGraphFieldContainer> asserter) {
-		NodeGraphFieldContainer container = createNode(false).v2();
+		NodeGraphFieldContainer container = createNode(false, null).v2();
 		createDummyData.set(container, fieldName);
 		updater.call(container);
 		container.reload();
