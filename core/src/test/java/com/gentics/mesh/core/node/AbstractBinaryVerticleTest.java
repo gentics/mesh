@@ -65,12 +65,12 @@ public abstract class AbstractBinaryVerticleTest extends AbstractIsolatedRestVer
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
-	protected Future<GenericMessageResponse> updateBinaryField(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
+	protected Future<GenericMessageResponse> uploadRandomData(String uuid, String languageTag, String fieldKey, int binaryLen, String contentType,
 			String fileName) {
 
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldKey, buffer, fileName, contentType);
+		return getClient().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldKey, buffer, fileName, contentType);
 	}
 
 }

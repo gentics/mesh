@@ -12,6 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -135,59 +137,64 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				BinaryGraphField field = newDraftVersion.createBinary(fieldName);
 
 				MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-				try {
-					Set<FileUpload> fileUploads = ac.getFileUploads();
-					if (fileUploads.isEmpty()) {
-						throw error(BAD_REQUEST, "node_error_no_binarydata_found");
+				Set<FileUpload> fileUploads = ac.getFileUploads();
+				if (fileUploads.isEmpty()) {
+					throw error(BAD_REQUEST, "node_error_no_binarydata_found");
+				}
+				if (fileUploads.size() > 1) {
+					throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
+				}
+				FileUpload ul = fileUploads.iterator().next();
+				long byteLimit = uploadOptions.getByteLimit();
+				if (ul.size() > byteLimit) {
+					if (log.isDebugEnabled()) {
+						log.debug(
+								"Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
 					}
-					if (fileUploads.size() > 1) {
-						throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
+					String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
+					String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
+					throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
+				}
+				String contentType = ul.contentType();
+				String fileName = ul.fileName();
+				String fieldUuid = field.getUuid();
+				Single<ImageInfo> obsImage;
+
+				// Only gather image info for actual images. Otherwise return an empty image info object. 
+				if (contentType.startsWith("image/")) {
+					try {
+						obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
+					} catch (Exception e) {
+						log.error("Could not load schema for node {" + node.getUuid() + "}");
+						throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
 					}
-					FileUpload ul = fileUploads.iterator().next();
-					long byteLimit = uploadOptions.getByteLimit();
-					if (ul.size() > byteLimit) {
-						if (log.isDebugEnabled()) {
-							log.debug("Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit)
-									+ "} bytes.");
+
+				} else {
+					obsImage = Single.just(new ImageInfo());
+				}
+
+				Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
+				return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
+					SearchQueueBatch batch = db.tx(() -> {
+						field.setFileName(fileName);
+						field.setFileSize(ul.size());
+						field.setMimeType(contentType);
+						field.setSHA512Sum(sha512sum);
+						field.setImageDominantColor(imageInfo.getDominantColor());
+						field.setImageHeight(imageInfo.getHeight());
+						field.setImageWidth(imageInfo.getWidth());
+
+						// if the binary field is the segment field, we need to update the webroot info in the node
+						if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+							newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 						}
-						String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
-						String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
-						throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
-					}
-					String contentType = ul.contentType();
-					String fileName = ul.fileName();
-					String fieldUuid = field.getUuid();
 
-					Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
-					return obsHash.flatMap(sha512sum -> {
-						Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
-							field.setFileName(fileName);
-							field.setFileSize(ul.size());
-							field.setMimeType(contentType);
-							field.setSHA512Sum(sha512sum);
-							// TODO handle image properties as well
-							// node.setBinaryImageDPI(dpi);
-							// node.setBinaryImageHeight(heigth);
-							// node.setBinaryImageWidth(width);
-
-							// if the binary field is the segment field, we need to update the webroot info in the node
-							if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-								newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
-							}
-
-							SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
-							return Tuple.tuple(batch, node.getUuid());
-						});
-
-						SearchQueueBatch batch = tuple.v1();
-						String updatedNodeUuid = tuple.v2();
-						return batch.process().andThen(Single.just(message(ac, "node_binary_field_updated", updatedNodeUuid)));
+						return node.createIndexBatch(STORE_ACTION);
 					});
 
-				} catch (Exception e) {
-					log.error("Could not load schema for node {" + node.getUuid() + "}");
-					throw e;
-				}
+					return batch.process().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
+				}).flatMap(x -> x);
+
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
 

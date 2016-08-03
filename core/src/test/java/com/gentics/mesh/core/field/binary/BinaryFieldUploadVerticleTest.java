@@ -12,9 +12,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,7 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
 
 public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 
@@ -61,7 +64,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			prepareSchema(node, "", "binary");
 			role().revokePermissions(node, UPDATE_PERM);
 
-			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName);
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		}
@@ -80,7 +83,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			String whitelistRegex = "image/.*";
 			prepareSchema(node, whitelistRegex, "binary");
 
-			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName);
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_error_invalid_mimetype", contentType, whitelistRegex);
 		}
@@ -104,7 +107,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 				}
 				String newFileName = "somefile" + i + ".dat";
 
-				call(() -> updateBinaryField(node, "en", "binary", binaryLen, contentType, newFileName));
+				call(() -> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, newFileName));
 				node.reload();
 				container.reload();
 
@@ -138,7 +141,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "nonBinary", binaryLen, contentType, fileName);
+			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "nonBinary", binaryLen, contentType, fileName);
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_found_field_is_not_binary", "nonBinary");
 		}
@@ -152,7 +155,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 
-			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "nonBinary", binaryLen, contentType, fileName);
+			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "nonBinary", binaryLen, contentType, fileName);
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_schema_definition_not_found", "nonBinary");
 		}
@@ -161,11 +164,43 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 	/**
 	 * Test whether the implementation works as expected when you update the node binary data to an image and back to a non image. The image related fields
 	 * should disappear.
+	 * 
+	 * @throws IOException
 	 */
 	@Test
-	@Ignore("image prop handling not yet implemented")
-	public void testUpdateBinaryToImageAndNonImage() {
+	public void testUpdateBinaryToImageAndNonImage() throws IOException {
+		String mimeType = "image/png";
+		String fieldKey = "image";
+		String fileName = "somefile.png";
 
+		try (NoTx noTrx = db.noTx()) {
+			Node node = folder("news");
+			prepareSchema(node, "", fieldKey);
+
+			// 1. Upload the image
+			int size = uploadImage(node.getUuid(), "en", fieldKey, fileName, mimeType);
+
+			// 2. Upload a non-image 
+			fileName = "somefile.dat";
+			mimeType = "application/octet-stream";
+			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", fieldKey, size, mimeType, fileName);
+			latchFor(future);
+			assertSuccess(future);
+			expectResponseMessage(future, "node_binary_field_updated", fieldKey);
+			
+			node.reload();
+			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			BinaryField binaryField = response.getFields().getBinaryField(fieldKey);
+
+			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
+			assertEquals("The contentType was correctly set in the response.", mimeType, binaryField.getMimeType());
+			assertEquals("The binary length was not correctly set in the response.", size, binaryField.getFileSize());
+			assertNotNull("The hashsum was not found in the response.", binaryField.getSha512sum());
+			assertNull("The data did contain image information.", binaryField.getDominantColor());
+			assertNull("The data did contain image information.", binaryField.getWidth());
+			assertNull("The data did contain image information.", binaryField.getHeight());
+
+		}
 	}
 
 	@Test
@@ -180,7 +215,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
-			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName);
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_error_uploadlimit_reached", "9 KB", "9 KB");
 		}
@@ -197,7 +232,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			String contentType = "application/octet-stream";
 			String fileName = "somefile.dat";
 			int binaryLen = 10000;
-			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName);
 			latchFor(future);
 			assertSuccess(future);
 
@@ -214,7 +249,7 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testUpload() throws Exception {
 
-		String contentType = "application/octet-stream";
+		String contentType = "application/blub";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
@@ -222,23 +257,23 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
-			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName);
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
+			expectResponseMessage(future, "node_binary_field_updated", "binary");
 
 			node.reload();
 
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
-
 			BinaryField binaryField = response.getFields().getBinaryField("binary");
+
 			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
 			assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
 			assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());
 			assertNotNull("The hashsum was not found in the response.", binaryField.getSha512sum());
-			assertNull("The data did not contain image information.", binaryField.getDominantColor());
-			assertNull("The data did not contain image information.", binaryField.getWidth());
-			assertNull("The data did not contain image information.", binaryField.getHeight());
+			assertNull("The data did contain image information.", binaryField.getDominantColor());
+			assertNull("The data did contain image information.", binaryField.getWidth());
+			assertNull("The data did contain image information.", binaryField.getHeight());
 
 			Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary");
 			latchFor(downloadFuture);
@@ -270,58 +305,66 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			folder2014.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// upload file to folder 2014
-			Future<GenericMessageResponse> uploadFuture = updateBinaryField(folder2014, "en", "binary", binaryLen, contentType, fileName);
+			Future<GenericMessageResponse> uploadFuture = uploadRandomData(folder2014.getUuid(), "en", "binary", binaryLen, contentType, fileName);
 			latchFor(uploadFuture);
 			assertSuccess(uploadFuture);
 
 			// try to upload same file to folder 2015
-			uploadFuture = updateBinaryField(folder2015, "en", "binary", binaryLen, contentType, fileName);
+			uploadFuture = uploadRandomData(folder2015.getUuid(), "en", "binary", binaryLen, contentType, fileName);
 			latchFor(uploadFuture);
 			expectException(uploadFuture, CONFLICT, "node_conflicting_segmentfield_upload", "binary", fileName);
 		}
 	}
 
-	@Ignore("Image properties are not yet parsed")
 	@Test
 	public void testUploadImage() throws IOException {
 		String contentType = "image/png";
 		String fieldName = "image";
-		int binaryLen = 8000;
 		String fileName = "somefile.png";
 
 		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldName);
 
-			Future<GenericMessageResponse> future = updateBinaryField(node, "en", fieldName, binaryLen, contentType, fileName);
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
+			int size = uploadImage(node.getUuid(), "en", fieldName, fileName, contentType);
 
 			node.reload();
-
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 
 			BinaryField binaryField = response.getFields().getBinaryField(fieldName);
 			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
 			assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
-			assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());
+			assertEquals("The binary length was not correctly set in the response.", size, binaryField.getFileSize());
 			assertNotNull("The hashsum was not found in the response.", binaryField.getSha512sum());
-			assertNotNull("The data did not contain image information.", binaryField.getDominantColor());
-			assertNotNull("The data did not contain image information.", binaryField.getWidth());
-			assertNotNull("The data did not contain image information.", binaryField.getHeight());
+			assertEquals("The data did not contain correct image color information.", "#737042", binaryField.getDominantColor());
+			assertEquals("The data did not contain correct image width information.", 1160, binaryField.getWidth().intValue());
+			assertEquals("The data did not contain correct image height information.", 1376, binaryField.getHeight().intValue());
 
 			Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName);
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 			NodeDownloadResponse downloadResponse = downloadFuture.result();
 			assertNotNull(downloadResponse);
-			assertNotNull(downloadResponse.getBuffer().getByte(1));
-			assertNotNull(downloadResponse.getBuffer().getByte(binaryLen));
-			assertEquals(binaryLen, downloadResponse.getBuffer().length());
+			assertNotNull("The first byte of the response could not be loaded.", downloadResponse.getBuffer().getByte(1));
+			assertNotNull("The last byte of the response could not be loaded.", downloadResponse.getBuffer().getByte(size));
+			assertEquals(size, downloadResponse.getBuffer().length());
 			assertEquals(contentType, downloadResponse.getContentType());
 			assertEquals(fileName, downloadResponse.getFilename());
 		}
+	}
+
+	private int uploadImage(String uuid, String languageTag, String fieldname, String filename, String contentType) throws IOException {
+		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+		byte[] bytes = IOUtils.toByteArray(ins);
+		Buffer buffer = Buffer.buffer(bytes);
+		Future<GenericMessageResponse> future = getClient().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldname, buffer, filename,
+				contentType);
+
+		latchFor(future);
+		assertSuccess(future);
+		expectResponseMessage(future, "node_binary_field_updated", fieldname);
+		return bytes.length;
+
 	}
 
 }

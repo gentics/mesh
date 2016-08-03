@@ -2,13 +2,13 @@ package com.gentics.mesh.core.image.spi;
 
 public class ImageInfo {
 
-	private int width;
+	private Integer width;
 
-	private int height;
+	private Integer height;
 
 	private String dominantColor;
 
-	public int getWidth() {
+	public Integer getWidth() {
 		return width;
 	}
 
@@ -16,7 +16,7 @@ public class ImageInfo {
 		this.width = width;
 	}
 
-	public int getHeight() {
+	public Integer getHeight() {
 		return height;
 	}
 

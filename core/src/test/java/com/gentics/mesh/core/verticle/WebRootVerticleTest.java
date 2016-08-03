@@ -84,7 +84,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 			String fileName = "somefile.dat";
 
 			// 2. Update the binary data
-			Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName);
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "node_binary_field_updated", node.getUuid());

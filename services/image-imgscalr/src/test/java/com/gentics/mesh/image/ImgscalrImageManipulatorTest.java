@@ -74,8 +74,8 @@ public class ImgscalrImageManipulatorTest {
 		checkImages((imageName, width, height, color, ins) -> {
 			Single<ImageInfo> obs = manipulator.readImageInfo(ins);
 			ImageInfo info = obs.toBlocking().value();
-			assertEquals("The width or image {" + imageName + "} did not match.", width.intValue(), info.getWidth());
-			assertEquals("The height or image {" + imageName + "} did not match.", height.intValue(), info.getHeight());
+			assertEquals("The width or image {" + imageName + "} did not match.", width, info.getWidth());
+			assertEquals("The height or image {" + imageName + "} did not match.", height, info.getHeight());
 			assertEquals("The dominant color of the image did not match {" + imageName + "}", color, info.getDominantColor());
 		});
 	}
