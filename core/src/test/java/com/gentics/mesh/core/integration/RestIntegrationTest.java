@@ -5,15 +5,18 @@ import static org.junit.Assert.fail;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.test.AbstractIntegrationTest;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public class RestIntegrationTest extends AbstractIntegrationTest {
 
-	@Ignore("Somehow this test always fails with timeout")
+	private static final Logger log = LoggerFactory.getLogger(RestIntegrationTest.class);
+
 	@Test
 	public void testIntegration() throws Exception {
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 2;
@@ -22,6 +25,7 @@ public class RestIntegrationTest extends AbstractIntegrationTest {
 		final Mesh mesh = Mesh.mesh();
 		mesh.setCustomLoader((vertx) -> {
 			vertx.eventBus().consumer("mesh-startup-complete", mh -> {
+				log.info("Received startup event..");
 				latch.countDown();
 			});
 		});

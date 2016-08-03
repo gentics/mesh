@@ -77,6 +77,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshVerticleConfiguration;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
@@ -233,11 +234,21 @@ public class BootstrapInitializer {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
-		invokeChangelog();
-		initMandatoryData();
-		markChangelogApplied();
 
-		//		initPermissions();
+		// Only execute the installation if there are any elements in the graph
+		boolean isEmptyInstallation = isEmptyInstallation();
+		if (!isEmptyInstallation) {
+			invokeChangelog();
+		}
+
+		initMandatoryData();
+
+		// Mark all changelog entries as applied for new installations
+		if (isEmptyInstallation) {
+			markChangelogApplied();
+		}
+
+		//initPermissions();
 		initSearchIndex();
 		try {
 			invokeSearchQueueProcessing();
@@ -256,6 +267,17 @@ public class BootstrapInitializer {
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
 
+	}
+
+	/**
+	 * Check whether there are any vertices in the graph.
+	 * 
+	 * @return
+	 */
+	private boolean isEmptyInstallation() {
+		try (NoTx noTx = db.noTx()) {
+			return noTx.getGraph().v().count() == 0;
+		}
 	}
 
 	/**
@@ -287,11 +309,9 @@ public class BootstrapInitializer {
 	 * Marking all changes as applied since this is an initial mesh setup
 	 */
 	private void markChangelogApplied() {
-		if (isInitialSetup) {
-			log.info("This is the initial setup.. marking all found changelog entries as applied");
-			ChangelogSystem cls = new ChangelogSystem(db);
-			cls.markAllAsApplied();
-		}
+		log.info("This is the initial setup.. marking all found changelog entries as applied");
+		ChangelogSystem cls = new ChangelogSystem(db);
+		cls.markAllAsApplied();
 
 	}
 

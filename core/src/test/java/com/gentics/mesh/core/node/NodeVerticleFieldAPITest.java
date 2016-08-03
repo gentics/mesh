@@ -52,7 +52,7 @@ public class NodeVerticleFieldAPITest extends AbstractBinaryVerticleTest {
 			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName);
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
+			expectResponseMessage(future, "node_binary_field_updated", "binary");
 
 			node.reload();
 

@@ -87,7 +87,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName);
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
+			expectResponseMessage(future, "node_binary_field_updated", "binary");
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
