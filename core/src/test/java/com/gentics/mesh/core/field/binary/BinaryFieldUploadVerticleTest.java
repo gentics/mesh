@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.node.AbstractBinaryVerticleTest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
@@ -177,8 +179,15 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldKey);
 
+			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			String originalVersion = response.getVersion().getNumber();
+
 			// 1. Upload the image
 			int size = uploadImage(node.getUuid(), "en", fieldKey, fileName, mimeType);
+
+			response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			assertNotEquals(originalVersion, response.getVersion().getNumber());
+			originalVersion = response.getVersion().getNumber();
 
 			// 2. Upload a non-image 
 			fileName = "somefile.dat";
@@ -187,9 +196,10 @@ public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "node_binary_field_updated", fieldKey);
-			
+
 			node.reload();
-			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			assertNotEquals(originalVersion, response.getVersion().getNumber());
 			BinaryField binaryField = response.getFields().getBinaryField(fieldKey);
 
 			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
