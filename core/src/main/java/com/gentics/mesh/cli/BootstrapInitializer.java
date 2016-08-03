@@ -75,6 +75,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshVerticleConfiguration;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
@@ -215,9 +216,17 @@ public class BootstrapInitializer {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
-		invokeChangelog();
+		boolean isEmptyInstallation = isEmptyInstallation();
+		if (!isEmptyInstallation) {
+			invokeChangelog();
+		}
+
 		initMandatoryData();
-		markChangelogApplied();
+
+		// Mark all changelog entries as applied for new installations
+		if (isEmptyInstallation) {
+			markChangelogApplied();
+		}
 
 		//initPermissions();
 		initSearchIndex();
@@ -248,6 +257,17 @@ public class BootstrapInitializer {
 			log.info("This is the initial setup.. marking all found changelog entries as applied");
 			ChangelogSystem cls = new ChangelogSystem(db);
 			cls.markAllAsApplied();
+		}
+	}
+
+	/**
+	 * Check whether there are any vertices in the graph.
+	 * 
+	 * @return
+	 */
+	private boolean isEmptyInstallation() {
+		try (NoTrx noTx = db.noTrx()) {
+			return noTx.getGraph().v().count() == 0;
 		}
 	}
 
