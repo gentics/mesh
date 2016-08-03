@@ -79,12 +79,12 @@ public class RouterStorage {
 
 	private Map<String, Router> customRouters = new HashMap<>();
 	/**
-	 * Project routers are routers that handle project rest api endpoints. E.g: /api/v1/alohaeditor, /api/v1/yourprojectname
+	 * Project routers are routers that handle project rest api endpoints. E.g: /api/v1/dummy, /api/v1/yourprojectname
 	 */
 	private Map<String, Router> projectRouters = new HashMap<>();
 
 	/**
-	 * Project sub routers are routers that are mounted by project routers. E.g: /api/v1/alohaeditor/contents, /api/v1/yourprojectname/tags
+	 * Project sub routers are routers that are mounted by project routers. E.g: /api/v1/dummy/nodes, /api/v1/yourprojectname/tagFamilies
 	 */
 	private Map<String, Router> projectSubRouters = new HashMap<>();
 

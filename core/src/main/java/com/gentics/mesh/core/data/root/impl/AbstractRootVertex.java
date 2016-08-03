@@ -63,10 +63,33 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
+	public Single<T> findByName(InternalActionContext ac, String name, GraphPermission perm) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		reload();
+		return findByName(name).map(element -> {
+			if (element == null) {
+				throw error(NOT_FOUND, "object_not_found_for_name", name);
+			}
+
+			T result = db.noTx(() -> {
+				MeshAuthUser requestUser = ac.getUser();
+				String elementUuid = element.getUuid();
+				if (requestUser.hasPermissionSync(ac, element, perm)) {
+					return element;
+				} else {
+					throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+				}
+			});
+
+			return result;
+		});
+	}
+
+	@Override
 	public Single<T> findByUuid(String uuid) {
 		return Single.just(findByUuidSync(uuid));
 	}
-	
+
 	@Override
 	public T findByUuidSync(String uuid) {
 		return out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null);
@@ -132,13 +155,6 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", elementUuid);
 				}
-				//				return requestUser.hasPermissionAsync(ac, element, perm).map(hasPerm -> {
-				//					if (hasPerm) {
-				//						return element;
-				//					} else {
-				//						throw error(FORBIDDEN, "error_missing_perm", elementUuid);
-				//					}
-				//				});
 			});
 
 			return result;

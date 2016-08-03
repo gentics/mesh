@@ -2,7 +2,6 @@ package com.gentics.mesh.core.verticle.admin;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.HEAD;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.ext.web.Router;
@@ -25,7 +23,7 @@ import io.vertx.ext.web.Router;
 public class RestInfoVerticle extends AbstractWebVerticle {
 
 	@Autowired
-	SearchProvider searchProvider;
+	private SearchProvider searchProvider;
 
 	protected RestInfoVerticle() {
 		super(null);

@@ -60,6 +60,7 @@ import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectInfoVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
@@ -134,6 +135,7 @@ public class BootstrapInitializer {
 
 		// Add API Info Verticle
 		addMandatoryVerticle(RestInfoVerticle.class);
+		addMandatoryVerticle(ProjectInfoVerticle.class);
 
 		// User Group Role verticles
 		addMandatoryVerticle(UserVerticle.class);

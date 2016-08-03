@@ -35,6 +35,20 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	Single<T> findByName(String name);
 
 	/**
+	 * Load the object by name and check the given permission.
+	 * 
+	 * @param ac
+	 *            Context to be used in order to check user permissions
+	 * @param name
+	 *            Name of the object that should be loaded
+	 * @param perm
+	 *            Permission that must be granted in order to load the object
+	 * 
+	 * @return
+	 */
+	Single<T> findByName(InternalActionContext ac, String projectName, GraphPermission perm);
+
+	/**
 	 * Find the element with the given uuid.
 	 * 
 	 * @param uuid
