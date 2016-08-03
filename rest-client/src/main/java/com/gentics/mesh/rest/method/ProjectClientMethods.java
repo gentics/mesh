@@ -21,6 +21,15 @@ public interface ProjectClientMethods {
 	Future<ProjectResponse> findProjectByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
+	 * Find the project using the specified name.
+	 * 
+	 * @param name
+	 * @param parameters
+	 * @return
+	 */
+	Future<ProjectResponse> findProjectByName(String name, ParameterProvider... parameters);
+
+	/**
 	 * Load multiple projects.
 	 * 
 	 * @param parameters

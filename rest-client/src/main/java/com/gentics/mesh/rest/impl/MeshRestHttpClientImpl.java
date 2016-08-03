@@ -254,6 +254,12 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public Future<ProjectResponse> findProjectByName(String name, ParameterProvider... parameters) {
+		Objects.requireNonNull(name, "name must not be null");
+		return handleRequest(GET, "/" + name + getQuery(parameters), ProjectResponse.class);
+	}
+
+	@Override
 	public Future<ProjectListResponse> findProjects(ParameterProvider... parameters) {
 		return handleRequest(GET, "/projects" + getQuery(parameters), ProjectListResponse.class);
 	}

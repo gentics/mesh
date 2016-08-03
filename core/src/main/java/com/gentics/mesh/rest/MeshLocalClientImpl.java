@@ -314,6 +314,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public Future<ProjectResponse> findProjectByName(String name, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class, parameters);
+		projectCrudHandler.handleReadByName(ac, name);
+		return ac.getFuture();
+	}
+
+	@Override
 	public Future<ProjectListResponse> findProjects(ParameterProvider... parameters) {
 		LocalActionContextImpl<ProjectListResponse> ac = createContext(ProjectListResponse.class, parameters);
 		projectCrudHandler.handleReadList(ac);
