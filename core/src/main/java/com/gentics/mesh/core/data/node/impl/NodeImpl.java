@@ -155,21 +155,26 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 		if (container != null) {
-			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
+			String segmentFieldKey = container.getSchemaContainerVersion().getSchema().getSegmentField();
+			// The container may reference a schema which has no segment field set.
+			if (segmentFieldKey == null) {
+				return Single.just(null);
+			}
+
 			// 1. Try to load the path segment using the string field
-			StringGraphField stringField = container.getString(fieldName);
+			StringGraphField stringField = container.getString(segmentFieldKey);
 			if (stringField != null) {
 				return Single.just(stringField.getString());
 			}
 
 			// 2. Try to load the path segment using the binary field since the string field could not be found
 			if (stringField == null) {
-				BinaryGraphField binaryField = container.getBinary(fieldName);
+				BinaryGraphField binaryField = container.getBinary(segmentFieldKey);
 				if (binaryField != null) {
 					return Single.just(binaryField.getFileName());
 				}
 			}
-			return Single.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_field", fieldName, getUuid(),
+			return Single.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_field", segmentFieldKey, getUuid(),
 					Arrays.toString(languageTag), releaseUuid, type.getShortName()));
 		}
 		return Single.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_container", getUuid(), Arrays.toString(languageTag),

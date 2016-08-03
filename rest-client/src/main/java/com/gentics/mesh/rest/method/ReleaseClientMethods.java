@@ -56,7 +56,7 @@ public interface ReleaseClientMethods {
 	Future<ReleaseResponse> updateRelease(String projectName, String releaseUuid, ReleaseUpdateRequest request);
 
 	/**
-	 * Get schema versions assigned to a release
+	 * Get schema versions assigned to a release.
 	 *
 	 * @param projectName
 	 * @param releaseUuid
@@ -65,8 +65,9 @@ public interface ReleaseClientMethods {
 	Future<SchemaReferenceList> getReleaseSchemaVersions(String projectName, String releaseUuid);
 
 	/**
-	 * Assign the given schema versions to the release
-	 * @param projectName 
+	 * Assign the given schema versions to the release.
+	 * 
+	 * @param projectName
 	 * @param releaseUuid
 	 * @param schemaVersionReferences
 	 * @return
@@ -74,16 +75,17 @@ public interface ReleaseClientMethods {
 	Future<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReferenceList schemaVersionReferences);
 
 	/**
-	 * Assign the given schema versions to the release
-	 * @param projectName 
+	 * Assign the given schema versions to the release.
+	 * 
+	 * @param projectName
 	 * @param releaseUuid
 	 * @param schemaVersionReferences
 	 * @return
 	 */
-	Future<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReference...schemaVersionReferences);
+	Future<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReference... schemaVersionReferences);
 
 	/**
-	 * Get microschema versions assigned to a release
+	 * Get microschema versions assigned to a release.
 	 *
 	 * @param projectName
 	 * @param releaseUuid
@@ -93,19 +95,23 @@ public interface ReleaseClientMethods {
 
 	/**
 	 * Assign the given microschema versions to the release
-	 * @param projectName 
+	 * 
+	 * @param projectName
 	 * @param releaseUuid
 	 * @param microschemaVersionReferences
 	 * @return
 	 */
-	Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid, MicroschemaReferenceList microschemaVersionReferences);
+	Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			MicroschemaReferenceList microschemaVersionReferences);
 
 	/**
 	 * Assign the given microschema versions to the release
-	 * @param projectName 
+	 * 
+	 * @param projectName
 	 * @param releaseUuid
 	 * @param microschemaVersionReferences
 	 * @return
 	 */
-	Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid, MicroschemaReference...microschemaVersionReferences);
+	Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			MicroschemaReference... microschemaVersionReferences);
 }
