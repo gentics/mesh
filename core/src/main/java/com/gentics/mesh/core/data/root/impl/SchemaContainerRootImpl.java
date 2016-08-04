@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -42,6 +43,9 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerRootImpl.class, MeshVertexImpl.class);
+		database.addEdgeType(HAS_SCHEMA_ROOT);
+		database.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
+		database.addEdgeIndex(HAS_SCHEMA_CONTAINER_ITEM);
 	}
 
 	@Override
@@ -113,31 +117,31 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		MeshAuthUser requestUser = ac.getUser();
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return Single.defer(() -> {
-				Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
-				requestModel.validate();
-				if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
+			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+			requestModel.validate();
+			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
 
-					Tuple<SearchQueueBatch, SchemaContainer> tuple = db.tx(() -> {
+				Tuple<SearchQueueBatch, SchemaContainer> tuple = db.tx(() -> {
 
-						String schemaName = requestModel.getName();
-						SchemaContainer conflictingSchema = findByName(schemaName).toBlocking().value();
-						if (conflictingSchema != null) {
-							throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
-						}
+					String schemaName = requestModel.getName();
+					SchemaContainer conflictingSchema = findByName(schemaName).toBlocking().value();
+					if (conflictingSchema != null) {
+						throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
+					}
 
-						requestUser.reload();
-						SchemaContainer container = create(requestModel, requestUser);
-						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-						SearchQueueBatch batch = container.createIndexBatch(STORE_ACTION);
-						return Tuple.tuple(batch, container);
-					});
+					requestUser.reload();
+					SchemaContainer container = create(requestModel, requestUser);
+					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+					SearchQueueBatch batch = container.createIndexBatch(STORE_ACTION);
+					return Tuple.tuple(batch, container);
+				});
 
-					SearchQueueBatch batch = tuple.v1();
-					SchemaContainer createdContainer = tuple.v2();
-					return batch.process().toSingleDefault(createdContainer);
-				} else {
-					return Single.error(error(FORBIDDEN, "error_missing_perm", getUuid()));
-				}
+				SearchQueueBatch batch = tuple.v1();
+				SchemaContainer createdContainer = tuple.v2();
+				return batch.process().toSingleDefault(createdContainer);
+			} else {
+				return Single.error(error(FORBIDDEN, "error_missing_perm", getUuid()));
+			}
 		});
 
 	}

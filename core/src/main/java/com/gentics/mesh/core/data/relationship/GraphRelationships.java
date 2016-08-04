@@ -13,8 +13,7 @@ public class GraphRelationships {
 		db.noTx(() -> {
 			db.addEdgeIndexSource(ASSIGNED_TO_ROLE);
 			db.addEdgeType(HAS_SEARCH_QUEUE_ROOT);
-			db.addEdgeType(HAS_PROJECT);
-			db.addEdgeType(HAS_RELEASE);
+
 			db.addEdgeType(HAS_INITIAL_RELEASE);
 			db.addEdgeType(HAS_LATEST_RELEASE);
 			db.addEdgeType(HAS_NEXT_RELEASE);
@@ -35,8 +34,7 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_ROOT_NODE);
 
 			db.addEdgeType(HAS_SCHEMA_TYPE);
-			db.addEdgeType(HAS_SCHEMA_ROOT);
-			db.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
+			
 			db.addEdgeType(HAS_SCHEMA_CONTAINER);
 			db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
 			db.addEdgeType(HAS_MICROSCHEMA_ROOT);

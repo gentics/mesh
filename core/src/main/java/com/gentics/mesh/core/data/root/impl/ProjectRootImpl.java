@@ -61,6 +61,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	public static void init(Database database) {
 		database.addVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
+		database.addEdgeType(HAS_PROJECT);
+		database.addEdgeIndex(HAS_PROJECT);
 	}
 
 	@Override

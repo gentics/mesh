@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -26,7 +27,10 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -92,7 +96,20 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public T findByUuidSync(String uuid) {
-		return out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null);
+		FramedGraph graph = Database.getThreadLocalGraph();
+		//1. Find the element with given uuid within the whole graph
+		Iterator<Vertex> it = MeshSpringConfiguration.getInstance().database().getVertices(getPersistanceClass(), new String[] { "uuid" },
+				new String[] { uuid });
+		if (it.hasNext()) {
+			Vertex potentialElement = it.next();
+			// 2. Use the edge index to determine whether the element is part of this root vertex
+			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase(),
+					MeshSpringConfiguration.getInstance().database().createComposedIndexKey(getId(), potentialElement.getId()));
+			if (edges.iterator().hasNext()) {
+				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
+			}
+		}
+		return null;
 	}
 
 	@Override

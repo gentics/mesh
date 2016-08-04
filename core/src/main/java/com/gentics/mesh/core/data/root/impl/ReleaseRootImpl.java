@@ -48,6 +48,8 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 	public static void init(Database database) {
 		database.addVertexType(ReleaseRootImpl.class, MeshVertexImpl.class);
+		database.addEdgeType(HAS_RELEASE);
+		database.addEdgeIndex(HAS_RELEASE);
 	}
 
 	@Override

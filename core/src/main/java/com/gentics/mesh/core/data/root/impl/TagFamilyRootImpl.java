@@ -40,8 +40,8 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
 	public static void init(Database database) {
-		database.addEdgeIndex(HAS_TAG_FAMILY);
 		database.addVertexType(TagFamilyRootImpl.class, MeshVertexImpl.class);
+		database.addEdgeIndex(HAS_TAG_FAMILY);
 	}
 
 	@Override

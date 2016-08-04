@@ -276,13 +276,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
-			OrientVertexType e = tx.getVertexType(clazzOfVertex.getSimpleName());
-			if (e == null) {
+			OrientVertexType vertexType = tx.getVertexType(clazzOfVertex.getSimpleName());
+			if (vertexType == null) {
 				String superClazz = "V";
 				if (superClazzOfVertex != null) {
 					superClazz = superClazzOfVertex.getSimpleName();
 				}
-				e = tx.createVertexType(clazzOfVertex.getSimpleName(), superClazz);
+				vertexType = tx.createVertexType(clazzOfVertex.getSimpleName(), superClazz);
 			} else {
 				// Update the existing vertex type and set the super class
 				if (superClazzOfVertex != null) {
@@ -291,7 +291,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 						throw new RuntimeException("The supertype for vertices of type {" + clazzOfVertex + "} can't be set since the supertype {"
 								+ superClazzOfVertex.getSimpleName() + "} was not yet added to orientdb.");
 					}
-					e.setSuperClass(superType);
+					vertexType.setSuperClass(superType);
 				}
 			}
 		} finally {
