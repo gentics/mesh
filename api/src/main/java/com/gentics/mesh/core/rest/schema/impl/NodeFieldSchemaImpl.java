@@ -41,4 +41,9 @@ public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFiel
 		}
 	}
 
+	@Override
+	public String getMappingType() {
+		return "string";
+	}
+
 }

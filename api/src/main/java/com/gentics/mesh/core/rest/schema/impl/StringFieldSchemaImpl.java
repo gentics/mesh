@@ -44,4 +44,9 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 		}
 	}
 
+	@Override
+	public String getMappingType() {
+		return "string";
+	}
+
 }

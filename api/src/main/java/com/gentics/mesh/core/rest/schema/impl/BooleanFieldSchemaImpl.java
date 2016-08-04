@@ -10,4 +10,9 @@ public class BooleanFieldSchemaImpl extends AbstractFieldSchema implements Boole
 		return FieldTypes.BOOLEAN.toString();
 	}
 
+	@Override
+	public String getMappingType() {
+		return "boolean";
+	}
+
 }

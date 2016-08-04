@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.swing.plaf.synth.SynthSpinnerUI;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.jettison.json.JSONArray;
@@ -105,7 +106,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public final static String CUSTOM_LANGUAGE_TAG = "languageTag";
 
 	/**
-	 * Name of the custom property of SearchQueueEntry containing the release uuid
+	 * Name of the custom property of SearchQueueEntry containing the release uuid.
 	 */
 	public final static String CUSTOM_RELEASE_UUID = "releaseUuid";
 
@@ -115,7 +116,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public final static String CUSTOM_VERSION = "version";
 
 	/**
-	 * Name of the custom property of SearchQueueEntry containing the project uuid
+	 * Name of the custom property of SearchQueueEntry containing the project uuid.
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
@@ -644,29 +645,43 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				mappingRequestBuilder.setType(type);
 
 				try {
-					XContentBuilder mappingBuilder = XContentFactory.jsonBuilder().startObject() // root object
-							.startObject(type) // type
-							.startObject("properties") // properties
-							.startObject("fields") // fields
-							.startObject("properties"); // properties
+
+					JsonObject mappingJson = new JsonObject();
+
+					JsonObject typeJson = new JsonObject();
+					JsonObject fieldJson = new JsonObject();
+					JsonObject fieldProps = new JsonObject();
+					fieldJson.put("properties", fieldProps);
+					JsonObject typeProperties = new JsonObject();
+					typeJson.put("properties", typeProperties);
+					typeProperties.put("fields", fieldJson);
+					mappingJson.put(type, typeJson);
 
 					for (FieldSchema field : schema.getFields()) {
+						JsonObject fieldInfo = new JsonObject();
+						fieldInfo.put("type" ,field.getMappingType());
+						fieldProps.put(field.getName(), fieldInfo);
+
+						JsonObject rawInfo = new JsonObject();
+						rawInfo.put("type", field.getMappingType());
+						rawInfo.put("index", "not_analyzed");
+						JsonObject rawFieldInfo = new JsonObject();
+						rawFieldInfo.put("raw", rawInfo);
+						fieldInfo.put("fields", rawFieldInfo);
+
 						if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
 							if ("micronode".equals(((ListFieldSchema) field).getListType())) {
-								mappingBuilder.startObject(field.getName()).field("type", "nested").endObject();
+								fieldInfo.put("type", "nested");
+								fieldProps.put(field.getName(), fieldInfo);
 							}
 						}
 					}
 
-					mappingBuilder.endObject() // properties
-							.endObject() // fields
-							.endObject() // properties
-							.endObject() // type
-							.endObject(); // root object
 					if (log.isDebugEnabled()) {
-						log.debug(mappingBuilder.string());
+						log.debug(mappingJson.toString());
 					}
-					mappingRequestBuilder.setSource(mappingBuilder);
+					System.out.println(mappingJson.toString());
+					mappingRequestBuilder.setSource(mappingJson.toString());
 
 					mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
 
@@ -693,7 +708,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	@Override
 	protected JsonObject getMapping() {
 		JsonObject props = new JsonObject();
-
 		return props;
 	}
 
