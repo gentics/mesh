@@ -440,6 +440,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		int numberValue = 1200;
 		try (NoTx noTx = db.noTx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
+			content().getLatestDraftFieldContainer(english()).createNumber("speed").setNumber(92.1535f);
 			fullIndex();
 		}
 
@@ -924,7 +925,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
-	private void addNumberSpeedFieldToOneNode(int number) {
+	private void addNumberSpeedFieldToOneNode(Number number) {
 		Node node = content("concorde");
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));

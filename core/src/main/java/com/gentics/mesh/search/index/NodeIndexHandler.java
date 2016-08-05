@@ -4,7 +4,6 @@ import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,7 +13,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-import javax.swing.plaf.synth.SynthSpinnerUI;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.jettison.json.JSONArray;
@@ -22,45 +20,23 @@ import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.DateGraphField;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -70,7 +46,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
-import rx.Observable;
 
 /**
  * Handler for the node specific search index.
@@ -354,7 +329,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		map.put("language", language);
 		addSchema(map, container.getSchemaContainerVersion());
 
-		addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
+		searchProvider.addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
 		if (log.isTraceEnabled()) {
 			String json = JsonUtil.toJson(map);
 			log.trace("Search index json:");
@@ -372,172 +347,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Add node fields to the given source map.
-	 * 
-	 * @param map
-	 *            Search index document source map
-	 * @param container
-	 *            Node field container
-	 * @param fields
-	 *            List of schema fields that should be handled
-	 */
-	private void addFields(Map<String, Object> map, GraphFieldContainer container, List<? extends FieldSchema> fields) {
-		Map<String, Object> fieldsMap = new HashMap<>();
-		for (FieldSchema fieldSchema : fields) {
-			String name = fieldSchema.getName();
-			FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-
-			switch (type) {
-			case STRING:
-				StringGraphField stringField = container.getString(name);
-				if (stringField != null) {
-					fieldsMap.put(name, stringField.getString());
-				}
-				break;
-			case HTML:
-				HtmlGraphField htmlField = container.getHtml(name);
-				if (htmlField != null) {
-					fieldsMap.put(name, htmlField.getHTML());
-				}
-				break;
-			case BOOLEAN:
-				BooleanGraphField booleanField = container.getBoolean(name);
-				if (booleanField != null) {
-					fieldsMap.put(name, booleanField.getBoolean());
-				}
-				break;
-			case DATE:
-				DateGraphField dateField = container.getDate(name);
-				if (dateField != null) {
-					fieldsMap.put(name, dateField.getDate());
-				}
-				break;
-			case NUMBER:
-				NumberGraphField numberField = container.getNumber(name);
-				if (numberField != null) {
-
-					// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
-					// The mesh json parser will not deserialize numbers into BigDecimal at this point. No need to check for big decimal is therefore needed.
-					fieldsMap.put(name, numberField.getNumber());
-				}
-				break;
-			case NODE:
-				NodeGraphField nodeField = container.getNode(name);
-				if (nodeField != null) {
-					fieldsMap.put(name, nodeField.getNode().getUuid());
-				}
-				break;
-			case LIST:
-				if (fieldSchema instanceof ListFieldSchemaImpl) {
-					ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
-					switch (listFieldSchema.getListType()) {
-					case "node":
-						NodeGraphFieldList graphNodeList = container.getNodeList(fieldSchema.getName());
-						if (graphNodeList != null) {
-							List<String> nodeItems = new ArrayList<>();
-							for (NodeGraphField listItem : graphNodeList.getList()) {
-								nodeItems.add(listItem.getNode().getUuid());
-							}
-							fieldsMap.put(fieldSchema.getName(), nodeItems);
-						}
-						break;
-					case "date":
-						DateGraphFieldList graphDateList = container.getDateList(fieldSchema.getName());
-						if (graphDateList != null) {
-							List<Long> dateItems = new ArrayList<>();
-							for (DateGraphField listItem : graphDateList.getList()) {
-								dateItems.add(listItem.getDate());
-							}
-							fieldsMap.put(fieldSchema.getName(), dateItems);
-						}
-						break;
-					case "number":
-						NumberGraphFieldList graphNumberList = container.getNumberList(fieldSchema.getName());
-						if (graphNumberList != null) {
-							List<Number> numberItems = new ArrayList<>();
-							for (NumberGraphField listItem : graphNumberList.getList()) {
-								// TODO Number can also be a big decimal. We need to convert those special objects into basic numbers or else ES will not be
-								// able to store them
-								numberItems.add(listItem.getNumber());
-							}
-							fieldsMap.put(fieldSchema.getName(), numberItems);
-						}
-						break;
-					case "boolean":
-						BooleanGraphFieldList graphBooleanList = container.getBooleanList(fieldSchema.getName());
-						if (graphBooleanList != null) {
-							List<String> booleanItems = new ArrayList<>();
-							for (BooleanGraphField listItem : graphBooleanList.getList()) {
-								booleanItems.add(String.valueOf(listItem.getBoolean()));
-							}
-							fieldsMap.put(fieldSchema.getName(), booleanItems);
-						}
-						break;
-					case "micronode":
-						MicronodeGraphFieldList micronodeGraphFieldList = container.getMicronodeList(fieldSchema.getName());
-						if (micronodeGraphFieldList != null) {
-							// add list of micronode objects
-							fieldsMap.put(fieldSchema.getName(), Observable.from(micronodeGraphFieldList.getList()).map(item -> {
-								Map<String, Object> itemMap = new HashMap<>();
-								Micronode micronode = item.getMicronode();
-								addMicroschema(itemMap, micronode.getSchemaContainerVersion());
-								addFields(itemMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
-								return itemMap;
-							}).toList().toBlocking().single());
-						}
-						break;
-					case "string":
-						StringGraphFieldList graphStringList = container.getStringList(fieldSchema.getName());
-						if (graphStringList != null) {
-							List<String> stringItems = new ArrayList<>();
-							for (StringGraphField listItem : graphStringList.getList()) {
-								stringItems.add(listItem.getString());
-							}
-							fieldsMap.put(fieldSchema.getName(), stringItems);
-						}
-						break;
-					case "html":
-						HtmlGraphFieldList graphHtmlList = container.getHTMLList(fieldSchema.getName());
-						if (graphHtmlList != null) {
-							List<String> htmlItems = new ArrayList<>();
-							for (HtmlGraphField listItem : graphHtmlList.getList()) {
-								htmlItems.add(listItem.getHTML());
-							}
-							fieldsMap.put(fieldSchema.getName(), htmlItems);
-						}
-						break;
-					default:
-						log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
-						break;
-					}
-				}
-				// container.getStringList(fieldKey)
-				// ListField listField = container.getN(name);
-				// fieldsMap.put(name, htmlField.getHTML());
-				break;
-			case MICRONODE:
-				MicronodeGraphField micronodeGraphField = container.getMicronode(fieldSchema.getName());
-				if (micronodeGraphField != null) {
-					Micronode micronode = micronodeGraphField.getMicronode();
-					if (micronode != null) {
-						Map<String, Object> micronodeMap = new HashMap<>();
-						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
-						addFields(micronodeMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
-						fieldsMap.put(fieldSchema.getName(), micronodeMap);
-					}
-				}
-				break;
-			default:
-				// TODO error?
-				break;
-			}
-
-		}
-		map.put("fields", fieldsMap);
-
-	}
-
-	/**
 	 * Transform the given schema and add it to the source map.
 	 * 
 	 * @param map
@@ -551,19 +360,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		schemaFields.put(UUID_KEY, uuid);
 		schemaFields.put(VERSION_KEY, String.valueOf(schemaContainerVersion.getVersion()));
 		map.put("schema", schemaFields);
-	}
-
-	/**
-	 * Transform the given microschema container and add it to the source map.
-	 * 
-	 * @param map
-	 * @param microschemaContainerVersion
-	 */
-	private void addMicroschema(Map<String, Object> map, MicroschemaContainerVersion microschemaContainerVersion) {
-		Map<String, String> microschemaFields = new HashMap<>();
-		microschemaFields.put(NAME_KEY, microschemaContainerVersion.getName());
-		microschemaFields.put(UUID_KEY, microschemaContainerVersion.getUuid());
-		map.put("microschema", microschemaFields);
 	}
 
 	/**
@@ -658,23 +454,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					mappingJson.put(type, typeJson);
 
 					for (FieldSchema field : schema.getFields()) {
-						JsonObject fieldInfo = new JsonObject();
-						fieldInfo.put("type" ,field.getMappingType());
+						JsonObject fieldInfo = searchProvider.getMappingInfo(field);
 						fieldProps.put(field.getName(), fieldInfo);
-
-						JsonObject rawInfo = new JsonObject();
-						rawInfo.put("type", field.getMappingType());
-						rawInfo.put("index", "not_analyzed");
-						JsonObject rawFieldInfo = new JsonObject();
-						rawFieldInfo.put("raw", rawInfo);
-						fieldInfo.put("fields", rawFieldInfo);
-
-						if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
-							if ("micronode".equals(((ListFieldSchema) field).getListType())) {
-								fieldInfo.put("type", "nested");
-								fieldProps.put(field.getName(), fieldInfo);
-							}
-						}
 					}
 
 					if (log.isDebugEnabled()) {

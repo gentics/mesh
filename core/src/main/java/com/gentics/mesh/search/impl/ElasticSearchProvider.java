@@ -50,7 +50,7 @@ import rx.Single;
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
  */
-public class ElasticSearchProvider implements SearchProvider {
+public class ElasticSearchProvider extends AbstractSearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 
@@ -94,7 +94,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	/**
-	 * Initialize and start the search provider using the given options.
+	 * Initialise and start the search provider using the given options.
 	 * 
 	 * @param options
 	 * @return Fluent API

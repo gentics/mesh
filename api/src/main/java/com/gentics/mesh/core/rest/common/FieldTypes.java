@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
  * POJO model interface, rest POJO model implementation.
  */
 public enum FieldTypes {
+
 	STRING(StringFieldSchema.class, StringFieldSchemaImpl.class, StringField.class, StringFieldImpl.class),
 
 	HTML(HtmlFieldSchema.class, HtmlFieldSchemaImpl.class, HtmlField.class, HtmlFieldImpl.class),
@@ -66,6 +67,7 @@ public enum FieldTypes {
 	private Class<? extends FieldSchema> schemaImplementationClazz;
 
 	private Class<? extends Field> fieldInterfaceClass;
+	
 	private Class<? extends Field> fieldImplementationClass;
 
 	private FieldTypes(Class<? extends FieldSchema> schemaInterfaceClazz, Class<? extends FieldSchema> schemaImplementationClazz,

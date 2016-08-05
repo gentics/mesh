@@ -8,13 +8,12 @@ import java.util.Map;
 import org.elasticsearch.node.Node;
 
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.search.SearchProvider;
 
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
-public class DummySearchProvider implements SearchProvider {
+public class DummySearchProvider extends AbstractSearchProvider {
 
 	private Map<String, Map<String, Object>> updateEvents = new HashMap<>();
 	private List<String> deleteEvents = new ArrayList<>();
@@ -126,4 +125,5 @@ public class DummySearchProvider implements SearchProvider {
 	public String getVersion() {
 		return "1.0";
 	}
+
 }
