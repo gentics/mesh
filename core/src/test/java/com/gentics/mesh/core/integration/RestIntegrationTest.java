@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -13,6 +14,7 @@ import com.gentics.mesh.test.AbstractIntegrationTest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+@Ignore
 public class RestIntegrationTest extends AbstractIntegrationTest {
 
 	private static final Logger log = LoggerFactory.getLogger(RestIntegrationTest.class);
