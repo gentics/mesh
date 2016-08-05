@@ -408,7 +408,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		String initialPath = "/News/2015";
 		String newPath = "/News_new/2015_new";
 
-		// 1. create new release and migrate nodes
+		// 1. create new release and migrate node
 		db.noTx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
 			nodeMigrationHandler.migrateNodes(newRelease).await();

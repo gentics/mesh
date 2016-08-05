@@ -26,7 +26,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	public static void init(Database database) {
 		database.addVertexType(TagRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_TAG);
+		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.RELEASE_UUID_KEY);
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(TagRootImpl.class);

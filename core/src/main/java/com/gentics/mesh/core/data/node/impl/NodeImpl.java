@@ -459,7 +459,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void addTag(Tag tag, Release release) {
 		removeTag(tag, release);
-
 		TagEdge edge = addFramedEdge(HAS_TAG, tag.getImpl(), TagEdgeImpl.class);
 		edge.setReleaseUuid(release.getUuid());
 	}
