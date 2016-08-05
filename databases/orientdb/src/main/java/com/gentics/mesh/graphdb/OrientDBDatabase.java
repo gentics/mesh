@@ -198,11 +198,18 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 			String indexName = "e." + label.toLowerCase();
 			List<String> fields = new ArrayList<>(Arrays.asList("out", "in"));
-			fields.addAll(Arrays.asList(extraFields));
-
 			if (e.getClassIndex(indexName) == null) {
-				e.createIndex(indexName, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields.toArray(new String[fields.size()]));
+				e.createIndex(indexName, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields.toArray(new String[fields.size()]));
 			}
+
+			if (extraFields.length != 0) {
+				indexName += "_extra";
+				fields.addAll(Arrays.asList(extraFields));
+				if (e.getClassIndex(indexName) == null) {
+					e.createIndex(indexName, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields.toArray(new String[fields.size()]));
+				}
+			}
+
 		} finally {
 			tx.shutdown();
 		}
