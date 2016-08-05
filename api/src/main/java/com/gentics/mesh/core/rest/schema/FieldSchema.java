@@ -89,11 +89,4 @@ public interface FieldSchema {
 
 	Map<String, Object> getAllChangeProperties();
 
-	/**
-	 * Return the elastic search specific mapping type.
-	 * 
-	 * @return
-	 */
-	@JsonIgnore
-	String getMappingType();
 }

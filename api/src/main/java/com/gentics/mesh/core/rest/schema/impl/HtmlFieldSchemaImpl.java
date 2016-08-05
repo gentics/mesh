@@ -9,10 +9,4 @@ public class HtmlFieldSchemaImpl extends AbstractFieldSchema implements HtmlFiel
 	public String getType() {
 		return FieldTypes.HTML.toString();
 	}
-
-	@Override
-	public String getMappingType() {
-		return "string";
-	}
-
 }

@@ -40,10 +40,4 @@ public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFiel
 			setAllowedSchemas((String[]) fieldProperties.get("allowedSchemas"));
 		}
 	}
-
-	@Override
-	public String getMappingType() {
-		return "string";
-	}
-
 }

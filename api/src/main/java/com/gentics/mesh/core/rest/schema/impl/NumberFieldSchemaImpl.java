@@ -48,10 +48,4 @@ public class NumberFieldSchemaImpl extends AbstractFieldSchema implements Number
 	public String getType() {
 		return FieldTypes.NUMBER.toString();
 	}
-
-	@Override
-	public String getMappingType() {
-		return "long";
-	}
-
 }

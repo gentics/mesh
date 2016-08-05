@@ -111,10 +111,4 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 			throw error(BAD_REQUEST, "schema_error_list_type_invalid", getListType(), getName());
 		}
 	}
-
-	@Override
-	public String getMappingType() {
-		return "array";
-	}
-
 }

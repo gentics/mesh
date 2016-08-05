@@ -43,9 +43,4 @@ public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements Mic
 			setAllowedMicroSchemas((String[]) fieldProperties.get(SchemaChangeModel.ALLOW_KEY));
 		}
 	}
-
-	@Override
-	public String getMappingType() {
-		return "nested";
-	}
 }

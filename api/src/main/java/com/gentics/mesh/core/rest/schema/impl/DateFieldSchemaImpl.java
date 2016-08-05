@@ -9,10 +9,4 @@ public class DateFieldSchemaImpl extends AbstractFieldSchema implements DateFiel
 	public String getType() {
 		return FieldTypes.DATE.toString();
 	}
-
-	@Override
-	public String getMappingType() {
-		return "date";
-	}
-
 }
