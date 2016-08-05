@@ -210,14 +210,16 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			});
 
 			SearchQueueBatch batch = tuple.v1();
+			Project project = tuple.v2();
+			String name = project.getName();
+
 			Single<Project> single = Single.create(sub -> {
-				Project project = tuple.v2();
 
 				try {
 					//TODO BUG project should only be added to router when trx and ES finished successfully
-					routerStorage.addProjectRouter(project.getName());
+					routerStorage.addProjectRouter(name);
 					if (log.isInfoEnabled()) {
-						log.info("Registered project {" + project.getName() + "}");
+						log.info("Registered project {" + name + "}");
 					}
 					sub.onSuccess(project);
 				} catch (InvalidNameException e) {
