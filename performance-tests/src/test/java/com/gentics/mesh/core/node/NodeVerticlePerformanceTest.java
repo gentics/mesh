@@ -38,12 +38,12 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(100)));
 		});
 	}
-	
+
 	@Test
 	public void testReadSingleNode() {
 		String uuid = db.noTx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.read-by-uuid", 200, (step) -> {
-			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new PagingParameters().setPerPage(100)));
+			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
 		});
 	}
 

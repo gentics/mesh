@@ -10,7 +10,6 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
 public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
@@ -27,17 +26,6 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
 		authentication.setLogin(username, password);
-		return this;
-	}
-
-	@Override
-	public MeshRestClient initializeAuthenticationProvider(RoutingContext context) {
-		String authHeader = context.request().getHeader("Authentication");
-		if (authHeader == null || authHeader.startsWith("Basic")) {
-			authentication = new BasicAuthentication(context);
-		} else if (authHeader.startsWith("Bearer")) {
-			authentication = new JWTAuthentication(context);
-		}
 		return this;
 	}
 

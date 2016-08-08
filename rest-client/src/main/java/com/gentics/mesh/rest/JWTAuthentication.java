@@ -29,17 +29,17 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 	public Completable addAuthenticationInformation(HttpClientRequest request) {
 		//TODO: request new Token when old one expires
 
-		if (authHeader != null) {
+//		if (authHeader != null) {
 			request.headers().add("Authorization", "Bearer " + token);
 			return Completable.complete();
-		} else if (loginRequest == null) {
-			return Completable.complete();
-		} else {
-			return loginRequest.map(x -> {
-				request.headers().add("Authorization", "Bearer " + token);
-				return null;
-			}).toCompletable();
-		}
+//		} else if (loginRequest == null) {
+//			return Completable.complete();
+//		} else {
+//			return loginRequest.map(x -> {
+//				request.headers().add("Authorization", "Bearer " + token);
+//				return null;
+//			}).toCompletable();
+//		}
 	}
 
 	@Override

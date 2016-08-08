@@ -973,12 +973,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRestClient initializeAuthenticationProvider(RoutingContext context) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void close() {
 		// TODO Auto-generated method stub
 	}

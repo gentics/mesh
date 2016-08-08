@@ -441,9 +441,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				mappingRequestBuilder.setType(type);
 
 				try {
-
 					JsonObject mappingJson = new JsonObject();
-
 					JsonObject typeJson = new JsonObject();
 					JsonObject fieldJson = new JsonObject();
 					JsonObject fieldProps = new JsonObject();

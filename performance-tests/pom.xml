@@ -4,7 +4,7 @@
 
 	<artifactId>mesh-performance-tests</artifactId>
 	<packaging>jar</packaging>
-	<name>Mesh - Core</name>
+	<name>Mesh - Performance Tests</name>
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
