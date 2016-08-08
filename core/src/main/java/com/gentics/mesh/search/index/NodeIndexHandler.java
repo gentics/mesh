@@ -53,17 +53,17 @@ import rx.Completable;
  * <p>
  * Format:
  * <ul>
- * <li>Document Id: [:uuid]-[:languageTag]</li>
+ * <li>Document Id: [:uuid-:languageTag]</li>
  * <li>Example: 234ef7f2510e4d0e8ef9f2210e0d0ec2-en</li>
  * </ul>
  * 
  * <ul>
- * <li>Document Type: [:schemaName]-[:schemaVersion]</li>
+ * <li>Document Type: [:schemaName-:schemaVersion]</li>
  * <li>Example: content-1</li>
  * </ul>
  * 
  * <ul>
- * <li>Document Index: [node-[:projectUuid]-[:releaseUuid]-[:versionType]</li>
+ * <li>Document Index: [node-:projectUuid-:releaseUuid-:versionType]</li>
  * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
  * </ul>
  * <p>
@@ -193,7 +193,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	protected Map<String, Object> transformToDocumentMap(Node object) {
+	protected JsonObject transformToDocument(Node object) {
 		throw new NotImplementedException("Nodes can't be directly transformed due to i18n support.");
 	}
 
@@ -300,7 +300,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Generate a flat property map from the given container and store the map within the search index.
+	 * Generate an elasticsearch document object from the given container and stores it in the search index.
 	 * 
 	 * @param container
 	 * @param indexName
@@ -312,26 +312,26 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Completable storeContainer(NodeGraphFieldContainer container, String indexName, String releaseUuid) {
 
 		Node node = container.getParentNode();
-		Map<String, Object> map = new HashMap<>();
-		addUser(map, "editor", container.getEditor());
-		map.put("edited", container.getLastEditedTimestamp());
-		addBasicReferences(map, node);
-		addProject(map, node.getProject());
-		addTags(map, node.getTags(node.getProject().getLatestRelease()));
+		JsonObject document = new JsonObject();
+		addUser(document, "editor", container.getEditor());
+		document.put("edited", container.getLastEditedTimestamp());
+		addBasicReferences(document, node);
+		addProject(document, node.getProject());
+		addTags(document, node.getTags(node.getProject().getLatestRelease()));
 
 		// The basenode has no parent.
 		if (node.getParentNode(releaseUuid) != null) {
-			addParentNodeInfo(map, node.getParentNode(releaseUuid));
+			addParentNodeInfo(document, node.getParentNode(releaseUuid));
 		}
 
-		map.remove("language");
+		document.remove("language");
 		String language = container.getLanguage().getLanguageTag();
-		map.put("language", language);
-		addSchema(map, container.getSchemaContainerVersion());
+		document.put("language", language);
+		addSchema(document, container.getSchemaContainerVersion());
 
-		searchProvider.addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
+		searchProvider.addFields(document, container, container.getSchemaContainerVersion().getSchema().getFields());
 		if (log.isTraceEnabled()) {
-			String json = JsonUtil.toJson(map);
+			String json = document.toString();
 			log.trace("Search index json:");
 			log.trace(json);
 		}
@@ -340,35 +340,35 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		Map<String, String> displayFieldMap = new HashMap<>();
 		displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
 		displayFieldMap.put("value", container.getDisplayFieldValue());
-		map.put("displayField", displayFieldMap);
+		document.put("displayField", displayFieldMap);
 		return searchProvider.storeDocument(indexName, getDocumentType(container.getSchemaContainerVersion()),
-				composeDocumentId(container.getParentNode(), language), map);
+				composeDocumentId(container.getParentNode(), language), document);
 
 	}
 
 	/**
 	 * Transform the given schema and add it to the source map.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param schemaContainerVersion
 	 */
-	private void addSchema(Map<String, Object> map, SchemaContainerVersion schemaContainerVersion) {
+	private void addSchema(JsonObject document, SchemaContainerVersion schemaContainerVersion) {
 		String name = schemaContainerVersion.getName();
 		String uuid = schemaContainerVersion.getSchemaContainer().getUuid();
 		Map<String, String> schemaFields = new HashMap<>();
 		schemaFields.put(NAME_KEY, name);
 		schemaFields.put(UUID_KEY, uuid);
 		schemaFields.put(VERSION_KEY, String.valueOf(schemaContainerVersion.getVersion()));
-		map.put("schema", schemaFields);
+		document.put("schema", schemaFields);
 	}
 
 	/**
 	 * Use the given node to populate the parent node fields within the source map.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param parentNode
 	 */
-	private void addParentNodeInfo(Map<String, Object> map, Node parentNode) {
+	private void addParentNodeInfo(JsonObject document, Node parentNode) {
 		Map<String, Object> parentNodeInfo = new HashMap<>();
 		parentNodeInfo.put(UUID_KEY, parentNode.getUuid());
 		// TODO check whether nesting of nested elements would also work
@@ -376,7 +376,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		// (n:Node)->(sSchemaContainer) ?
 		// parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
 		// parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
-		map.put("parentNode", parentNodeInfo);
+		document.put("parentNode", parentNodeInfo);
 	}
 
 	/**
@@ -433,7 +433,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            schema
 	 * @return observable
 	 */
-	protected Completable setNodeIndexMapping(String indexName, String type, Schema schema) {
+	public Completable setNodeIndexMapping(String indexName, String type, Schema schema) {
 		// Check whether the search provider is a dummy provider or not
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
@@ -461,9 +461,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					if (log.isDebugEnabled()) {
 						log.debug(mappingJson.toString());
 					}
-					System.out.println(mappingJson.toString());
 					mappingRequestBuilder.setSource(mappingJson.toString());
-
 					mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
 
 						@Override

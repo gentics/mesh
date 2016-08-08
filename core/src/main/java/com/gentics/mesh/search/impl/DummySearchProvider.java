@@ -9,15 +9,16 @@ import org.elasticsearch.node.Node;
 
 import com.gentics.mesh.core.rest.schema.Schema;
 
+import io.vertx.core.json.JsonObject;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
 public class DummySearchProvider extends AbstractSearchProvider {
 
-	private Map<String, Map<String, Object>> updateEvents = new HashMap<>();
+	private Map<String, JsonObject> updateEvents = new HashMap<>();
 	private List<String> deleteEvents = new ArrayList<>();
-	private Map<String, Map<String, Object>> storeEvents = new HashMap<>();
+	private Map<String, JsonObject> storeEvents = new HashMap<>();
 	private List<String> getEvents = new ArrayList<>();
 
 	@Override
@@ -31,9 +32,9 @@ public class DummySearchProvider extends AbstractSearchProvider {
 
 	@Override
 
-	public Completable updateDocument(String index, String type, String uuid, Map<String, Object> map) {
+	public Completable updateDocument(String index, String type, String uuid, JsonObject document) {
 		return Completable.fromAction(() -> {
-			updateEvents.put(index + "-" + type + "-" + uuid, map);
+			updateEvents.put(index + "-" + type + "-" + uuid, document);
 		});
 	}
 
@@ -55,9 +56,9 @@ public class DummySearchProvider extends AbstractSearchProvider {
 	}
 
 	@Override
-	public Completable storeDocument(String index, String type, String uuid, Map<String, Object> map) {
+	public Completable storeDocument(String index, String type, String uuid, JsonObject document) {
 		return Completable.fromAction(() -> {
-			storeEvents.put(index + "-" + type + "-" + uuid, map);
+			storeEvents.put(index + "-" + type + "-" + uuid, document);
 		});
 	}
 
@@ -82,7 +83,7 @@ public class DummySearchProvider extends AbstractSearchProvider {
 		return null;
 	}
 
-	public Map<String, Map<String, Object>> getStoreEvents() {
+	public Map<String, JsonObject> getStoreEvents() {
 		return storeEvents;
 	}
 
@@ -90,7 +91,7 @@ public class DummySearchProvider extends AbstractSearchProvider {
 		return deleteEvents;
 	}
 
-	public Map<String, Map<String, Object>> getUpdateEvents() {
+	public Map<String, JsonObject> getUpdateEvents() {
 		return updateEvents;
 	}
 

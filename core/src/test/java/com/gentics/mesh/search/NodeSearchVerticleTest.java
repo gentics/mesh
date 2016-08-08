@@ -56,6 +56,7 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
@@ -139,7 +140,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
-	public void testSearchAndSort() throws InterruptedException {
+	public void testSearchAndSort() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
@@ -177,7 +178,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	@Override
-	public void testDocumentDeletion() throws InterruptedException, JSONException {
+	public void testDocumentDeletion() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
@@ -199,7 +200,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
-	public void testCustomQuery() throws InterruptedException, JSONException {
+	public void testCustomQuery() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
@@ -212,7 +213,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
-	public void testSearchForChildNodes() throws JSONException, InterruptedException {
+	public void testSearchForChildNodes() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
@@ -301,7 +302,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
-	public void testSearchContent() throws InterruptedException, JSONException {
+	public void testSearchContent() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
@@ -318,7 +319,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
-	public void testSearchContentResolveLinksAndLangFallback() throws InterruptedException, JSONException {
+	public void testSearchContentResolveLinksAndLangFallback() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
@@ -335,7 +336,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
-	public void testSearchContentResolveLinks() throws InterruptedException, JSONException {
+	public void testSearchContentResolveLinks() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
@@ -359,7 +360,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	 * @throws JSONException
 	 */
 	@Test
-	public void testSearchEnglish() throws InterruptedException, JSONException {
+	public void testSearchEnglish() throws Exception {
 		searchWithLanguages("en");
 	}
 
@@ -370,7 +371,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	 * @throws JSONException
 	 */
 	@Test
-	public void testSearchGerman() throws InterruptedException, JSONException {
+	public void testSearchGerman() throws Exception {
 		searchWithLanguages("de");
 	}
 
@@ -382,7 +383,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	 * @throws JSONException
 	 */
 	@Test
-	public void testSearchMultipleLanguages() throws InterruptedException, JSONException {
+	public void testSearchMultipleLanguages() throws Exception {
 		searchWithLanguages("de", "en");
 	}
 
@@ -393,7 +394,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	 * @throws InterruptedException
 	 * @throws JSONException
 	 */
-	protected void searchWithLanguages(String... expectedLanguages) throws InterruptedException, JSONException {
+	protected void searchWithLanguages(String... expectedLanguages) throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
@@ -449,6 +450,52 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 900, 1500), new VersioningParameters().draft()));
 		assertEquals("We could expect to find the node with the given seed number field since the value {" + numberValue
 				+ "} is between the search range.", 1, response.getData().size());
+	}
+
+	@Test
+	public void testSearchBinaryField() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			Node nodeA = content("concorde");
+			Node nodeB = content();
+			Schema schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
+			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
+			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
+
+			//image
+			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.jpg").setFileSize(200).setImageHeight(200)
+					.setImageWidth(400).setMimeType("image/jpeg").setSHA512Sum("someHash").setImageDominantColor("#super");
+
+			// file
+			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.dat").setFileSize(200)
+					.setMimeType("application/test").setSHA512Sum("someHash");
+			fullIndex();
+		}
+
+		// filesize
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.filesize", 100, 300), new VersioningParameters().draft()));
+		assertEquals("Exactly two nodes should be found for the given filesize range.", 2, response.getData().size());
+
+		// width
+		response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.width", 300, 500), new VersioningParameters().draft()));
+		assertEquals("Exactly one node should be found for the given image width range.", 1, response.getData().size());
+
+		// height
+		response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.height", 100, 300), new VersioningParameters().draft()));
+		assertEquals("Exactly one node should be found for the given image height range.", 1, response.getData().size());
+
+		// dominantColor
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.dominantColor", "#super"),
+				new VersioningParameters().draft()));
+		assertEquals("Exactly one node should be found for the given image dominant color.", 1, response.getData().size());
+
+		// mimeType
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType", "image/jpeg"),
+				new VersioningParameters().draft()));
+		assertEquals("Exactly one node should be found for the given image mime type.", 1, response.getData().size());
+
 	}
 
 	@Test
@@ -664,7 +711,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	 * @throws InterruptedException
 	 */
 	@Test
-	public void testTagCount() throws JSONException, InterruptedException {
+	public void testTagCount() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
@@ -762,7 +809,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
-	public void testReindexNodeIndex() throws InterruptedException {
+	public void testReindexNodeIndex() throws Exception {
 
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();

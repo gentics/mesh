@@ -44,9 +44,11 @@ public interface SearchProvider {
 	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid of the document
-	 * @param transformToDocumentMap
+	 * @param document
+	 *            Document which should be stored
+	 * 
 	 */
-	Completable updateDocument(String indexName, String type, String uuid, Map<String, Object> transformToDocumentMap);
+	Completable updateDocument(String indexName, String type, String uuid, JsonObject document);
 
 	/**
 	 * Delete the given document and invoke the handler when the document has been deleted or an error occurred.
@@ -69,10 +71,10 @@ public interface SearchProvider {
 	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid for the document
-	 * @param map
-	 *            Map that holds the document properties
+	 * @param document
+	 *            JSON Object which holds the document data
 	 */
-	Completable storeDocument(String indexName, String type, String uuid, Map<String, Object> map);
+	Completable storeDocument(String indexName, String type, String uuid, JsonObject document);
 
 	/**
 	 * Get the given document and invoke the handler when the document has been loaded or an error occurred.
@@ -178,13 +180,13 @@ public interface SearchProvider {
 	/**
 	 * Add node fields to the given source map.
 	 * 
-	 * @param map
-	 *            Search index document source map
+	 * @param document
+	 *            Search index document
 	 * @param container
 	 *            Node field container
 	 * @param fields
 	 *            List of schema fields that should be handled
 	 */
-	void addFields(Map<String, Object> map, GraphFieldContainer container, List<? extends FieldSchema> fields);
+	void addFields(JsonObject document, GraphFieldContainer container, List<? extends FieldSchema> fields);
 
 }

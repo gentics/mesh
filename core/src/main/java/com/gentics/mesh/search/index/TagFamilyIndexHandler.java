@@ -101,13 +101,13 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	protected Map<String, Object> transformToDocumentMap(TagFamily tagFamily) {
-		Map<String, Object> map = new HashMap<>();
-		map.put(NAME_KEY, tagFamily.getName());
-		addBasicReferences(map, tagFamily);
-		addTags(map, tagFamily.getTagRoot().findAll());
-		addProject(map, tagFamily.getProject());
-		return map;
+	protected JsonObject transformToDocument(TagFamily tagFamily) {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.put(NAME_KEY, tagFamily.getName());
+		addBasicReferences(jsonObject, tagFamily);
+		addTags(jsonObject, tagFamily.getTagRoot().findAll());
+		addProject(jsonObject, tagFamily.getProject());
+		return jsonObject;
 	}
 
 	@Override

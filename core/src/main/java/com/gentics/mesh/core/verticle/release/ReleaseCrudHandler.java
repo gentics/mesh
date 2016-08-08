@@ -7,10 +7,12 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
@@ -23,6 +25,8 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.NodeIndexHandler;
 
 import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Observable;
@@ -33,6 +37,9 @@ import rx.Single;
  */
 @Component
 public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResponse> {
+
+	@Autowired
+	private NodeIndexHandler nodeIndexHandler;
 
 	@Override
 	public RootVertex<Release> getRootVertex(InternalActionContext ac) {
@@ -71,12 +78,14 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			RootVertex<Release> root = getRootVertex(ac);
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(release -> {
 				SchemaReferenceList schemaReferenceList = ac.fromJson(SchemaReferenceList.class);
-				SchemaContainerRoot schemaContainerRoot = ac.getProject().getSchemaContainerRoot();
-
+				Project project = ac.getProject();
+				SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 				return db.tx(() -> {
 					// Resolve the list of references to graph schema container versions
 					Observable<SchemaContainerVersion> obs = Observable.from(schemaReferenceList)
 							.flatMap(reference -> schemaContainerRoot.fromReference(reference).toObservable());
+
+					// Invoke schema migration for each found schema version
 					obs.toBlocking().forEach(version -> {
 						SchemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
 						if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
@@ -84,6 +93,12 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 									Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
 						}
 						release.assignSchemaVersion(version);
+
+						// Update the index type specific ES mapping
+						nodeIndexHandler.setNodeIndexMapping("node-" + project.getUuid() + "-" + release.getUuid() + "-draft",
+								version.getName() + "-" + version.getVersion(), version.getSchema()).await();
+						nodeIndexHandler.setNodeIndexMapping("node-" + project.getUuid() + "-" + release.getUuid() + "-published",
+								version.getName() + "-" + version.getVersion(), version.getSchema()).await();
 
 						DeliveryOptions options = new DeliveryOptions();
 						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());

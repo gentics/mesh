@@ -41,6 +41,7 @@ import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
@@ -239,14 +240,14 @@ public class ElasticSearchProvider extends AbstractSearchProvider {
 	}
 
 	@Override
-	public Completable updateDocument(String index, String type, String uuid, Map<String, Object> map) {
+	public Completable updateDocument(String index, String type, String uuid, JsonObject document) {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
 				log.debug("Updating object {" + uuid + ":" + type + "} to index.");
 			}
 			UpdateRequestBuilder builder = getSearchClient().prepareUpdate(index, type, uuid);
-			builder.setDoc(map);
+			builder.setDoc(document.toString());
 			builder.execute().addListener(new ActionListener<UpdateResponse>() {
 
 				@Override
@@ -269,7 +270,7 @@ public class ElasticSearchProvider extends AbstractSearchProvider {
 	}
 
 	@Override
-	public Completable storeDocument(String index, String type, String uuid, Map<String, Object> map) {
+	public Completable storeDocument(String index, String type, String uuid, JsonObject document) {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
@@ -277,7 +278,7 @@ public class ElasticSearchProvider extends AbstractSearchProvider {
 			}
 			IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
 
-			builder.setSource(map);
+			builder.setSource(document.toString());
 			builder.execute().addListener(new ActionListener<IndexResponse>() {
 
 				@Override

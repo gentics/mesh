@@ -65,7 +65,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	}
 
 	@Test
-	public void testSearchSchema() throws InterruptedException, JSONException {
+	public void testSearchSchema() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}

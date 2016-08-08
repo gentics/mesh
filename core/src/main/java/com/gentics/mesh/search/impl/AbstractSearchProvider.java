@@ -28,8 +28,8 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -42,7 +42,7 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 
 	@Override
-	public void addFields(Map<String, Object> map, GraphFieldContainer container, List<? extends FieldSchema> fields) {
+	public void addFields(JsonObject document, GraphFieldContainer container, List<? extends FieldSchema> fields) {
 		Map<String, Object> fieldsMap = new HashMap<>();
 		for (FieldSchema fieldSchema : fields) {
 			String name = fieldSchema.getName();
@@ -67,11 +67,11 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 					JsonObject binaryFieldInfo = new JsonObject();
 					fieldsMap.put(name, binaryFieldInfo);
 					binaryFieldInfo.put("filename", binaryField.getFileName());
+					binaryFieldInfo.put("filesize", binaryField.getFileSize());
 					binaryFieldInfo.put("width", binaryField.getImageWidth());
 					binaryFieldInfo.put("height", binaryField.getImageHeight());
 					binaryFieldInfo.put("mimeType", binaryField.getMimeType());
 					binaryFieldInfo.put("dominantColor", binaryField.getImageDominantColor());
-					//TODO also store width, height, dominant color, mimetype
 				}
 				break;
 			case BOOLEAN:
@@ -152,7 +152,7 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 						if (micronodeGraphFieldList != null) {
 							// add list of micronode objects
 							fieldsMap.put(fieldSchema.getName(), Observable.from(micronodeGraphFieldList.getList()).map(item -> {
-								Map<String, Object> itemMap = new HashMap<>();
+								JsonObject itemMap = new JsonObject();
 								Micronode micronode = item.getMicronode();
 								addMicroschema(itemMap, micronode.getSchemaContainerVersion());
 								addFields(itemMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
@@ -194,7 +194,7 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 				if (micronodeGraphField != null) {
 					Micronode micronode = micronodeGraphField.getMicronode();
 					if (micronode != null) {
-						Map<String, Object> micronodeMap = new HashMap<>();
+						JsonObject micronodeMap = new JsonObject();
 						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
 						addFields(micronodeMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
 						fieldsMap.put(fieldSchema.getName(), micronodeMap);
@@ -207,7 +207,7 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 			}
 
 		}
-		map.put("fields", fieldsMap);
+		document.put("fields", fieldsMap);
 
 	}
 
@@ -260,6 +260,12 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 			filenameInfo.put("index", "not_analyzed");
 			binaryProps.put("filename", filenameInfo);
 
+			// filesize
+			JsonObject filesizeInfo = new JsonObject();
+			filesizeInfo.put("type", "long");
+			filesizeInfo.put("index", "not_analyzed");
+			binaryProps.put("filesize", filesizeInfo);
+
 			// mimeType
 			JsonObject mimeTypeInfo = new JsonObject();
 			mimeTypeInfo.put("type", "string");
@@ -282,7 +288,7 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 			JsonObject dominantColorInfo = new JsonObject();
 			dominantColorInfo.put("type", "string");
 			dominantColorInfo.put("index", "not_analyzed");
-			binaryProps.put("height", dominantColorInfo);
+			binaryProps.put("dominantColor", dominantColorInfo);
 			break;
 		case NUMBER:
 			// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
@@ -291,7 +297,7 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 			break;
 		case NODE:
 			fieldInfo.put("type", "string");
-			fieldInfo.put("index", "standard");
+			fieldInfo.put("index", "not_analyzed");
 			break;
 		case LIST:
 			if (fieldSchema instanceof ListFieldSchemaImpl) {
@@ -341,11 +347,11 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 	 * @param map
 	 * @param microschemaContainerVersion
 	 */
-	private void addMicroschema(Map<String, Object> map, MicroschemaContainerVersion microschemaContainerVersion) {
-		Map<String, String> microschemaFields = new HashMap<>();
-		microschemaFields.put(NAME_KEY, microschemaContainerVersion.getName());
-		microschemaFields.put(UUID_KEY, microschemaContainerVersion.getUuid());
-		map.put("microschema", microschemaFields);
+	private void addMicroschema(JsonObject document, MicroschemaContainerVersion microschemaContainerVersion) {
+		JsonObject info = new JsonObject();
+		info.put(NAME_KEY, microschemaContainerVersion.getName());
+		info.put(UUID_KEY, microschemaContainerVersion.getUuid());
+		document.put("microschema", info);
 	}
 
 }

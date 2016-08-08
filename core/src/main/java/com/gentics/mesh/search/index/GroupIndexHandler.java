@@ -6,8 +6,6 @@ import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -68,11 +66,11 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	protected Map<String, Object> transformToDocumentMap(Group group) {
-		Map<String, Object> map = new HashMap<>();
-		map.put(NAME_KEY, group.getName());
-		addBasicReferences(map, group);
-		return map;
+	protected JsonObject transformToDocument(Group group) {
+		JsonObject document = new JsonObject();
+		document.put(NAME_KEY, group.getName());
+		addBasicReferences(document, group);
+		return document;
 	}
 
 	@Override

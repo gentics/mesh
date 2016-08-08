@@ -49,6 +49,8 @@ import com.gentics.mesh.search.index.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.search.index.UserIndexHandler;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * Search document example JSON generator
  * 
@@ -200,13 +202,14 @@ public class SearchModelGenerator extends AbstractGenerator {
 	}
 
 	private void writeStoreEvent(String name) throws Exception {
-		Map<String, Object> eventMap = provider.getStoreEvents().values().iterator().next();
+		JsonObject eventMap = provider.getStoreEvents().values().iterator().next();
 		if (eventMap == null) {
 			throw new RuntimeException("Could not find event to handle");
 		}
 		Map<String, Object> outputMap = new TreeMap<>();
 		// System.out.println(new JSONObject(eventMap).toString(4));
-		flatten(eventMap, outputMap, null);
+		//TODO flatten json?
+//		flatten(eventMap, outputMap, null);
 		JSONObject json = new JSONObject(outputMap);
 		write(json, name);
 		provider.reset();

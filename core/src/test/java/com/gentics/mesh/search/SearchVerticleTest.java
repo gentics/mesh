@@ -79,7 +79,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testClearIndex() throws InterruptedException {
+	public void testClearIndex() throws Exception {
 		try (NoTx noTrx = db.noTx()) {
 			fullIndex();
 		}

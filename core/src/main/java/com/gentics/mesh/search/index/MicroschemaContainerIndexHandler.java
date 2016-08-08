@@ -8,8 +8,6 @@ import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -70,12 +68,12 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	protected Map<String, Object> transformToDocumentMap(MicroschemaContainer microschema) {
-		Map<String, Object> map = new HashMap<>();
-		addBasicReferences(map, microschema);
-		map.put(NAME_KEY, microschema.getName());
+	protected JsonObject transformToDocument(MicroschemaContainer microschema) {
+		JsonObject info = new JsonObject();
+		addBasicReferences(info, microschema);
+		info.put(NAME_KEY, microschema.getName());
 		//map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
-		return map;
+		return info;
 	}
 
 	@Override

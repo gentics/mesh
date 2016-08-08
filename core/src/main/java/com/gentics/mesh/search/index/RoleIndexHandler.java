@@ -6,8 +6,6 @@ import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -68,11 +66,11 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	protected Map<String, Object> transformToDocumentMap(Role role) {
-		Map<String, Object> map = new HashMap<>();
-		map.put(NAME_KEY, role.getName());
-		addBasicReferences(map, role);
-		return map;
+	protected JsonObject transformToDocument(Role role) {
+		JsonObject document = new JsonObject();
+		document.put(NAME_KEY, role.getName());
+		addBasicReferences(document, role);
+		return document;
 	}
 
 	@Override

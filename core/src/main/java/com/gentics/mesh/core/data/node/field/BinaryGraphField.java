@@ -89,8 +89,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	 * Copy the values of this field to the specified target field.
 	 * 
 	 * @param target
+	 * @return Fluent API
 	 */
-	void copyTo(BinaryGraphField target);
+	BinaryGraphField copyTo(BinaryGraphField target);
 
 	/**
 	 * Check whether the binary data represents an image.
@@ -103,8 +104,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	 * Set the binary filename.
 	 * 
 	 * @param filenName
+	 * @return Fluent API
 	 */
-	void setFileName(String filenName);
+	BinaryGraphField setFileName(String filenName);
 
 	/**
 	 * Return the binary mime type of the node.
@@ -117,8 +119,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	 * Set the binary mime type of the node.
 	 * 
 	 * @param mimeType
+	 * @return Fluent API
 	 */
-	void setMimeType(String mimeType);
+	BinaryGraphField setMimeType(String mimeType);
 
 	/**
 	 * Return future that holds a buffer reference to the binary file data.
@@ -138,8 +141,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	 * Set the binary file size in bytes
 	 * 
 	 * @param sizeInBytes
+	 * @return Fluent API
 	 */
-	void setFileSize(long sizeInBytes);
+	BinaryGraphField setFileSize(long sizeInBytes);
 
 	/**
 	 * Return the binary file size in bytes
@@ -152,8 +156,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	 * Set the binary SHA 512 checksum.
 	 * 
 	 * @param sha512HashSum
+	 * @return Fluent API
 	 */
-	void setSHA512Sum(String sha512HashSum);
+	BinaryGraphField setSHA512Sum(String sha512HashSum);
 
 	/**
 	 * Return the binary SHA 512 checksum.
@@ -187,8 +192,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	 * Set the image width of the binary image.
 	 * 
 	 * @param width
+	 * @return Fluent API
 	 */
-	void setImageWidth(Integer width);
+	BinaryGraphField setImageWidth(Integer width);
 
 	/**
 	 * Return the width of the binary image.
@@ -201,8 +207,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	 * Set the with of the binary image. You can set this null to indicate that the binary data has no height.
 	 * 
 	 * @param heigth
+	 * @return Fluent API
 	 */
-	void setImageHeight(Integer heigth);
+	BinaryGraphField setImageHeight(Integer heigth);
 
 	/**
 	 * Returns the segmented path that points to the binary file within the binary file location. The segmented path is build using the uuid of the binary field
