@@ -9,5 +9,4 @@ public class BooleanFieldSchemaImpl extends AbstractFieldSchema implements Boole
 	public String getType() {
 		return FieldTypes.BOOLEAN.toString();
 	}
-
 }

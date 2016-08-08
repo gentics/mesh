@@ -51,7 +51,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public void copyTo(BinaryGraphField target) {
+	public BinaryGraphField copyTo(BinaryGraphField target) {
 		for (String key : getPropertyKeys()) {
 			//Don't copy the uuid
 			if ("uuid".equals(key)) {
@@ -60,6 +60,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 			Object value = getProperty(key);
 			target.getImpl().setProperty(key, value);
 		}
+		return this;
 	}
 
 	@Override
@@ -105,8 +106,9 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public void setImageWidth(Integer width) {
+	public BinaryGraphField setImageWidth(Integer width) {
 		setProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
+		return this;
 	}
 
 	@Override
@@ -115,8 +117,9 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public void setImageHeight(Integer heigth) {
+	public BinaryGraphField setImageHeight(Integer heigth) {
 		setProperty(BINARY_IMAGE_HEIGHT_PROPERTY_KEY, heigth);
+		return this;
 	}
 
 	@Override
@@ -135,8 +138,9 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public void setSHA512Sum(String sha512HashSum) {
+	public BinaryGraphField setSHA512Sum(String sha512HashSum) {
 		setProperty(BINARY_SHA512SUM_PROPERTY_KEY, sha512HashSum);
+		return this;
 	}
 
 	@Override
@@ -146,13 +150,15 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public void setFileSize(long sizeInBytes) {
+	public BinaryGraphField setFileSize(long sizeInBytes) {
 		setProperty(BINARY_FILESIZE_PROPERTY_KEY, sizeInBytes);
+		return this;
 	}
 
 	@Override
-	public void setFileName(String filenName) {
+	public BinaryGraphField setFileName(String filenName) {
 		setProperty(BINARY_FILENAME_PROPERTY_KEY, filenName);
+		return this;
 	}
 
 	@Override
@@ -166,8 +172,9 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public void setMimeType(String contentType) {
+	public BinaryGraphField setMimeType(String contentType) {
 		setProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY, contentType);
+		return this;
 	}
 
 	@Override

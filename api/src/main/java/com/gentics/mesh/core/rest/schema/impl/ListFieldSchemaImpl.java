@@ -16,8 +16,8 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFieldSchema {
 
-//	private Integer min;
-//	private Integer max;
+	//	private Integer min;
+	//	private Integer max;
 
 	@JsonProperty("allow")
 	private String[] allowedSchemas;
@@ -111,5 +111,4 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 			throw error(BAD_REQUEST, "schema_error_list_type_invalid", getListType(), getName());
 		}
 	}
-
 }

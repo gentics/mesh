@@ -18,9 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.search.index.IndexHandler;
+import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
+import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -42,6 +47,9 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 
 	@Autowired
 	private IndexHandlerRegistry registry;
+
+	@Autowired
+	private NodeIndexHandler nodeIndexHandler;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -107,7 +115,21 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 		return "{ \"query\": " + range.toString() + "}";
 	}
 
-	protected void fullIndex() throws InterruptedException {
+	protected void fullIndex() throws InterruptedException, InvalidArgumentException {
+		Project project = project();
+		for (Release release : project.getReleaseRoot().findAll()) {
+			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+				String type = version.getName() + "-" + version.getVersion();
+				String drafIndex = "node-" + project.getUuid() + "-" + release.getUuid() + "-draft";
+				log.debug("Creating schema mapping for index {" + drafIndex + "}");
+				nodeIndexHandler.setNodeIndexMapping(drafIndex, type, version.getSchema()).await();
+
+				String publishIndex = "node-" + project.getUuid() + "-" + release.getUuid() + "-published";
+				log.debug("Creating schema mapping for index {" + publishIndex + "}");
+				nodeIndexHandler.setNodeIndexMapping(publishIndex, type, version.getSchema()).await();
+			}
+		}
+
 		boot.meshRoot().getSearchQueue().addFullIndex();
 		boot.meshRoot().getSearchQueue().processAll();
 	}

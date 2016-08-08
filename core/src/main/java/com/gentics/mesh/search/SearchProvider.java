@@ -1,10 +1,15 @@
 package com.gentics.mesh.search;
 
+import java.util.List;
 import java.util.Map;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.node.Node;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+
+import io.vertx.core.json.JsonObject;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
@@ -39,9 +44,11 @@ public interface SearchProvider {
 	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid of the document
-	 * @param transformToDocumentMap
+	 * @param document
+	 *            Document which should be stored
+	 * 
 	 */
-	Completable updateDocument(String indexName, String type, String uuid, Map<String, Object> transformToDocumentMap);
+	Completable updateDocument(String indexName, String type, String uuid, JsonObject document);
 
 	/**
 	 * Delete the given document and invoke the handler when the document has been deleted or an error occurred.
@@ -64,10 +71,10 @@ public interface SearchProvider {
 	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid for the document
-	 * @param map
-	 *            Map that holds the document properties
+	 * @param document
+	 *            JSON Object which holds the document data
 	 */
-	Completable storeDocument(String indexName, String type, String uuid, Map<String, Object> map);
+	Completable storeDocument(String indexName, String type, String uuid, JsonObject document);
 
 	/**
 	 * Get the given document and invoke the handler when the document has been loaded or an error occurred.
@@ -161,5 +168,25 @@ public interface SearchProvider {
 	 * @return
 	 */
 	String getVersion();
+
+	/**
+	 * Return the mapping JSON info for the field.
+	 * 
+	 * @param field
+	 * @return
+	 */
+	JsonObject getMappingInfo(FieldSchema field);
+
+	/**
+	 * Add node fields to the given source map.
+	 * 
+	 * @param document
+	 *            Search index document
+	 * @param container
+	 *            Node field container
+	 * @param fields
+	 *            List of schema fields that should be handled
+	 */
+	void addFields(JsonObject document, GraphFieldContainer container, List<? extends FieldSchema> fields);
 
 }

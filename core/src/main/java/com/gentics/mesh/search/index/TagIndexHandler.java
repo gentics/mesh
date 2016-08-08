@@ -103,22 +103,22 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	protected Map<String, Object> transformToDocumentMap(Tag tag) {
-		Map<String, Object> map = new HashMap<>();
+	protected JsonObject transformToDocument(Tag tag) {
+		JsonObject document = new JsonObject();
 		Map<String, String> tagFields = new HashMap<>();
 		tagFields.put(NAME_KEY, tag.getName());
-		map.put("fields", tagFields);
-		addBasicReferences(map, tag);
-		addTagFamily(map, tag.getTagFamily());
-		addProject(map, tag.getProject());
-		return map;
+		document.put("fields", tagFields);
+		addBasicReferences(document, tag);
+		addTagFamily(document, tag.getTagFamily());
+		addProject(document, tag.getProject());
+		return document;
 	}
 
-	private void addTagFamily(Map<String, Object> map, TagFamily tagFamily) {
-		Map<String, Object> tagFamilyFields = new HashMap<>();
-		tagFamilyFields.put(NAME_KEY, tagFamily.getName());
-		tagFamilyFields.put(UUID_KEY, tagFamily.getUuid());
-		map.put("tagFamily", tagFamilyFields);
+	private void addTagFamily(JsonObject document, TagFamily tagFamily) {
+		JsonObject info = new JsonObject();
+		info.put(NAME_KEY, tagFamily.getName());
+		info.put(UUID_KEY, tagFamily.getUuid());
+		document.put("tagFamily", info);
 	}
 
 	@Override

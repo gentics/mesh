@@ -92,12 +92,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	abstract protected RootVertex<T> getRootVertex();
 
 	/**
-	 * Transform the given object into a source map which can be used to store the document in the search provider specific format.
+	 * Transform the given object into a source JSON object which can be used to store the document in the search provider specific format.
 	 * 
 	 * @param object
 	 * @return
 	 */
-	abstract protected Map<String, Object> transformToDocumentMap(T object);
+	abstract protected JsonObject transformToDocument(T object);
 
 	/**
 	 * Store the given object within the search index.
@@ -109,7 +109,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * @return
 	 */
 	public Completable store(T object, String documentType, SearchQueueEntry entry) {
-		return searchProvider.storeDocument(getIndex(entry), documentType, object.getUuid(), transformToDocumentMap(object)).doOnCompleted(() -> {
+		return searchProvider.storeDocument(getIndex(entry), documentType, object.getUuid(), transformToDocument(object)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
@@ -153,51 +153,43 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * @param map
 	 * @param vertex
 	 */
-	protected void addBasicReferences(Map<String, Object> map, MeshCoreVertex<?, ?> vertex) {
-		// TODO make sure field names match node response
-		map.put("uuid", vertex.getUuid());
+	protected void addBasicReferences(JsonObject document, MeshCoreVertex<?, ?> vertex) {
+		document.put("uuid", vertex.getUuid());
 		if (vertex instanceof CreatorTrackingVertex) {
 			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex) vertex;
-			addUser(map, "creator", createdVertex.getCreator());
-			map.put("created", createdVertex.getCreationTimestamp());
+			addUser(document, "creator", createdVertex.getCreator());
+			document.put("created", createdVertex.getCreationTimestamp());
 		}
 		if (vertex instanceof EditorTrackingVertex) {
 			EditorTrackingVertex editedVertex = (EditorTrackingVertex) vertex;
-			addUser(map, "editor", editedVertex.getEditor());
-			map.put("edited", editedVertex.getLastEditedTimestamp());
+			addUser(document, "editor", editedVertex.getEditor());
+			document.put("edited", editedVertex.getLastEditedTimestamp());
 		}
 	}
 
 	/**
-	 * Add a user field to the map with the given key.
+	 * Add a user field to the document with the given key.
 	 * 
 	 * @param map
 	 * @param key
 	 * @param user
 	 */
-	protected void addUser(Map<String, Object> map, String key, User user) {
+	protected void addUser(JsonObject document, String key, User user) {
 		if (user != null) {
 			// TODO make sure field names match response UserResponse field names..
-			Map<String, Object> userFields = new HashMap<>();
-			// For now we are not adding the user field to the indexed field since this would cause huge cascaded updates when the user object is being
-			// modified.
-			// userFields.put("username", user.getUsername());
-			// userFields.put("emailadress", user.getEmailAddress());
-			// userFields.put("firstname", user.getFirstname());
-			// userFields.put("lastname", user.getLastname());
-			// userFields.put("enabled", String.valueOf(user.isEnabled()));
+			JsonObject userFields = new JsonObject();
 			userFields.put("uuid", user.getUuid());
-			map.put(key, userFields);
+			document.put(key, userFields);
 		}
 	}
 
 	/**
 	 * Add the tags field to the source map using the given list of tags.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param tags
 	 */
-	protected void addTags(Map<String, Object> map, List<? extends Tag> tags) {
+	protected void addTags(JsonObject document, List<? extends Tag> tags) {
 		List<String> tagUuids = new ArrayList<>();
 		List<String> tagNames = new ArrayList<>();
 		for (Tag tag : tags) {
@@ -207,21 +199,21 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		Map<String, List<String>> tagFields = new HashMap<>();
 		tagFields.put("uuid", tagUuids);
 		tagFields.put("name", tagNames);
-		map.put("tags", tagFields);
+		document.put("tags", tagFields);
 	}
 
 	/**
 	 * Add the project field to the source map.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param project
 	 */
-	protected void addProject(Map<String, Object> map, Project project) {
+	protected void addProject(JsonObject document, Project project) {
 		if (project != null) {
 			Map<String, String> projectFields = new HashMap<>();
 			projectFields.put("name", project.getName());
 			projectFields.put("uuid", project.getUuid());
-			map.put("project", projectFields);
+			document.put("project", projectFields);
 		}
 	}
 

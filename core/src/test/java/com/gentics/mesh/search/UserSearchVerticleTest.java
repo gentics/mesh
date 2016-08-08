@@ -99,7 +99,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
-	public void testTokenzierIssueQuery() throws InterruptedException, JSONException {
+	public void testTokenzierIssueQuery() throws Exception {
 
 		String impossibleName = "Jöhä@sRe2";
 		try (NoTx noTx = db.noTx()) {
@@ -117,7 +117,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
-	public void testTokenzierIssueQuery2() throws InterruptedException, JSONException {
+	public void testTokenzierIssueQuery2() throws Exception {
 		String impossibleName = "Jöhä@sRe";
 		try (NoTx noTx = db.noTx()) {
 			user().setLastname(impossibleName);
@@ -134,7 +134,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
-	public void testTokenzierIssueLowercasedQuery() throws InterruptedException, JSONException {
+	public void testTokenzierIssueLowercasedQuery() throws Exception {
 		String impossibleName = "Jöhä@sRe";
 		try (NoTx noTx = db.noTx()) {
 			user().setLastname(impossibleName);

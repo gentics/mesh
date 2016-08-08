@@ -78,20 +78,20 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	protected Map<String, Object> transformToDocumentMap(User user) {
-		Map<String, Object> map = new HashMap<>();
-		addBasicReferences(map, user);
-		map.put(USERNAME_KEY, user.getUsername());
-		map.put(EMAIL_KEY, user.getEmailAddress());
-		map.put(FIRSTNAME_KEY, user.getFirstname());
-		map.put(LASTNAME_KEY, user.getLastname());
-		addGroups(map, user.getGroups());
+	protected JsonObject transformToDocument(User user) {
+		JsonObject document = new JsonObject();
+		addBasicReferences(document, user);
+		document.put(USERNAME_KEY, user.getUsername());
+		document.put(EMAIL_KEY, user.getEmailAddress());
+		document.put(FIRSTNAME_KEY, user.getFirstname());
+		document.put(LASTNAME_KEY, user.getLastname());
+		addGroups(document, user.getGroups());
 		Node referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
-			map.put("nodeReference", referencedNode.getUuid());
+			document.put("nodeReference", referencedNode.getUuid());
 		}
 		//TODO add disabled / enabled flag
-		return map;
+		return document;
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	 * @param map
 	 * @param groups
 	 */
-	private void addGroups(Map<String, Object> map, List<? extends Group> groups) {
+	private void addGroups(JsonObject document, List<? extends Group> groups) {
 		List<String> groupUuids = new ArrayList<>();
 		List<String> groupNames = new ArrayList<>();
 		for (Group group : groups) {
@@ -110,7 +110,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 		Map<String, List<String>> groupFields = new HashMap<>();
 		groupFields.put(UUID_KEY, groupUuids);
 		groupFields.put(NAME_KEY, groupNames);
-		map.put("groups", groupFields);
+		document.put("groups", groupFields);
 	}
 
 	@Override

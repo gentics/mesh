@@ -40,7 +40,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 //	}
 
 	@Test
-	public void testSearchProject() throws InterruptedException, JSONException {
+	public void testSearchProject() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
 		}
