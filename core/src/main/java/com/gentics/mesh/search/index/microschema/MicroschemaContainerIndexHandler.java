@@ -1,25 +1,18 @@
-package com.gentics.mesh.search.index;
-
-import static com.gentics.mesh.search.index.MappingHelper.ANALYZED;
-import static com.gentics.mesh.search.index.MappingHelper.DESCRIPTION_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+package com.gentics.mesh.search.index.microschema;
 
 import java.util.Collections;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-
-import io.vertx.core.json.JsonObject;
+import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 @Component
 public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<MicroschemaContainer> {
@@ -28,6 +21,9 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	private final static Set<String> indices = Collections.singleton("microschema");
 
+	@Autowired
+	private MicroschemaTransformator transformator;
+
 	@PostConstruct
 	public void setup() {
 		instance = this;
@@ -35,6 +31,10 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	public static MicroschemaContainerIndexHandler getInstance() {
 		return instance;
+	}
+
+	public MicroschemaTransformator getTransformator() {
+		return transformator;
 	}
 
 	@Override
@@ -65,23 +65,6 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	@Override
 	protected RootVertex<MicroschemaContainer> getRootVertex() {
 		return boot.meshRoot().getMicroschemaContainerRoot();
-	}
-
-	@Override
-	protected JsonObject transformToDocument(MicroschemaContainer microschema) {
-		JsonObject info = new JsonObject();
-		addBasicReferences(info, microschema);
-		info.put(NAME_KEY, microschema.getName());
-		//map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
-		return info;
-	}
-
-	@Override
-	protected JsonObject getMapping() {
-		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
-		props.put(DESCRIPTION_KEY, fieldType(STRING, ANALYZED));
-		return props;
 	}
 
 }

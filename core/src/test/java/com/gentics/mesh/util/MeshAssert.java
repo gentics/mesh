@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.Future;

@@ -1,23 +1,18 @@
-package com.gentics.mesh.search.index;
-
-import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+package com.gentics.mesh.search.index.project;
 
 import java.util.Collections;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-
-import io.vertx.core.json.JsonObject;
+import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 @Component
 public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
@@ -26,9 +21,16 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	private final static Set<String> indices = Collections.singleton(Project.TYPE);
 
+	@Autowired
+	private ProjectTransformator transformator;
+
 	@PostConstruct
 	public void setup() {
 		instance = this;
+	}
+
+	public ProjectTransformator getTransformator() {
+		return transformator;
 	}
 
 	public static ProjectIndexHandler getInstance() {
@@ -63,21 +65,6 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	@Override
 	protected RootVertex<Project> getRootVertex() {
 		return boot.meshRoot().getProjectRoot();
-	}
-
-	@Override
-	protected JsonObject transformToDocument(Project project) {
-		JsonObject document = new JsonObject();
-		document.put(NAME_KEY, project.getName());
-		addBasicReferences(document, project);
-		return document;
-	}
-
-	@Override
-	protected JsonObject getMapping() {
-		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
-		return props;
 	}
 
 }

@@ -1,32 +1,23 @@
-package com.gentics.mesh.search.index;
-
-import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+package com.gentics.mesh.search.index.tag;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-
-import io.vertx.core.json.JsonObject;
+import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 @Component
 public class TagIndexHandler extends AbstractIndexHandler<Tag> {
@@ -37,6 +28,9 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	private static TagIndexHandler instance;
 
+	@Autowired
+	private TagTransformator transformator;
+
 	@PostConstruct
 	public void setup() {
 		instance = this;
@@ -44,6 +38,11 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	public static TagIndexHandler getInstance() {
 		return instance;
+	}
+
+	@Override
+	protected TagTransformator getTransformator() {
+		return transformator;
 	}
 
 	@Override
@@ -100,32 +99,6 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	@Override
 	protected RootVertex<Tag> getRootVertex() {
 		return boot.meshRoot().getTagRoot();
-	}
-
-	@Override
-	protected JsonObject transformToDocument(Tag tag) {
-		JsonObject document = new JsonObject();
-		Map<String, String> tagFields = new HashMap<>();
-		tagFields.put(NAME_KEY, tag.getName());
-		document.put("fields", tagFields);
-		addBasicReferences(document, tag);
-		addTagFamily(document, tag.getTagFamily());
-		addProject(document, tag.getProject());
-		return document;
-	}
-
-	private void addTagFamily(JsonObject document, TagFamily tagFamily) {
-		JsonObject info = new JsonObject();
-		info.put(NAME_KEY, tagFamily.getName());
-		info.put(UUID_KEY, tagFamily.getUuid());
-		document.put("tagFamily", info);
-	}
-
-	@Override
-	protected JsonObject getMapping() {
-		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
-		return props;
 	}
 
 }

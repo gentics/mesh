@@ -39,15 +39,15 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.search.impl.DummySearchProvider;
-import com.gentics.mesh.search.index.GroupIndexHandler;
-import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.NodeIndexHandler;
-import com.gentics.mesh.search.index.ProjectIndexHandler;
-import com.gentics.mesh.search.index.RoleIndexHandler;
-import com.gentics.mesh.search.index.SchemaContainerIndexHandler;
-import com.gentics.mesh.search.index.TagFamilyIndexHandler;
-import com.gentics.mesh.search.index.TagIndexHandler;
-import com.gentics.mesh.search.index.UserIndexHandler;
+import com.gentics.mesh.search.index.group.GroupIndexHandler;
+import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.project.ProjectIndexHandler;
+import com.gentics.mesh.search.index.role.RoleIndexHandler;
+import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
+import com.gentics.mesh.search.index.tag.TagIndexHandler;
+import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
+import com.gentics.mesh.search.index.user.UserIndexHandler;
 
 import io.vertx.core.json.JsonObject;
 

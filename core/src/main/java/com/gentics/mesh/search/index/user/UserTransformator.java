@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.index;
+package com.gentics.mesh.search.index.user;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
@@ -7,78 +7,29 @@ import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
 @Component
-public class UserIndexHandler extends AbstractIndexHandler<User> {
+public class UserTransformator extends AbstractTransformator<User> {
 
 	public static final String EMAIL_KEY = "emailaddress";
 	public static final String USERNAME_KEY = "username";
 	public static final String FIRSTNAME_KEY = "firstname";
 	public static final String LASTNAME_KEY = "lastname";
 
-	private final static Set<String> indices = Collections.singleton(User.TYPE);
-
-	private static UserIndexHandler instance;
-
-	@PostConstruct
-	public void setup() {
-		instance = this;
-	}
-
-	public static UserIndexHandler getInstance() {
-		return instance;
-	}
-
 	@Override
-	protected String getIndex(SearchQueueEntry entry) {
-		return User.TYPE;
-	}
-
-	@Override
-	public Set<String> getIndices() {
-		return indices;
-	}
-
-	@Override
-	public Set<String> getAffectedIndices(InternalActionContext ac) {
-		return indices;
-	}
-
-	@Override
-	protected String getType() {
-		return User.TYPE;
-	}
-
-	@Override
-	public String getKey() {
-		return User.TYPE;
-	}
-
-	@Override
-	protected RootVertex<User> getRootVertex() {
-		return boot.meshRoot().getUserRoot();
-	}
-
-	@Override
-	protected JsonObject transformToDocument(User user) {
+	public JsonObject toDocument(User user) {
 		JsonObject document = new JsonObject();
 		addBasicReferences(document, user);
 		document.put(USERNAME_KEY, user.getUsername());
@@ -114,7 +65,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	protected JsonObject getMapping() {
+	public JsonObject getMappingProperties() {
 		JsonObject props = new JsonObject();
 		props.put(LASTNAME_KEY, fieldType(STRING, NOT_ANALYZED));
 		props.put(FIRSTNAME_KEY, fieldType(STRING, NOT_ANALYZED));

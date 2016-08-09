@@ -1,20 +1,15 @@
-package com.gentics.mesh.search.index;
+package com.gentics.mesh.search.index.node;
 
-import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
@@ -35,12 +30,11 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -71,6 +65,8 @@ import rx.Completable;
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
+	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
+
 	public final static String DOCUMENT_ID_NAME = "documentId";
 
 	public final static String FIELD_CONTAINER_UUID_NAME = "fieldContainerUuid";
@@ -95,11 +91,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
-	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
-
-	private static final String VERSION_KEY = "version";
-
 	private static NodeIndexHandler instance;
+
+	@Autowired
+	private NodeGraphFieldContainerTransformator transformator;
 
 	@Autowired
 	protected Database db;
@@ -111,6 +106,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	public static NodeIndexHandler getInstance() {
 		return instance;
+	}
+
+	public NodeGraphFieldContainerTransformator getTransformator() {
+		return transformator;
 	}
 
 	/**
@@ -163,7 +162,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Get the index name for the given project/release/version
+	 * Get the index name for the given project/release/version.
 	 * 
 	 * @param projectUuid
 	 * @param releaseUuid
@@ -190,11 +189,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	@Override
 	protected RootVertex<Node> getRootVertex() {
 		return boot.meshRoot().getNodeRoot();
-	}
-
-	@Override
-	protected JsonObject transformToDocument(Node object) {
-		throw new NotImplementedException("Nodes can't be directly transformed due to i18n support.");
 	}
 
 	@Override
@@ -310,77 +304,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return
 	 */
 	public Completable storeContainer(NodeGraphFieldContainer container, String indexName, String releaseUuid) {
-
-		Node node = container.getParentNode();
-		JsonObject document = new JsonObject();
-		addUser(document, "editor", container.getEditor());
-		document.put("edited", container.getLastEditedTimestamp());
-		addBasicReferences(document, node);
-		addProject(document, node.getProject());
-		addTags(document, node.getTags(node.getProject().getLatestRelease()));
-
-		// The basenode has no parent.
-		if (node.getParentNode(releaseUuid) != null) {
-			addParentNodeInfo(document, node.getParentNode(releaseUuid));
-		}
-
-		document.remove("language");
-		String language = container.getLanguage().getLanguageTag();
-		document.put("language", language);
-		addSchema(document, container.getSchemaContainerVersion());
-
-		searchProvider.addFields(document, container, container.getSchemaContainerVersion().getSchema().getFields());
-		if (log.isTraceEnabled()) {
-			String json = document.toString();
-			log.trace("Search index json:");
-			log.trace(json);
-		}
-
-		// Add display field value
-		Map<String, String> displayFieldMap = new HashMap<>();
-		displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
-		displayFieldMap.put("value", container.getDisplayFieldValue());
-		document.put("displayField", displayFieldMap);
+		JsonObject doc = transformator.toDocument(container, releaseUuid);
 		return searchProvider.storeDocument(indexName, getDocumentType(container.getSchemaContainerVersion()),
-				composeDocumentId(container.getParentNode(), language), document);
-
+				composeDocumentId(container.getParentNode(), doc.getString("language")), doc);
 	}
 
 	/**
-	 * Transform the given schema and add it to the source map.
-	 * 
-	 * @param document
-	 * @param schemaContainerVersion
-	 */
-	private void addSchema(JsonObject document, SchemaContainerVersion schemaContainerVersion) {
-		String name = schemaContainerVersion.getName();
-		String uuid = schemaContainerVersion.getSchemaContainer().getUuid();
-		Map<String, String> schemaFields = new HashMap<>();
-		schemaFields.put(NAME_KEY, name);
-		schemaFields.put(UUID_KEY, uuid);
-		schemaFields.put(VERSION_KEY, String.valueOf(schemaContainerVersion.getVersion()));
-		document.put("schema", schemaFields);
-	}
-
-	/**
-	 * Use the given node to populate the parent node fields within the source map.
-	 * 
-	 * @param document
-	 * @param parentNode
-	 */
-	private void addParentNodeInfo(JsonObject document, Node parentNode) {
-		Map<String, Object> parentNodeInfo = new HashMap<>();
-		parentNodeInfo.put(UUID_KEY, parentNode.getUuid());
-		// TODO check whether nesting of nested elements would also work
-		// TODO FIXME MIGRATE: How to add this reference info? The schema is now linked to the node. Should we add another reference:
-		// (n:Node)->(sSchemaContainer) ?
-		// parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
-		// parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
-		document.put("parentNode", parentNodeInfo);
-	}
-
-	/**
-	 * Compose the document ID for the index document
+	 * Compose the document ID for the index document.
 	 * 
 	 * @param node
 	 *            node
@@ -408,7 +338,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Set the mapping for the given type in all indices for the schema.
+	 * Update the mapping for the given type in all indices for the schema.
 	 * 
 	 * @param type
 	 *            type name
@@ -416,14 +346,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            schema
 	 * @return observable
 	 */
-	public Completable setNodeIndexMapping(String type, Schema schema) {
+	public Completable updateNodeIndexMapping(String type, Schema schema) {
 		Set<Completable> obs = new HashSet<>();
-		getIndices().forEach(index -> obs.add(setNodeIndexMapping(index, type, schema)));
+		getIndices().forEach(index -> obs.add(updateNodeIndexMapping(index, type, schema)));
 		return Completable.merge(obs);
 	}
 
 	/**
-	 * Set the mapping for the given type in the given index for the schema.
+	 * Update the mapping for the given type in the given index for the schema.
 	 *
 	 * @param indexName
 	 *            index name
@@ -433,7 +363,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            schema
 	 * @return observable
 	 */
-	public Completable setNodeIndexMapping(String indexName, String type, Schema schema) {
+	public Completable updateNodeIndexMapping(String indexName, String type, Schema schema) {
 		// Check whether the search provider is a dummy provider or not
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
@@ -441,21 +371,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				mappingRequestBuilder.setType(type);
 
 				try {
-					JsonObject mappingJson = new JsonObject();
-					JsonObject typeJson = new JsonObject();
-					JsonObject fieldJson = new JsonObject();
-					JsonObject fieldProps = new JsonObject();
-					fieldJson.put("properties", fieldProps);
-					JsonObject typeProperties = new JsonObject();
-					typeJson.put("properties", typeProperties);
-					typeProperties.put("fields", fieldJson);
-					mappingJson.put(type, typeJson);
-
-					for (FieldSchema field : schema.getFields()) {
-						JsonObject fieldInfo = searchProvider.getMappingInfo(field);
-						fieldProps.put(field.getName(), fieldInfo);
-					}
-
+					JsonObject mappingJson = transformator.getMapping(schema, type);
 					if (log.isDebugEnabled()) {
 						log.debug(mappingJson.toString());
 					}
@@ -480,12 +396,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		} else {
 			return Completable.complete();
 		}
-	}
-
-	@Override
-	protected JsonObject getMapping() {
-		JsonObject props = new JsonObject();
-		return props;
 	}
 
 	// TODO Combine updateMapping with setNodeIndexMapping

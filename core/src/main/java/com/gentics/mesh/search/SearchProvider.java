@@ -1,13 +1,9 @@
 package com.gentics.mesh.search;
 
-import java.util.List;
 import java.util.Map;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.node.Node;
-
-import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
@@ -168,25 +164,5 @@ public interface SearchProvider {
 	 * @return
 	 */
 	String getVersion();
-
-	/**
-	 * Return the mapping JSON info for the field.
-	 * 
-	 * @param field
-	 * @return
-	 */
-	JsonObject getMappingInfo(FieldSchema field);
-
-	/**
-	 * Add node fields to the given source map.
-	 * 
-	 * @param document
-	 *            Search index document
-	 * @param container
-	 *            Node field container
-	 * @param fields
-	 *            List of schema fields that should be handled
-	 */
-	void addFields(JsonObject document, GraphFieldContainer container, List<? extends FieldSchema> fields);
 
 }

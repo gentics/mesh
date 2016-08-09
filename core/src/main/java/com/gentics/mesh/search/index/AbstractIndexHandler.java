@@ -2,17 +2,14 @@ package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -24,12 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.CreatorTrackingVertex;
-import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
@@ -91,13 +83,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 */
 	abstract protected RootVertex<T> getRootVertex();
 
-	/**
-	 * Transform the given object into a source JSON object which can be used to store the document in the search provider specific format.
-	 * 
-	 * @param object
-	 * @return
-	 */
-	abstract protected JsonObject transformToDocument(T object);
+	abstract protected Transformator getTransformator();
 
 	/**
 	 * Store the given object within the search index.
@@ -109,12 +95,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * @return
 	 */
 	public Completable store(T object, String documentType, SearchQueueEntry entry) {
-		return searchProvider.storeDocument(getIndex(entry), documentType, object.getUuid(), transformToDocument(object)).doOnCompleted(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Stored object in index.");
-			}
-			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
-		});
+		return searchProvider.storeDocument(getIndex(entry), documentType, object.getUuid(), getTransformator().toDocument(object))
+				.doOnCompleted(() -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Stored object in index.");
+					}
+					MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+				});
 	}
 
 	@Override
@@ -145,76 +132,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 */
 	protected boolean isSearchClientAvailable() {
 		return searchProvider != null;
-	}
-
-	/**
-	 * Add basic references (creator, editor, created, edited) to the map for the given vertex.
-	 * 
-	 * @param map
-	 * @param vertex
-	 */
-	protected void addBasicReferences(JsonObject document, MeshCoreVertex<?, ?> vertex) {
-		document.put("uuid", vertex.getUuid());
-		if (vertex instanceof CreatorTrackingVertex) {
-			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex) vertex;
-			addUser(document, "creator", createdVertex.getCreator());
-			document.put("created", createdVertex.getCreationTimestamp());
-		}
-		if (vertex instanceof EditorTrackingVertex) {
-			EditorTrackingVertex editedVertex = (EditorTrackingVertex) vertex;
-			addUser(document, "editor", editedVertex.getEditor());
-			document.put("edited", editedVertex.getLastEditedTimestamp());
-		}
-	}
-
-	/**
-	 * Add a user field to the document with the given key.
-	 * 
-	 * @param map
-	 * @param key
-	 * @param user
-	 */
-	protected void addUser(JsonObject document, String key, User user) {
-		if (user != null) {
-			// TODO make sure field names match response UserResponse field names..
-			JsonObject userFields = new JsonObject();
-			userFields.put("uuid", user.getUuid());
-			document.put(key, userFields);
-		}
-	}
-
-	/**
-	 * Add the tags field to the source map using the given list of tags.
-	 * 
-	 * @param document
-	 * @param tags
-	 */
-	protected void addTags(JsonObject document, List<? extends Tag> tags) {
-		List<String> tagUuids = new ArrayList<>();
-		List<String> tagNames = new ArrayList<>();
-		for (Tag tag : tags) {
-			tagUuids.add(tag.getUuid());
-			tagNames.add(tag.getName());
-		}
-		Map<String, List<String>> tagFields = new HashMap<>();
-		tagFields.put("uuid", tagUuids);
-		tagFields.put("name", tagNames);
-		document.put("tags", tagFields);
-	}
-
-	/**
-	 * Add the project field to the source map.
-	 * 
-	 * @param document
-	 * @param project
-	 */
-	protected void addProject(JsonObject document, Project project) {
-		if (project != null) {
-			Map<String, String> projectFields = new HashMap<>();
-			projectFields.put("name", project.getName());
-			projectFields.put("uuid", project.getUuid());
-			document.put("project", projectFields);
-		}
 	}
 
 	@Override
@@ -267,13 +184,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		});
 	}
 
-	/**
-	 * Return the index specific the mapping as JSON.
-	 * 
-	 * @return
-	 */
-	protected abstract JsonObject getMapping();
-
 	@Override
 	public Completable updateMapping() {
 		try {
@@ -297,12 +207,17 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		if (searchProvider.getNode() != null) {
 			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
 			mappingRequestBuilder.setType(getType());
-			JsonObject mappingProperties = getMapping();
+
+			JsonObject mapping = new JsonObject();
+			JsonObject mappingProperties = getTransformator().getMappingProperties();
 			// Enhance mappings with generic/common field types
 			mappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
+			mappingProperties.put("created", fieldType(DATE, NOT_ANALYZED));
+			mappingProperties.put("edited", fieldType(DATE, NOT_ANALYZED));
+
 			JsonObject root = new JsonObject();
 			root.put("properties", mappingProperties);
-			JsonObject mapping = new JsonObject();
+
 			mapping.put(getType(), root);
 			mappingRequestBuilder.setSource(mapping.toString());
 

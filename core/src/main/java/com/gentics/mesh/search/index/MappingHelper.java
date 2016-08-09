@@ -14,6 +14,8 @@ public final class MappingHelper {
 
 	// Field Types
 	public static final String STRING = "string";
+	public static final String DATE = "date";
+	public static final String DOUBLE = "double";
 
 	// Index Types
 	public static final String NOT_ANALYZED = "not_analyzed";

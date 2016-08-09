@@ -1489,7 +1489,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+
+		// Create a new batch
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+
+		// Add all graph field containers for all releases to the batch
 		getProject().getReleaseRoot().findAll().forEach((release) -> {
 			String releaseUuid = release.getUuid();
 			for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {

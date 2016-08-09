@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.search.index.TagIndexHandler;
+import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.util.RxDebugger;
 
 import io.vertx.core.Future;

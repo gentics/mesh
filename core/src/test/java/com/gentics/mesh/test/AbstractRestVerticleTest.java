@@ -123,7 +123,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		client = MeshRestClient.create("localhost", getPort(), vertx, Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
 		trx = db.noTx();
 		client.setLogin(user().getUsername(), getUserInfo().getPassword());
-		client.login();
+		client.login().toBlocking().value();
 	}
 
 	public HttpClient createHttpClient() {

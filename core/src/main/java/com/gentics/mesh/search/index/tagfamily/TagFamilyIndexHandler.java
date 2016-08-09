@@ -1,19 +1,13 @@
-package com.gentics.mesh.search.index;
-
-import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+package com.gentics.mesh.search.index.tagfamily;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -23,8 +17,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-
-import io.vertx.core.json.JsonObject;
+import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 @Component
 public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
@@ -36,6 +29,9 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	private static TagFamilyIndexHandler instance;
 
+	@Autowired
+	private TagFamilyTransformator transformator;
+
 	@PostConstruct
 	public void setup() {
 		instance = this;
@@ -43,6 +39,10 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	public static TagFamilyIndexHandler getInstance() {
 		return instance;
+	}
+
+	public TagFamilyTransformator getTransformator() {
+		return transformator;
 	}
 
 	@Override
@@ -98,23 +98,6 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	@Override
 	protected RootVertex<TagFamily> getRootVertex() {
 		return boot.meshRoot().getTagFamilyRoot();
-	}
-
-	@Override
-	protected JsonObject transformToDocument(TagFamily tagFamily) {
-		JsonObject jsonObject = new JsonObject();
-		jsonObject.put(NAME_KEY, tagFamily.getName());
-		addBasicReferences(jsonObject, tagFamily);
-		addTags(jsonObject, tagFamily.getTagRoot().findAll());
-		addProject(jsonObject, tagFamily.getProject());
-		return jsonObject;
-	}
-
-	@Override
-	protected JsonObject getMapping() {
-		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
-		return props;
 	}
 
 }

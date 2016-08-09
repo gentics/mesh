@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.search.index.IndexHandler;
-import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -122,11 +122,11 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 				String type = version.getName() + "-" + version.getVersion();
 				String drafIndex = "node-" + project.getUuid() + "-" + release.getUuid() + "-draft";
 				log.debug("Creating schema mapping for index {" + drafIndex + "}");
-				nodeIndexHandler.setNodeIndexMapping(drafIndex, type, version.getSchema()).await();
+				nodeIndexHandler.updateNodeIndexMapping(drafIndex, type, version.getSchema()).await();
 
 				String publishIndex = "node-" + project.getUuid() + "-" + release.getUuid() + "-published";
 				log.debug("Creating schema mapping for index {" + publishIndex + "}");
-				nodeIndexHandler.setNodeIndexMapping(publishIndex, type, version.getSchema()).await();
+				nodeIndexHandler.updateNodeIndexMapping(publishIndex, type, version.getSchema()).await();
 			}
 		}
 

@@ -8,13 +8,14 @@ import java.util.Map;
 import org.elasticsearch.node.Node;
 
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
-public class DummySearchProvider extends AbstractSearchProvider {
+public class DummySearchProvider implements SearchProvider {
 
 	private Map<String, JsonObject> updateEvents = new HashMap<>();
 	private List<String> deleteEvents = new ArrayList<>();

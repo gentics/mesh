@@ -75,7 +75,7 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.DeploymentOptions;
@@ -937,9 +937,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
 		call(() -> getClient().publishNode(PROJECT_NAME, uuid));
 
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
 		createRelease.setName("newrelease");
 		call(() -> getClient().createRelease(PROJECT_NAME, createRelease));
+		failingLatch(latch);
 
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic")));
 		assertThat(response.getData()).as("Search result").isEmpty();
@@ -958,9 +960,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		NodeResponse concorde = call(
 				() -> getClient().findNodeByUuid(PROJECT_NAME, db.noTx(() -> content("concorde").getUuid()), new VersioningParameters().draft()));
 
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
 		createRelease.setName("newrelease");
 		call(() -> getClient().createRelease(PROJECT_NAME, createRelease));
+		failingLatch(latch);
 
 		NodeListResponse response = call(
 				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParameters().draft()));
@@ -1014,7 +1018,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		nodeIndexHandler.setNodeIndexMapping(schema.getName() + "-" + schema.getVersion(), schema).await();
+		nodeIndexHandler.updateNodeIndexMapping(schema.getName() + "-" + schema.getVersion(), schema).await();
 
 		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {

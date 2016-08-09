@@ -1,15 +1,22 @@
-package com.gentics.mesh.search.impl;
+package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static com.gentics.mesh.util.DateUtils.toISO8601;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.NotImplementedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -26,22 +33,72 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
-public abstract class AbstractSearchProvider implements SearchProvider {
+@Component
+public class NodeGraphFieldContainerTransformator extends AbstractTransformator<NodeGraphFieldContainer> {
 
-	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerTransformator.class);
 
-	@Override
+	private static final String VERSION_KEY = "version";
+
+	@Autowired
+	private SearchProvider searchProvider;
+
+	/**
+	 * Transform the given schema and add it to the source map.
+	 * 
+	 * @param document
+	 * @param schemaContainerVersion
+	 */
+	private void addSchema(JsonObject document, SchemaContainerVersion schemaContainerVersion) {
+		String name = schemaContainerVersion.getName();
+		String uuid = schemaContainerVersion.getSchemaContainer().getUuid();
+		Map<String, String> schemaFields = new HashMap<>();
+		schemaFields.put(NAME_KEY, name);
+		schemaFields.put(UUID_KEY, uuid);
+		schemaFields.put(VERSION_KEY, String.valueOf(schemaContainerVersion.getVersion()));
+		document.put("schema", schemaFields);
+	}
+
+	/**
+	 * Use the given node to populate the parent node fields within the source map.
+	 * 
+	 * @param document
+	 * @param parentNode
+	 */
+	private void addParentNodeInfo(JsonObject document, Node parentNode) {
+		JsonObject info = new JsonObject();
+		info.put(UUID_KEY, parentNode.getUuid());
+		// TODO check whether nesting of nested elements would also work
+		// TODO FIXME MIGRATE: How to add this reference info? The schema is now linked to the node. Should we add another reference:
+		// (n:Node)->(sSchemaContainer) ?
+		// parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
+		// parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
+		document.put("parentNode", info);
+	}
+
+	/**
+	 * Add node fields to the given source map.
+	 * 
+	 * @param document
+	 *            Search index document
+	 * @param container
+	 *            Node field container
+	 * @param fields
+	 *            List of schema fields that should be handled
+	 */
 	public void addFields(JsonObject document, GraphFieldContainer container, List<? extends FieldSchema> fields) {
 		Map<String, Object> fieldsMap = new HashMap<>();
 		for (FieldSchema fieldSchema : fields) {
@@ -226,7 +283,12 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 		fieldInfo.put("fields", rawFieldInfo);
 	}
 
-	@Override
+	/**
+	 * Return the mapping JSON info for the field.
+	 * 
+	 * @param field
+	 * @return
+	 */
 	public JsonObject getMappingInfo(FieldSchema fieldSchema) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 
@@ -352,6 +414,84 @@ public abstract class AbstractSearchProvider implements SearchProvider {
 		info.put(NAME_KEY, microschemaContainerVersion.getName());
 		info.put(UUID_KEY, microschemaContainerVersion.getUuid());
 		document.put("microschema", info);
+	}
+
+	/**
+	 * It is required to specify the releaseUuid in order to transform containers.
+	 * 
+	 * @deprecated
+	 */
+	@Override
+	@Deprecated
+	public JsonObject toDocument(NodeGraphFieldContainer object) {
+		throw new NotImplementedException("Use toDocument(container, releaseUuid) instead");
+	}
+
+	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid) {
+		Node node = container.getParentNode();
+		JsonObject document = new JsonObject();
+		document.put("uuid", node.getUuid());
+		addUser(document, "editor", container.getEditor());
+		document.put("edited", toISO8601(container.getLastEditedTimestamp()));
+		addUser(document, "creator", node.getCreator());
+		document.put("created", toISO8601(node.getCreationTimestamp()));
+
+		addProject(document, node.getProject());
+		addTags(document, node.getTags(node.getProject().getLatestRelease()));
+
+		// The basenode has no parent.
+		if (node.getParentNode(releaseUuid) != null) {
+			addParentNodeInfo(document, node.getParentNode(releaseUuid));
+		}
+
+		String language = container.getLanguage().getLanguageTag();
+		document.put("language", language);
+		addSchema(document, container.getSchemaContainerVersion());
+
+		addFields(document, container, container.getSchemaContainerVersion().getSchema().getFields());
+		if (log.isTraceEnabled()) {
+			String json = document.toString();
+			log.trace("Search index json:");
+			log.trace(json);
+		}
+
+		// Add display field value
+		JsonObject displayField = new JsonObject();
+		displayField.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
+		displayField.put("value", container.getDisplayFieldValue());
+		return document.put("displayField", displayField);
+	}
+
+	@Override
+	public JsonObject getMappingProperties() {
+		JsonObject props = new JsonObject();
+		return props;
+	}
+
+	/**
+	 * Return the type specific mapping which is constructed using the provided schema.
+	 * 
+	 * @param schema
+	 * @param type
+	 * @return
+	 */
+	public JsonObject getMapping(Schema schema, String type) {
+		JsonObject mappingJson = new JsonObject();
+		JsonObject typeJson = new JsonObject();
+		JsonObject fieldJson = new JsonObject();
+		JsonObject fieldProps = new JsonObject();
+		fieldJson.put("properties", fieldProps);
+		JsonObject typeProperties = new JsonObject();
+		typeJson.put("properties", typeProperties);
+		typeProperties.put("fields", fieldJson);
+		mappingJson.put(type, typeJson);
+
+		for (FieldSchema field : schema.getFields()) {
+			JsonObject fieldInfo = getMappingInfo(field);
+			fieldProps.put(field.getName(), fieldInfo);
+		}
+		return mappingJson;
+
 	}
 
 }

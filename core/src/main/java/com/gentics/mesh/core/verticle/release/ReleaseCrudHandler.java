@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Observable;
@@ -95,9 +95,9 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						release.assignSchemaVersion(version);
 
 						// Update the index type specific ES mapping
-						nodeIndexHandler.setNodeIndexMapping("node-" + project.getUuid() + "-" + release.getUuid() + "-draft",
+						nodeIndexHandler.updateNodeIndexMapping("node-" + project.getUuid() + "-" + release.getUuid() + "-draft",
 								version.getName() + "-" + version.getVersion(), version.getSchema()).await();
-						nodeIndexHandler.setNodeIndexMapping("node-" + project.getUuid() + "-" + release.getUuid() + "-published",
+						nodeIndexHandler.updateNodeIndexMapping("node-" + project.getUuid() + "-" + release.getUuid() + "-published",
 								version.getName() + "-" + version.getVersion(), version.getSchema()).await();
 
 						DeliveryOptions options = new DeliveryOptions();

@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.search.impl.DummySearchProvider;
-import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 public class NodeIndexHandlerTest extends AbstractIsolatedBasicDBTest {
 

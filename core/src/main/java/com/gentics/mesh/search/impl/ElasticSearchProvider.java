@@ -51,7 +51,7 @@ import rx.Single;
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
  */
-public class ElasticSearchProvider extends AbstractSearchProvider {
+public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 

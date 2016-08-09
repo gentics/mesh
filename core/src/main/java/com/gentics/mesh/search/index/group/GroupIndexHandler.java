@@ -1,23 +1,18 @@
-package com.gentics.mesh.search.index;
-
-import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+package com.gentics.mesh.search.index.group;
 
 import java.util.Collections;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-
-import io.vertx.core.json.JsonObject;
+import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 @Component
 public class GroupIndexHandler extends AbstractIndexHandler<Group> {
@@ -26,6 +21,9 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	private final static Set<String> indices = Collections.singleton("group");
 
+	@Autowired
+	private GroupTransformator transformator;
+
 	@PostConstruct
 	public void setup() {
 		instance = this;
@@ -33,6 +31,10 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	public static GroupIndexHandler getInstance() {
 		return instance;
+	}
+
+	public GroupTransformator getTransformator() {
+		return transformator;
 	}
 
 	@Override
@@ -63,21 +65,6 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	@Override
 	protected RootVertex<Group> getRootVertex() {
 		return boot.meshRoot().getGroupRoot();
-	}
-
-	@Override
-	protected JsonObject transformToDocument(Group group) {
-		JsonObject document = new JsonObject();
-		document.put(NAME_KEY, group.getName());
-		addBasicReferences(document, group);
-		return document;
-	}
-
-	@Override
-	protected JsonObject getMapping() {
-		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
-		return props;
 	}
 
 }
