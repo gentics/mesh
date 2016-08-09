@@ -1,7 +1,15 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
+import static com.gentics.mesh.search.index.MappingHelper.DATE;
+import static com.gentics.mesh.search.index.MappingHelper.LONG;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.NESTED;
+import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
+import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
+import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 
 import java.util.ArrayList;
@@ -10,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -38,7 +45,6 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
@@ -46,15 +52,16 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
+/**
+ * Transformator which can be used to transform a {@link NodeGraphFieldContainer} into a elasticsearch document. Additionally the matching mapping can also be
+ * generated using this class.
+ */
 @Component
 public class NodeGraphFieldContainerTransformator extends AbstractTransformator<NodeGraphFieldContainer> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerTransformator.class);
 
 	private static final String VERSION_KEY = "version";
-
-	@Autowired
-	private SearchProvider searchProvider;
 
 	/**
 	 * Transform the given schema and add it to the source map.
@@ -247,13 +254,15 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 				// fieldsMap.put(name, htmlField.getHTML());
 				break;
 			case MICRONODE:
+
 				MicronodeGraphField micronodeGraphField = container.getMicronode(fieldSchema.getName());
 				if (micronodeGraphField != null) {
 					Micronode micronode = micronodeGraphField.getMicronode();
 					if (micronode != null) {
 						JsonObject micronodeMap = new JsonObject();
 						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
-						addFields(micronodeMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
+						// Micronode field can't be stored. The datastructure is dynamic
+						//addFields(micronodeMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
 						fieldsMap.put(fieldSchema.getName(), micronodeMap);
 					}
 				}
@@ -296,60 +305,60 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 
 		switch (type) {
 		case STRING:
-			fieldInfo.put("type", "string");
+			fieldInfo.put("type", STRING);
 			addRawInfo(fieldInfo, "string");
 			break;
 		case HTML:
-			fieldInfo.put("type", "string");
+			fieldInfo.put("type", STRING);
 			addRawInfo(fieldInfo, "string");
 			break;
 		case BOOLEAN:
-			fieldInfo.put("type", "boolean");
+			fieldInfo.put("type", BOOLEAN);
 			//addRawInfo(fieldInfo, "boolean");
 			break;
 		case DATE:
-			fieldInfo.put("type", "date");
+			fieldInfo.put("type", DATE);
 			//addRawInfo(fieldInfo, "date");
 			break;
 		case BINARY:
-			fieldInfo.put("type", "object");
+			fieldInfo.put("type", OBJECT);
 			JsonObject binaryProps = new JsonObject();
 			fieldInfo.put("properties", binaryProps);
 
 			// filename
 			JsonObject filenameInfo = new JsonObject();
 			filenameInfo.put("type", "string");
-			filenameInfo.put("index", "not_analyzed");
+			filenameInfo.put("index", NOT_ANALYZED);
 			binaryProps.put("filename", filenameInfo);
 
 			// filesize
 			JsonObject filesizeInfo = new JsonObject();
 			filesizeInfo.put("type", "long");
-			filesizeInfo.put("index", "not_analyzed");
+			filesizeInfo.put("index", NOT_ANALYZED);
 			binaryProps.put("filesize", filesizeInfo);
 
 			// mimeType
 			JsonObject mimeTypeInfo = new JsonObject();
 			mimeTypeInfo.put("type", "string");
-			mimeTypeInfo.put("index", "not_analyzed");
+			mimeTypeInfo.put("index", NOT_ANALYZED);
 			binaryProps.put("mimeType", mimeTypeInfo);
 
 			// imageWidth
 			JsonObject imageWidthInfo = new JsonObject();
 			imageWidthInfo.put("type", "long");
-			imageWidthInfo.put("index", "not_analyzed");
+			imageWidthInfo.put("index", NOT_ANALYZED);
 			binaryProps.put("width", imageWidthInfo);
 
 			// imageHeight
 			JsonObject imageHeightInfo = new JsonObject();
-			imageHeightInfo.put("type", "long");
-			imageHeightInfo.put("index", "not_analyzed");
+			imageHeightInfo.put("type", LONG);
+			imageHeightInfo.put("index", NOT_ANALYZED);
 			binaryProps.put("height", imageHeightInfo);
 
 			// dominantColor
 			JsonObject dominantColorInfo = new JsonObject();
-			dominantColorInfo.put("type", "string");
-			dominantColorInfo.put("index", "not_analyzed");
+			dominantColorInfo.put("type", STRING);
+			dominantColorInfo.put("index", NOT_ANALYZED);
 			binaryProps.put("dominantColor", dominantColorInfo);
 			break;
 		case NUMBER:
@@ -358,34 +367,34 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 			fieldInfo.put("type", "double");
 			break;
 		case NODE:
-			fieldInfo.put("type", "string");
-			fieldInfo.put("index", "not_analyzed");
+			fieldInfo.put("type", STRING);
+			fieldInfo.put("index", NOT_ANALYZED);
 			break;
 		case LIST:
 			if (fieldSchema instanceof ListFieldSchemaImpl) {
 				ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 				switch (listFieldSchema.getListType()) {
 				case "node":
-					fieldInfo.put("type", "nested");
+					fieldInfo.put("type", NESTED);
 					break;
 				case "date":
-					fieldInfo.put("type", "nested");
+					fieldInfo.put("type", NESTED);
 					break;
 				case "number":
-					fieldInfo.put("type", "nested");
+					fieldInfo.put("type", NESTED);
 					break;
 				case "boolean":
-					fieldInfo.put("type", "nested");
+					fieldInfo.put("type", NESTED);
 					break;
 				case "micronode":
-					fieldInfo.put("type", "nested");
+					fieldInfo.put("type", NESTED);
 					//fieldProps.put(field.getName(), fieldInfo);
 					break;
 				case "string":
-					fieldInfo.put("type", "nested");
+					fieldInfo.put("type", NESTED);
 					break;
 				case "html":
-					fieldInfo.put("type", "nested");
+					fieldInfo.put("type", NESTED);
 					break;
 				default:
 					log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
@@ -394,7 +403,20 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 			}
 			break;
 		case MICRONODE:
-			fieldInfo.put("type", "object");
+			fieldInfo.put("type", OBJECT);
+			JsonObject micronodeMappingProperties = new JsonObject();
+
+			//microschema
+			JsonObject microschemaMapping = new JsonObject();
+			micronodeMappingProperties.put("microschema", microschemaMapping);
+
+			JsonObject microschemaMappingProperties = new JsonObject();
+			microschemaMappingProperties.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
+			microschemaMappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
+			microschemaMapping.put("properties", microschemaMappingProperties);
+			//fieldInfo.put("dynamic", true);
+			//TODO add version
+			fieldInfo.put("properties", micronodeMappingProperties);
 			break;
 		default:
 			throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
@@ -413,6 +435,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 		JsonObject info = new JsonObject();
 		info.put(NAME_KEY, microschemaContainerVersion.getName());
 		info.put(UUID_KEY, microschemaContainerVersion.getUuid());
+		//TODO add version
 		document.put("microschema", info);
 	}
 
@@ -476,21 +499,72 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 	 * @return
 	 */
 	public JsonObject getMapping(Schema schema, String type) {
-		JsonObject mappingJson = new JsonObject();
-		JsonObject typeJson = new JsonObject();
-		JsonObject fieldJson = new JsonObject();
+		// 1. Get the common type specific mapping
+		JsonObject mapping = getMapping(type);
+
+		//2. Enhance the type specific mapping
+		JsonObject typeMapping = mapping.getJsonObject(type);
+		typeMapping.put("dynamic", "strict");
+		JsonObject typeProperties = typeMapping.getJsonObject("properties");
+
+		// project
+		JsonObject projectMapping = new JsonObject();
+		projectMapping.put("type", OBJECT);
+		JsonObject projectMappingProps = new JsonObject();
+		projectMappingProps.put("name", fieldType(STRING, NOT_ANALYZED));
+		projectMappingProps.put("uuid", fieldType(STRING, NOT_ANALYZED));
+		projectMapping.put("properties", projectMappingProps);
+		typeProperties.put("project", projectMapping);
+
+		//tags
+		JsonObject tagsMapping = new JsonObject();
+		tagsMapping.put("type", "nested");
+		tagsMapping.put("dynamic", true);
+		typeProperties.put("tags", tagsMapping);
+
+		//language
+		JsonObject languageMapping = fieldType(STRING, NOT_ANALYZED);
+		typeProperties.put("language", languageMapping);
+
+		//schema
+		JsonObject schemaMapping = new JsonObject();
+		schemaMapping.put("type", OBJECT);
+		JsonObject schemaMappingProperties = new JsonObject();
+		schemaMappingProperties.put("uuid", fieldType(STRING, NOT_ANALYZED));
+		schemaMappingProperties.put("name", fieldType(STRING, NOT_ANALYZED));
+		schemaMappingProperties.put("version", fieldType(LONG, NOT_ANALYZED));
+		schemaMapping.put("properties", schemaMappingProperties);
+		typeProperties.put("schema", schemaMapping);
+
+		//displayField
+		JsonObject displayFieldMapping = new JsonObject();
+		displayFieldMapping.put("type", OBJECT);
+		JsonObject displayFieldMappingProperties = new JsonObject();
+		displayFieldMappingProperties.put("key", fieldType(STRING, NOT_ANALYZED));
+		displayFieldMappingProperties.put("value", fieldType(STRING, NOT_ANALYZED));
+		displayFieldMapping.put("properties", displayFieldMappingProperties);
+		typeProperties.put("displayField", displayFieldMapping);
+
+		//parentNode
+		JsonObject parentNodeMapping = new JsonObject();
+		parentNodeMapping.put("type", OBJECT);
+		JsonObject parentNodeMappingProperties = new JsonObject();
+		parentNodeMappingProperties.put("uuid", fieldType(STRING, NOT_ANALYZED));
+		parentNodeMapping.put("properties", parentNodeMappingProperties);
+		typeProperties.put("parentNode", parentNodeMapping);
+
+		// Add field properties
 		JsonObject fieldProps = new JsonObject();
+		JsonObject fieldJson = new JsonObject();
 		fieldJson.put("properties", fieldProps);
-		JsonObject typeProperties = new JsonObject();
-		typeJson.put("properties", typeProperties);
 		typeProperties.put("fields", fieldJson);
-		mappingJson.put(type, typeJson);
+		mapping.put(type, typeMapping);
 
 		for (FieldSchema field : schema.getFields()) {
 			JsonObject fieldInfo = getMappingInfo(field);
 			fieldProps.put(field.getName(), fieldInfo);
 		}
-		return mappingJson;
+		return mapping;
 
 	}
 

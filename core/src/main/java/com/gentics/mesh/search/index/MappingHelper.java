@@ -13,8 +13,12 @@ public final class MappingHelper {
 	public static final String DESCRIPTION_KEY = "description";
 
 	// Field Types
+	public static final String OBJECT = "object";
+	public static final String NESTED = "nested";
 	public static final String STRING = "string";
+	public static final String BOOLEAN = "boolean";
 	public static final String DATE = "date";
+	public static final String LONG = "long";
 	public static final String DOUBLE = "double";
 
 	// Index Types

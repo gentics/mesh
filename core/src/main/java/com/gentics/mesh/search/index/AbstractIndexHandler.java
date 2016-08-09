@@ -1,12 +1,8 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
+
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.index.MappingHelper.DATE;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.HashSet;
@@ -208,17 +204,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
 			mappingRequestBuilder.setType(getType());
 
-			JsonObject mapping = new JsonObject();
-			JsonObject mappingProperties = getTransformator().getMappingProperties();
-			// Enhance mappings with generic/common field types
-			mappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
-			mappingProperties.put("created", fieldType(DATE, NOT_ANALYZED));
-			mappingProperties.put("edited", fieldType(DATE, NOT_ANALYZED));
+			JsonObject mapping = getTransformator().getMapping(getType());
 
-			JsonObject root = new JsonObject();
-			root.put("properties", mappingProperties);
-
-			mapping.put(getType(), root);
 			mappingRequestBuilder.setSource(mapping.toString());
 
 			return Completable.create(sub -> {
