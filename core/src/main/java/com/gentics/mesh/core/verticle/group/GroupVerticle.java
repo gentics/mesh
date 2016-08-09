@@ -194,7 +194,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.method(POST);
-		endpoint.description("Create a new group");
+		endpoint.description("Create a new group.");
 		endpoint.exampleRequest(groupExamples.getGroupCreateRequest("New group"));
 		endpoint.exampleResponse(201, groupExamples.getGroupResponse1("New group"));
 		endpoint.handler(rc -> {

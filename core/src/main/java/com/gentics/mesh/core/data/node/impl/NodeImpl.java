@@ -174,8 +174,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					return Single.just(binaryField.getFileName());
 				}
 			}
-			return Single.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_field", segmentFieldKey, getUuid(),
-					Arrays.toString(languageTag), releaseUuid, type.getShortName()));
+			return Single.just(null);
 		}
 		return Single.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment_no_container", getUuid(), Arrays.toString(languageTag),
 				releaseUuid, type.getShortName()));
@@ -1261,26 +1260,33 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getDisplayName(InternalActionContext ac) {
-		NodeParameters parameters = ac.getNodeParameters();
+		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
-		String displayFieldName = null;
-		try {
-			NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
-					versioningParameters.getVersion());
-			if (container == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
+
+		String langInfo = Arrays.toString(nodeParameters.getLanguageList().toArray());
+		String key = getUuid() + langInfo + versioningParameters.getVersion() + ac.getRelease(getProject()).getUuid();
+		String displayFieldName = (String) ac.data().computeIfAbsent(key, (key2) -> {
+
+			try {
+				NodeGraphFieldContainer container = findNextMatchingFieldContainer(nodeParameters.getLanguageList(),
+						ac.getRelease(getProject()).getUuid(), versioningParameters.getVersion());
+				if (container == null) {
+					if (log.isDebugEnabled()) {
+						log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
+					}
+					return null;
+				} else {
+					// Determine the display field name and load the string value
+					// from that field.
+					return container.getDisplayFieldValue();
 				}
-				return null;
-			} else {
-				// Determine the display field name and load the string value
-				// from that field.
-				return container.getDisplayFieldValue();
+			} catch (Exception e) {
+				log.error("Could not determine displayName for node {" + getUuid() + "} and version {" + versioningParameters.getVersion()
+						+ "} of language {" + langInfo + "}", e);
+				throw e;
 			}
-		} catch (Exception e) {
-			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}", e);
-			throw e;
-		}
+		});
+		return displayFieldName;
 	}
 
 	/**

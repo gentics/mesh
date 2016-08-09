@@ -133,7 +133,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/");
-		endpoint.description("Create the user with the given uuid");
+		endpoint.description("Create a new user.");
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);

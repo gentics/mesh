@@ -1278,11 +1278,11 @@ At the moment it is not possible to delete older versions.
 
 So far we learned that node language variants can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Releases`. A release is very similar to branches in a versioning control system.
 
-Releases can be used to restructure your nodes and change the contents within a specific release without affecting a different release which provide a different structure/content.
+Releases can be used to restructure your nodes and change the contents within a specific release without affecting a different release which provides a different structure/content.
 
 Structural references for nodes always contain release information. This applies to parent/child relationship or taggings, publish states of nodes. This way releases are completely isolated from each other.
 
-NOTE: It is current not possible to migrate from one release to another. There is currently no way to invoke an automatic merge of nodes from one specific release to another.
+NOTE: It is currently not possible to migrate from one release to another. Nodes of releases can't be automatically merged to other releases.
 
 Typical usecases are:
 
@@ -1294,13 +1294,13 @@ Typical usecases are:
   Each project can have multiple releases.
   An initial release will automatically be created when creating a project.
 
-All operations to nodes can be scoped to a specific release by adding the ```?release=name``` query parameter. If omitted the latest release release will be used to execute the operation. 
+All operations to nodes can be scoped to a specific release by adding the ```?release=name``` query parameter. If omitted the latest release will be used to execute the operation.
 
-TIP: Implementations which use mesh should always reference a specific release. Otherwise the document structure could change without the implementation being aware of these changes. 
+TIP: Implementations which use mesh should always reference a specific release. Otherwise the document structure could change without the implementation being aware of these changes.
 
 ==== Creating a Release
 
-A release requires an unique name. Existing nodes within the project will automatically be migrated into the release. 
+A release requires an unique name. Existing nodes within the project will automatically be migrated into the release.
 Please note the started *node migration* will be processed asynchronously and thus not all nodes may be directly accessible within the scope of the release.
 
 This migration is different from a schema version migration. The release node migration just takes care of making all nodes from the previous release available in the newly created release.

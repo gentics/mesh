@@ -49,10 +49,10 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 		return list;
 	}
 
-//	@BeforeClass
-//	public static void setupOnce() {
-//		new RxDebugger().start();
-//	}
+	//	@BeforeClass
+	//	public static void setupOnce() {
+	//		new RxDebugger().start();
+	//	}
 
 	/**
 	 * Folder /news/2015 is not published. A new node will be created in folder 2015. Publishing the created folder should fail since the parent folder
@@ -206,6 +206,19 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 	}
 
 	@Test
+	public void testPublishNodeWithNoSegmentPathValue() {
+		String uuid = db.noTx(() -> folder("news").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.setParentNodeUuid(uuid);
+		request.setSchema(new SchemaReference().setName("content"));
+		request.getFields().put("name", FieldUtil.createStringField("someNode"));
+		request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
+		NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, request));
+		call(() -> getClient().publishNode(PROJECT_NAME, response.getUuid()));
+	}
+
+	@Test
 	public void testPublishNodeForRelease() {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
@@ -264,7 +277,8 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 		// 2. Move the published node into the offline target node
 		String publishedNode = db.noTx(() -> content("concorde").getUuid());
-		call(() -> getClient().moveNode(PROJECT_NAME, publishedNode, newsFolderUuid), BAD_REQUEST, "node_error_parent_containers_not_published", newsFolderUuid);
+		call(() -> getClient().moveNode(PROJECT_NAME, publishedNode, newsFolderUuid), BAD_REQUEST, "node_error_parent_containers_not_published",
+				newsFolderUuid);
 	}
 
 	@Test
