@@ -6,13 +6,13 @@ import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
@@ -37,11 +37,9 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 		return list;
 	}
 
-	@Test
-	public void testReadPage() {
-
+	public void addNodes() {
 		String uuid = db.noTx(() -> folder("news").getUuid());
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 500; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
@@ -51,6 +49,13 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 			NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, request));
 			call(() -> getClient().publishNode(PROJECT_NAME, response.getUuid()));
 		}
+	}
+
+	@Test
+	public void testPerformance() {
+		addNodes();
+		String uuid = db.noTx(() -> folder("news").getUuid());
+		String baseUuid = db.noTx(() -> project().getBaseNode().getUuid());
 
 		loggingStopWatch(logger, "node.read-page-100", 200, (step) -> {
 			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(100)));
@@ -59,28 +64,16 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 		loggingStopWatch(logger, "node.read-page-25", 200, (step) -> {
 			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(25)));
 		});
-	}
 
-	@Test
-	public void testReadNavigation() {
-		String uuid = db.noTx(() -> project().getBaseNode().getUuid());
 		loggingStopWatch(logger, "node.read-nav-expanded-full-4", 200, (step) -> {
-			call(() -> getClient().loadNavigation(PROJECT_NAME, uuid, new NodeParameters().setExpandAll(true).setResolveLinks(LinkType.FULL),
+			call(() -> getClient().loadNavigation(PROJECT_NAME, baseUuid, new NodeParameters().setExpandAll(true).setResolveLinks(LinkType.FULL),
 					new NavigationParameters().setMaxDepth(4)));
 		});
-	}
 
-	@Test
-	public void testReadSingleNode() {
-		String uuid = db.noTx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.read-by-uuid", 200, (step) -> {
 			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
 		});
-	}
 
-	@Test
-	public void testCreatePerformance() throws Exception {
-		String uuid = db.noTx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.create", 200, (step) -> {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setSchema(new SchemaReference().setName("content"));
