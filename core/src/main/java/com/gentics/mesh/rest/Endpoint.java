@@ -4,7 +4,6 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -171,9 +170,34 @@ public class Endpoint implements Route {
 
 	public String getRamlPath() {
 		if (ramlPath == null) {
-			return route.getPath();
+			return convertPath(route.getPath());
 		}
 		return ramlPath;
+	}
+
+	/**
+	 * Convert the provided vertx path to a raml path.
+	 * 
+	 * @param path
+	 * @return
+	 */
+	private String convertPath(String path) {
+		StringBuilder builder = new StringBuilder();
+		String[] segments = path.split("/");
+		for (int i = 0; i < segments.length; i++) {
+			String segment = segments[i];
+			if (segment.startsWith(":")) {
+				segment = "{" + segment.substring(1) + "}";
+			}
+			builder.append(segment);
+			if (i != segments.length - 1) {
+				builder.append("/");
+			}
+		}
+		if (path.endsWith("/")) {
+			builder.append("/");
+		}
+		return builder.toString();
 	}
 
 	public Endpoint displayName(String name) {

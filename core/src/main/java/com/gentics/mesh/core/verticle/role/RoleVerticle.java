@@ -15,6 +15,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.util.UUIDUtil;
 
 @Component
 @Scope("singleton")
@@ -46,7 +47,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addPermissionHandler() {
 		Endpoint permissionSetEndpoint = createEndpoint();
-		permissionSetEndpoint.setRAMLPath("/:uuid/permissions/:path");
+		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
 		permissionSetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		permissionSetEndpoint.method(PUT);
 		permissionSetEndpoint.description("Set the permissions between role and the targeted element.");
@@ -61,7 +62,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		});
 
 		Endpoint permissionGetEndpoint = createEndpoint();
-		permissionGetEndpoint.setRAMLPath("/:uuid/permissions/:path");
+		permissionGetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
 		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		permissionGetEndpoint.description("Load the permissions between given role and the targeted element.");
 		permissionGetEndpoint.method(GET);
@@ -77,13 +78,14 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:roleUuid");
+		endpoint.addUriParameter("roleUuid", "Uuid of the role", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
 		endpoint.description("Delete the role with the given uuid");
 		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
 	}
