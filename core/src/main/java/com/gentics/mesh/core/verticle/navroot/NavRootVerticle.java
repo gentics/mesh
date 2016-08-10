@@ -40,7 +40,8 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 		endpoint.pathRegex("\\/(.*)");
 		endpoint.method(GET);
 		endpoint.description("Return a navigation for the node which is located using the given path.");
-		endpoint.setRAMLPath("/:path");
+		endpoint.setRAMLPath("/{path}");
+		endpoint.addUriParameter("path", "Webroot path to the node language variation.", "someFolder/somePage.html");
 		endpoint.addQueryParameters(NavigationParameters.class);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(200, nodeExamples.getNavigationResponse());

@@ -101,12 +101,14 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 	 * 
 	 * @param document
 	 *            Search index document
+	 * @param fieldKey
+	 *            Key to be used to store the fields (e.g.: fields)
 	 * @param container
 	 *            Node field container
 	 * @param fields
 	 *            List of schema fields that should be handled
 	 */
-	public void addFields(JsonObject document, GraphFieldContainer container, List<? extends FieldSchema> fields) {
+	public void addFields(JsonObject document, String fieldKey, GraphFieldContainer container, List<? extends FieldSchema> fields) {
 		Map<String, Object> fieldsMap = new HashMap<>();
 		for (FieldSchema fieldSchema : fields) {
 			String name = fieldSchema.getName();
@@ -219,7 +221,8 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 								JsonObject itemMap = new JsonObject();
 								Micronode micronode = item.getMicronode();
 								addMicroschema(itemMap, micronode.getSchemaContainerVersion());
-								addFields(itemMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
+								addFields(itemMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode,
+										micronode.getSchemaContainerVersion().getSchema().getFields());
 								return itemMap;
 							}).toList().toBlocking().single());
 						}
@@ -262,7 +265,8 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 						JsonObject micronodeMap = new JsonObject();
 						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
 						// Micronode field can't be stored. The datastructure is dynamic
-						//addFields(micronodeMap, micronode, micronode.getSchemaContainerVersion().getSchema().getFields());
+						addFields(micronodeMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode,
+								micronode.getSchemaContainerVersion().getSchema().getFields());
 						fieldsMap.put(fieldSchema.getName(), micronodeMap);
 					}
 				}
@@ -273,7 +277,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 			}
 
 		}
-		document.put("fields", fieldsMap);
+		document.put(fieldKey, fieldsMap);
 
 	}
 
@@ -388,6 +392,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 					break;
 				case "micronode":
 					fieldInfo.put("type", NESTED);
+					fieldInfo.put("dynamic", true);
 					//fieldProps.put(field.getName(), fieldInfo);
 					break;
 				case "string":
@@ -414,7 +419,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 			microschemaMappingProperties.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
 			microschemaMappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
 			microschemaMapping.put("properties", microschemaMappingProperties);
-			//fieldInfo.put("dynamic", true);
+			fieldInfo.put("dynamic", true);
 			//TODO add version
 			fieldInfo.put("properties", micronodeMappingProperties);
 			break;
@@ -471,7 +476,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 		document.put("language", language);
 		addSchema(document, container.getSchemaContainerVersion());
 
-		addFields(document, container, container.getSchemaContainerVersion().getSchema().getFields());
+		addFields(document, "fields", container, container.getSchemaContainerVersion().getSchema().getFields());
 		if (log.isTraceEnabled()) {
 			String json = document.toString();
 			log.trace("Search index json:");

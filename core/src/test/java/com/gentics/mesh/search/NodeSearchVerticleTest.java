@@ -1042,8 +1042,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private String getNestedVCardListSearch(String firstName, String lastName) throws IOException {
 		return XContentFactory.jsonBuilder().startObject().startObject("query").startObject("nested").field("path", "fields.vcardlist")
 				.startObject("query").startObject("bool").startArray("must").startObject().startObject("match")
-				.field("fields.vcardlist.fields.firstName", firstName).endObject().endObject().startObject().startObject("match")
-				.field("fields.vcardlist.fields.lastName", lastName).endObject().endObject().endArray().endObject().endObject().endObject()
+				.field("fields.vcardlist.fields-vcard.firstName", firstName).endObject().endObject().startObject().startObject("match")
+				.field("fields.vcardlist.fields-vcard.lastName", lastName).endObject().endObject().endArray().endObject().endObject().endObject()
 				.endObject().endObject().string();
 	}
 }

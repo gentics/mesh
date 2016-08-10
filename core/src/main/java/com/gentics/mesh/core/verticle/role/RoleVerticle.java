@@ -47,8 +47,10 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addPermissionHandler() {
 		Endpoint permissionSetEndpoint = createEndpoint();
-		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
 		permissionSetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
+		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
+		permissionSetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
+		permissionSetEndpoint.addUriParameter("pathToElement", "API path to the element.", "projects/" + UUIDUtil.randomUUID());
 		permissionSetEndpoint.method(PUT);
 		permissionSetEndpoint.description("Set the permissions between role and the targeted element.");
 		permissionSetEndpoint.exampleResponse(200, miscExamples.getMessageResponse());
@@ -62,8 +64,10 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		});
 
 		Endpoint permissionGetEndpoint = createEndpoint();
-		permissionGetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
 		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
+		permissionGetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
+		permissionGetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
+		permissionGetEndpoint.addUriParameter("pathToElement", "API path to the element.", "projects/" + UUIDUtil.randomUUID());
 		permissionGetEndpoint.description("Load the permissions between given role and the targeted element.");
 		permissionGetEndpoint.method(GET);
 		permissionGetEndpoint.produces(APPLICATION_JSON);
@@ -92,29 +96,31 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addUpdateHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:roleUuid");
+		endpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
+		endpoint.description("Update the role with the given uuid.");
 		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
-		endpoint.description("Update the role with the given uuid.");
 		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
 		endpoint.exampleResponse(200, roleExamples.getRoleResponse1("New role name"));
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
 	}
 
 	private void addReadHandler() {
 		Endpoint readOne = createEndpoint();
-		readOne.path("/:uuid");
-		readOne.method(GET);
+		readOne.path("/:roleUuid");
+		readOne.addUriParameter("roleUuid", "Uuid of the role", UUIDUtil.randomUUID());
 		readOne.description("Load the role with the given uuid.");
+		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(200, roleExamples.getRoleResponse1("Admin Role"));
 		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleRead(ac, uuid);
 		});
 

@@ -87,6 +87,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:nodeUuid/navigation");
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Returns a navigation object for the provided node.");
@@ -104,11 +105,11 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addLanguageHandlers() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:nodeUuid/languages/:languageTag");
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("languageTag", "Language tag of the content which should be deleted.", "en");
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the language specific content of the node.");
-		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		endpoint.addUriParameter("languageTag", "Language tag of the content which should be deleted.", "en");
 		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -121,13 +122,13 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addFieldHandlers() {
 		Endpoint fieldUpdate = createEndpoint();
 		fieldUpdate.path("/:nodeUuid/languages/:languageTag/fields/:fieldName");
+		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		fieldUpdate.addUriParameter("languageTag", "Language tag of the content which contains the field.", "en");
+		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
 		// TODO consumes json and upload
 		fieldUpdate.exampleResponse(200, miscExamples.getMessageResponse());
-		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		fieldUpdate.addUriParameter("languageTag", "Language tag of the content which contains the field.", "en");
-		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
 		fieldUpdate.description("Update the field with the given name.");
 		fieldUpdate.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
@@ -139,9 +140,11 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 		Endpoint fieldGet = createEndpoint();
 		fieldGet.path("/:nodeUuid/languages/:languageTag/fields/:fieldName");
+		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		fieldGet.addUriParameter("languageTag", "Language tag.", "en");
+		fieldGet.addUriParameter("fieldName", "Name of the field", "content");
 		fieldGet.method(GET);
 		fieldGet.description("Load the field with the given name.");
-		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		fieldGet.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("languageTag");
@@ -152,6 +155,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint fieldCreate = createEndpoint();
 		fieldCreate.path("/:nodeUuid/languages/:languageTag/fields/:fieldName");
 		fieldCreate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		fieldCreate.addUriParameter("languageTag", "Language tag.", "en");
+		fieldCreate.addUriParameter("fieldName", "Name of the field", "binary");
 		fieldCreate.description("Create a new field with the given name.");
 		fieldCreate.method(PUT).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
@@ -164,6 +169,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Endpoint fieldDelete = createEndpoint();
 		fieldDelete.path("/:nodeUuid/languages/:languageTag/fields/:fieldName");
 		fieldDelete.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		fieldDelete.addUriParameter("languageTag", "Language tag.", "en");
+		fieldDelete.addUriParameter("fieldName", "Name of the field", "content");
 		fieldDelete.method(DELETE);
 		fieldDelete.produces(APPLICATION_JSON);
 		fieldDelete.description("Delete the field with the given name");
@@ -179,6 +186,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		// Image Transformation
 		Endpoint imageTransform = createEndpoint();
 		imageTransform.path("/:nodeUuid/languages/:languageTag/fields/:fieldName/transform");
+		imageTransform.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		imageTransform.addUriParameter("languageTag", "Language tag.", "en");
+		imageTransform.addUriParameter("fieldName", "Name of the field", "image");
 		imageTransform.method(POST);
 		imageTransform.produces(APPLICATION_JSON);
 		imageTransform.consumes(APPLICATION_JSON);
@@ -195,6 +205,10 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		// List methods
 		Endpoint listItemDelete = createEndpoint();
 		listItemDelete.path("/:nodeUuid/languages/:languageTag/fields/:fieldName/:itemIndex");
+		listItemDelete.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		listItemDelete.addUriParameter("languageTag", "Language tag.", "en");
+		listItemDelete.addUriParameter("fieldName", "Name of the field", "stringList");
+		listItemDelete.addUriParameter("itemIndex", "Index which identifies the item which should be deleted", "5");
 		listItemDelete.method(DELETE);
 		listItemDelete.produces(APPLICATION_JSON);
 		listItemDelete.exampleResponse(200, miscExamples.getMessageResponse());
@@ -208,25 +222,33 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		});
 
 		Endpoint listItemGet = createEndpoint();
-		listItemGet.path("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex");
+		listItemGet.path("/:nodeUuid/languages/:languageTag/fields/:fieldName/:itemIndex");
+		listItemGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		listItemGet.addUriParameter("languageTag", "Language tag.", "en");
+		listItemGet.addUriParameter("fieldName", "Name of the field", "stringList");
+		listItemGet.addUriParameter("itemIndex", "Index which identifies the item which should be loaded.", "5");
 		listItemGet.method(GET);
 		listItemGet.exampleResponse(200, miscExamples.getMessageResponse());
 		listItemGet.description("Load the field list item at the given index position. (Not yet implemented)");
 		listItemGet.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = rc.request().getParam("uuid");
+			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("languageTag");
 			String fieldName = rc.request().getParam("fieldName");
 			fieldAPIHandler.handleReadFieldItem(ac, uuid);
 		});
 
 		Endpoint updateFieldItem = createEndpoint();
-		updateFieldItem.path("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex");
+		updateFieldItem.path("/:nodeUuid/languages/:languageTag/fields/:fieldName/:itemIndex");
+		updateFieldItem.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		updateFieldItem.addUriParameter("languageTag", "Language tag.", "en");
+		updateFieldItem.addUriParameter("fieldName", "Name of the field", "stringList");
+		updateFieldItem.addUriParameter("itemIndex", "Index which identifies the item which should be created.", "5");
 		updateFieldItem.method(PUT);
 		updateFieldItem.description("Update the field list item at the given index position. (Not yet implemented)");
 		updateFieldItem.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = rc.request().getParam("uuid");
+			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("languageTag");
 			String fieldName = rc.request().getParam("fieldName");
 			fieldAPIHandler.handleUpdateFieldItem(ac, uuid);
@@ -234,6 +256,11 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 		Endpoint moveFieldItem = createEndpoint();
 		moveFieldItem.path("/:nodeUuid/languages/:languageTag/fields/:fieldName/:itemIndex/move/:newItemIndex");
+		moveFieldItem.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		moveFieldItem.addUriParameter("languageTag", "Language tag.", "en");
+		moveFieldItem.addUriParameter("fieldName", "Name of the field", "stringList");
+		moveFieldItem.addUriParameter("itemIndex", "Index which identifies the item which should be moved.", "5");
+		moveFieldItem.addUriParameter("newItemIndex", "Index which identifies the item which should be moved to.", "6");
 		moveFieldItem.method(POST);
 		moveFieldItem.description("Move the field list item on a new index position. (Not yet implemented)");
 		moveFieldItem.handler(rc -> {
@@ -254,6 +281,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addMoveHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:nodeUuid/moveTo/:toUuid");
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node which should be moved.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("toUuid", "Uuid of target the node.", UUIDUtil.randomUUID());
 		endpoint.method(PUT);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Move the node into the target node.");
@@ -270,6 +299,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addChildrenHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:nodeUuid/children");
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(200, nodeExamples.getNodeListResponse());
@@ -288,6 +318,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addTagsHandler() {
 		Endpoint getTags = createEndpoint();
 		getTags.path("/:nodeUuid/tags");
+		getTags.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		getTags.method(GET);
 		getTags.produces(APPLICATION_JSON);
 		getTags.exampleResponse(200, tagExamples.getTagListResponse());
@@ -475,7 +506,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		getLanguageRoute.produces(APPLICATION_JSON);
 		getLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
 		getLanguageRoute.handler(rc -> {
-			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"), rc.request().getParam("languageTag"));
+			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"),
+					rc.request().getParam("languageTag"));
 		});
 
 		Endpoint putLanguageRoute = createEndpoint();

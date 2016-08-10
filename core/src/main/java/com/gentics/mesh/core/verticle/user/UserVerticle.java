@@ -18,6 +18,7 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.Route;
 
@@ -52,7 +53,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 	private void addReadPermissionHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
-		endpoint.setRAMLPath("/:uuid/permissions/:path");
+		endpoint.setRAMLPath("/{userUuid}/permissions/{path}");
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		endpoint.addUriParameter("path", "Path to the element from which the permissions should be loaded.", "projects/:projectUuid/schemas");
 		endpoint.description("Read the user permissions on the element/s that are located by the specified path.");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
@@ -67,8 +70,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		Endpoint readOne = createEndpoint();
-		readOne.path("/:uuid");
+		readOne.path("/:userUuid");
 		readOne.description("Read the user with the given uuid");
+		readOne.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(200, userExamples.getUserResponse1("jdoe"));
@@ -77,7 +81,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		readOne.addQueryParameters(RolePermissionParameters.class);
 		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleRead(ac, uuid);
 		});
 
@@ -101,7 +105,8 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:userUuid");
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
 		endpoint.description(
 				"Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.");
@@ -109,14 +114,15 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
 	private void addUpdateHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:userUuid");
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.description("Update the user with the given uuid.");
 		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
@@ -125,7 +131,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.exampleResponse(200, userExamples.getUserResponse1("jdoe42"));
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
 	}

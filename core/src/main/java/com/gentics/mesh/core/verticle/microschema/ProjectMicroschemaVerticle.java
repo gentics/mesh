@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Verticle for /api/v1/PROJECTNAME/microschemas
@@ -56,28 +57,30 @@ public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 
 	private void addUpdateHandlers() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:microschemaUuid");
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(PUT);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Add the microschema to the project.");
 		endpoint.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleAddMicroschemaToProject(ac, uuid);
 		});
 	}
 
 	private void addDeleteHandlers() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:microschemaUuid");
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Remove the microschema from the project.");
 		endpoint.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleRemoveMicroschemaFromProject(ac, uuid);
 		});
 	}

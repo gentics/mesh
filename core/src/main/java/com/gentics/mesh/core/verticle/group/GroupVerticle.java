@@ -16,6 +16,7 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.util.UUIDUtil;
 
 @Component
 @Scope("singleton")
@@ -28,7 +29,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	public GroupVerticle() {
 		super("groups");
 	}
-	
+
 	@Override
 	public String getDescription() {
 		return "Provides endpoints which allow the manipulation of groups.";
@@ -50,8 +51,9 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addGroupRoleHandlers() {
 		Endpoint readRoles = createEndpoint();
 		readRoles.path("/:groupUuid/roles");
-		readRoles.method(GET);
+		readRoles.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		readRoles.description("Load multiple roles that are assigned to the group. Return a paged list response.");
+		readRoles.method(GET);
 		readRoles.produces(APPLICATION_JSON);
 		readRoles.exampleResponse(200, roleExamples.getRoleListResponse());
 		readRoles.addQueryParameters(PagingParameters.class);
@@ -64,6 +66,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		Endpoint addRole = createEndpoint();
 		addRole.path("/:groupUuid/roles/:roleUuid");
+		addRole.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
+		addRole.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
 		addRole.method(PUT);
 		addRole.description("Add the specified role to the group.");
 		addRole.produces(APPLICATION_JSON);
@@ -77,6 +81,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		Endpoint removeRole = createEndpoint();
 		removeRole.path("/:groupUuid/roles/:roleUuid");
+		removeRole.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
+		removeRole.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
 		removeRole.method(DELETE);
 		removeRole.description("Remove the given role from the group.");
 		removeRole.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
@@ -91,10 +97,11 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addGroupUserHandlers() {
 		Endpoint readUsers = createEndpoint();
 		readUsers.path("/:groupUuid/users");
+		readUsers.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		readUsers.method(GET);
 		readUsers.produces(APPLICATION_JSON);
 		readUsers.exampleResponse(200, userExamples.getUserListResponse());
-		readUsers.description("Load a list of users which have been assigned to the group");
+		readUsers.description("Load a list of users which have been assigned to the group.");
 		readUsers.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -103,6 +110,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		Endpoint addUser = createEndpoint();
 		addUser.path("/:groupUuid/users/:userUuid");
+		addUser.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
+		addUser.addUriParameter("userUuid", "Uuid of the user which should be added to the group.", UUIDUtil.randomUUID());
 		addUser.method(PUT);
 		addUser.description("Add the given user to the group");
 		addUser.produces(APPLICATION_JSON);
@@ -116,6 +125,8 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 		Endpoint removeUser = createEndpoint();
 		removeUser.path("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
+		removeUser.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
+		removeUser.addUriParameter("userUuid", "Uuid of the user which should be removed from the group.", UUIDUtil.randomUUID());
 		removeUser.description("Remove the given user from the group.");
 		removeUser.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
 		removeUser.handler(rc -> {
@@ -128,14 +139,15 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		Endpoint deleteGroup = createEndpoint();
-		deleteGroup.path("/:uuid");
-		deleteGroup.method(DELETE);
+		deleteGroup.path("/:groupUuid");
+		deleteGroup.addUriParameter("groupUuid", "Uuid of the group which should be deleted.", UUIDUtil.randomUUID());
 		deleteGroup.description("Delete the given group.");
+		deleteGroup.method(DELETE);
 		deleteGroup.exampleResponse(200, miscExamples.getMessageResponse());
 		deleteGroup.produces(APPLICATION_JSON);
 		deleteGroup.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
 	}
@@ -144,16 +156,17 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO update timestamps
 	private void addUpdateHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:groupUuid");
+		endpoint.addUriParameter("groupUuid", "Uuid of the group which should be updated.", UUIDUtil.randomUUID());
+		endpoint.description("Update the group with the given uuid.");
 		endpoint.method(PUT);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
 		endpoint.exampleResponse(200, groupExamples.getGroupResponse1("New group name"));
-		endpoint.description("Update the group with the given uuid.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
 
@@ -161,15 +174,16 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		Endpoint readOne = createEndpoint();
-		readOne.path("/:uuid");
-		readOne.method(GET);
+		readOne.path("/:groupUuid");
+		readOne.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		readOne.description("Read the group with the given uuid.");
+		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(200, groupExamples.getGroupResponse1("Admin Group"));
 		readOne.addQueryParameters(RolePermissionParameters.class);
 		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleRead(ac, uuid);
 		});
 

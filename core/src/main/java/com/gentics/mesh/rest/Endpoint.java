@@ -4,10 +4,14 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
@@ -113,7 +117,7 @@ public class Endpoint implements Route {
 	/**
 	 * Validate that all mandatory fields have been set.
 	 */
-	private void validate() {
+	public void validate() {
 		if (!produces.isEmpty() && exampleResponses.isEmpty()) {
 			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
 			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
@@ -126,6 +130,24 @@ public class Endpoint implements Route {
 			log.error("Endpoint {" + getPath() + "} has no description.");
 			throw new RuntimeException("No description was set");
 		}
+
+		// Check whether all segments have a description.
+		List<String> segments = getNamedSegments();
+		for (String segment : segments) {
+			if (!getUriParameters().containsKey(segment)) {
+				throw new RuntimeException("Missing URI description for path {" + getRamlPath() + "} segment {" + segment + "}");
+			}
+		}
+
+	}
+
+	public List<String> getNamedSegments() {
+		List<String> allMatches = new ArrayList<String>();
+		Matcher m = Pattern.compile("\\{[^}]*\\}").matcher(getRamlPath());
+		while (m.find()) {
+			allMatches.add(m.group().substring(1, m.group().length() - 1));
+		}
+		return allMatches;
 	}
 
 	@Override

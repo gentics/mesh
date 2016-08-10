@@ -16,6 +16,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.util.UUIDUtil;
 
 @Component
 @Scope("singleton")
@@ -49,7 +50,8 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 
 	private void addDiffHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid/diff");
+		endpoint.path("/:microschemaUuid/diff");
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
@@ -59,7 +61,7 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 				"Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String schemaUuid = ac.getParameter("uuid");
+			String schemaUuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDiff(ac, schemaUuid);
 		});
 	}
@@ -77,31 +79,33 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 		//			crudHandler.handleGetSchemaChanges(ac, schemaUuid);
 		//		});
 
-		Endpoint executeChanges = createEndpoint();
-		executeChanges.path("/:schemaUuid/changes");
-		executeChanges.method(POST);
-		executeChanges.produces(APPLICATION_JSON);
-		executeChanges.consumes(APPLICATION_JSON);
-		executeChanges.description(
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:microschemaUuid/changes");
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
+		endpoint.method(POST);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.description(
 				"Apply the provided changes on the latest version of the schema and migrate all nodes which are based on the schema. Please note that this operation is non-blocking and will continue to run in the background.");
-		executeChanges.exampleRequest(schemaExamples.getSchemaChangesListModel());
-		executeChanges.exampleResponse(200, miscExamples.getMessageResponse());
-		executeChanges.handler(rc -> {
+		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String schemaUuid = ac.getParameter("schemaUuid");
+			String schemaUuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
 		});
 	}
 
 	private void addReadHandlers() {
 		Endpoint readOne = createEndpoint();
-		readOne.path("/:uuid");
+		readOne.path("/:microschemaUuid");
+		readOne.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());
 		readOne.description("Read the microschema with the given uuid.");
 		readOne.handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
+			String uuid = rc.request().params().get("microschemaUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
@@ -124,21 +128,23 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:microschemaUuid");
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.description("Delete the microschema with the given uuid.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
 	private void addUpdateHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:microschemaUuid");
+		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(PUT);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.consumes(APPLICATION_JSON);
@@ -147,7 +153,7 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 		endpoint.description("Update the microschema with the given uuid.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
 	}

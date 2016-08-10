@@ -17,6 +17,7 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.util.UUIDUtil;
 
 @Component
 @Scope("singleton")
@@ -46,8 +47,9 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addUpdateHandler() {
 		Endpoint updateEndpoint = createEndpoint();
-		updateEndpoint.path("/:uuid");
+		updateEndpoint.path("/:projectUuid");
 		updateEndpoint.description("Update the project with the given uuid.");
+		updateEndpoint.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
 		updateEndpoint.method(PUT);
 		updateEndpoint.consumes(APPLICATION_JSON);
 		updateEndpoint.produces(APPLICATION_JSON);
@@ -55,7 +57,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		updateEndpoint.exampleResponse(200, projectExamples.getProjectResponse("New project name"));
 		updateEndpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
 	}
@@ -78,14 +80,15 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		Endpoint readOne = createEndpoint();
-		readOne.path("/:uuid");
-		readOne.method(GET);
+		readOne.path("/:projectUuid");
+		readOne.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
 		readOne.description("Load the project with the given uuid.");
+		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(200, projectExamples.getProjectResponse("Project name"));
 		readOne.addQueryParameters(RolePermissionParameters.class);
 		readOne.handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
+			String uuid = rc.request().params().get("projectUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
@@ -108,14 +111,15 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:projectUuid");
+		endpoint.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
 		endpoint.description("Delete the project and all attached nodes.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
 	}

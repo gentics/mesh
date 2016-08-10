@@ -16,6 +16,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Verticle for /api/v1/schemas endpoint
@@ -60,14 +61,15 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		//			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
 		//		});
 
-		Endpoint executeChanges = createEndpoint();
-		executeChanges.path("/:schemaUuid/changes");
-		executeChanges.method(POST);
-		executeChanges.description("Apply the posted changes to the schema.");
-		executeChanges.produces(APPLICATION_JSON);
-		executeChanges.exampleRequest(schemaExamples.getSchemaChangesListModel());
-		executeChanges.exampleResponse(200, miscExamples.getMessageResponse());
-		executeChanges.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:schemaUuid/changes");
+		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
+		endpoint.method(POST);
+		endpoint.description("Apply the posted changes to the schema.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
@@ -90,7 +92,8 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 	private void addDiffHandler() {
 		Endpoint diffEndpoint = createEndpoint();
-		diffEndpoint.path("/:uuid/diff");
+		diffEndpoint.path("/:schemaUuid/diff");
+		diffEndpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		diffEndpoint.method(POST);
 		diffEndpoint.description("Compare the given schema with the stored schema and create a changeset");
 		diffEndpoint.consumes(APPLICATION_JSON);
@@ -99,14 +102,15 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		diffEndpoint.exampleResponse(200, schemaExamples.getSchemaChangesListModel());
 		diffEndpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDiff(ac, uuid);
 		});
 	}
 
 	private void addUpdateHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:schemaUuid");
+		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(PUT);
 		endpoint.description("Update the schema.");
 		endpoint.consumes(APPLICATION_JSON);
@@ -115,34 +119,36 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		endpoint.exampleResponse(200, schemaExamples.getSchema());
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
 	}
 
 	private void addDeleteHandler() {
-		Endpoint deleteSchema = createEndpoint();
-		deleteSchema.path("/:uuid");
-		deleteSchema.method(DELETE);
-		deleteSchema.description("Delete the schema with the given uuid.");
-		deleteSchema.produces(APPLICATION_JSON);
-		deleteSchema.exampleResponse(200, miscExamples.getMessageResponse());
-		deleteSchema.handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:schemaUuid");
+		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
+		endpoint.method(DELETE);
+		endpoint.description("Delete the schema with the given uuid.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
 	private void addReadHandlers() {
 		Endpoint readOne = createEndpoint();
-		readOne.path("/:uuid");
+		readOne.path("/:schemaUuid");
+		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.description("Load the schema with the given uuid.");
 		readOne.exampleResponse(200, schemaExamples.getSchema());
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
-			String uuid = rc.request().params().get("uuid");
+			String uuid = rc.request().params().get("schemaUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
