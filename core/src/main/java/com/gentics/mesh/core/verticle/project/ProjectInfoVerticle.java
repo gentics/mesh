@@ -11,6 +11,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.rest.Endpoint;
 
+import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 
 @Component
@@ -29,12 +30,14 @@ public class ProjectInfoVerticle extends AbstractCoreApiVerticle {
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:projectName");
-		endpoint.description("Return the current project info");
+		endpoint.path("/:project");
+		endpoint.method(HttpMethod.GET);
+		endpoint.addUriParameter("project", "Name of the project.", "demo");
+		endpoint.description("Return the current project info.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, projectExamples.getProjectResponse("dummy"));
+		endpoint.exampleResponse(200, projectExamples.getProjectResponse("demo"));
 		endpoint.handler(rc -> {
-			String projectName = rc.request().params().get("projectName");
+			String projectName = rc.request().params().get("project");
 			crudHandler.handleReadByName(InternalActionContext.create(rc), projectName);
 		});
 	}
