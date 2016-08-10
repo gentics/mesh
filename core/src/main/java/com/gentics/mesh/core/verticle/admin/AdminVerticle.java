@@ -55,7 +55,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 
 	private void addMigrationStatusHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/migrationStatus");
+		endpoint.path("/status/migrations");
 		endpoint.method(GET);
 		endpoint.description("Return the current schema or node migration status.");
 		endpoint.produces(APPLICATION_JSON);

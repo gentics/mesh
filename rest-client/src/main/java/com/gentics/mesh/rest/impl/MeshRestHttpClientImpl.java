@@ -770,7 +770,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public Future<GenericMessageResponse> schemaMigrationStatus() {
-		return handleRequest(GET, "/admin/migrationStatus", GenericMessageResponse.class);
+		return handleRequest(GET, "/admin/status/migrations", GenericMessageResponse.class);
 	}
 
 	@Override

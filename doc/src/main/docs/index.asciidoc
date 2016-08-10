@@ -1146,7 +1146,7 @@ The posted list of changes will be validated and stored when valid. A schema mig
 
 The https://github.com/sockjs[SockJS] compliant ```/api/v1/eventbus``` endpoint can be used to register to migration specific messages.
 
-Additionally to websocket it is possible to query whether a migration is running via the ```/api/v1/admin/migrationStatus``` endpoint.
+Additionally to websocket it is possible to query whether a migration is running via the ```/api/v1/admin/status/migrations``` endpoint.
 
 Sending a schema to ```/api/v1/schemas:uuid``` using the ```PUT``` method will conveniently combine the diff generation and invocation of the schema migration.
 
@@ -1306,7 +1306,7 @@ Please note the started *node migration* will be processed asynchronously and th
 This migration is different from a schema version migration. The release node migration just takes care of making all nodes from the previous release available in the newly created release.
 Unlike the schema migration the node migration will not create new language variant versions.
 
-You can use the eventbus bridge or the dedicated ```/api/v1/admin/migrationStatus``` endpoint to query the migration status.
+You can use the eventbus bridge or the dedicated ```/api/v1/admin/status/migrations``` endpoint to query the migration status.
 The ```migrated``` JSON property within the release response also indicates whether the node migration has been completed.
 
 Note: Migrated nodes will still have the same _uuid_ as before.

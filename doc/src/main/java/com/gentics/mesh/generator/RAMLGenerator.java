@@ -172,7 +172,7 @@ public class RAMLGenerator {
 	private void addProjectVerticles(Map<String, Resource> resources) throws Exception {
 		NodeVerticle nodeVerticle = Mockito.spy(new NodeVerticle());
 		initVerticle(nodeVerticle);
-		String projectBasePath = "/{projectName}";
+		String projectBasePath = "/{project}";
 		addEndpoints(projectBasePath, resources, nodeVerticle);
 
 		TagFamilyVerticle tagFamilyVerticle = Mockito.spy(new TagFamilyVerticle());
