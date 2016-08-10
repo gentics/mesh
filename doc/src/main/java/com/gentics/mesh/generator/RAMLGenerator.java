@@ -76,12 +76,12 @@ public class RAMLGenerator {
 		System.out.println(dumpFromRaml);
 	}
 
-	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractWebVerticle vericle) throws IOException {
+	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractWebVerticle verticle) throws IOException {
 
 		Resource verticleResource = new Resource();
-		for (Endpoint endpoint : vericle.getEndpoints()) {
+		for (Endpoint endpoint : verticle.getEndpoints()) {
 						
-			String fullPath = "api/v1" + basePath + "/" + vericle.getBasePath() + endpoint.getRamlPath();
+			String fullPath = "api/v1" + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
 			Action action = new Action();
 			action.setIs(Arrays.asList(endpoint.getTraits()));
 			action.setDisplayName(endpoint.getDisplayName());
@@ -122,7 +122,7 @@ public class RAMLGenerator {
 
 			String path = endpoint.getRamlPath();
 			if (path == null) {
-				throw new RuntimeException("Could not determine path for endpoint of verticle " + vericle.getClass() + " " + endpoint.getPathRegex());
+				throw new RuntimeException("Could not determine path for endpoint of verticle " + verticle.getClass() + " " + endpoint.getPathRegex());
 			}
 			Resource pathResource = verticleResource.getResources().get(path);
 			if (pathResource == null) {
@@ -136,10 +136,10 @@ public class RAMLGenerator {
 			verticleResource.getResources().put(path, pathResource);
 
 		}
-		verticleResource.setDisplayName(basePath + "/" +vericle.getBasePath());
-		verticleResource.setDescription(vericle.getDescription());
+		verticleResource.setDisplayName(basePath + "/" +verticle.getBasePath());
+		verticleResource.setDescription(verticle.getDescription());
 		//action.setBaseUriParameters(endpoint.getUriParameters());
-		resources.put(basePath + "/" + vericle.getBasePath(), verticleResource);
+		resources.put(basePath + "/" + verticle.getBasePath(), verticleResource);
 
 	}
 
