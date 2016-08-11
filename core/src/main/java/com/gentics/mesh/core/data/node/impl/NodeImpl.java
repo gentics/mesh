@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -97,6 +98,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
+import com.google.common.hash.Hashing;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -1583,5 +1585,34 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		throw error(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
 
+	}
+
+	/**
+	 * Generate the etag for nodes. The etag consists of:
+	 * <ul>
+	 * <li>uuid of the node</li>
+	 * <li>parent node uuid (which is release specific)</li>
+	 * <li>version and language specific etag of the field container</li>
+	 * </ul>
+	 */
+	@Override
+	public String getETag(InternalActionContext ac) {
+		Release release = ac.getRelease(ac.getProject());
+		Node parentNode = getParentNode(release.getUuid());
+		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getNodeParameters().getLanguageList(), release.getUuid(),
+				ac.getVersioningParameters().getVersion());
+
+		StringBuilder keyBuilder = new StringBuilder();
+		keyBuilder.append(getUuid());
+		keyBuilder.append("-");
+		if (parentNode != null) {
+			keyBuilder.append("-");
+			keyBuilder.append(parentNode.getUuid());
+		}
+		if (container != null) {
+			keyBuilder.append("-");
+			keyBuilder.append(container.getETag(ac));
+		}
+		return Hashing.crc32c().hashString(keyBuilder.toString(), Charset.defaultCharset()).toString();
 	}
 }

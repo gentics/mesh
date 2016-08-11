@@ -274,4 +274,5 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	boolean hasPermission(MeshVertex node, GraphPermission permission);
 
 	boolean hasAdminRole();
+
 }

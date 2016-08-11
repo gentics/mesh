@@ -78,6 +78,16 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	}
 
 	@Test
+	public void testETag() {
+		InternalActionContext ac = getMockedInternalActionContext();
+		try (NoTx noTx = db.noTx()) {
+			User user = user();
+			String eTag = user.getETag(ac);
+			System.out.println(eTag);
+		}
+	}
+
+	@Test
 	@Override
 	public void testRootNode() {
 		try (NoTx noTx = db.noTx()) {

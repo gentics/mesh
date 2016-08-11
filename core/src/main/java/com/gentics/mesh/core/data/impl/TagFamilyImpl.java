@@ -13,6 +13,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
+import com.google.common.hash.Hashing;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -273,8 +275,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		List<Tuple<String, Object>> customProperties = Arrays
-				.asList(Tuple.tuple(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid()));
+		List<Tuple<String, Object>> customProperties = Arrays.asList(Tuple.tuple(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid()));
 		if (action == DELETE_ACTION) {
 			for (Tag tag : getTagRoot().findAll()) {
 				batch.addEntry(tag, DELETE_ACTION, customProperties);
@@ -290,9 +291,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		batch.addEntry(this, action,
-				Arrays.asList(Tuple.tuple(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
+		batch.addEntry(this, action, Arrays.asList(Tuple.tuple(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
 		addRelatedEntries(batch, action);
 		return batch;
+	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return Hashing.crc32c().hashString(getUuid() + "-" + getLastEditedTimestamp(), Charset.defaultCharset()).toString();
 	}
 }

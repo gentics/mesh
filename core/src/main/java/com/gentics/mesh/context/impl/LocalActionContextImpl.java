@@ -210,6 +210,16 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		// Not supported
 	}
 
+	@Override
+	public void setEtag(String entityTag) {
+		// Not supported
+	}
+
+	@Override
+	public boolean matches(String etag) {
+		return false;
+	}
+
 	/**
 	 * Return the future which will be completed on sending or failure.
 	 * 

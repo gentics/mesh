@@ -97,7 +97,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateBogusName() {
-		String name = "Tä üst";
+		String name = "Tä\u1F921 üst";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
 		request.setSchemaReference(new SchemaReference().setName("folder"));

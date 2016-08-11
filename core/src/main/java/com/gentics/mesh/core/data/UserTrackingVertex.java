@@ -16,5 +16,6 @@ public interface UserTrackingVertex extends CreatorTrackingVertex, EditorTrackin
 		setCreationTimestamp(System.currentTimeMillis());
 		setEditor(creator);
 		setLastEditedTimestamp(System.currentTimeMillis());
-	}
+	}	
+
 }

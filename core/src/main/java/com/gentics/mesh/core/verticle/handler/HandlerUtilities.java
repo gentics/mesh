@@ -27,6 +27,8 @@ import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.UUIDUtil;
 
+import rx.Single;
+
 public final class HandlerUtilities {
 
 	/**
@@ -138,8 +140,14 @@ public final class HandlerUtilities {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTx(() -> {
 			RootVertex<?> root = handler.call();
-			return root.loadObjectByUuid(ac, uuid, READ_PERM).flatMap(node -> {
-				return node.transformToRest(ac, 0);
+			return root.loadObjectByUuid(ac, uuid, READ_PERM).flatMap(element -> {
+				String etag = element.getETag(ac);
+				ac.setEtag(etag);
+				if (ac.matches(etag)) {
+					return Single.just(message(ac, "Jo eh"));
+				} else {
+					return element.transformToRest(ac, 0);
+				}
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

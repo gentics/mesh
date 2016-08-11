@@ -45,4 +45,13 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * @return
 	 */
 	Single<T> transformToRestSync(InternalActionContext ac, int level, String... languageTags);
+
+	/**
+	 * Return the etag for the element.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	String getETag(InternalActionContext ac);
+
 }

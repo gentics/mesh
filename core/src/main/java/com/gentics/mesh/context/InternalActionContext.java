@@ -102,5 +102,13 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 */
 	void addCookie(Cookie cookie);
 
+	/**
+	 * Set the etag which should be returned in the header.
+	 * 
+	 * @param entityTag
+	 */
+	void setEtag(String entityTag);
+
+	boolean matches(String etag);
 
 }

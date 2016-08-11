@@ -2,6 +2,8 @@ package com.gentics.mesh.context.impl;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +17,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.google.common.hash.Hashing;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
@@ -73,6 +77,20 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 		rc.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
 		rc.response().putHeader("Cache-Control", "no-cache");
 		rc.response().setStatusCode(statusCode.code()).end(body);
+	}
+
+	@Override
+	public void setEtag(String entityTag) {
+		rc.response().putHeader("ETag", entityTag);
+	}
+
+	@Override
+	public boolean matches(String etag) {
+		String headerValue = rc.request().getHeader("If-None-Match");
+		if (headerValue == null) {
+			return false;
+		}
+		return headerValue.equals(etag);
 	}
 
 	@Override

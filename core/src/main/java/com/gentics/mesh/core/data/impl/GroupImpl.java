@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Set;
 
@@ -33,6 +34,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
+import com.google.common.hash.Hashing;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import rx.Completable;
@@ -237,6 +239,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		for (User user : getUsers()) {
 			batch.addEntry(user, STORE_ACTION);
 		}
+	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return Hashing.crc32c().hashString(getUuid() + "-" + getLastEditedTimestamp(), Charset.defaultCharset()).toString();
 	}
 
 }

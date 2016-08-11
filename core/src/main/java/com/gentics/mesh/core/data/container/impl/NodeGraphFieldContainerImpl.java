@@ -13,6 +13,7 @@ import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -57,6 +58,7 @@ import com.gentics.mesh.util.VersionNumber;
 import com.google.common.base.Equivalence;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
+import com.google.common.hash.Hashing;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -197,7 +199,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					webRootInfo.toString());
 			if (conflictingContainer != null) {
 				Node conflictingNode = conflictingContainer.getParentNode();
-				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage().getLanguageTag(), conflictI18n, segmentFieldName, segment);
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(),
+						conflictingContainer.getLanguage().getLanguageTag(), conflictI18n, segmentFieldName, segment);
 			}
 
 			setProperty(propertyName, webRootInfo.toString());
@@ -428,4 +431,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER)
 				.has(MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldListImpl.class);
 	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return Hashing.crc32c().hashString(getUuid(), Charset.defaultCharset()).toString();
+	}
+
 }

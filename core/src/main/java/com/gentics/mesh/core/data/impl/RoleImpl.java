@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.google.common.hash.Hashing;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
 
@@ -160,6 +162,11 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		for (Group group : getGroups()) {
 			batch.addEntry(group, STORE_ACTION);
 		}
+	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return Hashing.crc32c().hashString(getUuid() + "-" + getLastEditedTimestamp(), Charset.defaultCharset()).toString();
 	}
 
 }

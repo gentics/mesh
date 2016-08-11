@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Set;
 
@@ -54,6 +55,7 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.google.common.hash.Hashing;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -306,5 +308,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			linkOut(root.getImpl(), HAS_RELEASE_ROOT);
 		}
 		return root;
+	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return Hashing.crc32c().hashString(getUuid() + "-" + getLastEditedTimestamp(), Charset.defaultCharset()).toString();
 	}
 }

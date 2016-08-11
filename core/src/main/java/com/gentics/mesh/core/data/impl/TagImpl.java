@@ -14,6 +14,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,6 +50,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
+import com.google.common.hash.Hashing;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -268,5 +270,10 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	@Override
 	public TagReference createEmptyReferenceModel() {
 		return new TagReference();
+	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return Hashing.crc32c().hashString(getUuid() + "-" + getLastEditedTimestamp() + "-" + ac.getRelease(ac.getProject()).getUuid(), Charset.defaultCharset()).toString();
 	}
 }

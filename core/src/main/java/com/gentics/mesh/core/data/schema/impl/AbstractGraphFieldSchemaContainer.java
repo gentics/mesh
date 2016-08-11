@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LAT
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -17,6 +18,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.google.common.hash.Hashing;
 
 import rx.Single;
 
@@ -114,6 +116,11 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 		createIndexBatch(DELETE_ACTION);
 		getElement().remove();
 		//TODO delete versions and nodes as well
+	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return Hashing.crc32c().hashString(getLatestVersion().getETag(ac), Charset.defaultCharset()).toString();
 	}
 
 }

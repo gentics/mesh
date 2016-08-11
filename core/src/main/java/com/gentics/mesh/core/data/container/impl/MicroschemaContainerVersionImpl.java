@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestModelHelper;
+import com.google.common.hash.Hashing;
 
 import rx.Single;
 
@@ -66,11 +68,10 @@ public class MicroschemaContainerVersionImpl
 	@Override
 	public List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
 		return in(HAS_MICROSCHEMA_CONTAINER).has(MicronodeImpl.class).copySplit(
-				(a) -> a.in(HAS_FIELD).mark().inE(HAS_FIELD_CONTAINER)
-						.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
+				(a) -> a.in(HAS_FIELD).mark().inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
 						.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back(),
-				(a) -> a.in(HAS_ITEM).in(HAS_LIST).mark()
-						.inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
+				(a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(HAS_FIELD_CONTAINER)
+						.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
 						.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back())
 				.fairMerge().dedup().transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).toList();
 	}
@@ -122,5 +123,10 @@ public class MicroschemaContainerVersionImpl
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());
 		return reference;
+	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return Hashing.crc32c().hashString(getUuid(), Charset.defaultCharset()).toString();
 	}
 }

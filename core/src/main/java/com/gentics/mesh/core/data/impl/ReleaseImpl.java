@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_REL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -34,6 +35,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.google.common.hash.Hashing;
 
 import rx.Completable;
 import rx.Single;
@@ -73,9 +75,9 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 				setName(requestModel.getName());
 			}
 			// TODO: Not yet fully implemented 
-//			if (requestModel.getActive() != null) {
-//				setActive(requestModel.getActive());
-//			}
+			//			if (requestModel.getActive() != null) {
+			//				setActive(requestModel.getActive());
+			//			}
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
 			return Single.just(this);
@@ -98,7 +100,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 		ReleaseResponse restRelease = new ReleaseResponse();
 		restRelease.setName(getName());
-//		restRelease.setActive(isActive());
+		//		restRelease.setActive(isActive());
 		restRelease.setMigrated(isMigrated());
 
 		// Add common fields
@@ -270,5 +272,10 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 			unlinkOut(version.getImpl(), HAS_VERSION);
 			version = version.getPreviousVersion();
 		}
+	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return Hashing.crc32c().hashString(getUuid() + "-" + getLastEditedTimestamp(), Charset.defaultCharset()).toString();
 	}
 }

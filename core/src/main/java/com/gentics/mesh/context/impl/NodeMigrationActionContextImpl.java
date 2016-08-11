@@ -70,7 +70,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public void setUser(MeshAuthUser user) {
 		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -117,7 +116,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public void addCookie(Cookie cookie) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -138,13 +136,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public void send(String body, HttpResponseStatus statusCode) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void fail(Throwable cause) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -156,7 +152,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public void logout() {
 		// TODO Auto-generated method stub
+	}
 
+	@Override
+	public void setEtag(String entityTag) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public boolean matches(String etag) {
+		return false;
 	}
 
 }

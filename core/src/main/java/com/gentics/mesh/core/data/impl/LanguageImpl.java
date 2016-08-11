@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import java.nio.charset.Charset;
+
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -10,6 +12,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.google.common.hash.Hashing;
 
 import rx.Single;
 
@@ -91,6 +94,11 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	@Override
 	public Single<Language> update(InternalActionContext rc) {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return Hashing.crc32c().hashString(getUuid(), Charset.defaultCharset()).toString();
 	}
 
 }

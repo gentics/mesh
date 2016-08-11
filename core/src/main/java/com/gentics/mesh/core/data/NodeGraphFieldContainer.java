@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 import java.util.Set;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -187,4 +188,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return list of micronode list fields
 	 */
 	List<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version);
+
+	/**
+	 * Return the etag for the field container.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	String getETag(InternalActionContext ac);
 }
