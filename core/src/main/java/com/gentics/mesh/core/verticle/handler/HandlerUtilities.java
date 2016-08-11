@@ -144,6 +144,8 @@ public final class HandlerUtilities {
 				String etag = element.getETag(ac);
 				ac.setEtag(etag);
 				if (ac.matches(etag)) {
+					// TODO handle status code
+					// TODO no message/body?
 					return Single.just(message(ac, "Jo eh"));
 				} else {
 					return element.transformToRest(ac, 0);
@@ -167,7 +169,15 @@ public final class HandlerUtilities {
 
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			PageImpl<? extends T> page = root.findAll(ac, pagingInfo);
-			return page.transformToRest(ac, 0);
+			String etag = page.getETag(ac);
+			ac.setEtag(etag);
+			if (ac.matches(etag)) {
+				// TODO handle status code
+				// TODO no message/body?
+				return Single.just(message(ac, "Jo eh"));
+			} else {
+				return (Single<RestModel>) page.transformToRest(ac, 0);
+			}
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

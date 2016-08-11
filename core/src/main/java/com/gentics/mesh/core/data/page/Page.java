@@ -70,4 +70,17 @@ public interface Page {
 	 */
 	void setPaging(ListResponse<?> response);
 
+	/**
+	 * Return the eTag of the page. The etag is calculated using the following information:
+	 * <ul>
+	 * <li>Number of total elements (all pages)</li>
+	 * <li>All etags for all found elements</li>
+	 * <li>Number of the current page</li>
+	 * </ul>
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	String getETag(InternalActionContext ac);
+
 }

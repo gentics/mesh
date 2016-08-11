@@ -108,4 +108,16 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 		info.setTotalCount(getTotalElements());
 	}
 
+	@Override
+	public String getETag(InternalActionContext ac) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(getTotalElements());
+		builder.append(getNumber());
+		for (T element : this) {
+			builder.append("-");
+			builder.append(element.getETag(ac));
+		}
+		return builder.toString();
+	}
+
 }
