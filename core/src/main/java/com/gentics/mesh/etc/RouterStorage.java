@@ -1,5 +1,7 @@
 package com.gentics.mesh.etc;
 
+import static com.gentics.mesh.util.URIUtils.encodeFragment;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -201,11 +203,12 @@ public class RouterStorage {
 	 * @throws InvalidNameException
 	 */
 	public Router addProjectRouter(String name) throws InvalidNameException {
-		if (coreRouters.containsKey(name)) {
-			throw new InvalidNameException("The project name {" + name
+		String encodedName = encodeFragment(name);
+		if (coreRouters.containsKey(encodedName)) {
+			throw new InvalidNameException("The project name {" + encodedName
 					+ "} is conflicting with a core router. Best guess is that an core verticle is already occupying the name. Please choose a different name or remove the conflicting core verticle.");
 		}
-		Router projectRouter = projectRouters.get(name);
+		Router projectRouter = projectRouters.get(encodedName);
 		// TODO synchronize access to projectRouters
 		if (projectRouter == null) {
 			projectRouter = Router.router(vertx);
@@ -217,8 +220,8 @@ public class RouterStorage {
 				ctx.next();
 			});
 
-			getAPIRouter().mountSubRouter("/" + name, projectRouter);
-			mountSubRoutersForProjectRouter(projectRouter, name);
+			getAPIRouter().mountSubRouter("/" + encodedName, projectRouter);
+			mountSubRoutersForProjectRouter(projectRouter, encodedName);
 		}
 		return projectRouter;
 	}

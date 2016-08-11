@@ -37,17 +37,21 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
@@ -60,10 +64,14 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Autowired
 	private ProjectVerticle verticle;
 
+	@Autowired
+	private NodeVerticle nodeVerticle;
+
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
+		list.add(nodeVerticle);
 		return list;
 	}
 
@@ -88,6 +96,22 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	}
 
 	@Test
+	public void testCreateBogusName() {
+		String name = "Tä üst";
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(name);
+		request.setSchemaReference(new SchemaReference().setName("folder"));
+
+		ProjectResponse restProject = call(() -> getClient().createProject(request));
+		assertEquals("The name of the project did not match.", name, restProject.getName());
+
+		NodeResponse response = call(
+				() -> getClient().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
+		assertEquals("folder", response.getSchema().getName());
+
+	}
+
+	@Test
 	@Override
 	public void testCreate() throws Exception {
 		final String name = "test12345";
@@ -96,6 +120,10 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		request.setSchemaReference(new SchemaReference().setName("folder"));
 
 		ProjectResponse restProject = call(() -> getClient().createProject(request));
+
+		NodeResponse response = call(
+				() -> getClient().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
+		assertEquals("folder", response.getSchema().getName());
 
 		try (NoTx noTx = db.noTx()) {
 			test.assertProject(request, restProject);
@@ -128,7 +156,6 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
 		request.setSchemaReference(new SchemaReference().setName("folder"));
-
 
 		try (NoTx noTx = db.noTx()) {
 			// Create a new project
