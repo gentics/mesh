@@ -156,7 +156,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		Future<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, uuid,
-				new NavigationParameters().setMaxDepth(2).setIncludeAll(true));
+				new NavigationParameters().setMaxDepth(2).setIncludeAll(true)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		NavigationResponse response = future.result();
@@ -182,7 +182,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node.getUuid());
 
 		Future<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, uuid,
-				new NavigationParameters().setMaxDepth(2).setIncludeAll(false));
+				new NavigationParameters().setMaxDepth(2).setIncludeAll(false)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		NavigationResponse response = future.result();

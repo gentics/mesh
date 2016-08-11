@@ -4,8 +4,8 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
+import com.gentics.mesh.rest.MeshRequest;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 
 /**
@@ -30,8 +30,8 @@ public interface NodeFieldAPIClientMethods {
 	 * @param contentType
 	 * @return
 	 */
-	Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, Buffer fileData,
-			String fileName, String contentType);
+	MeshRequest<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+			Buffer fileData, String fileName, String contentType);
 
 	/**
 	 * Download the binary field of the given node in the given project.
@@ -41,21 +41,26 @@ public interface NodeFieldAPIClientMethods {
 	 * @param languageTag
 	 * @param fieldKey
 	 * @param parameters
-	 * @return Future with a download response that contains a reference to the byte buffer with the binary data
+	 * @return Mesh request which provides a download response that contains a reference to the byte buffer with the binary data
 	 */
-	Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+	MeshRequest<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
 			ParameterProvider... parameters);
 
 	/**
 	 * Transform the binary field of the given node in the given project
 	 * 
-	 * @param projectName project name
-	 * @param nodeUuid uuid of hte node
-	 * @param languageTag language tag
-	 * @param fieldKey field key
-	 * @param imageManipulationParameter parameters for the image transformation
-	 * @return future with the generic message from the response
+	 * @param projectName
+	 *            project name
+	 * @param nodeUuid
+	 *            uuid of hte node
+	 * @param languageTag
+	 *            language tag
+	 * @param fieldKey
+	 *            field key
+	 * @param imageManipulationParameter
+	 *            parameters for the image transformation
+	 * @return Mesh request
 	 */
-	Future<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag,
-			String fieldKey, ImageManipulationParameters imageManipulationParameter);
+	MeshRequest<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+			ImageManipulationParameters imageManipulationParameter);
 }

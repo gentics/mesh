@@ -1,8 +1,7 @@
 package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface UtilityClientMethods {
 
@@ -12,5 +11,5 @@ public interface UtilityClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<String> resolveLinks(String body, ParameterProvider... parameters);
+	MeshRequest<String> resolveLinks(String body, ParameterProvider... parameters);
 }

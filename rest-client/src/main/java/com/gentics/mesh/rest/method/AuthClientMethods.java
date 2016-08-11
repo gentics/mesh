@@ -3,9 +3,9 @@ package com.gentics.mesh.rest.method;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.rest.MeshRequest;
 import com.gentics.mesh.rest.MeshRestClient;
 
-import io.vertx.core.Future;
 import rx.Single;
 
 public interface AuthClientMethods {
@@ -29,7 +29,7 @@ public interface AuthClientMethods {
 	 * 
 	 * @return
 	 */
-	Future<UserResponse> me();
+	MeshRequest<UserResponse> me();
 
 	/**
 	 * Assign permissions in between the given role and the object uuid.
@@ -44,6 +44,6 @@ public interface AuthClientMethods {
 	 *            Define whether nested elements or child element should also be affected
 	 * @return
 	 */
-	Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive);
+	MeshRequest<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive);
 
 }

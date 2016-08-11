@@ -1,8 +1,7 @@
 package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface ApiInfoClientMethods {
 
@@ -11,6 +10,6 @@ public interface ApiInfoClientMethods {
 	 * 
 	 * @return
 	 */
-	Future<MeshServerInfoModel> getApiInfo();
+	MeshRequest<MeshServerInfoModel> getApiInfo();
 
 }

@@ -141,7 +141,7 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 * @return rendered result
 	 */
 	private String renderContent(String content, LinkType linkType) {
-		Future<String> future = getClient().resolveLinks(content, new NodeParameters().setResolveLinks(linkType));
+		Future<String> future = getClient().resolveLinks(content, new NodeParameters().setResolveLinks(linkType)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();

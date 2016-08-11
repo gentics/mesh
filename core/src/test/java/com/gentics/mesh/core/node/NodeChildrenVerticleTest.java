@@ -49,7 +49,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadChildrenOfBaseNode() {
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid());
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -176,7 +176,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		role().revokePermissions(node, READ_PERM);
 
 		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
-				new NodeParameters());
+				new NodeParameters()).invoke();
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 

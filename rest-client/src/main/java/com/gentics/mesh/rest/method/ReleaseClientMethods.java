@@ -9,8 +9,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 /**
  * Interface for Release specific rest API methods
@@ -24,7 +23,7 @@ public interface ReleaseClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest, ParameterProvider... parameters);
+	MeshRequest<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest, ParameterProvider... parameters);
 
 	/**
 	 * Find the release with the given uuid in the project with the given name.
@@ -34,7 +33,7 @@ public interface ReleaseClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid, ParameterProvider... parameters);
+	MeshRequest<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid, ParameterProvider... parameters);
 
 	/**
 	 * Find all releases within the project with the given name. The query parameters can be used to set paging.
@@ -43,7 +42,7 @@ public interface ReleaseClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ReleaseListResponse> findReleases(String projectName, ParameterProvider... parameters);
+	MeshRequest<ReleaseListResponse> findReleases(String projectName, ParameterProvider... parameters);
 
 	/**
 	 * Update the release.
@@ -53,7 +52,7 @@ public interface ReleaseClientMethods {
 	 * @param request
 	 * @return
 	 */
-	Future<ReleaseResponse> updateRelease(String projectName, String releaseUuid, ReleaseUpdateRequest request);
+	MeshRequest<ReleaseResponse> updateRelease(String projectName, String releaseUuid, ReleaseUpdateRequest request);
 
 	/**
 	 * Get schema versions assigned to a release.
@@ -62,7 +61,7 @@ public interface ReleaseClientMethods {
 	 * @param releaseUuid
 	 * @return
 	 */
-	Future<SchemaReferenceList> getReleaseSchemaVersions(String projectName, String releaseUuid);
+	MeshRequest<SchemaReferenceList> getReleaseSchemaVersions(String projectName, String releaseUuid);
 
 	/**
 	 * Assign the given schema versions to the release.
@@ -72,7 +71,7 @@ public interface ReleaseClientMethods {
 	 * @param schemaVersionReferences
 	 * @return
 	 */
-	Future<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReferenceList schemaVersionReferences);
+	MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReferenceList schemaVersionReferences);
 
 	/**
 	 * Assign the given schema versions to the release.
@@ -82,7 +81,7 @@ public interface ReleaseClientMethods {
 	 * @param schemaVersionReferences
 	 * @return
 	 */
-	Future<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReference... schemaVersionReferences);
+	MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReference... schemaVersionReferences);
 
 	/**
 	 * Get microschema versions assigned to a release.
@@ -91,7 +90,7 @@ public interface ReleaseClientMethods {
 	 * @param releaseUuid
 	 * @return
 	 */
-	Future<MicroschemaReferenceList> getReleaseMicroschemaVersions(String projectName, String releaseUuid);
+	MeshRequest<MicroschemaReferenceList> getReleaseMicroschemaVersions(String projectName, String releaseUuid);
 
 	/**
 	 * Assign the given microschema versions to the release
@@ -101,7 +100,7 @@ public interface ReleaseClientMethods {
 	 * @param microschemaVersionReferences
 	 * @return
 	 */
-	Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+	MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
 			MicroschemaReferenceList microschemaVersionReferences);
 
 	/**
@@ -112,6 +111,6 @@ public interface ReleaseClientMethods {
 	 * @param microschemaVersionReferences
 	 * @return
 	 */
-	Future<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+	MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
 			MicroschemaReference... microschemaVersionReferences);
 }

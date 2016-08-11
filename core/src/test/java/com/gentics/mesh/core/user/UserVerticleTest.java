@@ -84,7 +84,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			User user = user();
 			assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
-			Future<UserResponse> future = getClient().findUserByUuid(user.getUuid());
+			Future<UserResponse> future = getClient().findUserByUuid(user.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			UserResponse restUser = future.result();
@@ -111,7 +111,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		}
 
 		try (NoTx noTx = db.noTx()) {
-			Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement);
+			Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			UserPermissionResponse response = future.result();
@@ -125,7 +125,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
 		}
 		try (NoTx noTx = db.noTx()) {
-			Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement);
+			Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			UserPermissionResponse response = future.result();
@@ -140,7 +140,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			User user = user();
 			String uuid = user.getUuid();
 
-			Future<UserResponse> future = getClient().findUserByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()));
+			Future<UserResponse> future = getClient().findUserByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
@@ -160,7 +160,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			}
 
 			assertEquals(11, user().getGroups().size());
-			Future<UserResponse> future = getClient().findUserByUuid(user().getUuid());
+			Future<UserResponse> future = getClient().findUserByUuid(user().getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			UserResponse response = future.result();
@@ -177,7 +177,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findUserByUuid(uuid));
+				set.add(getClient().findUserByUuid(uuid).invoke());
 			}
 			validateSet(set, null);
 		}
@@ -190,7 +190,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			int nJobs = 200;
 			Set<Future<UserResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findUserByUuid(user().getUuid()));
+				set.add(getClient().findUserByUuid(user().getUuid()).invoke());
 			}
 			for (Future<UserResponse> future : set) {
 				latchFor(future);
@@ -208,7 +208,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull("The username of the user must not be null.", user.getUsername());
 			role().revokePermissions(user, READ_PERM);
 
-			Future<UserResponse> future = getClient().findUserByUuid(uuid);
+			Future<UserResponse> future = getClient().findUserByUuid(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -240,7 +240,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals("We did not find the expected count of users attached to the user root vertex.", 3 + nUsers + 1, root.findAll().size());
 
 			// Test default paging parameters
-			Future<UserListResponse> future = getClient().findUsers();
+			Future<UserListResponse> future = getClient().findUsers().invoke();
 			latchFor(future);
 			assertSuccess(future);
 			ListResponse<UserResponse> restResponse = future.result();
@@ -253,7 +253,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			int perPage = 2;
 			int totalUsers = 3 + nUsers;
 			int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
-			future = getClient().findUsers(new PagingParameters(3, perPage));
+			future = getClient().findUsers(new PagingParameters(3, perPage)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -269,7 +269,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<UserResponse> allUsers = new ArrayList<>();
 			for (int page = 1; page < totalPages; page++) {
-				Future<UserListResponse> pageFuture = getClient().findUsers(new PagingParameters(page, perPage));
+				Future<UserListResponse> pageFuture = getClient().findUsers(new PagingParameters(page, perPage)).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -283,11 +283,11 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			future = getClient().findUsers(new PagingParameters(1, -1));
+			future = getClient().findUsers(new PagingParameters(1, -1)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findUsers(new PagingParameters(4242, 25));
+			future = getClient().findUsers(new PagingParameters(4242, 25)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -302,7 +302,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testInvalidPageParameter() {
-		Future<UserListResponse> future = getClient().findUsers(new PagingParameters(1, 0));
+		Future<UserListResponse> future = getClient().findUsers(new PagingParameters(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -311,7 +311,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testInvalidPageParameter2() {
-		Future<UserListResponse> future = getClient().findUsers(new PagingParameters(-1, 25));
+		Future<UserListResponse> future = getClient().findUsers(new PagingParameters(-1, 25)).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 	}
@@ -332,7 +332,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().updateUser(user().getUuid(), updateRequest));
+			set.add(getClient().updateUser(user().getUuid(), updateRequest).invoke());
 		}
 		validateSet(set, barrier);
 
@@ -351,7 +351,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		UserResponse restUser = db.tx(() -> {
 			User user = user();
-			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			return future.result();
@@ -388,7 +388,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		updateRequest.setLastname(lastname);
 		updateRequest.setUsername(username);
 
-		Future<UserResponse> future = getClient().updateUser(uuid, updateRequest);
+		Future<UserResponse> future = getClient().updateUser(uuid, updateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		UserResponse restUser = future.result();
@@ -411,7 +411,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setUsername("New Name");
 
-		Future<UserResponse> future = getClient().updateUser("bogus", request);
+		Future<UserResponse> future = getClient().updateUser("bogus", request).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -433,7 +433,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			userNodeReference.setUuid(nodeUuid);
 			updateRequest.setNodeReference(userNodeReference);
 
-			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			UserResponse restUser = future.result();
@@ -472,7 +472,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			Future<UserResponse> future = getClient().createUser(newUser);
+			Future<UserResponse> future = getClient().createUser(newUser).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			UserResponse response = future.result();
@@ -496,7 +496,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setGroupUuid(group().getUuid());
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
-			Future<UserResponse> future = getClient().createUser(newUser);
+			Future<UserResponse> future = getClient().createUser(newUser).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			return future.result();
@@ -505,7 +505,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			Future<UserListResponse> userListResponseFuture = getClient().findUsers(new PagingParameters().setPerPage(100),
-					new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en"));
+					new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")).invoke();
 			latchFor(userListResponseFuture);
 			assertSuccess(userListResponseFuture);
 			UserListResponse userResponse = userListResponseFuture.result();
@@ -541,13 +541,13 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser = request;
 		}
 
-		Future<UserResponse> future = getClient().createUser(newUser);
+		Future<UserResponse> future = getClient().createUser(newUser).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		UserResponse userResponse = future.result();
 
 		Future<UserResponse> userResponseFuture = getClient().findUserByUuid(userResponse.getUuid(),
-				new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en"));
+				new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")).invoke();
 		latchFor(userResponseFuture);
 		assertSuccess(userResponseFuture);
 		UserResponse userResponse2 = userResponseFuture.result();
@@ -573,7 +573,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			Future<UserResponse> future = getClient().createUser(newUser);
+			Future<UserResponse> future = getClient().createUser(newUser).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "project_not_found", "bogus_name");
 		}
@@ -592,7 +592,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			Future<UserResponse> future = getClient().createUser(newUser);
+			Future<UserResponse> future = getClient().createUser(newUser).invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus_uuid");
 		}
@@ -610,7 +610,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			Future<UserResponse> future = getClient().createUser(newUser);
+			Future<UserResponse> future = getClient().createUser(newUser).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 		}
@@ -628,7 +628,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			Future<UserResponse> future = getClient().createUser(newUser);
+			Future<UserResponse> future = getClient().createUser(newUser).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "user_incomplete_node_reference");
 		}
@@ -648,7 +648,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setPassword("new_password");
 
-		Future<UserResponse> future = getClient().updateUser(uuid, updateRequest);
+		Future<UserResponse> future = getClient().updateUser(uuid, updateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		UserResponse restUser = future.result();
@@ -670,7 +670,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			UserUpdateRequest request = new UserUpdateRequest();
 			request.setPassword("new_password");
-			Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
@@ -693,7 +693,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			updatedUser.setUsername("new_user");
 			// updatedUser.addGroup(group().getName());
 
-			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser);
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 			User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().value();
@@ -714,7 +714,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			UserUpdateRequest request = new UserUpdateRequest();
 			request.setUsername("existing_username");
 
-			Future<UserResponse> future = getClient().updateUser(user().getUuid(), request);
+			Future<UserResponse> future = getClient().updateUser(user().getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "user_conflicting_username");
 		}
@@ -729,7 +729,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			UserUpdateRequest request = new UserUpdateRequest();
 			request.setUsername(user.getUsername());
 
-			Future<UserResponse> future = getClient().updateUser(user.getUuid(), request);
+			Future<UserResponse> future = getClient().updateUser(user.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 		}
@@ -752,7 +752,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setGroupUuid(group().getUuid());
 			newUser.setPassword("test1234");
 
-			Future<UserResponse> future = getClient().createUser(newUser);
+			Future<UserResponse> future = getClient().createUser(newUser).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "user_conflicting_username");
 		}
@@ -769,7 +769,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setUsername("new_user_test123");
 			newUser.setGroupUuid(group().getUuid());
 
-			Future<UserResponse> future = getClient().createUser(newUser);
+			Future<UserResponse> future = getClient().createUser(newUser).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "user_missing_password");
 		}
@@ -784,7 +784,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setLastname("Doe");
 			newUser.setPassword("test123456");
 
-			Future<UserResponse> future = getClient().createUser(newUser);
+			Future<UserResponse> future = getClient().createUser(newUser).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "user_missing_username");
 		}
@@ -799,7 +799,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		newUser.setUsername("new_user");
 		newUser.setPassword("test123456");
 
-		Future<UserResponse> future = getClient().createUser(newUser);
+		Future<UserResponse> future = getClient().createUser(newUser).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getGroups().size());
@@ -815,7 +815,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		newUser.setPassword("test123456");
 		newUser.setGroupUuid("bogus");
 
-		Future<UserResponse> future = getClient().createUser(newUser);
+		Future<UserResponse> future = getClient().createUser(newUser).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -830,7 +830,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setPassword("test123456");
 			request.setGroupUuid(group().getUuid());
 
-			Future<UserResponse> future = getClient().createUser(request);
+			Future<UserResponse> future = getClient().createUser(request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			UserResponse restUser = future.result();
@@ -847,7 +847,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			updateRequest.setLastname(LASTNAME);
 			updateRequest.setUsername(USERNAME);
 			updateRequest.setPassword("newPassword");
-			future = getClient().updateUser(restUser.getUuid(), updateRequest);
+			future = getClient().updateUser(restUser.getUuid(), updateRequest).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restUser = future.result();
@@ -870,7 +870,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setPassword("test123456");
 			request.setGroupUuid(group().getUuid());
 
-			Future<UserResponse> future = getClient().createUser(request);
+			Future<UserResponse> future = getClient().createUser(request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			UserResponse restUser = future.result();
@@ -899,7 +899,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setUsername("new_user_" + i);
 			request.setPassword("test123456");
 			request.setGroupUuid(group().getUuid());
-			set.add(getClient().createUser(request));
+			set.add(getClient().createUser(request).invoke());
 		}
 		validateCreation(set, barrier);
 	}
@@ -921,18 +921,18 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setPassword("test123456");
 			newUser.setGroupUuid(group().getUuid());
 
-			Future<UserResponse> createFuture = getClient().createUser(newUser);
+			Future<UserResponse> createFuture = getClient().createUser(newUser).invoke();
 			latchFor(createFuture);
 			assertSuccess(createFuture);
 			UserResponse restUser = createFuture.result();
 
 			test.assertUser(newUser, restUser);
 
-			Future<UserResponse> readFuture = getClient().findUserByUuid(restUser.getUuid());
+			Future<UserResponse> readFuture = getClient().findUserByUuid(restUser.getUuid()).invoke();
 			latchFor(readFuture);
 			assertSuccess(readFuture);
 
-			Future<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid());
+			Future<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
 			expectResponseMessage(deleteFuture, "user_deleted", restUser.getUuid() + "/" + restUser.getUsername());
@@ -963,7 +963,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			newUser.setPassword("test123456");
 			newUser.setGroupUuid(group().getUuid());
 
-			Future<UserResponse> createFuture = getClient().createUser(newUser);
+			Future<UserResponse> createFuture = getClient().createUser(newUser).invoke();
 			latchFor(createFuture);
 			assertSuccess(createFuture);
 			UserResponse restUser = createFuture.result();
@@ -972,7 +972,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = restUser.getUuid();
 			String name = restUser.getUsername();
 
-			Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
+			Future<GenericMessageResponse> future = getClient().deleteUser(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "user_deleted", uuid + "/" + name);
@@ -983,7 +983,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			}
 
 			// Load the user again and check whether it is disabled
-			Future<UserResponse> userFuture = getClient().findUserByUuid(uuid);
+			Future<UserResponse> userFuture = getClient().findUserByUuid(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNull(userFuture.result());
@@ -1000,7 +1000,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().deleteUser(uuid));
+			set.add(getClient().deleteUser(uuid).invoke());
 		}
 		validateDeletion(set, barrier);
 	}
@@ -1018,7 +1018,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().grantPermissions(user, CREATE_PERM);
 			role().grantPermissions(user, READ_PERM);
 
-			Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
+			Future<GenericMessageResponse> future = getClient().deleteUser(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 			userRoot = meshRoot().getUserRoot();
@@ -1028,7 +1028,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testDeleteWithUuidNull() throws Exception {
-		Future<GenericMessageResponse> future = getClient().deleteUser(null);
+		Future<GenericMessageResponse> future = getClient().deleteUser(null).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "null");
 	}
@@ -1055,7 +1055,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals(1, user.getGroups().size());
 			assertTrue("The user should be enabled", user.isEnabled());
 
-			Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
+			Future<GenericMessageResponse> future = getClient().deleteUser(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "user_deleted", uuid + "/" + name);

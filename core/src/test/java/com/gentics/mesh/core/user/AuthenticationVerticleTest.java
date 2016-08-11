@@ -55,7 +55,7 @@ public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest
 			assertNotNull(loginResponse);
 			assertEquals("OK", loginResponse.getMessage());
 
-			Future<UserResponse> meResponse = client.me();
+			Future<UserResponse> meResponse = client.me().invoke();
 			latchFor(meResponse);
 			UserResponse me = meResponse.result();
 			assertFalse("The request failed.", meResponse.failed());
@@ -67,7 +67,7 @@ public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest
 			logoutFuture.toBlocking().value();
 
 			// assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
-			meResponse = client.me();
+			meResponse = client.me().invoke();
 			latchFor(meResponse);
 			expectException(meResponse, UNAUTHORIZED, "error_not_authorized");
 		}

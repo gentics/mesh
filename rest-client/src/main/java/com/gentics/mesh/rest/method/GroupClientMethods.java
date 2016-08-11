@@ -1,13 +1,12 @@
 package com.gentics.mesh.rest.method;
 
-import io.vertx.core.Future;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface GroupClientMethods {
 
@@ -18,7 +17,7 @@ public interface GroupClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<GroupResponse> findGroupByUuid(String uuid, ParameterProvider... parameters);
+	MeshRequest<GroupResponse> findGroupByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Load multiple groups.
@@ -26,7 +25,7 @@ public interface GroupClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<GroupListResponse> findGroups(ParameterProvider... parameters);
+	MeshRequest<GroupListResponse> findGroups(ParameterProvider... parameters);
 
 	/**
 	 * Create the group.
@@ -34,7 +33,7 @@ public interface GroupClientMethods {
 	 * @param groupCreateRequest
 	 * @return
 	 */
-	Future<GroupResponse> createGroup(GroupCreateRequest groupCreateRequest);
+	MeshRequest<GroupResponse> createGroup(GroupCreateRequest groupCreateRequest);
 
 	/**
 	 * Update the group.
@@ -43,7 +42,7 @@ public interface GroupClientMethods {
 	 * @param request
 	 * @return
 	 */
-	Future<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request);
+	MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request);
 
 	/**
 	 * Delete the group.
@@ -51,7 +50,7 @@ public interface GroupClientMethods {
 	 * @param uuid
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteGroup(String uuid);
+	MeshRequest<GenericMessageResponse> deleteGroup(String uuid);
 
 	/**
 	 * Add the given user to the group.
@@ -60,7 +59,7 @@ public interface GroupClientMethods {
 	 * @param userUuid
 	 * @return
 	 */
-	Future<GroupResponse> addUserToGroup(String groupUuid, String userUuid);
+	MeshRequest<GroupResponse> addUserToGroup(String groupUuid, String userUuid);
 
 	/**
 	 * Remove the given user from the group.
@@ -69,7 +68,7 @@ public interface GroupClientMethods {
 	 * @param userUuid
 	 * @return
 	 */
-	Future<GroupResponse> removeUserFromGroup(String groupUuid, String userUuid);
+	MeshRequest<GroupResponse> removeUserFromGroup(String groupUuid, String userUuid);
 
 	/**
 	 * Add the role to the group.
@@ -78,7 +77,7 @@ public interface GroupClientMethods {
 	 * @param roleUuid
 	 * @return
 	 */
-	Future<GroupResponse> addRoleToGroup(String groupUuid, String roleUuid);
+	MeshRequest<GroupResponse> addRoleToGroup(String groupUuid, String roleUuid);
 
 	/**
 	 * Remove the role from the group.
@@ -87,6 +86,6 @@ public interface GroupClientMethods {
 	 * @param roleUuid
 	 * @return
 	 */
-	Future<GroupResponse> removeRoleFromGroup(String groupUuid, String roleUuid);
+	MeshRequest<GroupResponse> removeRoleFromGroup(String groupUuid, String roleUuid);
 
 }

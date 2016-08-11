@@ -2,8 +2,7 @@ package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface NavRootClientMethods {
 
@@ -18,5 +17,5 @@ public interface NavRootClientMethods {
 	 *            Additional query parameters
 	 * @return
 	 */
-	Future<NavigationResponse> navroot(String projectName, String path, ParameterProvider... parameters);
+	MeshRequest<NavigationResponse> navroot(String projectName, String path, ParameterProvider... parameters);
 }

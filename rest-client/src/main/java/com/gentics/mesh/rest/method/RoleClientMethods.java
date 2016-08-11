@@ -8,8 +8,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface RoleClientMethods {
 
@@ -20,7 +19,7 @@ public interface RoleClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<RoleResponse> findRoleByUuid(String uuid, ParameterProvider... parameters);
+	MeshRequest<RoleResponse> findRoleByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Load multiple roles.
@@ -28,7 +27,7 @@ public interface RoleClientMethods {
 	 * @param parameter
 	 * @return
 	 */
-	Future<RoleListResponse> findRoles(ParameterProvider... parameter);
+	MeshRequest<RoleListResponse> findRoles(ParameterProvider... parameter);
 
 	/**
 	 * Create a new role.
@@ -36,7 +35,7 @@ public interface RoleClientMethods {
 	 * @param request
 	 * @return
 	 */
-	Future<RoleResponse> createRole(RoleCreateRequest request);
+	MeshRequest<RoleResponse> createRole(RoleCreateRequest request);
 
 	/**
 	 * Delete the role.
@@ -44,7 +43,7 @@ public interface RoleClientMethods {
 	 * @param uuid
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteRole(String uuid);
+	MeshRequest<GenericMessageResponse> deleteRole(String uuid);
 
 	/**
 	 * Load multiple roles that were assigned to the given group.
@@ -53,7 +52,7 @@ public interface RoleClientMethods {
 	 * @param parameter
 	 * @return
 	 */
-	Future<RoleListResponse> findRolesForGroup(String groupUuid, ParameterProvider... parameter);
+	MeshRequest<RoleListResponse> findRolesForGroup(String groupUuid, ParameterProvider... parameter);
 
 	/**
 	 * Update the role permissions for the the given path.
@@ -66,7 +65,7 @@ public interface RoleClientMethods {
 	 *            Request that defines how the permissions should be changed
 	 * @return
 	 */
-	Future<GenericMessageResponse> updateRolePermissions(String roleUuid, String pathToElement, RolePermissionRequest request);
+	MeshRequest<GenericMessageResponse> updateRolePermissions(String roleUuid, String pathToElement, RolePermissionRequest request);
 
 	/**
 	 * Read the role permissions for the given path.
@@ -75,7 +74,7 @@ public interface RoleClientMethods {
 	 * @param pathToElement
 	 * @return
 	 */
-	Future<RolePermissionResponse> readRolePermissions(String roleUuid, String pathToElement);
+	MeshRequest<RolePermissionResponse> readRolePermissions(String roleUuid, String pathToElement);
 
 	/**
 	 * Update the role using the given update request.
@@ -84,5 +83,5 @@ public interface RoleClientMethods {
 	 * @param restRole
 	 * @return
 	 */
-	Future<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole);
+	MeshRequest<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole);
 }

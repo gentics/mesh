@@ -70,7 +70,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findMicroschemaByUuid(uuid));
+				set.add(getClient().findMicroschemaByUuid(uuid).invoke());
 			}
 			validateSet(set, barrier);
 		}
@@ -93,7 +93,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().createMicroschema(request));
+			set.add(getClient().createMicroschema(request).invoke());
 		}
 		validateCreation(set, barrier);
 	}
@@ -109,7 +109,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 
 			Set<Future<Microschema>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findMicroschemaByUuid(uuid));
+				set.add(getClient().findMicroschemaByUuid(uuid).invoke());
 			}
 			for (Future<Microschema> future : set) {
 				latchFor(future);
@@ -126,7 +126,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 		request.setDescription("microschema description");
 
 		assertThat(searchProvider).recordedStoreEvents(0);
-		Future<Microschema> future = getClient().createMicroschema(request);
+		Future<Microschema> future = getClient().createMicroschema(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertThat(searchProvider).recordedStoreEvents(1);
@@ -149,7 +149,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
-			Future<Microschema> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid());
+			Future<Microschema> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			Microschema microschemaResponse = future.result();
@@ -166,7 +166,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
-			Future<Microschema> future = getClient().findMicroschemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()));
+			Future<Microschema> future = getClient().findMicroschemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
@@ -186,7 +186,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			role().grantPermissions(vcardContainer, CREATE_PERM);
 			role().revokePermissions(vcardContainer, READ_PERM);
 
-			Future<Microschema> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid());
+			Future<Microschema> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", vcardContainer.getUuid());
 		}
@@ -217,7 +217,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			Microschema request = new MicroschemaModel();
 			request.setName("new-name");
 
-			Future<GenericMessageResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);
+			Future<GenericMessageResponse> future = getClient().updateMicroschema(microschema.getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", microschema.getUuid());
 		}
@@ -233,7 +233,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			Microschema request = new MicroschemaModel();
 			request.setName("new-name");
 
-			Future<GenericMessageResponse> future = getClient().updateMicroschema("bogus", request);
+			Future<GenericMessageResponse> future = getClient().updateMicroschema("bogus", request).invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
@@ -249,7 +249,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
 
-			Future<GenericMessageResponse> future = getClient().deleteMicroschema(microschema.getUuid());
+			Future<GenericMessageResponse> future = getClient().deleteMicroschema(microschema.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "microschema_deleted", microschema.getUuid() + "/" + microschema.getName());
@@ -268,7 +268,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 
 			role().revokePermissions(microschema, DELETE_PERM);
 
-			Future<GenericMessageResponse> future = getClient().deleteMicroschema(microschema.getUuid());
+			Future<GenericMessageResponse> future = getClient().deleteMicroschema(microschema.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", microschema.getUuid());
 

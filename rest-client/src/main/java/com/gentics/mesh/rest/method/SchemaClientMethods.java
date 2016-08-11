@@ -7,8 +7,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface SchemaClientMethods {
 
@@ -18,7 +17,7 @@ public interface SchemaClientMethods {
 	 * @param request
 	 * @return
 	 */
-	Future<Schema> createSchema(Schema request);
+	MeshRequest<Schema> createSchema(Schema request);
 
 	/**
 	 * Load the schema with the given uuid.
@@ -27,7 +26,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<Schema> findSchemaByUuid(String uuid, ParameterProvider... parameters);
+	MeshRequest<Schema> findSchemaByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Update the schema with the given request.
@@ -38,7 +37,7 @@ public interface SchemaClientMethods {
 	 *            Update request
 	 * @return
 	 */
-	Future<GenericMessageResponse> updateSchema(String uuid, Schema request);
+	MeshRequest<GenericMessageResponse> updateSchema(String uuid, Schema request);
 
 	/**
 	 * Compare the given schema with the currently stored one and return a list of schema changes.
@@ -46,7 +45,7 @@ public interface SchemaClientMethods {
 	 * @param uuid
 	 * @return
 	 */
-	Future<SchemaChangesListModel> diffSchema(String uuid, Schema request);
+	MeshRequest<SchemaChangesListModel> diffSchema(String uuid, Schema request);
 
 	/**
 	 * Delete the given schema
@@ -55,7 +54,7 @@ public interface SchemaClientMethods {
 	 *            Schema uuid
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteSchema(String uuid);
+	MeshRequest<GenericMessageResponse> deleteSchema(String uuid);
 
 	/**
 	 * Load multiple schemas.
@@ -63,7 +62,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<SchemaListResponse> findSchemas(ParameterProvider... parameters);
+	MeshRequest<SchemaListResponse> findSchemas(ParameterProvider... parameters);
 
 	/**
 	 * Load multiple microschemas.
@@ -71,7 +70,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<MicroschemaListResponse> findMicroschemas(ParameterProvider... parameters);
+	MeshRequest<MicroschemaListResponse> findMicroschemas(ParameterProvider... parameters);
 
 	/**
 	 * Apply the given list of changes to the schema which is identified by the given uuid.
@@ -82,7 +81,7 @@ public interface SchemaClientMethods {
 	 *            List of changes
 	 * @return
 	 */
-	Future<GenericMessageResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes);
+	MeshRequest<GenericMessageResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes);
 
 
 	/**
@@ -92,7 +91,7 @@ public interface SchemaClientMethods {
 	 * @param schemaUuid schema uuid
 	 * @return
 	 */
-	Future<Schema> assignSchemaToProject(String projectName, String schemaUuid);
+	MeshRequest<Schema> assignSchemaToProject(String projectName, String schemaUuid);
 
 	/**
 	 * Unassign a schema from the project
@@ -101,7 +100,7 @@ public interface SchemaClientMethods {
 	 * @param schemaUuid schema uuid
 	 * @return
 	 */
-	Future<Schema> unassignSchemaFromProject(String projectName, String schemaUuid);
+	MeshRequest<Schema> unassignSchemaFromProject(String projectName, String schemaUuid);
 
 	/**
 	 * Find all schemas assigned to the project
@@ -110,7 +109,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<SchemaListResponse> findSchemas(String projectName, ParameterProvider... parameters);
+	MeshRequest<SchemaListResponse> findSchemas(String projectName, ParameterProvider... parameters);
 
 	/**
 	 * Assign a microschema to the project
@@ -119,7 +118,7 @@ public interface SchemaClientMethods {
 	 * @param microschemaUuid microschema uuid
 	 * @return
 	 */
-	Future<Microschema> assignMicroschemaToProject(String projectName, String microschemaUuid);
+	MeshRequest<Microschema> assignMicroschemaToProject(String projectName, String microschemaUuid);
 
 	/**
 	 * Unassign a microschema from the project
@@ -127,7 +126,7 @@ public interface SchemaClientMethods {
 	 * @param microschemaUuid microschema uuid
 	 * @return
 	 */
-	Future<Microschema> unassignMicroschemaFromProject(String projectName, String microschemaUuid);
+	MeshRequest<Microschema> unassignMicroschemaFromProject(String projectName, String microschemaUuid);
 
 	/**
 	 * Find all microschemas assigned to the project
@@ -136,5 +135,5 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<MicroschemaListResponse> findMicroschemas(String projectName, ParameterProvider... parameters);
+	MeshRequest<MicroschemaListResponse> findMicroschemas(String projectName, ParameterProvider... parameters);
 }

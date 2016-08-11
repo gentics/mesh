@@ -650,7 +650,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		}
 
 		// 4. Invoke the schema migration
-		Future<GenericMessageResponse> migrationFuture = getClient().updateSchema(schemaUuid, schema);
+		Future<GenericMessageResponse> migrationFuture = getClient().updateSchema(schemaUuid, schema).invoke();
 		latchFor(migrationFuture);
 		assertSuccess(migrationFuture);
 		expectResponseMessage(migrationFuture, "migration_invoked", "content");
@@ -841,7 +841,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		searchProvider.clear();
 
-		Future<GenericMessageResponse> future = getClient().invokeReindex();
+		Future<GenericMessageResponse> future = getClient().invokeReindex().invoke();
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "search_admin_reindex_invoked");

@@ -6,8 +6,7 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface ProjectClientMethods {
 
@@ -18,7 +17,7 @@ public interface ProjectClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ProjectResponse> findProjectByUuid(String uuid, ParameterProvider... parameters);
+	MeshRequest<ProjectResponse> findProjectByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Find the project using the specified name.
@@ -27,7 +26,7 @@ public interface ProjectClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ProjectResponse> findProjectByName(String name, ParameterProvider... parameters);
+	MeshRequest<ProjectResponse> findProjectByName(String name, ParameterProvider... parameters);
 
 	/**
 	 * Load multiple projects.
@@ -35,7 +34,7 @@ public interface ProjectClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ProjectListResponse> findProjects(ParameterProvider... parameters);
+	MeshRequest<ProjectListResponse> findProjects(ParameterProvider... parameters);
 
 	// TODO use language tag instead?
 	/**
@@ -45,7 +44,7 @@ public interface ProjectClientMethods {
 	 * @param languageUuid
 	 * @return
 	 */
-	Future<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid);
+	MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid);
 
 	/**
 	 * Unassign the given language from the project.
@@ -54,7 +53,7 @@ public interface ProjectClientMethods {
 	 * @param languageUuid
 	 * @return
 	 */
-	Future<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid);
+	MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid);
 
 	/**
 	 * Create a new project.
@@ -62,7 +61,7 @@ public interface ProjectClientMethods {
 	 * @param request
 	 * @return
 	 */
-	Future<ProjectResponse> createProject(ProjectCreateRequest request);
+	MeshRequest<ProjectResponse> createProject(ProjectCreateRequest request);
 
 	/**
 	 * Update the project.
@@ -71,7 +70,7 @@ public interface ProjectClientMethods {
 	 * @param request
 	 * @return
 	 */
-	Future<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request);
+	MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request);
 
 	/**
 	 * Delete the project.
@@ -79,5 +78,5 @@ public interface ProjectClientMethods {
 	 * @param uuid
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteProject(String uuid);
+	MeshRequest<GenericMessageResponse> deleteProject(String uuid);
 }

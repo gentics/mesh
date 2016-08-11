@@ -5,7 +5,6 @@ import org.apache.commons.lang.StringUtils;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
@@ -39,7 +38,7 @@ public final class MeshRestRequestUtil {
 	 *            Authentication provider to use
 	 * @return
 	 */
-	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
+	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
 			HttpClient client, MeshRestClientAuthenticationProvider authentication) {
 		String uri = BASEURI + path;
 		MeshResponseHandler<T> handler = new MeshResponseHandler<>(classOfT, method, uri);
@@ -69,7 +68,7 @@ public final class MeshRestRequestUtil {
 						request.write(bodyData);
 					}
 				}
-				request.end();
+				
 			});
 		} else {
 			request.headers().add("Accept", "application/json");
@@ -86,10 +85,9 @@ public final class MeshRestRequestUtil {
 					request.write(bodyData);
 				}
 			}
-			request.end();
 		}
 
-		return handler.getFuture();
+		return new MeshRequest<T>(request, handler);
 	}
 
 	/**
@@ -109,7 +107,7 @@ public final class MeshRestRequestUtil {
 	 *            Authentication provider to use
 	 * @return
 	 */
-	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel, HttpClient client,
+	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel, HttpClient client,
 			MeshRestClientAuthenticationProvider authentication) {
 		Buffer buffer = Buffer.buffer();
 		String json = JsonUtil.toJson(restModel);
@@ -137,7 +135,7 @@ public final class MeshRestRequestUtil {
 	 *            Authentication provider to use
 	 * @return
 	 */
-	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData, HttpClient client,
+	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData, HttpClient client,
 			MeshRestClientAuthenticationProvider authentication) {
 
 		if (log.isDebugEnabled()) {
@@ -166,7 +164,7 @@ public final class MeshRestRequestUtil {
 	 *            Authentication provider to use
 	 * @return
 	 */
-	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, HttpClient client,
+	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, HttpClient client,
 			MeshRestClientAuthenticationProvider authentication) {
 		return handleRequest(method, path, classOfT, Buffer.buffer(), null, client, authentication);
 	}

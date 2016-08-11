@@ -45,19 +45,19 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 			fullIndex();
 		}
 
-		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleQuery("dummy"), new PagingParameters().setPage(1).setPerPage(2));
+		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleQuery("dummy"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		ProjectListResponse response = future.result();
 		assertEquals(1, response.getData().size());
 
-		future = getClient().searchProjects(getSimpleQuery("blub"), new PagingParameters().setPage(1).setPerPage(2));
+		future = getClient().searchProjects(getSimpleQuery("blub"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
 		assertEquals(0, response.getData().size());
 
-		future = getClient().searchProjects(getSimpleTermQuery("name", "dummy"), new PagingParameters().setPage(1).setPerPage(2));
+		future = getClient().searchProjects(getSimpleTermQuery("name", "dummy"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -74,7 +74,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 			MeshAssert.assertElement(boot.projectRoot(), project.getUuid(), true);
 		}
 		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", newName),
-				new PagingParameters().setPage(1).setPerPage(2));
+				new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		ProjectListResponse response = future.result();
@@ -88,13 +88,13 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 		ProjectResponse project = createProject(projectName);
 
 		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", projectName),
-				new PagingParameters().setPage(1).setPerPage(2));
+				new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(1, future.result().getData().size());
 
 		deleteProject(project.getUuid());
-		future = getClient().searchProjects(getSimpleTermQuery("name", projectName), new PagingParameters().setPage(1).setPerPage(2));
+		future = getClient().searchProjects(getSimpleTermQuery("name", projectName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -110,12 +110,12 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 		updateProject(project.getUuid(), newProjectName);
 
 		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", projectName),
-				new PagingParameters().setPage(1).setPerPage(2));
+				new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
 
-		future = getClient().searchProjects(getSimpleTermQuery("name", newProjectName), new PagingParameters().setPage(1).setPerPage(2));
+		future = getClient().searchProjects(getSimpleTermQuery("name", newProjectName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(1, future.result().getData().size());

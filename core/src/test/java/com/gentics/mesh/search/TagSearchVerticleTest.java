@@ -49,7 +49,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 			createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
 		}
 
-		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", tagName));
+		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", tagName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -83,7 +83,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 		}
 
 		start = System.currentTimeMillis();
-		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName + "2"));
+		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName + "2")).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -111,7 +111,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 		}
 
 		// 1. Verify that the tag is indexed
-		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name));
+		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("The tag with name {" + name + "} and uuid {" + uuid + "} could not be found in the search index.", 1,
@@ -121,7 +121,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 		deleteTag(PROJECT_NAME, parentTagFamilyUuid, uuid);
 
 		// 3. Search again and verify that the document was removed from the index
-		searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name));
+		searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

@@ -4,10 +4,10 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface MicroschemaClientMethods {
+
 	/**
 	 * Create a new microschema using the given request.
 	 * 
@@ -15,7 +15,7 @@ public interface MicroschemaClientMethods {
 	 *            create request
 	 * @return future for the microschema response
 	 */
-	Future<Microschema> createMicroschema(Microschema request);
+	MeshRequest<Microschema> createMicroschema(Microschema request);
 
 	/**
 	 * Load the microschema with the given UUID.
@@ -24,7 +24,7 @@ public interface MicroschemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<Microschema> findMicroschemaByUuid(String uuid, ParameterProvider... parameters);
+	MeshRequest<Microschema> findMicroschemaByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Update the microschema with the given request.
@@ -35,7 +35,7 @@ public interface MicroschemaClientMethods {
 	 *            Update request
 	 * @return
 	 */
-	Future<GenericMessageResponse> updateMicroschema(String uuid, Microschema request);
+	MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, Microschema request);
 
 	/**
 	 * Delete the given microschema.
@@ -44,7 +44,7 @@ public interface MicroschemaClientMethods {
 	 *            Microschema UUID
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteMicroschema(String uuid);
+	MeshRequest<GenericMessageResponse> deleteMicroschema(String uuid);
 
 	/**
 	 * Apply the given set of changes to the microschema.
@@ -54,7 +54,7 @@ public interface MicroschemaClientMethods {
 	 * @param changes
 	 * @return
 	 */
-	Future<GenericMessageResponse> applyChangesToMicroschema(String uuid, SchemaChangesListModel changes);
+	MeshRequest<GenericMessageResponse> applyChangesToMicroschema(String uuid, SchemaChangesListModel changes);
 
 	/**
 	 * Compare the given microschema with a currently stored one and return a list of changes.
@@ -63,6 +63,6 @@ public interface MicroschemaClientMethods {
 	 * @param request
 	 * @return
 	 */
-	Future<SchemaChangesListModel> diffMicroschema(String uuid, Microschema request);
+	MeshRequest<SchemaChangesListModel> diffMicroschema(String uuid, Microschema request);
 
 }

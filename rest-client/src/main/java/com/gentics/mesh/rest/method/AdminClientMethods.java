@@ -1,8 +1,7 @@
 package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface AdminClientMethods {
 
@@ -11,13 +10,13 @@ public interface AdminClientMethods {
 	 * 
 	 * @return
 	 */
-	Future<String> meshStatus();
+	MeshRequest<String> meshStatus();
 
 	/**
 	 * Return the current schema/microschema migration status.
 	 * 
 	 * @return
 	 */
-	Future<GenericMessageResponse> schemaMigrationStatus();
+	MeshRequest<GenericMessageResponse> schemaMigrationStatus();
 
 }

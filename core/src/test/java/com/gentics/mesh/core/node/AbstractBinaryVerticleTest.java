@@ -15,9 +15,9 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.rest.MeshRequest;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.test.core.TestUtils;
 
@@ -65,7 +65,7 @@ public abstract class AbstractBinaryVerticleTest extends AbstractIsolatedRestVer
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
-	protected Future<GenericMessageResponse> uploadRandomData(String uuid, String languageTag, String fieldKey, int binaryLen, String contentType,
+	protected MeshRequest<GenericMessageResponse> uploadRandomData(String uuid, String languageTag, String fieldKey, int binaryLen, String contentType,
 			String fileName) {
 
 		// role().grantPermissions(node, UPDATE_PERM);

@@ -67,7 +67,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
 			assertThat(searchProvider).recordedStoreEvents(0);
-			Future<Schema> future = getClient().createSchema(schema);
+			Future<Schema> future = getClient().createSchema(schema).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertThat(searchProvider).recordedStoreEvents(1);
@@ -91,7 +91,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertThat(searchProvider).recordedStoreEvents(0);
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
-			Future<Schema> createFuture = getClient().createSchema(schema);
+			Future<Schema> createFuture = getClient().createSchema(schema).invoke();
 			latchFor(createFuture);
 			assertSuccess(createFuture);
 			assertThat(searchProvider).recordedStoreEvents(1);
@@ -100,11 +100,11 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
-			Future<Schema> readFuture = getClient().findSchemaByUuid(restSchema.getUuid());
+			Future<Schema> readFuture = getClient().findSchemaByUuid(restSchema.getUuid()).invoke();
 			latchFor(readFuture);
 			assertSuccess(readFuture);
 
-			Future<GenericMessageResponse> deleteFuture = getClient().deleteSchema(restSchema.getUuid());
+			Future<GenericMessageResponse> deleteFuture = getClient().deleteSchema(restSchema.getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
 			expectResponseMessage(deleteFuture, "schema_deleted", restSchema.getUuid() + "/" + restSchema.getName());
@@ -142,7 +142,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// Don't grant permissions to no perm schema
 			totalSchemas = nSchemas + schemaContainers().size();
 			// Test default paging parameters
-			Future<SchemaListResponse> future = getClient().findSchemas();
+			Future<SchemaListResponse> future = getClient().findSchemas().invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaListResponse restResponse = future.result();
@@ -151,7 +151,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 11;
-			future = getClient().findSchemas(new PagingParameters(2, perPage));
+			future = getClient().findSchemas(new PagingParameters(2, perPage)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -167,7 +167,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<Schema> allSchemas = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<SchemaListResponse> pageFuture = getClient().findSchemas(new PagingParameters(page, perPage));
+				Future<SchemaListResponse> pageFuture = getClient().findSchemas(new PagingParameters(page, perPage)).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 
@@ -182,15 +182,15 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// .collect(Collectors.toList());
 			// assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
 
-			future = getClient().findSchemas(new PagingParameters(-1, perPage));
+			future = getClient().findSchemas(new PagingParameters(-1, perPage)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findSchemas(new PagingParameters(1, -1));
+			future = getClient().findSchemas(new PagingParameters(1, -1)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findSchemas(new PagingParameters(4242, 25));
+			future = getClient().findSchemas(new PagingParameters(4242, 25)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -202,7 +202,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<SchemaListResponse> future = getClient().findSchemas(new PagingParameters(1, 0));
+		Future<SchemaListResponse> future = getClient().findSchemas(new PagingParameters(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -213,7 +213,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadByUUID() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schemaContainer = schemaContainer("content");
-			Future<Schema> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
+			Future<Schema> future = getClient().findSchemaByUuid(schemaContainer.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			Schema restSchema = future.result();
@@ -226,7 +226,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadByUuidWithRolePerms() {
 		String uuid = db.noTx(() -> schemaContainer("content").getUuid());
 
-		Future<Schema> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTx(() -> role().getUuid())));
+		Future<Schema> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTx(() -> role().getUuid()))).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull(future.result().getRolePerms());
@@ -247,7 +247,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		}
 
 		try (NoTx noTx = db.noTx()) {
-			Future<Schema> future = getClient().findSchemaByUuid(schema.getUuid());
+			Future<Schema> future = getClient().findSchemaByUuid(schema.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
 		}
@@ -255,7 +255,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadSchemaByInvalidUUID() throws Exception {
-		Future<Schema> future = getClient().findSchemaByUuid("bogus");
+		Future<Schema> future = getClient().findSchemaByUuid("bogus").invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -278,7 +278,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		request.setDisplayField("name");
 		request.setName(name);
 
-		Future<Schema> future = getClient().createSchema(request);
+		Future<Schema> future = getClient().createSchema(request).invoke();
 		latchFor(future);
 		expectException(future, CONFLICT, "schema_conflicting_name", name);
 	}
@@ -291,7 +291,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Schema request = new SchemaModel();
 			request.setName("new-name");
 
-			Future<GenericMessageResponse> future = getClient().updateSchema("bogus", request);
+			Future<GenericMessageResponse> future = getClient().updateSchema("bogus", request).invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
@@ -311,7 +311,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			String name = schema.getUuid() + "/" + schema.getName();
 			String uuid = schema.getUuid();
-			Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
+			Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid()).invoke();
 			latchFor(future);
 
 			expectException(future, BAD_REQUEST, "schema_delete_still_in_use", uuid);
@@ -326,7 +326,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				node.delete(batch);
 			}
 
-			future = getClient().deleteSchema(schema.getUuid());
+			future = getClient().deleteSchema(schema.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "schema_deleted", name);
@@ -344,7 +344,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			SchemaContainer schema = schemaContainer("content");
 			role().revokePermissions(schema, DELETE_PERM);
 
-			Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
+			Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
 
@@ -365,7 +365,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().updateSchema(schema.getUuid(), request));
+				set.add(getClient().updateSchema(schema.getUuid(), request).invoke());
 			}
 			validateSet(set, barrier);
 		}
@@ -382,7 +382,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findSchemaByUuid(uuid));
+				set.add(getClient().findSchemaByUuid(uuid).invoke());
 			}
 			validateSet(set, barrier);
 		}
@@ -398,7 +398,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<GenericMessageResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().deleteSchema(schema.getUuid()));
+				set.add(getClient().deleteSchema(schema.getUuid()).invoke());
 			}
 			validateDeletion(set, barrier);
 		}
@@ -416,7 +416,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().createSchema(request));
+			set.add(getClient().createSchema(request).invoke());
 		}
 		validateCreation(set, barrier);
 	}
@@ -429,7 +429,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			SchemaContainer schema = schemaContainer("content");
 			Set<Future<Schema>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findSchemaByUuid(schema.getUuid()));
+				set.add(getClient().findSchemaByUuid(schema.getUuid()).invoke());
 			}
 			for (Future<Schema> future : set) {
 				latchFor(future);
@@ -452,7 +452,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Schema request = new SchemaModel();
 			request.setName("new-name");
 
-			Future<GenericMessageResponse> future = getClient().updateSchema(schemaUuid, request);
+			Future<GenericMessageResponse> future = getClient().updateSchema(schemaUuid, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", schemaUuid);
 		}

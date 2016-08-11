@@ -66,7 +66,7 @@ public class NodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
 		NodeFieldListImpl listField = new NodeFieldListImpl();
 		listField.add(new NodeFieldListItemImpl("bogus"));
 
-		Future<NodeResponse> future = createNodeAsync("listField", listField);
+		Future<NodeResponse> future = createNodeAsync("listField", listField).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_list_item_not_found", "bogus");
 	}

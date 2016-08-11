@@ -74,7 +74,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 
-		Future<RoleResponse> future = getClient().createRole(request);
+		Future<RoleResponse> future = getClient().createRole(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
@@ -85,7 +85,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertTrue(user().hasPermission(createdRole, DELETE_PERM));
 			assertTrue(user().hasPermission(createdRole, CREATE_PERM));
 
-			Future<RoleResponse> readFuture = getClient().findRoleByUuid(future.result().getUuid());
+			Future<RoleResponse> readFuture = getClient().findRoleByUuid(future.result().getUuid()).invoke();
 			latchFor(readFuture);
 			assertSuccess(readFuture);
 
@@ -102,11 +102,11 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName(name);
 
-		Future<RoleResponse> future = getClient().createRole(request);
+		Future<RoleResponse> future = getClient().createRole(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
-		future = getClient().createRole(request);
+		future = getClient().createRole(request).invoke();
 		latchFor(future);
 		expectException(future, CONFLICT, "role_conflicting_name");
 	}
@@ -117,14 +117,14 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 
-		Future<RoleResponse> createFuture = getClient().createRole(request);
+		Future<RoleResponse> createFuture = getClient().createRole(request).invoke();
 		latchFor(createFuture);
 		assertSuccess(createFuture);
 
 		RoleResponse restRole = createFuture.result();
 		test.assertRole(request, restRole);
 
-		Future<GenericMessageResponse> deleteFuture = getClient().deleteRole(restRole.getUuid());
+		Future<GenericMessageResponse> deleteFuture = getClient().deleteRole(restRole.getUuid()).invoke();
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
 		expectResponseMessage(deleteFuture, "role_deleted", restRole.getUuid() + "/" + restRole.getName());
@@ -141,7 +141,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		}
 
 		try (NoTx noTx = db.noTx()) {
-			Future<RoleResponse> future = getClient().createRole(request);
+			Future<RoleResponse> future = getClient().createRole(request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid());
 		}
@@ -159,7 +159,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testCreateRoleWithNoName() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 
-		Future<RoleResponse> future = getClient().createRole(request);
+		Future<RoleResponse> future = getClient().createRole(request).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 	}
@@ -173,7 +173,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = role.getUuid();
 			assertNotNull("The UUID of the role must not be null.", role.getUuid());
 
-			Future<RoleResponse> future = getClient().findRoleByUuid(uuid);
+			Future<RoleResponse> future = getClient().findRoleByUuid(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			RoleResponse restRole = future.result();
@@ -191,7 +191,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 			role().grantPermissions(extraRole, READ_PERM);
 
-			Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid());
+			Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			RoleResponse restRole = future.result();
@@ -207,7 +207,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Role role = role();
 			String uuid = role.getUuid();
 
-			Future<RoleResponse> future = getClient().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()));
+			Future<RoleResponse> future = getClient().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
@@ -226,7 +226,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().revokePermissions(extraRole, READ_PERM);
 
 			assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-			Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid());
+			Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", extraRole.getUuid());
 		}
@@ -240,7 +240,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = role.getUuid();
 			assertNotNull("The UUID of the role must not be null.", role.getUuid());
 			role.revokePermissions(role, READ_PERM);
-			Future<RoleResponse> future = getClient().findRoleByUuid(uuid);
+			Future<RoleResponse> future = getClient().findRoleByUuid(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -270,7 +270,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			noPermRoleName = noPermRole.getName();
 
 			// Test default paging parameters
-			Future<RoleListResponse> future = getClient().findRoles();
+			Future<RoleListResponse> future = getClient().findRoles().invoke();
 			latchFor(future);
 			assertSuccess(future);
 			RoleListResponse restResponse = future.result();
@@ -280,7 +280,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			int perPage = 11;
 			int page = 1;
-			future = getClient().findRoles(new PagingParameters(page, perPage));
+			future = getClient().findRoles(new PagingParameters(page, perPage)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -302,7 +302,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<RoleResponse> allRoles = new ArrayList<>();
 			for (page = 1; page <= totalPages; page++) {
-				Future<RoleListResponse> pageFuture = getClient().findRoles(new PagingParameters(page, perPage));
+				Future<RoleListResponse> pageFuture = getClient().findRoles(new PagingParameters(page, perPage)).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -315,15 +315,15 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			future = getClient().findRoles(new PagingParameters(-1, perPage));
+			future = getClient().findRoles(new PagingParameters(-1, perPage)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findRoles(new PagingParameters(1, -1));
+			future = getClient().findRoles(new PagingParameters(1, -1)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findRoles(new PagingParameters(4242, 25));
+			future = getClient().findRoles(new PagingParameters(4242, 25)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -337,7 +337,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<RoleListResponse> future = getClient().findRoles(new PagingParameters(1, 0));
+		Future<RoleListResponse> future = getClient().findRoles(new PagingParameters(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -357,7 +357,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			RoleUpdateRequest request = new RoleUpdateRequest();
 			request.setName("renamed role");
 
-			Future<RoleResponse> future = getClient().updateRole(roleUuid, request);
+			Future<RoleResponse> future = getClient().updateRole(roleUuid, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			RoleResponse restRole = future.result();
@@ -380,7 +380,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			RoleUpdateRequest request = new RoleUpdateRequest();
 			request.setName("New Name");
 
-			Future<RoleResponse> future = getClient().updateRole(uuid, request);
+			Future<RoleResponse> future = getClient().updateRole(uuid, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -394,7 +394,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			RoleUpdateRequest request = new RoleUpdateRequest();
 			request.setName("test123");
 
-			Future<RoleResponse> future = getClient().updateRole(role().getUuid(), request);
+			Future<RoleResponse> future = getClient().updateRole(role().getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "role_conflicting_name");
 		}
@@ -406,7 +406,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
 
-		Future<RoleResponse> future = getClient().updateRole("bogus", request);
+		Future<RoleResponse> future = getClient().updateRole("bogus", request).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
@@ -423,14 +423,14 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			RoleUpdateRequest restRole = new RoleUpdateRequest();
 			restRole.setName("renamed role");
 
-			Future<RoleResponse> future = getClient().updateRole(uuid, restRole);
+			Future<RoleResponse> future = getClient().updateRole(uuid, restRole).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
 			// Add the missing permission and try again
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 
-			future = getClient().updateRole(uuid, restRole);
+			future = getClient().updateRole(uuid, restRole).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -455,7 +455,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String roleName = extraRole.getName();
 			role().grantPermissions(extraRole, DELETE_PERM);
 
-			Future<GenericMessageResponse> future = getClient().deleteRole(roleUuid);
+			Future<GenericMessageResponse> future = getClient().deleteRole(roleUuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "role_deleted", roleUuid + "/" + roleName);
@@ -473,7 +473,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		try (NoTx noTx = db.noTx()) {
 			String uuid = role().getUuid();
-			Future<GenericMessageResponse> future = getClient().deleteRole(uuid);
+			Future<GenericMessageResponse> future = getClient().deleteRole(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 			assertElement(meshRoot().getRoleRoot(), uuid, true);
@@ -491,7 +491,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().updateRole(role().getUuid(), request));
+			set.add(getClient().updateRole(role().getUuid(), request).invoke());
 		}
 		validateSet(set, barrier);
 	}
@@ -509,7 +509,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findRoleByUuid(uuid));
+			set.add(getClient().findRoleByUuid(uuid).invoke());
 		}
 		validateSet(set, barrier);
 	}
@@ -523,7 +523,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().deleteRole(uuid));
+			set.add(getClient().deleteRole(uuid).invoke());
 		}
 		validateDeletion(set, barrier);
 	}
@@ -542,7 +542,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		for (int i = 0; i < nJobs; i++) {
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName("new_role_" + i);
-			set.add(getClient().createRole(request));
+			set.add(getClient().createRole(request).invoke());
 		}
 		validateFutures(set);
 	}
@@ -558,7 +558,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			int nJobs = 400;
 			Set<Future<RoleResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findRoleByUuid(role().getUuid()));
+				set.add(getClient().findRoleByUuid(role().getUuid()).invoke());
 			}
 			for (Future<RoleResponse> future : set) {
 				latchFor(future);

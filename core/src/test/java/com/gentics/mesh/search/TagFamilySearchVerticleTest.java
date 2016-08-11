@@ -38,7 +38,7 @@ public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest impl
 		String tagFamilyName = "newtagfamily";
 		createTagFamily(PROJECT_NAME, tagFamilyName);
 
-		Future<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName));
+		Future<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -50,13 +50,13 @@ public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest impl
 		String tagFamilyName = "newtagfamily";
 		TagFamilyResponse tagFamilyResponse = createTagFamily(PROJECT_NAME, tagFamilyName);
 
-		Future<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName));
+		Future<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
 
 		deleteTagFamily(PROJECT_NAME, tagFamilyResponse.getUuid());
-		searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName));
+		searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -73,14 +73,14 @@ public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest impl
 		updateTagFamily(PROJECT_NAME, tagFamily.getUuid(), newTagFamilyName);
 
 		// Check that the new tag family name is now stored in the search index
-		Future<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", newTagFamilyName));
+		Future<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", newTagFamilyName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("The simple term query for name {" + newTagFamilyName + "} did not find the updated tag family entry", 1,
 				searchFuture.result().getData().size());
 
 		// Check that old tag family name is no longer stored in the search index
-		searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName));
+		searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(

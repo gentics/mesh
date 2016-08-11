@@ -90,7 +90,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			Set<Future<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findReleaseByUuid(projectName, uuid));
+				set.add(getClient().findReleaseByUuid(projectName, uuid).invoke());
 			}
 
 			for (Future<?> future : set) {
@@ -102,7 +102,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Override
 	public void testDeleteByUUIDMultithreaded() throws Exception {
-		
+
 	}
 
 	@Test
@@ -117,7 +117,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			for (int i = 0; i < nJobs; i++) {
 				ReleaseCreateRequest request = new ReleaseCreateRequest();
 				request.setName(releaseName + i);
-				Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request);
+				Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request).invoke();
 				responseFutures.add(future);
 			}
 
@@ -159,7 +159,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			Set<Future<ReleaseResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findReleaseByUuid(project().getName(), project().getInitialRelease().getUuid()));
+				set.add(getClient().findReleaseByUuid(project().getName(), project().getInitialRelease().getUuid()).invoke());
 			}
 			for (Future<ReleaseResponse> future : set) {
 				latchFor(future);
@@ -370,13 +370,13 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			// change active
 			ReleaseUpdateRequest request2 = new ReleaseUpdateRequest();
-//			request2.setActive(false);
+			// request2.setActive(false);
 			response = call(() -> getClient().updateRelease(projectName, uuid, request2));
 			assertThat(response).as("Updated Release").isNotNull().hasName(newName).isInactive();
 
 			// change active and name
 			ReleaseUpdateRequest request3 = new ReleaseUpdateRequest();
-//			request3.setActive(true);
+			// request3.setActive(true);
 			request3.setName(anotherNewName);
 			response = call(() -> getClient().updateRelease(projectName, uuid, request3));
 			assertThat(response).as("Updated Release").isNotNull().hasName(anotherNewName).isActive();
@@ -406,7 +406,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
 
 			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
-			//request.setActive(false);
+			// request.setActive(false);
 			call(() -> getClient().updateRelease(projectName, project.getInitialRelease().getUuid(), request), FORBIDDEN, "error_missing_perm",
 					project.getInitialRelease().getUuid());
 		}
@@ -419,7 +419,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Project project = project();
 
 			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
-//			request.setActive(false);
+			// request.setActive(false);
 			call(() -> getClient().updateRelease(project.getName(), "bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
 	}

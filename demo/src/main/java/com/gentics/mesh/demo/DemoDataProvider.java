@@ -122,7 +122,7 @@ public class DemoDataProvider {
 
 		for (ProjectResponse project : projects.values()) {
 			Future<PublishStatusResponse> future = client.publishNode(PROJECT_NAME, project.getRootNodeUuid(),
-					new PublishParameters().setRecursive(true));
+					new PublishParameters().setRecursive(true)).invoke();
 			latchFor(future);
 		}
 
@@ -139,10 +139,10 @@ public class DemoDataProvider {
 		request.getPermissions().add("read");
 		request.getPermissions().add("update");
 		Future<GenericMessageResponse> future = client.updateRolePermissions(getRole("Client Role").getUuid(),
-				"projects/" + getProject("demo").getUuid(), request);
+				"projects/" + getProject("demo").getUuid(), request).invoke();
 		latchFor(future);
 
-		future = client.updateRolePermissions(getRole("Client Role").getUuid(), "users/" + users.get("webclient").getUuid(), request);
+		future = client.updateRolePermissions(getRole("Client Role").getUuid(), "users/" + users.get("webclient").getUuid(), request).invoke();
 		latchFor(future);
 	}
 
@@ -171,7 +171,7 @@ public class DemoDataProvider {
 			request.setFirstname(firstname);
 			request.setLastname(lastname);
 			request.setPassword(password);
-			Future<UserResponse> future = client.createUser(request);
+			Future<UserResponse> future = client.createUser(request).invoke();
 			latchFor(future);
 			users.put(username, future.result());
 
@@ -200,14 +200,14 @@ public class DemoDataProvider {
 			log.info("Creating group {" + name + "}");
 			GroupCreateRequest groupCreateRequest = new GroupCreateRequest();
 			groupCreateRequest.setName(name);
-			Future<GroupResponse> groupResponseFuture = client.createGroup(groupCreateRequest);
+			Future<GroupResponse> groupResponseFuture = client.createGroup(groupCreateRequest).invoke();
 			latchFor(groupResponseFuture);
 			GroupResponse group = groupResponseFuture.result();
 			groups.put(name, group);
 
 			JsonArray rolesNode = groupJson.getJsonArray("roles");
 			for (int e = 0; e < rolesNode.size(); e++) {
-				Future<GroupResponse> future = client.addRoleToGroup(group.getUuid(), getRole(rolesNode.getString(e)).getUuid());
+				Future<GroupResponse> future = client.addRoleToGroup(group.getUuid(), getRole(rolesNode.getString(e)).getUuid()).invoke();
 				latchFor(future);
 			}
 		}
@@ -243,7 +243,7 @@ public class DemoDataProvider {
 			log.info("Creating role {" + name + "}");
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName(name);
-			Future<RoleResponse> roleFuture = client.createRole(request);
+			Future<RoleResponse> roleFuture = client.createRole(request).invoke();
 			latchFor(roleFuture);
 
 			roles.put(name, roleFuture.result());
@@ -257,25 +257,25 @@ public class DemoDataProvider {
 	 */
 	private void addBootstrappedData() throws InterruptedException {
 
-		Future<GroupListResponse> groupsFuture = client.findGroups();
+		Future<GroupListResponse> groupsFuture = client.findGroups().invoke();
 		latchFor(groupsFuture);
 		for (GroupResponse group : groupsFuture.result().getData()) {
 			groups.put(group.getName(), group);
 		}
 
-		Future<UserListResponse> usersFuture = client.findUsers();
+		Future<UserListResponse> usersFuture = client.findUsers().invoke();
 		latchFor(usersFuture);
 		for (UserResponse user : usersFuture.result().getData()) {
 			users.put(user.getUsername(), user);
 		}
 
-		Future<RoleListResponse> rolesFuture = client.findRoles();
+		Future<RoleListResponse> rolesFuture = client.findRoles().invoke();
 		latchFor(rolesFuture);
 		for (RoleResponse role : rolesFuture.result().getData()) {
 			roles.put(role.getName(), role);
 		}
 
-		Future<SchemaListResponse> schemasFuture = client.findSchemas();
+		Future<SchemaListResponse> schemasFuture = client.findSchemas().invoke();
 		latchFor(schemasFuture);
 		for (Schema schema : schemasFuture.result().getData()) {
 			schemas.put(schema.getName(), schema);
@@ -335,7 +335,7 @@ public class DemoDataProvider {
 			}
 			// englishContainer.updateWebrootPathInfo("node_conflicting_segmentfield_update");
 
-			Future<NodeResponse> nodeCreateFuture = client.createNode(project.getName(), nodeCreateRequest);
+			Future<NodeResponse> nodeCreateFuture = client.createNode(project.getName(), nodeCreateRequest).invoke();
 			latchFor(nodeCreateFuture);
 			NodeResponse createdNode = nodeCreateFuture.result();
 
@@ -353,7 +353,7 @@ public class DemoDataProvider {
 				Buffer fileData = Buffer.buffer(bytes);
 
 				Future<GenericMessageResponse> binaryUpdateFuture = client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image",
-						fileData, filenName, contentType);
+						fileData, filenName, contentType).invoke();
 				latchFor(binaryUpdateFuture);
 
 			}
@@ -362,7 +362,7 @@ public class DemoDataProvider {
 			JsonArray tagArray = nodeJson.getJsonArray("tags");
 			for (int e = 0; e < tagArray.size(); e++) {
 				String tagName = tagArray.getString(e);
-				Future<NodeResponse> tagAddedFuture = client.addTagToNode(PROJECT_NAME, createdNode.getUuid(), getTag(tagName).getUuid());
+				Future<NodeResponse> tagAddedFuture = client.addTagToNode(PROJECT_NAME, createdNode.getUuid(), getTag(tagName).getUuid()).invoke();
 				latchFor(tagAddedFuture);
 			}
 
@@ -390,7 +390,7 @@ public class DemoDataProvider {
 			// TODO determine project of tag family automatically or use json field to assign it
 			TagCreateRequest createRequest = new TagCreateRequest();
 			createRequest.getFields().setName(name);
-			Future<TagResponse> tagFuture = client.createTag(PROJECT_NAME, tagFamily.getUuid(), createRequest);
+			Future<TagResponse> tagFuture = client.createTag(PROJECT_NAME, tagFamily.getUuid(), createRequest).invoke();
 			latchFor(tagFuture);
 			tags.put(name, tagFuture.result());
 		}
@@ -413,7 +413,7 @@ public class DemoDataProvider {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setSchemaReference(new SchemaReference().setName("folder"));
 			request.setName(name);
-			Future<ProjectResponse> projectFuture = client.createProject(request);
+			Future<ProjectResponse> projectFuture = client.createProject(request).invoke();
 			latchFor(projectFuture);
 
 			// TODO impl. once endpoint exists
@@ -437,7 +437,7 @@ public class DemoDataProvider {
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName(name);
 			// request.setDescription("Description for basic tag family");
-			Future<TagFamilyResponse> future = client.createTagFamily(PROJECT_NAME, request);
+			Future<TagFamilyResponse> future = client.createTagFamily(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			tagFamilies.put(name, future.result());
 		}
@@ -456,7 +456,7 @@ public class DemoDataProvider {
 			if (ins != null) {
 				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
 				Schema schema = JsonUtil.readValue(writer.toString(), SchemaModel.class);
-				Future<Schema> future = client.createSchema(schema);
+				Future<Schema> future = client.createSchema(schema).invoke();
 				latchFor(future);
 				Schema schemaResponse = future.result();
 				schemas.put(schemaName, schemaResponse);
@@ -468,7 +468,7 @@ public class DemoDataProvider {
 				String projectName = projectsArray.getString(e);
 				ProjectResponse project = getProject(projectName);
 				for (Schema schema : schemas.values()) {
-					Future<Schema> updateFuture = client.assignSchemaToProject(project.getName(), schema.getUuid());
+					Future<Schema> updateFuture = client.assignSchemaToProject(project.getName(), schema.getUuid()).invoke();
 					latchFor(updateFuture);
 				}
 			}

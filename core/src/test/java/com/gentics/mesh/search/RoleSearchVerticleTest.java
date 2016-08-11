@@ -36,7 +36,7 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implement
 		String roleName = "rolename42a";
 		createRole(roleName, db.noTx(() -> group().getUuid()));
 
-		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
+		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -48,14 +48,14 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implement
 		String roleName = "rolename42a";
 		RoleResponse role = createRole(roleName, db.noTx(() -> group().getUuid()));
 
-		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
+		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
 
 		deleteRole(role.getUuid());
 
-		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
+		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -68,7 +68,7 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implement
 		String roleName = "rolename42a";
 		RoleResponse role = createRole(roleName, db.noTx(() -> group().getUuid()));
 
-		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
+		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -76,12 +76,12 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implement
 		String newRoleName = "updatedrolename";
 		updateRole(role.getUuid(), newRoleName);
 
-		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", newRoleName));
+		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", newRoleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
 
-		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
+		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

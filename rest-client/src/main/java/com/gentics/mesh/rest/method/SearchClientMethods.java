@@ -12,8 +12,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface SearchClientMethods {
 
@@ -25,7 +24,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeListResponse> searchNodes(String json, ParameterProvider... parameters);
+	MeshRequest<NodeListResponse> searchNodes(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search nodes in project
@@ -36,7 +35,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeListResponse> searchNodes(String projectName, String json, ParameterProvider... parameters);
+	MeshRequest<NodeListResponse> searchNodes(String projectName, String json, ParameterProvider... parameters);
 
 	/**
 	 * Search users.
@@ -46,7 +45,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserListResponse> searchUsers(String json, ParameterProvider... parameters);
+	MeshRequest<UserListResponse> searchUsers(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search groups.
@@ -56,7 +55,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<GroupListResponse> searchGroups(String json, ParameterProvider... parameters);
+	MeshRequest<GroupListResponse> searchGroups(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search roles.
@@ -66,7 +65,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<RoleListResponse> searchRoles(String json, ParameterProvider... parameters);
+	MeshRequest<RoleListResponse> searchRoles(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search projects.
@@ -76,7 +75,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<ProjectListResponse> searchProjects(String json, ParameterProvider... parameters);
+	MeshRequest<ProjectListResponse> searchProjects(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tags.
@@ -86,7 +85,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagListResponse> searchTags(String json, ParameterProvider... parameters);
+	MeshRequest<TagListResponse> searchTags(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tags in project
@@ -97,7 +96,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagListResponse> searchTags(String projectName, String json, ParameterProvider... parameters);
+	MeshRequest<TagListResponse> searchTags(String projectName, String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tag families.
@@ -106,7 +105,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagFamilyListResponse> searchTagFamilies(String json, ParameterProvider... parameters);
+	MeshRequest<TagFamilyListResponse> searchTagFamilies(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search tag families in project
@@ -116,7 +115,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagFamilyListResponse> searchTagFamilies(String projectName, String json, ParameterProvider... parameters);
+	MeshRequest<TagFamilyListResponse> searchTagFamilies(String projectName, String json, ParameterProvider... parameters);
 
 	/**
 	 * Search schemas.
@@ -126,7 +125,7 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<SchemaListResponse> searchSchemas(String json, ParameterProvider... parameters);
+	MeshRequest<SchemaListResponse> searchSchemas(String json, ParameterProvider... parameters);
 
 	/**
 	 * Search microschemas.
@@ -136,20 +135,20 @@ public interface SearchClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<MicroschemaListResponse> searchMicroschemas(String json, ParameterProvider... parameters);
+	MeshRequest<MicroschemaListResponse> searchMicroschemas(String json, ParameterProvider... parameters);
 
 	/**
 	 * Load the search queue status.
 	 * 
 	 * @return
 	 */
-	Future<SearchStatusResponse> loadSearchStatus();
+	MeshRequest<SearchStatusResponse> loadSearchStatus();
 
 	/**
 	 * Trigger a reindex action which will rebuild the index for all elements. This is useful when you want to sync the search index after restoring a backup.
 	 * 
 	 * @return
 	 */
-	Future<GenericMessageResponse> invokeReindex();
+	MeshRequest<GenericMessageResponse> invokeReindex();
 
 }

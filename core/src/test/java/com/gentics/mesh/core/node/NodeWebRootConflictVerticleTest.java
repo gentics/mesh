@@ -28,12 +28,8 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.Future;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
-
-	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
 	@Autowired
 	private NodeVerticle verticle;
@@ -113,7 +109,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create);
+			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -126,7 +122,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			create.getFields().put("name", FieldUtil.createStringField("some other name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			future = getClient().createNode(PROJECT_NAME, create);
+			future = getClient().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
 			return null;
@@ -150,7 +146,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create);
+			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -163,7 +159,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(nonConflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			future = getClient().createNode(PROJECT_NAME, create);
+			future = getClient().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			String uuid = future.result().getUuid();
@@ -174,7 +170,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			update.setVersion(new VersionReference(null, "0.1"));
 			update.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
-			future = getClient().updateNode(PROJECT_NAME, uuid, update);
+			future = getClient().updateNode(PROJECT_NAME, uuid, update).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
 			return null;
@@ -197,7 +193,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create);
+			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			String uuid = future.result().getUuid();
@@ -210,7 +206,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			update.getFields().put("name", FieldUtil.createStringField("Irgendein Name"));
 			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			update.getFields().put("content", FieldUtil.createStringField("Gesegnete Mahlzeit!"));
-			future = getClient().updateNode(PROJECT_NAME, uuid, update);
+			future = getClient().updateNode(PROJECT_NAME, uuid, update).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
 			return null;

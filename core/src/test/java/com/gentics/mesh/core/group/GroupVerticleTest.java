@@ -77,7 +77,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setName(name);
 			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
-			Future<GroupResponse> future = getClient().createGroup(request);
+			Future<GroupResponse> future = getClient().createGroup(request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
@@ -98,7 +98,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				root.reload();
 				role().grantPermissions(root, CREATE_PERM);
 
-				Future<GroupResponse> future = getClient().createGroup(request);
+				Future<GroupResponse> future = getClient().createGroup(request).invoke();
 				latchFor(future);
 				assertSuccess(future);
 				GroupResponse restGroup = future.result();
@@ -115,14 +115,14 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		try (NoTx noTx = db.noTx()) {
 			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
-			Future<GroupResponse> future = getClient().createGroup(request);
+			Future<GroupResponse> future = getClient().createGroup(request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
 			test.assertGroup(request, restGroup);
 
 			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
-			future = getClient().createGroup(request);
+			future = getClient().createGroup(request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "group_conflicting_name", name);
 		}
@@ -137,7 +137,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
 
-			Future<GroupResponse> future = getClient().createGroup(request);
+			Future<GroupResponse> future = getClient().createGroup(request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
@@ -146,12 +146,12 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Group foundGroup = boot.groupRoot().findByUuid(restGroup.getUuid()).toBlocking().value();
 			assertNotNull("Group should have been created.", foundGroup);
 
-			Future<GroupResponse> readFuture = getClient().findGroupByUuid(restGroup.getUuid());
+			Future<GroupResponse> readFuture = getClient().findGroupByUuid(restGroup.getUuid()).invoke();
 			latchFor(readFuture);
 			assertSuccess(readFuture);
 
 			// Now delete the group
-			Future<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid());
+			Future<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
 			expectResponseMessage(deleteFuture, "group_deleted", restGroup.getUuid() + "/" + restGroup.getName());
@@ -164,7 +164,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().grantPermissions(group(), CREATE_PERM);
 		}
 		GroupCreateRequest request = new GroupCreateRequest();
-		Future<GroupResponse> future = getClient().createGroup(request);
+		Future<GroupResponse> future = getClient().createGroup(request).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
@@ -185,7 +185,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertFalse("The create permission to the groups root node should have been revoked.",
 					user.hasPermissionAsync(ac, root, CREATE_PERM).toBlocking().value());
 
-			Future<GroupResponse> future = getClient().createGroup(request);
+			Future<GroupResponse> future = getClient().createGroup(request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", rootUuid);
 		}
@@ -211,7 +211,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			totalGroups = nGroups + groups().size();
 			// Test default paging parameters
-			Future<GroupListResponse> future = getClient().findGroups();
+			Future<GroupListResponse> future = getClient().findGroups().invoke();
 			latchFor(future);
 			assertSuccess(future);
 			GroupListResponse restResponse = future.result();
@@ -220,7 +220,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 6;
-			future = getClient().findGroups(new PagingParameters(3, perPage));
+			future = getClient().findGroups(new PagingParameters(3, perPage)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -238,7 +238,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<GroupResponse> allGroups = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<GroupListResponse> pageFuture = getClient().findGroups(new PagingParameters(page, perPage));
+				Future<GroupListResponse> pageFuture = getClient().findGroups(new PagingParameters(page, perPage)).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -251,15 +251,15 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("Extra group should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			future = getClient().findGroups(new PagingParameters(-1, perPage));
+			future = getClient().findGroups(new PagingParameters(-1, perPage)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findGroups(new PagingParameters(1, -1));
+			future = getClient().findGroups(new PagingParameters(1, -1)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findGroups(new PagingParameters(4242, 1));
+			future = getClient().findGroups(new PagingParameters(4242, 1)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -273,7 +273,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<GroupListResponse> future = getClient().findGroups(new PagingParameters(1, 0));
+		Future<GroupListResponse> future = getClient().findGroups(new PagingParameters(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -286,7 +286,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Group group = group();
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
 
-			Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
+			Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertThat(future.result()).matches(group());
@@ -300,7 +300,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Group group = group();
 			String uuid = group.getUuid();
 
-			Future<GroupResponse> future = getClient().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()));
+			Future<GroupResponse> future = getClient().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
@@ -315,7 +315,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Group group = group();
 			role().revokePermissions(group, READ_PERM);
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
-			Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
+			Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 		}
@@ -324,7 +324,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testReadGroupWithBogusUUID() throws Exception {
 		final String bogusUuid = "sadgasdasdg";
-		Future<GroupResponse> future = getClient().findGroupByUuid(bogusUuid);
+		Future<GroupResponse> future = getClient().findGroupByUuid(bogusUuid).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
@@ -341,7 +341,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		GroupResponse updatedGroup = db.noTx(() -> {
 			Group group = group();
 
-			Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
+			Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
@@ -363,7 +363,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupUpdateRequest request = new GroupUpdateRequest();
 			request.setName("new Name");
 
-			Future<GroupResponse> future = getClient().updateGroup(uuid, request);
+			Future<GroupResponse> future = getClient().updateGroup(uuid, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -380,7 +380,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupUpdateRequest request = new GroupUpdateRequest();
 			request.setName(name);
 
-			Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
+			Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
@@ -400,7 +400,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupUpdateRequest request = new GroupUpdateRequest();
 			request.setName(alreadyUsedName);
 
-			Future<GroupResponse> future = getClient().updateGroup(group().getUuid(), request);
+			Future<GroupResponse> future = getClient().updateGroup(group().getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "group_conflicting_name", alreadyUsedName);
 
@@ -420,7 +420,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupCreateRequest createReq = new GroupCreateRequest();
 			for (int i = 0; i < groupCount; i++) {
 				createReq.setName("testGroup" + i);
-				Future<GroupResponse> future = getClient().createGroup(createReq);
+				Future<GroupResponse> future = getClient().createGroup(createReq).invoke();
 				latchFor(future);
 			}
 
@@ -429,7 +429,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			int readCount = 100;
 			for (int i = 0; i < readCount; i++) {
-				Future<GroupListResponse> fut = getClient().findGroups(params);
+				Future<GroupListResponse> fut = getClient().findGroups(params).invoke();
 				latchFor(fut);
 				GroupListResponse res = fut.result();
 
@@ -448,7 +448,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
 
-		Future<GroupResponse> future = getClient().updateGroup("bogus", request);
+		Future<GroupResponse> future = getClient().updateGroup("bogus", request).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -463,7 +463,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String name = group.getName();
 			String uuid = group.getUuid();
 			assertNotNull(uuid);
-			Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
+			Future<GenericMessageResponse> future = getClient().deleteGroup(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "group_deleted", uuid + "/" + name);
@@ -482,7 +482,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// Don't allow delete
 			role().revokePermissions(group, DELETE_PERM);
 
-			Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
+			Future<GenericMessageResponse> future = getClient().deleteGroup(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 			assertElement(boot.groupRoot(), group.getUuid(), true);
@@ -500,7 +500,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().updateGroup(group().getUuid(), request));
+			set.add(getClient().updateGroup(group().getUuid(), request).invoke());
 		}
 		validateSet(set, barrier);
 
@@ -516,7 +516,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking findGroupByUuid REST call");
-			set.add(getClient().findGroupByUuid(uuid));
+			set.add(getClient().findGroupByUuid(uuid).invoke());
 		}
 		validateSet(set, barrier);
 	}
@@ -531,7 +531,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking deleteUser REST call");
-			set.add(getClient().deleteGroup(uuid));
+			set.add(getClient().deleteGroup(uuid).invoke());
 		}
 		validateDeletion(set, barrier);
 	}
@@ -547,7 +547,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			log.debug("Invoking createGroup REST call");
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName("test12345_" + i);
-			set.add(getClient().createGroup(request));
+			set.add(getClient().createGroup(request).invoke());
 		}
 		validateCreation(set, barrier);
 
@@ -561,7 +561,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			int nJobs = 200;
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking findGroupByUuid REST call");
-				set.add(getClient().findGroupByUuid(group().getUuid()));
+				set.add(getClient().findGroupByUuid(group().getUuid()).invoke());
 			}
 		}
 		for (Future<GroupResponse> future : set) {

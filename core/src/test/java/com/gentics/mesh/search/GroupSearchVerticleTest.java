@@ -37,7 +37,7 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implemen
 		String groupName = "testgroup42a";
 		createGroup(groupName);
 
-		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName));
+		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -48,7 +48,7 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implemen
 		String groupName = "testgroup42a";
 		String uuid = createGroup(groupName).getUuid();
 
-		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("uuid", uuid));
+		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("uuid", uuid)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -63,7 +63,7 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implemen
 		GroupResponse group = createGroup(groupName);
 		deleteGroup(group.getUuid());
 
-		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName));
+		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -78,12 +78,12 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implemen
 		String newGroupName = "testgrouprenamed";
 		updateGroup(group.getUuid(), newGroupName);
 
-		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName));
+		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
 
-		searchFuture = getClient().searchGroups(getSimpleTermQuery("name", newGroupName));
+		searchFuture = getClient().searchGroups(getSimpleTermQuery("name", newGroupName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());

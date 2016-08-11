@@ -4,7 +4,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
@@ -61,19 +60,19 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 		this.authentication = authentication;
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType) {
+	protected <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType) {
 		return MeshRestRequestUtil.handleRequest(method, path, classOfT, bodyData, contentType, client, authentication);
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
+	protected <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
 		return MeshRestRequestUtil.handleRequest(method, path, classOfT, restModel, client, authentication);
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData) {
+	protected <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData) {
 		return MeshRestRequestUtil.handleRequest(method, path, classOfT, jsonBodyData, client, authentication);
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT) {
+	protected <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT) {
 		return MeshRestRequestUtil.handleRequest(method, path, classOfT, client, authentication);
 	}
 

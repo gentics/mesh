@@ -125,7 +125,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			// Update the node and change the name field. Base the update on 1.0 thus a conflict check must be performed. A conflict should be detected.
 			NodeUpdateRequest request3 = prepareNameFieldUpdateRequest("1234", "1.0");
 			request3.getFields().put("name", FieldUtil.createStringField("updatedField"));
-			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request3, parameters);
+			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request3, parameters).invoke();
 			latchFor(future);
 			assertTrue("The node update should fail with a conflict error", future.failed());
 			Throwable error = future.cause();
@@ -364,7 +364,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),
 							Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname-also-modified"))));
 
-			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters);
+			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters).invoke();
 			latchFor(future);
 			assertTrue("The node update should fail with a conflict error", future.failed());
 			Throwable error = future.cause();

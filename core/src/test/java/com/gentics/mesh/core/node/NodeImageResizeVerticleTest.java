@@ -39,12 +39,8 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
-
-	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
 	@Autowired
 	private NodeVerticle nodeVerticle;
@@ -121,12 +117,12 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 			// 2. Transform the image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
 			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
-					params);
+					params).invoke();
 			latchFor(transformFuture);
 			assertSuccess(transformFuture);
 
 			// 3. Download the image
-			Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image");
+			Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image").invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 
@@ -145,7 +141,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 			// 2. Transform the image
 			ImageManipulationParameters params = new ImageManipulationParameters();
 			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
-					params);
+					params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_no_image_transformation", "image");
 		}
@@ -158,7 +154,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 			// try to transform the "name"
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "name", params);
+			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "name", params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_found_field_is_not_binary", "name");
 		}
@@ -173,14 +169,14 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 			// upload non-image data
 			Future<GenericMessageResponse> uploadFuture = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
-					Buffer.buffer("I am not an image"), "test.txt", "text/plain");
+					Buffer.buffer("I am not an image"), "test.txt", "text/plain").invoke();
 			latchFor(uploadFuture);
 			assertSuccess(uploadFuture);
 
 			// Transform
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
 			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
-					params);
+					params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_transformation_non_image", "image");
 		}
@@ -201,7 +197,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 	}
 
 	private Future<NodeDownloadResponse> resizeImage(Node node, ImageManipulationParameters params) {
-		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params);
+		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
 		latchFor(downloadFuture);
 		return downloadFuture;
 	}
@@ -236,7 +232,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		Buffer buffer = Buffer.buffer(bytes);
 
 		Future<GenericMessageResponse> future = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer,
-				fileName, contentType);
+				fileName, contentType).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}

@@ -165,7 +165,7 @@ public class NodeFieldVerticleTest extends AbstractFieldVerticleTest {
 		nodeUpdateRequest.getFields().put(FIELD_NAME, null);
 
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest,
-				new NodeParameters().setLanguages("en"));
+				new NodeParameters().setLanguages("en")).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -271,7 +271,7 @@ public class NodeFieldVerticleTest extends AbstractFieldVerticleTest {
 		createGermanNode.setLanguage("de");
 		createGermanNode.getFields().put("name", FieldUtil.createStringField("German Target"));
 
-		Future<NodeResponse> createGermanFuture = getClient().createNode(PROJECT_NAME, createGermanNode);
+		Future<NodeResponse> createGermanFuture = getClient().createNode(PROJECT_NAME, createGermanNode).invoke();
 		latchFor(createGermanFuture);
 		assertSuccess(createGermanFuture);
 		NodeResponse germanTarget = createGermanFuture.result();
@@ -281,7 +281,7 @@ public class NodeFieldVerticleTest extends AbstractFieldVerticleTest {
 		createEnglishNode.setLanguage("en");
 		createEnglishNode.getFields().put("name", FieldUtil.createStringField("English Target"));
 
-		Future<NodeResponse> updateEnglishNode = getClient().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode);
+		Future<NodeResponse> updateEnglishNode = getClient().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode).invoke();
 		latchFor(updateEnglishNode);
 		assertSuccess(updateEnglishNode);
 
@@ -293,7 +293,7 @@ public class NodeFieldVerticleTest extends AbstractFieldVerticleTest {
 		createSourceNode.getFields().put("name", FieldUtil.createStringField("German Source"));
 		createSourceNode.getFields().put(FIELD_NAME, FieldUtil.createNodeField(germanTarget.getUuid()));
 
-		Future<NodeResponse> createSourceFuture = getClient().createNode(PROJECT_NAME, createSourceNode);
+		Future<NodeResponse> createSourceFuture = getClient().createNode(PROJECT_NAME, createSourceNode).invoke();
 		latchFor(createSourceFuture);
 		assertSuccess(createSourceFuture);
 		NodeResponse source = createSourceFuture.result();
@@ -301,7 +301,7 @@ public class NodeFieldVerticleTest extends AbstractFieldVerticleTest {
 		// read source node with expanded field
 		for (String[] requestedLangs : Arrays.asList(new String[] { "de" }, new String[] { "de", "en" }, new String[] { "en", "de" })) {
 			Future<NodeResponse> resultFuture = getClient().findNodeByUuid(PROJECT_NAME, source.getUuid(),
-					new NodeParameters().setLanguages(requestedLangs).setExpandAll(true), new VersioningParameters().draft());
+					new NodeParameters().setLanguages(requestedLangs).setExpandAll(true), new VersioningParameters().draft()).invoke();
 			latchFor(resultFuture);
 			assertSuccess(resultFuture);
 			NodeResponse response = resultFuture.result();

@@ -9,8 +9,7 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 /**
  * Interface for Node specific rest API methods.
@@ -26,7 +25,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeResponse> findNodeByUuid(String projectName, String uuid, ParameterProvider... parameters);
+	MeshRequest<NodeResponse> findNodeByUuid(String projectName, String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Create a node within the given project. The query parameters determine which language of the node will be returned.
@@ -36,7 +35,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest, ParameterProvider... parameters);
+	MeshRequest<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest, ParameterProvider... parameters);
 
 	/**
 	 * Update the node with the given uuid.
@@ -47,7 +46,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest, ParameterProvider... parameters);
+	MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest, ParameterProvider... parameters);
 
 	/**
 	 * Delete the node with the given uuid. All languages will be deleted.
@@ -57,7 +56,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteNode(String projectName, String uuid, ParameterProvider... parameters);
+	MeshRequest<GenericMessageResponse> deleteNode(String projectName, String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Delete the node with the given language.
@@ -68,7 +67,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag, ParameterProvider... parameters);
+	MeshRequest<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag, ParameterProvider... parameters);
 
 	/**
 	 * Find all nodes within the project with the given name. The query parameters can be used to set paging and language settings.
@@ -77,7 +76,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeListResponse> findNodes(String projectName, ParameterProvider... parameters);
+	MeshRequest<NodeListResponse> findNodes(String projectName, ParameterProvider... parameters);
 
 	// Relations
 
@@ -89,7 +88,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeListResponse> findNodeChildren(String projectName, String parentNodeUuid, ParameterProvider... parameters);
+	MeshRequest<NodeListResponse> findNodeChildren(String projectName, String parentNodeUuid, ParameterProvider... parameters);
 
 	/**
 	 * Find all nodes that were tagged by the tag with the given tagUuid. The query parameters can be used to set paging and language settings.
@@ -101,7 +100,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeListResponse> findNodesForTag(String projectName, String tagFamilyUuid, String tagUuid, ParameterProvider... parameters);
+	MeshRequest<NodeListResponse> findNodesForTag(String projectName, String tagFamilyUuid, String tagUuid, ParameterProvider... parameters);
 
 	/**
 	 * Add with the given tagUuid to the node with the given nodeUuid. The query parameters can be used to set language settings.
@@ -114,7 +113,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeResponse> addTagToNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters);
+	MeshRequest<NodeResponse> addTagToNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters);
 
 	/**
 	 * Remove a tag with the given tagUuid from the node with the given nodeUuid. The query parameters can be used to set language settings.
@@ -127,7 +126,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeResponse> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters);
+	MeshRequest<NodeResponse> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters);
 
 	/**
 	 * Move the given node into the target folder. This operation will also affect the children of the given node. Please also note that it is not possible to
@@ -139,7 +138,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid, ParameterProvider... parameters);
+	MeshRequest<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid, ParameterProvider... parameters);
 
 	/**
 	 * Load multiple tags that were assigned to a given node.
@@ -149,7 +148,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, ParameterProvider... parameters);
+	MeshRequest<TagListResponse> findTagsForNode(String projectName, String nodeUuid, ParameterProvider... parameters);
 
 	/**
 	 * Get the publish status of a node
@@ -159,7 +158,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<PublishStatusResponse> getNodePublishStatus(String projectName, String nodeUuid,
+	MeshRequest<PublishStatusResponse> getNodePublishStatus(String projectName, String nodeUuid,
 			ParameterProvider... parameters);
 
 	/**
@@ -171,7 +170,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<PublishStatusModel> getNodeLanguagePublishStatus(String projectName, String nodeUuid, String languageTag,
+	MeshRequest<PublishStatusModel> getNodeLanguagePublishStatus(String projectName, String nodeUuid, String languageTag,
 			ParameterProvider... parameters);
 
 	/**
@@ -182,7 +181,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<PublishStatusResponse> publishNode(String projectName, String nodeUuid,
+	MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid,
 			ParameterProvider... parameters);
 
 	/**
@@ -194,7 +193,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
+	MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
 			ParameterProvider... parameters);
 
 	/**
@@ -205,7 +204,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<PublishStatusResponse> takeNodeOffline(String projectName, String nodeUuid,
+	MeshRequest<PublishStatusResponse> takeNodeOffline(String projectName, String nodeUuid,
 			ParameterProvider... parameters);
 
 	/**
@@ -217,7 +216,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<PublishStatusModel> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
+	MeshRequest<PublishStatusModel> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
 			ParameterProvider... parameters);
 
 }

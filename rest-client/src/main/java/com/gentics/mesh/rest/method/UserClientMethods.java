@@ -7,8 +7,7 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface UserClientMethods {
 
@@ -19,7 +18,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserResponse> findUserByUuid(String uuid, ParameterProvider... parameters);
+	MeshRequest<UserResponse> findUserByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Load a specific user by username.
@@ -28,7 +27,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserResponse> findUserByUsername(String username, ParameterProvider... parameters);
+	MeshRequest<UserResponse> findUserByUsername(String username, ParameterProvider... parameters);
 
 	/**
 	 * Load multiple users.
@@ -36,7 +35,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserListResponse> findUsers(ParameterProvider... parameters);
+	MeshRequest<UserListResponse> findUsers(ParameterProvider... parameters);
 
 	/**
 	 * Create a new user.
@@ -45,7 +44,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserResponse> createUser(UserCreateRequest request, ParameterProvider... parameters);
+	MeshRequest<UserResponse> createUser(UserCreateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Update the user.
@@ -56,7 +55,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserResponse> updateUser(String uuid, UserUpdateRequest request, ParameterProvider... parameters);
+	MeshRequest<UserResponse> updateUser(String uuid, UserUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Delete the user.
@@ -65,7 +64,7 @@ public interface UserClientMethods {
 	 *            User uuid
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteUser(String uuid);
+	MeshRequest<GenericMessageResponse> deleteUser(String uuid);
 
 	/**
 	 * Find users that were assigned to a specific group.
@@ -74,7 +73,7 @@ public interface UserClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<UserListResponse> findUsersOfGroup(String groupUuid, ParameterProvider... parameters);
+	MeshRequest<UserListResponse> findUsersOfGroup(String groupUuid, ParameterProvider... parameters);
 
 	/**
 	 * Read the user permissions for the given path.
@@ -85,5 +84,5 @@ public interface UserClientMethods {
 	 *            Path to the element
 	 * @return
 	 */
-	Future<UserPermissionResponse> readUserPermissions(String uuid, String pathToElement);
+	MeshRequest<UserPermissionResponse> readUserPermissions(String uuid, String pathToElement);
 }

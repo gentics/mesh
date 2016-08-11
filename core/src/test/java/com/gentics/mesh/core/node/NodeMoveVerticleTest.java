@@ -77,7 +77,7 @@ public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Node targetNode = content("concorde");
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
 			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
@@ -91,7 +91,7 @@ public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Node sourceNode = folder("news");
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
 			assertNotEquals(sourceNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid());
+			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_move_error_same_nodes");
 			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
@@ -107,7 +107,7 @@ public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
 
-			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_move_error_not_allowed_to_move_node_into_one_of_its_children");
 
@@ -124,7 +124,7 @@ public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
 			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
 
-			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", sourceNode.getUuid());
 			assertNotEquals("The source node should not have been moved.", targetNode.getUuid(),
@@ -140,7 +140,7 @@ public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Node targetNode = folder("2015");
 			String oldSourceParentId = sourceNode.getParentNode(releaseUuid).getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+			Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "node_moved_to", sourceNode.getUuid(), targetNode.getUuid());

@@ -9,6 +9,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +80,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 	public void testNoDiff() {
 		MicroschemaContainer microschema = microschemaContainer("vcard");
 		Microschema request = getMicroschema();
-		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request);
+		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaChangesListModel changes = future.result();
@@ -95,7 +96,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 		stringField.setAllowedValues("one", "two");
 		request.addField(stringField);
 
-		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request);
+		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaChangesListModel changes = future.result();
@@ -113,7 +114,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 		BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binaryField");
 		request.addField(binaryField);
 
-		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request);
+		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "microschema_error_field_type_not_allowed", "binaryField", "binary");
 	}
@@ -123,7 +124,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 		MicroschemaContainer microschema = microschemaContainer("vcard");
 		Microschema request = getMicroschema();
 		request.removeField("postcode");
-		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request);
+		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaChangesListModel changes = future.result();

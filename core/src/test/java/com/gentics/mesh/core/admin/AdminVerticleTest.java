@@ -29,7 +29,7 @@ public class AdminVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMigrationStatusWithNoMigrationRunning() {
-		Future<GenericMessageResponse> statusFuture = getClient().schemaMigrationStatus();
+		Future<GenericMessageResponse> statusFuture = getClient().schemaMigrationStatus().invoke();
 		latchFor(statusFuture);
 		expectResponseMessage(statusFuture, "migration_status_idle");
 	}

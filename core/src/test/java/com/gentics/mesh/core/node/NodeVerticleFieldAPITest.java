@@ -49,7 +49,7 @@ public class NodeVerticleFieldAPITest extends AbstractBinaryVerticleTest {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
-			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName);
+			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "node_binary_field_updated", "binary");
@@ -57,7 +57,7 @@ public class NodeVerticleFieldAPITest extends AbstractBinaryVerticleTest {
 			node.reload();
 
 			// 2. Download the data using the field api
-			Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary");
+			Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary").invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 			assertEquals(binaryLen, downloadFuture.result().getBuffer().length());

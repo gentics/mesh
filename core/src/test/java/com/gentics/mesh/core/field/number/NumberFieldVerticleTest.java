@@ -65,7 +65,7 @@ public class NumberFieldVerticleTest extends AbstractFieldVerticleTest {
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.getFields().put(fieldKey, field);
 
-		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"));
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "field_number_error_invalid_type", fieldKey, "text");
 	}

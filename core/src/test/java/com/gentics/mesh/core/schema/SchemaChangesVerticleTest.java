@@ -64,7 +64,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 		ServerSchemaStorage.getInstance().clear();
 
-		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "migration_invoked", "content");
@@ -95,12 +95,12 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		listOfChanges.getChanges().add(change);
 
 		// Assert migration is in idle
-		Future<GenericMessageResponse> statusFuture = getClient().schemaMigrationStatus();
+		Future<GenericMessageResponse> statusFuture = getClient().schemaMigrationStatus().invoke();
 		latchFor(statusFuture);
 		expectResponseMessage(statusFuture, "migration_status_idle");
 
 		// Trigger migration
-		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "migration_invoked", "content");
@@ -113,7 +113,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Thread.sleep(3000);
 
 		// Assert migration is running
-		statusFuture = getClient().schemaMigrationStatus();
+		statusFuture = getClient().schemaMigrationStatus().invoke();
 		latchFor(statusFuture);
 		expectResponseMessage(statusFuture, "migration_status_running");
 		Thread.sleep(10000);
@@ -123,7 +123,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 			try {
 				Thread.sleep(1000);
 				// Assert migration has finished
-				statusFuture = getClient().schemaMigrationStatus();
+				statusFuture = getClient().schemaMigrationStatus().invoke();
 				latchFor(statusFuture);
 				expectResponseMessage(statusFuture, "migration_status_idle");
 				break;
@@ -149,7 +149,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// Update name to folder to create a conflict
 		request.setName(name);
 
-		Future<GenericMessageResponse> future = getClient().updateSchema(schema.getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateSchema(schema.getUuid(), request).invoke();
 		latchFor(future);
 		expectException(future, CONFLICT, "schema_conflicting_name", name);
 		schema.reload();
@@ -168,7 +168,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 		// Trigger migration
-		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "migration_invoked", "content");
@@ -216,7 +216,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 4. Update the schema server side -> 2.0
-		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "migration_invoked", schema.getName());
@@ -253,7 +253,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	public void testApplyWithEmptyChangesList() {
 		SchemaContainer container = schemaContainer("content");
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "schema_migration_no_changes_specified");
 	}
@@ -271,7 +271,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaContainer container = schemaContainer("content");
 		SchemaContainerVersion currentVersion = container.getLatestVersion();
 		assertNull("The schema should not yet have any changes", currentVersion.getNextChange());
-		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
@@ -296,7 +296,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// 2. Invoke migration
 		SchemaContainer container = schemaContainer("content");
 		assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
-		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "schema_error_segmentfield_invalid", "filename");
 
@@ -326,7 +326,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// 4. Invoke migration
 		assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
 		SchemaContainerVersion currentVersion = container.getLatestVersion();
-		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
@@ -361,7 +361,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 3. Invoke migration
-		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "migration_invoked", "content");
@@ -444,7 +444,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 			// 3. Invoke migration
 			Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(),
-					listOfChanges);
+					listOfChanges).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "migration_invoked", "content");
@@ -513,7 +513,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Schema schema = container.getLatestVersion().getSchema();
 
 		// Update the schema server side
-		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "schema_update_no_difference_detected");
@@ -534,7 +534,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 3. Update the schema server side -> 2.0
-		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		// 4. assign the new schema version to the release
@@ -543,7 +543,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 		failingLatch(latch);
 
-		Future<Schema> schemaFuture = getClient().findSchemaByUuid(container.getUuid());
+		Future<Schema> schemaFuture = getClient().findSchemaByUuid(container.getUuid()).invoke();
 		latchFor(schemaFuture);
 		assertSuccess(schemaFuture);
 		assertEquals("The segment field name should be set", "filename", schemaFuture.result().getSegmentField());
@@ -590,7 +590,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// Update the schema server side
-		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
@@ -625,7 +625,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 3. Update the schema server side
-		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		// 4. assign the new schema version to the initial release

@@ -56,6 +56,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.rest.MeshRequest;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.search.impl.DummySearchProvider;
@@ -177,14 +178,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		request.setPassword("test1234");
 		request.setGroupUuid(group().getUuid());
 
-		Future<UserResponse> future = getClient().createUser(request);
+		Future<UserResponse> future = getClient().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected UserResponse readUser(String uuid) {
-		Future<UserResponse> future = getClient().findUserByUuid(uuid);
+		Future<UserResponse> future = getClient().findUserByUuid(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -193,14 +194,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected UserResponse updateUser(String uuid, String newUserName) {
 		UserUpdateRequest userUpdateRequest = new UserUpdateRequest();
 		userUpdateRequest.setUsername(newUserName);
-		Future<UserResponse> future = getClient().updateUser(uuid, userUpdateRequest);
+		Future<UserResponse> future = getClient().updateUser(uuid, userUpdateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected void deleteUser(String uuid) {
-		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
+		Future<GenericMessageResponse> future = getClient().deleteUser(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -210,14 +211,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected GroupResponse createGroup(String groupName) {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(groupName);
-		Future<GroupResponse> future = getClient().createGroup(request);
+		Future<GroupResponse> future = getClient().createGroup(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected GroupResponse readGroup(String uuid) {
-		Future<GroupResponse> future = getClient().findGroupByUuid(uuid);
+		Future<GroupResponse> future = getClient().findGroupByUuid(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -226,14 +227,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected GroupResponse updateGroup(String uuid, String newGroupName) {
 		GroupUpdateRequest groupUpdateRequest = new GroupUpdateRequest();
 		groupUpdateRequest.setName(newGroupName);
-		Future<GroupResponse> future = getClient().updateGroup(uuid, groupUpdateRequest);
+		Future<GroupResponse> future = getClient().updateGroup(uuid, groupUpdateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected void deleteGroup(String uuid) {
-		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
+		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -243,21 +244,21 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected RoleResponse createRole(String roleName, String groupUuid) {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
-		Future<RoleResponse> future = getClient().createRole(roleCreateRequest);
+		Future<RoleResponse> future = getClient().createRole(roleCreateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected RoleResponse readRole(String uuid) {
-		Future<RoleResponse> future = getClient().findRoleByUuid(uuid);
+		Future<RoleResponse> future = getClient().findRoleByUuid(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected void deleteRole(String uuid) {
-		Future<GenericMessageResponse> future = getClient().deleteRole(uuid);
+		Future<GenericMessageResponse> future = getClient().deleteRole(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -265,7 +266,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected RoleResponse updateRole(String uuid, String newRoleName) {
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName(newRoleName);
-		Future<RoleResponse> future = getClient().updateRole(uuid, request);
+		Future<RoleResponse> future = getClient().updateRole(uuid, request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -275,14 +276,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected TagResponse createTag(String projectName, String tagFamilyUuid, String tagName) {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName(tagName);
-		Future<TagResponse> future = getClient().createTag(projectName, tagFamilyUuid, tagCreateRequest);
+		Future<TagResponse> future = getClient().createTag(projectName, tagFamilyUuid, tagCreateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected TagResponse readTag(String projectName, String tagFamilyUuid, String uuid) {
-		Future<TagResponse> future = getClient().findTagByUuid(projectName, tagFamilyUuid, uuid);
+		Future<TagResponse> future = getClient().findTagByUuid(projectName, tagFamilyUuid, uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -291,14 +292,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected TagResponse updateTag(String projectName, String tagFamilyUuid, String uuid, String newTagName) {
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		tagUpdateRequest.setFields(new TagFieldContainer().setName(newTagName));
-		Future<TagResponse> future = getClient().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest);
+		Future<TagResponse> future = getClient().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected void deleteTag(String projectName, String tagFamilyUuid, String uuid) {
-		Future<GenericMessageResponse> future = getClient().deleteTag(projectName, tagFamilyUuid, uuid);
+		Future<GenericMessageResponse> future = getClient().deleteTag(projectName, tagFamilyUuid, uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -307,13 +308,13 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected NodeResponse createNode(String projectName, String nameField) {
 		NodeCreateRequest request = new NodeCreateRequest();
-		Future<NodeResponse> future = getClient().createNode(projectName, request);
+		Future<NodeResponse> future = getClient().createNode(projectName, request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
-	protected Future<NodeResponse> createNodeAsync(String fieldKey, Field field) {
+	protected MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
 		Node parentNode = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
@@ -339,14 +340,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void deleteNode(String projectName, String uuid) {
-		Future<GenericMessageResponse> future = getClient().deleteNode(projectName, uuid);
+		Future<GenericMessageResponse> future = getClient().deleteNode(projectName, uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
 
 	protected NodeResponse updateNode(String projectName, String uuid, String nameFieldValue) {
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-		Future<NodeResponse> future = getClient().updateNode(projectName, uuid, nodeUpdateRequest);
+		Future<NodeResponse> future = getClient().updateNode(projectName, uuid, nodeUpdateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -355,14 +356,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected TagFamilyResponse createTagFamily(String projectName, String tagFamilyName) {
 		TagFamilyCreateRequest tagFamilyCreateRequest = new TagFamilyCreateRequest();
 		tagFamilyCreateRequest.setName(tagFamilyName);
-		Future<TagFamilyResponse> future = getClient().createTagFamily(projectName, tagFamilyCreateRequest);
+		Future<TagFamilyResponse> future = getClient().createTagFamily(projectName, tagFamilyCreateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected TagFamilyResponse readTagFamily(String projectName, String uuid) {
-		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(projectName, uuid);
+		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(projectName, uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -371,14 +372,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected TagFamilyResponse updateTagFamily(String projectName, String uuid, String newTagFamilyName) {
 		TagFamilyUpdateRequest tagFamilyUpdateRequest = new TagFamilyUpdateRequest();
 		tagFamilyUpdateRequest.setName(newTagFamilyName);
-		Future<TagFamilyResponse> future = getClient().updateTagFamily(projectName, uuid, tagFamilyUpdateRequest);
+		Future<TagFamilyResponse> future = getClient().updateTagFamily(projectName, uuid, tagFamilyUpdateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected void deleteTagFamily(String projectName, String uuid) {
-		Future<GenericMessageResponse> future = getClient().deleteTagFamily(projectName, uuid);
+		Future<GenericMessageResponse> future = getClient().deleteTagFamily(projectName, uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -416,14 +417,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(projectName);
 		projectCreateRequest.setSchemaReference(new SchemaReference().setName("folder"));
-		Future<ProjectResponse> future = getClient().createProject(projectCreateRequest);
+		Future<ProjectResponse> future = getClient().createProject(projectCreateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected ProjectResponse readProject(String uuid) {
-		Future<ProjectResponse> future = getClient().findProjectByUuid(uuid);
+		Future<ProjectResponse> future = getClient().findProjectByUuid(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -432,14 +433,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected ProjectResponse updateProject(String uuid, String projectName) {
 		ProjectUpdateRequest projectUpdateRequest = new ProjectUpdateRequest();
 		projectUpdateRequest.setName(projectName);
-		Future<ProjectResponse> future = getClient().updateProject(uuid, projectUpdateRequest);
+		Future<ProjectResponse> future = getClient().updateProject(uuid, projectUpdateRequest).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected void deleteProject(String uuid) {
-		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
+		Future<GenericMessageResponse> future = getClient().deleteProject(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -448,14 +449,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected Schema createSchema(String schemaName) {
 		Schema schema = FieldUtil.createMinimalValidSchema();
 		schema.setName(schemaName);
-		Future<Schema> future = getClient().createSchema(schema);
+		Future<Schema> future = getClient().createSchema(schema).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected Schema readSchema(String uuid) {
-		Future<Schema> future = getClient().findSchemaByUuid(uuid);
+		Future<Schema> future = getClient().findSchemaByUuid(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -464,14 +465,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected GenericMessageResponse updateSchema(String uuid, String schemaName) {
 		Schema schema = FieldUtil.createMinimalValidSchema();
 		schema.setName(schemaName);
-		Future<GenericMessageResponse> future = getClient().updateSchema(uuid, schema);
+		Future<GenericMessageResponse> future = getClient().updateSchema(uuid, schema).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
 	protected void deleteSchema(String uuid) {
-		Future<GenericMessageResponse> future = getClient().deleteSchema(uuid);
+		Future<GenericMessageResponse> future = getClient().deleteSchema(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -539,7 +540,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected <T> T call(ClientHandler<T> handler) {
 		Future<T> future;
 		try {
-			future = handler.handle();
+			future = handler.handle().invoke();
 		} catch (Exception e) {
 			future = Future.failedFuture(e);
 		}
@@ -563,7 +564,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected <T> void call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		Future<T> future;
 		try {
-			future = handler.handle();
+			future = handler.handle().invoke();
 		} catch (Exception e) {
 			future = Future.failedFuture(e);
 		}
@@ -579,6 +580,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	 */
 	@FunctionalInterface
 	protected static interface ClientHandler<T> {
-		Future<T> handle() throws Exception;
+		MeshRequest<T> handle() throws Exception;
 	}
 }

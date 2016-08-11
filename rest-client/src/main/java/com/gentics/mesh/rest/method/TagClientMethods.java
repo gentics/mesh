@@ -6,8 +6,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.MeshRequest;
 
 public interface TagClientMethods {
 
@@ -22,7 +21,7 @@ public interface TagClientMethods {
 	 *            Create request
 	 * @return
 	 */
-	Future<TagResponse> createTag(String projectName, String tagFamilyUuid, TagCreateRequest request);
+	MeshRequest<TagResponse> createTag(String projectName, String tagFamilyUuid, TagCreateRequest request);
 
 	/**
 	 * Load the tag with the given uuid.
@@ -33,7 +32,7 @@ public interface TagClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, ParameterProvider... parameters);
+	MeshRequest<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, ParameterProvider... parameters);
 
 	//
 	/**
@@ -49,7 +48,7 @@ public interface TagClientMethods {
 	 *            Update request
 	 * @return
 	 */
-	Future<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request);
+	MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request);
 
 	/**
 	 * Delete the tag.
@@ -62,7 +61,7 @@ public interface TagClientMethods {
 	 *            Uuid of the tag
 	 * @return
 	 */
-	Future<GenericMessageResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid);
+	MeshRequest<GenericMessageResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid);
 
 	/**
 	 * Load multiple tags of a given tag family.
@@ -75,7 +74,7 @@ public interface TagClientMethods {
 	 *            Additional query parameters
 	 * @return
 	 */
-	Future<TagListResponse> findTags(String projectName, String tagFamilyUuid, ParameterProvider... parameters);
+	MeshRequest<TagListResponse> findTags(String projectName, String tagFamilyUuid, ParameterProvider... parameters);
 
 	//
 	//	//TODO keep this?
@@ -86,7 +85,7 @@ public interface TagClientMethods {
 	//	 * @param name
 	//	 * @return
 	//	 */
-	//	Future<TagResponse> findTagByName(String projectName, String name);
+	//	MeshRequest<TagResponse> findTagByName(String projectName, String name);
 	//
 
 

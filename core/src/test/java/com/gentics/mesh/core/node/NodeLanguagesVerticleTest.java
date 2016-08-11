@@ -49,24 +49,24 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 			assertThat(node.getAvailableLanguageNames()).contains("en", "de");
 
 			// Delete the english version 
-			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en");
+			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "node_deleted_language", node.getUuid(), "en");
 
 			// Loading is still be possible but the node will contain no fields
-			Future<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en"));
+			Future<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en")).invoke();
 			latchFor(response);
 			assertSuccess(response);
 			assertThat(response.result().getAvailableLanguages()).contains("de");
 			assertThat(response.result().getFields()).isEmpty();
 
-			response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"));
+			response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de")).invoke();
 			latchFor(response);
 			assertSuccess(future);
 
 			// Delete the english version again
-			future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en");
+			future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "node_no_language_found", "en");
 
@@ -77,10 +77,10 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 			assertEquals(nLanguagesBefore - 1, node.getAvailableLanguageNames().size());
 
 			// Now delete the remaining german version
-			future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "de");
+			future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "de").invoke();
 			latchFor(future);
 			assertThat(searchProvider).recordedDeleteEvents(2 + 2);
-			response = getClient().findNodeByUuid(PROJECT_NAME, uuid);
+			response = getClient().findNodeByUuid(PROJECT_NAME, uuid).invoke();
 			latchFor(response);
 			expectException(response, NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", uuid,
 					project().getLatestRelease().getUuid());
@@ -92,7 +92,7 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 	public void testDeleteBogusLanguage() {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
-			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "blub");
+			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "blub").invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "error_language_not_found", "blub");
 		}
@@ -103,7 +103,7 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			role().revokePermissions(node, DELETE_PERM);
-			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en");
+			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		}

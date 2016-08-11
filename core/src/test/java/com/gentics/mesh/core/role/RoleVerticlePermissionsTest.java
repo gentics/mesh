@@ -47,7 +47,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
-			Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request);
+			Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "role_updated_permission", role().getName());
@@ -69,7 +69,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			request.getPermissions().add("update");
 			request.getPermissions().add("create");
 			Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(),
-					"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request);
+					"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "role_updated_permission", role().getName());
@@ -94,7 +94,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			request.getPermissions().add("read");
 			request.getPermissions().add("update");
 			request.getPermissions().add("create");
-			Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request);
+			Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "role_updated_permission", role().getName());
@@ -118,7 +118,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			request.getPermissions().add("create");
 			assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 
-			Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), pathToElement, request);
+			Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), pathToElement, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "role_updated_permission", role().getName());
@@ -135,7 +135,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 
 			String pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid();
-			Future<RolePermissionResponse> future = getClient().readRolePermissions(role().getUuid(), pathToElement);
+			Future<RolePermissionResponse> future = getClient().readRolePermissions(role().getUuid(), pathToElement).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			RolePermissionResponse response = future.result();
@@ -159,7 +159,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			request.getPermissions().add("create");
 
 			Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(),
-					"projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request);
+					"projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "role_updated_permission", role().getName());

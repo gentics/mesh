@@ -76,7 +76,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull(noPermTag.getUuid());
 
 			// Test default paging parameters
-			Future<TagListResponse> future = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid());
+			Future<TagListResponse> future = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -93,7 +93,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			List<TagResponse> allTags = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
 				Future<TagListResponse> tagPageFut = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(),
-						new PagingParameters(page, perPage));
+						new PagingParameters(page, perPage)).invoke();
 				latchFor(tagPageFut);
 				assertSuccess(future);
 				restResponse = tagPageFut.result();
@@ -119,21 +119,21 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			Future<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(-1, perPage));
+			Future<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(-1, perPage)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			pageFuture = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(0, perPage));
+			pageFuture = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(0, perPage)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
-			pageFuture = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(1, -1));
+			pageFuture = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(1, -1)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 			perPage = 25;
 			totalPages = (int) Math.ceil(totalTags / (double) perPage);
-			pageFuture = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(4242, perPage));
+			pageFuture = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(4242, perPage)).invoke();
 			latchFor(pageFuture);
 			TagListResponse tagList = pageFuture.result();
 			assertEquals(0, tagList.getData().size());
@@ -149,7 +149,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
-			Future<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParameters(1, 0));
+			Future<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParameters(1, 0)).invoke();
 			latchFor(pageFuture);
 			assertSuccess(pageFuture);
 			assertEquals(0, pageFuture.result().getData().size());
@@ -163,7 +163,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-			Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid());
+			Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertThat(future.result()).matches(tag);
@@ -192,7 +192,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			role().revokePermissions(tag, READ_PERM);
 
-			Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid);
+			Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -208,7 +208,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String tagUuid = tag.getUuid();
 			String tagName = tag.getName();
 			assertNotNull(tag.getEditor());
-			Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid);
+			Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).invoke();
 			latchFor(readTagFut);
 			assertSuccess(readTagFut);
 
@@ -227,14 +227,14 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals(newName, tagUpdateRequest.getFields().getName());
 
 			// 3. Send the request to the server
-			Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest);
+			Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest).invoke();
 			latchFor(updatedTagFut);
 			assertSuccess(updatedTagFut);
 			TagResponse tag2 = updatedTagFut.result();
 			assertThat(tag2).matches(tag);
 
 			// 4. read the tag again and verify that it was changed
-			Future<TagResponse> reloadedTagFut = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid);
+			Future<TagResponse> reloadedTagFut = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).invoke();
 			latchFor(reloadedTagFut);
 			assertSuccess(reloadedTagFut);
 			TagResponse reloadedTag = reloadedTagFut.result();
@@ -260,7 +260,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			tagUpdateRequest.getFields().setName(newName);
 			assertEquals(newName, tagUpdateRequest.getFields().getName());
 
-			Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest);
+			Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest).invoke();
 			latchFor(updatedTagFut);
 			expectException(updatedTagFut, CONFLICT, "tag_create_tag_with_same_name_already_exists", newName, tagFamilyName);
 		}
@@ -275,7 +275,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = tag.getUuid();
 			TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 
-			Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest);
+			Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest).invoke();
 			latchFor(updatedTagFut);
 			expectException(updatedTagFut, BAD_REQUEST, "tag_name_not_set");
 		}
@@ -296,12 +296,12 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			TagUpdateRequest request = new TagUpdateRequest();
 			request.getFields().setName("new Name");
 
-			Future<TagResponse> tagUpdateFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request);
+			Future<TagResponse> tagUpdateFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request).invoke();
 			latchFor(tagUpdateFut);
 			expectException(tagUpdateFut, FORBIDDEN, "error_missing_perm", tagUuid);
 
 			// read the tag again and verify that it was not changed
-			Future<TagResponse> tagReloadFut = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid);
+			Future<TagResponse> tagReloadFut = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).invoke();
 			latchFor(tagReloadFut);
 			assertTrue(tagReloadFut.succeeded());
 			TagResponse loadedTag = tagReloadFut.result();
@@ -320,7 +320,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String name = tag.getName();
 			String uuid = tag.getUuid();
 
-			Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid);
+			Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "tag_deleted", uuid + "/" + name);
@@ -342,7 +342,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = tag.getUuid();
 			role().revokePermissions(tag, DELETE_PERM);
 
-			Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid);
+			Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke();
 			latchFor(messageFut);
 			expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
 
@@ -360,7 +360,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			tagCreateRequest.getFields().setName("red");
 			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
-			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest);
+			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", "colors");
 			MeshRestClientHttpException exception = ((MeshRestClientHttpException) future.cause());
@@ -380,7 +380,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			tagCreateRequest.getFields().setName("SomeName");
 			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
-			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest);
+			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertEquals("SomeName", future.result().getFields().getName());
@@ -390,7 +390,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull("The tag could not be found within the project.tagRoot node.",
 					project().getTagRoot().findByUuid(future.result().getUuid()).toBlocking().value());
 
-			future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), future.result().getUuid());
+			future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), future.result().getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertEquals("SomeName", future.result().getFields().getName());
@@ -411,7 +411,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			TagFamily tagFamily = tagFamilies().get("colors");
 			tagFamilyName = tagFamily.getName();
 			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
-			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest);
+			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
 		}
@@ -431,7 +431,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, request));
+				set.add(getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, request).invoke());
 			}
 			validateSet(set, barrier);
 		}
@@ -449,7 +449,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid));
+				set.add(getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke());
 			}
 			validateSet(set, barrier);
 		}
@@ -467,7 +467,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<Future<GenericMessageResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid));
+				set.add(getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke());
 			}
 			validateDeletion(set, barrier);
 		}
@@ -485,7 +485,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			TagCreateRequest request = new TagCreateRequest();
 			request.getFields().setName("newcolor_" + i);
 			// request.setTagFamily(new TagFamilyReference().setName("colors"));
-			set.add(getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), request));
+			set.add(getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), request).invoke());
 		}
 		validateCreation(set, null);
 	}
@@ -499,7 +499,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			Set<Future<TagResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag("red").getUuid()));
+				set.add(getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag("red").getUuid()).invoke());
 			}
 			for (Future<TagResponse> future : set) {
 				latchFor(future);
@@ -518,19 +518,19 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		try (NoTx noTx = db.noTx()) {
 			// Create
-			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest);
+			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertEquals("SomeName", future.result().getFields().getName());
 
 			// Read
-			future = getClient().findTagByUuid(PROJECT_NAME, tagFamily.getUuid(), future.result().getUuid());
+			future = getClient().findTagByUuid(PROJECT_NAME, tagFamily.getUuid(), future.result().getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertEquals("SomeName", future.result().getFields().getName());
 
 			// Delete
-			Future<GenericMessageResponse> deleteFuture = getClient().deleteTag(PROJECT_NAME, tagFamily.getUuid(), future.result().getUuid());
+			Future<GenericMessageResponse> deleteFuture = getClient().deleteTag(PROJECT_NAME, tagFamily.getUuid(), future.result().getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
 		}
@@ -548,7 +548,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = tag.getUuid();
 			role().revokePermissions(tag, READ_PERM);
 
-			Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid);
+			Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -563,7 +563,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
-			Future<TagResponse> future = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), "bogus", request);
+			Future<TagResponse> future = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), "bogus", request).invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
