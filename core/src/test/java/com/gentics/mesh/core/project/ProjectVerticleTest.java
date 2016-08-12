@@ -51,11 +51,11 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 
 public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
@@ -158,7 +158,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		try (NoTx noTx = db.noTx()) {
 			// Create a new project
-			Future<ProjectResponse> createFuture = getClient().createProject(request).invoke();
+			MeshResponse<ProjectResponse> createFuture = getClient().createProject(request).invoke();
 			latchFor(createFuture);
 			assertSuccess(createFuture);
 			ProjectResponse restProject = createFuture.result();
@@ -169,12 +169,12 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().value());
 
 			// Read the project
-			Future<ProjectResponse> readFuture = getClient().findProjectByUuid(restProject.getUuid()).invoke();
+			MeshResponse<ProjectResponse> readFuture = getClient().findProjectByUuid(restProject.getUuid()).invoke();
 			latchFor(readFuture);
 			assertSuccess(readFuture);
 
 			// Now delete the project
-			Future<GenericMessageResponse> deleteFuture = getClient().deleteProject(restProject.getUuid()).invoke();
+			MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteProject(restProject.getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
 			expectResponseMessage(deleteFuture, "project_deleted", restProject.getUuid() + "/" + restProject.getName());
@@ -203,7 +203,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// Don't grant permissions to no perm project
 
 			// Test default paging parameters
-			Future<ProjectListResponse> future = getClient().findProjects(new PagingParameters()).invoke();
+			MeshResponse<ProjectListResponse> future = getClient().findProjects(new PagingParameters()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			ProjectListResponse restResponse = future.result();
@@ -229,7 +229,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<ProjectResponse> allProjects = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<ProjectListResponse> pageFuture = getClient().findProjects(new PagingParameters(page, perPage)).invoke();
+				MeshResponse<ProjectListResponse> pageFuture = getClient().findProjects(new PagingParameters(page, perPage)).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -268,7 +268,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadProjectCountInfoOnly() {
-		Future<ProjectListResponse> future = getClient().findProjects(new PagingParameters(1, 0)).invoke();
+		MeshResponse<ProjectListResponse> future = getClient().findProjects(new PagingParameters(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -283,7 +283,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
 			role().grantPermissions(project, READ_PERM, UPDATE_PERM);
 
-			Future<ProjectResponse> future = getClient().findProjectByUuid(uuid).invoke();
+			MeshResponse<ProjectResponse> future = getClient().findProjectByUuid(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			ProjectResponse restProject = future.result();
@@ -303,7 +303,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Project project = project();
 			String uuid = project.getUuid();
 
-			Future<ProjectResponse> future = getClient().findProjectByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
+			MeshResponse<ProjectResponse> future = getClient().findProjectByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
 					.invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -321,7 +321,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
 			role().revokePermissions(project, READ_PERM);
 
-			Future<ProjectResponse> future = getClient().findProjectByUuid(uuid).invoke();
+			MeshResponse<ProjectResponse> future = getClient().findProjectByUuid(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -339,7 +339,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().grantPermissions(project, UPDATE_PERM);
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("Test234");
-			Future<ProjectResponse> future = getClient().updateProject(uuid, request).invoke();
+			MeshResponse<ProjectResponse> future = getClient().updateProject(uuid, request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "project_conflicting_name");
 		}
@@ -358,7 +358,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setName("New Name");
 
 			assertEquals(0, searchProvider.getStoreEvents().size());
-			Future<ProjectResponse> future = getClient().updateProject(uuid, request).invoke();
+			MeshResponse<ProjectResponse> future = getClient().updateProject(uuid, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			ProjectResponse restProject = future.result();
@@ -377,7 +377,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("new Name");
 
-		Future<ProjectResponse> future = getClient().updateProject("bogus", request).invoke();
+		MeshResponse<ProjectResponse> future = getClient().updateProject("bogus", request).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
@@ -396,7 +396,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("New Name");
 
-			Future<ProjectResponse> future = getClient().updateProject(uuid, request).invoke();
+			MeshResponse<ProjectResponse> future = getClient().updateProject(uuid, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
@@ -420,7 +420,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String name = project.getName();
 			assertNotNull(uuid);
 			assertNotNull(name);
-			Future<GenericMessageResponse> future = getClient().deleteProject(uuid).invoke();
+			MeshResponse<GenericMessageResponse> future = getClient().deleteProject(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "project_deleted", uuid + "/" + name);
@@ -437,7 +437,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = project.getUuid();
 			role().revokePermissions(project, DELETE_PERM);
 
-			Future<GenericMessageResponse> future = getClient().deleteProject(uuid).invoke();
+			MeshResponse<GenericMessageResponse> future = getClient().deleteProject(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
@@ -456,7 +456,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setName("New Name");
 
 			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<Future<?>> set = new HashSet<>();
+			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().updateProject(project().getUuid(), request).invoke());
 			}
@@ -471,7 +471,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			String uuid = project().getUuid();
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<Future<?>> set = new HashSet<>();
+			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().findProjectByUuid(uuid).invoke());
 			}
@@ -486,7 +486,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		int nJobs = 3;
 		String uuid = project().getUuid();
 		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<GenericMessageResponse>> set = new HashSet<>();
+		Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().deleteProject(uuid).invoke());
 		}
@@ -500,7 +500,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		int nJobs = 100;
 		int nProjectsBefore = meshRoot().getProjectRoot().findAll().size();
 
-		Set<Future<?>> set = new HashSet<>();
+		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("test12345_" + i);
@@ -525,11 +525,11 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			int nJobs = 200;
-			Set<Future<ProjectResponse>> set = new HashSet<>();
+			Set<MeshResponse<ProjectResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().findProjectByUuid(project().getUuid()).invoke());
 			}
-			for (Future<ProjectResponse> future : set) {
+			for (MeshResponse<ProjectResponse> future : set) {
 				latchFor(future);
 				assertSuccess(future);
 			}

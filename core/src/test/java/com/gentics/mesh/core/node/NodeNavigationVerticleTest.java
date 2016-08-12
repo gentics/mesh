@@ -25,9 +25,8 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-
-import io.vertx.core.Future;
 
 public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 
@@ -155,7 +154,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		Future<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, uuid,
+		MeshResponse<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, uuid,
 				new NavigationParameters().setMaxDepth(2).setIncludeAll(true)).invoke();
 		latchFor(future);
 		assertSuccess(future);
@@ -181,7 +180,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		Future<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, uuid,
+		MeshResponse<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, uuid,
 				new NavigationParameters().setMaxDepth(2).setIncludeAll(false)).invoke();
 		latchFor(future);
 		assertSuccess(future);

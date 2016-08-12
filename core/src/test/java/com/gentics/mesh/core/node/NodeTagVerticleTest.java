@@ -37,10 +37,9 @@ import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.performance.TestUtils;
-
-import io.vertx.core.Future;
 
 public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
@@ -77,7 +76,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 			assertNotNull(node.getSchemaContainer());
-			Future<TagListResponse> future = getClient().findTagsForNode(PROJECT_NAME, node.getUuid()).invoke();
+			MeshResponse<TagListResponse> future = getClient().findTagsForNode(PROJECT_NAME, node.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			TagListResponse tagList = future.result();
@@ -94,7 +93,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 
 			assertThat(searchProvider).recordedStoreEvents(0);
-			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
+			MeshResponse<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertThat(searchProvider)
@@ -125,7 +124,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 
-			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
+			MeshResponse<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -140,7 +139,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(tag, READ_PERM);
 
-			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
+			MeshResponse<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 
@@ -155,8 +154,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 
-			Future<NodeResponse> future;
-			future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
+			MeshResponse<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -174,7 +172,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
-			Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, uuid, "bogus").invoke();
+			MeshResponse<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, uuid, "bogus").invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
@@ -188,7 +186,8 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 
-			Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()).invoke();
+			MeshResponse<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters())
+					.invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 
@@ -201,7 +200,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 		String releaseOne = "ReleaseV1";
 		String releaseTwo = "ReleaseV2";
 
-		// 1. Create release v1 
+		// 1. Create release v1
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 		try (NoTx noTx = db.noTx()) {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
@@ -366,7 +365,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(tag, READ_PERM);
-			Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()).invoke();
+			MeshResponse<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 

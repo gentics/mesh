@@ -21,10 +21,10 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
 
-import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -36,7 +36,7 @@ public final class MeshAssert {
 
 	private static final Integer DEV_TIMEOUT_SECONDS = 10000;
 
-	public static void assertSuccess(Future<?> future) {
+	public static void assertSuccess(MeshResponse<?> future) {
 		if (future.cause() != null) {
 			future.cause().printStackTrace();
 		}
@@ -78,7 +78,7 @@ public final class MeshAssert {
 		}
 	}
 
-	public static void latchFor(Future<?> future) {
+	public static void latchFor(MeshResponse<?> future) {
 		CountDownLatch latch = new CountDownLatch(1);
 		future.setHandler(rh -> {
 			latch.countDown();

@@ -26,9 +26,8 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-
-import io.vertx.core.Future;
 
 public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 
@@ -80,7 +79,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 	public void testNoDiff() {
 		MicroschemaContainer microschema = microschemaContainer("vcard");
 		Microschema request = getMicroschema();
-		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+		MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaChangesListModel changes = future.result();
@@ -96,7 +95,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 		stringField.setAllowedValues("one", "two");
 		request.addField(stringField);
 
-		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+		MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaChangesListModel changes = future.result();
@@ -114,7 +113,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 		BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binaryField");
 		request.addField(binaryField);
 
-		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+		MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "microschema_error_field_type_not_allowed", "binaryField", "binary");
 	}
@@ -124,15 +123,14 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 		MicroschemaContainer microschema = microschemaContainer("vcard");
 		Microschema request = getMicroschema();
 		request.removeField("postcode");
-		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+		MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaChangesListModel changes = future.result();
 		assertNotNull(changes);
 		assertThat(changes.getChanges()).hasSize(2);
 		assertThat(changes.getChanges().get(0)).is(REMOVEFIELD).forField("postcode");
-		assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order",
-				new String[] { "firstName", "lastName", "address" });
+		assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order", new String[] { "firstName", "lastName", "address" });
 	}
 
 }

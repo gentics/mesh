@@ -15,8 +15,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.client.MeshResponse;
 
 public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
@@ -37,7 +36,7 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implemen
 		String groupName = "testgroup42a";
 		createGroup(groupName);
 
-		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
+		MeshResponse<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -48,7 +47,7 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implemen
 		String groupName = "testgroup42a";
 		String uuid = createGroup(groupName).getUuid();
 
-		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("uuid", uuid)).invoke();
+		MeshResponse<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("uuid", uuid)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -63,7 +62,7 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implemen
 		GroupResponse group = createGroup(groupName);
 		deleteGroup(group.getUuid());
 
-		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
+		MeshResponse<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -78,7 +77,7 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implemen
 		String newGroupName = "testgrouprenamed";
 		updateGroup(group.getUuid(), newGroupName);
 
-		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
+		MeshResponse<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

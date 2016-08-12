@@ -16,6 +16,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
+import com.gentics.mesh.rest.client.MeshResponse;
 
 import io.vertx.core.Future;
 
@@ -38,7 +39,7 @@ public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest impl
 		String tagFamilyName = "newtagfamily";
 		createTagFamily(PROJECT_NAME, tagFamilyName);
 
-		Future<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
+		MeshResponse<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -50,7 +51,7 @@ public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest impl
 		String tagFamilyName = "newtagfamily";
 		TagFamilyResponse tagFamilyResponse = createTagFamily(PROJECT_NAME, tagFamilyName);
 
-		Future<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
+		MeshResponse<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -73,7 +74,7 @@ public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest impl
 		updateTagFamily(PROJECT_NAME, tagFamily.getUuid(), newTagFamilyName);
 
 		// Check that the new tag family name is now stored in the search index
-		Future<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", newTagFamilyName)).invoke();
+		MeshResponse<TagFamilyListResponse> searchFuture = getClient().searchTagFamilies(getSimpleTermQuery("name", newTagFamilyName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("The simple term query for name {" + newTagFamilyName + "} did not find the updated tag family entry", 1,

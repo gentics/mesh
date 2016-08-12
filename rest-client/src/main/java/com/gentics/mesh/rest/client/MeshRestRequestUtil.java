@@ -1,9 +1,10 @@
-package com.gentics.mesh.rest;
+package com.gentics.mesh.rest.client;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -87,7 +88,7 @@ public final class MeshRestRequestUtil {
 			}
 		}
 
-		return new MeshRequest<T>(request, handler);
+		return new MeshRequest<T>(request, handler.getFuture());
 	}
 
 	/**

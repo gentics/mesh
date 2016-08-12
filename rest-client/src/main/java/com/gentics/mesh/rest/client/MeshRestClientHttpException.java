@@ -1,4 +1,4 @@
-package com.gentics.mesh.rest;
+package com.gentics.mesh.rest.client;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 

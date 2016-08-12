@@ -27,8 +27,7 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.client.MeshResponse;
 
 public class NodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
 
@@ -66,7 +65,7 @@ public class NodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
 		NodeFieldListImpl listField = new NodeFieldListImpl();
 		listField.add(new NodeFieldListItemImpl("bogus"));
 
-		Future<NodeResponse> future = createNodeAsync("listField", listField).invoke();
+		MeshResponse<NodeResponse> future = createNodeAsync("listField", listField).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_list_item_not_found", "bogus");
 	}

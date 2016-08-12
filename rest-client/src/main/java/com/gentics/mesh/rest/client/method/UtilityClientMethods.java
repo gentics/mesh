@@ -1,7 +1,7 @@
-package com.gentics.mesh.rest.method;
+package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.rest.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRequest;
 
 public interface UtilityClientMethods {
 

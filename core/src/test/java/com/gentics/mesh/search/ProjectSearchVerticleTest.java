@@ -17,9 +17,8 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.util.MeshAssert;
-
-import io.vertx.core.Future;
 
 public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
@@ -45,7 +44,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 			fullIndex();
 		}
 
-		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleQuery("dummy"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<ProjectListResponse> future = getClient().searchProjects(getSimpleQuery("dummy"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		ProjectListResponse response = future.result();
@@ -73,7 +72,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 		try (NoTx noTx = db.noTx()) {
 			MeshAssert.assertElement(boot.projectRoot(), project.getUuid(), true);
 		}
-		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", newName),
+		MeshResponse<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", newName),
 				new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
@@ -87,7 +86,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 		final String projectName = "newproject";
 		ProjectResponse project = createProject(projectName);
 
-		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", projectName),
+		MeshResponse<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", projectName),
 				new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
@@ -109,7 +108,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implem
 		String newProjectName = "updatedprojectname";
 		updateProject(project.getUuid(), newProjectName);
 
-		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", projectName),
+		MeshResponse<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", projectName),
 				new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);

@@ -1,4 +1,4 @@
-package com.gentics.mesh.rest;
+package com.gentics.mesh.rest.client;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -22,7 +22,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshResponseHandler.class);
 
-	private Future<T> future;
+	private MeshResponse<T> future;
 	private Class<? extends T> classOfT;
 	private Handler<HttpClientResponse> handler;
 	private HttpMethod method;
@@ -40,7 +40,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 */
 	public MeshResponseHandler(Class<? extends T> classOfT, HttpMethod method, String uri) {
 		this.classOfT = classOfT;
-		this.future = Future.future();
+		this.future = new MeshResponse<>(Future.future());
 		this.method = method;
 		this.uri = uri;
 	}
@@ -117,7 +117,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 
 	}
 
-	public Future<T> getFuture() {
+	public MeshResponse<T> getFuture() {
 		return future;
 	}
 

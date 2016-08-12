@@ -24,11 +24,11 @@ import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
 
 public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
@@ -70,7 +70,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 			fullIndex();
 		}
 
-		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleQuery("folder"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<SchemaListResponse> future = getClient().searchSchemas(getSimpleQuery("folder"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
@@ -97,7 +97,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		try (NoTx noTx = db.noTx()) {
 			MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		}
-		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName),
+		MeshResponse<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName),
 				new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
@@ -111,7 +111,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		final String schemaName = "newschemaname";
 		Schema schema = createSchema(schemaName);
 
-		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
+		MeshResponse<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
 				new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
@@ -142,7 +142,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		failingLatch(latch);
 
 		// 4. Search for the original schema
-		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
+		MeshResponse<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
 				new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);

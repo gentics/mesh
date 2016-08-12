@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -29,7 +30,7 @@ public class AdminVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMigrationStatusWithNoMigrationRunning() {
-		Future<GenericMessageResponse> statusFuture = getClient().schemaMigrationStatus().invoke();
+		MeshResponse<GenericMessageResponse> statusFuture = getClient().schemaMigrationStatus().invoke();
 		latchFor(statusFuture);
 		expectResponseMessage(statusFuture, "migration_status_idle");
 	}

@@ -39,11 +39,10 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.rest.MeshRestClientHttpException;
+import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.Tuple;
-
-import io.vertx.core.Future;
 
 public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
@@ -125,7 +124,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			// Update the node and change the name field. Base the update on 1.0 thus a conflict check must be performed. A conflict should be detected.
 			NodeUpdateRequest request3 = prepareNameFieldUpdateRequest("1234", "1.0");
 			request3.getFields().put("name", FieldUtil.createStringField("updatedField"));
-			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request3, parameters).invoke();
+			MeshResponse<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request3, parameters).invoke();
 			latchFor(future);
 			assertTrue("The node update should fail with a conflict error", future.failed());
 			Throwable error = future.cause();
@@ -364,7 +363,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),
 							Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname-also-modified"))));
 
-			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters).invoke();
+			MeshResponse<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters).invoke();
 			latchFor(future);
 			assertTrue("The node update should fail with a conflict error", future.failed());
 			Throwable error = future.cause();

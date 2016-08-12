@@ -1,31 +1,30 @@
-package com.gentics.mesh.rest;
+package com.gentics.mesh.rest.client;
 
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
-import com.gentics.mesh.rest.impl.MeshRestHttpClientImpl;
-import com.gentics.mesh.rest.method.AdminClientMethods;
-import com.gentics.mesh.rest.method.ApiInfoClientMethods;
-import com.gentics.mesh.rest.method.AuthClientMethods;
-import com.gentics.mesh.rest.method.EventbusClientMethods;
-import com.gentics.mesh.rest.method.GroupClientMethods;
-import com.gentics.mesh.rest.method.MicroschemaClientMethods;
-import com.gentics.mesh.rest.method.NavRootClientMethods;
-import com.gentics.mesh.rest.method.NavigationClientMethods;
-import com.gentics.mesh.rest.method.NodeClientMethods;
-import com.gentics.mesh.rest.method.NodeFieldAPIClientMethods;
-import com.gentics.mesh.rest.method.ProjectClientMethods;
-import com.gentics.mesh.rest.method.ReleaseClientMethods;
-import com.gentics.mesh.rest.method.RoleClientMethods;
-import com.gentics.mesh.rest.method.SchemaClientMethods;
-import com.gentics.mesh.rest.method.SearchClientMethods;
-import com.gentics.mesh.rest.method.TagClientMethods;
-import com.gentics.mesh.rest.method.TagFamilyClientMethods;
-import com.gentics.mesh.rest.method.UserClientMethods;
-import com.gentics.mesh.rest.method.UtilityClientMethods;
-import com.gentics.mesh.rest.method.WebRootClientMethods;
+import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
+import com.gentics.mesh.rest.client.method.AdminClientMethods;
+import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
+import com.gentics.mesh.rest.client.method.AuthClientMethods;
+import com.gentics.mesh.rest.client.method.EventbusClientMethods;
+import com.gentics.mesh.rest.client.method.GroupClientMethods;
+import com.gentics.mesh.rest.client.method.MicroschemaClientMethods;
+import com.gentics.mesh.rest.client.method.NavRootClientMethods;
+import com.gentics.mesh.rest.client.method.NavigationClientMethods;
+import com.gentics.mesh.rest.client.method.NodeClientMethods;
+import com.gentics.mesh.rest.client.method.NodeFieldAPIClientMethods;
+import com.gentics.mesh.rest.client.method.ProjectClientMethods;
+import com.gentics.mesh.rest.client.method.ReleaseClientMethods;
+import com.gentics.mesh.rest.client.method.RoleClientMethods;
+import com.gentics.mesh.rest.client.method.SchemaClientMethods;
+import com.gentics.mesh.rest.client.method.SearchClientMethods;
+import com.gentics.mesh.rest.client.method.TagClientMethods;
+import com.gentics.mesh.rest.client.method.TagFamilyClientMethods;
+import com.gentics.mesh.rest.client.method.UserClientMethods;
+import com.gentics.mesh.rest.client.method.UtilityClientMethods;
+import com.gentics.mesh.rest.client.method.WebRootClientMethods;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
-import io.vertx.ext.web.RoutingContext;
 
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,

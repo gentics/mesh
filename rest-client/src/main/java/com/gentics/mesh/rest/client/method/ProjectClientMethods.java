@@ -1,4 +1,4 @@
-package com.gentics.mesh.rest.method;
+package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.rest.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRequest;
 
 public interface ProjectClientMethods {
 

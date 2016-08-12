@@ -18,14 +18,9 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
-
-import io.vertx.core.Future;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import com.gentics.mesh.rest.client.MeshResponse;
 
 public class NodeVerticleFieldAPITest extends AbstractBinaryVerticleTest {
-
-	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
 	@Autowired
 	private NodeVerticle verticle;
@@ -49,7 +44,7 @@ public class NodeVerticleFieldAPITest extends AbstractBinaryVerticleTest {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
-			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
+			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "node_binary_field_updated", "binary");
@@ -57,7 +52,8 @@ public class NodeVerticleFieldAPITest extends AbstractBinaryVerticleTest {
 			node.reload();
 
 			// 2. Download the data using the field api
-			Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary").invoke();
+			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary")
+					.invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 			assertEquals(binaryLen, downloadFuture.result().getBuffer().length());

@@ -1,4 +1,4 @@
-package com.gentics.mesh.rest.impl;
+package com.gentics.mesh.rest.client.impl;
 
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -74,12 +74,13 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.rest.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.BasicAuthentication;
 import com.gentics.mesh.rest.JWTAuthentication;
-import com.gentics.mesh.rest.MeshRequest;
-import com.gentics.mesh.rest.MeshResponseHandler;
-import com.gentics.mesh.rest.MeshRestClientHttpException;
+import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
+import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshResponseHandler;
+import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -626,7 +627,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			request.end();
 		});
 
-		Future<WebRootResponse> future = Future.future();
+		MeshResponse<WebRootResponse> future = MeshResponse.create();
 		handler.getFuture().setHandler(rh -> {
 			if (rh.failed()) {
 				future.fail(rh.cause());

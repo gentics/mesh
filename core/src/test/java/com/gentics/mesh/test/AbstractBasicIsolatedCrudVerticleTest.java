@@ -12,16 +12,15 @@ import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.definition.CrudVerticleTestCases;
 import com.gentics.mesh.test.definition.MultithreadingTestCases;
 
-import io.vertx.core.Future;
-
 public abstract class AbstractBasicIsolatedCrudVerticleTest extends AbstractIsolatedRestVerticleTest implements MultithreadingTestCases, CrudVerticleTestCases {
 
-	protected void validateDeletion(Set<Future<GenericMessageResponse>> set, CyclicBarrier barrier) {
+	protected void validateDeletion(Set<MeshResponse<GenericMessageResponse>> set, CyclicBarrier barrier) {
 		boolean foundDelete = false;
-		for (Future<GenericMessageResponse> future : set) {
+		for (MeshResponse<GenericMessageResponse> future : set) {
 			latchFor(future);
 			if (future.succeeded() && future.result() != null) {
 				foundDelete = true;
@@ -39,8 +38,8 @@ public abstract class AbstractBasicIsolatedCrudVerticleTest extends AbstractIsol
 		}
 	}
 
-	protected void validateSet(Set<Future<?>> set, CyclicBarrier barrier) {
-		for (Future<?> future : set) {
+	protected void validateSet(Set<MeshResponse<?>> set, CyclicBarrier barrier) {
+		for (MeshResponse<?> future : set) {
 			latchFor(future);
 			assertSuccess(future);
 		}
@@ -50,17 +49,17 @@ public abstract class AbstractBasicIsolatedCrudVerticleTest extends AbstractIsol
 		}
 	}
 
-	protected void validateFutures(Set<Future<?>> set) {
-		for (Future<?> future : set) {
+	protected void validateFutures(Set<MeshResponse<?>> set) {
+		for (MeshResponse<?> future : set) {
 			latchFor(future);
 			assertSuccess(future);
 		}
 	}
 
-	protected void validateCreation(Set<Future<?>> set, CyclicBarrier barrier)
+	protected void validateCreation(Set<MeshResponse<?>> set, CyclicBarrier barrier)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		Set<String> uuids = new HashSet<>();
-		for (Future<?> future : set) {
+		for (MeshResponse<?> future : set) {
 			latchFor(future);
 			assertSuccess(future);
 			Object result = future.result();

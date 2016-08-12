@@ -19,9 +19,8 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.util.RxDebugger;
-
-import io.vertx.core.Future;
 
 public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
@@ -49,7 +48,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 			createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
 		}
 
-		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", tagName)).invoke();
+		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", tagName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -83,7 +82,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 		}
 
 		start = System.currentTimeMillis();
-		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName + "2")).invoke();
+		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName + "2")).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -111,7 +110,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 		}
 
 		// 1. Verify that the tag is indexed
-		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name)).invoke();
+		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("The tag with name {" + name + "} and uuid {" + uuid + "} could not be found in the search index.", 1,

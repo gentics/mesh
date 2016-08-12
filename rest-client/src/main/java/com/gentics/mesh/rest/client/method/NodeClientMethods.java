@@ -1,4 +1,4 @@
-package com.gentics.mesh.rest.method;
+package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.rest.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRequest;
 
 /**
  * Interface for Node specific rest API methods.

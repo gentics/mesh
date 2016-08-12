@@ -47,9 +47,9 @@ import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
-import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -77,7 +77,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setName(name);
 			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
-			Future<GroupResponse> future = getClient().createGroup(request).invoke();
+			MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
@@ -98,7 +98,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				root.reload();
 				role().grantPermissions(root, CREATE_PERM);
 
-				Future<GroupResponse> future = getClient().createGroup(request).invoke();
+				MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
 				latchFor(future);
 				assertSuccess(future);
 				GroupResponse restGroup = future.result();
@@ -115,7 +115,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		try (NoTx noTx = db.noTx()) {
 			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
-			Future<GroupResponse> future = getClient().createGroup(request).invoke();
+			MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
@@ -137,7 +137,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
 
-			Future<GroupResponse> future = getClient().createGroup(request).invoke();
+			MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
@@ -146,12 +146,12 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Group foundGroup = boot.groupRoot().findByUuid(restGroup.getUuid()).toBlocking().value();
 			assertNotNull("Group should have been created.", foundGroup);
 
-			Future<GroupResponse> readFuture = getClient().findGroupByUuid(restGroup.getUuid()).invoke();
+			MeshResponse<GroupResponse> readFuture = getClient().findGroupByUuid(restGroup.getUuid()).invoke();
 			latchFor(readFuture);
 			assertSuccess(readFuture);
 
 			// Now delete the group
-			Future<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid()).invoke();
+			MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
 			expectResponseMessage(deleteFuture, "group_deleted", restGroup.getUuid() + "/" + restGroup.getName());
@@ -164,7 +164,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().grantPermissions(group(), CREATE_PERM);
 		}
 		GroupCreateRequest request = new GroupCreateRequest();
-		Future<GroupResponse> future = getClient().createGroup(request).invoke();
+		MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
@@ -185,7 +185,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertFalse("The create permission to the groups root node should have been revoked.",
 					user.hasPermissionAsync(ac, root, CREATE_PERM).toBlocking().value());
 
-			Future<GroupResponse> future = getClient().createGroup(request).invoke();
+			MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", rootUuid);
 		}
@@ -211,7 +211,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			totalGroups = nGroups + groups().size();
 			// Test default paging parameters
-			Future<GroupListResponse> future = getClient().findGroups().invoke();
+			MeshResponse<GroupListResponse> future = getClient().findGroups().invoke();
 			latchFor(future);
 			assertSuccess(future);
 			GroupListResponse restResponse = future.result();
@@ -238,7 +238,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<GroupResponse> allGroups = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<GroupListResponse> pageFuture = getClient().findGroups(new PagingParameters(page, perPage)).invoke();
+				MeshResponse<GroupListResponse> pageFuture = getClient().findGroups(new PagingParameters(page, perPage)).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -273,7 +273,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<GroupListResponse> future = getClient().findGroups(new PagingParameters(1, 0)).invoke();
+		MeshResponse<GroupListResponse> future = getClient().findGroups(new PagingParameters(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -286,7 +286,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Group group = group();
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
 
-			Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid()).invoke();
+			MeshResponse<GroupResponse> future = getClient().findGroupByUuid(group.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertThat(future.result()).matches(group());
@@ -300,7 +300,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Group group = group();
 			String uuid = group.getUuid();
 
-			Future<GroupResponse> future = getClient().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
+			MeshResponse<GroupResponse> future = getClient().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
@@ -315,7 +315,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Group group = group();
 			role().revokePermissions(group, READ_PERM);
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
-			Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid()).invoke();
+			MeshResponse<GroupResponse> future = getClient().findGroupByUuid(group.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 		}
@@ -324,7 +324,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testReadGroupWithBogusUUID() throws Exception {
 		final String bogusUuid = "sadgasdasdg";
-		Future<GroupResponse> future = getClient().findGroupByUuid(bogusUuid).invoke();
+		MeshResponse<GroupResponse> future = getClient().findGroupByUuid(bogusUuid).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
@@ -341,7 +341,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		GroupResponse updatedGroup = db.noTx(() -> {
 			Group group = group();
 
-			Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request).invoke();
+			MeshResponse<GroupResponse> future = getClient().updateGroup(group.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
@@ -363,7 +363,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupUpdateRequest request = new GroupUpdateRequest();
 			request.setName("new Name");
 
-			Future<GroupResponse> future = getClient().updateGroup(uuid, request).invoke();
+			MeshResponse<GroupResponse> future = getClient().updateGroup(uuid, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -380,7 +380,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupUpdateRequest request = new GroupUpdateRequest();
 			request.setName(name);
 
-			Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request).invoke();
+			MeshResponse<GroupResponse> future = getClient().updateGroup(group.getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
@@ -400,7 +400,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupUpdateRequest request = new GroupUpdateRequest();
 			request.setName(alreadyUsedName);
 
-			Future<GroupResponse> future = getClient().updateGroup(group().getUuid(), request).invoke();
+			MeshResponse<GroupResponse> future = getClient().updateGroup(group().getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "group_conflicting_name", alreadyUsedName);
 
@@ -420,7 +420,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupCreateRequest createReq = new GroupCreateRequest();
 			for (int i = 0; i < groupCount; i++) {
 				createReq.setName("testGroup" + i);
-				Future<GroupResponse> future = getClient().createGroup(createReq).invoke();
+				MeshResponse<GroupResponse> future = getClient().createGroup(createReq).invoke();
 				latchFor(future);
 			}
 
@@ -429,7 +429,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			int readCount = 100;
 			for (int i = 0; i < readCount; i++) {
-				Future<GroupListResponse> fut = getClient().findGroups(params).invoke();
+				MeshResponse<GroupListResponse> fut = getClient().findGroups(params).invoke();
 				latchFor(fut);
 				GroupListResponse res = fut.result();
 
@@ -448,7 +448,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
 
-		Future<GroupResponse> future = getClient().updateGroup("bogus", request).invoke();
+		MeshResponse<GroupResponse> future = getClient().updateGroup("bogus", request).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -463,7 +463,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String name = group.getName();
 			String uuid = group.getUuid();
 			assertNotNull(uuid);
-			Future<GenericMessageResponse> future = getClient().deleteGroup(uuid).invoke();
+			MeshResponse<GenericMessageResponse> future = getClient().deleteGroup(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "group_deleted", uuid + "/" + name);
@@ -482,7 +482,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// Don't allow delete
 			role().revokePermissions(group, DELETE_PERM);
 
-			Future<GenericMessageResponse> future = getClient().deleteGroup(uuid).invoke();
+			MeshResponse<GenericMessageResponse> future = getClient().deleteGroup(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 			assertElement(boot.groupRoot(), group.getUuid(), true);
@@ -498,7 +498,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		int nJobs = 5;
 		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<?>> set = new HashSet<>();
+		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().updateGroup(group().getUuid(), request).invoke());
 		}
@@ -513,7 +513,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		int nJobs = 10;
 		String uuid = user().getUuid();
 		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<?>> set = new HashSet<>();
+		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking findGroupByUuid REST call");
 			set.add(getClient().findGroupByUuid(uuid).invoke());
@@ -528,7 +528,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		int nJobs = 3;
 		String uuid = group().getUuid();
 		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<GenericMessageResponse>> set = new HashSet<>();
+		Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking deleteUser REST call");
 			set.add(getClient().deleteGroup(uuid).invoke());
@@ -542,7 +542,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
 		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<?>> set = new HashSet<>();
+		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking createGroup REST call");
 			GroupCreateRequest request = new GroupCreateRequest();
@@ -556,7 +556,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
-		Set<Future<GroupResponse>> set = new HashSet<>();
+		Set<MeshResponse<GroupResponse>> set = new HashSet<>();
 		try (NoTx noTx = db.noTx()) {
 			int nJobs = 200;
 			for (int i = 0; i < nJobs; i++) {
@@ -564,7 +564,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				set.add(getClient().findGroupByUuid(group().getUuid()).invoke());
 			}
 		}
-		for (Future<GroupResponse> future : set) {
+		for (MeshResponse<GroupResponse> future : set) {
 			latchFor(future);
 			assertSuccess(future);
 		}

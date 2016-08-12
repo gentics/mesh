@@ -19,10 +19,10 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.rest.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
-import io.vertx.core.Future;
 import rx.Single;
 
 public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest {
@@ -55,7 +55,7 @@ public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest
 			assertNotNull(loginResponse);
 			assertEquals("OK", loginResponse.getMessage());
 
-			Future<UserResponse> meResponse = client.me().invoke();
+			MeshResponse<UserResponse> meResponse = client.me().invoke();
 			latchFor(meResponse);
 			UserResponse me = meResponse.result();
 			assertFalse("The request failed.", meResponse.failed());

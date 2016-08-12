@@ -34,9 +34,8 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-
-import io.vertx.core.Future;
 
 public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 
@@ -60,7 +59,7 @@ public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 		role().grantPermissions(extraUser, READ_PERM);
 		String groupUuid = group().getUuid();
 
-		Future<UserListResponse> future = getClient().findUsersOfGroup(groupUuid, new PagingParameters()).invoke();
+		MeshResponse<UserListResponse> future = getClient().findUsersOfGroup(groupUuid, new PagingParameters()).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
@@ -85,7 +84,7 @@ public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 		String userUuid = extraUser.getUuid();
 		role().grantPermissions(extraUser, READ_PERM);
 
-		Future<GroupResponse> future = getClient().addUserToGroup("bogus", userUuid).invoke();
+		MeshResponse<GroupResponse> future = getClient().addUserToGroup("bogus", userUuid).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -100,8 +99,7 @@ public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 
 		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
 
-		Future<GroupResponse> future;
-		future = getClient().addUserToGroup(group().getUuid(), extraUser.getUuid()).invoke();
+		MeshResponse<GroupResponse> 		future = getClient().addUserToGroup(group().getUuid(), extraUser.getUuid()).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
@@ -123,7 +121,7 @@ public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 		role().grantPermissions(extraUser, READ_PERM);
 		role().revokePermissions(group, UPDATE_PERM);
 
-		Future<GroupResponse> future = getClient().addUserToGroup(groupUuid, extraUserUuid).invoke();
+		MeshResponse<GroupResponse> future = getClient().addUserToGroup(groupUuid, extraUserUuid).invoke();
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", groupUuid);
 		assertFalse("User should not be member of the group.", group().hasUser(extraUser));
@@ -136,7 +134,7 @@ public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 		extraUser = userRoot.create("extraUser", user());
 		role().grantPermissions(extraUser, DELETE_PERM);
 
-		Future<GroupResponse> future = getClient().addUserToGroup(group().getUuid(), extraUser.getUuid()).invoke();
+		MeshResponse<GroupResponse> future = getClient().addUserToGroup(group().getUuid(), extraUser.getUuid()).invoke();
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", extraUser.getUuid());
 		assertFalse("User should not be member of the group.", group().hasUser(extraUser));
@@ -150,7 +148,7 @@ public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 		assertTrue("User should be a member of the group.", group.hasUser(user));
 		role().revokePermissions(group, UPDATE_PERM);
 
-		Future<GroupResponse> future = getClient().removeUserFromGroup(group().getUuid(), user().getUuid()).invoke();
+		MeshResponse<GroupResponse> future = getClient().removeUserFromGroup(group().getUuid(), user().getUuid()).invoke();
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", group().getUuid());
 
@@ -159,7 +157,7 @@ public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveUserFromGroupWithPerm() throws Exception {
-		Future<GroupResponse> future;
+		MeshResponse<GroupResponse> future;
 		future = getClient().removeUserFromGroup(group().getUuid(), user().getUuid()).invoke();
 		latchFor(future);
 		assertSuccess(future);
@@ -177,7 +175,7 @@ public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveUserFromLastGroupWithPerm() throws Exception {
-		Future<GroupResponse> future = getClient().removeUserFromGroup(group().getUuid(), user().getUuid()).invoke();
+		MeshResponse<GroupResponse> future = getClient().removeUserFromGroup(group().getUuid(), user().getUuid()).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertFalse("User should no longer be member of the group.", group().hasUser(user()));
@@ -185,7 +183,7 @@ public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveUserFromGroupWithBogusUserUuid() throws Exception {
-		Future<GroupResponse> future = getClient().removeUserFromGroup(group().getUuid(), "bogus").invoke();
+		MeshResponse<GroupResponse> future = getClient().removeUserFromGroup(group().getUuid(), "bogus").invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		assertTrue("User should still be member of the group.", group().hasUser(user()));

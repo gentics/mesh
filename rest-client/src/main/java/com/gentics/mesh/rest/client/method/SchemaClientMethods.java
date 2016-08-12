@@ -1,4 +1,4 @@
-package com.gentics.mesh.rest.method;
+package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.rest.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRequest;
 
 public interface SchemaClientMethods {
 

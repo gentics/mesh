@@ -45,9 +45,8 @@ import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
-
-import io.vertx.core.Future;
 
 public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
@@ -88,12 +87,12 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String projectName = project().getName();
 			String uuid = project().getInitialRelease().getUuid();
 
-			Set<Future<?>> set = new HashSet<>();
+			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().findReleaseByUuid(projectName, uuid).invoke());
 			}
 
-			for (Future<?> future : set) {
+			for (MeshResponse<?> future : set) {
 				latchFor(future);
 				assertSuccess(future);
 			}
@@ -113,17 +112,17 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Project project = project();
 			int nJobs = 100;
 
-			Set<Future<ReleaseResponse>> responseFutures = new HashSet<>();
+			Set<MeshResponse<ReleaseResponse>> responseFutures = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				ReleaseCreateRequest request = new ReleaseCreateRequest();
 				request.setName(releaseName + i);
-				Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request).invoke();
+				MeshResponse<ReleaseResponse> future = getClient().createRelease(project.getName(), request).invoke();
 				responseFutures.add(future);
 			}
 
 			Set<String> uuids = new HashSet<>();
 			uuids.add(project.getInitialRelease().getUuid());
-			for (Future<ReleaseResponse> future : responseFutures) {
+			for (MeshResponse<ReleaseResponse> future : responseFutures) {
 				latchFor(future);
 				assertSuccess(future);
 
@@ -157,11 +156,11 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
 		try (NoTx noTx = db.noTx()) {
-			Set<Future<ReleaseResponse>> set = new HashSet<>();
+			Set<MeshResponse<ReleaseResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().findReleaseByUuid(project().getName(), project().getInitialRelease().getUuid()).invoke());
 			}
-			for (Future<ReleaseResponse> future : set) {
+			for (MeshResponse<ReleaseResponse> future : set) {
 				latchFor(future);
 				assertSuccess(future);
 			}

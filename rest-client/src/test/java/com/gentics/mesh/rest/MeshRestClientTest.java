@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
+import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.Vertx;
 

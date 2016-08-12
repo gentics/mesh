@@ -31,9 +31,8 @@ import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-
-import io.vertx.core.Future;
 
 public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
@@ -49,7 +48,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadChildrenOfBaseNode() {
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
+		MeshResponse<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -175,7 +174,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		role().revokePermissions(node, READ_PERM);
 
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
+		MeshResponse<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
 				new NodeParameters()).invoke();
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());

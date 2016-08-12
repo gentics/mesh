@@ -24,9 +24,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-
-import io.vertx.core.Future;
 
 public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest {
 
@@ -49,13 +48,13 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 			assertThat(node.getAvailableLanguageNames()).contains("en", "de");
 
 			// Delete the english version 
-			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
+			MeshResponse<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "node_deleted_language", node.getUuid(), "en");
 
 			// Loading is still be possible but the node will contain no fields
-			Future<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en")).invoke();
+			MeshResponse<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en")).invoke();
 			latchFor(response);
 			assertSuccess(response);
 			assertThat(response.result().getAvailableLanguages()).contains("de");
@@ -92,7 +91,7 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 	public void testDeleteBogusLanguage() {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
-			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "blub").invoke();
+			MeshResponse<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "blub").invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "error_language_not_found", "blub");
 		}
@@ -103,7 +102,7 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			role().revokePermissions(node, DELETE_PERM);
-			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
+			MeshResponse<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		}

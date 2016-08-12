@@ -36,8 +36,8 @@ import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 
 public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
@@ -63,7 +63,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
-			Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
+			MeshResponse<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 
@@ -98,7 +98,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth()).setHeight(102);
-			Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
+			MeshResponse<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 			node.reload();
@@ -116,13 +116,13 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 			// 2. Transform the image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
+			MeshResponse<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
 					params).invoke();
 			latchFor(transformFuture);
 			assertSuccess(transformFuture);
 
 			// 3. Download the image
-			Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image").invoke();
+			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image").invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 
@@ -140,7 +140,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 			// 2. Transform the image
 			ImageManipulationParameters params = new ImageManipulationParameters();
-			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
+			MeshResponse<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
 					params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_no_image_transformation", "image");
@@ -154,7 +154,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 			// try to transform the "name"
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "name", params).invoke();
+			MeshResponse<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "name", params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_found_field_is_not_binary", "name");
 		}
@@ -168,14 +168,14 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 			prepareSchema(node, "*/*", "image");
 
 			// upload non-image data
-			Future<GenericMessageResponse> uploadFuture = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
+			MeshResponse<GenericMessageResponse> uploadFuture = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
 					Buffer.buffer("I am not an image"), "test.txt", "text/plain").invoke();
 			latchFor(uploadFuture);
 			assertSuccess(uploadFuture);
 
 			// Transform
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
+			MeshResponse<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
 					params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_transformation_non_image", "image");
@@ -196,8 +196,8 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		}
 	}
 
-	private Future<NodeDownloadResponse> resizeImage(Node node, ImageManipulationParameters params) {
-		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
+	private MeshResponse<NodeDownloadResponse> resizeImage(Node node, ImageManipulationParameters params) {
+		MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
 		latchFor(downloadFuture);
 		return downloadFuture;
 	}
@@ -231,7 +231,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
 
-		Future<GenericMessageResponse> future = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer,
+		MeshResponse<GenericMessageResponse> future = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer,
 				fileName, contentType).invoke();
 		latchFor(future);
 		assertSuccess(future);

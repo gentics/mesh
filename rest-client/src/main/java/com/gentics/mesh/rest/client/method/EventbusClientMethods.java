@@ -1,4 +1,4 @@
-package com.gentics.mesh.rest.method;
+package com.gentics.mesh.rest.client.method;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.WebSocket;

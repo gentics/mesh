@@ -1,6 +1,6 @@
 package com.gentics.mesh.context.impl;
 
-import static com.gentics.mesh.rest.AbstractMeshRestHttpClient.getQuery;
+import static com.gentics.mesh.rest.client.AbstractMeshRestHttpClient.getQuery;
 
 import java.io.IOException;
 import java.util.HashMap;

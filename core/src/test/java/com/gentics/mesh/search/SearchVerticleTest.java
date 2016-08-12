@@ -20,10 +20,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
-
-import io.vertx.core.Future;
 
 public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
@@ -42,7 +41,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testLoadSearchStatus() {
-		Future<SearchStatusResponse> future = getClient().loadSearchStatus().invoke();
+		MeshResponse<SearchStatusResponse> future = getClient().loadSearchStatus().invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SearchStatusResponse status = future.result();
@@ -52,7 +51,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testNoPermReIndex() {
-		Future<GenericMessageResponse> future = getClient().invokeReindex().invoke();
+		MeshResponse<GenericMessageResponse> future = getClient().invokeReindex().invoke();
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_admin_permission_required");
 	}
@@ -65,12 +64,12 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 			searchProvider.refreshIndex();
 		}
 
-		Future<GenericMessageResponse> future = getClient().invokeReindex().invoke();
+		MeshResponse<GenericMessageResponse> future = getClient().invokeReindex().invoke();
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "search_admin_reindex_invoked");
 
-		Future<SearchStatusResponse> statusFuture = getClient().loadSearchStatus().invoke();
+		MeshResponse<SearchStatusResponse> statusFuture = getClient().loadSearchStatus().invoke();
 		latchFor(statusFuture);
 		assertSuccess(statusFuture);
 		SearchStatusResponse status = statusFuture.result();

@@ -9,7 +9,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
-import com.gentics.mesh.rest.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;

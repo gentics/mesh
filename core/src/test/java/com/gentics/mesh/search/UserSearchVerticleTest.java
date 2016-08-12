@@ -25,8 +25,7 @@ import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.client.MeshResponse;
 
 public class UserSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
@@ -57,7 +56,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 				+ "          \"analyzer\": \"snowball\",\n" + "          \"fields\": [\"name^5\",\"_all\"],\n"
 				+ "          \"default_operator\": \"and\"\n" + "      }\n" + "  }\n" + "}";
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(json).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(json).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -76,7 +75,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 				+ "          \"analyzer\": \"snowball\",\n" + "          \"fields\": [\"name^5\",\"_all\"],\n"
 				+ "          \"default_operator\": \"and\"\n" + "      }\n" + "  }\n" + "}";
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(json).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(json).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -91,7 +90,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 			createUser(username);
 		}
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", username)).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", username)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -106,7 +105,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 			user().setLastname(impossibleName);
 			fullIndex();
 		}
-		Future<UserListResponse> future = getClient().searchUsers(getSimpleTermQuery("lastname", impossibleName)).invoke();
+		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleTermQuery("lastname", impossibleName)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		UserListResponse response = future.result();
@@ -123,7 +122,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 			user().setLastname(impossibleName);
 			fullIndex();
 		}
-		Future<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName + "*")).invoke();
+		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName + "*")).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		ListResponse<UserResponse> response = future.result();
@@ -140,7 +139,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 			user().setLastname(impossibleName);
 			fullIndex();
 		}
-		Future<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*")).invoke();
+		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*")).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		ListResponse<UserResponse> response = future.result();
@@ -160,11 +159,11 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		request.setEmailAddress(email);
 		request.setGroupUuid(db.noTx(() -> group().getUuid()));
 
-		Future<UserResponse> future = getClient().createUser(request).invoke();
+		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleWildCardQuery("emailaddress", "*")).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleWildCardQuery("emailaddress", "*")).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("We expected to see one result.", 1, searchFuture.result().getData().size());
@@ -179,7 +178,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 			createUser(username);
 		}
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("We expected to see one result.", 1, searchFuture.result().getData().size());
@@ -197,11 +196,11 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		request.setPassword("test1234");
 		request.setGroupUuid(group.getUuid());
 
-		Future<UserResponse> future = getClient().createUser(request).invoke();
+		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("We expected to see one result.", 1, searchFuture.result().getData().size());
@@ -219,17 +218,17 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		UserCreateRequest request = new UserCreateRequest();
 		request.setUsername(username);
 		request.setPassword("test1234");
-		Future<UserResponse> future = getClient().createUser(request).invoke();
+		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
 		// 3. Assign the previously created user to the group
-		Future<GroupResponse> futureAdd = getClient().addUserToGroup(group.getUuid(), future.result().getUuid()).invoke();
+		MeshResponse<GroupResponse> futureAdd = getClient().addUserToGroup(group.getUuid(), future.result().getUuid()).invoke();
 		latchFor(futureAdd);
 		assertSuccess(futureAdd);
 
 		// Check whether the user index was updated
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(
@@ -249,17 +248,17 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		request.setPassword("test1234");
 		request.setGroupUuid(group.getUuid());
 
-		Future<UserResponse> future = getClient().createUser(request).invoke();
+		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
 		String userUuid = future.result().getUuid();
 
-		Future<GroupResponse> futureDelete = getClient().removeUserFromGroup(group.getUuid(), userUuid).invoke();
+		MeshResponse<GroupResponse> futureDelete = getClient().removeUserFromGroup(group.getUuid(), userUuid).invoke();
 		latchFor(futureDelete);
 		assertSuccess(futureDelete);
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -277,17 +276,17 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		request.setPassword("test1234");
 		request.setGroupUuid(group.getUuid());
 
-		Future<UserResponse> future = getClient().createUser(request).invoke();
+		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
 		String userUuid = future.result().getUuid();
 
-		Future<GenericMessageResponse> futureDelete = getClient().deleteUser(userUuid).invoke();
+		MeshResponse<GenericMessageResponse> futureDelete = getClient().deleteUser(userUuid).invoke();
 		latchFor(futureDelete);
 		assertSuccess(futureDelete);
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -303,7 +302,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 			createUser(username);
 		}
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()),
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()),
 				new PagingParameters().setPerPage(0)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
@@ -321,7 +320,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 			deleteUser(user.getUuid());
 		}
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", userName)).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", userName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -337,7 +336,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 			user = updateUser(user.getUuid(), newUserName);
 		}
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", userName)).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", userName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

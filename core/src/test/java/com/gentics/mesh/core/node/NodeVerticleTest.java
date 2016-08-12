@@ -70,9 +70,9 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
-import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -110,7 +110,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(folder("news").getUuid());
 
 			assertThat(searchProvider).recordedStoreEvents(0);
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_no_languagecode_specified");
 			assertThat(searchProvider).recordedStoreEvents(0);
@@ -133,7 +133,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(folder("news").getUuid());
 
 			assertThat(searchProvider).recordedStoreEvents(0);
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "language_not_found", "BOGUS");
 			assertThat(searchProvider).recordedStoreEvents(0);
@@ -153,7 +153,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(project().getBaseNode().getUuid());
 
 			assertThat(searchProvider).recordedStoreEvents(0);
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			NodeResponse restNode = future.result();
@@ -177,7 +177,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(uuid);
 
 			assertThat(searchProvider).recordedStoreEvents(0);
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			NodeResponse restNode = future.result();
@@ -207,7 +207,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 				request.setParentNodeUuid(uuid);
 
-				Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+				MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 				latchFor(future);
 				assertSuccess(future);
 				long duration = System.currentTimeMillis() - start;
@@ -235,7 +235,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(uuid);
 
 			assertThat(searchProvider).recordedStoreEvents(0);
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			NodeResponse restNode = future.result();
@@ -409,7 +409,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					new VersioningParameters().draft()));
 
 			// Delete the node
-			Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid()).invoke();
+			MeshResponse<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid()).invoke();
 			latchFor(deleteFut);
 			assertSuccess(deleteFut);
 			expectResponseMessage(deleteFut, "node_deleted", restNode2.getUuid());
@@ -432,7 +432,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_missing_parentnode_field");
 		}
@@ -455,7 +455,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
 
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", schemaContainer("content").getUuid());
 		}
@@ -483,7 +483,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(uuid);
 
 			assertThat(searchProvider).recordedStoreEvents(0);
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 			assertThat(searchProvider).recordedStoreEvents(0);
@@ -569,7 +569,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<NodeResponse> allNodes = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(page, perPage),
+				MeshResponse<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(page, perPage),
 						new VersioningParameters().draft()).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
@@ -583,7 +583,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(-1, 25)).invoke();
+			MeshResponse<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(-1, 25)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
@@ -717,7 +717,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Ignore("Disabled until custom 404 handler has been added")
 	public void testReadNodeWithBogusProject() {
-		Future<NodeResponse> future = getClient().findNodeByUuid("BOGUS", "someUuuid").invoke();
+		MeshResponse<NodeResponse> future = getClient().findNodeByUuid("BOGUS", "someUuuid").invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "project_not_found", "BOGUS");
 	}
@@ -755,7 +755,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// Create various nodes and update them directly after creation. Ensure that update was successful.
 			for (int i = 0; i < nJobs; i++) {
 				log.info("Invoking createNode REST call for job {" + i + "}");
-				Future<NodeResponse> createFuture = getClient().createNode(PROJECT_NAME, createRequest).invoke();
+				MeshResponse<NodeResponse> createFuture = getClient().createNode(PROJECT_NAME, createRequest).invoke();
 
 				createFuture.setHandler(rh -> {
 					if (rh.failed()) {
@@ -763,20 +763,20 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					} else {
 						log.info("Created {" + rh.result().getUuid() + "}");
 						NodeResponse response = rh.result();
-						Future<NodeResponse> updateFuture = getClient().updateNode(PROJECT_NAME, response.getUuid(), updateRequest).invoke();
+						MeshResponse<NodeResponse> updateFuture = getClient().updateNode(PROJECT_NAME, response.getUuid(), updateRequest).invoke();
 						updateFuture.setHandler(uh -> {
 							if (uh.failed()) {
 								fail(uh.cause().getMessage());
 							} else {
 								log.info("Updated {" + uh.result().getUuid() + "}");
-								Future<NodeResponse> readFuture = getClient().findNodeByUuid(PROJECT_NAME, uh.result().getUuid(),
+								MeshResponse<NodeResponse> readFuture = getClient().findNodeByUuid(PROJECT_NAME, uh.result().getUuid(),
 										new VersioningParameters().draft()).invoke();
 								readFuture.setHandler(rf -> {
 									if (rh.failed()) {
 										fail(rh.cause().getMessage());
 									} else {
 										log.info("Read {" + rf.result().getUuid() + "}");
-										Future<GenericMessageResponse> deleteFuture = getClient().deleteNode(PROJECT_NAME, rf.result().getUuid()).invoke();
+										MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteNode(PROJECT_NAME, rf.result().getUuid()).invoke();
 										deleteFuture.setHandler(df -> {
 											if (df.failed()) {
 												fail(df.cause().getMessage());
@@ -831,7 +831,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// CyclicBarrier barrier = new CyclicBarrier(nJobs);
 			// Trx.enableDebug();
 			// Trx.setBarrier(barrier);
-			Set<Future<NodeResponse>> set = new HashSet<>();
+			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking createNode REST call");
 				set.add(getClient().createNode(PROJECT_NAME, request).invoke());
@@ -839,7 +839,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			// Check each call response
 			Set<String> uuids = new HashSet<>();
-			for (Future<NodeResponse> future : set) {
+			for (MeshResponse<NodeResponse> future : set) {
 				latchFor(future);
 				assertSuccess(future);
 				String currentUuid = future.result().getUuid();
@@ -877,13 +877,13 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
 		// Trx.enableDebug();
 		// Trx.setBarrier(barrier);
-		Set<Future<NodeResponse>> set = new HashSet<>();
+		Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking updateNode REST call");
 			set.add(getClient().updateNode(PROJECT_NAME, uuid, request, parameters).invoke());
 		}
 
-		for (Future<NodeResponse> future : set) {
+		for (MeshResponse<NodeResponse> future : set) {
 			latchFor(future);
 			assertSuccess(future);
 		}
@@ -902,7 +902,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// CyclicBarrier barrier = new CyclicBarrier(nJobs);
 			// Trx.enableDebug();
 			// Trx.setBarrier(barrier);
-			Set<Future<GenericMessageResponse>> set = new HashSet<>();
+			Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking deleteNode REST call");
 				set.add(getClient().deleteNode(PROJECT_NAME, uuid).invoke());
@@ -918,12 +918,12 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 50;
 		try (NoTx noTx = db.noTx()) {
-			Set<Future<NodeResponse>> set = new HashSet<>();
+			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking findNodeByUuid REST call");
 				set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParameters().draft()).invoke());
 			}
-			for (Future<NodeResponse> future : set) {
+			for (MeshResponse<NodeResponse> future : set) {
 				latchFor(future);
 				assertSuccess(future);
 			}
@@ -935,12 +935,12 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
 		try (NoTx noTx = db.noTx()) {
-			Set<Future<NodeResponse>> set = new HashSet<>();
+			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking findNodeByUuid REST call");
 				set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParameters().draft()).invoke());
 			}
-			for (Future<NodeResponse> future : set) {
+			for (MeshResponse<NodeResponse> future : set) {
 				latchFor(future);
 				assertSuccess(future);
 			}
@@ -1325,7 +1325,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			VersioningParameters versionParams = new VersioningParameters().draft();
 
 			assertThat(searchProvider).recordedStoreEvents(0);
-			Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams).invoke();
+			MeshResponse<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
 			assertThat(searchProvider).recordedStoreEvents(0);
@@ -1339,7 +1339,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
-			Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()).invoke();
+			MeshResponse<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -1347,7 +1347,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testReadNodeByBogusUUID() throws Exception {
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, "bogusUUID").invoke();
+		MeshResponse<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, "bogusUUID").invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogusUUID");
 	}
@@ -1355,7 +1355,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testReadNodeByInvalidUUID() throws Exception {
 		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid).invoke();
+		MeshResponse<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
@@ -1445,7 +1445,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setSchema(reference);
 			request.setLanguage("en");
 
-			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -1466,7 +1466,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 
-			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, "bogus", request, parameters).invoke();
+			MeshResponse<NodeResponse> future = getClient().updateNode(PROJECT_NAME, "bogus", request, parameters).invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
@@ -1514,7 +1514,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			request.setParentNodeUuid(uuid);
 
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_error_missing_required_field_value", "name", "content");
 			assertNull(future.result());
@@ -1539,7 +1539,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			request.setParentNodeUuid(uuid);
 
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result());
@@ -1686,7 +1686,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = node.getUuid();
 			role().revokePermissions(node, DELETE_PERM);
 
-			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid).invoke();
+			MeshResponse<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 

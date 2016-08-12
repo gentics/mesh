@@ -75,11 +75,11 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
 
 public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
@@ -650,7 +650,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		}
 
 		// 4. Invoke the schema migration
-		Future<GenericMessageResponse> migrationFuture = getClient().updateSchema(schemaUuid, schema).invoke();
+		MeshResponse<GenericMessageResponse> migrationFuture = getClient().updateSchema(schemaUuid, schema).invoke();
 		latchFor(migrationFuture);
 		assertSuccess(migrationFuture);
 		expectResponseMessage(migrationFuture, "migration_invoked", "content");
@@ -841,7 +841,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		searchProvider.clear();
 
-		Future<GenericMessageResponse> future = getClient().invokeReindex().invoke();
+		MeshResponse<GenericMessageResponse> future = getClient().invokeReindex().invoke();
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "search_admin_reindex_invoked");

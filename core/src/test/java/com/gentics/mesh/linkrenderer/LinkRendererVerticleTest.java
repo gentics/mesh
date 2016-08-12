@@ -16,10 +16,10 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -141,7 +141,7 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 * @return rendered result
 	 */
 	private String renderContent(String content, LinkType linkType) {
-		Future<String> future = getClient().resolveLinks(content, new NodeParameters().setResolveLinks(linkType)).invoke();
+		MeshResponse<String> future = getClient().resolveLinks(content, new NodeParameters().setResolveLinks(linkType)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();

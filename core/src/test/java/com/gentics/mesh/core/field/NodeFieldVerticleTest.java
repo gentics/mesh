@@ -26,9 +26,8 @@ import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-
-import io.vertx.core.Future;
 
 public class NodeFieldVerticleTest extends AbstractIsolatedRestVerticleTest {
 
@@ -62,7 +61,7 @@ public class NodeFieldVerticleTest extends AbstractIsolatedRestVerticleTest {
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull("The response could not be found in the result of the future.", future.result());
@@ -74,7 +73,7 @@ public class NodeFieldVerticleTest extends AbstractIsolatedRestVerticleTest {
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.setVersion(new VersionReference().setNumber("0.1"));
 
-			Future<NodeResponse> updateFuture = getClient().updateNode(PROJECT_NAME, future.result().getUuid(), nodeUpdateRequest,
+			MeshResponse<NodeResponse> updateFuture = getClient().updateNode(PROJECT_NAME, future.result().getUuid(), nodeUpdateRequest,
 					new NodeParameters().setLanguages("en")).invoke();
 			latchFor(updateFuture);
 			assertSuccess(updateFuture);

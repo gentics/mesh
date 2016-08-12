@@ -47,8 +47,7 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.client.MeshResponse;
 
 public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
@@ -84,7 +83,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 			String fileName = "somefile.dat";
 
 			// 2. Update the binary data
-			Future<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
+			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "node_binary_field_updated", "binary");
@@ -189,12 +188,12 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		int nJobs = 200;
 		String path = "/News/2015/News_2015.en.html";
 
-		List<Future<WebRootResponse>> futures = new ArrayList<>();
+		List<MeshResponse<WebRootResponse>> futures = new ArrayList<>();
 		for (int i = 0; i < nJobs; i++) {
 			futures.add(getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")).invoke());
 		}
 
-		for (Future<WebRootResponse> fut : futures) {
+		for (MeshResponse<WebRootResponse> fut : futures) {
 			latchFor(fut);
 			assertSuccess(fut);
 		}
@@ -214,7 +213,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test(expected = RuntimeException.class)
 	public void testReadWithEmptyPath() {
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, "").invoke();
+		MeshResponse<WebRootResponse> future = getClient().webroot(PROJECT_NAME, "").invoke();
 		latchFor(future);
 		assertSuccess(future);
 		WebRootResponse response = future.result();
@@ -267,7 +266,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 			role().revokePermissions(newsFolder, READ_PERM);
 		}
 
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, englishPath, new VersioningParameters().draft()).invoke();
+		MeshResponse<WebRootResponse> future = getClient().webroot(PROJECT_NAME, englishPath, new VersioningParameters().draft()).invoke();
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
@@ -276,7 +275,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testReadContentByInvalidPath() throws Exception {
 		String invalidPath = "/News/2015/no-valid-content.html";
 
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, invalidPath).invoke();
+		MeshResponse<WebRootResponse> future = getClient().webroot(PROJECT_NAME, invalidPath).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "node_not_found_for_path", invalidPath);
 	}
@@ -284,7 +283,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testReadContentByInvalidPath2() throws Exception {
 		String invalidPath = "/News/no-valid-folder/no-valid-content.html";
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, invalidPath).invoke();
+		MeshResponse<WebRootResponse> future = getClient().webroot(PROJECT_NAME, invalidPath).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "node_not_found_for_path", invalidPath);
 	}
@@ -293,7 +292,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testRead404Page() {
 		String notFoundPath = "/error/404";
 
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, notFoundPath).invoke();
+		MeshResponse<WebRootResponse> future = getClient().webroot(PROJECT_NAME, notFoundPath).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "node_not_found_for_path", notFoundPath);
 	}
@@ -324,7 +323,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 			create404Node.setLanguage("en");
 			call(() -> getClient().createNode(PROJECT_NAME, create404Node));
 
-			Future<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft()).invoke();
+			MeshResponse<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft()).invoke();
 			latchFor(webrootFuture);
 			expectFailureMessage(webrootFuture, NOT_FOUND, null);
 		}

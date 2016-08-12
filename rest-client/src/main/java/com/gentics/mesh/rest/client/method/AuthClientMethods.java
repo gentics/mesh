@@ -1,10 +1,10 @@
-package com.gentics.mesh.rest.method;
+package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.rest.MeshRequest;
-import com.gentics.mesh.rest.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRestClient;
 
 import rx.Single;
 

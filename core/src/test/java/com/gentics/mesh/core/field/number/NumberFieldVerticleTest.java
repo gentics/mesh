@@ -28,8 +28,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-
-import io.vertx.core.Future;
+import com.gentics.mesh.rest.client.MeshResponse;
 
 public class NumberFieldVerticleTest extends AbstractFieldVerticleTest {
 	private static final String FIELD_NAME = "numberField";
@@ -65,7 +64,7 @@ public class NumberFieldVerticleTest extends AbstractFieldVerticleTest {
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.getFields().put(fieldKey, field);
 
-		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")).invoke();
+		MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "field_number_error_invalid_type", fieldKey, "text");
 	}

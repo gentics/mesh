@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -84,7 +85,7 @@ public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Schema request = getSchema();
 			request.setDisplayField("name");
 
-			Future<SchemaChangesListModel> future = getClient().diffSchema(container.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = getClient().diffSchema(container.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();
@@ -100,7 +101,7 @@ public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
-			Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();
@@ -117,7 +118,7 @@ public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binary");
 			binaryField.setAllowedMimeTypes("one", "two");
 			request.addField(binaryField);
-			Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();
@@ -135,7 +136,7 @@ public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
 			request.removeField("content");
-			Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();

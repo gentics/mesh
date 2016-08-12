@@ -43,9 +43,8 @@ import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
-
-import io.vertx.core.Future;
 
 public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
@@ -66,7 +65,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			assertNotNull(tagFamily);
 
-			Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid()).invoke();
+			MeshResponse<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			TagFamilyResponse response = future.result();
@@ -83,7 +82,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
 
-			Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid,
+			MeshResponse<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid,
 					new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -103,7 +102,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			assertNotNull(tagFamily);
 			role.revokePermissions(tagFamily, READ_PERM);
 
-			Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
+			MeshResponse<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -114,7 +113,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			String uuid = tagFamily.getUuid();
-			Future<TagListResponse> future = getClient().findTags(PROJECT_NAME, uuid).invoke();
+			MeshResponse<TagListResponse> future = getClient().findTags(PROJECT_NAME, uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 		}
@@ -132,7 +131,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			assertNotNull(noPermTagFamily.getUuid());
 
 			// Test default paging parameters
-			Future<TagFamilyListResponse> future = getClient().findTagFamilies(PROJECT_NAME).invoke();
+			MeshResponse<TagFamilyListResponse> future = getClient().findTagFamilies(PROJECT_NAME).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -147,7 +146,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 			List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				Future<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(page, perPage)).invoke();
+				MeshResponse<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(page, perPage)).invoke();
 				latchFor(tagPageFut);
 				assertSuccess(future);
 				restResponse = tagPageFut.result();
@@ -173,7 +172,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 					.collect(Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(-1, perPage)).invoke();
+			MeshResponse<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(-1, perPage)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
@@ -201,7 +200,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(1, 0)).invoke();
+		MeshResponse<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(1, 0)).invoke();
 		latchFor(pageFuture);
 		assertSuccess(pageFuture);
 		assertEquals(0, pageFuture.result().getData().size());
@@ -211,7 +210,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	public void testCreateWithConflictingName() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("colors");
-		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
+		MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
 		latchFor(future);
 		expectException(future, CONFLICT, "tagfamily_conflicting_name", "colors");
 	}
@@ -222,7 +221,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		String name = "newTagFamily";
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName(name);
-		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
+		MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(name, future.result().getName());
@@ -233,15 +232,15 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	public void testCreateReadDelete() throws Exception {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("newTagFamily");
-		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
+		MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
-		Future<TagFamilyResponse> readFuture = getClient().findTagFamilyByUuid(PROJECT_NAME, future.result().getUuid()).invoke();
+		MeshResponse<TagFamilyResponse> readFuture = getClient().findTagFamilyByUuid(PROJECT_NAME, future.result().getUuid()).invoke();
 		latchFor(readFuture);
 		assertSuccess(readFuture);
 
-		Future<GenericMessageResponse> deleteFuture = getClient().deleteTagFamily(PROJECT_NAME, future.result().getUuid()).invoke();
+		MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteTagFamily(PROJECT_NAME, future.result().getUuid()).invoke();
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
 
@@ -253,7 +252,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName("SuperDoll");
-			Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
+			MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
 			latchFor(future);
 
 			expectException(future, FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
@@ -264,7 +263,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	public void testCreateWithNoName() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		// Don't set the name
-		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
+		MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "tagfamily_name_not_set");
 	}
@@ -277,7 +276,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			String uuid = basicTagFamily.getUuid();
 			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid).toBlocking().value());
 
-			Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid).invoke();
+			MeshResponse<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertElement(project().getTagFamilyRoot(), uuid, false);
@@ -295,7 +294,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
-			Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()).invoke();
+			MeshResponse<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
 
@@ -311,7 +310,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName(newName);
 
-			Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request).invoke();
+			MeshResponse<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "tagfamily_conflicting_name", newName);
 		}
@@ -326,7 +325,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			String name = tagFamily.getName();
 
 			// 1. Read the current tagfamily
-			Future<TagFamilyResponse> readTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
+			MeshResponse<TagFamilyResponse> readTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
 			latchFor(readTagFut);
 			assertSuccess(readTagFut);
 			assertNotNull("The name of the tag should be loaded.", name);
@@ -343,14 +342,14 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			assertEquals(newName, tagUpdateRequest.getName());
 
 			// 3. Send the request to the server
-			Future<TagFamilyResponse> updatedTagFut = getClient().updateTagFamily(PROJECT_NAME, uuid, tagUpdateRequest).invoke();
+			MeshResponse<TagFamilyResponse> updatedTagFut = getClient().updateTagFamily(PROJECT_NAME, uuid, tagUpdateRequest).invoke();
 			latchFor(updatedTagFut);
 			assertSuccess(updatedTagFut);
 			TagFamilyResponse tagFamily2 = updatedTagFut.result();
 			assertThat(tagFamily2).matches(tagFamily("basic"));
 
 			// 4. read the tag again and verify that it was changed
-			Future<TagFamilyResponse> reloadedTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
+			MeshResponse<TagFamilyResponse> reloadedTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
 			latchFor(reloadedTagFut);
 			assertSuccess(reloadedTagFut);
 			TagFamilyResponse reloadedTagFamily = reloadedTagFut.result();
@@ -365,7 +364,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("new Name");
 
-		Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, "bogus", request).invoke();
+		MeshResponse<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, "bogus", request).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -383,7 +382,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName("new Name");
 
-			Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, uuid, request).invoke();
+			MeshResponse<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, uuid, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
@@ -401,7 +400,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 
 		try (NoTx noTx = db.noTx()) {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<Future<?>> set = new HashSet<>();
+			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().updateTagFamily(PROJECT_NAME, tagFamily("colors").getUuid(), request).invoke());
 			}
@@ -417,7 +416,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		try (NoTx noTx = db.noTx()) {
 			String uuid = tagFamily("colors").getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<Future<?>> set = new HashSet<>();
+			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke());
 			}
@@ -433,7 +432,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		try (NoTx noTx = db.noTx()) {
 			String uuid = project().getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<Future<GenericMessageResponse>> set = new HashSet<>();
+			Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().deleteTagFamily(PROJECT_NAME, uuid).invoke());
 			}
@@ -450,7 +449,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		request.setName("test12345");
 
 		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<Future<?>> set = new HashSet<>();
+		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().createTagFamily(PROJECT_NAME, request).invoke());
 		}
@@ -462,11 +461,11 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			int nJobs = 200;
-			Set<Future<?>> set = new HashSet<>();
+			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily("colors").getUuid()).invoke());
 			}
-			for (Future<?> future : set) {
+			for (MeshResponse<?> future : set) {
 				latchFor(future);
 				assertSuccess(future);
 			}

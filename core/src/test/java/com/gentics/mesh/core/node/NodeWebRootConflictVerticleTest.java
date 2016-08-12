@@ -25,9 +25,8 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-
-import io.vertx.core.Future;
 
 public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
@@ -109,7 +108,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -146,7 +145,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -193,7 +192,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
+			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			String uuid = future.result().getUuid();
