@@ -21,6 +21,7 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 		this.handler = handler;
 	}
 
+	@Override
 	public HttpClientRequest getRequest() {
 		return request;
 	}

@@ -377,6 +377,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 * @param ac
 	 * @param restUser
 	 * @param level
+	 *            Current depth level of transformation
 	 * @return
 	 */
 	private Completable setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {

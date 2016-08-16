@@ -83,10 +83,11 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			User user = user();
 			assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
-			MeshResponse<UserResponse> future = getClient().findUserByUuid(user.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			UserResponse restUser = future.result();
+			MeshResponse<UserResponse> response = getClient().findUserByUuid(user.getUuid()).invoke();
+
+			latchFor(response);
+			assertSuccess(response);
+			UserResponse restUser = response.result();
 
 			assertThat(restUser).matches(user);
 			// TODO assert groups
@@ -139,7 +140,8 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			User user = user();
 			String uuid = user.getUuid();
 
-			MeshResponse<UserResponse> future = getClient().findUserByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
+			MeshResponse<UserResponse> future = getClient().findUserByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
@@ -503,15 +505,15 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
-			MeshResponse<UserListResponse> userListResponseFuture = getClient().findUsers(new PagingParameters().setPerPage(100),
-					new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")).invoke();
+			MeshResponse<UserListResponse> userListResponseFuture = getClient()
+					.findUsers(new PagingParameters().setPerPage(100), new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en"))
+					.invoke();
 			latchFor(userListResponseFuture);
 			assertSuccess(userListResponseFuture);
 			UserListResponse userResponse = userListResponseFuture.result();
 			assertNotNull(userResponse);
 
-			UserResponse foundUser = userResponse.getData().stream().filter(u -> u.getUuid().equals(userCreateResponse.getUuid())).findFirst()
-					.get();
+			UserResponse foundUser = userResponse.getData().stream().filter(u -> u.getUuid().equals(userCreateResponse.getUuid())).findFirst().get();
 
 			assertNotNull(foundUser.getNodeReference());
 			assertEquals(node.getUuid(), foundUser.getNodeReference().getUuid());
@@ -545,8 +547,8 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		assertSuccess(future);
 		UserResponse userResponse = future.result();
 
-		MeshResponse<UserResponse> userResponseFuture = getClient().findUserByUuid(userResponse.getUuid(),
-				new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")).invoke();
+		MeshResponse<UserResponse> userResponseFuture = getClient()
+				.findUserByUuid(userResponse.getUuid(), new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")).invoke();
 		latchFor(userResponseFuture);
 		assertSuccess(userResponseFuture);
 		UserResponse userResponse2 = userResponseFuture.result();

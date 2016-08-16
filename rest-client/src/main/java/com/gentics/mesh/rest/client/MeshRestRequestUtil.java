@@ -25,7 +25,7 @@ public final class MeshRestRequestUtil {
 	public static final String BASEURI = "/api/v1";
 
 	/**
-	 * Handle the request.
+	 * Prepare the request by adding the response handlers, auth info, payload etc.
 	 * 
 	 * @param method
 	 *            Request method
@@ -42,7 +42,7 @@ public final class MeshRestRequestUtil {
 	 *            Authentication provider to use
 	 * @return
 	 */
-	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
+	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
 			HttpClient client, MeshRestClientAuthenticationProvider authentication) {
 		String uri = BASEURI + path;
 		MeshResponseHandler<T> handler = new MeshJsonResponseHandler<T>(classOfT, method, uri);
@@ -95,7 +95,7 @@ public final class MeshRestRequestUtil {
 	}
 
 	/**
-	 * Handle the request.
+	 * Prepare the request by adding the payload, auth info etc.
 	 * 
 	 * @param method
 	 *            Request method
@@ -111,7 +111,7 @@ public final class MeshRestRequestUtil {
 	 *            Authentication provider to use
 	 * @return
 	 */
-	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel,
+	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel,
 			HttpClient client, MeshRestClientAuthenticationProvider authentication) {
 		Buffer buffer = Buffer.buffer();
 		String json = JsonUtil.toJson(restModel);
@@ -119,11 +119,11 @@ public final class MeshRestRequestUtil {
 			log.debug(json);
 		}
 		buffer.appendString(json);
-		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentication);
+		return prepareRequest(method, path, classOfT, buffer, "application/json", client, authentication);
 	}
 
 	/**
-	 * Handle the request.
+	 * Prepare the request by adding the payload, auth info etc.
 	 * 
 	 * @param method
 	 *            Request method
@@ -139,7 +139,7 @@ public final class MeshRestRequestUtil {
 	 *            Authentication provider to use
 	 * @return
 	 */
-	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData,
+	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData,
 			HttpClient client, MeshRestClientAuthenticationProvider authentication) {
 
 		if (log.isDebugEnabled()) {
@@ -150,11 +150,11 @@ public final class MeshRestRequestUtil {
 			buffer.appendString(jsonBodyData);
 		}
 
-		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentication);
+		return prepareRequest(method, path, classOfT, buffer, "application/json", client, authentication);
 	}
 
 	/**
-	 * Handle the request.
+	 * Prepare the request by adding the payload, auth info etc.
 	 * 
 	 * @param method
 	 *            Request method
@@ -168,8 +168,8 @@ public final class MeshRestRequestUtil {
 	 *            Authentication provider to use
 	 * @return
 	 */
-	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, HttpClient client,
+	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, HttpClient client,
 			MeshRestClientAuthenticationProvider authentication) {
-		return handleRequest(method, path, classOfT, Buffer.buffer(), null, client, authentication);
+		return prepareRequest(method, path, classOfT, Buffer.buffer(), null, client, authentication);
 	}
 }

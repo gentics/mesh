@@ -1597,7 +1597,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public String getETag(InternalActionContext ac) {
-		Release release = ac.getRelease(ac.getProject());
+		Release release = ac.getRelease(getProject());
 		Node parentNode = getParentNode(release.getUuid());
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getNodeParameters().getLanguageList(), release.getUuid(),
 				ac.getVersioningParameters().getVersion());
@@ -1612,6 +1612,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (container != null) {
 			keyBuilder.append("-");
 			keyBuilder.append(container.getETag(ac));
+		}
+
+		if (ac.getNodeParameters().getExpandAll()) {
+			keyBuilder.append("expand:true");
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
 		}
 		return Hashing.crc32c().hashString(keyBuilder.toString(), Charset.defaultCharset()).toString();
 	}

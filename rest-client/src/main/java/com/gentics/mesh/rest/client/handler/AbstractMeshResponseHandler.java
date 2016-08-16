@@ -1,11 +1,20 @@
 package com.gentics.mesh.rest.client.handler;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.NotModifiedException;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public abstract class AbstractMeshResponseHandler<T> implements MeshResponseHandler<T> {
+
+	private static final Logger log = LoggerFactory.getLogger(AbstractMeshResponseHandler.class);
 
 	protected String uri;
 	protected HttpMethod method;
@@ -30,5 +39,60 @@ public abstract class AbstractMeshResponseHandler<T> implements MeshResponseHand
 	@Override
 	public MeshResponse<T> getFuture() {
 		return future;
+	}
+
+	@Override
+	public void handle(HttpClientResponse response) {
+		getFuture().setResponse(response);
+		int code = response.statusCode();
+		if (code >= 200 && code < 300) {
+			handleSuccess(response);
+		} else if (code == 304) {
+			handleNotModified(response);
+		} else {
+			handleError(response);
+		}
+	}
+
+	/**
+	 * Success method which will be invoked for responses with codes >=200 && < 300
+	 * 
+	 * @param response
+	 */
+	public abstract void handleSuccess(HttpClientResponse response);
+
+	/**
+	 * Handles 304 responses.
+	 * 
+	 * @param response
+	 */
+	protected void handleNotModified(HttpClientResponse response) {
+		future.complete(null);
+	}
+
+	protected void handleError(HttpClientResponse response) {
+		response.bodyHandler(bh -> {
+			String body = bh.toString();
+			if (log.isDebugEnabled()) {
+				log.debug(body);
+			}
+
+			log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {" + body
+					+ "} for method {" + getMethod() + "} and uri {" + getUri() + "}");
+
+			try {
+				GenericMessageResponse responseMessage = JsonUtil.readValue(body, GenericMessageResponse.class);
+				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage(), responseMessage));
+				return;
+			} catch (Exception e) {
+				if (log.isDebugEnabled()) {
+					log.debug("Could not deserialize response {" + body + "}.", e);
+				}
+			}
+
+			future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage()));
+			return;
+		});
+
 	}
 }

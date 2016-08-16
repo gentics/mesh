@@ -18,10 +18,9 @@ public class MeshWebrootResponseHandler extends AbstractMeshResponseHandler<WebR
 	}
 
 	@Override
-	public void handle(HttpClientResponse rh) {
+	public void handleSuccess(HttpClientResponse rh) {
 
 		WebRootResponse response = new WebRootResponse();
-
 		NodeDownloadResponse downloadResponse = new NodeDownloadResponse();
 		String contentType = rh.getHeader(HttpHeaders.CONTENT_TYPE.toString());
 		if (contentType.startsWith(APPLICATION_JSON)) {
@@ -47,18 +46,7 @@ public class MeshWebrootResponseHandler extends AbstractMeshResponseHandler<WebR
 				response.setDownloadResponse(downloadResponse);
 				future.complete(response);
 			});
-
 		}
-
-		//		MeshResponse<WebRootResponse> future = MeshResponse.create();
-		//		handler.getFuture().setHandler(rh -> {
-		//			if (rh.failed()) {
-		//				future.fail(rh.cause());
-		//			} else {
-		//				future.complete(new WebRootResponse(rh.result()));
-		//			}
-		//		});
-
 	}
 
 }

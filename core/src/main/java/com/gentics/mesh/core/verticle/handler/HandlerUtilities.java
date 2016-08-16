@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
@@ -144,9 +145,7 @@ public final class HandlerUtilities {
 				String etag = element.getETag(ac);
 				ac.setEtag(etag);
 				if (ac.matches(etag)) {
-					// TODO handle status code
-					// TODO no message/body?
-					return Single.just(message(ac, "Jo eh"));
+					return Single.error(new NotModifiedException());
 				} else {
 					return element.transformToRest(ac, 0);
 				}
@@ -172,9 +171,7 @@ public final class HandlerUtilities {
 			String etag = page.getETag(ac);
 			ac.setEtag(etag);
 			if (ac.matches(etag)) {
-				// TODO handle status code
-				// TODO no message/body?
-				return Single.just(message(ac, "Jo eh"));
+				return Single.error(new NotModifiedException());
 			} else {
 				return (Single<RestModel>) page.transformToRest(ac, 0);
 			}

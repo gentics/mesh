@@ -9,6 +9,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
+import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
@@ -66,6 +67,12 @@ public class FailureHandler implements Handler<RoutingContext> {
 					break;
 				}
 				failure = failure.getCause();
+			}
+
+			if (failure != null && failure instanceof NotModifiedException) {
+				rc.response().setStatusCode(304);
+				rc.response().end();
+				return;
 			}
 
 			// TODO wrap this instead into a try/catch and throw the failure
