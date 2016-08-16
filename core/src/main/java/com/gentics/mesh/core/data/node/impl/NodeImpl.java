@@ -69,6 +69,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
+import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -794,10 +795,39 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (!getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");
 			}
-			NavigationResponse response = new NavigationResponse();
-			return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response.getRoot(), ac.getRelease(getProject()).getUuid(),
+			String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getRelease(getProject()).getUuid(),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()));
+			String etag = Hashing.crc32c().hashString(etagKey, Charset.defaultCharset()).toString();
+			ac.setEtag(etag);
+			if (ac.matches(etag)) {
+				return Single.error(new NotModifiedException());
+			} else {
+				NavigationResponse response = new NavigationResponse();
+				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response.getRoot(),
+						ac.getRelease(getProject()).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()));
+			}
 		});
+	}
+
+	public String buildNavigationEtagKey(InternalActionContext ac, Node node, int maxDepth, int level, String releaseUuid, ContainerType type) {
+		NavigationParameters parameters = new NavigationParameters(ac);
+		StringBuilder builder = new StringBuilder();
+		builder.append(node.getETag(ac));
+
+		List<? extends Node> nodes = node.getChildren(ac.getUser(), releaseUuid, type);
+
+		// Abort recursion when we reach the max level or when no more children can be found.
+		if (level == maxDepth || nodes.isEmpty()) {
+			return builder.toString();
+		}
+		for (Node child : nodes) {
+			if (child.getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
+				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level + 1, releaseUuid, type));
+			} else if (parameters.isIncludeAll()) {
+				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level, releaseUuid, type));
+			}
+		}
+		return builder.toString();
 	}
 
 	/**
@@ -816,9 +846,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param currentElement
 	 *            Current navigation element for the given level
 	 * @param releaseUuid
-	 *            TODO
+	 *            release uuid to be used for loading children of nodes
 	 * @param type
-	 *            TODO
+	 *            container type to be used for transformation
 	 * @return
 	 */
 	private Single<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
@@ -1615,8 +1645,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		if (ac.getNodeParameters().getExpandAll()) {
+			keyBuilder.append("-");
 			keyBuilder.append("expand:true");
 		}
+		String expandedFields = Arrays.toString(ac.getNodeParameters().getExpandedFieldNames());
+		keyBuilder.append("-");
+		keyBuilder.append("expandFields:");
+		keyBuilder.append(expandedFields);
+
 		if (log.isDebugEnabled()) {
 			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
 		}

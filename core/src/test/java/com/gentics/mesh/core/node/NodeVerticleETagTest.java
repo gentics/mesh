@@ -14,10 +14,12 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -49,6 +51,7 @@ public class NodeVerticleETagTest extends AbstractETagTest {
 
 			expect304(getClient().findNodes(PROJECT_NAME), etag);
 			expectNo304(getClient().findNodes(PROJECT_NAME, new PagingParameters().setPage(2)), etag);
+			expectNo304(getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(2)), etag);
 		}
 	}
 
@@ -57,6 +60,13 @@ public class NodeVerticleETagTest extends AbstractETagTest {
 	public void testReadOne() {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
+
+			// Inject the reference node field
+			Schema schema = node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema();
+			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
+			node.getGraphFieldContainer("en").getSchemaContainerVersion().setSchema(schema);
+			node.getGraphFieldContainer("en").createNode("reference", folder("2015"));
+
 			MeshResponse<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid()).invoke();
 			latchFor(response);
 			String etag = node.getETag(getMockedInternalActionContext());
@@ -69,9 +79,13 @@ public class NodeVerticleETagTest extends AbstractETagTest {
 			assertNotEquals("A different etag should have been generated since we are not requesting the expanded node.", etag,
 					expectNo304(getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true)), etag));
 
-			// Assert that adding bogus query parameters will not affect the etag
-			//			expect304(getClient().findNodeByUuid(node.getUuid(), new NodeParameters().setExpandAll(false)), etag);
-			//			expect304(getClient().findNodeByUuid(node.getUuid(), new NodeParameters().setExpandAll(true)), etag);
+			String newETag = expectNo304(
+					getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandedFieldNames("reference")), etag);
+			assertNotEquals("We added parameters and thus a new etag should have been generated.", newETag,
+					expectNo304(
+							getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandedFieldNames("reference", "bla")),
+							newETag));
+
 		}
 
 	}
