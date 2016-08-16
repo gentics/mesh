@@ -10,7 +10,7 @@ public interface AdminClientMethods {
 	 * 
 	 * @return
 	 */
-	MeshRequest<String> meshStatus();
+	MeshRequest<GenericMessageResponse> meshStatus();
 
 	/**
 	 * Return the current schema/microschema migration status.

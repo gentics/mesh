@@ -70,7 +70,6 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -78,9 +77,9 @@ import com.gentics.mesh.rest.BasicAuthentication;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshResponseHandler;
-import com.gentics.mesh.rest.client.MeshRestClientHttpException;
+import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
+import com.gentics.mesh.rest.client.handler.impl.MeshBinaryResponseHandler;
+import com.gentics.mesh.rest.client.handler.impl.MeshWebrootResponseHandler;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -88,7 +87,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.WebSocket;
 
@@ -615,28 +613,15 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		if (!path.startsWith("/")) {
 			throw new RuntimeException("The path {" + path + "} must start with a slash");
 		}
+		//TODO encode path?
 		String requestUri = BASEURI + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
-		MeshResponseHandler<Object> handler = new MeshResponseHandler<>(Object.class, HttpMethod.GET, requestUri);
+		MeshResponseHandler<WebRootResponse> handler = new MeshWebrootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
-		if (log.isDebugEnabled()) {
-			log.debug("Invoking get request to {" + requestUri + "}");
-		}
-
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "*/*");
-			request.end();
 		});
 
-		MeshResponse<WebRootResponse> future = MeshResponse.create();
-		handler.getFuture().setHandler(rh -> {
-			if (rh.failed()) {
-				future.fail(rh.cause());
-			} else {
-				future.complete(new WebRootResponse(rh.result()));
-			}
-		});
-
-		return new MeshRequest<WebRootResponse>(request, future);
+		return new MeshHttpRequestImpl<>(request, handler);
 
 	}
 
@@ -778,22 +763,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<String> meshStatus() {
-		Future<String> future = Future.future();
-		String uri = BASEURI + "/admin/status";
-		HttpClientRequest request = client.request(HttpMethod.GET, uri, rh -> {
-			rh.bodyHandler(bh -> {
-				future.complete(bh.toString());
-			});
-		});
-		if (log.isDebugEnabled()) {
-			log.debug("Invoking get request to {" + uri + "}");
-		}
-		authentication.addAuthenticationInformation(request).subscribe(() -> {
-			request.headers().add("Accept", "application/json");
-			request.end();
-		});
-		return new MeshRequest<>(request, future);
+	public MeshRequest<GenericMessageResponse> meshStatus() {
+		return handleRequest(GET, BASEURI + "/admin/status", GenericMessageResponse.class);
 	}
 
 	@Override
@@ -827,61 +798,15 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
-		Future<NodeDownloadResponse> future = Future.future();
 		String path = "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey + getQuery(parameters);
 		String uri = BASEURI + path;
 
-		HttpClientRequest request = client.request(GET, uri, rh -> {
-
-			int code = rh.statusCode();
-			if (code >= 200 && code < 300) {
-				NodeDownloadResponse response = new NodeDownloadResponse();
-				String contentType = rh.getHeader(HttpHeaders.CONTENT_TYPE.toString());
-				response.setContentType(contentType);
-				String disposition = rh.getHeader("content-disposition");
-				String filename = disposition.substring(disposition.indexOf("=") + 1);
-				response.setFilename(filename);
-
-				rh.bodyHandler(buffer -> {
-					response.setBuffer(buffer);
-					future.complete(response);
-				});
-			} else {
-				rh.bodyHandler(bh -> {
-					String json = bh.toString();
-					if (log.isDebugEnabled()) {
-						log.debug(json);
-					}
-
-					log.error("Request failed with statusCode {" + code + "} statusMessage {" + rh.statusMessage() + "} {" + json + "} for method {"
-							+ GET + "} and uri {" + uri + "}");
-
-					try {
-						GenericMessageResponse responseMessage = JsonUtil.readValue(json, GenericMessageResponse.class);
-						future.fail(new MeshRestClientHttpException(rh.statusCode(), rh.statusMessage(), responseMessage));
-						return;
-
-					} catch (Exception e) {
-						if (log.isDebugEnabled()) {
-							log.debug("Could not deserialize response {" + json + "}.", e);
-						}
-					}
-
-					future.fail(new MeshRestClientHttpException(rh.statusCode(), rh.statusMessage()));
-					return;
-
-				});
-			}
-		});
-		if (log.isDebugEnabled()) {
-			log.debug("Invoking get request to {" + uri + "}");
-		}
-
+		MeshBinaryResponseHandler handler = new MeshBinaryResponseHandler(GET, uri);
+		HttpClientRequest request = client.request(GET, uri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "application/json");
-			request.end();
 		});
-		return new MeshRequest<>(request, future);
+		return new MeshHttpRequestImpl<>(request, handler);
 	}
 
 	@Override

@@ -16,13 +16,13 @@ public class GenericMessageResponse implements RestModel {
 	private Map<String, Object> properties;
 
 	/**
-	 * Create a new generic message response pojo.
+	 * Create a new generic message response POJO.
 	 */
 	public GenericMessageResponse() {
 	}
 
 	/**
-	 * Create a new generic message response pojo.
+	 * Create a new generic message response POJO.
 	 * 
 	 * @param message
 	 *            Message

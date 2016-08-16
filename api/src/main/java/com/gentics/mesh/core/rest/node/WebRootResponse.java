@@ -6,16 +6,6 @@ public class WebRootResponse {
 
 	private NodeDownloadResponse downloadResponse;
 
-	public WebRootResponse(Object response) {
-		if (response instanceof NodeResponse) {
-			nodeResponse = (NodeResponse) response;
-		} else if (response instanceof NodeDownloadResponse) {
-			downloadResponse = (NodeDownloadResponse) response;
-		} else {
-			throw new RuntimeException("Unknown response type {" + response.getClass().getName() + "}");
-		}
-	}
-
 	public boolean isBinary() {
 		return downloadResponse != null;
 	}
@@ -24,7 +14,16 @@ public class WebRootResponse {
 		return downloadResponse;
 	}
 
+	public void setDownloadResponse(NodeDownloadResponse downloadResponse) {
+		this.downloadResponse = downloadResponse;
+	}
+
 	public NodeResponse getNodeResponse() {
 		return nodeResponse;
 	}
+
+	public void setNodeResponse(NodeResponse nodeResponse) {
+		this.nodeResponse = nodeResponse;
+	}
+
 }

@@ -1,13 +1,12 @@
-package com.gentics.mesh.rest.client;
+package com.gentics.mesh.rest.client.handler.impl;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.client.MeshRestClientHttpException;
+import com.gentics.mesh.rest.client.handler.AbstractMeshResponseHandler;
 
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
@@ -18,15 +17,11 @@ import io.vertx.core.logging.LoggerFactory;
  * 
  * @param <T>
  */
-public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
+public class MeshJsonResponseHandler<T> extends AbstractMeshResponseHandler<T> {
 
-	private static final Logger log = LoggerFactory.getLogger(MeshResponseHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(MeshJsonResponseHandler.class);
 
-	private MeshResponse<T> future;
 	private Class<? extends T> classOfT;
-	private Handler<HttpClientResponse> handler;
-	private HttpMethod method;
-	private String uri;
 
 	/**
 	 * Create a new response handler.
@@ -38,11 +33,9 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 * @param uri
 	 *            Uri that was queried
 	 */
-	public MeshResponseHandler(Class<? extends T> classOfT, HttpMethod method, String uri) {
+	public MeshJsonResponseHandler(Class<? extends T> classOfT, HttpMethod method, String uri) {
+		super(method, uri);
 		this.classOfT = classOfT;
-		this.future = new MeshResponse<>(Future.future());
-		this.method = method;
-		this.uri = uri;
 	}
 
 	@Override
@@ -72,21 +65,9 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 						future.fail(e);
 					}
 				});
-			} else if (classOfT.equals(String.class)) {
-				// if client requested a String, we just return the buffer as string
-				response.bodyHandler(buffer -> {
-					future.complete((T) buffer.toString());
-				});
 			} else {
-				NodeDownloadResponse downloadResponse = new NodeDownloadResponse();
-				downloadResponse.setContentType(contentType);
-				String disposition = response.getHeader("content-disposition");
-				String filename = disposition.substring(disposition.indexOf("=") + 1);
-				downloadResponse.setFilename(filename);
-
 				response.bodyHandler(buffer -> {
-					downloadResponse.setBuffer(buffer);
-					future.complete((T) downloadResponse);
+					future.fail(new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}"));
 				});
 			}
 		} else {
@@ -97,7 +78,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 				}
 
 				log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {" + json
-						+ "} for method {" + this.method + "} and uri {" + this.uri + "}");
+						+ "} for method {" + getMethod() + "} and uri {" + getUri() + "}");
 
 				try {
 					GenericMessageResponse responseMessage = JsonUtil.readValue(json, GenericMessageResponse.class);
@@ -111,23 +92,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage()));
 			});
 		}
-		if (handler != null) {
-			handler.handle(response);
-		}
 
-	}
-
-	public MeshResponse<T> getFuture() {
-		return future;
-	}
-
-	/**
-	 * Handle the client response.
-	 * 
-	 * @param handler
-	 */
-	public void handle(Handler<HttpClientResponse> handler) {
-		this.handler = handler;
 	}
 
 }

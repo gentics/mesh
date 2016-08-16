@@ -5,6 +5,9 @@ import org.apache.commons.lang.StringUtils;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
+import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
+import com.gentics.mesh.rest.client.handler.impl.MeshJsonResponseHandler;
+import com.gentics.mesh.rest.client.impl.MeshHttpRequestImpl;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -42,7 +45,7 @@ public final class MeshRestRequestUtil {
 	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
 			HttpClient client, MeshRestClientAuthenticationProvider authentication) {
 		String uri = BASEURI + path;
-		MeshResponseHandler<T> handler = new MeshResponseHandler<>(classOfT, method, uri);
+		MeshResponseHandler<T> handler = new MeshJsonResponseHandler<T>(classOfT, method, uri);
 
 		HttpClientRequest request = client.request(method, uri, handler);
 		// Let the response handler fail when an error ocures
@@ -69,7 +72,7 @@ public final class MeshRestRequestUtil {
 						request.write(bodyData);
 					}
 				}
-				
+
 			});
 		} else {
 			request.headers().add("Accept", "application/json");
@@ -88,7 +91,7 @@ public final class MeshRestRequestUtil {
 			}
 		}
 
-		return new MeshRequest<T>(request, handler.getFuture());
+		return new MeshHttpRequestImpl<T>(request, handler);
 	}
 
 	/**
@@ -108,8 +111,8 @@ public final class MeshRestRequestUtil {
 	 *            Authentication provider to use
 	 * @return
 	 */
-	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel, HttpClient client,
-			MeshRestClientAuthenticationProvider authentication) {
+	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel,
+			HttpClient client, MeshRestClientAuthenticationProvider authentication) {
 		Buffer buffer = Buffer.buffer();
 		String json = JsonUtil.toJson(restModel);
 		if (log.isDebugEnabled()) {
@@ -136,8 +139,8 @@ public final class MeshRestRequestUtil {
 	 *            Authentication provider to use
 	 * @return
 	 */
-	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData, HttpClient client,
-			MeshRestClientAuthenticationProvider authentication) {
+	public static <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData,
+			HttpClient client, MeshRestClientAuthenticationProvider authentication) {
 
 		if (log.isDebugEnabled()) {
 			log.debug("Posting json {" + jsonBodyData + "}");
