@@ -20,7 +20,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -55,7 +54,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.google.common.hash.Hashing;
+import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -572,7 +571,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			keyBuilder.append(referencedNode.getETag(ac));
 		}
 
-		return Hashing.crc32c().hashString(keyBuilder.toString(), Charset.defaultCharset()).toString();
+		return ETag.hash(keyBuilder.toString());
 	}
 
 }

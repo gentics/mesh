@@ -27,7 +27,6 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.node.AbstractBinaryVerticleTest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -38,11 +37,12 @@ import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.buffer.Buffer;
 
-public class BinaryFieldUploadVerticleTest extends AbstractBinaryVerticleTest {
+public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private NodeVerticle nodeVerticle;

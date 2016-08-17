@@ -10,9 +10,10 @@ public interface ETagTestcases {
 	 * <li>etag is part of the response when loading an element</li>
 	 * <li>a 304 response is returned when specifying the same etag in the request via a if-none-match header</li>
 	 * </ul>
+	 * @throws Exception 
 	 * 
 	 */
-	public void testReadOne();
+	public void testReadOne() throws Exception;
 
 	public void testReadMultiple();
 

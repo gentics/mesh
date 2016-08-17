@@ -10,10 +10,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +26,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.I18NUtil;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
@@ -41,6 +44,7 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -66,11 +70,13 @@ import com.gentics.mesh.search.impl.DummySearchProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
+import io.vertx.test.core.TestUtils;
 
 public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
@@ -91,6 +97,21 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	@Before
 	public void setupVerticleTest() throws Exception {
+
+		File uploadDir = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory());
+		FileUtils.deleteDirectory(uploadDir);
+		uploadDir.mkdirs();
+
+		File tempDir = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
+		FileUtils.deleteDirectory(tempDir);
+		tempDir.mkdirs();
+
+		File imageCacheDir = new File(Mesh.mesh().getOptions().getImageOptions().getImageCacheDirectory());
+		FileUtils.deleteDirectory(imageCacheDir);
+		imageCacheDir.mkdirs();
+
+		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
+
 		setupData();
 		port = com.gentics.mesh.test.performance.TestUtils.getRandomPort();
 		vertx = Mesh.vertx();
@@ -135,6 +156,9 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() throws Exception {
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getImageOptions().getImageCacheDirectory()));
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
 		searchProvider.reset();
 		for (AbstractSpringVerticle verticle : getVertices()) {
 			verticle.stop();
@@ -571,4 +595,30 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 	protected static interface ClientHandler<T> {
 		MeshRequest<T> handle() throws Exception;
 	}
+
+	/**
+	 * Prepare the schema of the given node by adding the binary content field to its schema fields. This method will also update the clientside schema storage.
+	 * 
+	 * @param node
+	 * @param mimeTypeWhitelist
+	 * @param binaryFieldName
+	 * @throws IOException
+	 */
+	protected void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
+		// Update the schema and enable binary support for folders
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+		ServerSchemaStorage.getInstance().clear();
+		// node.getSchemaContainer().setSchema(schema);
+	}
+
+	protected MeshRequest<GenericMessageResponse> uploadRandomData(String uuid, String languageTag, String fieldKey, int binaryLen,
+			String contentType, String fileName) {
+
+		// role().grantPermissions(node, UPDATE_PERM);
+		Buffer buffer = TestUtils.randomBuffer(binaryLen);
+		return getClient().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldKey, buffer, fileName, contentType);
+	}
+
 }

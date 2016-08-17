@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -22,8 +21,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.RestModelHelper;
-import com.google.common.hash.Hashing;
 
 import rx.Single;
 
@@ -143,7 +142,7 @@ public class SchemaContainerVersionImpl extends
 	
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return Hashing.crc32c().hashString(getUuid(), Charset.defaultCharset()).toString();
+		return ETag.hash(getUuid());
 	}
 
 }

@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.ETag;
 import com.google.common.hash.Hashing;
 
 import rx.Single;
@@ -98,7 +99,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return Hashing.crc32c().hashString(getUuid(), Charset.defaultCharset()).toString();
+		return ETag.hash(getUuid());
 	}
 
 }

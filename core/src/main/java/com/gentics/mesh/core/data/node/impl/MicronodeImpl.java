@@ -8,7 +8,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +42,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
-import com.google.common.hash.Hashing;
+import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -260,6 +259,6 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	@Override
 	public String getETag(InternalActionContext ac) {
 		// TODO check whether the uuid remains static for micronode updates 
-		return Hashing.crc32c().hashString(getUuid(), Charset.defaultCharset()).toString();
+		return ETag.hash(getUuid());
 	}
 }

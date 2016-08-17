@@ -37,10 +37,11 @@ import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.buffer.Buffer;
 
-public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
+public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private NodeVerticle nodeVerticle;

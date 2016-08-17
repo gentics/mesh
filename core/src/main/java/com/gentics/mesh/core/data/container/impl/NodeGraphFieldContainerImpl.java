@@ -53,6 +53,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.base.Equivalence;
@@ -434,7 +435,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return Hashing.crc32c().hashString(getUuid(), Charset.defaultCharset()).toString();
+		return ETag.hash(getUuid());
 	}
 
 }

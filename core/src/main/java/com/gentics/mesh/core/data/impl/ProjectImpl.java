@@ -55,6 +55,7 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.ETag;
 import com.google.common.hash.Hashing;
 
 import io.vertx.core.logging.Logger;
@@ -312,6 +313,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return Hashing.crc32c().hashString(getUuid() + "-" + getLastEditedTimestamp(), Charset.defaultCharset()).toString();
+		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
 	}
 }

@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,9 +19,9 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractETagTest;
 
-public class NodeVerticleFieldAPITest extends AbstractIsolatedRestVerticleTest {
+public class NodeVerticleFieldAPIeTagTest extends AbstractETagTest {
 
 	@Autowired
 	private NodeVerticle verticle;
@@ -34,7 +34,8 @@ public class NodeVerticleFieldAPITest extends AbstractIsolatedRestVerticleTest {
 	}
 
 	@Test
-	public void testDownloadBinaryField() throws IOException {
+	@Override
+	public void testReadOne() throws Exception {
 
 		// 1. Upload some binary data
 		String contentType = "application/octet-stream";
@@ -53,11 +54,19 @@ public class NodeVerticleFieldAPITest extends AbstractIsolatedRestVerticleTest {
 			node.reload();
 
 			// 2. Download the data using the field api
-			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary")
-					.invoke();
-			latchFor(downloadFuture);
-			assertSuccess(downloadFuture);
-			assertEquals(binaryLen, downloadFuture.result().getBuffer().length());
+			MeshResponse<NodeDownloadResponse> response = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary").invoke();
+			latchFor(response);
+			assertSuccess(response);
+			String etag = response.getResponse().getHeader(ETAG);
+			assertNotNull("A etag should have been generated.", etag);
+			expect304(getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"), etag);
 		}
+
 	}
+
+	@Override
+	public void testReadMultiple() {
+		// Not used
+	}
+
 }

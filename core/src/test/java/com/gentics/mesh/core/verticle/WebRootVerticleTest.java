@@ -29,7 +29,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.node.AbstractBinaryVerticleTest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -48,8 +47,9 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
-public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
+public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private WebRootVerticle webrootVerticle;

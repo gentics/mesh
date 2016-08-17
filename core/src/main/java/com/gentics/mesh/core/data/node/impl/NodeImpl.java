@@ -95,6 +95,7 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
+import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
@@ -797,7 +798,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getRelease(getProject()).getUuid(),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()));
-			String etag = Hashing.crc32c().hashString(etagKey, Charset.defaultCharset()).toString();
+			String etag = ETag.hash(etagKey);
 			ac.setEtag(etag);
 			if (ac.matches(etag)) {
 				return Single.error(new NotModifiedException());
@@ -1671,6 +1672,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (log.isDebugEnabled()) {
 			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
 		}
-		return Hashing.crc32c().hashString(keyBuilder.toString(), Charset.defaultCharset()).toString();
+		return ETag.hash(keyBuilder.toString());
 	}
 }

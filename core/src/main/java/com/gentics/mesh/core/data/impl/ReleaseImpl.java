@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_REL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
-import java.nio.charset.Charset;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -34,8 +33,8 @@ import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.google.common.hash.Hashing;
 
 import rx.Completable;
 import rx.Single;
@@ -276,6 +275,6 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return Hashing.crc32c().hashString(getUuid() + "-" + getLastEditedTimestamp(), Charset.defaultCharset()).toString();
+		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
 	}
 }
