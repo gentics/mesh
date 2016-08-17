@@ -40,7 +40,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 		endpoint.pathRegex("\\/(.*)");
 		endpoint.setRAMLPath("/{path}");
 		endpoint.method(GET);
-		endpoint.addUriParameter("path", "Path to the node", "/News/2015/somefile.dat");
+		endpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
 		endpoint.description("Load the node or the node's binary data which is located using the provided path.");
 		endpoint.addQueryParameters(ImageManipulationParameters.class);
 		endpoint.handler(rc -> {

@@ -22,14 +22,17 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
+import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
@@ -72,19 +75,34 @@ public class WebRootHandler {
 				if (requestUser.hasPermissionSync(ac, node, READ_PERM)) {
 					GraphField field = lastSegment.getPathField();
 					if (field instanceof BinaryGraphField) {
+						//TODO add image handlers to etag
 						BinaryGraphField binaryField = (BinaryGraphField) field;
-						try (NoTx tx = db.noTx()) {
-							// TODO move binary handler outside of event loop scope to avoid bogus object creation
-							BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
-							handler.handle(binaryField);
-							return null;
+						String etag = ETag.hash(binaryField.getSHA512Sum());
+						ac.setEtag(etag);
+						String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
+						if (requestETag != null && requestETag.equals(etag)) {
+							return Single.error(new NotModifiedException());
+						} else {
+							try (NoTx tx = db.noTx()) {
+								// TODO move binary handler outside of event loop scope to avoid bogus object creation
+								BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
+								handler.handle(binaryField);
+								return null;
+							}
 						}
 					} else {
-						// Use the language for which the node was resolved
-						List<String> languageTags = new ArrayList<>();
-						languageTags.add(lastSegment.getLanguageTag());
-						languageTags.addAll(ac.getNodeParameters().getLanguageList());
-						return node.transformToRest(ac, 0, languageTags.toArray(new String[0]));
+						String etag = node.getETag(ac);
+						String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
+						ac.setEtag(etag);
+						if (requestETag != null && requestETag.equals(etag)) {
+							return Single.error(new NotModifiedException());
+						} else {
+							// Use the language for which the node was resolved
+							List<String> languageTags = new ArrayList<>();
+							languageTags.add(lastSegment.getLanguageTag());
+							languageTags.addAll(ac.getNodeParameters().getLanguageList());
+							return node.transformToRest(ac, 0, languageTags.toArray(new String[0]));
+						}
 					}
 
 				} else {
@@ -108,7 +126,7 @@ public class WebRootHandler {
 				ac.send(JsonUtil.toJson(model),
 						HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
 			}
-		} , ac::fail);
+		}, ac::fail);
 
 	}
 
