@@ -809,7 +809,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		});
 	}
 
-	public String buildNavigationEtagKey(InternalActionContext ac, Node node, int maxDepth, int level, String releaseUuid, ContainerType type) {
+	/**
+	 * Generate the etag key for the requested navigation.
+	 * 
+	 * @param ac
+	 * @param node
+	 *            Current node to start building the navigation
+	 * @param maxDepth
+	 *            Maximum depth of navigation
+	 * @param level
+	 *            Current level of recursion
+	 * @param releaseUuid
+	 *            Release uuid used to extract selected tree structure
+	 * @param type
+	 * @return
+	 */
+	private String buildNavigationEtagKey(InternalActionContext ac, Node node, int maxDepth, int level, String releaseUuid, ContainerType type) {
 		NavigationParameters parameters = new NavigationParameters(ac);
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
