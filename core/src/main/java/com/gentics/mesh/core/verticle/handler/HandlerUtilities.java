@@ -168,6 +168,8 @@ public final class HandlerUtilities {
 
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			PageImpl<? extends T> page = root.findAll(ac, pagingInfo);
+
+			// Handle etag
 			String etag = page.getETag(ac);
 			ac.setEtag(etag);
 			if (ac.matches(etag)) {

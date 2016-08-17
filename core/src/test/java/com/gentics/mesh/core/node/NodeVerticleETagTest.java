@@ -17,9 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -52,6 +54,37 @@ public class NodeVerticleETagTest extends AbstractETagTest {
 			expect304(getClient().findNodes(PROJECT_NAME), etag);
 			expectNo304(getClient().findNodes(PROJECT_NAME, new PagingParameters().setPage(2)), etag);
 			expectNo304(getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(2)), etag);
+		}
+	}
+
+	@Test
+	public void testReadChildren() {
+		try (NoTx noTx = db.noTx()) {
+			String uuid = project().getBaseNode().getUuid();
+			MeshResponse<NodeListResponse> response = getClient().findNodeChildren(PROJECT_NAME, uuid).invoke();
+			latchFor(response);
+			String etag = response.getResponse().getHeader(ETAG);
+			assertNotNull(etag);
+
+			expect304(getClient().findNodeChildren(PROJECT_NAME, uuid), etag);
+			expectNo304(getClient().findNodeChildren(PROJECT_NAME, uuid, new PagingParameters().setPage(2)), etag);
+			expectNo304(getClient().findNodeChildren(PROJECT_NAME, uuid, new PagingParameters().setPerPage(2)), etag);
+
+			// Create a new node in the parent folder
+			NodeCreateRequest request = new NodeCreateRequest();
+			request.setLanguage("en");
+			request.setParentNodeUuid(uuid);
+			request.setSchema(new SchemaReference().setName("content"));
+			request.getFields().put("name", FieldUtil.createStringField("someName"));
+			NodeResponse createdNode = call(() -> getClient().createNode(PROJECT_NAME, request));
+
+			// We added another node but it has not yet been published
+			expect304(getClient().findNodeChildren(PROJECT_NAME, uuid), etag);
+
+			call(() -> getClient().publishNode(PROJECT_NAME, createdNode.getUuid()));
+
+			// We published the node thus the children result is different
+			expectNo304(getClient().findNodeChildren(PROJECT_NAME, uuid), etag);
 		}
 	}
 

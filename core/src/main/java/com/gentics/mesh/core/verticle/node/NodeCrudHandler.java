@@ -32,6 +32,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.spi.TxHandler;
@@ -148,12 +150,20 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				try {
 					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(),
 							ac.getRelease(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
-					return page.transformToRest(ac, 0);
+					// Handle etag
+					String etag = page.getETag(ac);
+					ac.setEtag(etag);
+					if (ac.matches(etag)) {
+						return Single.error(new NotModifiedException());
+					} else {
+						return page.transformToRest(ac, 0);
+					}
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
 				}
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.respond((RestModel) model, OK), ac::fail);
+
 	}
 
 	public void readTags(InternalActionContext ac, String uuid) {
