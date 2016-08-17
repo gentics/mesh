@@ -338,6 +338,27 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	}
 
+	/**
+	 * Test searching for a node which is only persisted in the search index but no longer in the graph.
+	 * 
+	 * @throws InterruptedException
+	 * @throws JSONException
+	 */
+	@Test
+	public void testSearchMissingVertex() throws Exception {
+		fullIndex();
+
+		Node node = content("honda nr");
+		node.getImpl().remove();
+		
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2));
+		latchFor(future);
+		assertSuccess(future);
+		NodeListResponse response = future.result();
+		assertEquals(0, response.getData().size());
+		assertEquals(0, response.getMetainfo().getTotalCount());
+	}
+
 	@Test
 	public void testSearchContentResolveLinksAndLangFallback() throws InterruptedException, JSONException {
 		fullIndex();

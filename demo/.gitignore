@@ -6,5 +6,5 @@ mesh-dump.zip
 orient-plugins/studio-2.1.zip
 
 mesh-ui-config.js
-data_tvc/
-restore.sh
+data_*
+restore*.sh

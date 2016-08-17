@@ -2,6 +2,9 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.FileUtils;
 
@@ -66,24 +69,6 @@ public abstract class AbstractDatabase implements Database {
 		start();
 	}
 
-//	@Override
-//	public <T> Observable<T> asyncTrx(TrxHandler<T> txHandler) {
-//		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
-//		Observable<T> obs = Observable.create(sub -> {
-//			try {
-//				T result = trx(txHandler);
-//				sub.onNext(result);
-//				sub.onCompleted();
-//			} catch (Exception e) {
-//				sub.onError(e);
-//			}
-//
-//		});
-//
-//		return obs.observeOn(scheduler);
-//
-//	}
-
 	@Override
 	public <T> T noTrx(TrxHandler<T> txHandler) {
 		try (NoTrx noTx = noTrx()) {
@@ -114,23 +99,37 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler) {
+		// Create an exception which we can use to enhance error information in case of timeout or other tranaction errors
+		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
+		try {
+			throw new Exception("Transaction timeout exception");
+		} catch (Exception e1) {
+			reference.set(e1);
+		}
+
 		ObservableFuture<T> obsFut = RxHelper.observableFuture();
 		Mesh.vertx().executeBlocking(bc -> {
-
 			try (NoTrx noTx = noTrx()) {
 				Observable<T> result = trxHandler.call();
 				if (result == null) {
 					bc.complete();
 				} else {
-					T ele = result.toBlocking().single();
-					bc.complete(ele);
+					try {
+						T ele = result.toBlocking().toFuture().get(20, TimeUnit.SECONDS);
+						bc.complete(ele);
+					} catch (TimeoutException e2) {
+						log.error("Timeout while processing result of transaction handler.", e2);
+						log.error("Calling transaction stacktrace.", reference.get());
+						bc.fail(reference.get());
+					}
 				}
 			} catch (Exception e) {
 				log.error("Error while handling no-transaction.", e);
+				log.error("Calling transaction stacktrace.", reference.get());
 				bc.fail(e);
 			}
 
-		} , false, obsFut.toHandler());
+		}, false, obsFut.toHandler());
 		return obsFut;
 	}
 }
