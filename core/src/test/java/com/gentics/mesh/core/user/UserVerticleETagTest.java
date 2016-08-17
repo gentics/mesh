@@ -24,6 +24,7 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.util.ETag;
 
 public class UserVerticleETagTest extends AbstractETagTest {
 
@@ -38,7 +39,6 @@ public class UserVerticleETagTest extends AbstractETagTest {
 	}
 
 	@Test
-	@Override
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {
 			User user = user();
@@ -46,17 +46,16 @@ public class UserVerticleETagTest extends AbstractETagTest {
 
 			MeshResponse<UserListResponse> response = getClient().findUsers().invoke();
 			latchFor(response);
-			String etag = response.getResponse().getHeader(ETAG);
+			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findUsers(), etag);
-			expectNo304(getClient().findUsers(new PagingParameters().setPage(2)), etag);
+			expect304(getClient().findUsers(), etag, true);
+			expectNo304(getClient().findUsers(new PagingParameters().setPage(2)), etag, true);
 
 		}
 	}
 
 	@Test
-	@Override
 	public void testReadOne() {
 		try (NoTx noTx = db.noTx()) {
 			User user = user();
@@ -65,24 +64,24 @@ public class UserVerticleETagTest extends AbstractETagTest {
 			MeshResponse<UserResponse> response = getClient().findUserByUuid(user.getUuid()).invoke();
 			latchFor(response);
 			String etag = user().getETag(getMockedInternalActionContext());
-			assertEquals(etag, response.getResponse().getHeader(ETAG));
+			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
 			MeshRequest<UserResponse> request = getClient().findUserByUuid(user.getUuid());
-			assertEquals(etag, expect304(request, etag));
+			assertEquals(etag, expect304(request, etag, true));
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertEquals(etag, expect304(getClient().findUserByUuid(user.getUuid(), new NodeParameters().setExpandAll(true)), etag));
+			assertEquals(etag, expect304(getClient().findUserByUuid(user.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
 
 			// Add node reference. This should affect the etag
 			user.setReferencedNode(content());
 			request = getClient().findUserByUuid(user.getUuid());
-			String newETag = expectNo304(request, etag);
+			String newETag = expectNo304(request, etag, true);
 			assertNotEquals(etag, newETag);
 
 			// Assert whether expanding the node will also affect the user etag
-			expect304(getClient().findUserByUuid(user.getUuid(), new NodeParameters().setExpandAll(false)), newETag);
-			expectNo304(getClient().findUserByUuid(user.getUuid(), new NodeParameters().setExpandAll(true)), newETag);
+			expect304(getClient().findUserByUuid(user.getUuid(), new NodeParameters().setExpandAll(false)), newETag, true);
+			expectNo304(getClient().findUserByUuid(user.getUuid(), new NodeParameters().setExpandAll(true)), newETag, true);
 		}
 
 	}

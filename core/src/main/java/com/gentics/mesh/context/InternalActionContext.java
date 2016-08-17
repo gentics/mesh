@@ -106,9 +106,19 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * Set the etag which should be returned in the header.
 	 * 
 	 * @param entityTag
+	 * @param flag
+	 *            which indicates whether the etag is a weak etag
 	 */
-	void setEtag(String entityTag);
+	void setEtag(String entityTag, boolean isWeak);
 
-	boolean matches(String etag);
+	/**
+	 * Checks whether the provided etag matches the etag within the request header.
+	 * 
+	 * @param etag
+	 * @param isWeak
+	 *            Provided etag is a weak etag
+	 * @return
+	 */
+	boolean matches(String etag, boolean isWeak);
 
 }

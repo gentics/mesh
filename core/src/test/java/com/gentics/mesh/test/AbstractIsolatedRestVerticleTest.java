@@ -12,11 +12,13 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -619,6 +621,21 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 		return getClient().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldKey, buffer, fileName, contentType);
+	}
+
+	protected void uploadImage(Node node, String languageTag, String fieldName) throws IOException {
+		String contentType = "image/jpeg";
+		String fileName = "blume.jpg";
+		prepareSchema(node, "image/.*", fieldName);
+
+		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+		byte[] bytes = IOUtils.toByteArray(ins);
+		Buffer buffer = Buffer.buffer(bytes);
+
+		MeshResponse<GenericMessageResponse> future = getClient()
+				.updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer, fileName, contentType).invoke();
+		latchFor(future);
+		assertSuccess(future);
 	}
 
 }

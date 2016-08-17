@@ -32,7 +32,6 @@ import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
@@ -75,12 +74,17 @@ public class WebRootHandler {
 				if (requestUser.hasPermissionSync(ac, node, READ_PERM)) {
 					GraphField field = lastSegment.getPathField();
 					if (field instanceof BinaryGraphField) {
-						//TODO add image handlers to etag
 						BinaryGraphField binaryField = (BinaryGraphField) field;
-						String etag = ETag.hash(binaryField.getSHA512Sum());
-						ac.setEtag(etag);
-						String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
-						if (requestETag != null && requestETag.equals(etag)) {
+						String sha512sum = binaryField.getSHA512Sum();
+
+						// Check the etag
+						String etagKey = sha512sum;
+						if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
+							etagKey += ac.getImageParameters().getQueryParameters();
+						}
+						String etag = ETag.hash(etagKey);
+						ac.setEtag(etag, false);
+						if (ac.matches(etag, false)) {
 							return Single.error(new NotModifiedException());
 						} else {
 							try (NoTx tx = db.noTx()) {
@@ -92,9 +96,8 @@ public class WebRootHandler {
 						}
 					} else {
 						String etag = node.getETag(ac);
-						String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
-						ac.setEtag(etag);
-						if (requestETag != null && requestETag.equals(etag)) {
+						ac.setEtag(etag, true);
+						if (ac.matches(etag, true)) {
 							return Single.error(new NotModifiedException());
 						} else {
 							// Use the language for which the node was resolved

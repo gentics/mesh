@@ -799,8 +799,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getRelease(getProject()).getUuid(),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()));
 			String etag = ETag.hash(etagKey);
-			ac.setEtag(etag);
-			if (ac.matches(etag)) {
+			ac.setEtag(etag, true);
+			if (ac.matches(etag, true)) {
 				return Single.error(new NotModifiedException());
 			} else {
 				NavigationResponse response = new NavigationResponse();

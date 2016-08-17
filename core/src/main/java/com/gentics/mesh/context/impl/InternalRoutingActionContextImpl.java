@@ -1,9 +1,9 @@
 package com.gentics.mesh.context.impl;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
+import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.google.common.hash.Hashing;
+import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.MultiMap;
@@ -80,17 +80,17 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	}
 
 	@Override
-	public void setEtag(String entityTag) {
-		rc.response().putHeader("ETag", entityTag);
+	public void setEtag(String entityTag, boolean isWeak) {
+		rc.response().putHeader(ETAG, ETag.prepareHeader(entityTag, isWeak));
 	}
 
 	@Override
-	public boolean matches(String etag) {
+	public boolean matches(String etag, boolean isWeak) {
 		String headerValue = rc.request().getHeader("If-None-Match");
 		if (headerValue == null) {
 			return false;
 		}
-		return headerValue.equals(etag);
+		return headerValue.equals(ETag.prepareHeader(etag, isWeak));
 	}
 
 	@Override

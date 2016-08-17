@@ -23,6 +23,7 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.util.ETag;
 
 public class ProjectVerticleETagTest extends AbstractETagTest {
 
@@ -37,39 +38,37 @@ public class ProjectVerticleETagTest extends AbstractETagTest {
 	}
 
 	@Test
-	@Override
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {
 			MeshResponse<ProjectListResponse> response = getClient().findProjects().invoke();
 			latchFor(response);
-			String etag = response.getResponse().getHeader(ETAG);
+			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findProjects(), etag);
-			expectNo304(getClient().findProjects(new PagingParameters().setPage(2)), etag);
+			expect304(getClient().findProjects(), etag, true);
+			expectNo304(getClient().findProjects(new PagingParameters().setPage(2)), etag, true);
 		}
 	}
 
 	@Test
-	@Override
 	public void testReadOne() {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			MeshResponse<ProjectResponse> response = getClient().findProjectByUuid(project.getUuid()).invoke();
 			latchFor(response);
 			String etag = project.getETag(getMockedInternalActionContext());
-			assertEquals(etag, response.getResponse().getHeader(ETAG));
+			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
 			MeshRequest<ProjectResponse> request = getClient().findProjectByUuid(project.getUuid());
-			assertEquals(etag, expect304(request, etag));
+			assertEquals(etag, expect304(request, etag, true));
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertEquals(etag, expect304(getClient().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag));
+			assertEquals(etag, expect304(getClient().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(getClient().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(false)), etag);
-			expect304(getClient().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag);
+			expect304(getClient().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
+			expect304(getClient().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
 		}
 
 	}

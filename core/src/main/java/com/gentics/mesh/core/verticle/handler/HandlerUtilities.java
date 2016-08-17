@@ -143,8 +143,8 @@ public final class HandlerUtilities {
 			RootVertex<?> root = handler.call();
 			return root.loadObjectByUuid(ac, uuid, READ_PERM).flatMap(element -> {
 				String etag = element.getETag(ac);
-				ac.setEtag(etag);
-				if (ac.matches(etag)) {
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
 					return Single.error(new NotModifiedException());
 				} else {
 					return element.transformToRest(ac, 0);
@@ -171,8 +171,8 @@ public final class HandlerUtilities {
 
 			// Handle etag
 			String etag = page.getETag(ac);
-			ac.setEtag(etag);
-			if (ac.matches(etag)) {
+			ac.setEtag(etag, true);
+			if (ac.matches(etag, true)) {
 				return Single.error(new NotModifiedException());
 			} else {
 				return (Single<RestModel>) page.transformToRest(ac, 0);

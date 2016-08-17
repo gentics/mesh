@@ -45,8 +45,6 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
-import io.vertx.core.Future;
-
 public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Autowired

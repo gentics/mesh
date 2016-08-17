@@ -113,6 +113,7 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 		StringBuilder builder = new StringBuilder();
 		builder.append(getTotalElements());
 		builder.append(getNumber());
+		builder.append(getPerPage());
 		for (T element : this) {
 			builder.append("-");
 			builder.append(element.getETag(ac));

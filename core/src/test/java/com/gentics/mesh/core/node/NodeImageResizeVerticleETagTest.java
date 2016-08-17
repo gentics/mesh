@@ -4,7 +4,6 @@ import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
-import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,54 +13,48 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.util.ETag;
 
-public class NodeVerticleFieldAPIeTagTest extends AbstractETagTest {
-
+public class NodeImageResizeVerticleETagTest extends AbstractETagTest {
 	@Autowired
-	private NodeVerticle verticle;
+	private NodeVerticle nodeVerticle;
 
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(nodeVerticle);
 		return list;
 	}
 
 	@Test
-	public void testReadOne() throws Exception {
-
-		// 1. Upload some binary data
-		String contentType = "application/octet-stream";
-		int binaryLen = 8000;
-		String fileName = "somefile.dat";
+	public void testImageResize() throws Exception {
 
 		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
-			prepareSchema(node, "", "binary");
 
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "node_binary_field_updated", "binary");
+			// 1. Upload image
+			uploadImage(node, "en", "image");
 
-			node.reload();
-
-			// 2. Download the data using the field api
-			MeshResponse<NodeDownloadResponse> response = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary").invoke();
+			// 2. Resize image
+			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
+			MeshResponse<NodeDownloadResponse> response = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
+					.invoke();
 			latchFor(response);
 			assertSuccess(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
-			assertNotNull("A etag should have been generated.", etag);
-			expect304(getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"), etag, false);
+
+			expect304(getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), etag, false);
+
+			params.setHeight(103);
+			String newETag = expectNo304(getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), etag, false);
+			expect304(getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), newETag, false);
+
 		}
-
 	}
-
 }

@@ -13,8 +13,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,7 +20,6 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,7 +61,8 @@ public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTes
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
-			MeshResponse<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
+			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
+					.invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 
@@ -99,7 +97,8 @@ public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTes
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth()).setHeight(102);
-			MeshResponse<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
+			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
+					.invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 			node.reload();
@@ -117,8 +116,8 @@ public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTes
 
 			// 2. Transform the image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			MeshResponse<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
-					params).invoke();
+			MeshResponse<GenericMessageResponse> transformFuture = getClient()
+					.transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
 			latchFor(transformFuture);
 			assertSuccess(transformFuture);
 
@@ -141,8 +140,8 @@ public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTes
 
 			// 2. Transform the image
 			ImageManipulationParameters params = new ImageManipulationParameters();
-			MeshResponse<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
-					params).invoke();
+			MeshResponse<GenericMessageResponse> transformFuture = getClient()
+					.transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_no_image_transformation", "image");
 		}
@@ -155,7 +154,8 @@ public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTes
 
 			// try to transform the "name"
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			MeshResponse<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "name", params).invoke();
+			MeshResponse<GenericMessageResponse> transformFuture = getClient()
+					.transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "name", params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_found_field_is_not_binary", "name");
 		}
@@ -169,15 +169,16 @@ public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTes
 			prepareSchema(node, "*/*", "image");
 
 			// upload non-image data
-			MeshResponse<GenericMessageResponse> uploadFuture = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
-					Buffer.buffer("I am not an image"), "test.txt", "text/plain").invoke();
+			MeshResponse<GenericMessageResponse> uploadFuture = getClient()
+					.updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", Buffer.buffer("I am not an image"), "test.txt", "text/plain")
+					.invoke();
 			latchFor(uploadFuture);
 			assertSuccess(uploadFuture);
 
 			// Transform
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			MeshResponse<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image",
-					params).invoke();
+			MeshResponse<GenericMessageResponse> transformFuture = getClient()
+					.transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_transformation_non_image", "image");
 		}
@@ -195,12 +196,6 @@ public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTes
 			call(() -> getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), NOT_FOUND,
 					"error_binaryfield_not_found_with_name", "image");
 		}
-	}
-
-	private MeshResponse<NodeDownloadResponse> resizeImage(Node node, ImageManipulationParameters params) {
-		MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
-		latchFor(downloadFuture);
-		return downloadFuture;
 	}
 
 	private void validateResizeImage(NodeDownloadResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,
@@ -221,21 +216,6 @@ public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTes
 			File cacheFile = springConfig.imageProvider().getCacheFile(binaryField.getSHA512Sum(), params);
 			assertTrue("The cache file could not be found in the cache directory. {" + cacheFile.getAbsolutePath() + "}", cacheFile.exists());
 		}
-	}
-
-	private void uploadImage(Node node, String languageTag, String fieldName) throws IOException {
-		String contentType = "image/jpeg";
-		String fileName = "blume.jpg";
-		prepareSchema(node, "image/.*", fieldName);
-
-		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
-		byte[] bytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(bytes);
-
-		MeshResponse<GenericMessageResponse> future = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer,
-				fileName, contentType).invoke();
-		latchFor(future);
-		assertSuccess(future);
 	}
 
 }

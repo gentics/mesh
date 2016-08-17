@@ -152,8 +152,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 							ac.getRelease(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 					// Handle etag
 					String etag = page.getETag(ac);
-					ac.setEtag(etag);
-					if (ac.matches(etag)) {
+					ac.setEtag(etag, true);
+					if (ac.matches(etag, true)) {
 						return Single.error(new NotModifiedException());
 					} else {
 						return page.transformToRest(ac, 0);
@@ -173,12 +173,19 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Tag> tagPage = node.getTags(ac.getRelease(null), ac.getPagingParameters());
-					return tagPage.transformToRest(ac, 0);
+					// Handle etag
+					String etag = tagPage.getETag(ac);
+					ac.setEtag(etag, true);
+					if (ac.matches(etag, true)) {
+						return Single.error(new NotModifiedException());
+					} else {
+						return tagPage.transformToRest(ac, 0);
+					}
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 				}
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.respond((RestModel) model, OK), ac::fail);
 	}
 
 	public void handleAddTag(InternalActionContext ac, String uuid, String tagUuid) {

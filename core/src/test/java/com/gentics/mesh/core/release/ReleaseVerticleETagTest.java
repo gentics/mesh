@@ -1,10 +1,10 @@
-package com.gentics.mesh.core.group;
+package com.gentics.mesh.core.release;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
@@ -14,10 +14,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.rest.group.GroupListResponse;
-import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.core.verticle.group.GroupVerticle;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.rest.release.ReleaseListResponse;
+import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -26,10 +26,10 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.util.ETag;
 
-public class GroupVerticleETagTest extends AbstractETagTest {
+public class ReleaseVerticleETagTest extends AbstractETagTest {
 
 	@Autowired
-	private GroupVerticle verticle;
+	private ReleaseVerticle verticle;
 
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
@@ -41,36 +41,32 @@ public class GroupVerticleETagTest extends AbstractETagTest {
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {
-			MeshResponse<GroupListResponse> response = getClient().findGroups().invoke();
+			MeshResponse<ReleaseListResponse> response = getClient().findReleases(PROJECT_NAME).invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findGroups(), etag, true);
-			expectNo304(getClient().findGroups(new PagingParameters().setPage(2)), etag, true);
+			expect304(getClient().findReleases(PROJECT_NAME), etag, true);
+			expectNo304(getClient().findReleases(PROJECT_NAME, new PagingParameters().setPage(2)), etag, true);
 		}
 	}
 
 	@Test
 	public void testReadOne() {
 		try (NoTx noTx = db.noTx()) {
-			Group group = group();
-
-			MeshResponse<GroupResponse> response = getClient().findGroupByUuid(group.getUuid()).invoke();
+			Release release = project().getLatestRelease();
+			MeshResponse<ReleaseResponse> response = getClient().findReleaseByUuid(PROJECT_NAME, release.getUuid()).invoke();
 			latchFor(response);
-			String etag = group.getETag(getMockedInternalActionContext());
-			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
+			String etag = release.getETag(getMockedInternalActionContext());
+			assertThat(response.getResponse().getHeader(ETAG)).contains(etag);
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<GroupResponse> request = getClient().findGroupByUuid(group.getUuid());
+			MeshRequest<ReleaseResponse> request = getClient().findReleaseByUuid(PROJECT_NAME, release.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
-			// The node has no node reference and thus expanding will not affect the etag
-			assertThat(expect304(getClient().findGroupByUuid(group.getUuid(), new NodeParameters().setExpandAll(true)), etag, true)).contains(etag);
-
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(getClient().findGroupByUuid(group.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
-			expect304(getClient().findGroupByUuid(group.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
+			expect304(getClient().findReleaseByUuid(PROJECT_NAME, release.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
+			expect304(getClient().findReleaseByUuid(PROJECT_NAME, release.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
 		}
 
 	}

@@ -211,12 +211,12 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	}
 
 	@Override
-	public void setEtag(String entityTag) {
+	public void setEtag(String entityTag, boolean isWeak) {
 		// Not supported
 	}
 
 	@Override
-	public boolean matches(String etag) {
+	public boolean matches(String etag, boolean isWeak) {
 		return false;
 	}
 

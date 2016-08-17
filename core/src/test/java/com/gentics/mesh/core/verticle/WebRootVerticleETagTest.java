@@ -25,12 +25,14 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.util.ETag;
 
 public class WebRootVerticleETagTest extends AbstractETagTest {
 
@@ -46,6 +48,38 @@ public class WebRootVerticleETagTest extends AbstractETagTest {
 		list.add(webrootVerticle);
 		list.add(nodeVerticle);
 		return list;
+	}
+
+	@Test
+	public void testResizeImage() throws IOException {
+		try (NoTx noTrx = db.noTx()) {
+			String path = "/News/2015/blume.jpg";
+			Node node = content("news_2015");
+
+			// 1. Transform the node into a binary content
+			SchemaContainer container = schemaContainer("binary-content");
+			node.setSchemaContainer(container);
+			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
+			prepareSchema(node, "image/*", "binary");
+
+			// 2. Upload image
+			uploadImage(node, "en", "binary");
+
+			// 3. Resize image
+			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
+			MeshResponse<WebRootResponse> response = getClient().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft"))
+					.invoke();
+			latchFor(response);
+			assertSuccess(response);
+			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
+			expect304(getClient().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), etag, false);
+
+			params.setHeight(103);
+			String newETag = expectNo304(getClient().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), etag,
+					false);
+			expect304(getClient().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), newETag, false);
+
+		}
 	}
 
 	@Test
@@ -74,20 +108,19 @@ public class WebRootVerticleETagTest extends AbstractETagTest {
 					.webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setResolveLinks(LinkType.FULL)).invoke();
 
 			latchFor(response);
-			String etag = response.getResponse().getHeader(ETAG);
+			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
 			// Check whether 304 is returned for correct etag
 			MeshRequest<WebRootResponse> request = getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
 					new NodeParameters().setResolveLinks(LinkType.FULL));
-			assertEquals(etag, expect304(request, etag));
+			assertEquals(etag, expect304(request, etag, false));
 
 		}
 
 	}
 
 	@Test
-	@Override
 	public void testReadOne() {
 		try (NoTx noTx = db.noTx()) {
 			String path = "/News/2015/News_2015.en.html";
@@ -103,20 +136,14 @@ public class WebRootVerticleETagTest extends AbstractETagTest {
 					.webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")).invoke();
 			latchFor(response);
 			String etag = node.getETag(getMockedInternalActionContext());
-			assertEquals(etag, response.getResponse().getHeader(ETAG));
+			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
 			MeshRequest<WebRootResponse> request = getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
 					new NodeParameters().setLanguages("en", "de"));
-			assertEquals(etag, expect304(request, etag));
+			assertEquals(etag, expect304(request, etag, true));
 
 		}
-
-	}
-
-	@Override
-	public void testReadMultiple() {
-		// TODO Auto-generated method stub
 
 	}
 
