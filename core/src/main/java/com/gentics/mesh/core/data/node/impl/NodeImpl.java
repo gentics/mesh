@@ -309,7 +309,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers() {
 		return outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).inV()
-				.has(NodeGraphFieldContainerImpl.class).toListExplicit(NodeGraphFieldContainerImpl.class);
+				.toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override

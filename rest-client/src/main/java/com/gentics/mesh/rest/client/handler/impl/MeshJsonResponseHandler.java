@@ -41,6 +41,9 @@ public class MeshJsonResponseHandler<T> extends AbstractMeshResponseHandler<T> {
 		String contentType = response.getHeader("Content-Type");
 		//FIXME TODO in theory it would also be possible that a customer uploads JSON into mesh. In those cases we would also need to return it directly (without parsing)
 		if (contentType == null && response.statusCode() == NO_CONTENT.code()) {
+			if (log.isDebugEnabled()) {
+				log.debug("Got {" + NO_CONTENT.code() + "} response.");
+			}
 			future.complete();
 		} else if (contentType.startsWith(HttpConstants.APPLICATION_JSON)) {
 			response.bodyHandler(bh -> {

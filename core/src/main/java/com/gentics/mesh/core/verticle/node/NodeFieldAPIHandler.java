@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
@@ -233,7 +234,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	public void handleRemoveFieldItem(InternalActionContext ac, String uuid) {
@@ -243,7 +244,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	public void handleUpdateFieldItem(InternalActionContext ac, String uuid) {

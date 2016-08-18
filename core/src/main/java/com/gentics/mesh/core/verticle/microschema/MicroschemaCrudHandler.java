@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "microschema_deleted");
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
 
 	/**
@@ -141,9 +142,9 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				}
 				return db.tx(() -> {
 					project.getMicroschemaContainerRoot().removeMicroschema(microschema);
-					return microschema.transformToRest(ac, 0);
+					return Single.just(null);
 				});
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 }

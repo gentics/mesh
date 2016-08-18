@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.navroot;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -44,7 +45,7 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 		endpoint.addUriParameter("path", "Webroot path to the node language variation.", "someFolder/somePage.html");
 		endpoint.addQueryParameters(NavigationParameters.class);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, nodeExamples.getNavigationResponse());
+		endpoint.exampleResponse(OK, nodeExamples.getNavigationResponse(), "Loaded navigation.");
 		endpoint.handler(rc -> handler.handleGetPath(rc));
 	}
 }

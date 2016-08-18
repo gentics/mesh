@@ -1,6 +1,5 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -68,7 +67,7 @@ public interface GroupClientMethods {
 	 * @param userUuid
 	 * @return
 	 */
-	MeshRequest<GroupResponse> removeUserFromGroup(String groupUuid, String userUuid);
+	MeshRequest<Void> removeUserFromGroup(String groupUuid, String userUuid);
 
 	/**
 	 * Add the role to the group.
@@ -86,6 +85,6 @@ public interface GroupClientMethods {
 	 * @param roleUuid
 	 * @return
 	 */
-	MeshRequest<GroupResponse> removeRoleFromGroup(String groupUuid, String roleUuid);
+	MeshRequest<Void> removeRoleFromGroup(String groupUuid, String roleUuid);
 
 }

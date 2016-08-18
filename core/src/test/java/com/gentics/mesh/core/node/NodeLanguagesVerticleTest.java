@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
@@ -48,10 +47,9 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 			assertThat(node.getAvailableLanguageNames()).contains("en", "de");
 
 			// Delete the english version 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
+			MeshResponse<Void> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "node_deleted_language", node.getUuid(), "en");
 
 			// Loading is still be possible but the node will contain no fields
 			MeshResponse<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en")).invoke();
@@ -91,7 +89,7 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 	public void testDeleteBogusLanguage() {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
-			MeshResponse<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "blub").invoke();
+			MeshResponse<Void> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "blub").invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "error_language_not_found", "blub");
 		}
@@ -102,7 +100,7 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			role().revokePermissions(node, DELETE_PERM);
-			MeshResponse<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
+			MeshResponse<Void> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		}

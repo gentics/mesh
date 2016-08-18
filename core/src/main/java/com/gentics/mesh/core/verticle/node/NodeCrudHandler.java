@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
@@ -66,10 +65,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					// Create the batch first since we can't delete the container and access it later in batch creation
 					SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 					SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-
 					node.deleteFromRelease(ac.getRelease(null), batch);
 					return batch;
-				}).process().andThen(Single.just(message(ac, "node_deleted", uuid)));
+				}).process().andThen(Single.just(null));
 			});
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
@@ -97,9 +95,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 				SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
-				return batch.process().toSingleDefault(message(ac, "node_deleted_language", uuid, languageTag));
+				return batch.process().andThen(Single.just(null));
 			});
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 
 	}
 
@@ -124,10 +122,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Single<Node> obsTargetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 
 			Single<Single<GenericMessageResponse>> obs = Single.zip(obsSourceNode, obsTargetNode, (sourceNode, targetNode) -> {
-				return sourceNode.moveTo(ac, targetNode).andThen(Single.just(message(ac, "node_moved_to", uuid, toUuid)));
+				return sourceNode.moveTo(ac, targetNode).andThen(Single.just(null));
 			});
 			return Single.merge(obs);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 
 	}
 
@@ -237,22 +235,17 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Single<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			Single<Single<NodeResponse>> obs = Single.zip(obsNode, obsTag, (node, tag) -> {
-				Tuple<SearchQueueBatch, Node> tuple = db.tx(() -> {
+				SearchQueueBatch sqBatch = db.tx(() -> {
 					// TODO get release specific containers
 					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 					node.removeTag(tag, release);
-					return Tuple.tuple(batch, node);
+					return batch;
 				});
-
-				SearchQueueBatch batch = tuple.v1();
-				Node updatedNode = tuple.v2();
-
-				return batch.process(ac).andThen(updatedNode.transformToRest(ac, 0));
-
+				return sqBatch.process(ac).andThen(Single.just(null));
 			});
 			return obs.flatMap(x -> x);
 
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 
 	}
 
@@ -307,11 +300,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return node.takeOffline(ac).andThen(Single.defer(() -> {
 					return db.noTx(() -> {
 						node.reload();
-						return node.transformToPublishStatus(ac);
+						//						return node.transformToPublishStatus(ac);
+						return Single.just(null);
 					});
 				}));
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	/**
@@ -365,11 +359,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return node.takeOffline(ac, languageTag).toSingle(() -> {
 					return db.noTx(() -> {
 						node.reload();
-						return node.transformToPublishStatus(ac, languageTag);
+						return Single.just(null);
 					});
 				}).flatMap(x -> x);
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	protected void readElement(InternalActionContext ac, String uuid, TxHandler<RootVertex<?>> handler) {

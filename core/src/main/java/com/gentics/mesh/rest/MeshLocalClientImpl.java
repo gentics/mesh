@@ -201,8 +201,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag, ParameterProvider... parameters) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
+	public MeshRequest<Void> deleteNode(String projectName, String uuid, String languageTag, ParameterProvider... parameters) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		ac.setQuery("?lang=" + languageTag);
 		// TODO set project
@@ -252,9 +252,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid,
-			ParameterProvider... parameters) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
+	public MeshRequest<Void> moveNode(String projectName, String nodeUuid, String targetFolderUuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleMove(ac, nodeUuid, targetFolderUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -579,8 +578,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GroupResponse> removeUserFromGroup(String groupUuid, String userUuid) {
-		LocalActionContextImpl<GroupResponse> ac = createContext(GroupResponse.class);
+	public MeshRequest<Void> removeUserFromGroup(String groupUuid, String userUuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		groupCrudHandler.handleRemoveUserFromGroup(ac, groupUuid, userUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -593,8 +592,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GroupResponse> removeRoleFromGroup(String groupUuid, String roleUuid) {
-		LocalActionContextImpl<GroupResponse> ac = createContext(GroupResponse.class);
+	public MeshRequest<Void> removeRoleFromGroup(String groupUuid, String roleUuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		groupCrudHandler.handleRemoveRoleFromGroup(ac, groupUuid, roleUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}

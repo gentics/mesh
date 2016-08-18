@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.verticle.release;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
@@ -50,7 +52,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		endpoint.description("Create a new release and automatically invoke a node migration.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(versioningExamples.createReleaseCreateRequest("Winter 2016"));
-		endpoint.exampleResponse(201, versioningExamples.createReleaseResponse("Winter 2016"));
+		endpoint.exampleResponse(CREATED, versioningExamples.createReleaseResponse("Winter 2016"), "Created release.");
 		endpoint.handler(rc -> crudHandler.handleCreate(InternalActionContext.create(rc)));
 	}
 
@@ -62,7 +64,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		readSchemas.description("Load schemas that are assigned to the release and return a paged list response.");
 		readSchemas.addQueryParameters(PagingParameters.class);
 		readSchemas.produces(APPLICATION_JSON);
-		readSchemas.exampleResponse(200, schemaExamples.createSchemaReferenceList());
+		readSchemas.exampleResponse(OK, schemaExamples.createSchemaReferenceList(), "Loaded schema list.");
 		readSchemas.handler(rc -> {
 			String uuid = rc.request().getParam("releaseUuid");
 			crudHandler.handleGetSchemaVersions(InternalActionContext.create(rc), uuid);
@@ -72,9 +74,9 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		readMicroschemas.path("/:releaseUuid/microschemas");
 		readMicroschemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readMicroschemas.method(GET);
-		readMicroschemas.description("Load schemas that are assigned to the release and return a paged list response.");
+		readMicroschemas.description("Load microschemas that are assigned to the release and return a paged list response.");
 		readMicroschemas.produces(APPLICATION_JSON);
-		readMicroschemas.exampleResponse(200, microschemaExamples.createMicroschemaReferenceList());
+		readMicroschemas.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "List of microschemas.");
 		readMicroschemas.addQueryParameters(PagingParameters.class);
 		readMicroschemas.handler(rc -> {
 			String uuid = rc.request().getParam("releaseUuid");
@@ -87,7 +89,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		readOne.description("Load the release with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(200, versioningExamples.createReleaseResponse("Summer Collection Release"));
+		readOne.exampleResponse(OK, versioningExamples.createReleaseResponse("Summer Collection Release"), "Loaded release.");
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("releaseUuid");
 			if (StringUtils.isEmpty(uuid)) {
@@ -101,7 +103,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Load multiple releases and return a paged list response.");
-		readAll.exampleResponse(200, versioningExamples.createReleaseListResponse());
+		readAll.exampleResponse(OK, versioningExamples.createReleaseListResponse(), "Loaded releases.");
 		readAll.addQueryParameters(PagingParameters.class);
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
@@ -118,7 +120,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		addSchema.consumes(APPLICATION_JSON);
 		addSchema.produces(APPLICATION_JSON);
 		addSchema.exampleRequest(schemaExamples.createSchemaReferenceList());
-		addSchema.exampleResponse(200, schemaExamples.createSchemaReferenceList());
+		addSchema.exampleResponse(OK, schemaExamples.createSchemaReferenceList(), "Updated schema list.");
 		addSchema.handler(rc -> {
 			String uuid = rc.request().params().get("releaseUuid");
 			crudHandler.handleAssignSchemaVersion(InternalActionContext.create(rc), uuid);
@@ -132,7 +134,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		addMicroschema.consumes(APPLICATION_JSON);
 		addMicroschema.produces(APPLICATION_JSON);
 		addMicroschema.exampleRequest(microschemaExamples.createMicroschemaReferenceList());
-		addMicroschema.exampleResponse(200, microschemaExamples.createMicroschemaReferenceList());
+		addMicroschema.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "Updated microschema list.");
 		addMicroschema.handler(rc -> {
 			String uuid = rc.request().params().get("releaseUuid");
 			crudHandler.handleAssignMicroschemaVersion(InternalActionContext.create(rc), uuid);
@@ -146,7 +148,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		updateRelease.consumes(APPLICATION_JSON);
 		updateRelease.produces(APPLICATION_JSON);
 		updateRelease.exampleRequest(versioningExamples.createReleaseUpdateRequest("Winter Collection Release"));
-		updateRelease.exampleResponse(200, versioningExamples.createReleaseResponse("Winter Collection Release"));
+		updateRelease.exampleResponse(OK, versioningExamples.createReleaseResponse("Winter Collection Release"), "Updated release");
 		updateRelease.handler(rc -> {
 			String uuid = rc.request().params().get("releaseUuid");
 			crudHandler.handleUpdate(InternalActionContext.create(rc), uuid);

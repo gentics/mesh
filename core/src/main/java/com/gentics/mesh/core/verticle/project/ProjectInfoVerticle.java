@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,7 @@ public class ProjectInfoVerticle extends AbstractCoreApiVerticle {
 		endpoint.addUriParameter("project", "Name of the project.", "demo");
 		endpoint.description("Return the current project info.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, projectExamples.getProjectResponse("demo"));
+		endpoint.exampleResponse(OK, projectExamples.getProjectResponse("demo"), "Project information.");
 		endpoint.handler(rc -> {
 			String projectName = rc.request().params().get("project");
 			crudHandler.handleReadByName(InternalActionContext.create(rc), projectName);

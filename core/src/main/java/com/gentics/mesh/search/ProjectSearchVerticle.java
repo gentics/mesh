@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -88,7 +89,7 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, exampleResponse);
+		endpoint.exampleResponse(OK, exampleResponse, "Paged search result list.");
 		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {
 			try {

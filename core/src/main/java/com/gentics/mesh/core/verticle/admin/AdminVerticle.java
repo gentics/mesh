@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.admin;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -31,7 +32,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	public AdminVerticle() {
 		super("admin");
 	}
-	
+
 	@Override
 	public String getDescription() {
 		//TODO what is a admin permission?
@@ -44,10 +45,10 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		addMigrationStatusHandler();
 
 		// TODO secure handlers below
-//		addBackupHandler();
-//		addRestoreHandler();
-//		addImportHandler();
-//		addExportHandler();
+		//		addBackupHandler();
+		//		addRestoreHandler();
+		//		addImportHandler();
+		//		addExportHandler();
 		// addVerticleHandler();
 		// addServiceHandler();
 
@@ -59,7 +60,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(GET);
 		endpoint.description("Return the current schema or node migration status.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Migration status.");
 		endpoint.handler(rc -> {
 			handler.handleMigrationStatus(InternalActionContext.create(rc));
 		});
@@ -71,7 +72,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(GET);
 		endpoint.description("Invoke a graph database export");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Export process was invoked.");
 		endpoint.handler(rc -> {
 			handler.handleExport(rc);
 		});
@@ -83,7 +84,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(GET);
 		endpoint.description("Invoke a graph database import");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database import command was invoked.");
 		endpoint.handler(rc -> {
 			handler.handleImport(rc);
 		});
@@ -94,7 +95,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.path("/restore");
 		endpoint.description("Invoke a graph database restore");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(GET);
 		endpoint.handler(rc -> {
 			handler.handleRestore(rc);
@@ -107,7 +108,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(GET);
 		endpoint.description("Invoke an incremental graph database backup.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Incremental backup was invoked.");
 		endpoint.handler(rc -> {
 			handler.handleBackup(rc);
 		});
@@ -121,7 +122,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		endpoint.description("Return the mesh system status.");
 		endpoint.path("/status");
 		endpoint.method(GET);
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "System status");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			handler.handleStatus(ac);

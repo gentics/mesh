@@ -80,7 +80,7 @@ public class RAMLGenerator {
 
 		Resource verticleResource = new Resource();
 		for (Endpoint endpoint : verticle.getEndpoints()) {
-						
+
 			String fullPath = "api/v1" + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
 			Action action = new Action();
 			action.setIs(Arrays.asList(endpoint.getTraits()));
@@ -89,21 +89,16 @@ public class RAMLGenerator {
 			action.setQueryParameters(endpoint.getQueryParameters());
 
 			// Add response examples
-			for (Entry<Integer, Object> entry : endpoint.getExampleResponses().entrySet()) {
-				Response response = new Response();
-				HashMap<String, MimeType> map = new HashMap<>();
-				response.setBody(map);
-
-				MimeType mimeType = new MimeType();
-				String json = JsonUtil.toJson(entry.getValue());
-				mimeType.setExample(json);
-				map.put("application/json", mimeType);
+			for (Entry<Integer, Response> entry : endpoint.getExampleResponses().entrySet()) {
 				String key = String.valueOf(entry.getKey());
-				action.getResponses().put(key, response);
-
+				Response response = entry.getValue();
 				//write example response to dedicated file
-				String filename = "response/" + fullPath + "/" + key + "/" + entry.getValue().getClass().getSimpleName() + ".json";
-				writeJson(filename, json);
+				String filename = "response/" + fullPath + "/" + key + "/example.json";
+				if (response.getBody() != null && response.getBody().get("application/json") != null) {
+					String json = response.getBody().get("application/json").getExample();
+					writeJson(filename, json);
+				}
+				action.getResponses().put(key, response);
 			}
 
 			// Add request example
@@ -122,7 +117,8 @@ public class RAMLGenerator {
 
 			String path = endpoint.getRamlPath();
 			if (path == null) {
-				throw new RuntimeException("Could not determine path for endpoint of verticle " + verticle.getClass() + " " + endpoint.getPathRegex());
+				throw new RuntimeException(
+						"Could not determine path for endpoint of verticle " + verticle.getClass() + " " + endpoint.getPathRegex());
 			}
 			Resource pathResource = verticleResource.getResources().get(path);
 			if (pathResource == null) {
@@ -136,7 +132,7 @@ public class RAMLGenerator {
 			verticleResource.getResources().put(path, pathResource);
 
 		}
-		verticleResource.setDisplayName(basePath + "/" +verticle.getBasePath());
+		verticleResource.setDisplayName(basePath + "/" + verticle.getBasePath());
 		verticleResource.setDescription(verticle.getDescription());
 		//action.setBaseUriParameters(endpoint.getUriParameters());
 		resources.put(basePath + "/" + verticle.getBasePath(), verticleResource);
@@ -246,7 +242,7 @@ public class RAMLGenerator {
 		AuthenticationVerticle authVerticle = Mockito.spy(new AuthenticationVerticle());
 		initVerticle(authVerticle);
 		addEndpoints(coreBasePath, resources, authVerticle);
-		
+
 		EventbusVerticle eventbusVerticle = Mockito.spy(new EventbusVerticle());
 		initVerticle(eventbusVerticle);
 		addEndpoints(coreBasePath, resources, eventbusVerticle);

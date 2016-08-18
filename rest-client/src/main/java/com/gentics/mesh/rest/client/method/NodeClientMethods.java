@@ -67,7 +67,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag, ParameterProvider... parameters);
+	MeshRequest<Void> deleteNode(String projectName, String uuid, String languageTag, ParameterProvider... parameters);
 
 	/**
 	 * Find all nodes within the project with the given name. The query parameters can be used to set paging and language settings.
@@ -138,7 +138,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid, ParameterProvider... parameters);
+	MeshRequest<Void> moveNode(String projectName, String nodeUuid, String targetFolderUuid, ParameterProvider... parameters);
 
 	/**
 	 * Load multiple tags that were assigned to a given node.
@@ -158,8 +158,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<PublishStatusResponse> getNodePublishStatus(String projectName, String nodeUuid,
-			ParameterProvider... parameters);
+	MeshRequest<PublishStatusResponse> getNodePublishStatus(String projectName, String nodeUuid, ParameterProvider... parameters);
 
 	/**
 	 * Get the publish status of a node language
@@ -181,8 +180,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid,
-			ParameterProvider... parameters);
+	MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid, ParameterProvider... parameters);
 
 	/**
 	 * Publish a node language.
@@ -193,8 +191,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
-			ParameterProvider... parameters);
+	MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters);
 
 	/**
 	 * Take a node and all node languages offline.
@@ -204,8 +201,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<PublishStatusResponse> takeNodeOffline(String projectName, String nodeUuid,
-			ParameterProvider... parameters);
+	MeshRequest<PublishStatusResponse> takeNodeOffline(String projectName, String nodeUuid, ParameterProvider... parameters);
 
 	/**
 	 * Take a node language offline.
@@ -216,7 +212,6 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<PublishStatusModel> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
-			ParameterProvider... parameters);
+	MeshRequest<PublishStatusModel> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters);
 
 }

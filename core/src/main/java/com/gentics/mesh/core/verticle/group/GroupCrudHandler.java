@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.group;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.elasticsearch.common.collect.Tuple;
@@ -35,7 +36,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "group_deleted");
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
 
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
@@ -95,19 +96,16 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsRole, (group, role) -> {
-				Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
+				SearchQueueBatch sqBatch = db.tx(() -> {
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					group.removeRole(role);
-					return Tuple.tuple(batch, group);
+					return batch;
 				});
 
-				SearchQueueBatch batch = tuple.v1();
-				Group updatedGroup = tuple.v2();
-				return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
+				return sqBatch.process().andThen(Single.just(null));
 			});
 			return Single.merge(obs);
-			//return obs.flatMap(x -> x);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	/**
@@ -182,10 +180,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 					return Tuple.tuple(batch, group);
 				});
 				SearchQueueBatch batch = tuple.v1();
-				Group updatedGroup = tuple.v2();
-				return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
+				return batch.process().andThen(Single.just(null));
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 }

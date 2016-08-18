@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.verticle.schema;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -56,7 +58,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		//		readChanges.method(GET);
 		//		readChanges.description("Return a list of changes ");
 		//		readChanges.produces(APPLICATION_JSON);
-		//		readChanges.exampleResponse(200, schemaExamples.)
+		//		readChanges.exampleResponse(OK, schemaExamples.)
 		//		readChanges.handler(rc -> {
 		//			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
 		//		});
@@ -68,7 +70,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		endpoint.description("Apply the posted changes to the schema.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Schema migration was started.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
@@ -84,7 +86,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaCreateRequest());
-		endpoint.exampleResponse(201, schemaExamples.getSchema());
+		endpoint.exampleResponse(CREATED, schemaExamples.getSchema(), "Created schema.");
 		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
@@ -95,11 +97,12 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		diffEndpoint.path("/:schemaUuid/diff");
 		diffEndpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		diffEndpoint.method(POST);
-		diffEndpoint.description("Compare the given schema with the stored schema and create a changeset");
+		diffEndpoint.description("Compare the given schema with the stored schema and create a changeset.");
 		diffEndpoint.consumes(APPLICATION_JSON);
 		diffEndpoint.produces(APPLICATION_JSON);
 		diffEndpoint.exampleRequest(schemaExamples.getSchema());
-		diffEndpoint.exampleResponse(200, schemaExamples.getSchemaChangesListModel());
+		diffEndpoint.exampleResponse(OK, schemaExamples.getSchemaChangesListModel(),
+				"List of schema changes that were detected by comparing the posted schema and the current version.");
 		diffEndpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("schemaUuid");
@@ -116,7 +119,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
-		endpoint.exampleResponse(200, schemaExamples.getSchema());
+		endpoint.exampleResponse(OK, schemaExamples.getSchema(), "Updated schema.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("schemaUuid");
@@ -131,7 +134,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(DELETE);
 		endpoint.description("Delete the schema with the given uuid.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully deleted.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("schemaUuid");
@@ -145,7 +148,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.description("Load the schema with the given uuid.");
-		readOne.exampleResponse(200, schemaExamples.getSchema());
+		readOne.exampleResponse(OK, schemaExamples.getSchema(), "Loaded schema.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("schemaUuid");
@@ -162,7 +165,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		readAll.description("Read multiple schemas and return a paged list response.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.addQueryParameters(PagingParameters.class);
-		readAll.exampleResponse(200, schemaExamples.getSchemaListResponse());
+		readAll.exampleResponse(OK, schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});

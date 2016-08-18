@@ -121,8 +121,7 @@ public interface Database {
 	<T> T noTx(TxHandler<T> txHandler);
 
 	/**
-	 * Asynchronously execute the trxHandler within the scope of a non transaction. Experimental implementation. This version will use RxJava schedulers to
-	 * execute the given observable within the scope of a transaction.
+	 * Asynchronously execute the trxHandler within the scope of a non transaction.
 	 * 
 	 * @param trxHandler
 	 * @return
@@ -130,7 +129,15 @@ public interface Database {
 	<T> Single<T> asyncNoTx(TxHandler<Single<T>> trxHandler);
 
 	/**
-	 * Initialize the database and store the settings.
+	 * Asynchronously execute the trxHandler within the scope of a transaction.
+	 * 
+	 * @param trxHandler
+	 * @return
+	 */
+	<T> Single<T> asyncTx(TxHandler<Single<T>> trxHandler);
+
+	/**
+	 * Initialise the database and store the settings.
 	 * 
 	 * @param options
 	 *            Graph database options

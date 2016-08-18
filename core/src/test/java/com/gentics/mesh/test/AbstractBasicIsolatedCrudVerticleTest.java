@@ -21,15 +21,15 @@ public abstract class AbstractBasicIsolatedCrudVerticleTest extends AbstractIsol
 		boolean foundDelete = false;
 		for (MeshResponse<Void> future : set) {
 			latchFor(future);
-			if (future.succeeded() && future.result() != null) {
+			if (future.succeeded() && foundDelete == true) {
+				fail("We found more than one request that succeeded. Only one of the requests should be able to delete the node.");
+			}
+			if (future.succeeded()) {
 				foundDelete = true;
 				continue;
 			}
-			if (future.succeeded() && future.result() != null && foundDelete == true) {
-				fail("We found more than one request that succeeded. Only one of the requests should be able to delete the node.");
-			}
 		}
-		assertTrue(foundDelete);
+		assertTrue("We did not find a single request which succeeded.", foundDelete);
 
 		//		Trx.disableDebug();
 		if (barrier != null) {

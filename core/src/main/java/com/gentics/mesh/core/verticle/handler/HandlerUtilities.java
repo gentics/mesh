@@ -61,11 +61,9 @@ public final class HandlerUtilities {
 	 *            Handler which provides the root vertex which will be used to load the element
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
-	 * @param responseMessage
-	 *            Response message to be returned on success
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac,
-			TxHandler<RootVertex<T>> handler, String uuid, String responseMessage) {
+			TxHandler<RootVertex<T>> handler, String uuid) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 
@@ -91,7 +89,7 @@ public final class HandlerUtilities {
 						}
 					});
 					//TODO add log output
-					String id = tuple.v1();
+//					String id = tuple.v1();
 					SearchQueueBatch batch = tuple.v2();
 					return batch.process().andThen(Single.just(null));
 				});

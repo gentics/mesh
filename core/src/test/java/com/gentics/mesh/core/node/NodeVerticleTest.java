@@ -52,7 +52,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -895,20 +894,20 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testDeleteByUUIDMultithreaded() {
 
-		int nJobs = 3;
-		try (NoTx noTx = db.noTx()) {
-			String uuid = folder("2015").getUuid();
-			// CyclicBarrier barrier = new CyclicBarrier(nJobs);
-			// Trx.enableDebug();
-			// Trx.setBarrier(barrier);
-			Set<MeshResponse<Void>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				log.debug("Invoking deleteNode REST call");
-				set.add(getClient().deleteNode(PROJECT_NAME, uuid).invoke());
-			}
+		String uuid = db.noTx(() -> folder("2015").getUuid());
+		int nJobs = 6;
 
-			validateDeletion(set, null);
+		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		// Trx.enableDebug();
+		// Trx.setBarrier(barrier);
+		Set<MeshResponse<Void>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking deleteNode REST call");
+			set.add(getClient().deleteNode(PROJECT_NAME, uuid).invoke());
 		}
+
+		validateDeletion(set, null);
+//		call(() -> getClient().deleteNode(PROJECT_NAME, uuid));
 
 	}
 

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.auth;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
@@ -41,7 +42,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 		meEndpoint.method(GET);
 		meEndpoint.produces(APPLICATION_JSON);
 		meEndpoint.description("Load your own user which is currently logged in.");
-		meEndpoint.exampleResponse(200, userExamples.getUserResponse1("jdoe"));
+		meEndpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "Currently logged in user.");
 		meEndpoint.handler(rc -> {
 			authRestHandler.handleMe(InternalActionContext.create(rc));
 		});
@@ -53,7 +54,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 		loginEndpoint.produces(APPLICATION_JSON);
 		loginEndpoint.description("Login via this dedicated login endpoint");
 		loginEndpoint.exampleRequest(miscExamples.getLoginRequest());
-		loginEndpoint.exampleResponse(200, miscExamples.getAuthTokenResponse());
+		loginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
 		loginEndpoint.handler(rc -> {
 			authRestHandler.handleLogin(InternalActionContext.create(rc));
 		});
@@ -66,7 +67,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 		logoutEndpoint.method(GET);
 		logoutEndpoint.produces(APPLICATION_JSON);
 		logoutEndpoint.description("Logout and delete the currently active session.");
-		logoutEndpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		logoutEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "User was successfully logged out.");
 		logoutEndpoint.handler(rc -> {
 			authRestHandler.handleLogout(InternalActionContext.create(rc));
 		});

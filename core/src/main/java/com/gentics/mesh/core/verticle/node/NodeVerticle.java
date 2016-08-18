@@ -1,10 +1,13 @@
 package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -93,7 +96,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.description("Returns a navigation object for the provided node.");
 		endpoint.displayName("Navigation");
 		endpoint.exampleRequest(new GenericMessageResponse("test"));
-		endpoint.exampleResponse(200, responseExample);
+		endpoint.exampleResponse(OK, responseExample, "Loaded navigation.");
 		endpoint.addQueryParameters(NavigationParameters.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -110,7 +113,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the language specific content of the node.");
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(NO_CONTENT, "Language variation of the node has been deleted.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -128,7 +131,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
 		// TODO consumes json and upload
-		fieldUpdate.exampleResponse(200, miscExamples.getMessageResponse());
+		fieldUpdate.exampleResponse(OK, miscExamples.getMessageResponse(), "Field was updated");
 		fieldUpdate.description("Update the field with the given name.");
 		fieldUpdate.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
@@ -174,7 +177,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		fieldDelete.method(DELETE);
 		fieldDelete.produces(APPLICATION_JSON);
 		fieldDelete.description("Delete the field with the given name");
-		fieldDelete.exampleResponse(200, miscExamples.getMessageResponse());
+		fieldDelete.exampleResponse(NO_CONTENT, "Field with the given name was deleted.");
 		fieldDelete.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -194,7 +197,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		imageTransform.consumes(APPLICATION_JSON);
 		imageTransform.description("Transform the image with the given field name and overwrite the stored image with the transformation result.");
 		imageTransform.exampleRequest(nodeExamples.getBinaryFieldTransformRequest());
-		imageTransform.exampleResponse(200, miscExamples.getMessageResponse());
+		imageTransform.exampleResponse(OK, miscExamples.getMessageResponse(), "Transformation was executed.");
 		imageTransform.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("language");
@@ -211,7 +214,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		listItemDelete.addUriParameter("itemIndex", "Index which identifies the item which should be deleted", "5");
 		listItemDelete.method(DELETE);
 		listItemDelete.produces(APPLICATION_JSON);
-		listItemDelete.exampleResponse(200, miscExamples.getMessageResponse());
+		listItemDelete.exampleResponse(OK, miscExamples.getMessageResponse(), "Item was deleted.");
 		listItemDelete.description("Delete the field list item at the given index position (Not yet implemented)");
 		listItemDelete.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -228,7 +231,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		listItemGet.addUriParameter("field", "Name of the field", "stringList");
 		listItemGet.addUriParameter("itemIndex", "Index which identifies the item which should be loaded.", "5");
 		listItemGet.method(GET);
-		listItemGet.exampleResponse(200, miscExamples.getMessageResponse());
+		listItemGet.exampleResponse(OK, miscExamples.getMessageResponse(), "Loaded item.");
 		listItemGet.description("Load the field list item at the given index position. (Not yet implemented)");
 		listItemGet.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -286,7 +289,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Move the node into the target node.");
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(NO_CONTENT, "Node was moved.");
 		endpoint.addQueryParameters(VersioningParameters.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -302,7 +305,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, nodeExamples.getNodeListResponse());
+		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of loaded node children.");
 		endpoint.description("Load all child nodes and return a paged list response.");
 		endpoint.addQueryParameters(PagingParameters.class);
 		endpoint.addQueryParameters(NodeParameters.class);
@@ -321,7 +324,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		getTags.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		getTags.method(GET);
 		getTags.produces(APPLICATION_JSON);
-		getTags.exampleResponse(200, tagExamples.getTagListResponse());
+		getTags.exampleResponse(OK, tagExamples.getTagListResponse(), "List of tags that were used to tag the node.");
 		getTags.description("Return a list of all tags which tag the node.");
 		getTags.addQueryParameters(VersioningParameters.class);
 		getTags.handler(rc -> {
@@ -336,7 +339,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		addTag.addUriParameter("tagUuid", "Uuid of the tag", UUIDUtil.randomUUID());
 		addTag.method(POST);
 		addTag.produces(APPLICATION_JSON);
-		addTag.exampleResponse(200, nodeExamples.getNodeResponse2());
+		addTag.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
 		addTag.description("Assign the given tag to the node.");
 		addTag.addQueryParameters(VersioningParameters.class);
 		addTag.handler(rc -> {
@@ -354,7 +357,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		removeTag.method(DELETE);
 		removeTag.produces(APPLICATION_JSON);
 		removeTag.description("Remove the given tag from the node.");
-		removeTag.exampleResponse(200, nodeExamples.getNodeResponse2());
+		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");
 		removeTag.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -373,7 +376,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.description("Create a new node.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(nodeExamples.getNodeCreateRequest());
-		endpoint.exampleResponse(201, nodeExamples.getNodeResponseWithAllFields());
+		endpoint.exampleResponse(CREATED, nodeExamples.getNodeResponseWithAllFields(), "Created node.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			ac.getVersioningParameters().setVersion("draft");
@@ -388,7 +391,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		readOne.method(GET);
 		readOne.description("Load the node with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(200, nodeExamples.getNodeResponseWithAllFields());
+		readOne.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "Loaded node.");
 		readOne.addQueryParameters(VersioningParameters.class);
 		readOne.addQueryParameters(RolePermissionParameters.class);
 		readOne.addQueryParameters(NodeParameters.class);
@@ -406,7 +409,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		readAll.description("Read all nodes and return a paged list response.");
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
-		readAll.exampleResponse(200, nodeExamples.getNodeListResponse());
+		readAll.exampleResponse(OK, nodeExamples.getNodeListResponse(), "Loaded list of nodes.");
 		readAll.addQueryParameters(VersioningParameters.class);
 		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.addQueryParameters(NodeParameters.class);
@@ -422,7 +425,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.description("Delete the node with the given uuid.");
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(204);
+		endpoint.exampleResponse(NO_CONTENT, "Deletion was successful.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -447,8 +450,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
-		endpoint.exampleResponse(200, nodeExamples.getNodeResponse2());
-		endpoint.exampleResponse(409, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
+		endpoint.exampleResponse(CONFLICT, miscExamples.getMessageResponse(), "A conflict has been detected.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -465,7 +468,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		getEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		getEndpoint.method(GET);
 		getEndpoint.produces(APPLICATION_JSON);
-		getEndpoint.exampleResponse(200, versioningExamples.createPublishStatusResponse());
+		getEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
 		getEndpoint.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), uuid);
@@ -477,7 +480,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		putEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		putEndpoint.method(POST);
 		putEndpoint.produces(APPLICATION_JSON);
-		putEndpoint.exampleResponse(200, versioningExamples.createPublishStatusResponse());
+		putEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
 		putEndpoint.addQueryParameters(PublishParameters.class);
 		putEndpoint.handler(rc -> {
 			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"));
@@ -489,7 +492,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		deleteEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
-		deleteEndpoint.exampleResponse(200, nodeExamples.getNodeResponse2());
+		deleteEndpoint.exampleResponse(NO_CONTENT, "Node was unpublished.");
 		deleteEndpoint.addQueryParameters(PublishParameters.class);
 		deleteEndpoint.handler(rc -> {
 			crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"));
@@ -504,7 +507,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		getLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
 		getLanguageRoute.method(GET);
 		getLanguageRoute.produces(APPLICATION_JSON);
-		getLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
+		getLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Publish status of the specific language.");
 		getLanguageRoute.handler(rc -> {
 			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"),
 					rc.request().getParam("language"));
@@ -516,7 +519,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		putLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
 		putLanguageRoute.description(
 				"Publish the language of the node. This will automatically assign a new major version to the node and update the draft version to the published version.");
-		putLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
+		putLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Updated publish status.");
 		putLanguageRoute.produces(APPLICATION_JSON);
 		putLanguageRoute.handler(rc -> {
 			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"), rc.request().getParam("language"));
@@ -527,7 +530,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		deleteLanguageRoute.path("/:nodeUuid/languages/:language/published").method(DELETE).produces(APPLICATION_JSON);
 		deleteLanguageRoute.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		deleteLanguageRoute.addUriParameter("language", "Name of the language tag", "en");
-		deleteLanguageRoute.exampleResponse(200, versioningExamples.createPublishStatusModel());
+		deleteLanguageRoute.exampleResponse(NO_CONTENT, versioningExamples.createPublishStatusModel(), "Node language was taken offline.");
 		deleteLanguageRoute.produces(APPLICATION_JSON);
 		deleteLanguageRoute.handler(rc -> {
 			crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"), rc.request().getParam("language"));

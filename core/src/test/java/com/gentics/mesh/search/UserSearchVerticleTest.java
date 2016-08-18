@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -139,7 +138,8 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 			user().setLastname(impossibleName);
 			fullIndex();
 		}
-		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*")).invoke();
+		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*"))
+				.invoke();
 		latchFor(future);
 		assertSuccess(future);
 		ListResponse<UserResponse> response = future.result();
@@ -254,9 +254,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		String userUuid = future.result().getUuid();
 
-		MeshResponse<GroupResponse> futureDelete = getClient().removeUserFromGroup(group.getUuid(), userUuid).invoke();
-		latchFor(futureDelete);
-		assertSuccess(futureDelete);
+		call(() -> getClient().removeUserFromGroup(group.getUuid(), userUuid));
 
 		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
@@ -302,8 +300,8 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 			createUser(username);
 		}
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()),
-				new PagingParameters().setPerPage(0)).invoke();
+		MeshResponse<UserListResponse> searchFuture = getClient()
+				.searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()), new PagingParameters().setPerPage(0)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

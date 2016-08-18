@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.verticle.group;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +57,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		readRoles.description("Load multiple roles that are assigned to the group. Return a paged list response.");
 		readRoles.method(GET);
 		readRoles.produces(APPLICATION_JSON);
-		readRoles.exampleResponse(200, roleExamples.getRoleListResponse());
+		readRoles.exampleResponse(OK, roleExamples.getRoleListResponse(), "List of roles which were assigned to the group.");
 		readRoles.addQueryParameters(PagingParameters.class);
 		readRoles.addQueryParameters(RolePermissionParameters.class);
 		readRoles.handler(rc -> {
@@ -71,7 +73,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		addRole.method(POST);
 		addRole.description("Add the specified role to the group.");
 		addRole.produces(APPLICATION_JSON);
-		addRole.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
+		addRole.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Loaded role.");
 		addRole.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -85,7 +87,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		removeRole.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
 		removeRole.method(DELETE);
 		removeRole.description("Remove the given role from the group.");
-		removeRole.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
+		removeRole.exampleResponse(NO_CONTENT, "Role was removed from the group.");
 		removeRole.produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -100,7 +102,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		readUsers.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		readUsers.method(GET);
 		readUsers.produces(APPLICATION_JSON);
-		readUsers.exampleResponse(200, userExamples.getUserListResponse());
+		readUsers.exampleResponse(OK, userExamples.getUserListResponse(), "List of users which belong to the group.");
 		readUsers.description("Load a list of users which have been assigned to the group.");
 		readUsers.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -115,7 +117,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		addUser.method(POST);
 		addUser.description("Add the given user to the group");
 		addUser.produces(APPLICATION_JSON);
-		addUser.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
+		addUser.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Updated group.");
 		addUser.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -128,7 +130,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		removeUser.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		removeUser.addUriParameter("userUuid", "Uuid of the user which should be removed from the group.", UUIDUtil.randomUUID());
 		removeUser.description("Remove the given user from the group.");
-		removeUser.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
+		removeUser.exampleResponse(NO_CONTENT, "User was removed from the group.");
 		removeUser.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -143,7 +145,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		deleteGroup.addUriParameter("groupUuid", "Uuid of the group which should be deleted.", UUIDUtil.randomUUID());
 		deleteGroup.description("Delete the given group.");
 		deleteGroup.method(DELETE);
-		deleteGroup.exampleResponse(200, miscExamples.getMessageResponse());
+		deleteGroup.exampleResponse(NO_CONTENT, "Group was deleted.");
 		deleteGroup.produces(APPLICATION_JSON);
 		deleteGroup.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -163,7 +165,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
-		endpoint.exampleResponse(200, groupExamples.getGroupResponse1("New group name"));
+		endpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated group.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("groupUuid");
@@ -179,7 +181,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		readOne.description("Read the group with the given uuid.");
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(200, groupExamples.getGroupResponse1("Admin Group"));
+		readOne.exampleResponse(OK, groupExamples.getGroupResponse1("Admin Group"), "Loaded group.");
 		readOne.addQueryParameters(RolePermissionParameters.class);
 		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -195,7 +197,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		readAll.method(GET);
 		readAll.description("Read multiple groups and return a paged list response.");
 		readAll.produces(APPLICATION_JSON);
-		readAll.exampleResponse(200, groupExamples.getGroupListResponse());
+		readAll.exampleResponse(OK, groupExamples.getGroupListResponse(), "List response which contains the found  groups.");
 		readAll.addQueryParameters(PagingParameters.class);
 		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.handler(rc -> {
@@ -210,7 +212,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(POST);
 		endpoint.description("Create a new group.");
 		endpoint.exampleRequest(groupExamples.getGroupCreateRequest("New group"));
-		endpoint.exampleResponse(201, groupExamples.getGroupResponse1("New group"));
+		endpoint.exampleResponse(CREATED, groupExamples.getGroupResponse1("New group"), "Created group.");
 		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});

@@ -36,7 +36,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "user_deleted");
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
 
 	/**

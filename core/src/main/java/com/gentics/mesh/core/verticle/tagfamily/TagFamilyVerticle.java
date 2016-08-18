@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.verticle.tagfamily;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +82,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Update the specified tag");
 		endpoint.exampleRequest(tagExamples.getTagUpdateRequest("Red"));
-		endpoint.exampleResponse(200, tagExamples.getTagResponse1("Red"));
+		endpoint.exampleResponse(OK, tagExamples.getTagResponse1("Red"), "Updated tag.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
@@ -113,7 +115,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		readOne.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.description("Read the specified tag from the tag family.");
-		readOne.exampleResponse(200, tagExamples.getTagResponse1("red"));
+		readOne.exampleResponse(OK, tagExamples.getTagResponse1("red"), "Loaded tag.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -127,7 +129,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		readAll.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		readAll.method(GET);
 		readAll.description("Load tags which were assigned to this tag family and return a paged list response.");
-		readAll.exampleResponse(200, tagExamples.getTagListResponse());
+		readAll.exampleResponse(OK, tagExamples.getTagListResponse(), "List of tags.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.addQueryParameters(PagingParameters.class);
 		readAll.handler(rc -> {
@@ -147,7 +149,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Remove the tag from the tag family.");
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(NO_CONTENT, "Tag was removed from the tag family");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
@@ -165,7 +167,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Load all nodes that have been tagged with the tag and return a paged list response.");
 		endpoint.addQueryParameters(PagingParameters.class);
-		endpoint.exampleResponse(200, nodeExamples.getNodeListResponse());
+		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of nodes which were tagged using the provided tag.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
@@ -181,7 +183,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the tag family.");
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(NO_CONTENT, "Tag family was deleted.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");
@@ -196,7 +198,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		readOne.method(GET);
 		readOne.description("Read the tag family with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(200, tagFamilyExamples.getTagFamilyResponse("Colors"));
+		readOne.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Colors"), "Loaded tag family.");
 		readOne.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");
@@ -209,7 +211,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		readAll.produces(APPLICATION_JSON);
 		readAll.description("Load multiple tag families and return a paged list response.");
 		readAll.addQueryParameters(PagingParameters.class);
-		readAll.exampleResponse(200, tagFamilyExamples.getTagFamilyListResponse());
+		readAll.exampleResponse(OK, tagFamilyExamples.getTagFamilyListResponse(), "Loaded tag families.");
 		readAll.handler(rc -> {
 			tagFamilyCrudHandler.handleReadList(InternalActionContext.create(rc));
 		});
@@ -223,7 +225,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyCreateRequest("Colors"));
-		endpoint.exampleResponse(201, tagFamilyExamples.getTagFamilyResponse("Colors"));
+		endpoint.exampleResponse(CREATED, tagFamilyExamples.getTagFamilyResponse("Colors"), "Created tag family.");
 		endpoint.handler(rc -> {
 			tagFamilyCrudHandler.handleCreate(InternalActionContext.create(rc));
 		});
@@ -238,7 +240,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
-		endpoint.exampleResponse(200, tagFamilyExamples.getTagFamilyResponse("Nicer colors"));
+		endpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated tag family.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");

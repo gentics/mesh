@@ -1,10 +1,11 @@
 package com.gentics.mesh.core.verticle.microschema;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Read all microschemas which are assigned to the project.");
-		endpoint.exampleResponse(200, microschemaExamples.getMicroschemaListResponse());
+		endpoint.exampleResponse(OK, microschemaExamples.getMicroschemaListResponse(), "List of assigned microschemas.");
 		endpoint.handler(rc -> {
 			crudHandler.handleReadMicroschemaList(InternalActionContext.create(rc));
 		});
@@ -63,7 +64,7 @@ public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Add the microschema to the project.");
-		endpoint.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());
+		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschema(), "Microschema was added to the project.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("microschemaUuid");
@@ -78,7 +79,7 @@ public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Remove the microschema from the project.");
-		endpoint.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());
+		endpoint.exampleResponse(NO_CONTENT, "Microschema was removed from project.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("microschemaUuid");

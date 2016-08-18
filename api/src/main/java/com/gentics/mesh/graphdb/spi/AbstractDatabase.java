@@ -14,8 +14,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.RxHelper;
-import rx.Scheduler;
 import rx.Single;
 
 public abstract class AbstractDatabase implements Database {
@@ -79,6 +77,33 @@ public abstract class AbstractDatabase implements Database {
 		}
 	}
 
+	@Override
+	public <T> Single<T> asyncTx(TxHandler<Single<T>> trxHandler) {
+		return Single.create(sub -> {
+			Mesh.vertx().executeBlocking(bc -> {
+				try (Tx tx = tx()) {
+					Single<T> result = trxHandler.call();
+					if (result == null) {
+						bc.complete();
+					} else {
+						T ele = result.toBlocking().value();
+						bc.complete(ele);
+					}
+				} catch (Exception e) {
+					log.error("Error while handling transaction.", e);
+					bc.fail(e);
+				}
+			}, false, (AsyncResult<T> done) -> {
+				if (done.failed()) {
+					sub.onError(done.cause());
+				} else {
+					sub.onSuccess(done.result());
+				}
+			});
+		});
+
+	}
+	
 	@Override
 	public <T> Single<T> asyncNoTx(TxHandler<Single<T>> trxHandler) {
 		return Single.create(sub -> {

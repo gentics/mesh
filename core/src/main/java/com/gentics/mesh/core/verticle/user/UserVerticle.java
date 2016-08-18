@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.verticle.user;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +21,6 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
-
-import io.vertx.ext.web.Route;
 
 @Component
 @Scope("singleton")
@@ -59,7 +59,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.description("Read the user permissions on the element/s that are located by the specified path.");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, userExamples.getUserPermissionResponse());
+		endpoint.exampleResponse(OK, userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String userUuid = ac.getParameter("param0");
@@ -75,7 +75,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		readOne.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(200, userExamples.getUserResponse1("jdoe"));
+		readOne.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "User response which may also contain an expanded node.");
 		readOne.addQueryParameters(NodeParameters.class);
 		readOne.addQueryParameters(VersioningParameters.class);
 		readOne.addQueryParameters(RolePermissionParameters.class);
@@ -93,7 +93,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		readAll.description("Load multiple users and return a paged list response.");
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
-		readAll.exampleResponse(200, userExamples.getUserListResponse());
+		readAll.exampleResponse(OK, userExamples.getUserListResponse(), "User list response which may also contain an expanded node references.");
 		readAll.addQueryParameters(NodeParameters.class);
 		readAll.addQueryParameters(VersioningParameters.class);
 		readAll.addQueryParameters(RolePermissionParameters.class);
@@ -111,7 +111,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.description(
 				"Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		endpoint.exampleResponse(NO_CONTENT, "User was deactivated.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("userUuid");
@@ -128,7 +128,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
-		endpoint.exampleResponse(200, userExamples.getUserResponse1("jdoe42"));
+		endpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated user response.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("userUuid");
@@ -144,7 +144,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(userExamples.getUserCreateRequest("newuser"));
-		endpoint.exampleResponse(201, userExamples.getUserResponse1("newuser"));
+		endpoint.exampleResponse(CREATED, userExamples.getUserResponse1("newuser"), "User response of the created user.");
 		endpoint.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});

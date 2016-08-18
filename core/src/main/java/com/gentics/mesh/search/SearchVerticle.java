@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
@@ -36,7 +37,6 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.IndexHandler;
 
-import io.vertx.ext.web.Route;
 import rx.functions.Func0;
 
 @Component
@@ -91,7 +91,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		statusEndpoint.method(GET);
 		statusEndpoint.description("Returns the search index status.");
 		statusEndpoint.produces(APPLICATION_JSON);
-		statusEndpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		statusEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Search index status.");
 		statusEndpoint.handler(rc -> {
 			searchHandler.handleStatus(InternalActionContext.create(rc));
 		});
@@ -100,8 +100,8 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		reindexEndpoint.path("/reindex");
 		reindexEndpoint.method(GET);
 		reindexEndpoint.produces(APPLICATION_JSON);
-		reindexEndpoint.description("Invokes a full reindex of the search indices.");
-		reindexEndpoint.exampleResponse(200, miscExamples.getMessageResponse());
+		reindexEndpoint.description("Invokes a full reindex of the search indices. This operation may take some time to complete.");
+		reindexEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Invoked reindex command for all elements.");
 		reindexEndpoint.handler(rc -> {
 			searchHandler.handleReindex(InternalActionContext.create(rc));
 		});
@@ -128,7 +128,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(200, exampleListResponse);
+		endpoint.exampleResponse(OK, exampleListResponse, "Paged search result for " + typeName);
 		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {
 			try {

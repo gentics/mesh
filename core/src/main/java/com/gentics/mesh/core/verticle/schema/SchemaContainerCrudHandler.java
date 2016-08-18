@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> boot.schemaContainerRoot(), uuid, "schema_deleted");
+		HandlerUtilities.deleteElement(ac, () -> boot.schemaContainerRoot(), uuid);
 	}
 
 	@Override
@@ -120,10 +121,10 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 				}
 				return db.tx(() -> {
 					project.getSchemaContainerRoot().removeSchemaContainer(schema);
-					return schema.transformToRest(ac, 0);
+					return Single.just(null);
 				});
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	public void handleGetSchemaChanges(InternalActionContext ac) {

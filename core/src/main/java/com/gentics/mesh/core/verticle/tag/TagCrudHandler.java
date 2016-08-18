@@ -140,7 +140,7 @@ public class TagCrudHandler extends AbstractHandler {
 
 		HandlerUtilities.deleteElement(ac, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
-		}, tagUuid, "tag_deleted");
+		}, tagUuid);
 
 	}
 

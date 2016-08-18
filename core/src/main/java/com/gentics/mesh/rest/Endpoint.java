@@ -13,11 +13,15 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.raml.model.MimeType;
+import org.raml.model.Response;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -45,7 +49,7 @@ public class Endpoint implements Route {
 	 */
 	private Map<String, UriParameter> uriParameters = new HashMap<>();
 
-	private Map<Integer, Object> exampleResponses = new HashMap<>();
+	private Map<Integer, Response> exampleResponses = new HashMap<>();
 
 	private String[] traits = new String[] {};
 
@@ -192,7 +196,7 @@ public class Endpoint implements Route {
 
 	/**
 	 * Return the path used for RAML. If non null the path which was previously set using {@link #setRAMLPath(String)} will be returned. Otherwise the converted
-	 * vert.x route path is returned. A vert.x path /:uuid is converted to a RAML path /{uuid}. 
+	 * vert.x route path is returned. A vert.x path /:uuid is converted to a RAML path /{uuid}.
 	 * 
 	 * @return
 	 */
@@ -256,8 +260,19 @@ public class Endpoint implements Route {
 		return displayName;
 	}
 
-	public Endpoint exampleResponse(int code) {
-		exampleResponses.put(code, null);
+	/**
+	 * Add the given response to the example responses.
+	 * 
+	 * @param status
+	 *            Status code of the response
+	 * @param description
+	 *            Description of the response
+	 * @return
+	 */
+	public Endpoint exampleResponse(HttpResponseStatus status, String description) {
+		Response response = new Response();
+		response.setDescription(description);
+		exampleResponses.put(status.code(), response);
 		return this;
 	}
 
@@ -265,11 +280,26 @@ public class Endpoint implements Route {
 	 * Add the given response to the example responses.
 	 * 
 	 * @param code
+	 *            Status code for the example response
 	 * @param model
+	 *            Model which will be turned into JSON
+	 * @param description
+	 *            Description of the example response
 	 * @return
 	 */
-	public Endpoint exampleResponse(int code, Object model) {
-		exampleResponses.put(code, model);
+	public Endpoint exampleResponse(HttpResponseStatus status, Object model, String description) {
+		Response response = new Response();
+		response.setDescription(description);
+
+		HashMap<String, MimeType> map = new HashMap<>();
+		response.setBody(map);
+
+		MimeType mimeType = new MimeType();
+		String json = JsonUtil.toJson(model);
+		mimeType.setExample(json);
+		map.put("application/json", mimeType);
+
+		exampleResponses.put(status.code(), response);
 		return this;
 	}
 
@@ -298,7 +328,7 @@ public class Endpoint implements Route {
 		return traits;
 	}
 
-	public Map<Integer, Object> getExampleResponses() {
+	public Map<Integer, Response> getExampleResponses() {
 		return exampleResponses;
 	}
 
