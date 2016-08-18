@@ -201,7 +201,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<PublishStatusResponse> takeNodeOffline(String projectName, String nodeUuid, ParameterProvider... parameters);
+	MeshRequest<Void> takeNodeOffline(String projectName, String nodeUuid, ParameterProvider... parameters);
 
 	/**
 	 * Take a node language offline.
@@ -212,6 +212,6 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<PublishStatusModel> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters);
+	MeshRequest<Void> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters);
 
 }

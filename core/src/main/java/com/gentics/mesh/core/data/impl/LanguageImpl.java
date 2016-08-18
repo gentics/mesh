@@ -102,4 +102,10 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 		return ETag.hash(getUuid());
 	}
 
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		// Languages don't have a public location
+		return null;
+	}
+
 }

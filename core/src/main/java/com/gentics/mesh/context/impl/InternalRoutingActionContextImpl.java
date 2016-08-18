@@ -1,7 +1,6 @@
 package com.gentics.mesh.context.impl;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
-import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Locale;
@@ -21,6 +20,7 @@ import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Cookie;
@@ -74,8 +74,8 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 
 	@Override
 	public void send(String body, HttpResponseStatus status) {
-		rc.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
-		rc.response().putHeader("Cache-Control", "no-cache");
+		rc.response().putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_UTF8);
+		rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
 		rc.response().setStatusCode(status.code()).end(body);
 	}
 
@@ -86,12 +86,17 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 
 	@Override
 	public void setEtag(String entityTag, boolean isWeak) {
-		rc.response().putHeader(ETAG, ETag.prepareHeader(entityTag, isWeak));
+		rc.response().putHeader(HttpHeaders.ETAG, ETag.prepareHeader(entityTag, isWeak));
+	}
+	
+	@Override
+	public void setLocation(String location) {
+		rc.response().putHeader(HttpHeaders.LOCATION, location);
 	}
 
 	@Override
 	public boolean matches(String etag, boolean isWeak) {
-		String headerValue = rc.request().getHeader("If-None-Match");
+		String headerValue = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
 		if (headerValue == null) {
 			return false;
 		}

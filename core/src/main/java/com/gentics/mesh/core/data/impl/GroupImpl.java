@@ -247,4 +247,9 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
 	}
 
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		return "/api/v1/groups/" + getUuid();
+	}
+
 }

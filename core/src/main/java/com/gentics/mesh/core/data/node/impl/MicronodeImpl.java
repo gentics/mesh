@@ -261,4 +261,9 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		// TODO check whether the uuid remains static for micronode updates 
 		return ETag.hash(getUuid());
 	}
+
+	public String getBaseLocation(InternalActionContext ac) {
+		// Micronodes have no public location
+		return null;
+	}
 }

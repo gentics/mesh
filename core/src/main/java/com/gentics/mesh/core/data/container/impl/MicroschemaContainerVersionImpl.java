@@ -128,4 +128,10 @@ public class MicroschemaContainerVersionImpl
 	public String getETag(InternalActionContext ac) {
 		return ETag.hash(getUuid());
 	}
+
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

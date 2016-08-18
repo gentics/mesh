@@ -25,6 +25,7 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.util.ETag;
 
 public class TagVerticleETagTest extends AbstractETagTest {
 
@@ -44,7 +45,7 @@ public class TagVerticleETagTest extends AbstractETagTest {
 			String tagFamilyUuid = tagFamily("colors").getUuid();
 			MeshResponse<TagListResponse> response = getClient().findTags(PROJECT_NAME, tagFamilyUuid).invoke();
 			latchFor(response);
-			String etag = response.getResponse().getHeader(ETAG);
+			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
 			expect304(getClient().findTags(PROJECT_NAME, tagFamilyUuid), etag, true);
@@ -61,7 +62,7 @@ public class TagVerticleETagTest extends AbstractETagTest {
 			MeshResponse<TagResponse> response = getClient().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid()).invoke();
 			latchFor(response);
 			String etag = tag.getETag(getMockedInternalActionContext());
-			assertEquals(etag, response.getResponse().getHeader(ETAG));
+			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
 			MeshRequest<TagResponse> request = getClient().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid());

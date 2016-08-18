@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -44,6 +45,11 @@ public class MicroschemaContainerImpl
 	@Override
 	public RootVertex<MicroschemaContainer> getRoot() {
 		return MeshRoot.getInstance().getMicroschemaContainerRoot();
+	}
+
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		return "/api/v1/microschemas/" + getUuid();
 	}
 
 }

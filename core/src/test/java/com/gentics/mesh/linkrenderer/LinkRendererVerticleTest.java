@@ -1,7 +1,5 @@
 package com.gentics.mesh.linkrenderer;
 
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -14,10 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
@@ -25,7 +23,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Test cases for link rendering using the Utility Verticle
  */
-public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
+public class LinkRendererVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private UtilityVerticle utilityVerticle;
@@ -42,8 +40,10 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeOff() {
-		Node newsNode = content("news overview");
-		testSimpleLink(newsNode, LinkType.OFF, "{{mesh.link('" + newsNode.getUuid() + "')}}");
+		try (NoTx noTx = db.noTx()) {
+			Node newsNode = content("news overview");
+			testSimpleLink(newsNode, LinkType.OFF, "{{mesh.link('" + newsNode.getUuid() + "')}}");
+		}
 	}
 
 	/**
@@ -51,8 +51,10 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeShort() {
-		Node newsNode = content("news overview");
-		testSimpleLink(newsNode, LinkType.SHORT, "/News/News+Overview.en.html");
+		try (NoTx noTx = db.noTx()) {
+			Node newsNode = content("news overview");
+			testSimpleLink(newsNode, LinkType.SHORT, "/News/News+Overview.en.html");
+		}
 	}
 
 	/**
@@ -60,8 +62,10 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeMedium() {
-		Node newsNode = content("news overview");
-		testSimpleLink(newsNode, LinkType.MEDIUM, "/dummy/News/News+Overview.en.html");
+		try (NoTx noTx = db.noTx()) {
+			Node newsNode = content("news overview");
+			testSimpleLink(newsNode, LinkType.MEDIUM, "/dummy/News/News+Overview.en.html");
+		}
 	}
 
 	/**
@@ -69,8 +73,10 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeFull() {
-		Node newsNode = content("news overview");
-		testSimpleLink(newsNode, LinkType.FULL, "/api/v1/dummy/webroot/News/News+Overview.en.html");
+		try (NoTx noTx = db.noTx()) {
+			Node newsNode = content("news overview");
+			testSimpleLink(newsNode, LinkType.FULL, "/api/v1/dummy/webroot/News/News+Overview.en.html");
+		}
 	}
 
 	/**
@@ -78,20 +84,22 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testLinkInJson() {
-		Node newsNode = content("news overview");
+		try (NoTx noTx = db.noTx()) {
+			Node newsNode = content("news overview");
 
-		JsonObject jsonObject = new JsonObject().put("quotes", "prefix {{mesh.link('" + newsNode.getUuid() + "')}} postfix")
-				.put("doublequotes", "prefix {{mesh.link(\"" + newsNode.getUuid() + "\")}} postfix")
-				.put("noquotes", "prefix {{mesh.link(" + newsNode.getUuid() + ")}} postfix");
+			JsonObject jsonObject = new JsonObject().put("quotes", "prefix {{mesh.link('" + newsNode.getUuid() + "')}} postfix")
+					.put("doublequotes", "prefix {{mesh.link(\"" + newsNode.getUuid() + "\")}} postfix")
+					.put("noquotes", "prefix {{mesh.link(" + newsNode.getUuid() + ")}} postfix");
 
-		JsonObject expected = new JsonObject().put("quotes", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix")
-				.put("doublequotes", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix")
-				.put("noquotes", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix");
+			JsonObject expected = new JsonObject().put("quotes", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix")
+					.put("doublequotes", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix")
+					.put("noquotes", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix");
 
-		JsonObject resultObject = new JsonObject(renderContent(jsonObject.encode(), LinkType.FULL));
+			JsonObject resultObject = new JsonObject(renderContent(jsonObject.encode(), LinkType.FULL));
 
-		for (String attr : Arrays.asList("quotes", "doublequotes", "noquotes")) {
-			assertEquals("Check attribute '" + attr + "'", expected.getString(attr), resultObject.getString(attr));
+			for (String attr : Arrays.asList("quotes", "doublequotes", "noquotes")) {
+				assertEquals("Check attribute '" + attr + "'", expected.getString(attr), resultObject.getString(attr));
+			}
 		}
 	}
 
@@ -100,7 +108,9 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testInvalidLink() {
-		testRenderContent("{{mesh.link('" + UUIDUtil.randomUUID() + "')}}", LinkType.FULL, "/api/v1/project/webroot/error/404");
+		try (NoTx noTx = db.noTx()) {
+			testRenderContent("{{mesh.link('" + UUIDUtil.randomUUID() + "')}}", LinkType.FULL, "/api/v1/project/webroot/error/404");
+		}
 	}
 
 	/**
@@ -114,7 +124,9 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 *            expected result
 	 */
 	private void testSimpleLink(Node node, LinkType linkType, String expectedResult) {
-		testRenderContent("{{mesh.link('" + node.getUuid() + "')}}", linkType, expectedResult);
+		try (NoTx noTx = db.noTx()) {
+			testRenderContent("{{mesh.link('" + node.getUuid() + "')}}", linkType, expectedResult);
+		}
 	}
 
 	/**
@@ -141,9 +153,6 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 * @return rendered result
 	 */
 	private String renderContent(String content, LinkType linkType) {
-		MeshResponse<String> future = getClient().resolveLinks(content, new NodeParameters().setResolveLinks(linkType)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().resolveLinks(content, new NodeParameters().setResolveLinks(linkType)));
 	}
 }

@@ -168,4 +168,9 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
 	}
 
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		return "/api/v1/roles/" + getUuid();
+	}
+
 }

@@ -64,8 +64,9 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 			}
 		}
 
-		assertThat(call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true))))
-				.as("Publish Status after take offline").isNotPublished("en").isNotPublished("de");
+		call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+		assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
+				.isNotPublished("de");
 
 		// assert that the containers have only the draft webrootpath properties set
 		try (NoTx noTx2 = db.noTx()) {
@@ -96,16 +97,16 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 			assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			// 3. Take only en offline 
-			assertThat(call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"))).as("Status after taken en offline")
-					.isNotPublished();
+			call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
+			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en");
 
 			// 4. Assert status
 			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isPublished("de");
 
 			// 5. Take also de offline
-			assertThat(call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"))).as("Status after taken en offline")
-					.isNotPublished();
+			call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
+			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("de");
 
 			// 6. Assert that both are offline
 			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
@@ -151,11 +152,13 @@ public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTes
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
-			assertThat(call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true))))
-					.as("Publish Status").isNotPublished("en").isNotPublished("de");
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
+					.isNotPublished("de");
 			// The request should work fine if we call it again 
-			assertThat(call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true))))
-					.as("Publish Status").isNotPublished("en").isNotPublished("de");
+			call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
+					.isNotPublished("de");
 		}
 	}
 

@@ -395,8 +395,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Microschema> unassignMicroschemaFromProject(String projectName, String microschemaUuid) {
-		LocalActionContextImpl<Microschema> ac = createContext(Microschema.class);
+	public MeshRequest<Void> unassignMicroschemaFromProject(String projectName, String microschemaUuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		microschemaCrudHandler.handleRemoveMicroschemaFromProject(ac, microschemaUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -842,8 +842,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> deleteMicroschema(String uuid) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<Void> deleteMicroschema(String uuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1026,17 +1026,17 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<PublishStatusResponse> takeNodeOffline(String projectName, String nodeUuid, ParameterProvider... parameters) {
-		LocalActionContextImpl<PublishStatusResponse> ac = createContext(PublishStatusResponse.class, parameters);
+	public MeshRequest<Void> takeNodeOffline(String projectName, String nodeUuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleTakeOffline(ac, nodeUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<PublishStatusModel> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
+	public MeshRequest<Void> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
 			ParameterProvider... parameters) {
-		LocalActionContextImpl<PublishStatusModel> ac = createContext(PublishStatusModel.class, parameters);
+		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleTakeOffline(ac, nodeUuid, languageTag);
 		return new MeshLocalRequestImpl<>(ac.getFuture());

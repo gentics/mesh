@@ -165,7 +165,8 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
-			MeshResponse<Microschema> future = getClient().findMicroschemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
+			MeshResponse<Microschema> future = getClient().findMicroschemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());
@@ -247,11 +248,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
-
-			MeshResponse<GenericMessageResponse> future = getClient().deleteMicroschema(microschema.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "microschema_deleted", microschema.getUuid() + "/" + microschema.getName());
+			call(() -> getClient().deleteMicroschema(microschema.getUuid()));
 
 			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().value();
 			assertNull("The microschema should have been deleted.", reloaded);
@@ -266,10 +263,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			assertNotNull(microschema);
 
 			role().revokePermissions(microschema, DELETE_PERM);
-
-			MeshResponse<GenericMessageResponse> future = getClient().deleteMicroschema(microschema.getUuid()).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", microschema.getUuid());
+			call(() -> getClient().deleteMicroschema(microschema.getUuid()), FORBIDDEN, "error_missing_perm", microschema.getUuid());
 
 			assertElement(boot.microschemaContainerRoot(), microschema.getUuid(), true);
 		}

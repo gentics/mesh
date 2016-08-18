@@ -12,7 +12,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Set;
 
@@ -56,7 +55,6 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
-import com.google.common.hash.Hashing;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -314,5 +312,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	@Override
 	public String getETag(InternalActionContext ac) {
 		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
+	}
+
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		return "/api/v1/projects/" + getUuid();
 	}
 }

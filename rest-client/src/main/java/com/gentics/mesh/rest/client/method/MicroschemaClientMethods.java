@@ -44,7 +44,7 @@ public interface MicroschemaClientMethods {
 	 *            Microschema UUID
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> deleteMicroschema(String uuid);
+	MeshRequest<Void> deleteMicroschema(String uuid);
 
 	/**
 	 * Apply the given set of changes to the microschema.

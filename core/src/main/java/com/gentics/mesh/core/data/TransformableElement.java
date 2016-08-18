@@ -17,6 +17,14 @@ import rx.Single;
 public interface TransformableElement<T extends RestModel> extends MeshElement {
 
 	/**
+	 * Return the API path to the element.
+	 * @param ac 
+	 * 
+	 * @return
+	 */
+	String getBaseLocation(InternalActionContext ac);
+
+	/**
 	 * Transform the node into the matching rest model response asynchronously
 	 * 
 	 * @param ac

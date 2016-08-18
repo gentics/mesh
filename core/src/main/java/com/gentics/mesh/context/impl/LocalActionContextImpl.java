@@ -139,7 +139,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public void send(HttpResponseStatus status) {
 		future.complete();
@@ -217,6 +217,11 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public void setEtag(String entityTag, boolean isWeak) {
+		// Not supported
+	}
+
+	@Override
+	public void setLocation(String location) {
 		// Not supported
 	}
 

@@ -581,4 +581,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		return ETag.hash(keyBuilder.toString());
 	}
 
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		return "/api/v1/users/" + getUuid();
+	}
+
 }

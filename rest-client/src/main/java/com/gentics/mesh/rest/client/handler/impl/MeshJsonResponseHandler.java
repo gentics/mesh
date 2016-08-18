@@ -60,9 +60,15 @@ public class MeshJsonResponseHandler<T> extends AbstractMeshResponseHandler<T> {
 				}
 			});
 		} else {
-			response.bodyHandler(buffer -> {
-				future.fail(new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}"));
-			});
+			if (classOfT.isAssignableFrom(String.class)) {
+				response.bodyHandler(buffer -> {
+					future.complete((T) buffer.toString());
+				});
+			} else {
+				response.bodyHandler(buffer -> {
+					future.fail(new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}"));
+				});
+			}
 		}
 	}
 

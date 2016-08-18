@@ -47,6 +47,7 @@ public final class HandlerUtilities {
 				// Transform the vertex using a fresh transaction in order to start with a clean cache
 				return db.noTx(() -> {
 					// created.reload();
+					ac.setLocation(created.getBaseLocation(ac));
 					return created.transformToRest(ac, 0);
 				});
 			});

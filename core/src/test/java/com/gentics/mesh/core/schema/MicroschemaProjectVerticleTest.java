@@ -28,9 +28,10 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
-public class MicroschemaProjectVerticleTest extends AbstractRestVerticleTest {
+public class MicroschemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Autowired
 	private SchemaVerticle schemaVerticle;
@@ -52,13 +53,15 @@ public class MicroschemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadProjectMicroschemas() {
-		MicroschemaListResponse list = call(() -> getClient().findMicroschemas(PROJECT_NAME));
-		assertEquals(2, list.getData().size());
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaListResponse list = call(() -> getClient().findMicroschemas(PROJECT_NAME));
+			assertEquals(2, list.getData().size());
 
-		call(() -> getClient().unassignMicroschemaFromProject(PROJECT_NAME, microschemaContainer("vcard").getUuid()));
+			call(() -> getClient().unassignMicroschemaFromProject(PROJECT_NAME, microschemaContainer("vcard").getUuid()));
 
-		list = call(() -> getClient().findMicroschemas(PROJECT_NAME));
-		assertEquals(1, list.getData().size());
+			list = call(() -> getClient().findMicroschemas(PROJECT_NAME));
+			assertEquals(1, list.getData().size());
+		}
 	}
 
 	// Microschema Project Testcases - PUT / Add
@@ -66,94 +69,97 @@ public class MicroschemaProjectVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddMicroschemaToExtraProject() {
 		final String name = "test12345";
-		MicroschemaContainer microschema = microschemaContainer("vcard");
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer microschema = microschemaContainer("vcard");
 
-		ProjectCreateRequest request = new ProjectCreateRequest();
-		request.setSchemaReference(new SchemaReference().setName("folder"));
-		request.setName(name);
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setName(name);
 
-		ProjectResponse restProject = call(() -> getClient().createProject(request));
+			ProjectResponse restProject = call(() -> getClient().createProject(request));
 
-		call(() -> getClient().assignMicroschemaToProject(restProject.getName(), microschema.getUuid()));
+			call(() -> getClient().assignMicroschemaToProject(restProject.getName(), microschema.getUuid()));
+		}
 	}
 
 	@Test
 	public void testAddMicroschemaToProjectWithPerm() throws Exception {
-		MicroschemaContainer microschema = microschemaContainer("vcard");
-		ProjectRoot projectRoot = meshRoot().getProjectRoot();
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer microschema = microschemaContainer("vcard");
+			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
-		ProjectCreateRequest request = new ProjectCreateRequest();
-		request.setSchemaReference(new SchemaReference().setName("folder"));
-		request.setName("extraProject");
-		ProjectResponse created = call(() -> getClient().createProject(request));
-		Project extraProject = projectRoot.findByUuidSync(created.getUuid());
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setName("extraProject");
+			ProjectResponse created = call(() -> getClient().createProject(request));
+			Project extraProject = projectRoot.findByUuidSync(created.getUuid());
 
-		// Add only read perms
-		role().grantPermissions(microschema, READ_PERM);
-		role().grantPermissions(extraProject, UPDATE_PERM);
+			// Add only read perms
+			role().grantPermissions(microschema, READ_PERM);
+			role().grantPermissions(extraProject, UPDATE_PERM);
 
-		Microschema restMicroschema = call(
-				() -> getClient().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
-		assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
-		extraProject.reload();
-		extraProject.getMicroschemaContainerRoot().reload();
-		assertNotNull("The microschema should be added to the extra project",
-				extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().value());
+			Microschema restMicroschema = call(() -> getClient().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
+			assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
+			extraProject.reload();
+			extraProject.getMicroschemaContainerRoot().reload();
+			assertNotNull("The microschema should be added to the extra project",
+					extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().value());
+		}
 	}
 
 	@Test
 	public void testAddMicroschemaToProjectWithoutPerm() throws Exception {
-		MicroschemaContainer microschema = microschemaContainer("vcard");
-		Project project = project();
-		ProjectRoot projectRoot = meshRoot().getProjectRoot();
-		Project extraProject = projectRoot.create("extraProject", user(), schemaContainer("folder").getLatestVersion());
-		// Add only read perms
-		role().grantPermissions(microschema, READ_PERM);
-		role().grantPermissions(project, READ_PERM);
-		call(() -> getClient().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()), FORBIDDEN,
-				"error_missing_perm", extraProject.getUuid());
-		// Reload the schema and check for expected changes
-		assertFalse("The microschema should not have been added to the extra project but it was",
-				extraProject.getMicroschemaContainerRoot().contains(microschema));
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer microschema = microschemaContainer("vcard");
+			Project project = project();
+			ProjectRoot projectRoot = meshRoot().getProjectRoot();
+			Project extraProject = projectRoot.create("extraProject", user(), schemaContainer("folder").getLatestVersion());
+			// Add only read perms
+			role().grantPermissions(microschema, READ_PERM);
+			role().grantPermissions(project, READ_PERM);
+			call(() -> getClient().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()), FORBIDDEN, "error_missing_perm",
+					extraProject.getUuid());
+			// Reload the schema and check for expected changes
+			assertFalse("The microschema should not have been added to the extra project but it was",
+					extraProject.getMicroschemaContainerRoot().contains(microschema));
+		}
 	}
 
 	// Microschema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveMicroschemaFromProjectWithPerm() throws Exception {
-		MicroschemaContainer microschema = microschemaContainer("vcard");
-		Project project = project();
-		assertTrue("The microschema should be assigned to the project.",
-				project.getMicroschemaContainerRoot().contains(microschema));
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer microschema = microschemaContainer("vcard");
+			Project project = project();
+			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
 
-		Microschema restMicroschema = call(
-				() -> getClient().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()));
-		assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
+			call(() -> getClient().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()));
 
-		MicroschemaListResponse list = call(() -> getClient().findMicroschemas(PROJECT_NAME));
+			MicroschemaListResponse list = call(() -> getClient().findMicroschemas(PROJECT_NAME));
 
-		// final String removedProjectName = project.getName();
-		assertEquals("The removed microschema should not be listed in the response", 0,
-				list.getData().stream().filter(s -> s.getUuid().equals(microschema.getUuid())).count());
-		project.getMicroschemaContainerRoot().reload();
-		assertFalse("The microschema should no longer be assigned to the project.",
-				project.getMicroschemaContainerRoot().contains(microschema));
+			assertEquals("The removed microschema should not be listed in the response", 0,
+					list.getData().stream().filter(s -> s.getUuid().equals(microschema.getUuid())).count());
+			project.getMicroschemaContainerRoot().reload();
+			assertFalse("The microschema should no longer be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
+		}
 	}
 
 	@Test
 	public void testRemoveMicroschemaFromProjectWithoutPerm() throws Exception {
-		MicroschemaContainer microschema = microschemaContainer("vcard");
-		Project project = project();
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer microschema = microschemaContainer("vcard");
+			Project project = project();
 
-		assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
-		// Revoke update perms on the project
-		role().revokePermissions(project, UPDATE_PERM);
+			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
+			// Revoke update perms on the project
+			role().revokePermissions(project, UPDATE_PERM);
 
-		call(() -> getClient().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()), FORBIDDEN,
-				"error_missing_perm", project.getUuid());
+			call(() -> getClient().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()), FORBIDDEN, "error_missing_perm",
+					project.getUuid());
 
-		// Reload the microschema and check for expected changes
-		assertTrue("The microschema should still be listed for the project.",
-				project.getMicroschemaContainerRoot().contains(microschema));
+			// Reload the microschema and check for expected changes
+			assertTrue("The microschema should still be listed for the project.", project.getMicroschemaContainerRoot().contains(microschema));
+		}
 	}
 
 }

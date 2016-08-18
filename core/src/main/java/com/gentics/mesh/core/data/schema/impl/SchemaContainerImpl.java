@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -68,6 +69,11 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 		} else {
 			throw error(BAD_REQUEST, "schema_delete_still_in_use", getUuid());
 		}
+	}
+
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		return "/api/v1/schemas/" + getUuid();
 	}
 
 }

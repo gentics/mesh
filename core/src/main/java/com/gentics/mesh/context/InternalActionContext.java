@@ -119,6 +119,13 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	void setEtag(String entityTag, boolean isWeak);
 
 	/**
+	 * Set the location header value.
+	 * 
+	 * @param location
+	 */
+	void setLocation(String location);
+
+	/**
 	 * Checks whether the provided etag matches the etag within the request header.
 	 * 
 	 * @param etag

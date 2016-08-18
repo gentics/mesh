@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -1765,5 +1766,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
 		}
 		return ETag.hash(keyBuilder.toString());
+	}
+
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		return "/api/v1/" + encodeFragment(getProject().getName()) + "/nodes/" + getUuid();
 	}
 }

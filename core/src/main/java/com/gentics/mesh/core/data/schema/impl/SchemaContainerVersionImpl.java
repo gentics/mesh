@@ -139,10 +139,15 @@ public class SchemaContainerVersionImpl extends
 		reference.setVersion(getVersion());
 		return reference;
 	}
-	
+
 	@Override
 	public String getETag(InternalActionContext ac) {
 		return ETag.hash(getUuid());
+	}
+
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		return null;
 	}
 
 }

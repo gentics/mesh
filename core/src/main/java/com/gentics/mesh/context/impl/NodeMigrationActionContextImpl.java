@@ -165,6 +165,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
+	public void setLocation(String location) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
 	public boolean matches(String etag, boolean isWeak) {
 		return false;
 	}

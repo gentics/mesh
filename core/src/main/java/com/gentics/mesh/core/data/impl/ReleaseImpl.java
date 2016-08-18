@@ -5,10 +5,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.util.URIUtils.encodeFragment;
 
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -276,5 +278,15 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	@Override
 	public String getETag(InternalActionContext ac) {
 		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
+	}
+
+	@Override
+	public String getBaseLocation(InternalActionContext ac) {
+		return "/api/v1/" + encodeFragment(getProject().getName()) + "/releases/" + getUuid();
+	}
+
+	@Override
+	public Project getProject() {
+		return null;
 	}
 }

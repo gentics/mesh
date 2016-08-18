@@ -126,7 +126,7 @@ public interface SchemaClientMethods {
 	 * @param microschemaUuid microschema uuid
 	 * @return
 	 */
-	MeshRequest<Microschema> unassignMicroschemaFromProject(String projectName, String microschemaUuid);
+	MeshRequest<Void> unassignMicroschemaFromProject(String projectName, String microschemaUuid);
 
 	/**
 	 * Find all microschemas assigned to the project
