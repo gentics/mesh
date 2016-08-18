@@ -566,9 +566,16 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		keyBuilder.append(getUuid());
 		keyBuilder.append("-");
 		keyBuilder.append(getLastEditedTimestamp());
-		if (referencedNode != null) {
+		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference")
+				|| ac.getNodeParameters().getExpandAll();
+		// We only need to compute the full etag if the referenced node is expanded.
+		if (referencedNode != null && expandReference) {
 			keyBuilder.append("-");
 			keyBuilder.append(referencedNode.getETag(ac));
+		} else if (referencedNode != null) {
+			keyBuilder.append("-");
+			keyBuilder.append(referencedNode.getUuid());
+			keyBuilder.append(referencedNode.getProject().getName());
 		}
 
 		return ETag.hash(keyBuilder.toString());

@@ -19,7 +19,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,6 +60,7 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -100,7 +100,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
-import com.google.common.hash.Hashing;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -680,7 +679,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 							});
 					tasks.add(obsFields.toCompletable());
 				}
-
 			}
 
 			// Tags
@@ -725,7 +723,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return Completable.create(sub -> {
 			VersioningParameters versioiningParameters = ac.getVersioningParameters();
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-				String releaseUuid = ac.getRelease(null).getUuid();
+				String releaseUuid = ac.getRelease(getProject()).getUuid();
 				ContainerType type = ContainerType.forVersion(versioiningParameters.getVersion());
 
 				// Path
@@ -1639,35 +1637,129 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * <li>uuid of the node</li>
 	 * <li>parent node uuid (which is release specific)</li>
 	 * <li>version and language specific etag of the field container</li>
+	 * <li>availableLanguages</li>
+	 * <li>breadcrumb</li>
+	 * <li>webroot path & language paths</li>
+	 * <li>permissions</li>
 	 * </ul>
 	 */
 	@Override
 	public String getETag(InternalActionContext ac) {
+		// Parameters
 		Release release = ac.getRelease(getProject());
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		ContainerType type = ContainerType.forVersion(versioiningParameters.getVersion());
+
 		Node parentNode = getParentNode(release.getUuid());
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getNodeParameters().getLanguageList(), release.getUuid(),
 				ac.getVersioningParameters().getVersion());
 
 		StringBuilder keyBuilder = new StringBuilder();
+
+		// node uuid
 		keyBuilder.append(getUuid());
 		keyBuilder.append("-");
+
+		// parent node
 		if (parentNode != null) {
 			keyBuilder.append("-");
 			keyBuilder.append(parentNode.getUuid());
 		}
+
+		// fields version
 		if (container != null) {
 			keyBuilder.append("-");
 			keyBuilder.append(container.getETag(ac));
 		}
 
+		// expansion (all)
 		if (ac.getNodeParameters().getExpandAll()) {
 			keyBuilder.append("-");
 			keyBuilder.append("expand:true");
 		}
+
+		// expansion (selective)
 		String expandedFields = Arrays.toString(ac.getNodeParameters().getExpandedFieldNames());
 		keyBuilder.append("-");
 		keyBuilder.append("expandFields:");
 		keyBuilder.append(expandedFields);
+
+		// release specific tags
+		for (Tag tag : getTags(release)) {
+			// Tags can't be moved across releases thus we don't need to add the tag family etag
+			keyBuilder.append(tag.getETag(ac));
+		}
+
+		// release specific children
+		for (Node child : getChildren(release.getUuid())) {
+			if (ac.getUser().hasPermissionSync(ac, child, READ_PERM)) {
+				keyBuilder.append("-");
+				keyBuilder.append(child.getSchemaContainer().getName());
+			}
+		}
+
+		// editor etag - (can be omitted since update would also affect the NGFC)
+		// creator etag
+		keyBuilder.append("-");
+		keyBuilder.append(getCreator().getETag(ac));
+
+		// availableLanguages
+		keyBuilder.append("-");
+		keyBuilder.append(Arrays.toString(getAvailableLanguageNames(release, type).toArray()));
+
+		// breadcrumb
+		keyBuilder.append("-");
+		Node current = getParentNode(release.getUuid());
+		if (current != null) {
+			while (current != null) {
+
+				String key = current.getUuid() + current.getDisplayName(ac);
+				keyBuilder.append(key);
+				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+					WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
+					String url = linkReplacer.resolve(release.getUuid(), type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
+							getProject().getName(), container.getLanguage().getLanguageTag()).toBlocking().value();
+					keyBuilder.append(url);
+				}
+				current = current.getParentNode(release.getUuid());
+
+			}
+		}
+
+		// webroot path & language paths
+		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
+
+			WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
+			String path = linkReplacer.resolve(release.getUuid(), type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
+					container.getLanguage().getLanguageTag()).toBlocking().value();
+			keyBuilder.append(path);
+
+			// languagePaths
+			for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release,
+					ContainerType.forVersion(versioiningParameters.getVersion()))) {
+				Language currLanguage = currentFieldContainer.getLanguage();
+				keyBuilder.append(currLanguage.getLanguageTag() + "="
+						+ linkReplacer.resolve(release.getUuid(), type, this, ac.getNodeParameters().getResolveLinks(), currLanguage.getLanguageTag())
+								.toBlocking().value());
+			}
+
+		}
+
+		// permissions (&roleUuid query parameter aware)
+		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
+		if (!isEmpty(roleUuid)) {
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuidSync(ac, roleUuid, READ_PERM);
+			if (role != null) {
+				Set<GraphPermission> permSet = role.getPermissions(this);
+				Set<String> humanNames = new HashSet<>();
+				for (GraphPermission permission : permSet) {
+					humanNames.add(permission.getSimpleName());
+				}
+				String[] names = humanNames.toArray(new String[humanNames.size()]);
+				keyBuilder.append(names);
+			}
+
+		}
 
 		if (log.isDebugEnabled()) {
 			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");

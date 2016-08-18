@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.generic;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +22,6 @@ import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.UUIDUtil;
-import com.google.common.hash.Hashing;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

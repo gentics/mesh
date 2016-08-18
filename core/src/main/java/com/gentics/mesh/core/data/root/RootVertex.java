@@ -108,6 +108,16 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	Single<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
 
 	/**
+	 * Load the object by uuid and check the given permission.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @return
+	 */
+	T loadObjectByUuidSync(InternalActionContext ac, String uuid, GraphPermission perm);
+
+	/**
 	 * Add the given item to the this root vertex.
 	 * 
 	 * @param item

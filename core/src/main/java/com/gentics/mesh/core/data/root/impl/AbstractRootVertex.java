@@ -179,4 +179,27 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	}
 
+	@Override
+	public T loadObjectByUuidSync(InternalActionContext ac, String uuid, GraphPermission perm) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		reload();
+		T element = findByUuidSync(uuid);
+		if (element == null) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
+		}
+
+		T result = db.noTx(() -> {
+			MeshAuthUser requestUser = ac.getUser();
+			String elementUuid = element.getUuid();
+			if (requestUser.hasPermissionSync(ac, element, perm)) {
+				return element;
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+			}
+		});
+
+		return result;
+
+	}
+
 }
