@@ -52,7 +52,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				}
 			});
 			return obs;
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
 			});
 			return obs.flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -107,7 +107,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			});
 			return Single.merge(obs);
 			//return obs.flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -132,7 +132,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 					return Single.error(e);
 				}
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -163,7 +163,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
 			});
 			return obs.flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -185,7 +185,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				Group updatedGroup = tuple.v2();
 				return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 }

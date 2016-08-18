@@ -282,7 +282,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		String userUuid = future.result().getUuid();
 
-		MeshResponse<GenericMessageResponse> futureDelete = getClient().deleteUser(userUuid).invoke();
+		MeshResponse<Void> futureDelete = getClient().deleteUser(userUuid).invoke();
 		latchFor(futureDelete);
 		assertSuccess(futureDelete);
 

@@ -24,7 +24,7 @@ public class AdminHandler extends AbstractHandler {
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
 	public void handleStatus(InternalActionContext ac) {
-		ac.respond(message(ac, "status_ready"), OK);
+		ac.send(message(ac, "status_ready"), OK);
 	}
 
 	/**
@@ -37,7 +37,7 @@ public class AdminHandler extends AbstractHandler {
 		db.asyncNoTx(() -> {
 			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
 			return Single.just(message(ac, "backup_finished"));
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleRestore(RoutingContext rc) {
@@ -46,7 +46,7 @@ public class AdminHandler extends AbstractHandler {
 			File backupFile = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory(), "");
 			db.restoreGraph(backupFile.getAbsolutePath());
 			return Single.just(message(ac, "restore_finished"));
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleExport(RoutingContext rc) {
@@ -54,7 +54,7 @@ public class AdminHandler extends AbstractHandler {
 		db.asyncNoTx(() -> {
 			db.exportGraph(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
 			return Single.just(message(ac, "export_finished"));
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -65,7 +65,7 @@ public class AdminHandler extends AbstractHandler {
 			File importFile = new File(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory(), "");
 			db.importGraph(importFile.getAbsolutePath());
 			return Single.just(message(ac, "import_finished"));
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleMigrationStatus(InternalActionContext ac) {
@@ -90,7 +90,7 @@ public class AdminHandler extends AbstractHandler {
 			if (currentStatusKey != null) {
 				statusKey = currentStatusKey;
 			}
-			ac.respond(message(ac, statusKey), OK);
+			ac.send(message(ac, statusKey), OK);
 		}
 	}
 

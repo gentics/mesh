@@ -19,7 +19,7 @@ import io.vertx.core.Handler;
 public abstract class AbstractInternalActionContext extends AbstractActionContext implements InternalActionContext {
 
 	@Override
-	public void respond(RestModel restModel, HttpResponseStatus status) {
+	public void send(RestModel restModel, HttpResponseStatus status) {
 		send(JsonUtil.toJson(restModel), status);
 	}
 

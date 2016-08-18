@@ -62,7 +62,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM).flatMap((release) -> getSchemaVersions(release));
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					return getSchemaVersions(release);
 				});
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -126,7 +126,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM).flatMap((release) -> getMicroschemaVersions(release));
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -169,7 +169,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					return getMicroschemaVersions(release);
 				});
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**

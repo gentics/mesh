@@ -75,7 +75,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		endpoint.path("/:tagFamilyUuid/tags/:tagUuid");
 		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
-		endpoint.method(PUT);
+		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Update the specified tag");
@@ -233,7 +233,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:tagFamilyUuid");
 		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
-		endpoint.method(PUT);
+		endpoint.method(POST);
 		endpoint.description("Update the tag family with the given uuid.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);

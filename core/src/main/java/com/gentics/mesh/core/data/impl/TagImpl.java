@@ -273,6 +273,6 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp() + "-" + ac.getRelease(ac.getProject()).getUuid());
+		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp() + "-" + ac.getRelease(getProject()).getUuid());
 	}
 }

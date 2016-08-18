@@ -54,7 +54,7 @@ public interface SchemaClientMethods {
 	 *            Schema uuid
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> deleteSchema(String uuid);
+	MeshRequest<Void> deleteSchema(String uuid);
 
 	/**
 	 * Load multiple schemas.

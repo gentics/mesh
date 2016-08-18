@@ -49,7 +49,7 @@ public class MeshRestAPITest extends AbstractRestVerticleTest {
 		HttpClient client = Mesh.vertx().createHttpClient(options);
 
 		CompletableFuture<String> future = new CompletableFuture<>();
-		HttpClientRequest request = client.request(HttpMethod.PUT, "/api/v1/test", rh -> {
+		HttpClientRequest request = client.request(HttpMethod.POST, "/api/v1/test", rh -> {
 			rh.bodyHandler(bh -> {
 				future.complete(bh.toString());
 			});

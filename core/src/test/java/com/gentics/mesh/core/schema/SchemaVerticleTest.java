@@ -103,10 +103,9 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(readFuture);
 			assertSuccess(readFuture);
 
-			MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteSchema(restSchema.getUuid()).invoke();
+			MeshResponse<Void> deleteFuture = getClient().deleteSchema(restSchema.getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
-			expectResponseMessage(deleteFuture, "schema_deleted", restSchema.getUuid() + "/" + restSchema.getName());
 			// TODO actually also the used nodes should have been deleted
 			assertThat(searchProvider).recordedDeleteEvents(1);
 			assertThat(searchProvider).recordedStoreEvents(1);
@@ -310,7 +309,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			String name = schema.getUuid() + "/" + schema.getName();
 			String uuid = schema.getUuid();
-			MeshResponse<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid()).invoke();
+			MeshResponse<Void> future = getClient().deleteSchema(schema.getUuid()).invoke();
 			latchFor(future);
 
 			expectException(future, BAD_REQUEST, "schema_delete_still_in_use", uuid);
@@ -328,7 +327,6 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			future = getClient().deleteSchema(schema.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "schema_deleted", name);
 
 			boot.schemaContainerRoot().reload();
 			reloaded = boot.schemaContainerRoot().findByUuid(uuid).toBlocking().value();
@@ -343,7 +341,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			SchemaContainer schema = schemaContainer("content");
 			role().revokePermissions(schema, DELETE_PERM);
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid()).invoke();
+			MeshResponse<Void> future = getClient().deleteSchema(schema.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
 
@@ -395,7 +393,7 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
+			Set<MeshResponse<Void>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().deleteSchema(schema.getUuid()).invoke());
 			}

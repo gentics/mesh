@@ -68,7 +68,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		addRole.path("/:groupUuid/roles/:roleUuid");
 		addRole.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		addRole.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
-		addRole.method(PUT);
+		addRole.method(POST);
 		addRole.description("Add the specified role to the group.");
 		addRole.produces(APPLICATION_JSON);
 		addRole.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
@@ -112,7 +112,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		addUser.path("/:groupUuid/users/:userUuid");
 		addUser.addUriParameter("groupUuid", "Uuid of the group.", UUIDUtil.randomUUID());
 		addUser.addUriParameter("userUuid", "Uuid of the user which should be added to the group.", UUIDUtil.randomUUID());
-		addUser.method(PUT);
+		addUser.method(POST);
 		addUser.description("Add the given user to the group");
 		addUser.produces(APPLICATION_JSON);
 		addUser.exampleResponse(200, groupExamples.getGroupResponse1("Group name"));
@@ -159,7 +159,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 		endpoint.path("/:groupUuid");
 		endpoint.addUriParameter("groupUuid", "Uuid of the group which should be updated.", UUIDUtil.randomUUID());
 		endpoint.description("Update the group with the given uuid.");
-		endpoint.method(PUT);
+		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));

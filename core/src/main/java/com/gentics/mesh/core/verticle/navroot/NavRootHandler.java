@@ -60,7 +60,7 @@ public class NavRootHandler {
 			} else {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 }

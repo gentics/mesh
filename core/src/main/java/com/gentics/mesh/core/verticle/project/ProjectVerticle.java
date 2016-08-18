@@ -50,7 +50,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		updateEndpoint.path("/:projectUuid");
 		updateEndpoint.description("Update the project with the given uuid.");
 		updateEndpoint.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
-		updateEndpoint.method(PUT);
+		updateEndpoint.method(POST);
 		updateEndpoint.consumes(APPLICATION_JSON);
 		updateEndpoint.produces(APPLICATION_JSON);
 		updateEndpoint.exampleRequest(projectExamples.getProjectUpdateRequest("New project name"));

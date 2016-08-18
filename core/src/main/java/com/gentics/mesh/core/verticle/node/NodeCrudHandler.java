@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -70,7 +71,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					return batch;
 				}).process().andThen(Single.just(message(ac, "node_deleted", uuid)));
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	/**
@@ -98,7 +99,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
 				return batch.process().toSingleDefault(message(ac, "node_deleted_language", uuid, languageTag));
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -126,7 +127,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return sourceNode.moveTo(ac, targetNode).andThen(Single.just(message(ac, "node_moved_to", uuid, toUuid)));
 			});
 			return Single.merge(obs);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -136,7 +137,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToNavigation(ac);
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleReadChildren(InternalActionContext ac, String uuid) {
@@ -162,7 +163,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
 				}
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond((RestModel) model, OK), ac::fail);
+		}).subscribe(model -> ac.send((RestModel) model, OK), ac::fail);
 
 	}
 
@@ -185,7 +186,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 				}
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond((RestModel) model, OK), ac::fail);
+		}).subscribe(model -> ac.send((RestModel) model, OK), ac::fail);
 	}
 
 	public void handleAddTag(InternalActionContext ac, String uuid, String tagUuid) {
@@ -211,7 +212,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			});
 			return obs.flatMap(x -> x);
 
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -251,7 +252,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			});
 			return obs.flatMap(x -> x);
 
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -268,7 +269,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToPublishStatus(ac);
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -289,7 +290,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					});
 				}));
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -310,7 +311,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					});
 				}));
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -326,7 +327,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToPublishStatus(ac, languageTag);
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -347,7 +348,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					});
 				}));
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -368,7 +369,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					});
 				}).flatMap(x -> x);
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	protected void readElement(InternalActionContext ac, String uuid, TxHandler<RootVertex<?>> handler) {
@@ -382,7 +383,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		}).subscribe(model -> {
 			HttpResponseStatus code = HttpResponseStatus.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
-			ac.respond(model, code);
+			ac.send(model, code);
 		}, ac::fail);
 
 	}

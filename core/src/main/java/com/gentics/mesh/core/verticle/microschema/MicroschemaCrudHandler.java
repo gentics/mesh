@@ -60,7 +60,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 					}
 				});
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -81,7 +81,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			Single<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			return obsSchema.flatMap(microschema -> microschema.getLatestVersion().diff(ac, comparator, requestModel));
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleGetSchemaChanges(InternalActionContext ac, String schemaUuid) {
@@ -95,7 +95,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -122,7 +122,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				});
 			}).flatMap(x -> x);
 
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleRemoveMicroschemaFromProject(InternalActionContext ac, String microschemaUuid) {
@@ -144,6 +144,6 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 					return microschema.transformToRest(ac, 0);
 				});
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 }

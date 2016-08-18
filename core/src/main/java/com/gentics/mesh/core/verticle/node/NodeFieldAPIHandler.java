@@ -196,7 +196,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				}).flatMap(x -> x);
 
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
+		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 
 	}
 
@@ -233,7 +233,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleRemoveFieldItem(InternalActionContext ac, String uuid) {
@@ -243,7 +243,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleUpdateFieldItem(InternalActionContext ac, String uuid) {
@@ -253,7 +253,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleReadFieldItem(InternalActionContext ac, String uuid) {
@@ -262,7 +262,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return new GenericMessageResponse("Not yet implemented");
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleMoveFieldItem(InternalActionContext ac, String uuid) {
@@ -272,7 +272,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -359,7 +359,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(INTERNAL_SERVER_ERROR, "error_internal");
 				}
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	// // TODO abstract rc away

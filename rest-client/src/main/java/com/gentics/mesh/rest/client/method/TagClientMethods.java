@@ -61,7 +61,7 @@ public interface TagClientMethods {
 	 *            Uuid of the tag
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid);
+	MeshRequest<Void> deleteTag(String projectName, String tagFamilyUuid, String uuid);
 
 	/**
 	 * Load multiple tags of a given tag family.

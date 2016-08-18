@@ -319,10 +319,9 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String name = tag.getName();
 			String uuid = tag.getUuid();
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "tag_deleted", uuid + "/" + name);
 
 			tag = boot.tagRoot().findByUuid(uuid).toBlocking().value();
 			assertNull("The tag should have been deleted", tag);
@@ -341,7 +340,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = tag.getUuid();
 			role().revokePermissions(tag, DELETE_PERM);
 
-			MeshResponse<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke();
+			MeshResponse<Void> messageFut = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke();
 			latchFor(messageFut);
 			expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
 
@@ -464,7 +463,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			String uuid = tag("red").getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
+			Set<MeshResponse<Void>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke());
 			}
@@ -529,7 +528,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals("SomeName", future.result().getFields().getName());
 
 			// Delete
-			MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteTag(PROJECT_NAME, tagFamily.getUuid(), future.result().getUuid()).invoke();
+			MeshResponse<Void> deleteFuture = getClient().deleteTag(PROJECT_NAME, tagFamily.getUuid(), future.result().getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
 		}

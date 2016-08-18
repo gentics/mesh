@@ -51,7 +51,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
 		permissionSetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
 		permissionSetEndpoint.addUriParameter("pathToElement", "API path to the element.", "projects/" + UUIDUtil.randomUUID());
-		permissionSetEndpoint.method(PUT);
+		permissionSetEndpoint.method(POST);
 		permissionSetEndpoint.description("Set the permissions between role and the targeted element.");
 		permissionSetEndpoint.exampleResponse(200, miscExamples.getMessageResponse());
 		permissionSetEndpoint.exampleRequest(roleExamples.getRolePermissionRequest());
@@ -99,7 +99,7 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 		endpoint.path("/:roleUuid");
 		endpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
 		endpoint.description("Update the role with the given uuid.");
-		endpoint.method(PUT);
+		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
 		endpoint.exampleResponse(200, roleExamples.getRoleResponse1("New role name"));

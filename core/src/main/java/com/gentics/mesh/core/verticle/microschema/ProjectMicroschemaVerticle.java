@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.microschema;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -59,7 +60,7 @@ public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
-		endpoint.method(PUT);
+		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Add the microschema to the project.");
 		endpoint.exampleResponse(200, microschemaExamples.getGeolocationMicroschema());

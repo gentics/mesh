@@ -124,10 +124,9 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		RoleResponse restRole = createFuture.result();
 		test.assertRole(request, restRole);
 
-		MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteRole(restRole.getUuid()).invoke();
+		MeshResponse<Void> deleteFuture = getClient().deleteRole(restRole.getUuid()).invoke();
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectResponseMessage(deleteFuture, "role_deleted", restRole.getUuid() + "/" + restRole.getName());
 	}
 
 	@Test
@@ -455,10 +454,9 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String roleName = extraRole.getName();
 			role().grantPermissions(extraRole, DELETE_PERM);
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteRole(roleUuid).invoke();
+			MeshResponse<Void> future = getClient().deleteRole(roleUuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "role_deleted", roleUuid + "/" + roleName);
 			meshRoot().getRoleRoot().reload();
 			assertElement(meshRoot().getRoleRoot(), roleUuid, false);
 		}
@@ -473,7 +471,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		try (NoTx noTx = db.noTx()) {
 			String uuid = role().getUuid();
-			MeshResponse<GenericMessageResponse> future = getClient().deleteRole(uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteRole(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 			assertElement(meshRoot().getRoleRoot(), uuid, true);
@@ -521,7 +519,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		int nJobs = 3;
 		String uuid = role().getUuid();
 		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
+		Set<MeshResponse<Void>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().deleteRole(uuid).invoke());
 		}

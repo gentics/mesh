@@ -50,7 +50,7 @@ public class TagCrudHandler extends AbstractHandler {
 					return Single.error(e);
 				}
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class TagCrudHandler extends AbstractHandler {
 					return tag.transformToRest(ac, 0);
 				});
 			});
-		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
+		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
 	/**

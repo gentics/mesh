@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle.release;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -114,7 +113,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		Endpoint addSchema = createEndpoint();
 		addSchema.path("/:releaseUuid/schemas");
 		addSchema.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
-		addSchema.method(PUT);
+		addSchema.method(POST);
 		addSchema.description("Assign a schema version to the release.");
 		addSchema.consumes(APPLICATION_JSON);
 		addSchema.produces(APPLICATION_JSON);
@@ -128,7 +127,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		Endpoint addMicroschema = createEndpoint();
 		addMicroschema.path("/:releaseUuid/microschemas");
 		addMicroschema.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
-		addMicroschema.method(PUT);
+		addMicroschema.method(POST);
 		addMicroschema.description("Assign a microschema version to the release.");
 		addMicroschema.consumes(APPLICATION_JSON);
 		addMicroschema.produces(APPLICATION_JSON);
@@ -143,7 +142,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 		updateRelease.path("/:releaseUuid");
 		updateRelease.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		updateRelease.description("Update the release with the given uuid.");
-		updateRelease.method(PUT);
+		updateRelease.method(POST);
 		updateRelease.consumes(APPLICATION_JSON);
 		updateRelease.produces(APPLICATION_JSON);
 		updateRelease.exampleRequest(versioningExamples.createReleaseUpdateRequest("Winter Collection Release"));

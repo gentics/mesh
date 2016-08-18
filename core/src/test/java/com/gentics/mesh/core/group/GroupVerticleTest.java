@@ -151,10 +151,9 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(readFuture);
 
 			// Now delete the group
-			MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid()).invoke();
+			MeshResponse<Void> deleteFuture = getClient().deleteGroup(restGroup.getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
-			expectResponseMessage(deleteFuture, "group_deleted", restGroup.getUuid() + "/" + restGroup.getName());
 		}
 	}
 
@@ -463,10 +462,9 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String name = group.getName();
 			String uuid = group.getUuid();
 			assertNotNull(uuid);
-			MeshResponse<GenericMessageResponse> future = getClient().deleteGroup(uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteGroup(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "group_deleted", uuid + "/" + name);
 			assertElement(boot.groupRoot(), uuid, false);
 		}
 
@@ -482,7 +480,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// Don't allow delete
 			role().revokePermissions(group, DELETE_PERM);
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteGroup(uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteGroup(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 			assertElement(boot.groupRoot(), group.getUuid(), true);
@@ -528,7 +526,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		int nJobs = 3;
 		String uuid = group().getUuid();
 		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
+		Set<MeshResponse<Void>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking deleteUser REST call");
 			set.add(getClient().deleteGroup(uuid).invoke());

@@ -3,10 +3,10 @@ package com.gentics.mesh.core.verticle.handler;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.elasticsearch.common.collect.Tuple;
@@ -50,7 +50,7 @@ public final class HandlerUtilities {
 					return created.transformToRest(ac, 0);
 				});
 			});
-		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
+		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
 	/**
@@ -90,12 +90,13 @@ public final class HandlerUtilities {
 							throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 						}
 					});
+					//TODO add log output
 					String id = tuple.v1();
 					SearchQueueBatch batch = tuple.v2();
-					return batch.process().toSingleDefault(message(ac, responseMessage, id));
+					return batch.process().andThen(Single.just(null));
 				});
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 
 	}
 
@@ -123,7 +124,7 @@ public final class HandlerUtilities {
 					});
 				});
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -150,7 +151,7 @@ public final class HandlerUtilities {
 					return element.transformToRest(ac, 0);
 				}
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -175,10 +176,10 @@ public final class HandlerUtilities {
 			if (ac.matches(etag, true)) {
 				return Single.error(new NotModifiedException());
 			} else {
-				return (Single<RestModel>) page.transformToRest(ac, 0);
+				return page.transformToRest(ac, 0);
 			}
 
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 }

@@ -1,6 +1,5 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
@@ -64,7 +63,7 @@ public interface UserClientMethods {
 	 *            User uuid
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> deleteUser(String uuid);
+	MeshRequest<Void> deleteUser(String uuid);
 
 	/**
 	 * Find users that were assigned to a specific group.

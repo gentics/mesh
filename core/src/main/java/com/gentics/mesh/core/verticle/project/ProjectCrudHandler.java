@@ -35,7 +35,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 			return root.findByName(ac, projectName, READ_PERM).flatMap(project -> {
 				return project.transformToRest(ac, 0);
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 }

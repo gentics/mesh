@@ -1,5 +1,7 @@
 package com.gentics.mesh.rest.client.handler.impl;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.handler.AbstractMeshResponseHandler;
@@ -38,7 +40,9 @@ public class MeshJsonResponseHandler<T> extends AbstractMeshResponseHandler<T> {
 	public void handleSuccess(HttpClientResponse response) {
 		String contentType = response.getHeader("Content-Type");
 		//FIXME TODO in theory it would also be possible that a customer uploads JSON into mesh. In those cases we would also need to return it directly (without parsing)
-		if (contentType.startsWith(HttpConstants.APPLICATION_JSON)) {
+		if (contentType == null && response.statusCode() == NO_CONTENT.code()) {
+			future.complete();
+		} else if (contentType.startsWith(HttpConstants.APPLICATION_JSON)) {
 			response.bodyHandler(bh -> {
 				String json = bh.toString();
 				if (log.isDebugEnabled()) {

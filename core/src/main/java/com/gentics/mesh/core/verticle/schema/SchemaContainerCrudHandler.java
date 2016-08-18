@@ -64,7 +64,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 					return Single.error(e);
 				}
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleDiff(InternalActionContext ac, String uuid) {
@@ -72,7 +72,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 			Single<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			return obsSchema.flatMap(schema -> schema.getLatestVersion().diff(ac, comparator, requestModel));
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleReadProjectList(InternalActionContext ac) {
@@ -99,7 +99,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 				});
 			}).flatMap(x -> x);
 
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -123,7 +123,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 					return schema.transformToRest(ac, 0);
 				});
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleGetSchemaChanges(InternalActionContext ac) {
@@ -139,7 +139,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 

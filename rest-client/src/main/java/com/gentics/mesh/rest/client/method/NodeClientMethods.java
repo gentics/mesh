@@ -56,7 +56,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> deleteNode(String projectName, String uuid, ParameterProvider... parameters);
+	MeshRequest<Void> deleteNode(String projectName, String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Delete the node with the given language.

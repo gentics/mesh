@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.schema;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -48,7 +49,7 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addUpdateHandlers() {
-		route("/:uuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
+		route("/:uuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleAddSchemaToProject(ac, uuid);

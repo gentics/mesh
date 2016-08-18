@@ -54,7 +54,7 @@ public interface TagFamilyClientMethods {
 	 *            Uuid of the tag family
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> deleteTagFamily(String projectName, String uuid);
+	MeshRequest<Void> deleteTagFamily(String projectName, String uuid);
 
 	/**
 	 * Update the tag family.

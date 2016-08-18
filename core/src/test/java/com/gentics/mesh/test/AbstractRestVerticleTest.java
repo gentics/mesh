@@ -202,7 +202,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void deleteUser(String uuid) {
-		MeshResponse<GenericMessageResponse> future = getClient().deleteUser(uuid).invoke();
+		MeshResponse<Void> future = getClient().deleteUser(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -235,7 +235,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void deleteGroup(String uuid) {
-		MeshResponse<GenericMessageResponse> future = getClient().deleteGroup(uuid).invoke();
+		MeshResponse<Void> future = getClient().deleteGroup(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -259,7 +259,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void deleteRole(String uuid) {
-		MeshResponse<GenericMessageResponse> future = getClient().deleteRole(uuid).invoke();
+		MeshResponse<Void> future = getClient().deleteRole(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -300,7 +300,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void deleteTag(String projectName, String tagFamilyUuid, String uuid) {
-		MeshResponse<GenericMessageResponse> future = getClient().deleteTag(projectName, tagFamilyUuid, uuid).invoke();
+		MeshResponse<Void> future = getClient().deleteTag(projectName, tagFamilyUuid, uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -341,7 +341,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void deleteNode(String projectName, String uuid) {
-		MeshResponse<GenericMessageResponse> future = getClient().deleteNode(projectName, uuid).invoke();
+		MeshResponse<Void> future = getClient().deleteNode(projectName, uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -380,7 +380,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void deleteTagFamily(String projectName, String uuid) {
-		MeshResponse<GenericMessageResponse> future = getClient().deleteTagFamily(projectName, uuid).invoke();
+		MeshResponse<Void> future = getClient().deleteTagFamily(projectName, uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -441,7 +441,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void deleteProject(String uuid) {
-		MeshResponse<GenericMessageResponse> future = getClient().deleteProject(uuid).invoke();
+		MeshResponse<Void> future = getClient().deleteProject(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -473,7 +473,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void deleteSchema(String uuid) {
-		MeshResponse<GenericMessageResponse> future = getClient().deleteSchema(uuid).invoke();
+		MeshResponse<Void> future = getClient().deleteSchema(uuid).invoke();
 		latchFor(future);
 		assertSuccess(future);
 	}

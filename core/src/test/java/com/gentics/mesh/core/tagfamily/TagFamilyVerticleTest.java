@@ -240,7 +240,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		latchFor(readFuture);
 		assertSuccess(readFuture);
 
-		MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteTagFamily(PROJECT_NAME, future.result().getUuid()).invoke();
+		MeshResponse<Void> deleteFuture = getClient().deleteTagFamily(PROJECT_NAME, future.result().getUuid()).invoke();
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
 
@@ -276,7 +276,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			String uuid = basicTagFamily.getUuid();
 			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid).toBlocking().value());
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteTagFamily(PROJECT_NAME, uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertElement(project().getTagFamilyRoot(), uuid, false);
@@ -294,7 +294,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()).invoke();
+			MeshResponse<Void> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
 
@@ -432,7 +432,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		try (NoTx noTx = db.noTx()) {
 			String uuid = project().getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
+			Set<MeshResponse<Void>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(getClient().deleteTagFamily(PROJECT_NAME, uuid).invoke());
 			}

@@ -174,10 +174,9 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(readFuture);
 
 			// Now delete the project
-			MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteProject(restProject.getUuid()).invoke();
+			MeshResponse<Void> deleteFuture = getClient().deleteProject(restProject.getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
-			expectResponseMessage(deleteFuture, "project_deleted", restProject.getUuid() + "/" + restProject.getName());
 		}
 	}
 
@@ -420,10 +419,9 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String name = project.getName();
 			assertNotNull(uuid);
 			assertNotNull(name);
-			MeshResponse<GenericMessageResponse> future = getClient().deleteProject(uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteProject(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "project_deleted", uuid + "/" + name);
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
 			// TODO check for removed routers?
 		}
@@ -437,7 +435,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = project.getUuid();
 			role().revokePermissions(project, DELETE_PERM);
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteProject(uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteProject(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
@@ -486,7 +484,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		int nJobs = 3;
 		String uuid = project().getUuid();
 		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
+		Set<MeshResponse<Void>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().deleteProject(uuid).invoke());
 		}

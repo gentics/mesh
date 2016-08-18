@@ -21,7 +21,7 @@ public abstract class AbstractAuthRestHandler extends AbstractHandler implements
 			//TODO add permission check
 			MeshAuthUser requestUser = ac.getUser();
 			return requestUser.transformToRest(ac, 0);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**

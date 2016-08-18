@@ -111,7 +111,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
-		endpoint.method(PUT);
+		endpoint.method(POST);
 		endpoint.description("Update the schema.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);

@@ -193,8 +193,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> deleteNode(String projectName, String uuid, ParameterProvider... parameters) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
+	public MeshRequest<Void> deleteNode(String projectName, String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -294,8 +294,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<Void> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		ac.setProject(projectName);
 		tagCrudHandler.handleDelete(ac, tagFamilyUuid, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -360,8 +360,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> deleteProject(String uuid) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<Void> deleteProject(String uuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		projectCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -435,8 +435,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> deleteTagFamily(String projectName, String uuid) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<Void> deleteTagFamily(String projectName, String uuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		ac.setProject(projectName);
 		tagFamilyCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -506,8 +506,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> deleteSchema(String uuid) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<Void> deleteSchema(String uuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		schemaCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -565,8 +565,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> deleteGroup(String uuid) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<Void> deleteGroup(String uuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		groupCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -636,8 +636,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> deleteUser(String uuid) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<Void> deleteUser(String uuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		userCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -679,8 +679,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> deleteRole(String uuid) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<Void> deleteRole(String uuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		roleCrudHandler.handleDelete(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}

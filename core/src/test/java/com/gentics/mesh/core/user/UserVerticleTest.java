@@ -933,10 +933,9 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(readFuture);
 			assertSuccess(readFuture);
 
-			MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteUser(restUser.getUuid()).invoke();
+			MeshResponse<Void> deleteFuture = getClient().deleteUser(restUser.getUuid()).invoke();
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
-			expectResponseMessage(deleteFuture, "user_deleted", restUser.getUuid() + "/" + restUser.getUsername());
 		}
 	}
 
@@ -971,12 +970,10 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
-			String name = restUser.getUsername();
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteUser(uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteUser(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "user_deleted", uuid + "/" + name);
 
 			try (Tx tx = db.tx()) {
 				User loadedUser = boot.userRoot().findByUuid(uuid).toBlocking().value();
@@ -999,7 +996,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		int nJobs = 3;
 		String uuid = user().getUuid();
 		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
+		Set<MeshResponse<Void>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().deleteUser(uuid).invoke());
 		}
@@ -1019,7 +1016,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			role().grantPermissions(user, CREATE_PERM);
 			role().grantPermissions(user, READ_PERM);
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteUser(uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteUser(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 			userRoot = meshRoot().getUserRoot();
@@ -1029,7 +1026,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testDeleteWithUuidNull() throws Exception {
-		MeshResponse<GenericMessageResponse> future = getClient().deleteUser(null).invoke();
+		MeshResponse<Void> future = getClient().deleteUser(null).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "null");
 	}
@@ -1056,10 +1053,9 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals(1, user.getGroups().size());
 			assertTrue("The user should be enabled", user.isEnabled());
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteUser(uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteUser(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			expectResponseMessage(future, "user_deleted", uuid + "/" + name);
 			userRoot.reload();
 			assertNull("The user was not deleted.", userRoot.findByUuid(uuid).toBlocking().value());
 

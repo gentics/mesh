@@ -79,7 +79,14 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * @param result
 	 * @param status
 	 */
-	void respond(RestModel result, HttpResponseStatus status);
+	void send(RestModel result, HttpResponseStatus status);
+
+	/**
+	 * Finish the request and send the provided respond. No body will be send.
+	 * 
+	 * @param status
+	 */
+	void send(HttpResponseStatus status);
 
 	/**
 	 * Return the set of fileuploads that are accessible through the context.

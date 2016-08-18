@@ -47,7 +47,7 @@ public class RestInfoVerticle extends AbstractWebVerticle {
 			info.setMeshVersion(Mesh.getPlainVersion());
 			info.setMeshNodeId(MeshNameProvider.getInstance().getName());
 			info.setVertxVersion(new io.vertx.core.Starter().getVersion());
-			ac.respond(info, OK);
+			ac.send(info, OK);
 		});
 	}
 

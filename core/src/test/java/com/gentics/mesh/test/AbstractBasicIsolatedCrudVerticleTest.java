@@ -11,16 +11,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.definition.CrudVerticleTestCases;
 import com.gentics.mesh.test.definition.MultithreadingTestCases;
 
 public abstract class AbstractBasicIsolatedCrudVerticleTest extends AbstractIsolatedRestVerticleTest implements MultithreadingTestCases, CrudVerticleTestCases {
 
-	protected void validateDeletion(Set<MeshResponse<GenericMessageResponse>> set, CyclicBarrier barrier) {
+	protected void validateDeletion(Set<MeshResponse<Void>> set, CyclicBarrier barrier) {
 		boolean foundDelete = false;
-		for (MeshResponse<GenericMessageResponse> future : set) {
+		for (MeshResponse<Void> future : set) {
 			latchFor(future);
 			if (future.succeeded() && future.result() != null) {
 				foundDelete = true;

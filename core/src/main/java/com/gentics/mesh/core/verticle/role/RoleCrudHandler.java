@@ -79,7 +79,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 					});
 				});
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -147,6 +147,6 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 				});
 			}).flatMap(x -> x);
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 }

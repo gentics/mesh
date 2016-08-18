@@ -124,7 +124,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.path("/:userUuid");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.description("Update the user with the given uuid.");
-		endpoint.method(PUT);
+		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));

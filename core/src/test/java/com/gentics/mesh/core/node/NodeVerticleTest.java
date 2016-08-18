@@ -409,10 +409,9 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					new VersioningParameters().draft()));
 
 			// Delete the node
-			MeshResponse<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid()).invoke();
+			MeshResponse<Void> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid()).invoke();
 			latchFor(deleteFut);
 			assertSuccess(deleteFut);
-			expectResponseMessage(deleteFut, "node_deleted", restNode2.getUuid());
 
 			meshRoot().getNodeRoot().reload();
 			Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid()).toBlocking().value();
@@ -569,8 +568,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<NodeResponse> allNodes = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(page, perPage),
-						new VersioningParameters().draft()).invoke();
+				MeshResponse<NodeListResponse> pageFuture = getClient()
+						.findNodes(PROJECT_NAME, new PagingParameters(page, perPage), new VersioningParameters().draft()).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -769,19 +768,19 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 								fail(uh.cause().getMessage());
 							} else {
 								log.info("Updated {" + uh.result().getUuid() + "}");
-								MeshResponse<NodeResponse> readFuture = getClient().findNodeByUuid(PROJECT_NAME, uh.result().getUuid(),
-										new VersioningParameters().draft()).invoke();
+								MeshResponse<NodeResponse> readFuture = getClient()
+										.findNodeByUuid(PROJECT_NAME, uh.result().getUuid(), new VersioningParameters().draft()).invoke();
 								readFuture.setHandler(rf -> {
 									if (rh.failed()) {
 										fail(rh.cause().getMessage());
 									} else {
 										log.info("Read {" + rf.result().getUuid() + "}");
-										MeshResponse<GenericMessageResponse> deleteFuture = getClient().deleteNode(PROJECT_NAME, rf.result().getUuid()).invoke();
+										MeshResponse<Void> deleteFuture = getClient().deleteNode(PROJECT_NAME, rf.result().getUuid()).invoke();
 										deleteFuture.setHandler(df -> {
 											if (df.failed()) {
 												fail(df.cause().getMessage());
 											} else {
-												log.info("Deleted {" + rf.result().getUuid() + "} " + df.result().getMessage());
+												log.info("Deleted {" + rf.result().getUuid() + "}");
 												latch.countDown();
 											}
 										});
@@ -902,7 +901,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// CyclicBarrier barrier = new CyclicBarrier(nJobs);
 			// Trx.enableDebug();
 			// Trx.setBarrier(barrier);
-			Set<MeshResponse<GenericMessageResponse>> set = new HashSet<>();
+			Set<MeshResponse<Void>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking deleteNode REST call");
 				set.add(getClient().deleteNode(PROJECT_NAME, uuid).invoke());
@@ -1595,8 +1594,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content("concorde");
 			String uuid = node.getUuid();
-			GenericMessageResponse response = call(() -> getClient().deleteNode(PROJECT_NAME, uuid));
-			expectResponseMessage(response, "node_deleted", uuid);
+			call(() -> getClient().deleteNode(PROJECT_NAME, uuid));
 
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
 			assertThat(searchProvider).as("Delete Events after node delete. We expect 4 since both languages have draft and publish version.")
@@ -1630,9 +1628,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(newRelease.getUuid())));
 
 			// 4. delete node in new release
-			GenericMessageResponse response = call(
-					() -> getClient().deleteNode(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getUuid())));
-			expectResponseMessage(response, "node_deleted", uuid);
+			call(() -> getClient().deleteNode(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getUuid())));
 
 			// 5. Assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
@@ -1663,9 +1659,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(newRelease.getUuid())));
 
 			// 5. delete node in new release
-			GenericMessageResponse response = call(
-					() -> getClient().deleteNode(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getUuid())));
-			expectResponseMessage(response, "node_deleted", uuid);
+			call(() -> getClient().deleteNode(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getUuid())));
 
 			// 6. Assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
@@ -1686,7 +1680,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String uuid = node.getUuid();
 			role().revokePermissions(node, DELETE_PERM);
 
-			MeshResponse<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid).invoke();
+			MeshResponse<Void> future = getClient().deleteNode(PROJECT_NAME, uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 

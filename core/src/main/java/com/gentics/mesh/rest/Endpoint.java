@@ -190,6 +190,12 @@ public class Endpoint implements Route {
 		return route.getPath();
 	}
 
+	/**
+	 * Return the path used for RAML. If non null the path which was previously set using {@link #setRAMLPath(String)} will be returned. Otherwise the converted
+	 * vert.x route path is returned. A vert.x path /:uuid is converted to a RAML path /{uuid}. 
+	 * 
+	 * @return
+	 */
 	public String getRamlPath() {
 		if (ramlPath == null) {
 			return convertPath(route.getPath());
@@ -232,14 +238,36 @@ public class Endpoint implements Route {
 		return this;
 	}
 
+	/**
+	 * Return the endpoint description.
+	 * 
+	 * @return
+	 */
 	public String getDescription() {
 		return description;
 	}
 
+	/**
+	 * Return the display name for the endpoint.
+	 * 
+	 * @return
+	 */
 	public String getDisplayName() {
 		return displayName;
 	}
 
+	public Endpoint exampleResponse(int code) {
+		exampleResponses.put(code, null);
+		return this;
+	}
+
+	/**
+	 * Add the given response to the example responses.
+	 * 
+	 * @param code
+	 * @param model
+	 * @return
+	 */
 	public Endpoint exampleResponse(int code, Object model) {
 		exampleResponses.put(code, model);
 		return this;
@@ -278,14 +306,29 @@ public class Endpoint implements Route {
 		return exampleRequest;
 	}
 
+	/**
+	 * Return the vert.x route path regex.
+	 * 
+	 * @return
+	 */
 	public String getPathRegex() {
 		return pathRegex;
 	}
 
+	/**
+	 * Return the method used for the endpoint.
+	 * 
+	 * @return
+	 */
 	public HttpMethod getMethod() {
 		return method;
 	}
 
+	/**
+	 * Return the list of query parameters for the endpoint.
+	 * 
+	 * @return
+	 */
 	public Map<String, QueryParameter> getQueryParameters() {
 		return parameters;
 	}
@@ -300,6 +343,11 @@ public class Endpoint implements Route {
 		}
 	}
 
+	/**
+	 * Explicitly set the RAML path. This will override the path which is otherwise transformed using the vertx route path.
+	 * 
+	 * @param path
+	 */
 	public void setRAMLPath(String path) {
 		this.ramlPath = path;
 	}

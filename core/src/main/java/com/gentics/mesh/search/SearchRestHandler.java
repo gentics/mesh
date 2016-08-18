@@ -236,7 +236,7 @@ public class SearchRestHandler {
 			SearchStatusResponse statusResponse = new SearchStatusResponse();
 			statusResponse.setBatchCount(queue.getSize());
 			return Observable.just(statusResponse);
-		}).subscribe(message -> ac.respond(message, OK), ac::fail);
+		}).subscribe(message -> ac.send(message, OK), ac::fail);
 	}
 
 	public void handleReindex(InternalActionContext ac) {
@@ -259,7 +259,7 @@ public class SearchRestHandler {
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-		}).subscribe(message -> ac.respond(message, OK), ac::fail);
+		}).subscribe(message -> ac.send(message, OK), ac::fail);
 
 	}
 

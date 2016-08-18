@@ -42,7 +42,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private String query;
 	private Project project;
 	private String responseBody;
-	private HttpResponseStatus responseStatusCode;
+	private HttpResponseStatus responseStatus;
 	private Future<T> future = Future.future();
 	private Class<? extends T> classOfResponse;
 	private Set<FileUpload> fileUploads = new HashSet<>();
@@ -129,15 +129,20 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	}
 
 	@Override
-	public void send(String body, HttpResponseStatus statusCode) {
+	public void send(String body, HttpResponseStatus status) {
 		this.responseBody = body;
-		this.responseStatusCode = statusCode;
+		this.responseStatus = status;
 		try {
 			T model = JsonUtil.readValue(responseBody, classOfResponse);
 			future.complete(model);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void send(HttpResponseStatus status) {
+		future.complete();
 	}
 
 	/**
@@ -155,7 +160,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @return
 	 */
 	public HttpResponseStatus getResponseStatusCode() {
-		return responseStatusCode;
+		return responseStatus;
 	}
 
 	@Override

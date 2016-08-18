@@ -43,7 +43,7 @@ public interface RoleClientMethods {
 	 * @param uuid
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> deleteRole(String uuid);
+	MeshRequest<Void> deleteRole(String uuid);
 
 	/**
 	 * Load multiple roles that were assigned to the given group.

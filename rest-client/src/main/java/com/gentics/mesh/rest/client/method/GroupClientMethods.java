@@ -50,7 +50,7 @@ public interface GroupClientMethods {
 	 * @param uuid
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> deleteGroup(String uuid);
+	MeshRequest<Void> deleteGroup(String uuid);
 
 	/**
 	 * Add the given user to the group.

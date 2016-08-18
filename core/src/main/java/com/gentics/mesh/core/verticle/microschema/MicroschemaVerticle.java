@@ -145,7 +145,7 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
-		endpoint.method(PUT);
+		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschema());

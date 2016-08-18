@@ -78,5 +78,5 @@ public interface ProjectClientMethods {
 	 * @param uuid
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> deleteProject(String uuid);
+	MeshRequest<Void> deleteProject(String uuid);
 }
