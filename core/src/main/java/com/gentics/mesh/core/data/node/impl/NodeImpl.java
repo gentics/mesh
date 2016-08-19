@@ -1701,8 +1701,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// editor etag - (can be omitted since update would also affect the NGFC)
 		// creator etag
-		keyBuilder.append("-");
-		keyBuilder.append(getCreator().getETag(ac));
+//		keyBuilder.append("-");
+//		keyBuilder.append(getCreator().getETag(ac));
 
 		// availableLanguages
 		keyBuilder.append("-");
