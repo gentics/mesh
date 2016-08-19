@@ -13,14 +13,14 @@ import rx.Single;
 
 /**
  * The User Domain Model interface.
-*
-* <pre>
+ *
+ * <pre>
 * {@code
 * 	(u:UserImpl)-[r1:HAS_USER]->(ur:UserRootImpl)
 * 	(u)-[r2:HAS_USER]->(g:GroupImpl)
  	(g)<-[r3:HAS_ROLE]-(r:RoleImpl)
 * }
-* </pre>
+ * </pre>
  *
  * <p>
  * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
@@ -193,10 +193,8 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode);
 
 	/**
-	 * This method adds additional permissions to the target node. The roles are
-	 * selected like in method
-	 * {@link #addCRUDPermissionOnRole(MeshVertex, GraphPermission, MeshVertex)}
-	 * .
+	 * This method adds additional permissions to the target node. The roles are selected like in method
+	 * {@link #addCRUDPermissionOnRole(MeshVertex, GraphPermission, MeshVertex)} .
 	 * 
 	 * @param sourceNode
 	 *            Node that will be checked
@@ -207,7 +205,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param toGrant
 	 *            permissions to grant
 	 */
-	void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission...toGrant);
+	void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant);
 
 	/**
 	 * Inherit permissions egdes from the source node and assign those permissions to the target node.
@@ -267,12 +265,20 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 */
 	void deactivate();
 
-	// List<? extends GenericVertexImpl> getEditedElements();
+	/**
+	 * Check whether the user has the given permission on the given element.
+	 * 
+	 * @param element
+	 * @param permission
+	 * @return
+	 */
+	boolean hasPermission(MeshVertex element, GraphPermission permission);
 
-	// List<? extends GenericVertexImpl> getCreatedElements();
-
-	boolean hasPermission(MeshVertex node, GraphPermission permission);
-
+	/**
+	 * Check whether the admin role was assigned to the user.
+	 * 
+	 * @return
+	 */
 	boolean hasAdminRole();
 
 }

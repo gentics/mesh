@@ -44,7 +44,7 @@ public class UserVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testPermissionPerformance() {
-		loggingStopWatch(logger, "user.hasPermission", 70000, (step) -> {
+		loggingStopWatch(logger, "user.hasPermission", 100000, (step) -> {
 			try (NoTx noTx = db.noTx()) {
 				user().hasPermission(content(), GraphPermission.READ_PERM);
 			}
@@ -77,12 +77,18 @@ public class UserVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 	public void testPerformance() {
 		addUsers();
 
+		String uuid = db.noTx(() -> user().getUuid());
+
 		loggingStopWatch(logger, "user.read-page-100", 200, (step) -> {
 			call(() -> getClient().findUsers(new PagingParameters().setPerPage(100)));
 		});
 
 		loggingStopWatch(logger, "user.read-page-25", 200, (step) -> {
 			call(() -> getClient().findUsers(new PagingParameters().setPerPage(25)));
+		});
+
+		loggingStopWatch(logger, "user.read-by-uuid", 200, (step) -> {
+			call(() -> getClient().findUserByUuid(uuid));
 		});
 
 		loggingStopWatch(logger, "user.create", 200, (step) -> {
