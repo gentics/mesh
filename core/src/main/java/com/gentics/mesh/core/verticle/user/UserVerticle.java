@@ -60,7 +60,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String userUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
@@ -79,7 +79,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		readOne.addQueryParameters(NodeParameters.class);
 		readOne.addQueryParameters(VersioningParameters.class);
 		readOne.addQueryParameters(RolePermissionParameters.class);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleRead(ac, uuid);
@@ -98,7 +98,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		readAll.addQueryParameters(VersioningParameters.class);
 		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.addQueryParameters(PagingParameters.class);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
@@ -112,7 +112,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 				"Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "User was deactivated.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -129,7 +129,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
 		endpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated user response.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -145,7 +145,7 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(userExamples.getUserCreateRequest("newuser"));
 		endpoint.exampleResponse(CREATED, userExamples.getUserResponse1("newuser"), "User response of the created user.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}

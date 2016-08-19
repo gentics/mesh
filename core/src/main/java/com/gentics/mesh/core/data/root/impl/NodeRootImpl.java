@@ -94,8 +94,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public PageImpl<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo)
-			throws InvalidArgumentException {
+	public PageImpl<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
 		MeshAuthUser requestUser = ac.getUser();
 		Release release = ac.getRelease(null);
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
@@ -103,23 +102,25 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		VertexTraversal<?, ?, ?> traversal = getAllTraversal(requestUser, release, type, permLabel);
 		VertexTraversal<?, ?, ?> countTraversal = getAllTraversal(requestUser, release, type, permLabel);
-		PageImpl<? extends Node> items = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, getPersistanceClass());
-		return items;
+		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, getPersistanceClass());
 	}
 
 	/**
 	 * Get the vertex traversal that finds all nodes visible to the user
-	 * @param requestUser user
-	 * @param release release
-	 * @param type type
-	 * @param permLabel permission label
+	 * 
+	 * @param requestUser
+	 *            user
+	 * @param release
+	 *            release
+	 * @param type
+	 *            type
+	 * @param permLabel
+	 *            permission label
 	 * @return vertex traversal
 	 */
-	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, ContainerType type,
-			String permLabel) {
-		return out(getRootLabel()).has(getPersistanceClass()).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser.getImpl()).back().mark().outE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
+	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, ContainerType type, String permLabel) {
+		return out(getRootLabel()).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back()
+				.mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();
 	}
 
@@ -231,7 +232,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			}
 
 			//TODO use fromReference call to load the schema container
-			
+
 			if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 				// 2. Use schema reference by uuid first
 				return project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM).flatMap(schemaContainer -> {
