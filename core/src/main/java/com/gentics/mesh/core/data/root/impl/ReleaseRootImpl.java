@@ -67,6 +67,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		release.setName(name);
 		release.setActive(true);
 		release.setMigrated(false);
+		release.setProject(getProject());
 
 		if (latestRelease == null) {
 			// if this is the first release, make it the initial release

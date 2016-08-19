@@ -181,4 +181,11 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 */
 	Project getProject();
 
+	/**
+	 * Assign the release to a specific project.
+	 * 
+	 * @param project
+	 */
+	void setProject(Project project);
+
 }

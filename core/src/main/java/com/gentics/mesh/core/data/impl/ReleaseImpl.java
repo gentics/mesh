@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
@@ -287,6 +288,11 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Project getProject() {
-		return null;
+		return out(ASSIGNED_TO_PROJECT).nextOrDefaultExplicit(ProjectImpl.class, null);
+	}
+
+	@Override
+	public void setProject(Project project) {
+		setUniqueLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
 	}
 }
