@@ -281,7 +281,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public String getBaseLocation(InternalActionContext ac) {
+	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/" + encodeFragment(getProject().getName()) + "/releases/" + getUuid();
 	}
 

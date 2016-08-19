@@ -1769,7 +1769,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public String getBaseLocation(InternalActionContext ac) {
+	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/" + encodeFragment(getProject().getName()) + "/nodes/" + getUuid();
 	}
 }

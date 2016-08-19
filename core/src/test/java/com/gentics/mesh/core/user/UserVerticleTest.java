@@ -11,6 +11,7 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,8 +59,11 @@ import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
+
+import io.vertx.core.http.HttpHeaders;
 
 public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
@@ -1074,5 +1078,48 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testDeleteOwnUser() {
 
 		// String response = request(info, HttpMethod.DELETE, "/api/v1/users/" + user.getUuid(), 403, "Forbidden");
+	}
+
+	@Test
+	public void testLocationHeader() {
+		String name = "someUser";
+
+		UserCreateRequest request = new UserCreateRequest();
+		request.setUsername(name);
+		request.setPassword("bla");
+		MeshResponse<UserResponse> response = getClient().createUser(request).invoke();
+		latchFor(response);
+		assertSuccess(response);
+		try (NoTx noTx = db.noTx()) {
+			meshRoot().getUserRoot().reload();
+			User user = meshRoot().getUserRoot().findByUsername(name);
+			assertNotNull("User should have been created.", user);
+			assertEquals(CREATED.code(), response.getResponse().statusCode());
+			String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
+			assertEquals("Location header value did not match", "http://localhost:" + getPort() + "/api/v1/users/" + user.getUuid(), location);
+		}
+	}
+
+	@Test
+	public void testLocationWithHostHeader() {
+		String name = "someUser";
+
+		UserCreateRequest userRequest = new UserCreateRequest();
+		userRequest.setUsername(name);
+		userRequest.setPassword("bla");
+
+		MeshRequest<UserResponse> request = getClient().createUser(userRequest);
+		request.getRequest().putHeader(HttpHeaders.HOST, "jotschi.de:" + getPort());
+		MeshResponse<UserResponse> response = request.invoke();
+		latchFor(response);
+		assertSuccess(response);
+		try (NoTx noTx = db.noTx()) {
+			meshRoot().getUserRoot().reload();
+			User user = meshRoot().getUserRoot().findByUsername(name);
+			assertNotNull("User should have been created.", user);
+			assertEquals(CREATED.code(), response.getResponse().statusCode());
+			String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
+			assertEquals("Location header value did not match", "http://jotschi.de:" + getPort() + "/api/v1/users/" + user.getUuid(), location);
+		}
 	}
 }

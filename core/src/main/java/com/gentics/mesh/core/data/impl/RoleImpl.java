@@ -169,7 +169,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public String getBaseLocation(InternalActionContext ac) {
+	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/roles/" + getUuid();
 	}
 

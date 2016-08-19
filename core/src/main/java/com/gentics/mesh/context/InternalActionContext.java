@@ -121,9 +121,9 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	/**
 	 * Set the location header value.
 	 * 
-	 * @param location
+	 * @param basePath
 	 */
-	void setLocation(String location);
+	void setLocation(String basePath);
 
 	/**
 	 * Checks whether the provided etag matches the etag within the request header.

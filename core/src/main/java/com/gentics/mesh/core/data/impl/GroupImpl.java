@@ -248,7 +248,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public String getBaseLocation(InternalActionContext ac) {
+	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/groups/" + getUuid();
 	}
 

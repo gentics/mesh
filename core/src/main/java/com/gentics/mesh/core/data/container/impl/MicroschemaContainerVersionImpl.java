@@ -130,7 +130,7 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public String getBaseLocation(InternalActionContext ac) {
+	public String getAPIPath(InternalActionContext ac) {
 		// TODO Auto-generated method stub
 		return null;
 	}

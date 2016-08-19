@@ -146,7 +146,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public String getBaseLocation(InternalActionContext ac) {
+	public String getAPIPath(InternalActionContext ac) {
 		return null;
 	}
 

@@ -88,10 +88,15 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	public void setEtag(String entityTag, boolean isWeak) {
 		rc.response().putHeader(HttpHeaders.ETAG, ETag.prepareHeader(entityTag, isWeak));
 	}
-	
+
 	@Override
-	public void setLocation(String location) {
-		rc.response().putHeader(HttpHeaders.LOCATION, location);
+	public void setLocation(String basePath) {
+		String protocol = "http://";
+		if (rc.request().isSSL()) {
+			protocol = "https://";
+		}
+		String hostAndPort = rc.request().host();
+		rc.response().putHeader(HttpHeaders.LOCATION, protocol + hostAndPort + basePath);
 	}
 
 	@Override

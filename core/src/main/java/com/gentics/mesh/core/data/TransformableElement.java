@@ -18,11 +18,12 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 
 	/**
 	 * Return the API path to the element.
-	 * @param ac 
 	 * 
-	 * @return
+	 * @param ac
+	 * 
+	 * @return API path or null if the element has no public path
 	 */
-	String getBaseLocation(InternalActionContext ac);
+	String getAPIPath(InternalActionContext ac);
 
 	/**
 	 * Transform the node into the matching rest model response asynchronously

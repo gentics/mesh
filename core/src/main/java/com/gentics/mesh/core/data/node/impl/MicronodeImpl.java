@@ -262,7 +262,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		return ETag.hash(getUuid());
 	}
 
-	public String getBaseLocation(InternalActionContext ac) {
+	public String getAPIPath(InternalActionContext ac) {
 		// Micronodes have no public location
 		return null;
 	}

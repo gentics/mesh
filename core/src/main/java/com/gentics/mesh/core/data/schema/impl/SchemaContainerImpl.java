@@ -72,7 +72,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	}
 
 	@Override
-	public String getBaseLocation(InternalActionContext ac) {
+	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/schemas/" + getUuid();
 	}
 

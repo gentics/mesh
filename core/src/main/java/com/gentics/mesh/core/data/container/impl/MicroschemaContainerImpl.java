@@ -48,7 +48,7 @@ public class MicroschemaContainerImpl
 	}
 
 	@Override
-	public String getBaseLocation(InternalActionContext ac) {
+	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/microschemas/" + getUuid();
 	}
 
