@@ -100,7 +100,7 @@ public interface SchemaClientMethods {
 	 * @param schemaUuid schema uuid
 	 * @return
 	 */
-	MeshRequest<Schema> unassignSchemaFromProject(String projectName, String schemaUuid);
+	MeshRequest<Void> unassignSchemaFromProject(String projectName, String schemaUuid);
 
 	/**
 	 * Find all schemas assigned to the project

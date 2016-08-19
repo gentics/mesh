@@ -243,8 +243,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NodeResponse> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters) {
-		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
+	public MeshRequest<Void> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleRemoveTag(ac, nodeUuid, tagUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -374,8 +374,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Schema> unassignSchemaFromProject(String projectName, String schemaUuid) {
-		LocalActionContextImpl<Schema> ac = createContext(Schema.class);
+	public MeshRequest<Void> unassignSchemaFromProject(String projectName, String schemaUuid) {
+		LocalActionContextImpl<Void> ac = createContext(Void.class);
 		schemaCrudHandler.handleRemoveSchemaFromProject(ac, schemaUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -1034,8 +1034,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
-			ParameterProvider... parameters) {
+	public MeshRequest<Void> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
 		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleTakeOffline(ac, nodeUuid, languageTag);

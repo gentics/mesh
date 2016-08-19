@@ -126,7 +126,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<NodeResponse> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters);
+	MeshRequest<Void> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters);
 
 	/**
 	 * Move the given node into the target folder. This operation will also affect the children of the given node. Please also note that it is not possible to

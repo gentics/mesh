@@ -154,11 +154,9 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 
-			MeshResponse<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			call(() -> getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid()));
 
-			NodeResponse restNode = future.result();
+			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid()));
 			assertThat(restNode).contains(tag);
 			node.reload();
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -172,9 +170,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
-			MeshResponse<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, uuid, "bogus").invoke();
-			latchFor(future);
-			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			call(() -> getClient().removeTagFromNode(PROJECT_NAME, uuid, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
 	}
 
@@ -186,10 +182,8 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 
-			MeshResponse<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters())
-					.invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+			call(() -> getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN,
+					"error_missing_perm", node.getUuid());
 
 			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
 		}
@@ -214,8 +208,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			Tag tag = tag("red");
-			NodeResponse tagResponse = call(
-					() -> getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+			call(() -> getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 		}
 
 		// Assert that the node is tagged with red in release one
@@ -365,9 +358,8 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(tag, READ_PERM);
-			MeshResponse<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
+			call(() -> getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN,
+					"error_missing_perm", tag.getUuid());
 
 			assertTrue("The tag should not have been removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
 		}
