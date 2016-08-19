@@ -110,7 +110,7 @@ node('dockerRoot') {
 			checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]],
 				extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
 			try {
-				sh "${mvnHome}/bin/mvn -B clean package -pl '!changelog-system,!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false"
+				sh "${mvnHome}/bin/mvn -B clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false"
 			} finally {
 				//step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 				step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
