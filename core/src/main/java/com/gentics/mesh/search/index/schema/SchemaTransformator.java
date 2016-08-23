@@ -14,7 +14,6 @@ import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
-@Component
 public class SchemaTransformator extends AbstractTransformator<SchemaContainer> {
 
 	@Override

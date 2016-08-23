@@ -5,14 +5,11 @@ import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
-@Component
 public class GroupTransformator extends AbstractTransformator<Group> {
 
 	@Override

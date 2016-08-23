@@ -5,7 +5,6 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -21,8 +20,7 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	private final static Set<String> indices = Collections.singleton(Project.TYPE);
 
-	@Autowired
-	private ProjectTransformator transformator;
+	private ProjectTransformator transformator = new ProjectTransformator();
 
 	@PostConstruct
 	public void setup() {

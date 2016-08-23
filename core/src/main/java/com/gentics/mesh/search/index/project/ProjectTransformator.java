@@ -12,7 +12,6 @@ import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
-@Component
 public class ProjectTransformator extends AbstractTransformator<Project> {
 
 	@Override

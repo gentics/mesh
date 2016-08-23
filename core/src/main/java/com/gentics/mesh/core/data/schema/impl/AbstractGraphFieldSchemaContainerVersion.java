@@ -214,7 +214,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 				}
 			}
 
-			R resultingSchema = FieldSchemaContainerMutator.getInstance().apply(this);
+			R resultingSchema = new FieldSchemaContainerMutator().apply(this);
 			resultingSchema.validate();
 
 			// Increment version of the schema

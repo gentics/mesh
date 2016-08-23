@@ -2,8 +2,6 @@ package com.gentics.mesh.core.schema.change;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -14,8 +12,7 @@ import com.gentics.mesh.test.AbstractEmptyDBTest;
  */
 public abstract class AbstractChangeTest extends AbstractEmptyDBTest {
 
-	@Autowired
-	protected FieldSchemaContainerMutator mutator;
+	protected FieldSchemaContainerMutator mutator = new FieldSchemaContainerMutator();
 
 	/**
 	 * Assert that the basic getter and setter work as expected.

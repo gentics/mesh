@@ -5,7 +5,6 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -19,8 +18,7 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	private static RoleIndexHandler instance;
 
-	@Autowired
-	private RoleTransformator transformator;
+	private RoleTransformator transformator = new RoleTransformator();
 
 	private final static Set<String> indices = Collections.singleton(Role.TYPE);
 

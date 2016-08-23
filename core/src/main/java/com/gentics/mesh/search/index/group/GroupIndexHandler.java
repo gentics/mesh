@@ -5,7 +5,6 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -21,8 +20,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	private final static Set<String> indices = Collections.singleton("group");
 
-	@Autowired
-	private GroupTransformator transformator;
+	private GroupTransformator transformator = new GroupTransformator();
 
 	@PostConstruct
 	public void setup() {

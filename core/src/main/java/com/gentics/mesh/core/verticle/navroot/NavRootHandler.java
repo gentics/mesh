@@ -25,6 +25,7 @@ import rx.Single;
 
 @Component
 public class NavRootHandler {
+
 	@Autowired
 	private WebRootService webrootService;
 

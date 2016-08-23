@@ -60,8 +60,7 @@ public abstract class AbstractDBTest {
 	@Autowired
 	protected DatabaseService databaseService;
 
-	@Autowired
-	protected RestAssert test;
+	protected RestAssert test = new RestAssert();
 
 	static {
 		// Use slf4j instead of jul

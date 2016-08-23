@@ -93,8 +93,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private static NodeIndexHandler instance;
 
-	@Autowired
-	private NodeGraphFieldContainerTransformator transformator;
+	private NodeGraphFieldContainerTransformator transformator = new NodeGraphFieldContainerTransformator();
 
 	@Autowired
 	protected Database db;

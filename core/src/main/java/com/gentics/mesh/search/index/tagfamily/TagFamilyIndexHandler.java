@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -29,8 +28,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	private static TagFamilyIndexHandler instance;
 
-	@Autowired
-	private TagFamilyTransformator transformator;
+	private TagFamilyTransformator transformator = new TagFamilyTransformator();
 
 	@PostConstruct
 	public void setup() {

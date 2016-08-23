@@ -29,7 +29,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	private static TagIndexHandler instance;
 
 	@Autowired
-	private TagTransformator transformator;
+	private TagTransformator transformator = new TagTransformator();
 
 	@PostConstruct
 	public void setup() {

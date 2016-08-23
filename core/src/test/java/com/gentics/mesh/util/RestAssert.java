@@ -29,7 +29,6 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 /**
  * @deprecated use {@link MeshAssertions} instead.
  */
-@Component
 @Deprecated
 public class RestAssert {
 

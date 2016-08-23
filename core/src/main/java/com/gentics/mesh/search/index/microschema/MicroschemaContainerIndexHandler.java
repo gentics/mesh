@@ -22,7 +22,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	private final static Set<String> indices = Collections.singleton("microschema");
 
 	@Autowired
-	private MicroschemaTransformator transformator;
+	private MicroschemaTransformator transformator = new MicroschemaTransformator();
 
 	@PostConstruct
 	public void setup() {

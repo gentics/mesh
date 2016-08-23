@@ -1,9 +1,5 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -15,19 +11,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
  * The field container mutator utilizes {@link SchemaChange} objects in order to modify/mutate a given field container implementaton (eg. {@link Schema} or
  * {@link Microschema}. This way {@link SchemaChange} operations can be applied on a given schema.
  */
-@Component
 public class FieldSchemaContainerMutator {
-
-	private static FieldSchemaContainerMutator instance;
-
-	public static FieldSchemaContainerMutator getInstance() {
-		return instance;
-	}
-
-	@PostConstruct
-	public void setup() {
-		FieldSchemaContainerMutator.instance = this;
-	}
 
 	/**
 	 * Applies all changes that are connected to the container to the version of the container and returns the mutated version of the field container that was

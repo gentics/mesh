@@ -5,7 +5,6 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -21,8 +20,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	private final static Set<String> indices = Collections.singleton("schema_container");
 
-	@Autowired
-	private SchemaTransformator transformator;
+	private SchemaTransformator transformator = new SchemaTransformator();
 
 	@PostConstruct
 	public void setup() {
