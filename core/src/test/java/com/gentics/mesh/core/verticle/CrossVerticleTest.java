@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -16,13 +15,10 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class CrossVerticleTest extends AbstractRestVerticleTest {
 
-	@Autowired
 	private ProjectVerticle projectVerticle;
 
-	@Autowired
 	private TagFamilyVerticle tagFamilyVerticle;
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
 	@Override

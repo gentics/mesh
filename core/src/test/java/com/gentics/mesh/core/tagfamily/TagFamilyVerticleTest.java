@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Role;
@@ -47,7 +46,6 @@ import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Autowired
 	private TagFamilyVerticle verticle;
 
 	@Override

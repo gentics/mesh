@@ -1,10 +1,8 @@
 package com.gentics.mesh.changelog;
 
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import dagger.Component;
 
-@Configuration
-@ComponentScan(basePackages = { "com.gentics.mesh" })
+@Component
 public class ChangelogSpringConfiguration {
 
 }

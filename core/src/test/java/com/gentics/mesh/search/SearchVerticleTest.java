@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
@@ -26,10 +25,8 @@ import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
-	@Autowired
 	private NodeIndexHandler nodeIndexHandler;
 
-	@Autowired
 	private IndexHandlerRegistry registry;
 
 	@Override

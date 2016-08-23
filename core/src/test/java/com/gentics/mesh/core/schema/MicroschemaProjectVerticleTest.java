@@ -33,13 +33,10 @@ import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class MicroschemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private SchemaVerticle schemaVerticle;
 
-	@Autowired
 	private ProjectMicroschemaVerticle projectMicroschemaVerticle;
 
-	@Autowired
 	private ProjectVerticle projectVerticle;
 
 	@Override

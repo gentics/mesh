@@ -5,11 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -22,24 +18,16 @@ import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@Component
-@Scope(value = "singleton")
 public class ServerSchemaStorage implements SchemaStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(ServerSchemaStorage.class);
 
 	public static ServerSchemaStorage instance;
 
-	@PostConstruct
-	public void setup() {
-		instance = this;
-	}
-
 	public static ServerSchemaStorage getInstance() {
 		return instance;
 	}
 
-	@Autowired
 	private BootstrapInitializer boot;
 
 	/**
@@ -48,6 +36,12 @@ public class ServerSchemaStorage implements SchemaStorage {
 	private Map<String, Map<Integer, Schema>> schemas = new HashMap<>();
 
 	private Map<String, Map<Integer, Microschema>> microschemas = new HashMap<>();
+
+	@Inject
+	public ServerSchemaStorage(BootstrapInitializer boot) {
+		this.boot = boot;
+		instance = this;
+	}
 
 	public void init() {
 		//Iterate over all schemas and load them into the storage

@@ -3,29 +3,21 @@ package com.gentics.mesh.search.index.microschema;
 import java.util.Collections;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
-@Component
 public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<MicroschemaContainer> {
 
 	private static MicroschemaContainerIndexHandler instance;
 
 	private final static Set<String> indices = Collections.singleton("microschema");
 
-	@Autowired
 	private MicroschemaTransformator transformator = new MicroschemaTransformator();
 
-	@PostConstruct
-	public void setup() {
+	public MicroschemaContainerIndexHandler() {
 		instance = this;
 	}
 

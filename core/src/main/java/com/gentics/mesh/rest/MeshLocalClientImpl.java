@@ -4,9 +4,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
@@ -101,58 +98,66 @@ import rx.Single;
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests.
  */
-@Component
 public class MeshLocalClientImpl implements MeshRestClient {
 
 	private MeshAuthUser user;
 
-	@Autowired
 	private BootstrapInitializer boot;
 
-	@Autowired
 	private Database database;
 
-	@Autowired
 	private UserCrudHandler userCrudHandler;
 
-	@Autowired
 	private RoleCrudHandler roleCrudHandler;
 
-	@Autowired
 	private GroupCrudHandler groupCrudHandler;
 
-	@Autowired
 	private SchemaContainerCrudHandler schemaCrudHandler;
 
-	@Autowired
 	private MicroschemaCrudHandler microschemaCrudHandler;
 
-	@Autowired
 	private TagCrudHandler tagCrudHandler;
 
-	@Autowired
 	private TagFamilyCrudHandler tagFamilyCrudHandler;
 
-	@Autowired
 	private ProjectCrudHandler projectCrudHandler;
 
-	@Autowired
 	private NodeCrudHandler nodeCrudHandler;
 
-	@Autowired
 	private NodeFieldAPIHandler fieldAPIHandler;
 
-	@Autowired
 	private WebRootHandler webrootHandler;
 
-	@Autowired
 	private AdminHandler adminHandler;
 
-	@Autowired
 	private AuthenticationRestHandler authRestHandler;
 
-	@Autowired
 	private UtilityHandler utilityHandler;
+
+	public MeshLocalClientImpl(UtilityHandler utilityHandler, AuthenticationRestHandler authRestHandler, AdminHandler adminHandler,
+			WebRootHandler webrootHandler, NodeFieldAPIHandler fieldAPIHandler, NodeCrudHandler nodeCrudHandler,
+			ProjectCrudHandler projectCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler, TagCrudHandler tagCrudHandler,
+			MicroschemaCrudHandler microschemaCrudHandler, SchemaContainerCrudHandler schemaCrudHandler, GroupCrudHandler groupCrudHandler,
+			RoleCrudHandler roleCrudHandler, UserCrudHandler userCrudHandler, Database database, BootstrapInitializer boot) {
+
+		this.utilityHandler = utilityHandler;
+		this.authRestHandler = authRestHandler;
+		this.adminHandler = adminHandler;
+		this.webrootHandler = webrootHandler;
+		this.fieldAPIHandler = fieldAPIHandler;
+		this.nodeCrudHandler = nodeCrudHandler;
+		this.projectCrudHandler = projectCrudHandler;
+		this.tagFamilyCrudHandler = tagFamilyCrudHandler;
+		this.tagCrudHandler = tagCrudHandler;
+		this.microschemaCrudHandler = microschemaCrudHandler;
+		this.schemaCrudHandler = schemaCrudHandler;
+		this.groupCrudHandler = groupCrudHandler;
+		this.roleCrudHandler = roleCrudHandler;
+		this.userCrudHandler = userCrudHandler;
+		this.database = database;
+		this.boot = boot;
+
+	}
 
 	private Map<String, Project> projects = new HashMap<>();
 

@@ -3,8 +3,6 @@ package com.gentics.mesh.core.verticle.project;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -14,7 +12,6 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 
-@Component
 public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResponse> {
 
 	@Override

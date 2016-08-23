@@ -5,10 +5,6 @@ import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_SECURE_FLAG
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
@@ -31,6 +27,8 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
+import dagger.Module;
+import dagger.Provides;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
@@ -50,9 +48,7 @@ import io.vertx.ext.web.sstore.SessionStore;
 /**
  * Main spring bean providing configuration class.
  */
-@Configuration
-@ComponentScan(basePackages = { "com.gentics.mesh" })
-@Profile({ "test", "full", "dump" })
+@Module
 public class MeshSpringConfiguration {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshSpringConfiguration.class);
@@ -70,12 +66,12 @@ public class MeshSpringConfiguration {
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
-	@Bean
+	@Provides
 	public ImageManipulatorService imageProviderService() {
 		return ImageManipulatorService.getInstance();
 	}
 
-	@Bean
+	@Provides
 	public ImageManipulator imageProvider() {
 		//		ImageManipulator provider = imageProviderService().getImageProvider();
 		//TODO assert provider
@@ -83,12 +79,12 @@ public class MeshSpringConfiguration {
 		return new ImgscalrImageManipulator();
 	}
 
-	@Bean
+	@Provides
 	public DatabaseService databaseService() {
 		return DatabaseService.getInstance();
 	}
 
-	@Bean
+	@Provides
 	public Database database() {
 		Database database = databaseService().getDatabase();
 		if (database == null) {
@@ -107,12 +103,12 @@ public class MeshSpringConfiguration {
 		}
 	}
 
-	@Bean
+	@Provides
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
 	}
 
-	@Bean
+	@Provides
 	public SearchProvider searchProvider() {
 		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
 		SearchProvider searchProvider = null;
@@ -124,7 +120,7 @@ public class MeshSpringConfiguration {
 		return searchProvider;
 	}
 
-	@Bean
+	@Provides
 	public SessionHandler sessionHandler() {
 		SessionStore store = LocalSessionStore.create(Mesh.vertx());
 		// TODO make session age configurable
@@ -137,7 +133,7 @@ public class MeshSpringConfiguration {
 	 * 
 	 * @return
 	 */
-	@Bean
+	@Provides
 	public AuthHandler authHandler() {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
@@ -148,7 +144,7 @@ public class MeshSpringConfiguration {
 		}
 	}
 
-	@Bean
+	@Provides
 	public AuthenticationRestHandler authRestHandler() {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
@@ -164,7 +160,7 @@ public class MeshSpringConfiguration {
 	 * 
 	 * @return
 	 */
-	@Bean
+	@Provides
 	public UserSessionHandler userSessionHandler() {
 		return UserSessionHandler.create(authProvider());
 	}
@@ -174,7 +170,7 @@ public class MeshSpringConfiguration {
 	 * 
 	 * @return
 	 */
-	@Bean
+	@Provides
 	public MeshAuthProvider authProvider() {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
@@ -190,7 +186,7 @@ public class MeshSpringConfiguration {
 	 * 
 	 * @return
 	 */
-	@Bean
+	@Provides
 	public MailClient mailClient() {
 		MailConfig config = Mesh.mesh().getOptions().getMailServerOptions();
 		MailClient mailClient = MailClient.createShared(Mesh.vertx(), config, "meshClient");
@@ -220,7 +216,7 @@ public class MeshSpringConfiguration {
 	 * 
 	 * @return
 	 */
-	@Bean
+	@Provides
 	public Handler<RoutingContext> bodyHandler() {
 		String tempDirectory = Mesh.mesh().getOptions().getUploadOptions().getTempDirectory();
 		BodyHandler handler = new MeshBodyHandlerImpl(tempDirectory);

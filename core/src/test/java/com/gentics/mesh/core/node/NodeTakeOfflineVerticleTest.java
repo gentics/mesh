@@ -30,7 +30,6 @@ import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private NodeVerticle verticle;
 
 	@Override

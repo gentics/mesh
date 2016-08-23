@@ -14,9 +14,6 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.naming.InvalidNameException;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -99,20 +96,16 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
  * The bootstrap initializer takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
  * GroupRoot, UserRoot and various element such as the Admin User, Admin Group, Admin Role.
  */
-@Component
 public class BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
 	private MeshOptions configuration;
 
-	@Autowired
 	private ServerSchemaStorage schemaStorage;
 
-	@Autowired
 	private Database db;
 
-	@Autowired
 	private IndexHandlerRegistry searchHandlerRegistry;
 
 	private static BootstrapInitializer instance;
@@ -121,17 +114,21 @@ public class BootstrapInitializer {
 
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryWorkerVerticles = new HashMap<>();
 
-	@Autowired
 	private MeshSpringConfiguration springConfiguration;
 
-	@Autowired
 	private RouterStorage routerStorage;
 
 	private static MeshRoot meshRoot;
 
 	public static boolean isInitialSetup = true;
 
-	public BootstrapInitializer() {
+	public BootstrapInitializer(ServerSchemaStorage schemaStorage, Database db, IndexHandlerRegistry searchHandlerRegistry,
+			MeshSpringConfiguration springConfiguration, RouterStorage routerStorage) {
+		this.schemaStorage = schemaStorage;
+		this.db = db;
+		this.searchHandlerRegistry = searchHandlerRegistry;
+		this.springConfiguration = springConfiguration;
+		this.routerStorage = routerStorage;
 
 		// Add API Info Verticle
 		addMandatoryVerticle(RestInfoVerticle.class);

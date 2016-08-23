@@ -14,7 +14,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -32,13 +31,10 @@ import io.vertx.core.DeploymentOptions;
 
 public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	@Autowired
 	private SchemaVerticle schemaVerticle;
 
-	@Autowired
 	private EventbusVerticle eventbusVerticle;
 
-	@Autowired
 	private NodeMigrationVerticle nodeMigrationVerticle;
 
 	@Override

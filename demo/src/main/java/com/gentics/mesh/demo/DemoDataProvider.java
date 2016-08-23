@@ -11,8 +11,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -58,7 +56,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@Component
 public class DemoDataProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(DemoDataProvider.class);
@@ -67,13 +64,10 @@ public class DemoDataProvider {
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
-	@Autowired
 	private Database db;
 
-	@Autowired
 	protected MeshSpringConfiguration springConfig;
 
-	@Autowired
 	private MeshLocalClientImpl client;
 
 	private Map<String, ProjectResponse> projects = new HashMap<>();
@@ -85,7 +79,10 @@ public class DemoDataProvider {
 	private Map<String, RoleResponse> roles = new HashMap<>();
 	private Map<String, GroupResponse> groups = new HashMap<>();
 
-	private DemoDataProvider() {
+	public DemoDataProvider(Database database, MeshSpringConfiguration springConfig, MeshLocalClientImpl client) {
+		this.db = database;
+		this.springConfig = springConfig;
+		this.client = client;
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
@@ -121,8 +118,8 @@ public class DemoDataProvider {
 	private void publishAllNodes() throws InterruptedException {
 
 		for (ProjectResponse project : projects.values()) {
-			MeshResponse<PublishStatusResponse> future = client.publishNode(PROJECT_NAME, project.getRootNodeUuid(),
-					new PublishParameters().setRecursive(true)).invoke();
+			MeshResponse<PublishStatusResponse> future = client
+					.publishNode(PROJECT_NAME, project.getRootNodeUuid(), new PublishParameters().setRecursive(true)).invoke();
 			latchFor(future);
 		}
 
@@ -138,8 +135,8 @@ public class DemoDataProvider {
 		request.setRecursive(true);
 		request.getPermissions().add("read");
 		request.getPermissions().add("update");
-		MeshResponse<GenericMessageResponse> future = client.updateRolePermissions(getRole("Client Role").getUuid(),
-				"projects/" + getProject("demo").getUuid(), request).invoke();
+		MeshResponse<GenericMessageResponse> future = client
+				.updateRolePermissions(getRole("Client Role").getUuid(), "projects/" + getProject("demo").getUuid(), request).invoke();
 		latchFor(future);
 
 		future = client.updateRolePermissions(getRole("Client Role").getUuid(), "users/" + users.get("webclient").getUuid(), request).invoke();
@@ -352,8 +349,8 @@ public class DemoDataProvider {
 				byte[] bytes = IOUtils.toByteArray(ins);
 				Buffer fileData = Buffer.buffer(bytes);
 
-				MeshResponse<GenericMessageResponse> binaryUpdateFuture = client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image",
-						fileData, filenName, contentType).invoke();
+				MeshResponse<GenericMessageResponse> binaryUpdateFuture = client
+						.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image", fileData, filenName, contentType).invoke();
 				latchFor(binaryUpdateFuture);
 
 			}
@@ -362,7 +359,8 @@ public class DemoDataProvider {
 			JsonArray tagArray = nodeJson.getJsonArray("tags");
 			for (int e = 0; e < tagArray.size(); e++) {
 				String tagName = tagArray.getString(e);
-				MeshResponse<NodeResponse> tagAddedFuture = client.addTagToNode(PROJECT_NAME, createdNode.getUuid(), getTag(tagName).getUuid()).invoke();
+				MeshResponse<NodeResponse> tagAddedFuture = client.addTagToNode(PROJECT_NAME, createdNode.getUuid(), getTag(tagName).getUuid())
+						.invoke();
 				latchFor(tagAddedFuture);
 			}
 

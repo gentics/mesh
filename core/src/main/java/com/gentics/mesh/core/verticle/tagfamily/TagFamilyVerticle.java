@@ -8,10 +8,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
@@ -23,26 +20,24 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyVerticle.class);
-
-	@Autowired
-	private TagFamilyCrudHandler tagFamilyCrudHandler;
 
 	@Override
 	public String getDescription() {
 		return "Provides endpoints which allow the manipulation of tag families and tags.";
 	}
 
-	@Autowired
+	private TagFamilyCrudHandler tagFamilyCrudHandler;
+
 	private TagCrudHandler tagCrudHandler;
 
-	public TagFamilyVerticle() {
+	@Inject
+	public TagFamilyVerticle(TagCrudHandler tagCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler) {
 		super("tagFamilies");
+		this.tagCrudHandler = tagCrudHandler;
+		this.tagFamilyCrudHandler = tagFamilyCrudHandler;
 	}
 
 	@Override

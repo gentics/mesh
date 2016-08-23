@@ -4,13 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.gentics.mesh.test.SpringTestConfiguration;
 
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
@@ -18,12 +12,8 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.impl.RouteImpl;
 
-@ContextConfiguration(classes = { SpringTestConfiguration.class })
-@RunWith(SpringJUnit4ClassRunner.class)
-@ActiveProfiles("test")
 public class RouterStorageTest {
 
-	@Autowired
 	RouterStorage storage;
 
 	@Test

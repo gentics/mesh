@@ -26,13 +26,11 @@ import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -50,7 +48,6 @@ import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Autowired
 	private TagFamilyVerticle verticle;
 
 	@Override

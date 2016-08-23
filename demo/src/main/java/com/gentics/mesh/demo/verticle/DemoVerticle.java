@@ -5,10 +5,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import java.io.File;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractWebVerticle;
@@ -22,18 +19,16 @@ import io.vertx.ext.web.handler.StaticHandler;
 /**
  * Demo verticle that is used to setup basic demo data.
  */
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class DemoVerticle extends AbstractWebVerticle {
 
 	private static Logger log = LoggerFactory.getLogger(DemoVerticle.class);
 
-	@Autowired
 	private DemoDataProvider demoDataProvider;
 
-	public DemoVerticle() {
+	@Inject
+	public DemoVerticle(DemoDataProvider demoDataProvider) {
 		super("demo");
+		this.demoDataProvider = demoDataProvider;
 	}
 
 	@Override

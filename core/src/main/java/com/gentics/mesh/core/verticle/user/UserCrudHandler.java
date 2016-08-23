@@ -7,7 +7,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -24,7 +23,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
-@Component
+
 public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(UserCrudHandler.class);

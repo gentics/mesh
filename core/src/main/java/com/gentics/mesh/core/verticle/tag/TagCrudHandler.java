@@ -4,8 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import org.springframework.stereotype.Component;
-
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.TagFamily;
@@ -13,13 +12,19 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 
 import rx.Single;
 
-@Component
 public class TagCrudHandler extends AbstractHandler {
+
+	public TagCrudHandler(Database db, MeshSpringConfiguration springConfiguration, BootstrapInitializer boot, RouterStorage routerStorage) {
+		super(db, springConfiguration, boot, routerStorage);
+	}
 
 	public TagFamily getTagFamily(InternalActionContext ac, String uuid) {
 		return ac.getProject().getTagFamilyRoot().findByUuidSync(uuid);

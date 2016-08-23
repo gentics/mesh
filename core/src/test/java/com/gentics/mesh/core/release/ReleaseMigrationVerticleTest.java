@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Meter;
@@ -41,16 +40,13 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 
 public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
-	@Autowired
+
 	private NodeMigrationVerticle nodeMigrationVerticle;
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
-	@Autowired
 	private ReleaseVerticle releaseVerticle;
 
-	@Autowired
 	private EventbusVerticle eventbusVerticle;
 
 	@Override

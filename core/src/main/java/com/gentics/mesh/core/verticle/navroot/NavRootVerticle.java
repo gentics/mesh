@@ -4,25 +4,17 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.rest.Endpoint;
 
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class NavRootVerticle extends AbstractProjectRestVerticle {
 
-	@Autowired
 	private NavRootHandler handler;
 
-	public NavRootVerticle() {
+	public NavRootVerticle(NavRootHandler handler) {
 		super("navroot");
+		this.handler = handler;
 	}
 
 	@Override

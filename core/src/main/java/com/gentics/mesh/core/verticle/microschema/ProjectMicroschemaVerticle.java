@@ -7,10 +7,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
@@ -20,16 +17,14 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * Verticle for /api/v1/PROJECTNAME/microschemas
  */
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 
-	@Autowired
 	private MicroschemaCrudHandler crudHandler;
 
-	public ProjectMicroschemaVerticle() {
+	@Inject
+	public ProjectMicroschemaVerticle(MicroschemaCrudHandler crudHandler) {
 		super("microschemas");
+		this.crudHandler = crudHandler;
 	}
 
 	@Override

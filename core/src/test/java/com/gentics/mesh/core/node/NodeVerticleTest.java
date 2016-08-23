@@ -79,10 +79,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
-	@Autowired
 	private NodeVerticle verticle;
 
-	@Autowired
 	private NodeMigrationHandler nodeMigrationHandler;
 
 	@Override

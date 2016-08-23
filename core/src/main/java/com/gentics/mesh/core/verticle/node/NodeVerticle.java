@@ -10,11 +10,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jacpfx.vertx.spring.SpringVerticle;
 import org.raml.model.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
@@ -33,17 +29,12 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class NodeVerticle extends AbstractProjectRestVerticle {
 
-	@Autowired
 	private NodeCrudHandler crudHandler;
 
 	private Resource resource = new Resource();
 
-	@Autowired
 	private NodeFieldAPIHandler fieldAPIHandler;
 
 	@Override
@@ -51,8 +42,10 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		return "Provides endpoints which allow the manipulation of nodes.";
 	}
 
-	public NodeVerticle() {
+	public NodeVerticle(NodeCrudHandler crudHandler, NodeFieldAPIHandler fieldAPIHandler) {
 		super("nodes");
+		this.crudHandler = crudHandler;
+		this.fieldAPIHandler = fieldAPIHandler;
 	}
 
 	@Override

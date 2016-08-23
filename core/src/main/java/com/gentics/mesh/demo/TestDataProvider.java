@@ -12,10 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -51,6 +50,7 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
+import dagger.Component;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -65,26 +65,15 @@ public class TestDataProvider {
 
 	private static TestDataProvider instance;
 
-	@PostConstruct
-	public void setupSingleton() {
-		instance = this;
-	}
-
 	public static TestDataProvider getInstance() {
 		return instance;
 	}
 
-	@Autowired
 	private Database db;
 
-	@Autowired
-	private BootstrapInitializer rootService;
-
-	@Autowired
 	protected MeshSpringConfiguration springConfig;
 
-	@Autowired
-	private BootstrapInitializer bootstrapInitializer;
+	private BootstrapInitializer boot;
 
 	// References to dummy data
 
@@ -108,14 +97,19 @@ public class TestDataProvider {
 	private Map<String, Role> roles = new HashMap<>();
 	private Map<String, Group> groups = new HashMap<>();
 
-	private TestDataProvider() {
+	@Inject
+	public TestDataProvider(BootstrapInitializer boot, MeshSpringConfiguration springConfig, Database database) {
+		this.boot = boot;
+		this.springConfig = springConfig;
+		this.db = database;
+		instance = this;
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		long start = System.currentTimeMillis();
 
 		db.noTx(() -> {
-			bootstrapInitializer.initMandatoryData();
+			boot.initMandatoryData();
 			schemaContainers.clear();
 			microschemaContainers.clear();
 			tagFamilies.clear();
@@ -126,9 +120,9 @@ public class TestDataProvider {
 			roles.clear();
 			groups.clear();
 
-			root = rootService.meshRoot();
-			english = rootService.languageRoot().findByLanguageTag("en");
-			german = rootService.languageRoot().findByLanguageTag("de");
+			root = boot.meshRoot();
+			english = boot.languageRoot().findByLanguageTag("en");
+			german = boot.languageRoot().findByLanguageTag("de");
 
 			addBootstrappedData();
 			addSchemaContainers();
@@ -362,15 +356,15 @@ public class TestDataProvider {
 	private void addBootstrapSchemas() {
 
 		// folder
-		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder").toBlocking().value();
+		SchemaContainer folderSchemaContainer = boot.schemaContainerRoot().findByName("folder").toBlocking().value();
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content").toBlocking().value();
+		SchemaContainer contentSchemaContainer = boot.schemaContainerRoot().findByName("content").toBlocking().value();
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary-content
-		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content").toBlocking().value();
+		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary-content").toBlocking().value();
 		schemaContainers.put("binary-content", binaryContentSchemaContainer);
 
 	}
@@ -421,7 +415,7 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		MicroschemaContainer vcardMicroschemaContainer = rootService.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser());
+		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(vcardMicroschemaContainer);
 	}
@@ -449,7 +443,7 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		MicroschemaContainer microschemaContainer = rootService.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
+		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
 	}

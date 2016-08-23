@@ -8,8 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -25,11 +24,14 @@ import com.gentics.mesh.json.JsonUtil;
 
 import rx.Single;
 
-@Component
 public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, Microschema> {
 
-	@Autowired
 	private MicroschemaComparator comparator;
+
+	@Inject	
+	public MicroschemaCrudHandler(MicroschemaComparator comparator) {
+		this.comparator = comparator;
+	}
 
 	@Override
 	public RootVertex<MicroschemaContainer> getRootVertex(InternalActionContext ac) {

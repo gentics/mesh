@@ -1,6 +1,6 @@
 package com.gentics.mesh.core;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -17,17 +17,22 @@ public abstract class AbstractSpringVerticle extends AbstractVerticle {
 
 	public abstract void start() throws Exception;
 
-	@Autowired
 	protected MeshSpringConfiguration springConfiguration;
 
-	@Autowired
 	protected RouterStorage routerStorage;
 
-	@Autowired
 	protected BootstrapInitializer boot;
 
-	@Autowired
 	protected Database db;
+
+	@Inject
+	public AbstractSpringVerticle(Database database, BootstrapInitializer boot, RouterStorage routerStorage,
+			MeshSpringConfiguration springConfiguration) {
+		this.db = database;
+		this.boot = boot;
+		this.routerStorage = routerStorage;
+		this.springConfiguration = springConfiguration;
+	}
 
 	public void setSpringConfig(MeshSpringConfiguration config) {
 		this.springConfiguration = config;

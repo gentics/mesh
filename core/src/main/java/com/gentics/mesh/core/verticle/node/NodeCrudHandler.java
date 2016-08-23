@@ -15,7 +15,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.elasticsearch.common.collect.Tuple;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -45,7 +44,6 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Single;
 
-@Component
 public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	@Override

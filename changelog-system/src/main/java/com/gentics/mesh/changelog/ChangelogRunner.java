@@ -1,7 +1,5 @@
 package com.gentics.mesh.changelog;
 
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;

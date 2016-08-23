@@ -3,10 +3,7 @@ package com.gentics.mesh.core.verticle.admin;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.MeshNameProvider;
@@ -17,16 +14,14 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.ext.web.Router;
 
-@Component
-@Scope(value = "singleton")
-@SpringVerticle
 public class RestInfoVerticle extends AbstractWebVerticle {
 
-	@Autowired
 	private SearchProvider searchProvider;
 
-	protected RestInfoVerticle() {
+	@Inject
+	protected RestInfoVerticle(SearchProvider searchProvider) {
 		super(null);
+		this.searchProvider = searchProvider;
 	}
 
 	@Override

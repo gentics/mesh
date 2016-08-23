@@ -2,12 +2,6 @@ package com.gentics.mesh.test;
 
 import java.util.Map;
 
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -40,24 +34,16 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 
-@ContextConfiguration(classes = { SpringTestConfiguration.class })
-@RunWith(SpringJUnit4ClassRunner.class)
-@ActiveProfiles("test")
 public abstract class AbstractDBTest {
 
-	@Autowired
 	protected BootstrapInitializer boot;
 
-	@Autowired
 	private TestDataProvider dataProvider;
 
-	@Autowired
 	protected MeshSpringConfiguration springConfig;
 
-	@Autowired
 	protected Database db;
 
-	@Autowired
 	protected DatabaseService databaseService;
 
 	protected RestAssert test = new RestAssert();

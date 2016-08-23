@@ -2,26 +2,19 @@ package com.gentics.mesh.demo;
 
 import java.io.File;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 
+import dagger.Module;
+
 /**
  * Spring configuration which is used in combination with the {@link DemoDumpGenerator}.
  */
-@Configuration
-@ComponentScan(basePackages = { "com.gentics.mesh" })
-@Profile("dump")
+@Module
 public class DemoDumpConfiguration {
 
-	@PostConstruct
-	public void setup() {
+	public DemoDumpConfiguration() {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 

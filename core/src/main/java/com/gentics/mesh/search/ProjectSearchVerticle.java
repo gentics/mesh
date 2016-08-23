@@ -4,10 +4,7 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
@@ -29,14 +26,10 @@ import rx.functions.Func0;
 /**
  * Verticle that adds REST endpoints for project specific search (for nodes, tags and tagFamilies)
  */
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
-	@Autowired
+
 	private SearchRestHandler searchHandler;
 
-	@Autowired
 	private IndexHandlerRegistry registry;
 
 	@Override
@@ -44,11 +37,11 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 		return "Provides endpoints which allow project wide search.";
 	}
 
-	/**
-	 * Create an instance
-	 */
-	public ProjectSearchVerticle() {
+	@Inject
+	public ProjectSearchVerticle(SearchRestHandler searchHandler, IndexHandlerRegistry registry) {
 		super("search");
+		this.searchHandler = searchHandler;
+		this.registry = registry;
 	}
 
 	@Override

@@ -7,10 +7,6 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
@@ -21,15 +17,13 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * Verticle for REST endpoints to manage Releases
  */
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class ReleaseVerticle extends AbstractProjectRestVerticle {
-	@Autowired
+
 	private ReleaseCrudHandler crudHandler;
 
-	public ReleaseVerticle() {
+	public ReleaseVerticle(ReleaseCrudHandler crudHandler) {
 		super("releases");
+		this.crudHandler = crudHandler;
 	}
 
 	@Override

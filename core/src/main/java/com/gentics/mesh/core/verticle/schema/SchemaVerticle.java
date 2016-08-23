@@ -8,11 +8,9 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
@@ -23,16 +21,14 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * Verticle for /api/v1/schemas endpoint
  */
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class SchemaVerticle extends AbstractCoreApiVerticle {
 
-	@Autowired
 	private SchemaContainerCrudHandler crudHandler;
 
-	public SchemaVerticle() {
+	@Inject
+	public SchemaVerticle(SchemaContainerCrudHandler crudHandler) {
 		super("schemas");
+		this.crudHandler = crudHandler;
 	}
 
 	@Override

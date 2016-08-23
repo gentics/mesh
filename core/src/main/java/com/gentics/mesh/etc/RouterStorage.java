@@ -6,12 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.naming.InvalidNameException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
@@ -39,8 +35,6 @@ import io.vertx.ext.web.handler.LoggerHandler;
  * Project routers are automatically bound to all projects. This way only a single node verticle is needed to handle all project requests.
  * 
  */
-@Component
-@Scope(value = "singleton")
 public class RouterStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(RouterStorage.class);
@@ -56,17 +50,12 @@ public class RouterStorage {
 
 	private static RouterStorage instance;
 
-	@Autowired
 	private MeshSpringConfiguration springConfiguration;
 
-	@PostConstruct
-	public void init() {
+	@Inject
+	public RouterStorage(MeshSpringConfiguration springConfiguration) {
+		this.springConfiguration = springConfiguration;
 		this.vertx = Mesh.vertx();
-		initAPIRouter();
-	}
-
-	@PostConstruct
-	public void setup() {
 		RouterStorage.instance = this;
 	}
 

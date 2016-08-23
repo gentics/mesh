@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -18,8 +20,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -54,22 +54,25 @@ import rx.functions.Func0;
 /**
  * Collection of handlers which are used to deal with rest search requests.
  */
-@Component
 public class SearchRestHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchRestHandler.class);
 
-	@Autowired
 	private BootstrapInitializer boot;
 
-	@Autowired
 	private SearchProvider searchProvider;
 
-	@Autowired
 	private Database db;
 
-	@Autowired
 	private IndexHandlerRegistry registry;
+
+	@Inject
+	public SearchRestHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
+		this.boot = boot;
+		this.searchProvider = searchProvider;
+		this.db = db;
+		this.registry = registry;
+	}
 
 	/**
 	 * Handle a search request.
@@ -244,12 +247,12 @@ public class SearchRestHandler {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler handler : registry.getHandlers()) {
 					handler.clearIndex().onErrorComplete(error -> {
-//						if (error instanceof IndexMissingException) {
-//							return true;
-//						} else {
-							log.error("Can't clear index for {" + handler.getKey() + "}", error);
-							return false;
-//						}
+						//						if (error instanceof IndexMissingException) {
+						//							return true;
+						//						} else {
+						log.error("Can't clear index for {" + handler.getKey() + "}", error);
+						return false;
+						//						}
 					}).await();
 				}
 				boot.meshRoot().getSearchQueue().clear();

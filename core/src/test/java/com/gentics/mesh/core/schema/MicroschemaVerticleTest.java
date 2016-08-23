@@ -24,7 +24,6 @@ import java.util.concurrent.CyclicBarrier;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -40,7 +39,6 @@ import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Autowired
 	private MicroschemaVerticle microschemaVerticle;
 
 	@Override

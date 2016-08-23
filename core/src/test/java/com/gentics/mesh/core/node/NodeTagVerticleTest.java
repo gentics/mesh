@@ -43,19 +43,14 @@ import com.gentics.mesh.test.performance.TestUtils;
 
 public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private NodeVerticle verticle;
 
-	@Autowired
 	private ReleaseVerticle releaseVerticle;
 
-	@Autowired
 	private NodeMigrationVerticle migrationVerticle;
 
-	@Autowired
 	private EventbusVerticle eventbusVerticle;
 
-	@Autowired
 	private TagFamilyVerticle tagFamilyVerticle;
 
 	@Override

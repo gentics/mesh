@@ -13,10 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.script.ScriptEngine;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -49,7 +47,10 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
@@ -63,11 +64,16 @@ import rx.Completable;
  * Handler for node migrations after schema updates
  */
 @SuppressWarnings("restriction")
-@Component
 public class NodeMigrationHandler extends AbstractHandler {
 
-	@Autowired
 	private NodeFieldAPIHandler nodeFieldAPIHandler;
+
+	@Inject	
+	public NodeMigrationHandler(NodeFieldAPIHandler nodeFieldAPIHandler, Database db, MeshSpringConfiguration config, BootstrapInitializer boot,
+			RouterStorage storage) {
+		super(db, config, boot, storage);
+		this.nodeFieldAPIHandler = nodeFieldAPIHandler;
+	}
 
 	/**
 	 * Script engine factory

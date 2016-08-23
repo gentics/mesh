@@ -24,7 +24,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.context.InternalActionContext;
@@ -59,7 +58,6 @@ import rx.Single;
 
 public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
-	@Autowired
 	private NodeMigrationHandler nodeMigrationHandler;
 
 	@Test

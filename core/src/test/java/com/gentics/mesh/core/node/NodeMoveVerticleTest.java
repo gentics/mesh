@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -38,19 +37,14 @@ import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
-	@Autowired
 	private ReleaseVerticle relaseVerticle;
 
-	@Autowired
 	private SchemaVerticle schemaVerticle;
 
-	@Autowired
 	private ProjectVerticle projectVerticle;
 
-	@Autowired
 	private ProjectSchemaVerticle projectSchemaVerticle;
 
 	@Override

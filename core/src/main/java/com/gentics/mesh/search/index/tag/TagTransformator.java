@@ -9,8 +9,6 @@ import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.search.index.AbstractTransformator;

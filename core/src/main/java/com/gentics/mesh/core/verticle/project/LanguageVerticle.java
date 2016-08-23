@@ -6,17 +6,11 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 
 import io.vertx.ext.web.Route;
 
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class LanguageVerticle extends AbstractProjectRestVerticle {
 
 	protected LanguageVerticle() {

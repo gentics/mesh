@@ -8,10 +8,7 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
@@ -20,16 +17,14 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class GroupVerticle extends AbstractCoreApiVerticle {
 
-	@Autowired
 	private GroupCrudHandler crudHandler;
 
-	public GroupVerticle() {
+	@Inject
+	public GroupVerticle(GroupCrudHandler crudHandler) {
 		super("groups");
+		this.crudHandler = crudHandler;
 	}
 
 	@Override

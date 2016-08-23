@@ -4,10 +4,7 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
@@ -19,18 +16,16 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * The admin verticle provides core administration rest endpoints.
  */
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class AdminVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminVerticle.class);
 
-	@Autowired
 	private AdminHandler handler;
 
-	public AdminVerticle() {
+	@Inject
+	public AdminVerticle(AdminHandler handler) {
 		super("admin");
+		this.handler = handler;
 	}
 
 	@Override

@@ -25,10 +25,8 @@ import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private NavRootVerticle navRootVerticle;
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
 	@Override

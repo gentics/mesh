@@ -5,11 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -19,8 +14,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
-@Component
 public class TagIndexHandler extends AbstractIndexHandler<Tag> {
+
 	/**
 	 * Name of the custom property of SearchQueueEntry containing the project uuid
 	 */
@@ -28,11 +23,9 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	private static TagIndexHandler instance;
 
-	@Autowired
 	private TagTransformator transformator = new TagTransformator();
 
-	@PostConstruct
-	public void setup() {
+	public TagIndexHandler() {
 		instance = this;
 	}
 

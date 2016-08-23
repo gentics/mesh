@@ -11,7 +11,6 @@ import java.util.List;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Tag;
@@ -24,7 +23,6 @@ import com.gentics.mesh.util.RxDebugger;
 
 public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	@Autowired
 	private TagFamilyVerticle tagFamilyVerticle;
 
 	@BeforeClass

@@ -11,9 +11,9 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.math.NumberUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -35,17 +35,20 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
-@Component
 public class WebRootHandler {
 
-	@Autowired
 	private WebRootService webrootService;
 
-	@Autowired
 	private ImageManipulator imageManipulator;
 
-	@Autowired
 	private Database db;
+
+	@Inject
+	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService) {
+		this.db = database;
+		this.imageManipulator = imageManipulator;
+		this.webrootService = webrootService;
+	}
 
 	public void handleGetPath(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);

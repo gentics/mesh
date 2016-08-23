@@ -2,10 +2,7 @@ package com.gentics.mesh.core.verticle.utility;
 
 import static io.vertx.core.http.HttpMethod.POST;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.rest.Endpoint;
@@ -13,16 +10,14 @@ import com.gentics.mesh.rest.Endpoint;
 /**
  * Verticle providing endpoints for various utilities.
  */
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class UtilityVerticle extends AbstractCoreApiVerticle {
 
-	@Autowired
 	private UtilityHandler utilityHandler;
 
-	public UtilityVerticle() {
+	@Inject
+	public UtilityVerticle(UtilityHandler utilityHandler) {
 		super("utilities");
+		this.utilityHandler = utilityHandler;
 	}
 
 	@Override

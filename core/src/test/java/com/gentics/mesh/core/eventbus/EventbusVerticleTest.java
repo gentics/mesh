@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -20,7 +19,6 @@ import io.vertx.core.json.JsonObject;
 
 public class EventbusVerticleTest extends AbstractRestVerticleTest {
 
-	@Autowired
 	private EventbusVerticle verticle;
 
 	@Override

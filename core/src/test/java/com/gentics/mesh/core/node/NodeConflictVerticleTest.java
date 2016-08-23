@@ -46,7 +46,6 @@ import com.gentics.mesh.util.Tuple;
 
 public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private NodeVerticle verticle;
 
 	@Override

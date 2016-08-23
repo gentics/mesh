@@ -18,10 +18,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.elasticsearch.common.collect.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -38,7 +37,10 @@ import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.util.FileUtils;
@@ -54,13 +56,17 @@ import io.vertx.rxjava.core.file.FileSystem;
 import rx.Completable;
 import rx.Single;
 
-@Component
 public class NodeFieldAPIHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeFieldAPIHandler.class);
 
-	@Autowired
 	private ImageManipulator imageManipulator;
+
+	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, MeshSpringConfiguration springConfiguration, BootstrapInitializer boot,
+			RouterStorage routerStorage) {
+		super(db, springConfiguration, boot, routerStorage);
+		this.imageManipulator = imageManipulator;
+	}
 
 	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);

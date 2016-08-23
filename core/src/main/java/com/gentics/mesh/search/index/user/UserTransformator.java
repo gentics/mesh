@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -20,7 +18,6 @@ import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
-@Component
 public class UserTransformator extends AbstractTransformator<User> {
 
 	public static final String EMAIL_KEY = "emailaddress";

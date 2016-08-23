@@ -5,11 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.Group;
@@ -39,19 +34,16 @@ import com.gentics.mesh.search.index.IndexHandler;
 
 import rx.functions.Func0;
 
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class SearchVerticle extends AbstractCoreApiVerticle {
 
-	@Autowired
 	private SearchRestHandler searchHandler;
 
-	@Autowired
 	private IndexHandlerRegistry registry;
 
-	public SearchVerticle() {
+	public SearchVerticle(SearchRestHandler searchHandler, IndexHandlerRegistry registry) {
 		super("search");
+		this.searchHandler = searchHandler;
+		this.registry = registry;
 	}
 
 	@Override

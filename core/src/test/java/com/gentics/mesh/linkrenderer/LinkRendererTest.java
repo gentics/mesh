@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.ContainerType;
@@ -27,7 +26,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	@Autowired
 	private WebRootLinkReplacer replacer;
-
+	
 	@Test
 	public void testLinkReplacerTypeOff() {
 		try (NoTx noTx = db.noTx()) {

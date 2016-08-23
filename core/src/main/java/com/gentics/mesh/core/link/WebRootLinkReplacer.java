@@ -24,7 +24,6 @@ import rx.Single;
 /**
  * This class will resolve mesh link placeholders.
  */
-@Component
 public class WebRootLinkReplacer {
 
 	private static final String START_TAG = "{{mesh.link(";
@@ -34,8 +33,7 @@ public class WebRootLinkReplacer {
 
 	private static final Logger log = LoggerFactory.getLogger(WebRootLinkReplacer.class);
 
-	@PostConstruct
-	public void setup() {
+	public WebRootLinkReplacer() {
 		WebRootLinkReplacer.instance = this;
 	}
 

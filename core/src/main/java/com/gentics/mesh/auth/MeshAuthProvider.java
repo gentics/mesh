@@ -1,8 +1,8 @@
 package com.gentics.mesh.auth;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -24,19 +24,22 @@ import io.vertx.ext.auth.jwt.JWTOptions;
 /**
  * Mesh auth provider
  */
-@Component
 public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshAuthProvider.class);
 
-	@Autowired
 	protected BootstrapInitializer boot;
 
-	@Autowired
 	protected Database db;
 
-	@Autowired
 	private MeshSpringConfiguration springConfiguration;
+
+	@Inject
+	public MeshAuthProvider(MeshSpringConfiguration springConfiguration, Database database, BootstrapInitializer boot) {
+		this.springConfiguration = springConfiguration;
+		this.db = database;
+		this.boot = boot;
+	}
 
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
@@ -71,13 +74,13 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				// TODO Don't let the user know that we know that he did not exist?
 				resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
 			}
-			
-//			 , rh -> {
-//					if (rh.failed()) {
-//						log.error("Error while authenticating user.", rh.cause());
-//						resultHandler.handle(Future.failedFuture(rh.cause()));
-//					}
-//				});
+
+			//			 , rh -> {
+			//					if (rh.failed()) {
+			//						log.error("Error while authenticating user.", rh.cause());
+			//						resultHandler.handle(Future.failedFuture(rh.cause()));
+			//					}
+			//				});
 			return null;
 		}).subscribe();
 

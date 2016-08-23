@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.gentics.mesh.changelog.changes.Change_424FA7436B6541269E6CE90C8C3D812D;
 import com.gentics.mesh.changelog.changes.Change_424FA7436B6541269E6CE90C8C3D812D3;

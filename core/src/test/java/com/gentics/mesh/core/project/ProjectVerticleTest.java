@@ -60,10 +60,8 @@ import io.vertx.ext.web.RoutingContext;
 
 public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Autowired
 	private ProjectVerticle verticle;
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
 	@Override

@@ -4,9 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
@@ -14,18 +12,17 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
-@Component
 public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	private final static Set<String> indices = Collections.singleton(User.TYPE);
 
 	private static UserIndexHandler instance;
 
-	@Autowired
 	private UserTransformator transformator;
 
-	@PostConstruct
-	public void setup() {
+	@Inject
+	public UserIndexHandler(UserTransformator transformator) {
+		this.transformator = transformator;
 		instance = this;
 	}
 

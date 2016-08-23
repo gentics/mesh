@@ -5,13 +5,9 @@ import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRA
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.lang.management.ManagementFactory;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
@@ -31,17 +27,17 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Dedicated worker verticle which will handle schema and microschema migrations.
  */
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class NodeMigrationVerticle extends AbstractSpringVerticle {
 
 	public final static String JMX_MBEAN_NAME = "com.gentics.mesh:type=NodeMigration";
 
 	private static Logger log = LoggerFactory.getLogger(NodeMigrationVerticle.class);
 
-	@Autowired
 	protected NodeMigrationHandler nodeMigrationHandler;
+
+	public NodeMigrationVerticle(NodeMigrationHandler handler) {
+		this.nodeMigrationHandler = handler;
+	}
 
 	public final static String SCHEMA_MIGRATION_ADDRESS = NodeMigrationVerticle.class.getName() + ".migrateSchema";
 

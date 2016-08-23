@@ -9,8 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -23,14 +22,17 @@ import com.gentics.mesh.path.PathSegment;
 import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
-@Component
 public class NavRootHandler {
 
-	@Autowired
 	private WebRootService webrootService;
 
-	@Autowired
 	private Database db;
+
+	@Inject
+	public NavRootHandler(Database database, WebRootService webRootService) {
+		this.db = database;
+		this.webrootService = webRootService;
+	}
 
 	public void handleGetPath(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);

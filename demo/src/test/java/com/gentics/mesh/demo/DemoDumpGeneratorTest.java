@@ -9,11 +9,6 @@ import java.io.IOException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.AbstractEnvironment;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -28,24 +23,18 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.util.RxDebugger;
 
-@ContextConfiguration(classes = { DemoDumpConfiguration.class })
-@RunWith(SpringJUnit4ClassRunner.class)
 public class DemoDumpGeneratorTest {
 
 	static {
 		System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "dump");
 	}
 
-	@Autowired
 	private BootstrapInitializer boot;
 
-	@Autowired
 	private DemoDataProvider dataProvider;
 
-	@Autowired
 	private SearchProvider searchProvider;
 
-	@Autowired
 	private Database db;
 
 	private static DemoDumpGenerator generator = new DemoDumpGenerator();

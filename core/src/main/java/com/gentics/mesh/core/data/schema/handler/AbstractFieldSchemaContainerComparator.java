@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.inject.Inject;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -28,8 +28,12 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractFieldSchemaContainerComparator.class);
 
-	@Autowired
 	protected FieldSchemaComparator fieldComparator;
+
+	@Inject
+	public AbstractFieldSchemaContainerComparator(FieldSchemaComparator fieldComparator) {
+		this.fieldComparator = fieldComparator;
+	}
 
 	/**
 	 * Compare the two field containers. The implementor should invoke {@link #diff(FieldSchemaContainer, FieldSchemaContainer, Class)} and specifiy the actual

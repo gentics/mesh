@@ -6,9 +6,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang.NotImplementedException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
@@ -25,7 +25,6 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -35,11 +34,14 @@ import rx.Single;
 /**
  * CRUD Handler for Releases
  */
-@Component
 public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResponse> {
 
-	@Autowired
 	private NodeIndexHandler nodeIndexHandler;
+
+	@Inject
+	public ReleaseCrudHandler(NodeIndexHandler nodeIndexHandler) {
+		this.nodeIndexHandler = nodeIndexHandler;
+	}
 
 	@Override
 	public RootVertex<Release> getRootVertex(InternalActionContext ac) {

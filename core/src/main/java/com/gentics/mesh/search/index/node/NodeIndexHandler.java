@@ -9,14 +9,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -62,7 +61,6 @@ import rx.Completable;
  * </ul>
  * <p>
  */
-@Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
@@ -95,8 +93,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private NodeGraphFieldContainerTransformator transformator = new NodeGraphFieldContainerTransformator();
 
-	@Autowired
 	protected Database db;
+
+	@Inject
+	public NodeIndexHandler(Database database) {
+		this.db = database;
+	}
 
 	@PostConstruct
 	public void setup() {

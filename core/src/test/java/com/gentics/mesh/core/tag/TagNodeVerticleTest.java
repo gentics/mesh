@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -24,10 +23,9 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
-	@Autowired
+
 	private TagFamilyVerticle tagFamilyVerticle;
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
 	@Override

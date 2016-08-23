@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -56,7 +55,6 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(GroupVerticleTest.class);
 
-	@Autowired
 	private GroupVerticle verticle;
 
 	@Override
