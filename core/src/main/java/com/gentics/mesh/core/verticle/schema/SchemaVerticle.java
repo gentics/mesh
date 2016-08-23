@@ -25,6 +25,10 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 	private SchemaContainerCrudHandler crudHandler;
 
+	public SchemaVerticle() {
+		super("schemas");
+	}
+
 	@Inject
 	public SchemaVerticle(SchemaContainerCrudHandler crudHandler) {
 		super("schemas");
@@ -49,15 +53,15 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addChangesHandler() {
-		//		Endpoint readChanges = createEndpoint();
-		//		readChanges.path("/:schemaUuid/changes");
-		//		readChanges.method(GET);
-		//		readChanges.description("Return a list of changes ");
-		//		readChanges.produces(APPLICATION_JSON);
-		//		readChanges.exampleResponse(OK, schemaExamples.)
-		//		readChanges.handler(rc -> {
-		//			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
-		//		});
+		// Endpoint readChanges = createEndpoint();
+		// readChanges.path("/:schemaUuid/changes");
+		// readChanges.method(GET);
+		// readChanges.description("Return a list of changes ");
+		// readChanges.produces(APPLICATION_JSON);
+		// readChanges.exampleResponse(OK, schemaExamples.)
+		// readChanges.handler(rc -> {
+		// crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
+		// });
 
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:schemaUuid/changes");

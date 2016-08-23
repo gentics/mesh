@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.Language;
@@ -66,7 +65,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 	protected final static String KILLERSCRIPT = "function migrate(node, fieldname) {var System = Java.type('java.lang.System'); System.exit(0);}";
 
-	@Autowired
 	protected NodeMigrationHandler nodeMigrationHandler;
 
 	/**

@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
@@ -18,7 +16,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
-@Component
 public class WebRootService {
 
 	private static Logger log = LoggerFactory.getLogger(WebRootService.class);

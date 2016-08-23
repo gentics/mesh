@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -50,22 +49,16 @@ import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Autowired
 	private ReleaseVerticle releaseVerticle;
 
-	@Autowired
 	private ProjectVerticle projectVerticle;
 
-	@Autowired
 	private SchemaVerticle schemaVerticle;
 
-	@Autowired
 	private MicroschemaVerticle microschemaVerticle;
 
-	@Autowired
 	private ProjectSchemaVerticle projectSchemaVerticle;
 
-	@Autowired
 	private ProjectMicroschemaVerticle projectMicroschemaVerticle;
 
 	@Override

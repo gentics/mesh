@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
@@ -17,7 +16,6 @@ import com.gentics.mesh.test.AbstractDBTest;
 
 public class SchemaComparatorMicroschemaTest extends AbstractDBTest {
 
-	@Autowired
 	private MicroschemaComparator comparator;
 
 	@Test

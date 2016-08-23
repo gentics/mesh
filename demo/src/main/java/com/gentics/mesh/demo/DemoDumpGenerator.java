@@ -17,10 +17,6 @@ public class DemoDumpGenerator {
 		new DemoDumpGenerator().dump();
 	}
 
-	static {
-		System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "dump");
-	}
-
 	private void dump() throws Exception {
 		// Cleanup in preparation for dumping the demo data
 		cleanup();

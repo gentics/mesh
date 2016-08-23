@@ -8,7 +8,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -46,7 +45,6 @@ import com.gentics.mesh.test.AbstractEmptyDBTest;
  */
 public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
-	@Autowired
 	private FieldSchemaContainerMutator mutator;
 
 	@Test

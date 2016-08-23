@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -27,7 +26,6 @@ import rx.Single;
 
 public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private AuthenticationVerticle authenticationVerticle;
 
 	@Override

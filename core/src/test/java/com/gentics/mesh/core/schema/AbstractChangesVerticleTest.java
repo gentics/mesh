@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
@@ -21,25 +20,18 @@ import io.vertx.core.DeploymentOptions;
 
 public abstract class AbstractChangesVerticleTest extends AbstractRestVerticleTest {
 
-	@Autowired
 	private EventbusVerticle eventbusVerticle;
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
-	@Autowired
 	private NodeMigrationVerticle nodeMigrationVerticle;
 
-	@Autowired
 	private AdminVerticle adminVerticle;
 
-	@Autowired
 	private SchemaVerticle schemaVerticle;
 
-	@Autowired
 	private MicroschemaVerticle microschemaVerticle;
 
-	@Autowired
 	private ReleaseVerticle releaseVerticle;
 
 	@Override

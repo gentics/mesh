@@ -12,6 +12,10 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 
 	private NavRootHandler handler;
 
+	public NavRootVerticle() {
+		super("navroot");
+	}
+
 	public NavRootVerticle(NavRootHandler handler) {
 		super("navroot");
 		this.handler = handler;

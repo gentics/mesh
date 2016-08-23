@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -67,7 +66,6 @@ import io.vertx.core.http.HttpHeaders;
 
 public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Autowired
 	private UserVerticle userVerticle;
 
 	@Override

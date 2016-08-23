@@ -5,26 +5,35 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
-@Component
 public class AdminHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
 	public void handleStatus(InternalActionContext ac) {
 		ac.send(message(ac, "status_ready"), OK);
+	}
+
+	@Inject
+	public AdminHandler(Database db, MeshSpringConfiguration springConfiguration, BootstrapInitializer boot, RouterStorage routerStorage) {
+		super(db, springConfiguration, boot, routerStorage);
 	}
 
 	/**
@@ -71,18 +80,18 @@ public class AdminHandler extends AbstractHandler {
 	public void handleMigrationStatus(InternalActionContext ac) {
 
 		if (vertx.isClustered()) {
-			//TODO implement this
+			// TODO implement this
 			throw new NotImplementedException("cluster support for migration status is not yet implemented");
-			//		vertx.sharedData().getClusterWideMap("migrationStatus", rh -> {
-			//			if (rh.failed()) {
-			//				System.out.println("failed");
-			//				rh.cause().printStackTrace();
-			//			} else {
-			//				rh.result().get("status", vh -> {
-			//					ac.respond(message(ac, "test"), OK);
-			//				});
-			//			}
-			//		});
+			// vertx.sharedData().getClusterWideMap("migrationStatus", rh -> {
+			// if (rh.failed()) {
+			// System.out.println("failed");
+			// rh.cause().printStackTrace();
+			// } else {
+			// rh.result().get("status", vh -> {
+			// ac.respond(message(ac, "test"), OK);
+			// });
+			// }
+			// });
 		} else {
 			LocalMap<String, String> map = vertx.sharedData().getLocalMap("migrationStatus");
 			String statusKey = "migration_status_idle";

@@ -1,13 +1,12 @@
 package com.gentics.mesh.core.rest;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -20,10 +19,8 @@ import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class MeshLocalClientTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private NodeVerticle verticle;
 
-	@Autowired
 	private MeshLocalClientImpl client;
 
 	@Override

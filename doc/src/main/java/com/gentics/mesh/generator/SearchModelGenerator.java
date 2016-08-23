@@ -24,9 +24,6 @@ import java.util.TreeMap;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.mockito.Mockito;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.core.env.AbstractEnvironment;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;

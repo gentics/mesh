@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
@@ -30,7 +29,6 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 
-	@Autowired
 	private NodeVerticle verticle;
 
 	@Override

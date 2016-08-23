@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -21,7 +20,6 @@ import com.gentics.mesh.test.performance.StopWatchLogger;
 
 public class UserVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private UserVerticle verticle;
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());

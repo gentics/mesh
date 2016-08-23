@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Group;
@@ -34,7 +33,6 @@ import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class GroupRolesVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private GroupVerticle verticle;
 
 	@Override

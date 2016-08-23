@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractSpringVerticle;

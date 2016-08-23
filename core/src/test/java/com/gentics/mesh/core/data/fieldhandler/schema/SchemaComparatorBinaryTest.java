@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.fieldhandler.schema;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorBinaryTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
@@ -10,7 +8,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 
 public class SchemaComparatorBinaryTest extends AbstractComparatorBinaryTest<Schema> {
 
-	@Autowired
 	protected SchemaComparator comparator;
 
 	@Override

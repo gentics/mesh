@@ -3,17 +3,18 @@ package com.gentics.mesh.search.index.schema;
 import java.util.Collections;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
-import org.springframework.stereotype.Component;
-
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
-@Component
 public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaContainer> {
 
 	private static SchemaContainerIndexHandler instance;
@@ -22,8 +23,9 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	private SchemaTransformator transformator = new SchemaTransformator();
 
-	@PostConstruct
-	public void setup() {
+	@Inject
+	public SchemaContainerIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
+		super(boot, searchProvider, db, registry);
 		instance = this;
 	}
 

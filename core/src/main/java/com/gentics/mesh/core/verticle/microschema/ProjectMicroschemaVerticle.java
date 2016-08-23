@@ -21,6 +21,10 @@ public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 
 	private MicroschemaCrudHandler crudHandler;
 
+	public ProjectMicroschemaVerticle() {
+		super("microschemas");
+	}
+
 	@Inject
 	public ProjectMicroschemaVerticle(MicroschemaCrudHandler crudHandler) {
 		super("microschemas");

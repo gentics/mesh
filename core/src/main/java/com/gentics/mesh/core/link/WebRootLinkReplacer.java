@@ -8,8 +8,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.node.Node;

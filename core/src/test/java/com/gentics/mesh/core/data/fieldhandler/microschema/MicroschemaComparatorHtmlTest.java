@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.fieldhandler.microschema;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorHtmlTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
@@ -10,7 +8,6 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 
 public class MicroschemaComparatorHtmlTest extends AbstractComparatorHtmlTest<Microschema> {
 
-	@Autowired
 	protected MicroschemaComparator comparator;
 
 	@Override

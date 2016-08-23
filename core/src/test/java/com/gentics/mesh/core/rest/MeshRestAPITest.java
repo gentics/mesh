@@ -8,7 +8,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -27,7 +26,6 @@ public class MeshRestAPITest extends AbstractRestVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
-	@Autowired
 	private UserVerticle verticle;
 
 	@Override

@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;

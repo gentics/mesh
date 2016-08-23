@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
@@ -61,13 +60,10 @@ import io.vertx.core.eventbus.Message;
 
 public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private NodeMigrationVerticle nodeMigrationVerticle;
 
-	@Autowired
 	private EventbusVerticle eventbusVerticle;
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
 	@Override

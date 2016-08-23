@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import javax.script.ScriptException;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
@@ -31,7 +30,7 @@ import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import io.vertx.rxjava.core.buffer.Buffer;
 
 public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest implements BinaryFieldTestHelper {
-	@Autowired
+
 	private NodeFieldAPIHandler nodeFieldAPIHandler;
 
 	String sha512Sum;

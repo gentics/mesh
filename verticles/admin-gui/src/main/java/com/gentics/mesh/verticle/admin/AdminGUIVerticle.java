@@ -12,11 +12,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
-import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.github.jknack.handlebars.Context;
@@ -27,15 +24,12 @@ import com.github.jknack.handlebars.context.MapValueResolver;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class AdminGUIVerticle extends AbstractWebVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminGUIVerticle.class);
 
 	public static final String CONF_FILE = "mesh-ui-config.js";
-	//TODO handle NPEs
+	// TODO handle NPEs
 	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
 
 	public AdminGUIVerticle() {

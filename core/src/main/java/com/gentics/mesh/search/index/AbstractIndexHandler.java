@@ -1,20 +1,17 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -33,25 +30,21 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
 
-@Component
 public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> implements IndexHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
-	@Autowired
 	protected SearchProvider searchProvider;
 
-	@Autowired
 	protected BootstrapInitializer boot;
 
-	@Autowired
 	protected Database db;
 
-	@Autowired
-	private IndexHandlerRegistry registry;
-
-	@PostConstruct
-	public void register() {
+	@Inject
+	public AbstractIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
+		this.boot = boot;
+		this.searchProvider = searchProvider;
+		this.db = db;
 		registry.registerHandler(this);
 	}
 

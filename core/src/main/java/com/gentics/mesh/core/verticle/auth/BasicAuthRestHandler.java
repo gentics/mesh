@@ -5,8 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
@@ -18,7 +16,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
 
-@Component
 public class BasicAuthRestHandler extends AbstractAuthRestHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(BasicAuthRestHandler.class);

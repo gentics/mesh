@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
@@ -28,7 +27,6 @@ import com.gentics.mesh.test.AbstractDBTest;
 
 public class SchemaComparatorSchemaTest extends AbstractDBTest {
 
-	@Autowired
 	private SchemaComparator comparator;
 
 	@Test

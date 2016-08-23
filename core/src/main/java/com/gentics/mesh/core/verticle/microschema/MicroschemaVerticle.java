@@ -20,6 +20,10 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 
 	private MicroschemaCrudHandler crudHandler;
 
+	public MicroschemaVerticle() {
+		super("microschemas");
+	}
+
 	public MicroschemaVerticle(MicroschemaCrudHandler crudHandler) {
 		super("microschemas");
 		this.crudHandler = crudHandler;
@@ -62,17 +66,17 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addChangesHandler() {
-		//		Endpoint readChanges = createEndpoint();
-		//		readChanges.path("/:schemaUuid/changes");
-		//		readChanges.method(GET);
-		//		readChanges.produces(APPLICATION_JSON);
-		//		readChanges.description("Load all changes that have been applied to the schema.");
-		//		readChanges.exampleResponse(OK, model)
-		//		readChanges.handler(rc -> {
-		//			InternalActionContext ac = InternalActionContext.create(rc);
-		//			String schemaUuid = ac.getParameter("schemaUuid");
-		//			crudHandler.handleGetSchemaChanges(ac, schemaUuid);
-		//		});
+		// Endpoint readChanges = createEndpoint();
+		// readChanges.path("/:schemaUuid/changes");
+		// readChanges.method(GET);
+		// readChanges.produces(APPLICATION_JSON);
+		// readChanges.description("Load all changes that have been applied to the schema.");
+		// readChanges.exampleResponse(OK, model)
+		// readChanges.handler(rc -> {
+		// InternalActionContext ac = InternalActionContext.create(rc);
+		// String schemaUuid = ac.getParameter("schemaUuid");
+		// crudHandler.handleGetSchemaChanges(ac, schemaUuid);
+		// });
 
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:microschemaUuid/changes");

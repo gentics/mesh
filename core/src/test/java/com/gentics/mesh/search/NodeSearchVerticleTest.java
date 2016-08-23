@@ -28,7 +28,6 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -83,31 +82,22 @@ import io.vertx.core.DeploymentOptions;
 
 public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
-	@Autowired
 	private NodeIndexHandler nodeIndexHandler;
 
-	@Autowired
 	private SchemaVerticle schemaVerticle;
 
-	@Autowired
 	private NodeMigrationVerticle nodeMigrationVerticle;
 
-	@Autowired
 	private AdminVerticle adminVerticle;
 
-	@Autowired
 	private EventbusVerticle eventbusVerticle;
 
-	@Autowired
 	private TagFamilyVerticle tagFamilyVerticle;
 
-	@Autowired
 	private ProjectVerticle projectVerticle;
 
-	@Autowired
 	private ReleaseVerticle releaseVerticle;
 
 	@BeforeClass

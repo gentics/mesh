@@ -20,7 +20,6 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -44,7 +43,6 @@ import io.vertx.core.buffer.Buffer;
 
 public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
 	@Override

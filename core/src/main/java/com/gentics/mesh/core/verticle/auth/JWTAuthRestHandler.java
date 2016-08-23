@@ -4,8 +4,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.auth.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
@@ -15,7 +13,7 @@ import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.ext.web.Cookie;
 
-@Component
+
 public class JWTAuthRestHandler extends AbstractAuthRestHandler {
 
 	public static final String TOKEN_COOKIE_KEY = "mesh.token";

@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import org.elasticsearch.common.collect.Tuple;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.AbstractBasicDBTest;
@@ -40,7 +39,6 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 
 	abstract protected FS createFieldSchema(boolean isRequired);
 
-	@Autowired
 	protected ServerSchemaStorage schemaStorage;
 
 	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {

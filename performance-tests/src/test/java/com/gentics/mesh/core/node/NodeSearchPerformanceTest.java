@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -26,13 +25,10 @@ public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
-	@Autowired
 	protected SearchVerticle searchVerticle;
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
-	@Autowired
 	protected ProjectSearchVerticle projectSearchVerticle;
 
 	@Override

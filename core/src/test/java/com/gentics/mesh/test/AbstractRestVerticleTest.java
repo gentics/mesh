@@ -16,7 +16,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
@@ -83,13 +82,10 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private MeshRestClient client;
 
-	@Autowired
 	private RouterStorage routerStorage;
 
-	@Autowired
 	protected DummySearchProvider searchProvider;
 
-	@Autowired
 	protected AuthenticationVerticle authenticationVerticle;
 
 	protected NoTx trx;

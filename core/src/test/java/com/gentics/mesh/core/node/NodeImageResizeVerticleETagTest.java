@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -22,7 +20,7 @@ import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.util.ETag;
 
 public class NodeImageResizeVerticleETagTest extends AbstractETagTest {
-	@Autowired
+
 	private NodeVerticle nodeVerticle;
 
 	@Override

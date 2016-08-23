@@ -23,6 +23,10 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private UserCrudHandler crudHandler;
 
+	public UserVerticle() {
+		super("users");
+	}
+	
 	@Inject
 	public UserVerticle(UserCrudHandler userCrudHandler) {
 		super("users");

@@ -21,6 +21,10 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private GroupCrudHandler crudHandler;
 
+	public GroupVerticle() {
+		super("groups");
+	}
+
 	@Inject
 	public GroupVerticle(GroupCrudHandler crudHandler) {
 		super("groups");

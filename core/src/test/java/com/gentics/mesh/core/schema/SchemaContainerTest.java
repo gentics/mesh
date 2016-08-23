@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -34,7 +33,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 
-	@Autowired
 	private ServerSchemaStorage schemaStorage;
 
 	@Test

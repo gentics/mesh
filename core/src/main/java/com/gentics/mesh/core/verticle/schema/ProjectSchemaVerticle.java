@@ -4,12 +4,8 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.core.http.HttpMethod.PUT;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
@@ -17,16 +13,15 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 /**
  * Verticle for /api/v1/PROJECTNAME/schemas
  */
-@Component
-@Scope("singleton")
-@SpringVerticle
 public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 
-	@Autowired
+
 	private SchemaContainerCrudHandler crudHandler;
 
-	protected ProjectSchemaVerticle() {
+	@Inject
+	public ProjectSchemaVerticle(SchemaContainerCrudHandler crudHandler) {
 		super("schemas");
+		this.crudHandler = crudHandler;
 	}
 
 	@Override

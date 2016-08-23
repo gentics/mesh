@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -37,7 +36,6 @@ import com.gentics.mesh.util.UUIDUtil;
 
 public class RestModelTest extends AbstractDBTest {
 
-	@Autowired
 	private ServerSchemaStorage schemaStorage;
 
 	@Test

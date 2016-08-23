@@ -14,7 +14,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
@@ -24,7 +23,6 @@ import io.vertx.core.http.HttpClientRequest;
 
 public class AdminGUIVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private AdminGUIVerticle verticle;
 
 	@Override

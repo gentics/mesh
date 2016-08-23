@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.node;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -14,7 +14,6 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -27,7 +26,6 @@ import rx.exceptions.CompositeException;
 
 public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 
-	@Autowired
 	private NodeFieldAPIHandler handler;
 
 	private MeshUploadOptions uploadOptions;

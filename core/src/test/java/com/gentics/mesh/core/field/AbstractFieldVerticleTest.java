@@ -6,8 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -27,7 +25,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public abstract class AbstractFieldVerticleTest extends AbstractRestVerticleTest implements FieldVerticleTestcases {
 
-	@Autowired
 	private NodeVerticle verticle;
 
 	@Override

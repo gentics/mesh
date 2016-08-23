@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Tag;
@@ -29,7 +28,6 @@ import com.gentics.mesh.util.ETag;
 
 public class TagVerticleETagTest extends AbstractETagTest {
 
-	@Autowired
 	private TagFamilyVerticle verticle;
 
 	@Override

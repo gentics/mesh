@@ -1,10 +1,7 @@
 package com.gentics.mesh.core.verticle.auth;
 
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.context.InternalActionContext;
 
-@Component
 public interface AuthenticationRestHandler {
 
 	/**

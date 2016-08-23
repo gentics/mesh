@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.graphdb.NoTx;
@@ -15,10 +14,8 @@ import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 public class NodeIndexHandlerTest extends AbstractIsolatedBasicDBTest {
 
-	@Autowired
 	protected DummySearchProvider searchProvider;
 
-	@Autowired
 	private NodeIndexHandler handler;
 
 	@Test

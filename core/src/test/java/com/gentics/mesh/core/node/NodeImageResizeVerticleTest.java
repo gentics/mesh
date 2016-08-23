@@ -21,7 +21,6 @@ import java.util.concurrent.CountDownLatch;
 import javax.imageio.ImageIO;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -40,7 +39,6 @@ import io.vertx.core.buffer.Buffer;
 
 public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private NodeVerticle nodeVerticle;
 
 	@Override

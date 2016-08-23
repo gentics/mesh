@@ -9,7 +9,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

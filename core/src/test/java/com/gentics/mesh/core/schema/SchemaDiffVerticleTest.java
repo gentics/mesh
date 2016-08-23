@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -33,11 +32,8 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
-import io.vertx.core.Future;
-
 public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private SchemaVerticle verticle;
 
 	@Override

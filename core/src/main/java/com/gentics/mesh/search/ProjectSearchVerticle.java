@@ -32,9 +32,8 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 
 	private IndexHandlerRegistry registry;
 
-	@Override
-	public String getDescription() {
-		return "Provides endpoints which allow project wide search.";
+	public ProjectSearchVerticle() {
+		super("search");
 	}
 
 	@Inject
@@ -42,6 +41,11 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 		super("search");
 		this.searchHandler = searchHandler;
 		this.registry = registry;
+	}
+
+	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow project wide search.";
 	}
 
 	@Override

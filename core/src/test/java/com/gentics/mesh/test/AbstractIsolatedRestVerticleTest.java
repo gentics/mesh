@@ -21,7 +21,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
@@ -88,13 +87,10 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	private MeshRestClient client;
 
-	@Autowired
 	private RouterStorage routerStorage;
 
-	@Autowired
 	protected DummySearchProvider searchProvider;
 
-	@Autowired
 	protected AuthenticationVerticle authenticationVerticle;
 
 	@Before

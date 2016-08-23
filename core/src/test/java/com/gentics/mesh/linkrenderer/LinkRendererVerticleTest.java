@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
@@ -25,7 +24,6 @@ import io.vertx.core.json.JsonObject;
  */
 public class LinkRendererVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private UtilityVerticle utilityVerticle;
 
 	@Override

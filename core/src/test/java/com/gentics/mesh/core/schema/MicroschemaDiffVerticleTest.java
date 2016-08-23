@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -31,7 +30,6 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 
-	@Autowired
 	private MicroschemaVerticle verticle;
 
 	@Override

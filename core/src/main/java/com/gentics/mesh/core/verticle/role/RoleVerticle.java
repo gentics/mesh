@@ -20,6 +20,10 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private RoleCrudHandler crudHandler;
 
+	public RoleVerticle() {
+		super("roles");
+	}
+
 	@Inject
 	public RoleVerticle(RoleCrudHandler crudHandler) {
 		super("roles");

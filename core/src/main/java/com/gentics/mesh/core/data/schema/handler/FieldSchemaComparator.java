@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.schema.handler;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.EMPTY;
 
 import java.io.IOException;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -11,7 +10,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 /**
  * The field schema comparator can be used to compare two field schemas with each other.
  */
-@Component
 public class FieldSchemaComparator {
 
 	/**

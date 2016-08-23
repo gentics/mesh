@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;

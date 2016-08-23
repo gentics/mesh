@@ -5,25 +5,17 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import org.jacpfx.vertx.spring.SpringVerticle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.rest.Endpoint;
 
-@Component
-@Scope("singleton")
-@SpringVerticle()
 public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
-	@Autowired
 	private AuthenticationRestHandler authRestHandler;
 
-	public AuthenticationVerticle() {
+	public AuthenticationVerticle(AuthenticationRestHandler authRestHandler) {
 		super("auth");
+		this.authRestHandler = authRestHandler;
 	}
 
 	@Override

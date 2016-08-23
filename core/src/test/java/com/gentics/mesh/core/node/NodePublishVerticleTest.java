@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
@@ -39,7 +38,6 @@ import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private NodeVerticle verticle;
 
 	@Override

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.MeshNameProvider;
@@ -16,7 +15,6 @@ import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class RestInfoVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private RestInfoVerticle infoVerticle;
 
 	@Override

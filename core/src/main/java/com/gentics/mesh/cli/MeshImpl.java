@@ -9,11 +9,7 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.joda.time.DateTime;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.core.env.AbstractEnvironment;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -44,7 +40,6 @@ public class MeshImpl implements Mesh {
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-		System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "full");
 		log = LoggerFactory.getLogger(MeshImpl.class);
 	}
 
@@ -154,26 +149,6 @@ public class MeshImpl implements Mesh {
 			}
 		}
 		return null;
-
-	}
-
-	/**
-	 * This method injects the spring context into the spring verticle factory. This method should be replaced by SpringVerticleFactory.setParentContext(ctx);
-	 * as soon as version 2.0.1 is released.
-	 * 
-	 * @param ctx
-	 */
-	@Deprecated
-	private void setParentContext(AnnotationConfigApplicationContext ctx) {
-		java.lang.reflect.Field field;
-		try {
-			field = SpringVerticleFactory.class.getDeclaredField("parentContext");
-			field.setAccessible(true);
-			field.set(null, ctx);
-		} catch (Exception e) {
-			log.error("Could not set spring context", e);
-			throw new RuntimeException("Spring context setup failed");
-		}
 
 	}
 

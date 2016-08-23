@@ -37,15 +37,19 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	private NodeFieldAPIHandler fieldAPIHandler;
 
-	@Override
-	public String getDescription() {
-		return "Provides endpoints which allow the manipulation of nodes.";
+	public NodeVerticle() {
+		super("nodes");
 	}
 
 	public NodeVerticle(NodeCrudHandler crudHandler, NodeFieldAPIHandler fieldAPIHandler) {
 		super("nodes");
 		this.crudHandler = crudHandler;
 		this.fieldAPIHandler = fieldAPIHandler;
+	}
+
+	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow the manipulation of nodes.";
 	}
 
 	@Override

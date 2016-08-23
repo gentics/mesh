@@ -7,14 +7,12 @@ import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 public class TagCloudVerticleTest extends AbstractRestVerticleTest {
 
-	@Autowired
 	private TagCloudVerticle verticle;
 
 	@Override

@@ -25,7 +25,6 @@ import java.util.concurrent.CyclicBarrier;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.AbstractSpringVerticle;
@@ -47,7 +46,6 @@ import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
 public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Autowired
 	private SchemaVerticle schemaVerticle;
 
 	@Override

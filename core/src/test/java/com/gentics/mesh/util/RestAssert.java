@@ -3,8 +3,6 @@ package com.gentics.mesh.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.springframework.stereotype.Component;
-
 import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;

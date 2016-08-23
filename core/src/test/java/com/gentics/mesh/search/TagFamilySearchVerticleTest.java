@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -18,11 +17,8 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.rest.client.MeshResponse;
 
-import io.vertx.core.Future;
-
 public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	@Autowired
 	private TagFamilyVerticle tagFamilyVerticle;
 
 	@Override

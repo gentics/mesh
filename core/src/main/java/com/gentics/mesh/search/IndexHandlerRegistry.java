@@ -8,14 +8,12 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.search.index.IndexHandler;
 
 /**
  * Central location to register search index handlers.
  */
-@Component
 public class IndexHandlerRegistry {
 
 	private Map<String, IndexHandler> handlers = Collections.synchronizedMap(new HashMap<>());

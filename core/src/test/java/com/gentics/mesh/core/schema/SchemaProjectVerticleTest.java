@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
@@ -33,13 +32,10 @@ import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 public class SchemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Autowired
 	private SchemaVerticle schemaVerticle;
 
-	@Autowired
 	private ProjectSchemaVerticle projectSchemaVerticle;
 
-	@Autowired
 	private ProjectVerticle projectVerticle;
 
 	@Override
@@ -136,7 +132,7 @@ public class SchemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest 
 
 			SchemaListResponse list = call(() -> getClient().findSchemas(PROJECT_NAME));
 
-			//final String removedProjectName = project.getName();
+			// final String removedProjectName = project.getName();
 			assertEquals("The removed schema should not be listed in the response", 0,
 					list.getData().stream().filter(s -> s.getUuid().equals(schema.getUuid())).count());
 			project.getSchemaContainerRoot().reload();

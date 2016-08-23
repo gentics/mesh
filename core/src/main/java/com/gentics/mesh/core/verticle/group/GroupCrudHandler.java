@@ -7,7 +7,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.elasticsearch.common.collect.Tuple;
-import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -25,7 +24,6 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 
 import rx.Single;
 
-@Component
 public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> {
 
 	@Override

@@ -14,7 +14,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -31,19 +30,14 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchVerticleTest.class);
 
-	@Autowired
 	protected SearchVerticle searchVerticle;
 
-	@Autowired
 	protected ProjectSearchVerticle projectSearchVerticle;
 
-	@Autowired
 	protected SearchProvider searchProvider;
 
-	@Autowired
 	private IndexHandlerRegistry registry;
 
-	@Autowired
 	private NodeIndexHandler nodeIndexHandler;
 
 	@Before
