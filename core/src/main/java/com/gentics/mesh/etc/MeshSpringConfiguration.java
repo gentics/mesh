@@ -127,7 +127,7 @@ public class MeshSpringConfiguration {
 	public SessionHandler sessionHandler() {
 		SessionStore store = LocalSessionStore.create(Mesh.vertx());
 		// TODO make session age configurable
-		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
+		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 24 * 60 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
 				store);
 	}
 
