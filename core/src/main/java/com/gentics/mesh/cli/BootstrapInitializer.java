@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
@@ -124,8 +123,12 @@ public class BootstrapInitializer {
 	public static boolean isInitialSetup = true;
 
 	@Inject
-	public BootstrapInitializer(Database db, IndexHandlerRegistry searchHandlerRegistry,
-			MeshSpringConfiguration springConfiguration, RouterStorage routerStorage) {
+	public BootstrapInitializer(Database db, IndexHandlerRegistry searchHandlerRegistry, MeshSpringConfiguration springConfiguration,
+			RouterStorage routerStorage) {
+
+		instance = this;
+		clearReferences();
+
 		this.db = db;
 		this.searchHandlerRegistry = searchHandlerRegistry;
 		this.springConfiguration = springConfiguration;
@@ -378,12 +381,6 @@ public class BootstrapInitializer {
 			}
 		}
 
-	}
-
-	@PostConstruct
-	public void setup() {
-		instance = this;
-		clearReferences();
 	}
 
 	public static BootstrapInitializer getBoot() {

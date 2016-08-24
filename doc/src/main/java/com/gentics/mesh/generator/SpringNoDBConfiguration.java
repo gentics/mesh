@@ -1,7 +1,5 @@
 package com.gentics.mesh.generator;
 
-import javax.annotation.PostConstruct;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -16,6 +14,14 @@ import dagger.Provides;
 @Module
 public class SpringNoDBConfiguration extends MeshSpringConfiguration {
 
+	public SpringNoDBConfiguration() {
+		MeshOptions options = new MeshOptions();
+		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());
+		// The orientdb database provider will switch to in memory mode when no directory has been specified.
+		options.getStorageOptions().setDirectory(null);
+		Mesh.mesh(options);
+	}
+
 	@Provides
 	public DummySearchProvider dummySearchProvider() {
 		return new DummySearchProvider();
@@ -25,15 +31,6 @@ public class SpringNoDBConfiguration extends MeshSpringConfiguration {
 	public SearchProvider searchProvider() {
 		// For testing it is not needed to start ES in most cases. This will speedup test execution since ES does not need to initialize.
 		return dummySearchProvider();
-	}
-
-	@PostConstruct
-	public void setup() {
-		MeshOptions options = new MeshOptions();
-		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());
-		// The orientdb database provider will switch to in memory mode when no directory has been specified.
-		options.getStorageOptions().setDirectory(null);
-		Mesh.mesh(options);
 	}
 
 	@Provides

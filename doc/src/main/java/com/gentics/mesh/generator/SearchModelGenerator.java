@@ -57,11 +57,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private DummySearchProvider provider;
 
-	private AnnotationConfigApplicationContext ctx;
-
-	static {
-		System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "nodb");
-	}
+//	private AnnotationConfigApplicationContext ctx;
 
 	public static void main(String[] args) throws Exception {
 		new SearchModelGenerator().start();

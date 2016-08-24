@@ -101,10 +101,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public NodeIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, BootstrapInitializer boot) {
 		super(searchProvider, db, registry);
 		this.boot = boot;
-	}
-
-	@PostConstruct
-	public void setup() {
 		NodeIndexHandler.instance = this;
 	}
 

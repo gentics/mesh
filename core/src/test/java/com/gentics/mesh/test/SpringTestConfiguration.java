@@ -2,13 +2,13 @@ package com.gentics.mesh.test;
 
 import java.io.File;
 
-import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
-import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
@@ -17,20 +17,18 @@ import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class SpringTestConfiguration {
+public class SpringTestConfiguration extends MeshSpringConfiguration {
+
+	@Inject
+	public SpringTestConfiguration() {
+		setup();
+	}
 
 	@Provides
 	public DummySearchProvider dummySearchProvider() {
 		return new DummySearchProvider();
 	}
 
-	@Provides
-	public SearchProvider searchProvider() {
-		// For testing it is not needed to start ES in most cases. This will speedup test execution since ES does not need to initialize.
-		return dummySearchProvider();
-	}
-
-	@PostConstruct
 	public void setup() {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
