@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
 import com.gentics.mesh.graphdb.NoTx;
@@ -17,6 +16,7 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -27,8 +27,8 @@ public class LinkRendererVerticleTest extends AbstractIsolatedRestVerticleTest {
 	private UtilityVerticle utilityVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(utilityVerticle);
 		return list;
 	}

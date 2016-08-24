@@ -10,11 +10,11 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.node.NodeVerticleTest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
@@ -22,15 +22,15 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class MeshRestAPITest extends AbstractRestVerticleTest {
+public class MeshRestAPITest extends AbstractIsolatedRestVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
 	private UserVerticle verticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}

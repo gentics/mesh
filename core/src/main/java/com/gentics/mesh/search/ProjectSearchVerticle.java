@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -18,6 +19,8 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.IndexHandler;
 
@@ -33,12 +36,13 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 	private IndexHandlerRegistry registry;
 
 	public ProjectSearchVerticle() {
-		super("search");
+		super("search", null, null, null);
 	}
 
 	@Inject
-	public ProjectSearchVerticle(SearchRestHandler searchHandler, IndexHandlerRegistry registry) {
-		super("search");
+	public ProjectSearchVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig,
+			SearchRestHandler searchHandler, IndexHandlerRegistry registry) {
+		super("search", boot, routerStorage, springConfig);
 		this.searchHandler = searchHandler;
 		this.registry = registry;
 	}

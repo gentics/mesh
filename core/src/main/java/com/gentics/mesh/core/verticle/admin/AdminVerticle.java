@@ -8,6 +8,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.logging.Logger;
@@ -23,8 +25,8 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	private AdminHandler handler;
 
 	@Inject
-	public AdminVerticle(AdminHandler handler) {
-		super("admin");
+	public AdminVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig , AdminHandler handler) {
+		super("admin", routerStorage, springConfig);
 		this.handler = handler;
 	}
 

@@ -14,8 +14,11 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.BooleanUtils;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -27,6 +30,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -35,6 +39,14 @@ import rx.Single;
 public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandler.class);
+
+	private BootstrapInitializer boot;
+
+	@Inject
+	public RoleCrudHandler(Database db, BootstrapInitializer boot) {
+		super(db);
+		this.boot = boot;
+	}
 
 	@Override
 	public RootVertex<Role> getRootVertex(InternalActionContext ac) {

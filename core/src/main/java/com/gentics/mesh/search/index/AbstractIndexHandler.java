@@ -7,13 +7,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -36,13 +33,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected SearchProvider searchProvider;
 
-	protected BootstrapInitializer boot;
-
 	protected Database db;
 
-	@Inject
-	public AbstractIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
-		this.boot = boot;
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		registry.registerHandler(this);

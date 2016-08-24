@@ -6,8 +6,11 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACT
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import javax.inject.Inject;
+
 import org.elasticsearch.common.collect.Tuple;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -20,11 +23,20 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 
 import rx.Single;
 
 public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> {
+
+	private BootstrapInitializer boot;
+
+	@Inject
+	public GroupCrudHandler(Database db, BootstrapInitializer boot) {
+		super(db);
+		this.boot = boot;
+	}
 
 	@Override
 	public RootVertex<Group> getRootVertex(InternalActionContext ac) {

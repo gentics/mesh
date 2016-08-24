@@ -12,7 +12,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
@@ -25,13 +24,15 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.util.ETag;
 
+import io.vertx.core.AbstractVerticle;
+
 public class MicroschemaVerticleETagTest extends AbstractETagTest {
 
 	private MicroschemaVerticle verticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}

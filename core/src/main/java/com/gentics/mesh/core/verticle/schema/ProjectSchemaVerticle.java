@@ -7,20 +7,23 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 
 /**
  * Verticle for /api/v1/PROJECTNAME/schemas
  */
 public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 
-
 	private SchemaContainerCrudHandler crudHandler;
 
 	@Inject
-	public ProjectSchemaVerticle(SchemaContainerCrudHandler crudHandler) {
-		super("schemas");
+	public ProjectSchemaVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig,
+			SchemaContainerCrudHandler crudHandler) {
+		super("schemas", boot, routerStorage, springConfig);
 		this.crudHandler = crudHandler;
 	}
 

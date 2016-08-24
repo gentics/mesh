@@ -4,7 +4,10 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -13,11 +16,11 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 	private NavRootHandler handler;
 
 	public NavRootVerticle() {
-		super("navroot");
+		super("navroot", null, null, null);
 	}
 
-	public NavRootVerticle(NavRootHandler handler) {
-		super("navroot");
+	public NavRootVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig, NavRootHandler handler) {
+		super("navroot", boot, routerStorage, springConfig);
 		this.handler = handler;
 	}
 

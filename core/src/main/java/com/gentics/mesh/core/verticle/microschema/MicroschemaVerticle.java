@@ -8,10 +8,14 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
@@ -21,11 +25,12 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	private MicroschemaCrudHandler crudHandler;
 
 	public MicroschemaVerticle() {
-		super("microschemas");
+		super("microschemas", null, null);
 	}
 
-	public MicroschemaVerticle(MicroschemaCrudHandler crudHandler) {
-		super("microschemas");
+	@Inject
+	public MicroschemaVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, MicroschemaCrudHandler crudHandler) {
+		super("microschemas", routerStorage, springConfig);
 		this.crudHandler = crudHandler;
 	}
 

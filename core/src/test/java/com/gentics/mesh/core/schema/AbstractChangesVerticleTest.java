@@ -6,7 +6,6 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
@@ -14,11 +13,12 @@ import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 
-public abstract class AbstractChangesVerticleTest extends AbstractRestVerticleTest {
+public abstract class AbstractChangesVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	private EventbusVerticle eventbusVerticle;
 
@@ -35,8 +35,8 @@ public abstract class AbstractChangesVerticleTest extends AbstractRestVerticleTe
 	private ReleaseVerticle releaseVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(eventbusVerticle);
 		list.add(adminVerticle);
 		list.add(nodeVerticle);

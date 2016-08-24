@@ -8,18 +8,19 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.project.ProjectInfoVerticle;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+
+import io.vertx.core.AbstractVerticle;
 
 public class ProjectInfoVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	private ProjectInfoVerticle verticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}

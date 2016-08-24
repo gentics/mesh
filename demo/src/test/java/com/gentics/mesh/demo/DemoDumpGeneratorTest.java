@@ -25,10 +25,6 @@ import com.gentics.mesh.util.RxDebugger;
 
 public class DemoDumpGeneratorTest {
 
-	static {
-		System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "dump");
-	}
-
 	private BootstrapInitializer boot;
 
 	private DemoDataProvider dataProvider;

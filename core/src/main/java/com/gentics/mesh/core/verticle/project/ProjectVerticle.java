@@ -14,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
@@ -24,8 +26,8 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	private ProjectCrudHandler crudHandler;
 
 	@Inject
-	public ProjectVerticle(ProjectCrudHandler crudHandler) {
-		super("projects");
+	public ProjectVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, ProjectCrudHandler crudHandler) {
+		super("projects", routerStorage, springConfig);
 		this.crudHandler = crudHandler;
 	}
 

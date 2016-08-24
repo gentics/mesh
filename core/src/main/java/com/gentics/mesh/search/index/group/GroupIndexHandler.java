@@ -21,8 +21,11 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	private GroupTransformator transformator = new GroupTransformator();
 
+	private BootstrapInitializer boot;
+
 	public GroupIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
-		super(boot, searchProvider, db, registry);
+		super(searchProvider, db, registry);
+		this.boot = boot;
 		instance = this;
 	}
 

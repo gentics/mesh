@@ -37,8 +37,6 @@ import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -62,10 +60,14 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	private ImageManipulator imageManipulator;
 
-	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, MeshSpringConfiguration springConfiguration, BootstrapInitializer boot,
-			RouterStorage routerStorage) {
-		super(db, springConfiguration, boot, routerStorage);
+	private Database db;
+
+	private BootstrapInitializer boot;
+
+	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, BootstrapInitializer boot) {
 		this.imageManipulator = imageManipulator;
+		this.db = db;
+		this.boot = boot;
 	}
 
 	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {

@@ -16,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
@@ -29,11 +31,12 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	private static final Logger log = LoggerFactory.getLogger(AdminGUIVerticle.class);
 
 	public static final String CONF_FILE = "mesh-ui-config.js";
+
 	// TODO handle NPEs
 	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
 
-	public AdminGUIVerticle() {
-		super("mesh-ui");
+	public AdminGUIVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig) {
+		super("mesh-ui", routerStorage, springConfig);
 	}
 
 	@Override

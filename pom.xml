@@ -20,6 +20,7 @@
 		<elasticsearch.version>2.3.3</elasticsearch.version>
 		<orientdb.version>2.2.6</orientdb.version>
 		<ferma.extensions.version>0.0.3-SNAPSHOT</ferma.extensions.version>
+		<dagger.version>2.6</dagger.version>
 
 		<surefire.forkcount>3</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
@@ -123,6 +124,19 @@
 				<version>${log4j.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.google.dagger</groupId>
+				<artifactId>dagger-compiler</artifactId>
+				<version>${dagger.version}</version>
+				<optional>true</optional>
+			</dependency>
+			<dependency>
+				<groupId>com.google.dagger</groupId>
+				<artifactId>dagger</artifactId>
+				<version>${dagger.version}</version>
+			</dependency>
+
+
 			<!-- Spring - bcrypt -->
 			<dependency>
 				<groupId>org.springframework.security</groupId>
@@ -146,21 +160,8 @@
 					<tag>${project.artifactId}-${project.version}</tag>
 				</configuration>
 			</plugin>
-			<!--
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			-->
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId> <executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals> 
+				<goal>sign</goal> </goals> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
@@ -186,18 +187,20 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			 <plugin>
-              <groupId>org.owasp</groupId>
-              <artifactId>dependency-check-maven</artifactId>
-              <version>1.4.0</version>
-              <executions>
-                  <execution>
-                      <goals>
-                          <goal>check</goal>
-                      </goals>
-                  </execution>
-              </executions>
-            </plugin>
+<!--
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>1.4.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+-->
 		</plugins>
 	</build>
 
@@ -213,17 +216,17 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-                <repository>
-                        <id>lan.snapshots</id>
-                        <name>Gentics Snapshots Repository</name>
-                        <url>http://artifactory.office/repository/lan.snapshots</url>
-		        <releases>
-                                <enabled>false</enabled>
-                        </releases>
-                        <snapshots>
-                                <enabled>true</enabled>
-                        </snapshots>
-                </repository>
+		<repository>
+			<id>lan.snapshots</id>
+			<name>Gentics Snapshots Repository</name>
+			<url>http://artifactory.office/repository/lan.snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
 		<repository>
 			<id>spring-snapshots</id>
 			<name>Spring Snapshots</name>
@@ -232,16 +235,8 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-		<!-- 
-		<repository>
-			<id>sonatype-nexus-snapshots</id>
-			<name>Sonatype Nexus Snapshots</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		 -->
+		<!-- <repository> <id>sonatype-nexus-snapshots</id> <name>Sonatype Nexus Snapshots</name> <url>https://oss.sonatype.org/content/repositories/snapshots</url> <snapshots> <enabled>true</enabled> 
+			</snapshots> </repository> -->
 	</repositories>
 
 	<pluginRepositories>

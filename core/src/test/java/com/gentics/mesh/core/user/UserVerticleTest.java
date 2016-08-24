@@ -36,7 +36,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -62,6 +61,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpHeaders;
 
 public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
@@ -69,8 +69,8 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	private UserVerticle userVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(userVerticle);
 		return list;
 	}

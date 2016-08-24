@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
 import rx.Single;
@@ -28,9 +30,13 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	private MicroschemaComparator comparator;
 
-	@Inject	
-	public MicroschemaCrudHandler(MicroschemaComparator comparator) {
+	private BootstrapInitializer boot;
+
+	@Inject
+	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, BootstrapInitializer boot) {
+		super(db);
 		this.comparator = comparator;
+		this.boot = boot;
 	}
 
 	@Override

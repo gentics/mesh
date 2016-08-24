@@ -6,8 +6,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
@@ -18,15 +21,23 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
-
 public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(UserCrudHandler.class);
+
+	private BootstrapInitializer boot;
+
+	@Inject
+	public UserCrudHandler(Database db, BootstrapInitializer boot) {
+		super(db);
+		this.boot = boot;
+	}
 
 	@Override
 	public RootVertex<User> getRootVertex(InternalActionContext ac) {

@@ -6,10 +6,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.lang.management.ManagementFactory;
 
+import javax.inject.Inject;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
@@ -18,7 +19,9 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus.Type;
+import com.gentics.mesh.graphdb.spi.Database;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -27,7 +30,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Dedicated worker verticle which will handle schema and microschema migrations.
  */
-public class NodeMigrationVerticle extends AbstractSpringVerticle {
+public class NodeMigrationVerticle extends AbstractVerticle {
 
 	public final static String JMX_MBEAN_NAME = "com.gentics.mesh:type=NodeMigration";
 
@@ -56,6 +59,16 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 	public static final String TO_VERSION_UUID_HEADER = "toVersion";
 
 	private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+
+	private Database db;
+
+	private BootstrapInitializer boot;
+
+	@Inject
+	public NodeMigrationVerticle(Database db, BootstrapInitializer boot) {
+		this.db = db;
+		this.boot = boot;
+	}
 
 	@Override
 	public void start() throws Exception {

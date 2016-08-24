@@ -12,7 +12,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -20,6 +19,8 @@ import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.util.RxDebugger;
+
+import io.vertx.core.AbstractVerticle;
 
 public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
@@ -31,8 +32,8 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	}
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(tagFamilyVerticle);
 		return list;

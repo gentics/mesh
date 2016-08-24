@@ -33,6 +33,8 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 import io.vertx.core.json.JsonObject;
@@ -93,11 +95,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private NodeGraphFieldContainerTransformator transformator = new NodeGraphFieldContainerTransformator();
 
-	protected Database db;
+	private BootstrapInitializer boot;
 
 	@Inject
-	public NodeIndexHandler(Database database) {
-		this.db = database;
+	public NodeIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, BootstrapInitializer boot) {
+		super(searchProvider, db, registry);
+		this.boot = boot;
 	}
 
 	@PostConstruct

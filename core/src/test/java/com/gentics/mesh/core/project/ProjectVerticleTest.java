@@ -27,13 +27,12 @@ import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -54,6 +53,7 @@ import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.RoutingContext;
 
 public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
@@ -63,8 +63,8 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	private NodeVerticle nodeVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		list.add(nodeVerticle);
 		return list;

@@ -9,14 +9,19 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 import org.raml.model.Resource;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -38,11 +43,13 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private NodeFieldAPIHandler fieldAPIHandler;
 
 	public NodeVerticle() {
-		super("nodes");
+		super("nodes", null, null, null);
 	}
 
-	public NodeVerticle(NodeCrudHandler crudHandler, NodeFieldAPIHandler fieldAPIHandler) {
-		super("nodes");
+	@Inject
+	public NodeVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig, NodeCrudHandler crudHandler,
+			NodeFieldAPIHandler fieldAPIHandler) {
+		super("nodes", boot, routerStorage, springConfig);
 		this.crudHandler = crudHandler;
 		this.fieldAPIHandler = fieldAPIHandler;
 	}

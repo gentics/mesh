@@ -10,6 +10,9 @@ import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.ext.web.Router;
@@ -18,10 +21,14 @@ public class RestInfoVerticle extends AbstractWebVerticle {
 
 	private SearchProvider searchProvider;
 
+	private Database db;
+
 	@Inject
-	protected RestInfoVerticle(SearchProvider searchProvider) {
-		super(null);
+	public RestInfoVerticle(String basePath, Database db, RouterStorage routerStorage, MeshSpringConfiguration springConfig,
+			SearchProvider searchProvider) {
+		super(null, routerStorage, springConfig);
 		this.searchProvider = searchProvider;
+		this.db = db;
 	}
 
 	@Override

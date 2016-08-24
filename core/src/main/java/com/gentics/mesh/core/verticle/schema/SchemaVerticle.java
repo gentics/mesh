@@ -14,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
@@ -26,12 +28,12 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private SchemaContainerCrudHandler crudHandler;
 
 	public SchemaVerticle() {
-		super("schemas");
+		super("schemas", null, null);
 	}
 
 	@Inject
-	public SchemaVerticle(SchemaContainerCrudHandler crudHandler) {
-		super("schemas");
+	public SchemaVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, SchemaContainerCrudHandler crudHandler) {
+		super("schemas", routerStorage, springConfig);
 		this.crudHandler = crudHandler;
 	}
 

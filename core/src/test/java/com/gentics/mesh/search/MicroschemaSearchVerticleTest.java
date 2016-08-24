@@ -7,16 +7,17 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
+
+import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	private MicroschemaVerticle microschemaVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(microschemaVerticle);
 		return list;

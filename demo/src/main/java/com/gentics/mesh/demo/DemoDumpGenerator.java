@@ -20,17 +20,17 @@ public class DemoDumpGenerator {
 	private void dump() throws Exception {
 		// Cleanup in preparation for dumping the demo data
 		cleanup();
-		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(DemoDumpConfiguration.class)) {
-			ctx.start();
-			ctx.registerShutdownHook();
-			// Initialize mesh
-			BootstrapInitializer boot = ctx.getBean(BootstrapInitializer.class);
-			DemoDataProvider provider = ctx.getBean("demoDataProvider", DemoDataProvider.class);
-			SearchProvider searchProvider = ctx.getBean("searchProvider", SearchProvider.class);
-			invokeDump(boot, provider);
-			searchProvider.getNode().close();
-			System.exit(0);
-		}
+//		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(DemoDumpConfiguration.class)) {
+//			ctx.start();
+//			ctx.registerShutdownHook();
+//			// Initialize mesh
+//			BootstrapInitializer boot = ctx.getBean(BootstrapInitializer.class);
+//			DemoDataProvider provider = ctx.getBean("demoDataProvider", DemoDataProvider.class);
+//			SearchProvider searchProvider = ctx.getBean("searchProvider", SearchProvider.class);
+//			invokeDump(boot, provider);
+//			searchProvider.getNode().close();
+//			System.exit(0);
+//		}
 
 	}
 

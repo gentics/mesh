@@ -13,6 +13,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.math.NumberUtils;
 import org.elasticsearch.common.collect.Tuple;
 
@@ -35,6 +37,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -45,6 +48,11 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Single;
 
 public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
+
+	@Inject
+	public NodeCrudHandler(Database db) {
+		super(db);
+	}
 
 	@Override
 	public RootVertex<Node> getRootVertex(InternalActionContext ac) {

@@ -20,7 +20,6 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -47,6 +46,8 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
+import io.vertx.core.AbstractVerticle;
+
 public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	private ReleaseVerticle releaseVerticle;
@@ -62,8 +63,8 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	private ProjectMicroschemaVerticle projectMicroschemaVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		return new ArrayList<AbstractSpringVerticle>(Arrays.asList(releaseVerticle, projectVerticle, schemaVerticle, microschemaVerticle,
+	public List<AbstractVerticle> getAdditionalVertices() {
+		return new ArrayList<AbstractVerticle>(Arrays.asList(releaseVerticle, projectVerticle, schemaVerticle, microschemaVerticle,
 				projectSchemaVerticle, projectMicroschemaVerticle));
 	}
 

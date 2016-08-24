@@ -23,9 +23,12 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	private SchemaTransformator transformator = new SchemaTransformator();
 
+	private BootstrapInitializer boot;
+
 	@Inject
 	public SchemaContainerIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
-		super(boot, searchProvider, db, registry);
+		super(searchProvider, db, registry);
+		this.boot = boot;
 		instance = this;
 	}
 

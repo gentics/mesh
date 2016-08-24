@@ -3,10 +3,16 @@ package com.gentics.mesh.search.index.microschema;
 import java.util.Collections;
 import java.util.Set;
 
+import javax.inject.Inject;
+
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<MicroschemaContainer> {
@@ -17,7 +23,12 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	private MicroschemaTransformator transformator = new MicroschemaTransformator();
 
-	public MicroschemaContainerIndexHandler() {
+	private BootstrapInitializer boot;
+
+	@Inject
+	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, BootstrapInitializer boot) {
+		super(searchProvider, db, registry);
+		this.boot = boot;
 		instance = this;
 	}
 

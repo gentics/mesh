@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.inject.Inject;
-
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -30,8 +28,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 
 	protected FieldSchemaComparator fieldComparator;
 
-	@Inject
-	public AbstractFieldSchemaContainerComparator(FieldSchemaComparator fieldComparator) {
+	protected AbstractFieldSchemaContainerComparator(FieldSchemaComparator fieldComparator) {
 		this.fieldComparator = fieldComparator;
 	}
 

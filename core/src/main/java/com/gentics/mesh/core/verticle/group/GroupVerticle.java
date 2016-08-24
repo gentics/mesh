@@ -12,6 +12,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
@@ -22,12 +24,12 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private GroupCrudHandler crudHandler;
 
 	public GroupVerticle() {
-		super("groups");
+		super("groups", null, null);
 	}
 
 	@Inject
-	public GroupVerticle(GroupCrudHandler crudHandler) {
-		super("groups");
+	public GroupVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, GroupCrudHandler crudHandler) {
+		super("groups", routerStorage, springConfig);
 		this.crudHandler = crudHandler;
 	}
 

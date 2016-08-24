@@ -21,8 +21,11 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	private ProjectTransformator transformator = new ProjectTransformator();
 
+	private BootstrapInitializer boot;
+
 	public ProjectIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
-		super(boot, searchProvider, db, registry);
+		super(searchProvider, db, registry);
+		this.boot = boot;
 		instance = this;
 	}
 

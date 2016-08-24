@@ -29,7 +29,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -48,6 +47,7 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
+import io.vertx.core.AbstractVerticle;
 import rx.Single;
 
 public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
@@ -57,8 +57,8 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	private AuthenticationVerticle authVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(authVerticle);
 		list.add(roleVerticle);
 		return list;

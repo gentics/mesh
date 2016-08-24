@@ -1,6 +1,8 @@
 package com.gentics.mesh.core;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 
 import io.vertx.ext.web.Router;
@@ -12,8 +14,12 @@ import io.vertx.ext.web.RoutingContext;
  */
 public abstract class AbstractProjectRestVerticle extends AbstractWebVerticle {
 
-	protected AbstractProjectRestVerticle(String basePath) {
-		super(basePath);
+	protected BootstrapInitializer boot;
+
+	protected AbstractProjectRestVerticle(String basePath, BootstrapInitializer boot, RouterStorage routerStorage,
+			MeshSpringConfiguration springConfig) {
+		super(basePath, routerStorage, springConfig);
+		this.boot = boot;
 	}
 
 	@Override

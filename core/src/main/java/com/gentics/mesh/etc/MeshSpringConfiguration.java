@@ -3,8 +3,6 @@ package com.gentics.mesh.etc;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_HTTP_ONLY_FLAG;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_SECURE_FLAG;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
@@ -12,6 +10,7 @@ import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.auth.MeshBasicAuthHandler;
 import com.gentics.mesh.auth.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.MeshJWTAuthProvider;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
@@ -55,8 +54,7 @@ public class MeshSpringConfiguration {
 
 	public static MeshSpringConfiguration instance;
 
-	@PostConstruct
-	public void setup() {
+	public MeshSpringConfiguration() {
 		instance = this;
 	}
 
@@ -134,24 +132,24 @@ public class MeshSpringConfiguration {
 	 * @return
 	 */
 	@Provides
-	public AuthHandler authHandler() {
+	public AuthHandler authHandler(Database db, BootstrapInitializer boot) {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
-			return MeshJWTAuthHandler.create(authProvider());
+			return MeshJWTAuthHandler.create(authProvider(db, boot));
 		case BASIC_AUTH:
 		default:
-			return MeshBasicAuthHandler.create(authProvider());
+			return MeshBasicAuthHandler.create(authProvider(db, boot));
 		}
 	}
 
 	@Provides
-	public AuthenticationRestHandler authRestHandler() {
+	public AuthenticationRestHandler authRestHandler(Database db) {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
-			return JWTAuthRestHandler.create();
+			return new JWTAuthRestHandler(db, this);
 		case BASIC_AUTH:
 		default:
-			return BasicAuthRestHandler.create();
+			return new BasicAuthRestHandler(db, this);
 		}
 	}
 
@@ -161,8 +159,8 @@ public class MeshSpringConfiguration {
 	 * @return
 	 */
 	@Provides
-	public UserSessionHandler userSessionHandler() {
-		return UserSessionHandler.create(authProvider());
+	public UserSessionHandler userSessionHandler(Database db, BootstrapInitializer boot) {
+		return UserSessionHandler.create(authProvider(db, boot));
 	}
 
 	/**
@@ -171,13 +169,13 @@ public class MeshSpringConfiguration {
 	 * @return
 	 */
 	@Provides
-	public MeshAuthProvider authProvider() {
+	public MeshAuthProvider authProvider(Database db, BootstrapInitializer boot) {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
-			return new MeshJWTAuthProvider();
+			return new MeshJWTAuthProvider(this, db, boot);
 		case BASIC_AUTH:
 		default:
-			return new MeshAuthProvider();
+			return new MeshAuthProvider(this, db, boot);
 		}
 	}
 

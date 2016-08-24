@@ -77,11 +77,11 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputDir.getAbsolutePath() + "}");
 		outputDir.mkdirs();
 
-		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(SpringNoDBConfiguration.class)) {
-			this.ctx = ctx;
-			ctx.start();
-			ctx.registerShutdownHook();
-			provider = ctx.getBean("dummySearchProvider", DummySearchProvider.class);
+//		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(SpringNoDBConfiguration.class)) {
+//			this.ctx = ctx;
+//			ctx.start();
+//			ctx.registerShutdownHook();
+//			provider = ctx.getBean("dummySearchProvider", DummySearchProvider.class);
 
 			try {
 				writeNodeDocumentExample();
@@ -98,7 +98,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 				System.exit(10);
 			}
 			System.exit(0);
-		}
+//		}
 
 	}
 

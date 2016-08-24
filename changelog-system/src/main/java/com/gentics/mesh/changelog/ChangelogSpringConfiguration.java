@@ -1,8 +1,8 @@
 package com.gentics.mesh.changelog;
 
-import dagger.Component;
+import dagger.Module;
 
-@Component
+@Module
 public class ChangelogSpringConfiguration {
 
 }

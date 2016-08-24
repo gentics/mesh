@@ -81,14 +81,12 @@ public class MeshImpl implements Mesh {
 		}
 
 		// Start the spring context
-		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MeshSpringConfiguration.class)) {
-			setParentContext(ctx);
-			BootstrapInitializer initalizer = ctx.getBean(BootstrapInitializer.class);
-			ctx.start();
-			initalizer.init(options, verticleLoader);
-			ctx.registerShutdownHook();
+//		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MeshSpringConfiguration.class)) {
+//			BootstrapInitializer initalizer = ctx.getBean(BootstrapInitializer.class);
+//			initalizer.init(options, verticleLoader);
+//			ctx.registerShutdownHook();
 			dontExit();
-		}
+//		}
 	}
 
 	private boolean isFirstApril() {

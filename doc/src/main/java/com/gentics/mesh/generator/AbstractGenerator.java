@@ -2,8 +2,6 @@ package com.gentics.mesh.generator;
 
 import java.io.File;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public abstract class AbstractGenerator {
 	protected File outputDir;
 

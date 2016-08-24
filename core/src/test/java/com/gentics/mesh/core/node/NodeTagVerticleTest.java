@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
-import com.gentics.mesh.core.AbstractSpringVerticle;
+
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -39,6 +39,8 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.performance.TestUtils;
 
+import io.vertx.core.AbstractVerticle;
+
 public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	private NodeVerticle verticle;
@@ -52,8 +54,8 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 	private TagFamilyVerticle tagFamilyVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		list.add(releaseVerticle);
 		list.add(migrationVerticle);

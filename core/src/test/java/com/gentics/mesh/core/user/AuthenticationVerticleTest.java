@@ -12,7 +12,6 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -22,6 +21,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
+import io.vertx.core.AbstractVerticle;
 import rx.Single;
 
 public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest {
@@ -29,8 +29,8 @@ public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest
 	private AuthenticationVerticle authenticationVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(authenticationVerticle);
 		return list;
 	}

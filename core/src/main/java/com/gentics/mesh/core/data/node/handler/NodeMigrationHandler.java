@@ -47,8 +47,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -68,10 +66,11 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 	private NodeFieldAPIHandler nodeFieldAPIHandler;
 
-	@Inject	
-	public NodeMigrationHandler(NodeFieldAPIHandler nodeFieldAPIHandler, Database db, MeshSpringConfiguration config, BootstrapInitializer boot,
-			RouterStorage storage) {
-		super(db, config, boot, storage);
+	private Database db;
+
+	@Inject
+	public NodeMigrationHandler(NodeFieldAPIHandler nodeFieldAPIHandler, Database db) {
+		this.db = db;
 		this.nodeFieldAPIHandler = nodeFieldAPIHandler;
 	}
 

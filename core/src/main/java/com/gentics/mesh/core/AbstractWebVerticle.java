@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -25,6 +27,7 @@ import com.gentics.mesh.example.UserExamples;
 import com.gentics.mesh.example.VersioningExamples;
 import com.gentics.mesh.rest.Endpoint;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -36,7 +39,7 @@ import io.vertx.ext.web.Router;
  * An abstract class that should be used when creating verticles which expose a http server. The verticle will automatically start a http server and add the
  * http server handler to the core router storage handler.
  */
-public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
+public abstract class AbstractWebVerticle extends AbstractVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractWebVerticle.class);
 
@@ -58,8 +61,14 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	protected String basePath;
 	protected HttpServer server;
 
-	protected AbstractWebVerticle(String basePath) {
+	protected RouterStorage routerStorage;
+
+	public  MeshSpringConfiguration springConfig;
+
+	protected AbstractWebVerticle(String basePath, RouterStorage routerStorage, MeshSpringConfiguration springConfig) {
 		this.basePath = basePath;
+		this.routerStorage = routerStorage;
+		this.springConfig = springConfig;
 	}
 
 	@Override
@@ -117,7 +126,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	 * Add a route which will secure all endpoints.
 	 */
 	protected void secureAll() {
-		getRouter().route("/*").handler(getSpringConfiguration().authHandler());
+		getRouter().route("/*").handler(springConfig.authHandler(null, null));
 	}
 
 	/**

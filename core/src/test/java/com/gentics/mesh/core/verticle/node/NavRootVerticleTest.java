@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import com.gentics.mesh.core.AbstractSpringVerticle;
+
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
 import com.gentics.mesh.graphdb.NoTx;
@@ -21,6 +21,8 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
+import io.vertx.core.AbstractVerticle;
+
 public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	private NavRootVerticle navRootVerticle;
@@ -28,8 +30,8 @@ public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 	private NodeVerticle nodeVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(navRootVerticle);
 		list.add(nodeVerticle);
 		return list;

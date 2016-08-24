@@ -26,14 +26,18 @@ import rx.Single;
 public class AdminHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
+	
+	private Database db;
 
 	public void handleStatus(InternalActionContext ac) {
 		ac.send(message(ac, "status_ready"), OK);
 	}
 
+	
 	@Inject
 	public AdminHandler(Database db, MeshSpringConfiguration springConfiguration, BootstrapInitializer boot, RouterStorage routerStorage) {
-		super(db, springConfiguration, boot, routerStorage);
+		this.db = db;
+		
 	}
 
 	/**

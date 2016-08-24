@@ -5,6 +5,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import javax.inject.Inject;
+
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.Group;
@@ -29,6 +32,8 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.IndexHandler;
 
@@ -40,10 +45,15 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 
 	private IndexHandlerRegistry registry;
 
-	public SearchVerticle(SearchRestHandler searchHandler, IndexHandlerRegistry registry) {
-		super("search");
+	private BootstrapInitializer boot;
+
+	@Inject
+	public SearchVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, SearchRestHandler searchHandler,
+			IndexHandlerRegistry registry, BootstrapInitializer boot) {
+		super("search", routerStorage, springConfig);
 		this.searchHandler = searchHandler;
 		this.registry = registry;
+		this.boot = boot;
 	}
 
 	@Override

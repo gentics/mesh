@@ -9,7 +9,6 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -20,6 +19,8 @@ import com.gentics.mesh.search.AbstractSearchVerticleTest;
 import com.gentics.mesh.search.ProjectSearchVerticle;
 import com.gentics.mesh.search.SearchVerticle;
 import com.gentics.mesh.test.performance.StopWatchLogger;
+
+import io.vertx.core.AbstractVerticle;
 
 public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
 
@@ -32,8 +33,8 @@ public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
 	protected ProjectSearchVerticle projectSearchVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(projectSearchVerticle);
 		list.add(nodeVerticle);

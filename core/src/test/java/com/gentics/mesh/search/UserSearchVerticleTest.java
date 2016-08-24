@@ -13,7 +13,6 @@ import java.util.List;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -25,6 +24,8 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 
+import io.vertx.core.AbstractVerticle;
+
 public class UserSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	private UserVerticle userVerticle;
@@ -32,8 +33,8 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private GroupVerticle groupVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(userVerticle);
 		list.add(groupVerticle);

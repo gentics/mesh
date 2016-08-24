@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import com.gentics.mesh.core.AbstractSpringVerticle;
+
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -29,6 +29,8 @@ import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
+import io.vertx.core.AbstractVerticle;
+
 public class MicroschemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	private SchemaVerticle schemaVerticle;
@@ -38,8 +40,8 @@ public class MicroschemaProjectVerticleTest extends AbstractIsolatedRestVerticle
 	private ProjectVerticle projectVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(schemaVerticle);
 		list.add(projectMicroschemaVerticle);
 		list.add(projectVerticle);

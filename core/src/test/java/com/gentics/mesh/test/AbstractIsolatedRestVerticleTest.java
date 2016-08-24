@@ -24,7 +24,6 @@ import org.junit.Before;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -69,6 +68,7 @@ import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -123,9 +123,8 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 		CountDownLatch latch = new CountDownLatch(getVertices().size());
 
-		// Inject spring config and start each verticle
-		for (AbstractSpringVerticle verticle : getVertices()) {
-			verticle.setSpringConfig(springConfig);
+		// Start each verticle
+		for (AbstractVerticle verticle : getVertices()) {
 			verticle.init(vertx, context);
 			Future<Void> future = Future.future();
 			verticle.start(future);
@@ -158,17 +157,17 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
 		searchProvider.reset();
-		for (AbstractSpringVerticle verticle : getVertices()) {
+		for (AbstractVerticle verticle : getVertices()) {
 			verticle.stop();
 		}
 		resetDatabase();
 
 	}
 
-	public abstract List<AbstractSpringVerticle> getAdditionalVertices();
+	public abstract List<AbstractVerticle> getAdditionalVertices();
 
-	private List<AbstractSpringVerticle> getVertices() {
-		List<AbstractSpringVerticle> list = getAdditionalVertices();
+	private List<AbstractVerticle> getVertices() {
+		List<AbstractVerticle> list = getAdditionalVertices();
 		list.add(authenticationVerticle);
 		return list;
 	}

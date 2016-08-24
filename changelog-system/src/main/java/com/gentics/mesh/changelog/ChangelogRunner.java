@@ -41,8 +41,8 @@ public class ChangelogRunner {
 	 */
 	public void run(MeshOptions options) {
 		log.info("Starting changelog runner");
-		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ChangelogSpringConfiguration.class)) {
-			ctx.start();
+//		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ChangelogSpringConfiguration.class)) {
+//			ctx.start();
 			try {
 
 				ChangelogSystem cls = new ChangelogSystem(getDatabase(options));
@@ -53,7 +53,7 @@ public class ChangelogRunner {
 			} catch (Exception e) {
 				log.error(e);
 			}
-		}
+//		}
 		log.info("Terminating changelog runner");
 	}
 

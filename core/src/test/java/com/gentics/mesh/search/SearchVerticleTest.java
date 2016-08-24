@@ -14,7 +14,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
@@ -23,6 +22,8 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
+import io.vertx.core.AbstractVerticle;
+
 public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
 	private NodeIndexHandler nodeIndexHandler;
@@ -30,8 +31,8 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 	private IndexHandlerRegistry registry;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		return list;
 	}

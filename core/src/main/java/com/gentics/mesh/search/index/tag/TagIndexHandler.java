@@ -12,6 +12,9 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class TagIndexHandler extends AbstractIndexHandler<Tag> {
@@ -25,8 +28,13 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	private TagTransformator transformator = new TagTransformator();
 
-	public TagIndexHandler() {
+	private BootstrapInitializer boot;
+
+	public TagIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, BootstrapInitializer boot) {
+		super(searchProvider, db, registry);
+		this.boot = boot;
 		instance = this;
+
 	}
 
 	public static TagIndexHandler getInstance() {

@@ -2,7 +2,12 @@ package com.gentics.mesh.core.verticle.webroot;
 
 import static io.vertx.core.http.HttpMethod.GET;
 
+import javax.inject.Inject;
+
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -10,8 +15,13 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 
 	private WebRootHandler handler;
 
-	public WebRootVerticle(WebRootHandler handler) {
-		super("webroot");
+	public WebRootVerticle() {
+		super("webroot", null, null, null);
+	}
+
+	@Inject
+	public WebRootVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig, WebRootHandler handler) {
+		super("webroot", boot, routerStorage, springConfig);
 		this.handler = handler;
 	}
 

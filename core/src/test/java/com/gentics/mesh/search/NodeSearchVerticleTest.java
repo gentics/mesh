@@ -30,7 +30,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -78,6 +77,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 
 public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
@@ -115,8 +115,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(projectSearchVerticle);
 		list.add(schemaVerticle);

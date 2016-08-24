@@ -6,10 +6,15 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
@@ -21,8 +26,14 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 
 	private ReleaseCrudHandler crudHandler;
 
-	public ReleaseVerticle(ReleaseCrudHandler crudHandler) {
-		super("releases");
+	public ReleaseVerticle() {
+		super("releases", null, null, null);
+	}
+
+	@Inject
+	public ReleaseVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig,
+			ReleaseCrudHandler crudHandler) {
+		super("releases", boot, routerStorage, springConfig);
 		this.crudHandler = crudHandler;
 	}
 

@@ -23,11 +23,14 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	private UserTransformator transformator;
 
+	private BootstrapInitializer boot;
+
 	@Inject
 	public UserIndexHandler(UserTransformator transformator, BootstrapInitializer boot, SearchProvider searchProvider, Database db,
 			IndexHandlerRegistry registry) {
-		super(boot, searchProvider, db, registry);
+		super(searchProvider, db, registry);
 		this.transformator = transformator;
+		this.boot = boot;
 		instance = this;
 	}
 

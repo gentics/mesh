@@ -10,6 +10,8 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -26,8 +28,8 @@ public class DemoVerticle extends AbstractWebVerticle {
 	private DemoDataProvider demoDataProvider;
 
 	@Inject
-	public DemoVerticle(DemoDataProvider demoDataProvider) {
-		super("demo");
+	public DemoVerticle(DemoDataProvider demoDataProvider, RouterStorage routerStorage, MeshSpringConfiguration springConfig) {
+		super("demo", routerStorage, springConfig);
 		this.demoDataProvider = demoDataProvider;
 	}
 

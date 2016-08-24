@@ -5,16 +5,22 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.NotImplementedException;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 
 import io.vertx.ext.web.Route;
 
 public class LanguageVerticle extends AbstractProjectRestVerticle {
 
-	protected LanguageVerticle() {
-		super("languages");
+	@Inject
+	public LanguageVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig) {
+		super("languages", boot, routerStorage, springConfig);
 	}
 
 	@Override

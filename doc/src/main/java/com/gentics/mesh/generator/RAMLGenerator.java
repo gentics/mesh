@@ -156,7 +156,7 @@ public class RAMLGenerator {
 	private void initVerticle(AbstractWebVerticle verticle) throws Exception {
 		Mockito.when(verticle.getRouter()).thenReturn(Router.router(Vertx.vertx()));
 		MeshSpringConfiguration mockConfig = Mockito.mock(MeshSpringConfiguration.class);
-		Mockito.when(verticle.getSpringConfiguration()).thenReturn(mockConfig);
+		Mockito.when(verticle.springConfig).thenReturn(mockConfig);
 		// Router mockRouter = Mockito.mock(Router.class);
 		// Mockito.when(verticle.getRouter()).thenReturn(mockRouter);
 		// NodeCrudHandler mockHandler = Mockito.mock(NodeCrudHandler.class);

@@ -1,8 +1,13 @@
 package com.gentics.mesh.auth;
 
+import javax.inject.Inject;
+
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.JWTAuthenticationOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -25,7 +30,9 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 
 	private static final String USERID_FIELD_NAME = "userUuid";
 
-	public MeshJWTAuthProvider() {
+	@Inject
+	public MeshJWTAuthProvider(MeshSpringConfiguration springConfiguration, Database database, BootstrapInitializer boot) {
+		super(springConfiguration, database, boot);
 		JWTAuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions().getJwtAuthenticationOptions();
 		String secret = options.getSignatureSecret();
 		if (secret == null) {

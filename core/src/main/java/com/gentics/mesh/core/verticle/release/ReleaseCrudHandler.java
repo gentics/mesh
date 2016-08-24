@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -39,7 +40,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	private NodeIndexHandler nodeIndexHandler;
 
 	@Inject
-	public ReleaseCrudHandler(NodeIndexHandler nodeIndexHandler) {
+	public ReleaseCrudHandler(Database db, NodeIndexHandler nodeIndexHandler) {
+		super(db);
 		this.nodeIndexHandler = nodeIndexHandler;
 	}
 

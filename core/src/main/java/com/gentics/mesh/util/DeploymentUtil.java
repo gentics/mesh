@@ -29,11 +29,6 @@ public final class DeploymentUtil {
 	}
 
 	public static String deployAndWait(Vertx vertx, JsonObject config, String verticleClass, boolean worker) throws InterruptedException {
-		String prefix = SpringVerticleFactory.PREFIX + ":";
-		return deployAndWait(vertx, config, prefix, verticleClass, worker);
-	}
-
-	public static String deployAndWait(Vertx vertx, JsonObject config, String prefix, String verticleClass, boolean worker) throws InterruptedException {
 		final CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<String> deploymentId = new AtomicReference<String>();
 		DeploymentOptions options = new DeploymentOptions();
@@ -41,7 +36,7 @@ public final class DeploymentUtil {
 			options = new DeploymentOptions(new JsonObject().put("config", config));
 		}
 		options.setWorker(worker);
-		vertx.deployVerticle(prefix + verticleClass, options, handler -> {
+		vertx.deployVerticle(verticleClass, options, handler -> {
 			if (handler.succeeded()) {
 				deploymentId.set(handler.result());
 				if (LOG.isInfoEnabled()) {

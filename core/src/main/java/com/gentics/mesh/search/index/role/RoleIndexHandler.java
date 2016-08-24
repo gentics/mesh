@@ -3,6 +3,8 @@ package com.gentics.mesh.search.index.role;
 import java.util.Collections;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
@@ -19,10 +21,14 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	private RoleTransformator transformator = new RoleTransformator();
 
+	private BootstrapInitializer boot;
+
 	private final static Set<String> indices = Collections.singleton(Role.TYPE);
 
-	public RoleIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
-		super(boot, searchProvider, db, registry);
+	@Inject
+	public RoleIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, BootstrapInitializer boot) {
+		super(searchProvider, db, registry);
+		this.boot = boot;
 		instance = this;
 	}
 

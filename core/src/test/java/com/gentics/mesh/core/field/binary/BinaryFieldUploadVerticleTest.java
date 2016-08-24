@@ -22,7 +22,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -39,6 +38,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
 
 public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleTest {
@@ -46,8 +46,8 @@ public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleT
 	private NodeVerticle nodeVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(nodeVerticle);
 		return list;
 	}

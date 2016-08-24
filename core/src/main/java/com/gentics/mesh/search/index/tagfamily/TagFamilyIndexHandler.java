@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -12,6 +14,9 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
@@ -25,10 +30,14 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	private TagFamilyTransformator transformator = new TagFamilyTransformator();
 
-	public TagFamilyIndexHandler() {
+	private BootstrapInitializer boot;
+
+	@Inject
+	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, BootstrapInitializer boot) {
+		super(searchProvider, db, registry);
+		this.boot = boot;
 		instance = this;
 	}
-	
 
 	public static TagFamilyIndexHandler getInstance() {
 		return instance;

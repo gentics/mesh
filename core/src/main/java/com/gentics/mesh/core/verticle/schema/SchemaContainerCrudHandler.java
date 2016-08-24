@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -21,6 +22,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
 import rx.Single;
@@ -29,9 +31,13 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 
 	private SchemaComparator comparator;
 
+	private BootstrapInitializer boot;
+
 	@Inject
-	public SchemaContainerCrudHandler(SchemaComparator comparator) {
+	public SchemaContainerCrudHandler(Database db, SchemaComparator comparator, BootstrapInitializer boot) {
+		super(db);
 		this.comparator = comparator;
+		this.boot = boot;
 	}
 
 	@Override

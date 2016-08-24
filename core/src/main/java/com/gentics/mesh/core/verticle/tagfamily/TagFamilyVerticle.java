@@ -10,9 +10,12 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
@@ -34,8 +37,9 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	private TagCrudHandler tagCrudHandler;
 
 	@Inject
-	public TagFamilyVerticle(TagCrudHandler tagCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler) {
-		super("tagFamilies");
+	public TagFamilyVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig,
+			TagCrudHandler tagCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler) {
+		super("tagFamilies", boot, routerStorage, springConfig);
 		this.tagCrudHandler = tagCrudHandler;
 		this.tagFamilyCrudHandler = tagFamilyCrudHandler;
 	}

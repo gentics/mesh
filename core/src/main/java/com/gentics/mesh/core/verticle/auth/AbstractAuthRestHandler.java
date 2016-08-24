@@ -2,13 +2,22 @@ package com.gentics.mesh.core.verticle.auth;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import javax.inject.Inject;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
 public abstract class AbstractAuthRestHandler extends AbstractHandler implements AuthenticationRestHandler {
+
+	protected Database db;
+
+	protected AbstractAuthRestHandler(Database db) {
+		this.db = db;
+	}
 
 	/**
 	 * Handle a <code>/me</code> request which will return the current user as a JSON response.

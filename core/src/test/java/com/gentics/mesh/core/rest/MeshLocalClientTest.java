@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -17,6 +16,8 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
+import io.vertx.core.AbstractVerticle;
+
 public class MeshLocalClientTest extends AbstractIsolatedRestVerticleTest {
 
 	private NodeVerticle verticle;
@@ -24,8 +25,8 @@ public class MeshLocalClientTest extends AbstractIsolatedRestVerticleTest {
 	private MeshLocalClientImpl client;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}

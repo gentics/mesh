@@ -8,16 +8,17 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
-public class TagCloudVerticleTest extends AbstractRestVerticleTest {
+import io.vertx.core.AbstractVerticle;
+
+public class TagCloudVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	private TagCloudVerticle verticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}

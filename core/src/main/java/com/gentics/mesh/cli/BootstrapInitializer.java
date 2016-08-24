@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -122,9 +123,9 @@ public class BootstrapInitializer {
 
 	public static boolean isInitialSetup = true;
 
-	public BootstrapInitializer(ServerSchemaStorage schemaStorage, Database db, IndexHandlerRegistry searchHandlerRegistry,
+	@Inject
+	public BootstrapInitializer(Database db, IndexHandlerRegistry searchHandlerRegistry,
 			MeshSpringConfiguration springConfiguration, RouterStorage routerStorage) {
-		this.schemaStorage = schemaStorage;
 		this.db = db;
 		this.searchHandlerRegistry = searchHandlerRegistry;
 		this.springConfiguration = springConfiguration;

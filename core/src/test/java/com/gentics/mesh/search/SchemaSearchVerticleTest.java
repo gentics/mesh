@@ -15,7 +15,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
@@ -27,6 +26,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 
 public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
@@ -38,8 +38,8 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	private NodeMigrationVerticle nodeMigrationVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
+	public List<AbstractVerticle> getAdditionalVertices() {
+		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(schemaVerticle);
 		list.add(eventbusVerticle);
