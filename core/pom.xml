@@ -318,7 +318,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -327,6 +326,7 @@
 					<dependency>
 						<groupId>com.google.dagger</groupId>
 						<artifactId>dagger-compiler</artifactId>
+						<version>${dagger.version}</version>
 						<optional>true</optional>
 					</dependency>
 				</dependencies>

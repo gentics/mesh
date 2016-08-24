@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -20,17 +20,18 @@ public class IndexHandlerRegistry {
 
 	private static IndexHandlerRegistry instance;
 
+	@Inject
+	public IndexHandlerRegistry() {
+		instance = this;
+	}
+
 	/**
 	 * Get the instance
+	 * 
 	 * @return instance
 	 */
 	public static IndexHandlerRegistry getInstance() {
 		return instance;
-	}
-
-	@PostConstruct
-	public void setup() {
-		instance = this;
 	}
 
 	/**
@@ -62,7 +63,9 @@ public class IndexHandlerRegistry {
 
 	/**
 	 * Get the index handler with given key
-	 * @param key index handler key
+	 * 
+	 * @param key
+	 *            index handler key
 	 * @return index handler or null if not registered
 	 */
 	public IndexHandler get(String key) {

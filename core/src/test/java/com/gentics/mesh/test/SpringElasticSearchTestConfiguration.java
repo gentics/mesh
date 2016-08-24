@@ -12,7 +12,7 @@ import dagger.Provides;
 public class SpringElasticSearchTestConfiguration extends SpringTestConfiguration {
 
 	@Provides
-	public SearchProvider searchProvider() {
+	public SearchProvider testSearchProvider() {
 		ElasticSearchOptions options = new ElasticSearchOptions();
 		options.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
 //		options.setHttpEnabled(true);

@@ -3,6 +3,8 @@ package com.gentics.mesh.etc;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_HTTP_ONLY_FLAG;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_SECURE_FLAG;
 
+import javax.inject.Inject;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
@@ -54,6 +56,7 @@ public class MeshSpringConfiguration {
 
 	public static MeshSpringConfiguration instance;
 
+	@Inject
 	public MeshSpringConfiguration() {
 		instance = this;
 	}
