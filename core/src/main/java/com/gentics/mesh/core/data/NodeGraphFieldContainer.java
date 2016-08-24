@@ -61,4 +61,18 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer {
 	 * @param action
 	 */
 	void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action);
+
+	/**
+	 * Set the published flag.
+	 * 
+	 * @param published
+	 */
+	void setPublished(boolean published);
+
+	/**
+	 * Return the published flag state.
+	 * 
+	 * @return
+	 */
+	boolean isPublished();
 }

@@ -29,11 +29,13 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeGraphFieldContainer {
 
+	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
+
 	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
 
 	public static final String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
 
-	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
+	private static final String PUBLISHED_PROPERTY_KEY = "published";
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
@@ -122,5 +124,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainerVersion());
 		batch.addEntry(getParentNode().getUuid() + "-" + getLanguage().getLanguageTag(), getParentNode().getType(), action, indexType);
+	}
+
+	@Override
+	public void setPublished(boolean published) {
+		setProperty(PUBLISHED_PROPERTY_KEY, String.valueOf(published));
+	}
+
+	@Override
+	public boolean isPublished() {
+		String fieldValue = getProperty(PUBLISHED_PROPERTY_KEY);
+		return Boolean.valueOf(fieldValue);
 	}
 }

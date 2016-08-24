@@ -91,8 +91,6 @@ import rx.Observable;
  */
 public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node {
 
-	private static final String PUBLISHED_PROPERTY_KEY = "published";
-
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public static void checkIndices(Database database) {
@@ -323,8 +321,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 			}
 
-			restNode.setPublished(isPublished());
-
 			// Parent node reference
 			Node parentNode = getParentNode();
 			if (parentNode != null) {
@@ -380,6 +376,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				//TODO return a 404 and adapt mesh rest client in order to return a mesh response
 				//				ac.data().put("statuscode", NOT_FOUND.code());
 			} else {
+
+				restNode.setPublished(fieldContainer.isPublished());
+
 				Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
 				restNode.setContainer(schema.isContainer());
 				restNode.setDisplayField(schema.getDisplayField());
@@ -443,9 +442,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// Path
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String path = linkReplacer
-						.resolve(getUuid(), ac.getResolveLinksType(), getProject().getName(), restNode.getLanguage())
-						.toBlocking().single();
+				String path = linkReplacer.resolve(getUuid(), ac.getResolveLinksType(), getProject().getName(), restNode.getLanguage()).toBlocking()
+						.single();
 				restNode.setPath(path);
 
 				// languagePaths
@@ -486,8 +484,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			if (!ac.getResolveLinksType().equals(Type.OFF)) {
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer.resolve(current.getUuid(), ac.getResolveLinksType(), getProject().getName(),
-						restNode.getLanguage()).toBlocking().single();
+				String url = linkReplacer.resolve(current.getUuid(), ac.getResolveLinksType(), getProject().getName(), restNode.getLanguage())
+						.toBlocking().single();
 				reference.setPath(url);
 			}
 			breadcrumb.add(reference);
@@ -695,17 +693,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void setPublished(boolean published) {
-		setProperty(PUBLISHED_PROPERTY_KEY, String.valueOf(published));
-	}
-
-	@Override
-	public boolean isPublished() {
-		String fieldValue = getProperty(PUBLISHED_PROPERTY_KEY);
-		return Boolean.valueOf(fieldValue);
-	}
-
-	@Override
 	public Observable<? extends Node> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		try {
@@ -720,7 +707,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 
 				/* TODO handle other fields, etc. */
-				setPublished(requestModel.isPublished());
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 
@@ -736,6 +722,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					SchemaContainerVersion latestSchemaVersion = container.getSchemaContainerVersion();
 					Schema schema = latestSchemaVersion.getSchema();
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+					container.setPublished(requestModel.isPublished());
 				}
 				return createIndexBatch(STORE_ACTION);
 			}).process().map(i -> this);

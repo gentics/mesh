@@ -158,13 +158,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 					return db.trx(() -> {
 						Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project);
 						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
 							throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 						}
 						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, schemaContainer.getLatestVersion());
 						container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+						container.setPublished(requestModel.isPublished());
 						SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 						return Tuple.tuple(batch, node);
 					});
