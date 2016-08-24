@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import javax.inject.Inject;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -37,7 +35,6 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	private Map<String, Map<Integer, Microschema>> microschemas = new HashMap<>();
 
-	@Inject
 	public ServerSchemaStorage(BootstrapInitializer boot) {
 		this.boot = boot;
 		instance = this;

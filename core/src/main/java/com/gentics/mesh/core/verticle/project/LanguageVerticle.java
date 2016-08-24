@@ -11,7 +11,6 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 
 import io.vertx.ext.web.Route;
@@ -19,8 +18,8 @@ import io.vertx.ext.web.Route;
 public class LanguageVerticle extends AbstractProjectRestVerticle {
 
 	@Inject
-	public LanguageVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig) {
-		super("languages", boot, routerStorage, springConfig);
+	public LanguageVerticle(BootstrapInitializer boot, RouterStorage routerStorage) {
+		super("languages", boot, routerStorage);
 	}
 
 	@Override

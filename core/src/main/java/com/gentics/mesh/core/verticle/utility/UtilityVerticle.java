@@ -5,7 +5,6 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -17,8 +16,8 @@ public class UtilityVerticle extends AbstractCoreApiVerticle {
 	private UtilityHandler utilityHandler;
 
 	@Inject
-	public UtilityVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, UtilityHandler utilityHandler) {
-		super("utilities", routerStorage, springConfig);
+	public UtilityVerticle(RouterStorage routerStorage, UtilityHandler utilityHandler) {
+		super("utilities", routerStorage);
 		this.utilityHandler = utilityHandler;
 	}
 

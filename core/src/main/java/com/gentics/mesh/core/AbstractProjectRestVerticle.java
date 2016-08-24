@@ -16,9 +16,8 @@ public abstract class AbstractProjectRestVerticle extends AbstractWebVerticle {
 
 	protected BootstrapInitializer boot;
 
-	protected AbstractProjectRestVerticle(String basePath, BootstrapInitializer boot, RouterStorage routerStorage,
-			MeshSpringConfiguration springConfig) {
-		super(basePath, routerStorage, springConfig);
+	protected AbstractProjectRestVerticle(String basePath, BootstrapInitializer boot, RouterStorage routerStorage) {
+		super(basePath, routerStorage);
 		this.boot = boot;
 	}
 

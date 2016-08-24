@@ -3,6 +3,7 @@ package com.gentics.mesh.test;
 import java.io.File;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -16,20 +17,16 @@ import com.gentics.mesh.util.UUIDUtil;
 import dagger.Module;
 import dagger.Provides;
 
+@Singleton
 @Module
 public class SpringTestConfiguration extends MeshSpringConfiguration {
-
-	@Inject
-	public SpringTestConfiguration() {
-		setup();
-	}
 
 	@Provides
 	public DummySearchProvider dummySearchProvider() {
 		return new DummySearchProvider();
 	}
 
-	public void setup() {
+	public static void init() {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 

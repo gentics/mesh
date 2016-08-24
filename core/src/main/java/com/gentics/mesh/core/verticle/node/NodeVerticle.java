@@ -20,7 +20,6 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -43,13 +42,13 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private NodeFieldAPIHandler fieldAPIHandler;
 
 	public NodeVerticle() {
-		super("nodes", null, null, null);
+		super("nodes", null, null);
 	}
 
 	@Inject
-	public NodeVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig, NodeCrudHandler crudHandler,
+	public NodeVerticle(BootstrapInitializer boot, RouterStorage routerStorage, NodeCrudHandler crudHandler,
 			NodeFieldAPIHandler fieldAPIHandler) {
-		super("nodes", boot, routerStorage, springConfig);
+		super("nodes", boot, routerStorage);
 		this.crudHandler = crudHandler;
 		this.fieldAPIHandler = fieldAPIHandler;
 	}

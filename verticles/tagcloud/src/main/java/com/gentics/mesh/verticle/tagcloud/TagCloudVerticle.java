@@ -11,7 +11,6 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.tagcloud.model.TagCloud;
 import com.gentics.mesh.tagcloud.model.TagCloudEntry;
@@ -22,9 +21,9 @@ public class TagCloudVerticle extends AbstractProjectRestVerticle {
 	private TagCloudService tagCloudService;
 
 	@Inject
-	public TagCloudVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig,
+	public TagCloudVerticle(BootstrapInitializer boot, RouterStorage routerStorage,
 			TagCloudService tagCloudService) {
-		super("page", boot, routerStorage, springConfig);
+		super("page", boot, routerStorage);
 		this.tagCloudService = tagCloudService;
 	}
 

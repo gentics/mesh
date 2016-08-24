@@ -3,6 +3,8 @@ package com.gentics.mesh.test;
 import java.util.Map;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.DaggerInMemoryMeshDagger;
+import com.gentics.mesh.cli.InMemoryMeshDagger;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -48,9 +50,17 @@ public abstract class AbstractDBTest {
 
 	protected RestAssert test = new RestAssert();
 
+	protected InMemoryMeshDagger meshDagger;
+
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+	}
+
+	public void setup() throws Exception {
+		SpringTestConfiguration.init();
+		meshDagger = DaggerInMemoryMeshDagger.builder().build();
+		dataProvider = meshDagger.testDataProvider();
 	}
 
 	protected void resetDatabase() {

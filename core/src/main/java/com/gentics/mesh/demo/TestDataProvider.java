@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,7 +44,6 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
 import com.tinkerpop.blueprints.Vertex;
@@ -52,6 +52,7 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+@Singleton
 public class TestDataProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(TestDataProvider.class);
@@ -67,8 +68,6 @@ public class TestDataProvider {
 	}
 
 	private Database db;
-
-	protected MeshSpringConfiguration springConfig;
 
 	private BootstrapInitializer boot;
 
@@ -95,9 +94,8 @@ public class TestDataProvider {
 	private Map<String, Group> groups = new HashMap<>();
 
 	@Inject
-	public TestDataProvider(BootstrapInitializer boot, MeshSpringConfiguration springConfig, Database database) {
+	public TestDataProvider(BootstrapInitializer boot, Database database) {
 		this.boot = boot;
-		this.springConfig = springConfig;
 		this.db = database;
 		instance = this;
 	}

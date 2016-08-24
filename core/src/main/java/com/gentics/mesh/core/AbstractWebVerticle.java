@@ -65,10 +65,9 @@ public abstract class AbstractWebVerticle extends AbstractVerticle {
 
 	public MeshSpringConfiguration springConfig;
 
-	protected AbstractWebVerticle(String basePath, RouterStorage routerStorage, MeshSpringConfiguration springConfig) {
+	protected AbstractWebVerticle(String basePath, RouterStorage routerStorage) {
 		this.basePath = basePath;
 		this.routerStorage = routerStorage;
-		this.springConfig = springConfig;
 	}
 
 	@Override

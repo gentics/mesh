@@ -7,7 +7,6 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -15,8 +14,8 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	private AuthenticationRestHandler authRestHandler;
 
-	public AuthenticationVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, AuthenticationRestHandler authRestHandler) {
-		super("auth", routerStorage, springConfig);
+	public AuthenticationVerticle(RouterStorage routerStorage, AuthenticationRestHandler authRestHandler) {
+		super("auth", routerStorage);
 		this.authRestHandler = authRestHandler;
 	}
 

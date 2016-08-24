@@ -9,7 +9,7 @@ import dagger.Component;
 @Singleton
 @Component(modules = { MeshSpringConfiguration.class })
 public interface MeshDagger {
-	
+
 	BootstrapInitializer boot();
 
 }

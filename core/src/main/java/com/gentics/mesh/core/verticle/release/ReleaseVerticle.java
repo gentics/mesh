@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
@@ -27,13 +26,12 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 	private ReleaseCrudHandler crudHandler;
 
 	public ReleaseVerticle() {
-		super("releases", null, null, null);
+		super("releases", null, null);
 	}
 
 	@Inject
-	public ReleaseVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig,
-			ReleaseCrudHandler crudHandler) {
-		super("releases", boot, routerStorage, springConfig);
+	public ReleaseVerticle(BootstrapInitializer boot, RouterStorage routerStorage, ReleaseCrudHandler crudHandler) {
+		super("releases", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}
 

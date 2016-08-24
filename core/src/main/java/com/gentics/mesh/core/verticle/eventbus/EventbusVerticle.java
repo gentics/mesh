@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle.eventbus;
 import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -18,8 +17,8 @@ public class EventbusVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(EventbusVerticle.class);
 
-	public EventbusVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig) {
-		super("eventbus", routerStorage, springConfig);
+	public EventbusVerticle(RouterStorage routerStorage) {
+		super("eventbus", routerStorage);
 	}
 
 	public String getDescription() {

@@ -17,6 +17,7 @@ public class AbstractBasicDBTest extends AbstractDBTest {
 
 	@Before
 	public void setup() throws Exception {
+		super.setup();
 		setupData();
 		tx = db.noTx();
 	}

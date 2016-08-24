@@ -3,7 +3,7 @@ package com.gentics.mesh.etc;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_HTTP_ONLY_FLAG;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_SECURE_FLAG;
 
-import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -56,13 +56,9 @@ public class MeshSpringConfiguration {
 
 	public static MeshSpringConfiguration instance;
 
-	@Inject
 	public MeshSpringConfiguration() {
+		System.out.println("conf");
 		instance = this;
-	}
-
-	public static MeshSpringConfiguration getInstance() {
-		return instance;
 	}
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
@@ -74,19 +70,22 @@ public class MeshSpringConfiguration {
 
 	@Provides
 	public ImageManipulator imageProvider() {
-		//		ImageManipulator provider = imageProviderService().getImageProvider();
-		//TODO assert provider
-		//		return provider;
+		// ImageManipulator provider = imageProviderService().getImageProvider();
+		// TODO assert provider
+		// return provider;
 		return new ImgscalrImageManipulator();
 	}
 
 	@Provides
-	public DatabaseService databaseService() {
+	@Singleton
+	public static DatabaseService databaseService() {
 		return DatabaseService.getInstance();
 	}
 
 	@Provides
-	public Database database() {
+	@Singleton
+	public static Database database() {
+		System.out.println("ZOP!!");
 		Database database = databaseService().getDatabase();
 		if (database == null) {
 			String message = "No database provider could be found.";
@@ -105,6 +104,7 @@ public class MeshSpringConfiguration {
 	}
 
 	@Provides
+	@Singleton
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
 	}

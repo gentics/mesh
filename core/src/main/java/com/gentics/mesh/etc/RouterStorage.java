@@ -53,8 +53,7 @@ public class RouterStorage {
 	private MeshSpringConfiguration springConfiguration;
 
 	@Inject
-	public RouterStorage(MeshSpringConfiguration springConfiguration) {
-		this.springConfiguration = springConfiguration;
+	public RouterStorage() {
 		this.vertx = Mesh.vertx();
 		RouterStorage.instance = this;
 	}

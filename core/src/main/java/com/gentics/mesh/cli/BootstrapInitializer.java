@@ -12,7 +12,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -71,7 +74,6 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshVerticleConfiguration;
@@ -96,6 +98,7 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
  * The bootstrap initializer takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
  * GroupRoot, UserRoot and various element such as the Admin User, Admin Group, Admin Role.
  */
+@Singleton
 public class BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
@@ -114,25 +117,27 @@ public class BootstrapInitializer {
 
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryWorkerVerticles = new HashMap<>();
 
-	private MeshSpringConfiguration springConfiguration;
-
 	private RouterStorage routerStorage;
+
+	private BCryptPasswordEncoder encoder;
 
 	private static MeshRoot meshRoot;
 
 	public static boolean isInitialSetup = true;
 
 	@Inject
-	public BootstrapInitializer(Database db, IndexHandlerRegistry searchHandlerRegistry, MeshSpringConfiguration springConfiguration,
-			RouterStorage routerStorage) {
+	public BootstrapInitializer(Database db, IndexHandlerRegistry searchHandlerRegistry,
+			RouterStorage routerStorage, BCryptPasswordEncoder encoder) {
+		System.out.println("MOPED");
 
 		instance = this;
 		clearReferences();
 
 		this.db = db;
 		this.searchHandlerRegistry = searchHandlerRegistry;
-		this.springConfiguration = springConfiguration;
 		this.routerStorage = routerStorage;
+		this.schemaStorage = new ServerSchemaStorage(this);
+		this.encoder = encoder;
 
 		// Add API Info Verticle
 		addMandatoryVerticle(RestInfoVerticle.class);
@@ -251,7 +256,7 @@ public class BootstrapInitializer {
 			markChangelogApplied();
 		}
 
-		//initPermissions();
+		// initPermissions();
 		initSearchIndex();
 		try {
 			invokeSearchQueueProcessing();
@@ -505,7 +510,7 @@ public class BootstrapInitializer {
 				// TODO remove later on
 				String pw = "admin";
 				// scanIn.close();
-				adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
+				adminUser.setPasswordHash(encoder.encode(pw));
 				log.info("Created admin user {" + adminUser.getUuid() + "}");
 			}
 

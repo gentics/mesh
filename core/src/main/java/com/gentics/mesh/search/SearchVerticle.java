@@ -32,7 +32,6 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.IndexHandler;
@@ -48,9 +47,9 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public SearchVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, SearchRestHandler searchHandler,
+	public SearchVerticle(RouterStorage routerStorage, SearchRestHandler searchHandler,
 			IndexHandlerRegistry registry, BootstrapInitializer boot) {
-		super("search", routerStorage, springConfig);
+		super("search", routerStorage);
 		this.searchHandler = searchHandler;
 		this.registry = registry;
 		this.boot = boot;

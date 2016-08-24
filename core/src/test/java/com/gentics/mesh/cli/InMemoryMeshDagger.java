@@ -3,6 +3,7 @@ package com.gentics.mesh.cli;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.verticle.user.UserVerticle;
+import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.SpringTestConfiguration;
 
@@ -15,8 +16,9 @@ public interface InMemoryMeshDagger {
 	BootstrapInitializer boot();
 
 	Database database();
-	
+
 	UserVerticle userVerticle();
-	
-	SpringTestConfiguration config();
+
+	TestDataProvider testDataProvider();
+
 }

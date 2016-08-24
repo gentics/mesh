@@ -7,7 +7,6 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -19,8 +18,8 @@ public class ProjectInfoVerticle extends AbstractCoreApiVerticle {
 	private ProjectCrudHandler crudHandler;
 
 	@Inject
-	public ProjectInfoVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, ProjectCrudHandler crudHandler) {
-		super(null, routerStorage, springConfig);
+	public ProjectInfoVerticle(RouterStorage routerStorage, ProjectCrudHandler crudHandler) {
+		super(null, routerStorage);
 		this.crudHandler = crudHandler;
 	}
 

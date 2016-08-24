@@ -51,7 +51,6 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -66,12 +65,10 @@ import io.vertx.core.http.HttpHeaders;
 
 public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	private UserVerticle userVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(userVerticle);
+		list.add(meshDagger.userVerticle());
 		return list;
 	}
 

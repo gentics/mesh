@@ -12,7 +12,6 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
@@ -23,12 +22,12 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	private RoleCrudHandler crudHandler;
 
 	public RoleVerticle() {
-		super("roles", null, null);
+		super("roles", null);
 	}
 
 	@Inject
-	public RoleVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, RoleCrudHandler crudHandler) {
-		super("roles", routerStorage, springConfig);
+	public RoleVerticle(RouterStorage routerStorage, RoleCrudHandler crudHandler) {
+		super("roles", routerStorage);
 		this.crudHandler = crudHandler;
 	}
 

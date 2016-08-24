@@ -1,14 +1,13 @@
 package com.gentics.mesh.core;
 
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 
 import io.vertx.ext.web.Router;
 
 public abstract class AbstractCoreApiVerticle extends AbstractWebVerticle {
 
-	protected AbstractCoreApiVerticle(String basePath, RouterStorage routerStorage, MeshSpringConfiguration springConfig) {
-		super(basePath, routerStorage, springConfig);
+	protected AbstractCoreApiVerticle(String basePath, RouterStorage routerStorage) {
+		super(basePath, routerStorage);
 	}
 
 	@Override

@@ -11,12 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.inject.Inject;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
@@ -35,8 +36,9 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	// TODO handle NPEs
 	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
 
-	public AdminGUIVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig) {
-		super("mesh-ui", routerStorage, springConfig);
+	@Inject
+	public AdminGUIVerticle(RouterStorage routerStorage) {
+		super("mesh-ui", routerStorage);
 	}
 
 	@Override

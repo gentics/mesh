@@ -95,7 +95,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	@Before
 	public void setupVerticleTest() throws Exception {
-
+		super.setup();
 		File uploadDir = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory());
 		FileUtils.deleteDirectory(uploadDir);
 		uploadDir.mkdirs();

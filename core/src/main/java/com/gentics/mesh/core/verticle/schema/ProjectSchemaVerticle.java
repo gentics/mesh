@@ -10,7 +10,6 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 
 /**
@@ -21,9 +20,8 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 	private SchemaContainerCrudHandler crudHandler;
 
 	@Inject
-	public ProjectSchemaVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MeshSpringConfiguration springConfig,
-			SchemaContainerCrudHandler crudHandler) {
-		super("schemas", boot, routerStorage, springConfig);
+	public ProjectSchemaVerticle(BootstrapInitializer boot, RouterStorage routerStorage, SchemaContainerCrudHandler crudHandler) {
+		super("schemas", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}
 

@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
@@ -25,12 +24,12 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	private MicroschemaCrudHandler crudHandler;
 
 	public MicroschemaVerticle() {
-		super("microschemas", null, null);
+		super("microschemas", null);
 	}
 
 	@Inject
-	public MicroschemaVerticle(RouterStorage routerStorage, MeshSpringConfiguration springConfig, MicroschemaCrudHandler crudHandler) {
-		super("microschemas", routerStorage, springConfig);
+	public MicroschemaVerticle(RouterStorage routerStorage, MicroschemaCrudHandler crudHandler) {
+		super("microschemas", routerStorage);
 		this.crudHandler = crudHandler;
 	}
 

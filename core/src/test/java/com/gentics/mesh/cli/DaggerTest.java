@@ -4,9 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.verticle.user.UserVerticle;
-import com.gentics.mesh.etc.DaggerMeshDagger;
-import com.gentics.mesh.etc.MeshDagger;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.SpringTestConfiguration;
 
 public class DaggerTest {
 
@@ -26,8 +25,10 @@ public class DaggerTest {
 			System.out.println("Found Groups: {" + meshDagger.boot().groupRoot().findAll().size() + "}");
 		}
 		System.out.println(meshDagger.userVerticle());
-		System.out.println(meshDagger.config().database());
+		//System.out.println(meshDagger.config().database());
+		
 		System.out.println(userVerticle);
+		//System.out.println(userVerticle.db2);
 	}
 
 	@Test
