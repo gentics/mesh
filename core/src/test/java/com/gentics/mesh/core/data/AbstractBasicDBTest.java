@@ -16,8 +16,8 @@ public class AbstractBasicDBTest extends AbstractDBTest {
 	protected NoTx tx;
 
 	@Before
-	public void setup() throws Exception {
-		super.setup();
+	public void initDagger() throws Exception {
+		super.initDagger();
 		setupData();
 		tx = db.noTx();
 	}

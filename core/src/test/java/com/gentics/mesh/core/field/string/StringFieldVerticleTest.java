@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class StringFieldVerticleTest extends AbstractFieldVerticleTest {
+
 	private static final String FIELD_NAME = "stringField";
 
 	/**

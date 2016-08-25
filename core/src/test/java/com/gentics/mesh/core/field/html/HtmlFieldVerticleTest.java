@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 
 public class HtmlFieldVerticleTest extends AbstractFieldVerticleTest {
+
 	private static final String FIELD_NAME = "htmlField";
 
 	@Before
@@ -78,7 +79,7 @@ public class HtmlFieldVerticleTest extends AbstractFieldVerticleTest {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
 		String oldVersion = firstResponse.getVersion().getNumber();
 
-		// Simple field with no value results in a request JSON null value. 
+		// Simple field with no value results in a request JSON null value.
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);

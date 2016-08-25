@@ -33,7 +33,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -46,12 +45,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 
@@ -89,7 +86,8 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.1");
 
-			// Update the node again but don't change any data. Base the update on 1.0 thus a conflict check must be performed. No conflict should occur. Since no fields have been altered no version should be created.
+			// Update the node again but don't change any data. Base the update on 1.0 thus a conflict check must be performed. No conflict should occur. Since
+			// no fields have been altered no version should be created.
 			restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.1");
 
@@ -106,7 +104,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 		try (Tx trx = db.tx()) {
 
-			// Invoke an initial update on the node - Update Version 1.0 Name  -> 1.1
+			// Invoke an initial update on the node - Update Version 1.0 Name -> 1.1
 			Node node = getTestNode();
 			NodeUpdateRequest request1 = prepareNameFieldUpdateRequest("1234", "1.0");
 			NodeParameters parameters = new NodeParameters();
@@ -114,7 +112,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request1, parameters));
 			assertThat(restNode).hasVersion("1.1");
 
-			// Invoke another update which just changes the title field - Update Title 1.1 -> 1.2 
+			// Invoke another update which just changes the title field - Update Title 1.1 -> 1.2
 			NodeUpdateRequest request2 = prepareNameFieldUpdateRequest("1234", "1.1");
 			request2.getFields().put("title", FieldUtil.createStringField("updatedTitle"));
 			restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request2, parameters));
@@ -174,7 +172,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
 
-			//Add micronode / string list
+			// Add micronode / string list
 			request.getFields().put("stringList", FieldUtil.createStringListField("a", "b", "c"));
 			request.getFields().put("micronode",
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-firstname")),
@@ -208,7 +206,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
 
-			//Add micronode / string list - This time only change the order
+			// Add micronode / string list - This time only change the order
 			request.getFields().put("stringList", FieldUtil.createStringListField("b", "c", "d"));
 			request.getFields().put("micronode",
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),
@@ -334,7 +332,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
 
-			//Add micronode / string list - This time only change the order
+			// Add micronode / string list - This time only change the order
 			request.getFields().put("stringList", FieldUtil.createStringListField("b", "c", "d"));
 			request.getFields().put("micronode",
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),
@@ -356,7 +354,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
 
-			//Add micronode / string list - This time only change the order
+			// Add micronode / string list - This time only change the order
 			request.getFields().put("stringList", FieldUtil.createStringListField("b", "c", "d"));
 			request.getFields().put("micronode",
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),

@@ -13,6 +13,7 @@ import com.gentics.mesh.util.VersionNumber;
  * Test cases for VersionNumber
  */
 public class VersionNumberTest {
+
 	@Test
 	public void testInitialVersion() {
 		assertThat(new VersionNumber()).as("Initial Version").hasToString("0.1");

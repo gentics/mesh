@@ -7,6 +7,7 @@ import org.junit.Before;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 
 public abstract class AbstractListFieldVerticleTest extends AbstractFieldVerticleTest implements FieldVerticleTestcases, ListFieldVerticleTestcases {
 
@@ -16,7 +17,9 @@ public abstract class AbstractListFieldVerticleTest extends AbstractFieldVerticl
 
 	@Before
 	public void updateSchema() throws IOException {
-		setSchema(getListFieldType());
+		try (NoTx noTx = db.noTx()) {
+			setSchema(getListFieldType());
+		}
 	}
 
 	protected void setSchema(String listType) throws IOException {

@@ -34,12 +34,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class GroupRolesVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private GroupVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.groupVerticle());
 		return list;
 	}
 

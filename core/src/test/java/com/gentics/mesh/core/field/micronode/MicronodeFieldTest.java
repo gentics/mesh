@@ -104,8 +104,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	protected MicroschemaContainer dummyMicroschema;
 
 	@Override
-	public void setup() throws Exception {
-		super.setup();
+	public void initDagger() throws Exception {
+		super.initDagger();
 		dummyMicroschema = createDummyMicroschema();
 	}
 

@@ -8,8 +8,8 @@ import com.gentics.mesh.test.AbstractDBTest;
 public class AbstractIsolatedBasicDBTest extends AbstractDBTest {
 
 	@Before
-	public void setup() throws Exception {
-		super.setup();
+	public void initDagger() throws Exception {
+		super.initDagger();
 		setupData();
 	}
 

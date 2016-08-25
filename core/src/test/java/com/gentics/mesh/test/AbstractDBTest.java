@@ -60,7 +60,7 @@ public abstract class AbstractDBTest {
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
 
-	public void setup() throws Exception {
+	public void initDagger() throws Exception {
 		MeshTestModule.init();
 		meshDagger = MeshCore.createTest();
 		dataProvider = meshDagger.testDataProvider();

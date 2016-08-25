@@ -23,97 +23,108 @@ import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 
 public class DateFieldVerticleTest extends AbstractFieldVerticleTest {
 	private static final String FIELD_NAME = "dateField";
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
-		DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
-		dateFieldSchema.setName(FIELD_NAME);
-		dateFieldSchema.setLabel("Some label");
-		schema.addField(dateFieldSchema);
-		schemaContainer("folder").getLatestVersion().setSchema(schema);
+		try (NoTx noTx = db.noTx()) {
+			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
+			dateFieldSchema.setName(FIELD_NAME);
+			dateFieldSchema.setLabel("Some label");
+			schema.addField(dateFieldSchema);
+			schemaContainer("folder").getLatestVersion().setSchema(schema);
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (Field) null);
-		DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
-		assertNull(field);
+		try (NoTx noTx = db.noTx()) {
+			NodeResponse response = createNode(FIELD_NAME, (Field) null);
+			DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
+			assertNull(field);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		Node node = folder("2015");
-		for (int i = 0; i < 20; i++) {
-			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis() + (i * 10000)));
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-			Long oldValue = getDateValue(container, FIELD_NAME);
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
+			for (int i = 0; i < 20; i++) {
+				Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis() + (i * 10000)));
+				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+				Long oldValue = getDateValue(container, FIELD_NAME);
 
-			NodeResponse response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
-			assertEquals("The timestamp did not match up.", toISO8601(nowEpoch), field.getDate());
+				NodeResponse response = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+				DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
+				assertEquals("The timestamp did not match up.", toISO8601(nowEpoch), field.getDate());
 
-			node.reload();
-			container.reload();
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
-			assertEquals("Check old value", oldValue, getDateValue(container, FIELD_NAME));
+				node.reload();
+				container.reload();
+				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+				assertEquals("Check old value", oldValue, getDateValue(container, FIELD_NAME));
+			}
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-		String oldVersion = firstResponse.getVersion().getNumber();
+		try (NoTx noTx = db.noTx()) {
+			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+			String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+			NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-		String oldVersion = firstResponse.getVersion().getNumber();
+		try (NoTx noTx = db.noTx()) {
+			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+			String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
-		assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+			assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
+			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 
-		// Assert that the old version was not modified
-		Node node = folder("2015");
-		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
-		assertThat(latest.getDate(FIELD_NAME)).isNull();
-		assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
-		Long oldValue = latest.getPreviousVersion().getDate(FIELD_NAME).getDate();
-		assertThat(oldValue).isEqualTo(nowEpoch);
+			// Assert that the old version was not modified
+			Node node = folder("2015");
+			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getDate(FIELD_NAME)).isNull();
+			assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
+			Long oldValue = latest.getPreviousVersion().getDate(FIELD_NAME).getDate();
+			assertThat(oldValue).isEqualTo(nowEpoch);
 
-		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-				secondResponse.getVersion().getNumber());
+			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+					secondResponse.getVersion().getNumber());
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
+		try (NoTx noTx = db.noTx()) {
+			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+			String oldVersion = firstResponse.getVersion().getNumber();
 
-		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-		String oldVersion = firstResponse.getVersion().getNumber();
-
-		// Date fields can't be set to empty.
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl());
-		assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
-
+			// Date fields can't be set to empty.
+			NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl());
+			assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
+			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+		}
 	}
 
 	/**
@@ -133,24 +144,28 @@ public class DateFieldVerticleTest extends AbstractFieldVerticleTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
-		NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-		DateField field = response.getFields().getDateField(FIELD_NAME);
-		assertEquals(toISO8601(nowEpoch), field.getDate());
+		try (NoTx noTx = db.noTx()) {
+			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+			NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+			DateField field = response.getFields().getDateField(FIELD_NAME);
+			assertEquals(toISO8601(nowEpoch), field.getDate());
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		try (NoTx noTx = db.noTx()) {
+			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
-		Node node = folder("2015");
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		container.createDate(FIELD_NAME).setDate(nowEpoch);
+			Node node = folder("2015");
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			container.createDate(FIELD_NAME).setDate(nowEpoch);
 
-		NodeResponse response = readNode(node);
-		DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);
-		assertNotNull(deserializedDateField);
-		assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());
+			NodeResponse response = readNode(node);
+			DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);
+			assertNotNull(deserializedDateField);
+			assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());
+		}
 	}
 }
