@@ -6,7 +6,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.ContainerType;
@@ -22,21 +23,16 @@ import rx.Single;
 /**
  * This class will resolve mesh link placeholders.
  */
+@Singleton
 public class WebRootLinkReplacer {
 
 	private static final String START_TAG = "{{mesh.link(";
 	private static final String END_TAG = ")}}";
 
-	private static WebRootLinkReplacer instance;
-
 	private static final Logger log = LoggerFactory.getLogger(WebRootLinkReplacer.class);
 
+	@Inject
 	public WebRootLinkReplacer() {
-		WebRootLinkReplacer.instance = this;
-	}
-
-	public static WebRootLinkReplacer getInstance() {
-		return instance;
 	}
 
 	/**

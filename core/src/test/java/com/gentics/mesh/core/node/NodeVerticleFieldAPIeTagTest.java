@@ -14,7 +14,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
@@ -24,12 +23,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeVerticleFieldAPIeTagTest extends AbstractETagTest {
 
-	private NodeVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

@@ -32,6 +32,10 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 		this.crudHandler = crudHandler;
 	}
 
+	public ProjectVerticle() {
+		super("projects", null);
+	}
+
 	@Override
 	public String getDescription() {
 		return "Provides endpoints which allow the manipulation of projects.";

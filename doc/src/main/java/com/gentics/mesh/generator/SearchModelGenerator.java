@@ -24,6 +24,7 @@ import java.util.TreeMap;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.mockito.Mockito;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -35,6 +36,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.TestMeshComponent;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
@@ -57,7 +60,9 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private DummySearchProvider provider;
 
-//	private AnnotationConfigApplicationContext ctx;
+	private static TestMeshComponent meshDagger;
+
+	// private AnnotationConfigApplicationContext ctx;
 
 	public static void main(String[] args) throws Exception {
 		new SearchModelGenerator().start();
@@ -73,28 +78,29 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputDir.getAbsolutePath() + "}");
 		outputDir.mkdirs();
 
-//		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(SpringNoDBConfiguration.class)) {
-//			this.ctx = ctx;
-//			ctx.start();
-//			ctx.registerShutdownHook();
-//			provider = ctx.getBean("dummySearchProvider", DummySearchProvider.class);
+		meshDagger = MeshCore.createTest();
+		// try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(SpringNoDBConfiguration.class)) {
+		// this.ctx = ctx;
+		// ctx.start();
+		// ctx.registerShutdownHook();
+		// provider = ctx.getBean("dummySearchProvider", DummySearchProvider.class);
 
-			try {
-				writeNodeDocumentExample();
-				writeTagDocumentExample();
-				writeGroupDocumentExample();
-				writeUserDocumentExample();
-				writeRoleDocumentExample();
-				writeProjectDocumentExample();
-				writeTagFamilyDocumentExample();
-				writeSchemaDocumentExample();
-				writeMicroschemaDocumentExample();
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(10);
-			}
-			System.exit(0);
-//		}
+		try {
+			writeNodeDocumentExample();
+			writeTagDocumentExample();
+			writeGroupDocumentExample();
+			writeUserDocumentExample();
+			writeRoleDocumentExample();
+			writeProjectDocumentExample();
+			writeTagFamilyDocumentExample();
+			writeSchemaDocumentExample();
+			writeMicroschemaDocumentExample();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(10);
+		}
+		System.exit(0);
+		// }
 
 	}
 
@@ -108,7 +114,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node parentNode = mockNodeBasic("folder", user);
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
-		NodeIndexHandler nodeIndexHandler = ctx.getBean(NodeIndexHandler.class);
+		NodeIndexHandler nodeIndexHandler = meshDagger.nodeIndexHandler();
 		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), null, null);
 		writeStoreEvent("node.search");
 
@@ -118,7 +124,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User creator = mockUser("admin", "Admin", "", null);
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Project project = mockProject(user);
-		ProjectIndexHandler projectIndexHandler = ctx.getBean(ProjectIndexHandler.class);
+		ProjectIndexHandler projectIndexHandler = meshDagger.projectIndexHandler();
 		projectIndexHandler.store(project, "project", null).await();
 		writeStoreEvent("project.search");
 	}
@@ -126,7 +132,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 	private void writeGroupDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Group group = mockGroup("adminGroup", user);
-		GroupIndexHandler groupIndexHandler = ctx.getBean(GroupIndexHandler.class);
+		GroupIndexHandler groupIndexHandler = meshDagger.groupIndexHandler();
 		groupIndexHandler.store(group, "group", null).await();
 		writeStoreEvent("group.search");
 	}
@@ -134,7 +140,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 	private void writeRoleDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Role role = mockRole("adminRole", user);
-		RoleIndexHandler roleIndexHandler = ctx.getBean(RoleIndexHandler.class);
+		RoleIndexHandler roleIndexHandler = meshDagger.roleIndexHandler();
 		roleIndexHandler.store(role, "role", null).await();
 		writeStoreEvent("role.search");
 	}
@@ -145,7 +151,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Group groupA = mockGroup("editors", user);
 		Group groupB = mockGroup("superEditors", user);
 		Mockito.<List<? extends Group>> when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
-		UserIndexHandler userIndexHandler = ctx.getBean(UserIndexHandler.class);
+		UserIndexHandler userIndexHandler = meshDagger.userIndexHandler();
 		userIndexHandler.store(user, "user", null).await();
 		writeStoreEvent("user.search");
 	}
@@ -161,7 +167,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		when(tagFamily.getTagRoot().findAll()).then(answer -> {
 			return tagList;
 		});
-		TagFamilyIndexHandler tagFamilyIndexHandler = ctx.getBean(TagFamilyIndexHandler.class);
+		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();
 		tagFamilyIndexHandler.store(tagFamily, "tagFamily", null).await();
 		writeStoreEvent("tagFamily.search");
 	}
@@ -170,7 +176,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 
-		SchemaContainerIndexHandler searchIndexHandler = ctx.getBean(SchemaContainerIndexHandler.class);
+		SchemaContainerIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
 		searchIndexHandler.store(schemaContainer, "schema", null).await();
 		writeStoreEvent("schema.search");
 	}
@@ -179,7 +185,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer("geolocation", user);
 
-		MicroschemaContainerIndexHandler searchIndexHandler = ctx.getBean(MicroschemaContainerIndexHandler.class);
+		MicroschemaContainerIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
 		searchIndexHandler.store(microschemaContainer, "schema", null).await();
 		writeStoreEvent("microschema.search");
 	}
@@ -189,7 +195,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Project project = mockProject(user);
 		TagFamily tagFamily = mockTagFamily("colors", user, project);
 		Tag tag = mockTag("red", user, tagFamily, project);
-		TagIndexHandler tagIndexHandler = ctx.getBean(TagIndexHandler.class);
+		TagIndexHandler tagIndexHandler = meshDagger.tagIndexHandler();
 		tagIndexHandler.store(tag, "tag", null).await();
 		writeStoreEvent("tag.search");
 	}
@@ -201,8 +207,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		}
 		Map<String, Object> outputMap = new TreeMap<>();
 		// System.out.println(new JSONObject(eventMap).toString(4));
-		//TODO flatten json?
-//		flatten(eventMap, outputMap, null);
+		// TODO flatten json?
+		// flatten(eventMap, outputMap, null);
 		JSONObject json = new JSONObject(outputMap);
 		write(json, name);
 		provider.reset();

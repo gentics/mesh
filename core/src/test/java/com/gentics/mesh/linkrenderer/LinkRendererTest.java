@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
@@ -25,6 +26,11 @@ import com.gentics.mesh.util.UUIDUtil;
 public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 
 	private WebRootLinkReplacer replacer;
+
+	@Before
+	public void setupDeps() {
+		replacer = meshDagger.webRootLinkReplacer();
+	}
 
 	@Test
 	public void testLinkReplacerTypeOff() {

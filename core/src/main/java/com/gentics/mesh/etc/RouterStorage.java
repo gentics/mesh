@@ -59,7 +59,6 @@ public class RouterStorage {
 
 	@Inject
 	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler, UserSessionHandler userSessionHandler) {
-		System.out.println("Zap");
 		this.vertx = Mesh.vertx();
 		RouterStorage.instance = this;
 		initAPIRouter(corsHandler, bodyHandler, sessionHandler, userSessionHandler);

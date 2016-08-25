@@ -15,7 +15,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -26,12 +25,10 @@ import rx.Single;
 
 public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private AuthenticationVerticle authenticationVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(authenticationVerticle);
+		list.add(meshDagger.authenticationVerticle());
 		return list;
 	}
 

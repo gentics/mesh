@@ -36,7 +36,6 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -47,12 +46,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	private SchemaVerticle schemaVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(schemaVerticle);
+		list.add(meshDagger.schemaVerticle());
 		return list;
 	}
 

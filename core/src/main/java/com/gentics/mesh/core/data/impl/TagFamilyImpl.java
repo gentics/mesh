@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;

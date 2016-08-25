@@ -27,11 +27,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -43,24 +38,14 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeVerticle verticle;
-
-	private ReleaseVerticle releaseVerticle;
-
-	private NodeMigrationVerticle migrationVerticle;
-
-	private EventbusVerticle eventbusVerticle;
-
-	private TagFamilyVerticle tagFamilyVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
-		list.add(releaseVerticle);
-		list.add(migrationVerticle);
-		list.add(eventbusVerticle);
-		list.add(tagFamilyVerticle);
+		list.add(meshDagger.nodeVerticle());
+		list.add(meshDagger.releaseVerticle());
+		list.add(meshDagger.nodeMigrationVerticle());
+		list.add(meshDagger.eventbusVerticle());
+		list.add(meshDagger.tagFamilyVerticle());
 		return list;
 	}
 

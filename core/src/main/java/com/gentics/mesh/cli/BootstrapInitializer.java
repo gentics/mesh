@@ -75,7 +75,6 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshVerticleConfiguration;
 import com.gentics.mesh.graphdb.NoTx;
@@ -112,8 +111,6 @@ public class BootstrapInitializer {
 
 	private IndexHandlerRegistry searchHandlerRegistry;
 
-	private static BootstrapInitializer instance;
-
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
 
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryWorkerVerticles = new HashMap<>();
@@ -126,9 +123,6 @@ public class BootstrapInitializer {
 
 	@Inject
 	public BootstrapInitializer(Database db, IndexHandlerRegistry searchHandlerRegistry, BCryptPasswordEncoder encoder) {
-		System.out.println("MOPED");
-
-		instance = this;
 		clearReferences();
 
 		this.db = db;

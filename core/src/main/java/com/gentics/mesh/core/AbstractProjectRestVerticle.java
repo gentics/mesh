@@ -6,7 +6,6 @@ import com.gentics.mesh.etc.RouterStorage;
 
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.AuthHandler;
 
 /**
  * A verticle which provides REST endpoints for all registered projects. The router for this verticle will automatically be mounted for all registered projects.

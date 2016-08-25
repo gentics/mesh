@@ -30,7 +30,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -40,12 +39,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	private MicroschemaVerticle microschemaVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(microschemaVerticle);
+		list.add(meshDagger.microschemaVerticle());
 		return list;
 	}
 

@@ -4,6 +4,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.MeshNameProvider;
@@ -16,6 +17,7 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.ext.web.Router;
 
+@Singleton
 public class RestInfoVerticle extends AbstractWebVerticle {
 
 	private SearchProvider searchProvider;
@@ -23,7 +25,7 @@ public class RestInfoVerticle extends AbstractWebVerticle {
 	private Database db;
 
 	@Inject
-	public RestInfoVerticle(String basePath, Database db, RouterStorage routerStorage, SearchProvider searchProvider) {
+	public RestInfoVerticle(Database db, RouterStorage routerStorage, SearchProvider searchProvider) {
 		super(null, routerStorage);
 		this.searchProvider = searchProvider;
 		this.db = db;

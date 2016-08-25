@@ -12,10 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshCore;
-import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 
 import io.vertx.core.MultiMap;

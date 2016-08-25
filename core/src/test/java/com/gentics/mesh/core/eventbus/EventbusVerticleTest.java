@@ -11,7 +11,6 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.AbstractVerticle;
@@ -19,12 +18,10 @@ import io.vertx.core.json.JsonObject;
 
 public class EventbusVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private EventbusVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.eventbusVerticle());
 		return list;
 	}
 

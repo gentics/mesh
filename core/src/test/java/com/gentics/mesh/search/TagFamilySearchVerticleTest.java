@@ -13,20 +13,17 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.rest.client.MeshResponse;
 
 import io.vertx.core.AbstractVerticle;
 
 public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	private TagFamilyVerticle tagFamilyVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(searchVerticle);
-		list.add(tagFamilyVerticle);
+		list.add(meshDagger.searchVerticle());
+		list.add(meshDagger.tagFamilyVerticle());
 		return list;
 	}
 

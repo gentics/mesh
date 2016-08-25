@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -16,15 +19,10 @@ import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+@Singleton
 public class ServerSchemaStorage implements SchemaStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(ServerSchemaStorage.class);
-
-	public static ServerSchemaStorage instance;
-
-	public static ServerSchemaStorage getInstance() {
-		return instance;
-	}
 
 	private BootstrapInitializer boot;
 
@@ -35,13 +33,13 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	private Map<String, Map<Integer, Microschema>> microschemas = new HashMap<>();
 
+	@Inject
 	public ServerSchemaStorage(BootstrapInitializer boot) {
 		this.boot = boot;
-		instance = this;
 	}
 
 	public void init() {
-		//Iterate over all schemas and load them into the storage
+		// Iterate over all schemas and load them into the storage
 		boot.schemaContainerRoot().findAll().stream().forEach(container -> {
 			for (SchemaContainerVersion version : container.findAll()) {
 				Schema restSchema = version.getSchema();

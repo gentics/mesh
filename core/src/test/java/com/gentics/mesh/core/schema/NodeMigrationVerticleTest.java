@@ -43,9 +43,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PublishParameters;
@@ -60,17 +58,11 @@ import io.vertx.core.eventbus.Message;
 
 public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeMigrationVerticle nodeMigrationVerticle;
-
-	private EventbusVerticle eventbusVerticle;
-
-	private NodeVerticle nodeVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(eventbusVerticle);
-		list.add(nodeVerticle);
+		list.add(meshDagger.eventbusVerticle());
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 
@@ -80,7 +72,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 		super.setupVerticleTest();
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
-		vertx.deployVerticle(nodeMigrationVerticle, options);
+		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);
 	}
 
 	@Test
@@ -104,15 +96,15 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 
 			// Trigger migration by sending a event
 			vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-				//			future.complete(rh);
+				// future.complete(rh);
 			});
 
 			failingLatch(latch);
 
-			//		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-			//		if (result.cause() != null) {
-			//			throw result.cause();
-			//		}
+			// AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+			// if (result.cause() != null) {
+			// throw result.cause();
+			// }
 		}
 
 	}
@@ -380,7 +372,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 			microschemaB.addField(newField);
 			versionB.setName("migratedSchema");
 			versionB.setSchema(microschemaB);
-			//boot.microschemaContainerRoot().addMicroschema(container);
+			// boot.microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
 			UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
@@ -483,7 +475,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 			microschemaB.addField(newField);
 			versionB.setName("migratedSchema");
 			versionB.setSchema(microschemaB);
-			//boot.microschemaContainerRoot().addMicroschema(container);
+			// boot.microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
 			UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
@@ -606,7 +598,7 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 			microschemaB.addField(newField);
 			versionB.setName("migratedSchema");
 			versionB.setSchema(microschemaB);
-			//boot.microschemaContainerRoot().addMicroschema(container);
+			// boot.microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
 			UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);

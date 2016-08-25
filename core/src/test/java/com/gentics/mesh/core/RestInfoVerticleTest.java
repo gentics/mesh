@@ -10,19 +10,16 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.core.verticle.admin.RestInfoVerticle;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.AbstractVerticle;
 
 public class RestInfoVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private RestInfoVerticle infoVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(infoVerticle);
+		list.add(meshDagger.restInfoVerticle());
 		return list;
 	}
 

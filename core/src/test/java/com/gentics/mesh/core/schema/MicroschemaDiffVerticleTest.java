@@ -23,7 +23,6 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
@@ -31,12 +30,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private MicroschemaVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.microschemaVerticle());
 		return list;
 	}
 

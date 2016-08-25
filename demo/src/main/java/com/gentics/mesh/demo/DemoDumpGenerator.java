@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.search.SearchProvider;
 
 public class DemoDumpGenerator {
 

@@ -40,6 +40,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 
 public class MicronodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
+
 	protected final static String FIELD_NAME = "micronodeListField";
 
 	@Before

@@ -20,8 +20,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.LinkType;
@@ -36,15 +34,11 @@ import io.vertx.core.AbstractVerticle;
 
 public class WebRootVerticleETagTest extends AbstractETagTest {
 
-	private WebRootVerticle webrootVerticle;
-
-	private NodeVerticle nodeVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(webrootVerticle);
-		list.add(nodeVerticle);
+		list.add(meshDagger.webrootVerticle());
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

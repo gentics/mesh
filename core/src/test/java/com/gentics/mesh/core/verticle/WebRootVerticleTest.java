@@ -24,9 +24,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -37,8 +35,7 @@ import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -51,17 +48,11 @@ import io.vertx.core.AbstractVerticle;
 
 public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private WebRootVerticle webrootVerticle;
-
-	private NodeVerticle nodeVerticle;
-
-	private NodeMigrationHandler nodeMigrationHandler;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(webrootVerticle);
-		list.add(nodeVerticle);
+		list.add(meshDagger.webrootVerticle());
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 
@@ -149,7 +140,7 @@ public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Schema schema = folderSchema.getLatestVersion().getSchema();
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
 			folderSchema.getLatestVersion().setSchema(schema);
-			ServerSchemaStorage.getInstance().addSchema(schema);
+			MeshCore.get().serverSchemaStorage().addSchema(schema);
 
 			// Create content which is only german
 			SchemaContainer contentSchema = schemaContainer("content");
@@ -187,7 +178,8 @@ public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 		List<MeshResponse<WebRootResponse>> futures = new ArrayList<>();
 		for (int i = 0; i < nJobs; i++) {
-			futures.add(getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")).invoke());
+			futures.add(getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de"))
+					.invoke());
 		}
 
 		for (MeshResponse<WebRootResponse> fut : futures) {
@@ -320,7 +312,8 @@ public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 			create404Node.setLanguage("en");
 			call(() -> getClient().createNode(PROJECT_NAME, create404Node));
 
-			MeshResponse<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft()).invoke();
+			MeshResponse<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft())
+					.invoke();
 			latchFor(webrootFuture);
 			expectFailureMessage(webrootFuture, NOT_FOUND, null);
 		}
@@ -407,7 +400,7 @@ public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 		// 1. create new release and migrate node
 		db.noTx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
-			nodeMigrationHandler.migrateNodes(newRelease).await();
+			meshDagger.nodeMigrationHandler().migrateNodes(newRelease).await();
 			return null;
 		});
 

@@ -12,20 +12,17 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.rest.client.MeshResponse;
 
 import io.vertx.core.AbstractVerticle;
 
 public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	private GroupVerticle groupVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(searchVerticle);
-		list.add(groupVerticle);
+		list.add(meshDagger.searchVerticle());
+		list.add(meshDagger.groupVerticle());
 		return list;
 	}
 

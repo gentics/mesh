@@ -41,7 +41,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -59,14 +58,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.core.verticle.admin.AdminVerticle;
-import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
-import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -74,31 +66,12 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 
 public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
-
-	private NodeVerticle nodeVerticle;
-
-	private NodeIndexHandler nodeIndexHandler;
-
-	private SchemaVerticle schemaVerticle;
-
-	private NodeMigrationVerticle nodeMigrationVerticle;
-
-	private AdminVerticle adminVerticle;
-
-	private EventbusVerticle eventbusVerticle;
-
-	private TagFamilyVerticle tagFamilyVerticle;
-
-	private ProjectVerticle projectVerticle;
-
-	private ReleaseVerticle releaseVerticle;
 
 	@BeforeClass
 	public static void debug() {
@@ -111,21 +84,21 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		super.setupVerticleTest();
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
-		vertx.deployVerticle(nodeMigrationVerticle, options);
+		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);
 	}
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(searchVerticle);
-		list.add(projectSearchVerticle);
-		list.add(schemaVerticle);
-		list.add(adminVerticle);
-		list.add(nodeVerticle);
-		list.add(eventbusVerticle);
-		list.add(tagFamilyVerticle);
-		list.add(projectVerticle);
-		list.add(releaseVerticle);
+		list.add(meshDagger.searchVerticle());
+		list.add(meshDagger.projectSearchVerticle());
+		list.add(meshDagger.schemaVerticle());
+		list.add(meshDagger.adminVerticle());
+		list.add(meshDagger.nodeVerticle());
+		list.add(meshDagger.eventbusVerticle());
+		list.add(meshDagger.tagFamilyVerticle());
+		list.add(meshDagger.projectVerticle());
+		list.add(meshDagger.releaseVerticle());
 		return list;
 	}
 
@@ -632,7 +605,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 			schemaUuid = concorde.getSchemaContainer().getUuid();
 		}
 		// Clear the schema storage in order to purge the reference from the storage which we would otherwise modify.
-		ServerSchemaStorage.getInstance().clear();
+		MeshCore.get().serverSchemaStorage().clear();
 
 		try (NoTx noTx = db.noTx()) {
 			meshRoot().getSearchQueue().reload();
@@ -1008,7 +981,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		nodeIndexHandler.updateNodeIndexMapping(schema.getName() + "-" + schema.getVersion(), schema).await();
+		meshDagger.nodeIndexHandler().updateNodeIndexMapping(schema.getName() + "-" + schema.getVersion(), schema).await();
 
 		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {

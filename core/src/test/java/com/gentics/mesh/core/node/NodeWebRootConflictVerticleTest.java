@@ -13,14 +13,12 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -30,14 +28,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeVerticle verticle;
-
-	private NodeMigrationHandler nodeMigrationHandler;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 
@@ -259,7 +253,7 @@ public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticl
 		// 1. Create new release and migrate nodes
 		db.noTx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
-			nodeMigrationHandler.migrateNodes(newRelease);
+			meshDagger.nodeMigrationHandler().migrateNodes(newRelease);
 			return null;
 		});
 

@@ -4,6 +4,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
@@ -98,6 +101,7 @@ import rx.Single;
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests.
  */
+@Singleton
 public class MeshLocalClientImpl implements MeshRestClient {
 
 	private MeshAuthUser user;
@@ -134,6 +138,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	private UtilityHandler utilityHandler;
 
+	@Inject
 	public MeshLocalClientImpl(UtilityHandler utilityHandler, AuthenticationRestHandler authRestHandler, AdminHandler adminHandler,
 			WebRootHandler webrootHandler, NodeFieldAPIHandler fieldAPIHandler, NodeCrudHandler nodeCrudHandler,
 			ProjectCrudHandler projectCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler, TagCrudHandler tagCrudHandler,

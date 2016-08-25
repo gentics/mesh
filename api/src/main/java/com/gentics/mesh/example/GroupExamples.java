@@ -2,7 +2,6 @@ package com.gentics.mesh.example;
 
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;

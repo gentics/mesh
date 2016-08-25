@@ -15,7 +15,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -28,12 +27,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class TagFamilyVerticleETagTest extends AbstractETagTest {
 
-	private TagFamilyVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.tagFamilyVerticle());
 		return list;
 	}
 

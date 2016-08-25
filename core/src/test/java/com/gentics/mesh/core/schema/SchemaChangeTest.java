@@ -7,7 +7,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.AbstractBasicDBTest;
+import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -21,62 +21,68 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 
-public class SchemaChangeTest extends AbstractBasicDBTest {
+public class SchemaChangeTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testDomainModel() {
+		try (NoTx noTx = db.noTx()) {
+			SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+			SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion versionC = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-		SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-		SchemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-		SchemaContainerVersion versionC = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			assertNull("Initially no version should have been set", container.getLatestVersion());
+			container.setLatestVersion(versionA);
+			assertEquals("The uuid of the latest version did not match to versionA's uuid.", versionA.getUuid(),
+					container.getLatestVersion().getUuid());
 
-		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-		assertNull("Initially no version should have been set", container.getLatestVersion());
-		container.setLatestVersion(versionA);
-		assertEquals("The uuid of the latest version did not match to versionA's uuid.", versionA.getUuid(), container.getLatestVersion().getUuid());
+			assertNull("The previous change should be null since we did not link it to any schema version.", versionA.getPreviousChange());
+			assertNull("The next change should be null since we did not link it to any schema version.", versionA.getNextChange());
 
-		assertNull("The previous change should be null since we did not link it to any schema version.", versionA.getPreviousChange());
-		assertNull("The next change should be null since we did not link it to any schema version.", versionA.getNextChange());
+			versionA.setNextChange(change);
+			assertNotNull("The next change was not found but we linked it to the schema container.", versionA.getNextChange());
 
-		versionA.setNextChange(change);
-		assertNotNull("The next change was not found but we linked it to the schema container.", versionA.getNextChange());
+			versionA.setPreviousChange(change);
+			assertNotNull("The previous change was not found but we linked it to the schema container.", versionA.getPreviousChange());
 
-		versionA.setPreviousChange(change);
-		assertNotNull("The previous change was not found but we linked it to the schema container.", versionA.getPreviousChange());
+			assertNull("The next version was not yet set and thus should be null but it was not.", versionB.getNextVersion());
+			versionB.setNextVersion(versionC);
+			assertNotNull(versionB.getNextVersion());
 
-		assertNull("The next version was not yet set and thus should be null but it was not.", versionB.getNextVersion());
-		versionB.setNextVersion(versionC);
-		assertNotNull(versionB.getNextVersion());
-
-		assertNull("The next version was not yet set and thus should be null but it was not.", versionB.getPreviousVersion());
-		versionB.setPreviousVersion(versionA);
-		assertNotNull(versionB.getPreviousVersion());
-
+			assertNull("The next version was not yet set and thus should be null but it was not.", versionB.getPreviousVersion());
+			versionB.setPreviousVersion(versionA);
+			assertNotNull(versionB.getPreviousVersion());
+		}
 	}
 
 	@Test
 	public void testMicroschemaChanges() {
-		MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
 
-		MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
-		MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
-		container.setLatestVersion(versionB);
-		SchemaChange oldChange = chainChanges(versionA, versionB);
-		validate(container, versionA, versionB, oldChange);
+			MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			container.setLatestVersion(versionB);
+			SchemaChange oldChange = chainChanges(versionA, versionB);
+			validate(container, versionA, versionB, oldChange);
+		}
 	}
 
 	@Test
 	public void testChangeChain() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
-		SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-		SchemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-		container.setLatestVersion(versionA);
-		SchemaChange oldChange = chainChanges(versionA, versionB);
-		validate(container, versionA, versionB, oldChange);
+		try (NoTx noTx = db.noTx()) {
+			SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+			SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			container.setLatestVersion(versionA);
+			SchemaChange oldChange = chainChanges(versionA, versionB);
+			validate(container, versionA, versionB, oldChange);
+		}
 	}
 
 	/**

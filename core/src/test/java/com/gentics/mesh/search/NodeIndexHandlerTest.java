@@ -10,13 +10,11 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.search.impl.DummySearchProvider;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 public class NodeIndexHandlerTest extends AbstractIsolatedBasicDBTest {
 
 	protected DummySearchProvider searchProvider;
 
-	private NodeIndexHandler handler;
 
 	@Test
 	public void testReindexAll() throws Exception {
@@ -24,7 +22,7 @@ public class NodeIndexHandlerTest extends AbstractIsolatedBasicDBTest {
 			assertThat(meshRoot().getNodeRoot().findAll()).as("Node list").isNotEmpty();
 			searchProvider.reset();
 			assertEquals("Initially no store event should have been recorded.", 0, searchProvider.getStoreEvents().size());
-			handler.reindexAll().await();
+			meshDagger.nodeIndexHandler().reindexAll().await();
 			assertTrue("We expected to see more than one store event.", searchProvider.getStoreEvents().size() > 1);
 		}
 

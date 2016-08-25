@@ -8,9 +8,9 @@ import java.util.Arrays;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.parameter.impl.LinkType;
 
 import rx.Single;
@@ -34,7 +34,7 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 					if (project == null) {
 						project = parentNode.getProject();
 					}
-					stringField.setString(WebRootLinkReplacer.getInstance().replace(ac.getRelease(null).getUuid(),
+					stringField.setString(MeshCore.get().webRootLinkReplacer().replace(ac.getRelease(null).getUuid(),
 							ContainerType.forVersion(ac.getVersioningParameters().getVersion()), stringField.getString(),
 							ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
 				}

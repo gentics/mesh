@@ -2,7 +2,6 @@ package com.gentics.mesh.core.rest.schema.impl;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;

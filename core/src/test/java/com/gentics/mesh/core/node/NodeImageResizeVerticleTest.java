@@ -27,7 +27,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
@@ -39,12 +38,10 @@ import io.vertx.core.buffer.Buffer;
 
 public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeVerticle nodeVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(nodeVerticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

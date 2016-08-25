@@ -14,7 +14,6 @@ import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
-import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 

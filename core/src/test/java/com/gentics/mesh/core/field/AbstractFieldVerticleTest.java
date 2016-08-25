@@ -15,7 +15,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
@@ -25,12 +24,10 @@ import io.vertx.core.AbstractVerticle;
 
 public abstract class AbstractFieldVerticleTest extends AbstractIsolatedRestVerticleTest implements FieldVerticleTestcases {
 
-	private NodeVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

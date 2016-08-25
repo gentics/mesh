@@ -10,7 +10,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -36,12 +35,11 @@ import com.gentics.mesh.util.UUIDUtil;
 
 public class RestModelTest extends AbstractDBTest {
 
-	private ServerSchemaStorage schemaStorage;
 
 	@Test
 	public void testNodeResponse() throws JsonParseException, JsonMappingException, IOException {
 
-		schemaStorage.addSchema(getDummySchema());
+		meshDagger.serverSchemaStorage().addSchema(getDummySchema());
 		NodeResponse response = new NodeResponse();
 		StringField stringField = new StringFieldImpl();
 		stringField.setString("some text");

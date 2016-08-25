@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.eventbus;
 import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.etc.RouterStorage;
@@ -10,12 +11,12 @@ import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
+@Singleton
 public class EventbusVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(EventbusVerticle.class);
@@ -23,6 +24,10 @@ public class EventbusVerticle extends AbstractCoreApiVerticle {
 	@Inject
 	public EventbusVerticle(RouterStorage routerStorage) {
 		super("eventbus", routerStorage);
+	}
+
+	public EventbusVerticle() {
+		super("eventbus", null);
 	}
 
 	public String getDescription() {
@@ -42,11 +47,11 @@ public class EventbusVerticle extends AbstractCoreApiVerticle {
 			BridgeOptions bridgeOptions = new BridgeOptions();
 			bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
 			bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
-			//		handler.bridge(bridgeOptions);
+			// handler.bridge(bridgeOptions);
 			handler.bridge(bridgeOptions, event -> {
-				//	if (event.type() == BridgeEventType.SOCKET_CREATED) {
-				//		log.info("A socket was created");
-				//	}
+				// if (event.type() == BridgeEventType.SOCKET_CREATED) {
+				// log.info("A socket was created");
+				// }
 				event.complete(true);
 			});
 		}

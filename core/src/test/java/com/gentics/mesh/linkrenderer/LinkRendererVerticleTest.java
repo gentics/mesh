@@ -9,7 +9,6 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -24,12 +23,10 @@ import io.vertx.core.json.JsonObject;
  */
 public class LinkRendererVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private UtilityVerticle utilityVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(utilityVerticle);
+		list.add(meshDagger.utilityVerticle());
 		return list;
 	}
 

@@ -26,7 +26,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
@@ -35,12 +34,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private SchemaVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.schemaVerticle());
 		return list;
 	}
 

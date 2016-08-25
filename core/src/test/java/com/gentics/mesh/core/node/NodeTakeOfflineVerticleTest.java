@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -30,12 +29,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

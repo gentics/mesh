@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.node.NodeVerticleTest;
-import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.AbstractVerticle;
@@ -26,12 +25,10 @@ public class MeshRestAPITest extends AbstractIsolatedRestVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
-	private UserVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.userVerticle());
 		return list;
 	}
 

@@ -12,7 +12,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -22,13 +21,11 @@ import io.vertx.core.AbstractVerticle;
 
 public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	private ProjectVerticle projectVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(searchVerticle);
-		list.add(projectVerticle);
+		list.add(meshDagger.searchVerticle());
+		list.add(meshDagger.projectVerticle());
 		return list;
 	}
 	

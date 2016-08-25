@@ -5,8 +5,6 @@ import java.util.List;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 

@@ -3,13 +3,14 @@ package com.gentics.mesh.core.verticle.webroot;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.Endpoint;
-
+@Singleton
 public class WebRootVerticle extends AbstractProjectRestVerticle {
 
 	private WebRootHandler handler;

@@ -15,7 +15,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -28,12 +27,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaVerticleETagTest extends AbstractETagTest {
 
-	private MicroschemaVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.microschemaVerticle());
 		return list;
 	}
 
@@ -65,7 +62,8 @@ public class MicroschemaVerticleETagTest extends AbstractETagTest {
 			assertThat(expect304(request, etag, true)).contains(etag);
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertThat(expect304(getClient().findMicroschemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(true)), etag, true)).contains(etag);
+			assertThat(expect304(getClient().findMicroschemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(true)), etag, true))
+					.contains(etag);
 
 			// Assert that adding bogus query parameters will not affect the etag
 			expect304(getClient().findMicroschemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);

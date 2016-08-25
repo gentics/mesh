@@ -22,7 +22,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -35,12 +34,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeVerticleETagTest extends AbstractETagTest {
 
-	private NodeVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

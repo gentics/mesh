@@ -23,9 +23,6 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
@@ -33,18 +30,12 @@ import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private SchemaVerticle schemaVerticle;
-
-	private ProjectMicroschemaVerticle projectMicroschemaVerticle;
-
-	private ProjectVerticle projectVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(schemaVerticle);
-		list.add(projectMicroschemaVerticle);
-		list.add(projectVerticle);
+		list.add(meshDagger.schemaVerticle());
+		list.add(meshDagger.projectMicroschemaVerticle());
+		list.add(meshDagger.projectVerticle());
 		return list;
 	}
 

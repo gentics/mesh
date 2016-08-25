@@ -26,7 +26,6 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.I18NUtil;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -55,6 +54,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -599,7 +599,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		ServerSchemaStorage.getInstance().clear();
+		MeshCore.get().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);
 	}
 

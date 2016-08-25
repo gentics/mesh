@@ -14,7 +14,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -27,12 +26,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class ProjectVerticleETagTest extends AbstractETagTest {
 
-	private ProjectVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.projectVerticle());
 		return list;
 	}
 

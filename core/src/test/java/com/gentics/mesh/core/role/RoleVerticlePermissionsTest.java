@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
-import com.gentics.mesh.core.verticle.role.RoleVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
@@ -27,12 +26,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTest {
 
-	private RoleVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.roleVerticle());
 		return list;
 	}
 

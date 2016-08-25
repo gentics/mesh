@@ -14,11 +14,11 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
@@ -70,14 +70,14 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Schema getSchema() {
-		Schema schema = ServerSchemaStorage.getInstance().getSchema(getName(), getVersion());
+		Schema schema = MeshCore.get().serverSchemaStorage().getSchema(getName(), getVersion());
 		if (schema == null) {
 			try {
 				schema = JsonUtil.readValue(getJson(), SchemaModel.class);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			ServerSchemaStorage.getInstance().addSchema(schema);
+			MeshCore.get().serverSchemaStorage().addSchema(schema);
 		}
 		return schema;
 
@@ -124,8 +124,8 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public void setSchema(Schema schema) {
-		ServerSchemaStorage.getInstance().removeSchema(schema.getName(), schema.getVersion());
-		ServerSchemaStorage.getInstance().addSchema(schema);
+		MeshCore.get().serverSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
+		MeshCore.get().serverSchemaStorage().addSchema(schema);
 		String json = JsonUtil.toJson(schema);
 		setJson(json);
 		setProperty(VERSION_PROPERTY_KEY, schema.getVersion());

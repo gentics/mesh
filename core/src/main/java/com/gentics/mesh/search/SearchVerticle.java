@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -36,9 +37,9 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.IndexHandler;
 
-import io.vertx.ext.web.handler.AuthHandler;
 import rx.functions.Func0;
 
+@Singleton
 public class SearchVerticle extends AbstractCoreApiVerticle {
 
 	private SearchRestHandler searchHandler;
@@ -54,6 +55,10 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		this.searchHandler = searchHandler;
 		this.registry = registry;
 		this.boot = boot;
+	}
+
+	public SearchVerticle() {
+		super("search", null);
 	}
 
 	@Override

@@ -37,6 +37,10 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 
 	private TagCrudHandler tagCrudHandler;
 
+	public TagFamilyVerticle() {
+		super("tagFamilies", null, null);
+	}
+
 	@Inject
 	public TagFamilyVerticle(BootstrapInitializer boot, RouterStorage routerStorage, TagCrudHandler tagCrudHandler,
 			TagFamilyCrudHandler tagFamilyCrudHandler) {

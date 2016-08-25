@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import java.nio.charset.Charset;
-
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -13,8 +11,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
-import com.google.common.hash.Hashing;
-
 import rx.Single;
 
 /**

@@ -37,7 +37,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -58,6 +57,7 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.json.MeshJsonException;
 
 import io.vertx.core.json.JsonObject;
@@ -246,7 +246,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		schema.addField(FieldUtil.createStringFieldSchema("stringfield"));
 		micronode.getSchemaContainerVersion().setSchema(schema);
 		InternalActionContext ac = getMockedInternalActionContext();
-		ServerSchemaStorage.getInstance().clear();
+		MeshCore.get().serverSchemaStorage().clear();
 
 		FieldMap restFields = new FieldMapImpl();
 		restFields.put("stringfield", new StringFieldImpl().setString("test"));

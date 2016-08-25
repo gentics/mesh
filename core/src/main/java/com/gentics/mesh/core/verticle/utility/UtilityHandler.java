@@ -5,8 +5,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 
@@ -35,7 +35,7 @@ public class UtilityHandler extends AbstractHandler {
 				projectName = "project";
 			}
 
-			return Single.just(WebRootLinkReplacer.getInstance().replace(null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(),
+			return Single.just(MeshCore.get().webRootLinkReplacer().replace(null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(),
 					projectName, new NodeParameters(ac).getLanguageList()));
 		}).subscribe(body -> rc.response().putHeader("Content-Type", "text/plain").setStatusCode(OK.code()).end(body), ac::fail);
 	}

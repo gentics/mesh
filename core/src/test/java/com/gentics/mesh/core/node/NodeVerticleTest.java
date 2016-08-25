@@ -45,11 +45,9 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -59,7 +57,7 @@ import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -78,14 +76,10 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
-	private NodeVerticle verticle;
-
-	private NodeMigrationHandler nodeMigrationHandler;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 
@@ -184,7 +178,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateMultiple() {
-		//TODO migrate test to performance tests
+		// TODO migrate test to performance tests
 		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
@@ -904,7 +898,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		}
 
 		validateDeletion(set, null);
-//		call(() -> getClient().deleteNode(PROJECT_NAME, uuid));
+		// call(() -> getClient().deleteNode(PROJECT_NAME, uuid));
 
 	}
 
@@ -1172,7 +1166,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField(null);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			ServerSchemaStorage.getInstance().clear();
+			MeshCore.get().serverSchemaStorage().clear();
 
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
 					new NodeParameters().setResolveLinks(LinkType.FULL), new VersioningParameters().draft()));
@@ -1381,14 +1375,14 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		request.setVersion(new VersionReference(null, "0.1"));
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 
-		// 3. Invoke update 
+		// 3. Invoke update
 		NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, uuid, request, new NodeParameters().setLanguages("en", "de")));
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
 		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("1.1").hasStringField("name", newName)
 				.hasStringField("title", "Concorde english title");
 
-		//5. Assert graph changes
+		// 5. Assert graph changes
 		try (NoTx noTx = db.noTx()) {
 			node = content("concorde");
 			node.reload();
@@ -1619,7 +1613,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 3. migrate nodes
-			nodeMigrationHandler.migrateNodes(newRelease).await();
+			meshDagger.nodeMigrationHandler().migrateNodes(newRelease).await();
 			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(initialRelease.getUuid())));
 			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(newRelease.getUuid())));
 
@@ -1650,7 +1644,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 4. migrate nodes
-			nodeMigrationHandler.migrateNodes(newRelease).await();
+			meshDagger.nodeMigrationHandler().migrateNodes(newRelease).await();
 			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(initialRelease.getUuid())));
 			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(newRelease.getUuid())));
 
@@ -1694,7 +1688,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			update.setLanguage("de");
 			update.getFields().put("name", FieldUtil.createStringField("2015"));
 			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "name", "2015");
-			//TODO also assert message properties
+			// TODO also assert message properties
 		}
 	}
 

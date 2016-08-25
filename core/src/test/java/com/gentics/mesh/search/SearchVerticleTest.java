@@ -26,14 +26,14 @@ import io.vertx.core.AbstractVerticle;
 
 public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
-	private NodeIndexHandler nodeIndexHandler;
-
-	private IndexHandlerRegistry registry;
+//	private NodeIndexHandler nodeIndexHandler;
+//
+//	private IndexHandlerRegistry registry;
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(searchVerticle);
+		list.add(meshDagger.searchVerticle());
 		return list;
 	}
 
@@ -86,7 +86,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 		assertNotNull("The user document should be stored within the index since we invoked a full index but it could not be found.", map);
 		assertEquals(db.noTx(() -> user().getUuid()), map.get("uuid"));
 
-		for (IndexHandler handler : registry.getHandlers()) {
+		for (IndexHandler handler : meshDagger.indexHandlerRegistry().getHandlers()) {
 			handler.clearIndex().await();
 		}
 

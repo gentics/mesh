@@ -14,7 +14,6 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -25,15 +24,11 @@ import io.vertx.core.AbstractVerticle;
 
 public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NavRootVerticle navRootVerticle;
-
-	private NodeVerticle nodeVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(navRootVerticle);
-		list.add(nodeVerticle);
+		list.add(meshDagger.navRootVerticle());
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

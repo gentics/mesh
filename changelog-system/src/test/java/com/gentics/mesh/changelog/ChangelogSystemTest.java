@@ -10,7 +10,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -26,9 +25,6 @@ import com.gentics.mesh.changelog.changes.Change_424FA7436B6541269E6CE90C8C3D812
 import com.gentics.mesh.changelog.changes.Change_424FA7436B6541269E6CE90C8C3D812D_Failing;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.tinkerpop.blueprints.Vertex;
-
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 

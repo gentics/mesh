@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
@@ -17,6 +18,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * The admin verticle provides core administration rest endpoints.
  */
+@Singleton
 public class AdminVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminVerticle.class);
@@ -24,14 +26,18 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	private AdminHandler handler;
 
 	@Inject
-	public AdminVerticle(RouterStorage routerStorage) {
+	public AdminVerticle(RouterStorage routerStorage, AdminHandler adminHandler) {
 		super("admin", routerStorage);
-		this.handler = handler;
+		this.handler = adminHandler;
+	}
+
+	public AdminVerticle() {
+		super("admin", null);
 	}
 
 	@Override
 	public String getDescription() {
-		//TODO what is a admin permission?
+		// TODO what is a admin permission?
 		return "Collection of administrative endpoints which usually require admin permission";
 	}
 
@@ -41,10 +47,10 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		addMigrationStatusHandler();
 
 		// TODO secure handlers below
-		//		addBackupHandler();
-		//		addRestoreHandler();
-		//		addImportHandler();
-		//		addExportHandler();
+		// addBackupHandler();
+		// addRestoreHandler();
+		// addImportHandler();
+		// addExportHandler();
 		// addVerticleHandler();
 		// addServiceHandler();
 

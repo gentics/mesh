@@ -35,7 +35,6 @@ import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.ProjectSearchVerticle;
@@ -155,8 +154,8 @@ public class RAMLGenerator {
 
 	private void initVerticle(AbstractWebVerticle verticle) throws Exception {
 		Mockito.when(verticle.getRouter()).thenReturn(Router.router(Vertx.vertx()));
-		MeshSpringConfiguration mockConfig = Mockito.mock(MeshSpringConfiguration.class);
-		Mockito.when(verticle.springConfig).thenReturn(mockConfig);
+//		MeshSpringConfiguration mockConfig = Mockito.mock(MeshSpringConfiguration.class);
+//		Mockito.when(verticle.springConfig).thenReturn(mockConfig);
 		// Router mockRouter = Mockito.mock(Router.class);
 		// Mockito.when(verticle.getRouter()).thenReturn(mockRouter);
 		// NodeCrudHandler mockHandler = Mockito.mock(NodeCrudHandler.class);

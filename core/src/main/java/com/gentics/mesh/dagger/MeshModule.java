@@ -78,7 +78,6 @@ public class MeshModule {
 	@Provides
 	@Singleton
 	public static Database database() {
-		System.out.println("ZOP!!");
 		Database database = databaseService().getDatabase();
 		if (database == null) {
 			String message = "No database provider could be found.";

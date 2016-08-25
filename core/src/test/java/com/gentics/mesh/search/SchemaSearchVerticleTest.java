@@ -17,9 +17,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -31,18 +28,12 @@ import io.vertx.core.DeploymentOptions;
 
 public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	private SchemaVerticle schemaVerticle;
-
-	private EventbusVerticle eventbusVerticle;
-
-	private NodeMigrationVerticle nodeMigrationVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(searchVerticle);
-		list.add(schemaVerticle);
-		list.add(eventbusVerticle);
+		list.add(meshDagger.searchVerticle());
+		list.add(meshDagger.schemaVerticle());
+		list.add(meshDagger.eventbusVerticle());
 		return list;
 	}
 
@@ -52,12 +43,12 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		super.setupVerticleTest();
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
-		vertx.deployVerticle(nodeMigrationVerticle, options);
+		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);
 	}
 
 	@After
 	public void setopWorkerVerticle() throws Exception {
-		nodeMigrationVerticle.stop();
+		meshDagger.nodeMigrationVerticle().stop();
 	}
 
 	@Test
@@ -66,7 +57,8 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 			fullIndex();
 		}
 
-		MeshResponse<SchemaListResponse> future = getClient().searchSchemas(getSimpleQuery("folder"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<SchemaListResponse> future = getClient().searchSchemas(getSimpleQuery("folder"), new PagingParameters().setPage(1).setPerPage(2))
+				.invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
@@ -93,8 +85,8 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		try (NoTx noTx = db.noTx()) {
 			MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		}
-		MeshResponse<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName),
-				new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<SchemaListResponse> future = getClient()
+				.searchSchemas(getSimpleTermQuery("name", newName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
@@ -107,8 +99,8 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		final String schemaName = "newschemaname";
 		Schema schema = createSchema(schemaName);
 
-		MeshResponse<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
-				new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<SchemaListResponse> future = getClient()
+				.searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(1, future.result().getData().size());
@@ -138,8 +130,8 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		failingLatch(latch);
 
 		// 4. Search for the original schema
-		MeshResponse<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
-				new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<SchemaListResponse> future = getClient()
+				.searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals("The schema with the old name {" + schemaName + "} was found but it should not have been since we updated it.", 0,

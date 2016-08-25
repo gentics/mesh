@@ -6,7 +6,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;

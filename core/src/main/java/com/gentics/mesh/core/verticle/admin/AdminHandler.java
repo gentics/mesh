@@ -12,11 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.dagger.MeshModule;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.shareddata.LocalMap;
@@ -26,18 +23,16 @@ import rx.Single;
 public class AdminHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
-	
+
 	private Database db;
 
 	public void handleStatus(InternalActionContext ac) {
 		ac.send(message(ac, "status_ready"), OK);
 	}
 
-	
 	@Inject
-	public AdminHandler(Database db, MeshModule springConfiguration, BootstrapInitializer boot, RouterStorage routerStorage) {
+	public AdminHandler(Database db) {
 		this.db = db;
-		
 	}
 
 	/**

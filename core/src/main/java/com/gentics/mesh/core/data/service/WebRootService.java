@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
@@ -16,9 +19,14 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
+@Singleton
 public class WebRootService {
 
 	private static Logger log = LoggerFactory.getLogger(WebRootService.class);
+
+	@Inject
+	public WebRootService() {
+	}
 
 	/**
 	 * Find the element that corresponds to the given project webroot path.
@@ -33,7 +41,7 @@ public class WebRootService {
 		Path nodePath = new Path();
 		nodePath.setTargetPath(path);
 
-		// Handle path to project root (baseNode) 
+		// Handle path to project root (baseNode)
 		if ("/".equals(path) || path.isEmpty()) {
 			nodePath.addSegment(new PathSegment(baseNode, null, null));
 			return Single.just(nodePath);
@@ -48,8 +56,8 @@ public class WebRootService {
 		stack.addAll(list);
 
 		// Traverse the graph and buildup the result path while doing so
-		Single<Path> obsNode = baseNode.resolvePath(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
-				nodePath, stack);
+		Single<Path> obsNode = baseNode.resolvePath(ac.getRelease(null).getUuid(),
+				ContainerType.forVersion(ac.getVersioningParameters().getVersion()), nodePath, stack);
 		return obsNode;
 	}
 

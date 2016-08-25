@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.search.index.IndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -30,27 +29,23 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchVerticleTest.class);
 
-	protected SearchVerticle searchVerticle;
-
-	protected ProjectSearchVerticle projectSearchVerticle;
-
-	protected SearchProvider searchProvider;
-
-	private IndexHandlerRegistry registry;
-
-	private NodeIndexHandler nodeIndexHandler;
+	// protected SearchProvider searchProvider;
+	//
+	// private IndexHandlerRegistry registry;
+	//
+	// private NodeIndexHandler nodeIndexHandler;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
 		super.setupVerticleTest();
-		for (IndexHandler handler : registry.getHandlers()) {
+		for (IndexHandler handler : meshDagger.indexHandlerRegistry().getHandlers()) {
 			handler.init().await();
 		}
 	}
 
 	@After
 	public void resetElasticSearch() {
-		//		searchProvider.reset();
+		// searchProvider.reset();
 		searchProvider.clear();
 	}
 
@@ -111,11 +106,11 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 				String type = version.getName() + "-" + version.getVersion();
 				String drafIndex = "node-" + project.getUuid() + "-" + release.getUuid() + "-draft";
 				log.debug("Creating schema mapping for index {" + drafIndex + "}");
-				nodeIndexHandler.updateNodeIndexMapping(drafIndex, type, version.getSchema()).await();
+				meshDagger.nodeIndexHandler().updateNodeIndexMapping(drafIndex, type, version.getSchema()).await();
 
 				String publishIndex = "node-" + project.getUuid() + "-" + release.getUuid() + "-published";
 				log.debug("Creating schema mapping for index {" + publishIndex + "}");
-				nodeIndexHandler.updateNodeIndexMapping(publishIndex, type, version.getSchema()).await();
+				meshDagger.nodeIndexHandler().updateNodeIndexMapping(publishIndex, type, version.getSchema()).await();
 			}
 		}
 

@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.lang.management.ManagementFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -30,6 +31,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Dedicated worker verticle which will handle schema and microschema migrations.
  */
+@Singleton
 public class NodeMigrationVerticle extends AbstractVerticle {
 
 	public final static String JMX_MBEAN_NAME = "com.gentics.mesh:type=NodeMigration";
@@ -38,7 +40,14 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 	protected NodeMigrationHandler nodeMigrationHandler;
 
-	public NodeMigrationVerticle(NodeMigrationHandler handler) {
+	private Database db;
+
+	private BootstrapInitializer boot;
+
+	@Inject
+	public NodeMigrationVerticle(Database db, BootstrapInitializer boot, NodeMigrationHandler handler) {
+		this.db = db;
+		this.boot = boot;
 		this.nodeMigrationHandler = handler;
 	}
 
@@ -59,16 +68,6 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 	public static final String TO_VERSION_UUID_HEADER = "toVersion";
 
 	private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-
-	private Database db;
-
-	private BootstrapInitializer boot;
-
-	@Inject
-	public NodeMigrationVerticle(Database db, BootstrapInitializer boot) {
-		this.db = db;
-		this.boot = boot;
-	}
 
 	@Override
 	public void start() throws Exception {
@@ -242,7 +241,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 			} else {
 				JsonObject msg = new JsonObject();
 				msg.put("type", "completed");
-				//TODO maybe a different address should be used
+				// TODO maybe a different address should be used
 				vertx.eventBus().publish(MESH_MIGRATION.toString(), msg);
 				message.reply(null);
 			}

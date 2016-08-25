@@ -1,7 +1,6 @@
 package com.gentics.mesh.rest.client.handler;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;

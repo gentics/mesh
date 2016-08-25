@@ -36,7 +36,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -47,12 +46,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	private TagFamilyVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.tagFamilyVerticle());
 		return list;
 	}
 
@@ -80,8 +77,8 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
 
-			MeshResponse<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid,
-					new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
+			MeshResponse<TagFamilyResponse> future = getClient()
+					.findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull("The response did not contain the expected role permission field value", future.result().getRolePerms());
@@ -144,7 +141,8 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 			List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(page, perPage)).invoke();
+				MeshResponse<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(page, perPage))
+						.invoke();
 				latchFor(tagPageFut);
 				assertSuccess(future);
 				restResponse = tagPageFut.result();

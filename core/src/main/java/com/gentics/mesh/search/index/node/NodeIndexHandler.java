@@ -16,7 +16,6 @@ import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;

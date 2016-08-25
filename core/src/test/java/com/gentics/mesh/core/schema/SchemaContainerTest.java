@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
@@ -32,8 +31,6 @@ import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
-
-	private ServerSchemaStorage schemaStorage;
 
 	@Test
 	@Override
@@ -94,9 +91,9 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testSchemaStorage() {
 		try (NoTx noTx = db.noTx()) {
-			schemaStorage.clear();
-			schemaStorage.init();
-			Schema schema = schemaStorage.getSchema("folder");
+			meshDagger.serverSchemaStorage().clear();
+			meshDagger.serverSchemaStorage().init();
+			Schema schema = meshDagger.serverSchemaStorage().getSchema("folder");
 			assertNotNull(schema);
 			assertEquals("folder", schema.getName());
 		}

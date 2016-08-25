@@ -31,6 +31,7 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 
 public class NumberFieldVerticleTest extends AbstractFieldVerticleTest {
+
 	private static final String FIELD_NAME = "numberField";
 
 	@Before

@@ -39,6 +39,7 @@ import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import io.vertx.ext.web.RoutingContext;
 
 public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
+
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {

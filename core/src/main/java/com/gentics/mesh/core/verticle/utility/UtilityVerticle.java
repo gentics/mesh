@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.utility;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.etc.RouterStorage;
@@ -11,6 +12,7 @@ import com.gentics.mesh.rest.Endpoint;
 /**
  * Verticle providing endpoints for various utilities.
  */
+@Singleton
 public class UtilityVerticle extends AbstractCoreApiVerticle {
 
 	private UtilityHandler utilityHandler;
@@ -19,6 +21,10 @@ public class UtilityVerticle extends AbstractCoreApiVerticle {
 	public UtilityVerticle(RouterStorage routerStorage, UtilityHandler utilityHandler) {
 		super("utilities", routerStorage);
 		this.utilityHandler = utilityHandler;
+	}
+
+	public UtilityVerticle() {
+		super("utilities", null);
 	}
 
 	@Override

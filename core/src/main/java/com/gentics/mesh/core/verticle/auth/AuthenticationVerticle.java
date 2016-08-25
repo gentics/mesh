@@ -13,8 +13,6 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
-import io.vertx.ext.web.handler.AuthHandler;
-
 @Singleton
 public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
@@ -24,6 +22,10 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 	public AuthenticationVerticle(RouterStorage routerStorage, JWTAuthRestHandler authRestHandler) {
 		super("auth", routerStorage);
 		this.authRestHandler = authRestHandler;
+	}
+
+	public AuthenticationVerticle() {
+		super("auth", null);
 	}
 
 	@Override

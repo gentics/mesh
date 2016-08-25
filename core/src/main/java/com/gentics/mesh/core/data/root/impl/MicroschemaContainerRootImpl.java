@@ -28,7 +28,6 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.dagger.MeshCore;
-import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 

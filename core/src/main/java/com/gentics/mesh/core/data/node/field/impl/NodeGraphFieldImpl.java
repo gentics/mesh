@@ -12,11 +12,11 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
@@ -53,7 +53,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			Node node = getNode();
 			nodeField.setUuid(node.getUuid());
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-				nodeField.setPath(WebRootLinkReplacer.getInstance()
+				nodeField.setPath(MeshCore.get().webRootLinkReplacer()
 						.resolve(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), node,
 								ac.getNodeParameters().getResolveLinks(), languageTags.toArray(new String[languageTags.size()]))
 						.toBlocking().value());

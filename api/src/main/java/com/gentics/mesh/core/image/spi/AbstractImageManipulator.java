@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
-
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 

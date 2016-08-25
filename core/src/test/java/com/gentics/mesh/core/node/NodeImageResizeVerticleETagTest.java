@@ -12,7 +12,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -23,12 +22,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeImageResizeVerticleETagTest extends AbstractETagTest {
 
-	private NodeVerticle nodeVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(nodeVerticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

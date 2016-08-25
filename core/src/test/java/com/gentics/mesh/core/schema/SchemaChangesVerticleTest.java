@@ -33,7 +33,6 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -45,6 +44,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -62,7 +62,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Schema request = container.getLatestVersion().getSchema();
 		request.setName(name);
 
-		ServerSchemaStorage.getInstance().clear();
+		MeshCore.get().serverSchemaStorage().clear();
 
 		MeshResponse<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), request).invoke();
 		latchFor(future);
@@ -144,7 +144,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaContainer schema = schemaContainer(originalSchemaName);
 		Schema request = schema.getLatestVersion().getSchema();
 
-		ServerSchemaStorage.getInstance().clear();
+		MeshCore.get().serverSchemaStorage().clear();
 
 		// Update name to folder to create a conflict
 		request.setName(name);
@@ -210,7 +210,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		schema.removeField("content");
 		schema.addField(FieldUtil.createNumberFieldSchema("content"));
 
-		ServerSchemaStorage.getInstance().clear();
+		MeshCore.get().serverSchemaStorage().clear();
 
 		// 3. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
@@ -528,7 +528,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Schema schema = container.getLatestVersion().getSchema();
 		assertEquals("The segment field name should be set", "filename", schema.getSegmentField());
 		schema.getFields().add(FieldUtil.createStringFieldSchema("extraname").setLabel("someLabel"));
-		ServerSchemaStorage.getInstance().clear();
+		MeshCore.get().serverSchemaStorage().clear();
 
 		// 2. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
@@ -584,7 +584,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		schema.removeField("content");
 
 		// Update the schema client side
-		ServerSchemaStorage.getInstance().clear();
+		MeshCore.get().serverSchemaStorage().clear();
 
 		// 2. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
@@ -619,7 +619,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaContainer container = schemaContainer("content");
 		Schema schema = container.getLatestVersion().getSchema();
 		schema.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
-		ServerSchemaStorage.getInstance().clear();
+		MeshCore.get().serverSchemaStorage().clear();
 
 		// 2. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());

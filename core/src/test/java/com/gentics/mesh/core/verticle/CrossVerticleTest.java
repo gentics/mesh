@@ -7,27 +7,18 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.AbstractVerticle;
 
 public class CrossVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private ProjectVerticle projectVerticle;
-
-	private TagFamilyVerticle tagFamilyVerticle;
-
-	private NodeVerticle nodeVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(projectVerticle);
-		list.add(tagFamilyVerticle);
-		list.add(nodeVerticle);
+		list.add(meshDagger.projectVerticle());
+		list.add(meshDagger.tagFamilyVerticle());
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

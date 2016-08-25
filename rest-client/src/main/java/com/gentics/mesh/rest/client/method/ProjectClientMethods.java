@@ -1,6 +1,5 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;

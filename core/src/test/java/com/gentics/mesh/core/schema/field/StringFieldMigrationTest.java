@@ -16,7 +16,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.util.DateUtils.fromISO8601;
-import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.script.ScriptException;

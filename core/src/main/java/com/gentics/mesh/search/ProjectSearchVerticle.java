@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -28,6 +29,7 @@ import rx.functions.Func0;
 /**
  * Verticle that adds REST endpoints for project specific search (for nodes, tags and tagFamilies)
  */
+@Singleton
 public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 
 	private SearchRestHandler searchHandler;

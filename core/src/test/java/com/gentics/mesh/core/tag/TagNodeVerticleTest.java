@@ -14,8 +14,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -25,13 +23,9 @@ import io.vertx.core.AbstractVerticle;
 
 public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private TagFamilyVerticle tagFamilyVerticle;
-
-	private NodeVerticle nodeVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
-		return new ArrayList<>(Arrays.asList(tagFamilyVerticle, nodeVerticle));
+		return new ArrayList<>(Arrays.asList(meshDagger.tagFamilyVerticle(), meshDagger.nodeVerticle()));
 	}
 
 	@Test

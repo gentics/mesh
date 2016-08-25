@@ -727,7 +727,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				ContainerType type = ContainerType.forVersion(versioiningParameters.getVersion());
 
 				// Path
-				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
+				WebRootLinkReplacer linkReplacer = MeshCore.get().webRootLinkReplacer();
 				String path = linkReplacer.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
 						restNode.getLanguage()).toBlocking().value();
 				restNode.setPath(path);
@@ -769,7 +769,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			reference.setDisplayName(current.getDisplayName(ac));
 
 			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
+				WebRootLinkReplacer linkReplacer = MeshCore.get().webRootLinkReplacer();
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
 						getProject().getName(), restNode.getLanguage()).toBlocking().value();
@@ -1716,7 +1716,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				String key = current.getUuid() + current.getDisplayName(ac);
 				keyBuilder.append(key);
 				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-					WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
+					WebRootLinkReplacer linkReplacer = MeshCore.get().webRootLinkReplacer();
 					String url = linkReplacer.resolve(release.getUuid(), type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
 							getProject().getName(), container.getLanguage().getLanguageTag()).toBlocking().value();
 					keyBuilder.append(url);
@@ -1729,7 +1729,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// webroot path & language paths
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 
-			WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
+			WebRootLinkReplacer linkReplacer = MeshCore.get().webRootLinkReplacer();
 			String path = linkReplacer.resolve(release.getUuid(), type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
 					container.getLanguage().getLanguageTag()).toBlocking().value();
 			keyBuilder.append(path);

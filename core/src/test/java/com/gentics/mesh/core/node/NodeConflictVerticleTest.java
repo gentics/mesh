@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.service.I18NUtil;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
@@ -35,6 +34,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -308,7 +308,7 @@ public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 		schema.addField(stringListFieldSchema);
 		schema.addField(micronodeFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		ServerSchemaStorage.getInstance().addSchema(schema);
+		MeshCore.get().serverSchemaStorage().addSchema(schema);
 	}
 
 	/**

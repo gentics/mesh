@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
@@ -12,6 +13,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.rest.Endpoint;
 
+@Singleton
 public class NavRootVerticle extends AbstractProjectRestVerticle {
 
 	private NavRootHandler handler;

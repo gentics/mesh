@@ -28,7 +28,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
@@ -39,19 +38,17 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 
-	//	@BeforeClass
-	//	public static void setupOnce() {
-	//		new RxDebugger().start();
-	//	}
+	// @BeforeClass
+	// public static void setupOnce() {
+	// new RxDebugger().start();
+	// }
 
 	/**
 	 * Folder /news/2015 is not published. A new node will be created in folder 2015. Publishing the created folder should fail since the parent folder
@@ -403,7 +400,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 		assertPublishStatus("Node should be offline.", nodeUuid, false);
 		assertPublishStatus("Node should be offline.", contentUuid, false);
 
-		// 3. Publish all nodes again 
+		// 3. Publish all nodes again
 		call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
 		assertPublishStatus("Node should be online again.", nodeUuid, true);
 		assertPublishStatus("Node should be online again.", contentUuid, true);
@@ -423,7 +420,7 @@ public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 		assertPublishStatus("Node should be offline.", nodeUuid, false);
 		assertPublishStatus("Node should be offline.", contentUuid, false);
 
-		// 3. Publish all nodes again 
+		// 3. Publish all nodes again
 		call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
 		assertPublishStatus("Node should be online again.", nodeUuid, true);
 		assertPublishStatus("Sub node should still be offline.", contentUuid, false);

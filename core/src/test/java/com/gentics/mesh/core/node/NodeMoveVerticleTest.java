@@ -22,11 +22,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
-import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
-import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.LinkType;
@@ -38,24 +33,14 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeVerticle nodeVerticle;
-
-	private ReleaseVerticle relaseVerticle;
-
-	private SchemaVerticle schemaVerticle;
-
-	private ProjectVerticle projectVerticle;
-
-	private ProjectSchemaVerticle projectSchemaVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(nodeVerticle);
-		list.add(relaseVerticle);
-		list.add(projectVerticle);
-		list.add(schemaVerticle);
-		list.add(projectSchemaVerticle);
+		list.add(meshDagger.nodeVerticle());
+		list.add(meshDagger.releaseVerticle());
+		list.add(meshDagger.projectVerticle());
+		list.add(meshDagger.schemaVerticle());
+		list.add(meshDagger.projectSchemaVerticle());
 		return list;
 	}
 
