@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang.StringUtils;
+import org.junit.Before;
 
 import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.Language;
@@ -66,6 +67,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	protected final static String KILLERSCRIPT = "function migrate(node, fieldname) {var System = Java.type('java.lang.System'); System.exit(0);}";
 
 	protected NodeMigrationHandler nodeMigrationHandler;
+
+	@Before
+	public void setupDeps() {
+		this.nodeMigrationHandler = meshDagger.nodeMigrationHandler();
+	}
 
 	/**
 	 * Generic method to test migration where a field has been removed from the schema/microschema
@@ -720,10 +726,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 *            data provider implementation
 	 * @param script
 	 *            migration script
-	 * @throws Throwable 
+	 * @throws Throwable
 	 */
-	protected void invalidMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script)
-			throws Throwable {
+	protected void invalidMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws Throwable {
 		try {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 				invalidMicroschemaMigrationScript(creator, dataProvider, script);
