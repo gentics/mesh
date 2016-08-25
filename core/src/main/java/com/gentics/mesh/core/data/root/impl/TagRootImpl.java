@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -16,6 +15,7 @@ import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -78,7 +78,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		addTag(tag);
 
 		// Add to global list of tags
-		TagRoot globalTagRoot = BootstrapInitializer.getBoot().tagRoot();
+		TagRoot globalTagRoot = MeshCore.get().boot().tagRoot();
 		if (this != globalTagRoot) {
 			globalTagRoot.addTag(tag);
 		}

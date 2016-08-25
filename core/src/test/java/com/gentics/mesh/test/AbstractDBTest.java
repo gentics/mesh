@@ -3,8 +3,6 @@ package com.gentics.mesh.test;
 import java.util.Map;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.DaggerInMemoryMeshDagger;
-import com.gentics.mesh.cli.InMemoryMeshDagger;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -21,14 +19,17 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshModule;
+import com.gentics.mesh.dagger.TestMeshComponent;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.demo.UserInfo;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
+import com.gentics.mesh.search.impl.DummySearchProvider;
+import com.gentics.mesh.test.dagger.MeshTestModule;
 import com.gentics.mesh.util.RestAssert;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -42,15 +43,17 @@ public abstract class AbstractDBTest {
 
 	private TestDataProvider dataProvider;
 
-	protected MeshSpringConfiguration springConfig;
+	protected MeshModule springConfig;
 
 	protected Database db;
 
-	protected DatabaseService databaseService;
-
 	protected RestAssert test = new RestAssert();
+	
+	protected TestMeshComponent meshDagger;
 
-	protected InMemoryMeshDagger meshDagger;
+	protected RouterStorage routerStorage;
+
+	protected DummySearchProvider searchProvider;
 
 	static {
 		// Use slf4j instead of jul
@@ -58,14 +61,17 @@ public abstract class AbstractDBTest {
 	}
 
 	public void setup() throws Exception {
-		SpringTestConfiguration.init();
-		meshDagger = DaggerInMemoryMeshDagger.builder().build();
+		MeshTestModule.init();
+		meshDagger = MeshCore.createTest();
 		dataProvider = meshDagger.testDataProvider();
+		routerStorage = meshDagger.routerStorage();
+		searchProvider = meshDagger.dummySearchProvider();
+		boot = meshDagger.boot();
+		db = meshDagger.database();
 	}
 
 	protected void resetDatabase() {
 		BootstrapInitializer.clearReferences();
-		Database db = databaseService.getDatabase();
 		db.clear();
 		DatabaseHelper helper = new DatabaseHelper(db);
 		helper.init();

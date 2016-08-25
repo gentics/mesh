@@ -5,28 +5,29 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.auth.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.ext.web.Cookie;
 
+@Singleton
 public class JWTAuthRestHandler extends AbstractAuthRestHandler {
 
 	public static final String TOKEN_COOKIE_KEY = "mesh.token";
 
-	private MeshSpringConfiguration springConfiguration;
+	private MeshAuthProvider provider;
 
 	@Inject
-	public JWTAuthRestHandler(Database db, MeshSpringConfiguration springConfiguration) {
+	public JWTAuthRestHandler(Database db, MeshAuthProvider provider) {
 		super(db);
-		this.springConfiguration = springConfiguration;
+		this.provider = provider;
 	}
 
 	@Override
@@ -61,11 +62,10 @@ public class JWTAuthRestHandler extends AbstractAuthRestHandler {
 	 * @return
 	 */
 	private MeshJWTAuthProvider getAuthProvider() {
-		MeshAuthProvider provider = springConfiguration.authProvider(null, null);
 		if (provider instanceof MeshJWTAuthProvider) {
 			return (MeshJWTAuthProvider) provider;
 		} else {
-			throw new IllegalStateException("AuthProvider must be an instance of MeshJWTAuthProvider when using JWT!");
+			throw new IllegalStateException("AuthProvider must be an instance of MeshJWTAuthProvider when using JWT! Got {" + provider + "}");
 		}
 	}
 }

@@ -42,8 +42,8 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParameters;
@@ -66,7 +66,7 @@ public class DemoDataProvider {
 
 	private Database db;
 
-	protected MeshSpringConfiguration springConfig;
+	protected MeshModule springConfig;
 
 	private MeshLocalClientImpl client;
 
@@ -79,7 +79,7 @@ public class DemoDataProvider {
 	private Map<String, RoleResponse> roles = new HashMap<>();
 	private Map<String, GroupResponse> groups = new HashMap<>();
 
-	public DemoDataProvider(Database database, MeshSpringConfiguration springConfig, MeshLocalClientImpl client) {
+	public DemoDataProvider(Database database, MeshModule springConfig, MeshLocalClientImpl client) {
 		this.db = database;
 		this.springConfig = springConfig;
 		this.client = client;

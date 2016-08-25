@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
@@ -26,8 +25,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	private BootstrapInitializer boot;
 
 	@Inject
-	public SchemaContainerIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
-		super(searchProvider, db, registry);
+	public SchemaContainerIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db) {
+		super(searchProvider, db);
 		this.boot = boot;
 		instance = this;
 	}

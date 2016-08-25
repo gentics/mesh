@@ -55,9 +55,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.demo.TestDataProvider;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -65,7 +63,6 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
-import com.gentics.mesh.search.impl.DummySearchProvider;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
@@ -87,15 +84,11 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	private MeshRestClient client;
 
-	private RouterStorage routerStorage;
-
-	protected DummySearchProvider searchProvider;
-
-	protected AuthenticationVerticle authenticationVerticle;
-
 	@Before
 	public void setupVerticleTest() throws Exception {
 		super.setup();
+
+		//TODO move dir creation to init of MeshTestModule
 		File uploadDir = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory());
 		FileUtils.deleteDirectory(uploadDir);
 		uploadDir.mkdirs();
@@ -168,7 +161,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	private List<AbstractVerticle> getVertices() {
 		List<AbstractVerticle> list = getAdditionalVertices();
-		list.add(authenticationVerticle);
+		list.add(meshDagger.authenticationVerticle());
 		return list;
 	}
 

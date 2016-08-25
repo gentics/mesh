@@ -18,6 +18,8 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.ext.web.handler.AuthHandler;
+
 public class GroupVerticle extends AbstractCoreApiVerticle {
 
 	private GroupCrudHandler crudHandler;

@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.dagger.MeshCore;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -59,7 +60,7 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 		}
 
 		// Handle Update / Create 
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		BootstrapInitializer boot = MeshCore.get().boot();
 		Node node = boot.nodeRoot().findByUuidSync(nodeField.getUuid());
 		if (node == null) {
 			// TODO We want to delete the field when the field has been explicitly set to null

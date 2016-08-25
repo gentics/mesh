@@ -7,17 +7,23 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CookieHandler;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.LoggerHandler;
+import io.vertx.ext.web.handler.SessionHandler;
+import io.vertx.ext.web.handler.UserSessionHandler;
 
 /**
  * Central storage for all vertx web request routers.
@@ -35,6 +41,7 @@ import io.vertx.ext.web.handler.LoggerHandler;
  * Project routers are automatically bound to all projects. This way only a single node verticle is needed to handle all project requests.
  * 
  */
+@Singleton
 public class RouterStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(RouterStorage.class);
@@ -50,12 +57,12 @@ public class RouterStorage {
 
 	private static RouterStorage instance;
 
-	private MeshSpringConfiguration springConfiguration;
-
 	@Inject
-	public RouterStorage() {
+	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler, UserSessionHandler userSessionHandler) {
+		System.out.println("Zap");
 		this.vertx = Mesh.vertx();
 		RouterStorage.instance = this;
+		initAPIRouter(corsHandler, bodyHandler, sessionHandler, userSessionHandler);
 	}
 
 	public static RouterStorage getIntance() {
@@ -67,7 +74,11 @@ public class RouterStorage {
 	 */
 	private Map<String, Router> coreRouters = new HashMap<>();
 
+	/**
+	 * Custom routers. (E.g.: /demo)
+	 */
 	private Map<String, Router> customRouters = new HashMap<>();
+
 	/**
 	 * Project routers are routers that handle project rest api endpoints. E.g: /api/v1/dummy, /api/v1/yourprojectname
 	 */
@@ -100,21 +111,21 @@ public class RouterStorage {
 	}
 
 	/**
-	 * Initialize the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like
+	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like
 	 * /api/v1/[groups|users|roles]
 	 */
-	private void initAPIRouter() {
+	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler, UserSessionHandler userSessionHandler) {
 		Router router = getAPIRouter();
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
-			router.route().handler(springConfiguration.corsHandler());
+			router.route().handler(corsHandler);
 		}
 		// TODO It would be good to have two body handler. One for fileuploads and one for post data handling
-		router.route().handler(springConfiguration.bodyHandler());
+		router.route().handler(bodyHandler);
 
 		router.route().handler(CookieHandler.create());
 		if (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod() == AuthenticationMethod.BASIC_AUTH) {
-			router.route().handler(springConfiguration.sessionHandler());
-			router.route().handler(springConfiguration.userSessionHandler(null, null));
+			router.route().handler(sessionHandler);
+			router.route().handler(userSessionHandler);
 		}
 	}
 
@@ -163,6 +174,9 @@ public class RouterStorage {
 		Router apiSubRouter = coreRouters.get(mountPoint);
 		if (apiSubRouter == null) {
 			apiSubRouter = Router.router(vertx);
+			if (log.isDebugEnabled()) {
+				log.debug("Creating subrouter for {" + mountPoint + "}");
+			}
 			getAPIRouter().mountSubRouter("/" + mountPoint, apiSubRouter);
 			coreRouters.put(mountPoint, apiSubRouter);
 		}

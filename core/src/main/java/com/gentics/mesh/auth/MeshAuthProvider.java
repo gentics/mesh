@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
@@ -32,10 +32,10 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	protected Database db;
 
-	private MeshSpringConfiguration springConfiguration;
+	private MeshModule springConfiguration;
 
 	@Inject
-	public MeshAuthProvider(MeshSpringConfiguration springConfiguration, Database database, BootstrapInitializer boot) {
+	public MeshAuthProvider(MeshModule springConfiguration, Database database, BootstrapInitializer boot) {
 		this.springConfiguration = springConfiguration;
 		this.db = database;
 		this.boot = boot;

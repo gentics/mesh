@@ -11,9 +11,11 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.etc.MeshCustomLoader;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 
 import io.vertx.core.MultiMap;
@@ -228,8 +230,8 @@ public class MeshImpl implements Mesh {
 	@Override
 	public void shutdown() throws Exception {
 		log.info("Mesh shutting down...");
-		MeshSpringConfiguration.getInstance().database().stop();
-		MeshSpringConfiguration.getInstance().searchProvider().stop();
+		MeshCore.get().database().stop();
+		MeshCore.get().searchProvider().stop();
 		getVertx().close();
 		MeshFactoryImpl.clear();
 		latch.countDown();

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.codehaus.jettison.json.JSONArray;
@@ -30,10 +29,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
@@ -95,12 +93,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private NodeGraphFieldContainerTransformator transformator = new NodeGraphFieldContainerTransformator();
 
-	private BootstrapInitializer boot;
 
 	@Inject
-	public NodeIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, BootstrapInitializer boot) {
-		super(searchProvider, db, registry);
-		this.boot = boot;
+	public NodeIndexHandler(SearchProvider searchProvider, Database db) {
+		super(searchProvider, db);
 		NodeIndexHandler.instance = this;
 	}
 
@@ -132,8 +128,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Set<String> getIndices() {
 		return db.noTx(() -> {
 			Set<String> indexNames = new HashSet<>();
-			BootstrapInitializer.getBoot().meshRoot().getProjectRoot().reload();
-			List<? extends Project> projects = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findAll();
+			MeshCore.get().boot().meshRoot().getProjectRoot().reload();
+			List<? extends Project> projects = MeshCore.get().boot().meshRoot().getProjectRoot().findAll();
 			projects.forEach((project) -> {
 				List<? extends Release> releases = project.getReleaseRoot().findAll();
 				releases.forEach((r) -> {
@@ -153,7 +149,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				return Collections
 						.singleton(getIndexName(project.getUuid(), ac.getRelease(null).getUuid(), ac.getVersioningParameters().getVersion()));
 			} else {
-				List<? extends Project> projects = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findAll();
+				List<? extends Project> projects = MeshCore.get().boot().meshRoot().getProjectRoot().findAll();
 				return projects.stream()
 						.map(p -> getIndexName(p.getUuid(), p.getLatestRelease().getUuid(), ac.getVersioningParameters().getVersion()))
 						.collect(Collectors.toSet());
@@ -188,7 +184,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	protected RootVertex<Node> getRootVertex() {
-		return boot.meshRoot().getNodeRoot();
+		return MeshCore.get().boot().meshRoot().getNodeRoot();
 	}
 
 	@Override
@@ -274,7 +270,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					log.debug("Stored node in index {" + indexName + "}");
 				}
 				return Completable.merge(obs).andThen(deleteObs).doOnCompleted(() -> {
-					MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+					MeshCore.get().searchProvider().refreshIndex();
 				});
 
 			}

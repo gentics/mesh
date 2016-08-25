@@ -43,7 +43,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -119,8 +119,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return vertex traversal
 	 */
 	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, ContainerType type, String permLabel) {
-		return out(getRootLabel()).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back()
-				.mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
+		return out(getRootLabel()).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back().mark()
+				.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();
 	}
 
@@ -162,10 +162,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	//TODO use schema container version instead of container
 	private Single<Node> createNode(InternalActionContext ac, Single<SchemaContainer> obsSchemaContainer) {
 
-		Database db = MeshSpringConfiguration.getInstance().database();
+		Database db = MeshCore.get().database();
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		BootstrapInitializer boot = MeshCore.get().boot();
 
 		return obsSchemaContainer.flatMap(schemaContainer -> {
 
@@ -214,7 +214,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
 
-		Database db = MeshSpringConfiguration.getInstance().database();
+		Database db = MeshCore.get().database();
 
 		return db.noTx(() -> {
 

@@ -17,6 +17,8 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.ext.web.handler.AuthHandler;
+
 public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private RoleCrudHandler crudHandler;

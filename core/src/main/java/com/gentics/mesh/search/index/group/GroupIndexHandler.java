@@ -3,34 +3,26 @@ package com.gentics.mesh.search.index.group;
 import java.util.Collections;
 import java.util.Set;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import javax.inject.Inject;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
-	private static GroupIndexHandler instance;
-
 	private final static Set<String> indices = Collections.singleton("group");
 
 	private GroupTransformator transformator = new GroupTransformator();
 
-	private BootstrapInitializer boot;
-
-	public GroupIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
-		super(searchProvider, db, registry);
-		this.boot = boot;
-		instance = this;
-	}
-
-	public static GroupIndexHandler getInstance() {
-		return instance;
+	@Inject
+	public GroupIndexHandler(SearchProvider searchProvider, Database db) {
+		super(searchProvider, db);
 	}
 
 	public GroupTransformator getTransformator() {
@@ -64,7 +56,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Override
 	protected RootVertex<Group> getRootVertex() {
-		return boot.meshRoot().getGroupRoot();
+		return MeshCore.get().boot().meshRoot().getGroupRoot();
 	}
 
 }

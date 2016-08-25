@@ -3,38 +3,30 @@ package com.gentics.mesh.search.index.project;
 import java.util.Collections;
 import java.util.Set;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import javax.inject.Inject;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
-	private static ProjectIndexHandler instance;
-
 	private final static Set<String> indices = Collections.singleton(Project.TYPE);
 
 	private ProjectTransformator transformator = new ProjectTransformator();
 
-	private BootstrapInitializer boot;
-
-	public ProjectIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
-		super(searchProvider, db, registry);
-		this.boot = boot;
-		instance = this;
+	@Inject
+	public ProjectIndexHandler(SearchProvider searchProvider, Database db) {
+		super(searchProvider, db);
 	}
 
 	public ProjectTransformator getTransformator() {
 		return transformator;
-	}
-
-	public static ProjectIndexHandler getInstance() {
-		return instance;
 	}
 
 	@Override
@@ -64,7 +56,7 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	@Override
 	protected RootVertex<Project> getRootVertex() {
-		return boot.meshRoot().getProjectRoot();
+		return MeshCore.get().boot().meshRoot().getProjectRoot();
 	}
 
 }

@@ -10,7 +10,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Set;
 
@@ -29,13 +28,12 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
-import com.google.common.hash.Hashing;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import rx.Completable;
@@ -193,8 +191,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public Single<? extends Group> update(InternalActionContext ac) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		Database db = MeshCore.get().database();
+		BootstrapInitializer boot = MeshCore.get().boot();
 		return db.noTx(() -> {
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 

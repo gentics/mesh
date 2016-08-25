@@ -24,7 +24,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	private AdminHandler handler;
 
 	@Inject
-	public AdminVerticle(RouterStorage routerStorage, AdminHandler handler) {
+	public AdminVerticle(RouterStorage routerStorage) {
 		super("admin", routerStorage);
 		this.handler = handler;
 	}

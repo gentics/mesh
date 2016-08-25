@@ -28,8 +28,8 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -115,7 +115,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	@Override
 	public Single<SchemaContainer> create(InternalActionContext ac) {
 		MeshAuthUser requestUser = ac.getUser();
-		Database db = MeshSpringConfiguration.getInstance().database();
+		Database db = MeshCore.get().database();
 		return Single.defer(() -> {
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			requestModel.validate();

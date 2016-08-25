@@ -5,16 +5,23 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
+import io.vertx.ext.web.handler.AuthHandler;
+
+@Singleton
 public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	private AuthenticationRestHandler authRestHandler;
 
-	public AuthenticationVerticle(RouterStorage routerStorage, AuthenticationRestHandler authRestHandler) {
+	@Inject
+	public AuthenticationVerticle(RouterStorage routerStorage, JWTAuthRestHandler authRestHandler) {
 		super("auth", routerStorage);
 		this.authRestHandler = authRestHandler;
 	}
@@ -28,7 +35,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 	public void registerEndPoints() throws Exception {
 
 		// Only secure /me
-		getRouter().route("/me").handler(springConfig.authHandler(null, null));
+		getRouter().route("/me").handler(authHandler);
 
 		Endpoint meEndpoint = createEndpoint();
 		meEndpoint.path("/me");
@@ -53,7 +60,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 		});
 
 		// Only secure logout
-		getRouter().route("/logout").handler(springConfig.authHandler(null, null));
+		getRouter().route("/logout").handler(authHandler);
 
 		Endpoint logoutEndpoint = createEndpoint();
 		logoutEndpoint.path("/logout");

@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -115,7 +116,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		batch.addEntry(this, action);
 		addRelatedEntries(batch, action);

@@ -1,4 +1,4 @@
-package com.gentics.mesh.test;
+package com.gentics.mesh.test.dagger;
 
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
@@ -9,7 +9,7 @@ import dagger.Provides;
 
 
 @Module
-public class SpringElasticSearchTestConfiguration extends SpringTestConfiguration {
+public class MeshElasticSearchTestModule extends MeshTestModule {
 
 	@Provides
 	public SearchProvider testSearchProvider() {

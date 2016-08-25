@@ -70,6 +70,7 @@ import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
@@ -117,8 +118,6 @@ public class BootstrapInitializer {
 
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryWorkerVerticles = new HashMap<>();
 
-	private RouterStorage routerStorage;
-
 	private BCryptPasswordEncoder encoder;
 
 	private static MeshRoot meshRoot;
@@ -126,8 +125,7 @@ public class BootstrapInitializer {
 	public static boolean isInitialSetup = true;
 
 	@Inject
-	public BootstrapInitializer(Database db, IndexHandlerRegistry searchHandlerRegistry,
-			RouterStorage routerStorage, BCryptPasswordEncoder encoder) {
+	public BootstrapInitializer(Database db, IndexHandlerRegistry searchHandlerRegistry, BCryptPasswordEncoder encoder) {
 		System.out.println("MOPED");
 
 		instance = this;
@@ -135,7 +133,6 @@ public class BootstrapInitializer {
 
 		this.db = db;
 		this.searchHandlerRegistry = searchHandlerRegistry;
-		this.routerStorage = routerStorage;
 		this.schemaStorage = new ServerSchemaStorage(this);
 		this.encoder = encoder;
 
@@ -209,7 +206,7 @@ public class BootstrapInitializer {
 	 */
 	private void initProjects() throws InvalidNameException {
 		for (Project project : meshRoot().getProjectRoot().findAll()) {
-			routerStorage.addProjectRouter(project.getName());
+			MeshCore.get().routerStorage().addProjectRouter(project.getName());
 			if (log.isInfoEnabled()) {
 				log.info("Initalized project {" + project.getName() + "}");
 			}
@@ -386,10 +383,6 @@ public class BootstrapInitializer {
 			}
 		}
 
-	}
-
-	public static BootstrapInitializer getBoot() {
-		return instance;
 	}
 
 	/**

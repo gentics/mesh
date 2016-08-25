@@ -36,6 +36,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.IndexHandler;
 
+import io.vertx.ext.web.handler.AuthHandler;
 import rx.functions.Func0;
 
 public class SearchVerticle extends AbstractCoreApiVerticle {
@@ -47,8 +48,8 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public SearchVerticle(RouterStorage routerStorage, SearchRestHandler searchHandler,
-			IndexHandlerRegistry registry, BootstrapInitializer boot) {
+	public SearchVerticle(RouterStorage routerStorage, SearchRestHandler searchHandler, IndexHandlerRegistry registry,
+			BootstrapInitializer boot) {
 		super("search", routerStorage);
 		this.searchHandler = searchHandler;
 		this.registry = registry;

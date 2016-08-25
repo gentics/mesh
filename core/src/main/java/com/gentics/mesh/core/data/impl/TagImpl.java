@@ -18,7 +18,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -42,7 +41,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
@@ -99,12 +98,12 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public String getName() {
-		return getFieldContainer(BootstrapInitializer.getBoot().languageRoot().getTagDefaultLanguage()).getName();
+		return getFieldContainer(MeshCore.get().boot().languageRoot().getTagDefaultLanguage()).getName();
 	}
 
 	@Override
 	public void setName(String name) {
-		getOrCreateFieldContainer(BootstrapInitializer.getBoot().languageRoot().getTagDefaultLanguage()).setName(name);
+		getOrCreateFieldContainer(MeshCore.get().boot().languageRoot().getTagDefaultLanguage()).setName(name);
 	}
 
 	@Override
@@ -218,7 +217,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public Single<Tag> update(InternalActionContext ac) {
-		Database db = MeshSpringConfiguration.getInstance().database();
+		Database db = MeshCore.get().database();
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		return db.tx(() -> {
 			String newTagName = requestModel.getFields().getName();
@@ -245,7 +244,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		batch.addEntry(this, action, Arrays.asList(Tuple.tuple(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
 		addRelatedEntries(batch, action);

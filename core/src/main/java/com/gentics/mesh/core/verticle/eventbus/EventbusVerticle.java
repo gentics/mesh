@@ -2,12 +2,15 @@ package com.gentics.mesh.core.verticle.eventbus;
 
 import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 
+import javax.inject.Inject;
+
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
@@ -17,6 +20,7 @@ public class EventbusVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(EventbusVerticle.class);
 
+	@Inject
 	public EventbusVerticle(RouterStorage routerStorage) {
 		super("eventbus", routerStorage);
 	}

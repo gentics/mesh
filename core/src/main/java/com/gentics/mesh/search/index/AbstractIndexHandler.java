@@ -16,10 +16,9 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -35,10 +34,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected Database db;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db) {
 		this.searchProvider = searchProvider;
 		this.db = db;
-		registry.registerHandler(this);
 	}
 
 	/**
@@ -82,7 +80,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					if (log.isDebugEnabled()) {
 						log.debug("Stored object in index.");
 					}
-					MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+					MeshCore.get().searchProvider().refreshIndex();
 				});
 	}
 

@@ -5,15 +5,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import javax.inject.Inject;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
@@ -24,21 +25,11 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
-	private static TagIndexHandler instance;
-
 	private TagTransformator transformator = new TagTransformator();
 
-	private BootstrapInitializer boot;
-
-	public TagIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, BootstrapInitializer boot) {
-		super(searchProvider, db, registry);
-		this.boot = boot;
-		instance = this;
-
-	}
-
-	public static TagIndexHandler getInstance() {
-		return instance;
+	@Inject
+	public TagIndexHandler(SearchProvider searchProvider, Database db) {
+		super(searchProvider, db);
 	}
 
 	@Override
@@ -54,7 +45,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	@Override
 	public Set<String> getIndices() {
 		return db.noTx(() -> {
-			ProjectRoot projectRoot = BootstrapInitializer.getBoot().meshRoot().getProjectRoot();
+			ProjectRoot projectRoot = MeshCore.get().boot().meshRoot().getProjectRoot();
 			projectRoot.reload();
 			List<? extends Project> projects = projectRoot.findAll();
 			Set<String> indices = projects.stream().map(project -> getIndexName(project.getUuid())).collect(Collectors.toSet());
@@ -99,7 +90,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	@Override
 	protected RootVertex<Tag> getRootVertex() {
-		return boot.meshRoot().getTagRoot();
+		return MeshCore.get().boot().meshRoot().getTagRoot();
 	}
 
 }

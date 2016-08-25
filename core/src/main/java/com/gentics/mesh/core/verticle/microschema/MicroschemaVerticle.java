@@ -19,6 +19,8 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.ext.web.handler.AuthHandler;
+
 public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 
 	private MicroschemaCrudHandler crudHandler;
@@ -28,7 +30,7 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	@Inject
-	public MicroschemaVerticle(RouterStorage routerStorage, MicroschemaCrudHandler crudHandler) {
+	public MicroschemaVerticle(RouterStorage routerStorage, MicroschemaCrudHandler crudHandler, AuthHandler authHandler) {
 		super("microschemas", routerStorage);
 		this.crudHandler = crudHandler;
 	}

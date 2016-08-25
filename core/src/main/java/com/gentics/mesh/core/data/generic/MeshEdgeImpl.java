@@ -2,7 +2,8 @@ package com.gentics.mesh.core.data.generic;
 
 import com.gentics.ferma.annotation.GraphElement;
 import com.gentics.mesh.core.data.MeshEdge;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractEdgeFrame;
@@ -53,7 +54,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	@Override
 	public Edge getElement() {
 		//TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the transaction finishes
-		Element edge = ((WrappedEdge)Database.getThreadLocalGraph().getEdge(id)).getBaseElement();
+		Element edge = ((WrappedEdge) Database.getThreadLocalGraph().getEdge(id)).getBaseElement();
 
 		//Element edge = threadLocalElement.get();
 
@@ -70,7 +71,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	public void reload() {
-		MeshSpringConfiguration.getInstance().database().reload(this);
+		MeshCore.get().database().reload(this);
 	}
 
 }

@@ -2,8 +2,6 @@ package com.gentics.mesh.core.verticle.auth;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import javax.inject.Inject;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;

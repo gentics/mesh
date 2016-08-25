@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
@@ -84,7 +84,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
-				MeshSpringConfiguration.getInstance().database().createComposedIndexKey(getId(), vertex.getImpl().getId()));
+				MeshCore.get().database().createComposedIndexKey(getId(), vertex.getImpl().getId()));
 		return edges.iterator().hasNext();
 	}
 
@@ -137,9 +137,9 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public Single<? extends Role> update(InternalActionContext ac) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
-		Database db = MeshSpringConfiguration.getInstance().database();
+		Database db = MeshCore.get().database();
 
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		BootstrapInitializer boot = MeshCore.get().boot();
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflict
 			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName()).toBlocking().value();

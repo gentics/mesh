@@ -18,7 +18,6 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.elasticsearch.common.collect.Tuple;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -37,6 +36,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -69,7 +69,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				}
 				return db.tx(() -> {
 					// Create the batch first since we can't delete the container and access it later in batch creation
-					SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+					SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
 					SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 					node.deleteFromRelease(ac.getRelease(null), batch);
 					return batch;
@@ -98,7 +98,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 				// Create the batch first since we can't delete the container and access it later in batch creation
-				SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+				SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
 				SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
 				return batch.process().andThen(Single.just(null));

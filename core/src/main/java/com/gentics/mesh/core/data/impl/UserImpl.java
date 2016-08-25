@@ -15,7 +15,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.etc.MeshSpringConfiguration.getInstance;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -29,7 +28,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.BooleanUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -50,7 +48,7 @@ import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -286,7 +284,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			Vertex role = roleEdge.getVertex(Direction.IN);
 			// Find all permission edges between the found role and target vertex with the specified label
 			Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
-					MeshSpringConfiguration.getInstance().database().createComposedIndexKey(role.getId(), vertex.getImpl().getId()));
+					MeshCore.get().database().createComposedIndexKey(role.getId(), vertex.getImpl().getId()));
 			boolean foundPermEdge = edges.iterator().hasNext();
 			if (foundPermEdge) {
 				return true;
@@ -319,7 +317,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				return Single.just(perm);
 			}
 		}
-		Database db = MeshSpringConfiguration.getInstance().database();
+		Database db = MeshCore.get().database();
 		return db.asyncNoTx(() -> Single.just(hasPermission(vertex, permission)));
 	}
 
@@ -478,18 +476,18 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 */
 	@Override
 	public void setPassword(String password) {
-		setPasswordHash(getInstance().passwordEncoder().encode(password));
+		setPasswordHash(MeshCore.get().passwordEncoder().encode(password));
 	}
 
 	@Override
 	public Single<User> update(InternalActionContext ac) {
-		Database db = MeshSpringConfiguration.getInstance().database();
+		Database db = MeshCore.get().database();
 
 		try {
 			UserUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserUpdateRequest.class);
 			return db.tx(() -> {
 				if (shouldUpdate(requestModel.getUsername(), getUsername())) {
-					User conflictingUser = BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername());
+					User conflictingUser = MeshCore.get().boot().userRoot().findByUsername(requestModel.getUsername());
 					if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
 						throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 					}
@@ -509,7 +507,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				}
 
 				if (!isEmpty(requestModel.getPassword())) {
-					setPasswordHash(MeshSpringConfiguration.getInstance().passwordEncoder().encode(requestModel.getPassword()));
+					setPasswordHash(MeshCore.get().passwordEncoder().encode(requestModel.getPassword()));
 				}
 
 				// TODO use fillRest method instead
@@ -526,7 +524,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 						String referencedNodeUuid = basicReference.getUuid();
 						String projectName = basicReference.getProjectName();
 						/* TODO decide whether we need to check perms on the project as well */
-						Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName).toBlocking().value();
+						Project project = MeshCore.get().boot().projectRoot().findByName(projectName).toBlocking().value();
 						if (project == null) {
 							throw error(BAD_REQUEST, "project_not_found", projectName);
 						}

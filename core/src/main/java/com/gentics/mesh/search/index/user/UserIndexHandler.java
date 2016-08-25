@@ -4,38 +4,27 @@ import java.util.Collections;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
+@Singleton
 public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	private final static Set<String> indices = Collections.singleton(User.TYPE);
 
-	private static UserIndexHandler instance;
-
-	private UserTransformator transformator;
-
-	private BootstrapInitializer boot;
+	private UserTransformator transformator = new UserTransformator();
 
 	@Inject
-	public UserIndexHandler(UserTransformator transformator, BootstrapInitializer boot, SearchProvider searchProvider, Database db,
-			IndexHandlerRegistry registry) {
-		super(searchProvider, db, registry);
-		this.transformator = transformator;
-		this.boot = boot;
-		instance = this;
-	}
-
-	public static UserIndexHandler getInstance() {
-		return instance;
+	public UserIndexHandler(SearchProvider searchProvider, Database db) {
+		super(searchProvider, db);
 	}
 
 	public UserTransformator getTransformator() {
@@ -69,6 +58,6 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	@Override
 	protected RootVertex<User> getRootVertex() {
-		return boot.meshRoot().getUserRoot();
+		return MeshCore.get().boot().meshRoot().getUserRoot();
 	}
 }

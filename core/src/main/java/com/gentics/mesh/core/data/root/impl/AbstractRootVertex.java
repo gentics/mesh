@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -68,7 +68,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public Single<T> findByName(InternalActionContext ac, String name, GraphPermission perm) {
-		Database db = MeshSpringConfiguration.getInstance().database();
+		Database db = MeshCore.get().database();
 		reload();
 		return findByName(name).map(element -> {
 			if (element == null) {
@@ -98,13 +98,13 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	public T findByUuidSync(String uuid) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		//1. Find the element with given uuid within the whole graph
-		Iterator<Vertex> it = MeshSpringConfiguration.getInstance().database().getVertices(getPersistanceClass(), new String[] { "uuid" },
+		Iterator<Vertex> it = MeshCore.get().database().getVertices(getPersistanceClass(), new String[] { "uuid" },
 				new String[] { uuid });
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase(),
-					MeshSpringConfiguration.getInstance().database().createComposedIndexKey(getId(), potentialElement.getId()));
+					MeshCore.get().database().createComposedIndexKey(getId(), potentialElement.getId()));
 			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
 			}
@@ -157,7 +157,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public Single<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		Database db = MeshSpringConfiguration.getInstance().database();
+		Database db = MeshCore.get().database();
 		reload();
 		return findByUuid(uuid).map(element -> {
 			if (element == null) {
@@ -181,7 +181,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public T loadObjectByUuidSync(InternalActionContext ac, String uuid, GraphPermission perm) {
-		Database db = MeshSpringConfiguration.getInstance().database();
+		Database db = MeshCore.get().database();
 		reload();
 		T element = findByUuidSync(uuid);
 		if (element == null) {

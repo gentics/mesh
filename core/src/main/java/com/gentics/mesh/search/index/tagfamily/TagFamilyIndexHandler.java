@@ -7,15 +7,14 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
@@ -26,21 +25,11 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
-	private static TagFamilyIndexHandler instance;
-
 	private TagFamilyTransformator transformator = new TagFamilyTransformator();
 
-	private BootstrapInitializer boot;
-
 	@Inject
-	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, BootstrapInitializer boot) {
-		super(searchProvider, db, registry);
-		this.boot = boot;
-		instance = this;
-	}
-
-	public static TagFamilyIndexHandler getInstance() {
-		return instance;
+	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db) {
+		super(searchProvider, db);
 	}
 
 	public TagFamilyTransformator getTransformator() {
@@ -55,7 +44,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	@Override
 	public Set<String> getIndices() {
 		return db.noTx(() -> {
-			ProjectRoot root = BootstrapInitializer.getBoot().meshRoot().getProjectRoot();
+			ProjectRoot root = MeshCore.get().boot().meshRoot().getProjectRoot();
 			root.reload();
 			List<? extends Project> projects = root.findAll();
 			return projects.stream().map(project -> getIndexName(project.getUuid())).collect(Collectors.toSet());
@@ -99,7 +88,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	protected RootVertex<TagFamily> getRootVertex() {
-		return boot.meshRoot().getTagFamilyRoot();
+		return MeshCore.get().boot().meshRoot().getTagFamilyRoot();
 	}
 
 }

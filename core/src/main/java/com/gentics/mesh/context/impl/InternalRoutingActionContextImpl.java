@@ -9,11 +9,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.ETag;
@@ -191,7 +191,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	public Project getProject() {
 		if (project == null) {
 			String projectName = get(RouterStorage.PROJECT_CONTEXT_KEY);
-			project = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(projectName).toBlocking().value();
+			project = MeshCore.get().boot().meshRoot().getProjectRoot().findByName(projectName).toBlocking().value();
 		}
 		return project;
 	}

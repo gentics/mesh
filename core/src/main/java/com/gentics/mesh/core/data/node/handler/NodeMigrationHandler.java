@@ -17,7 +17,6 @@ import javax.inject.Inject;
 import javax.script.ScriptEngine;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -47,6 +46,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -113,7 +113,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		} catch (IOException e) {
 			return Completable.error(e);
 		}
-		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
@@ -232,7 +232,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return Completable.error(e);
 		}
 
-		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
@@ -335,7 +335,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
 		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
 
-		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		for (Node node : nodes) {
 			db.tx(() -> {

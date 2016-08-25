@@ -6,14 +6,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.search.index.IndexHandler;
+import com.gentics.mesh.search.index.group.GroupIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.project.ProjectIndexHandler;
+import com.gentics.mesh.search.index.role.RoleIndexHandler;
+import com.gentics.mesh.search.index.tag.TagIndexHandler;
+import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
+import com.gentics.mesh.search.index.user.UserIndexHandler;
 
 /**
  * Central location to register search index handlers.
  */
+@Singleton
 public class IndexHandlerRegistry {
 
 	private Map<String, IndexHandler> handlers = Collections.synchronizedMap(new HashMap<>());
@@ -21,8 +30,15 @@ public class IndexHandlerRegistry {
 	private static IndexHandlerRegistry instance;
 
 	@Inject
-	public IndexHandlerRegistry() {
+	public IndexHandlerRegistry(NodeIndexHandler nodeIndexHandler, UserIndexHandler userIndexHandler, GroupIndexHandler groupIndexHandler, RoleIndexHandler roleIndexHandler, ProjectIndexHandler projectIndexHandler, TagFamilyIndexHandler tagFamilyIndexHandler, TagIndexHandler tagIndexHandler) {
 		instance = this;
+		registerHandler(nodeIndexHandler);
+		registerHandler(userIndexHandler);
+		registerHandler(groupIndexHandler);
+		registerHandler(roleIndexHandler);
+		registerHandler(projectIndexHandler);
+		registerHandler(tagFamilyIndexHandler);
+		registerHandler(tagIndexHandler);
 	}
 
 	/**
@@ -70,7 +86,7 @@ public class IndexHandlerRegistry {
 	 */
 	public IndexHandler get(String key) {
 		if (!handlers.containsKey(key)) {
-			throw new NotImplementedException("Index type {" + key + "} is not implemented.");
+			throw new NotImplementedException("Index type {" + key + "} was not registered.");
 		}
 		return handlers.get(key);
 	}

@@ -30,7 +30,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Inject
-	public ReleaseVerticle(BootstrapInitializer boot, RouterStorage routerStorage, ReleaseCrudHandler crudHandler) {
+	public ReleaseVerticle(RouterStorage routerStorage, BootstrapInitializer boot, ReleaseCrudHandler crudHandler) {
 		super("releases", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}

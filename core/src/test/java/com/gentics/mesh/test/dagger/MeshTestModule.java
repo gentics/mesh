@@ -1,12 +1,11 @@
-package com.gentics.mesh.test;
+package com.gentics.mesh.test.dagger;
 
 import java.io.File;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
@@ -19,7 +18,7 @@ import dagger.Provides;
 
 @Singleton
 @Module
-public class SpringTestConfiguration extends MeshSpringConfiguration {
+public class MeshTestModule extends MeshModule {
 
 	@Provides
 	public DummySearchProvider dummySearchProvider() {

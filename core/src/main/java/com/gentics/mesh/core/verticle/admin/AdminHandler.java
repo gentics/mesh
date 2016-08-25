@@ -15,7 +15,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -35,7 +35,7 @@ public class AdminHandler extends AbstractHandler {
 
 	
 	@Inject
-	public AdminHandler(Database db, MeshSpringConfiguration springConfiguration, BootstrapInitializer boot, RouterStorage routerStorage) {
+	public AdminHandler(Database db, MeshModule springConfiguration, BootstrapInitializer boot, RouterStorage routerStorage) {
 		this.db = db;
 		
 	}

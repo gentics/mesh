@@ -30,6 +30,8 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.ext.web.handler.AuthHandler;
+
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */

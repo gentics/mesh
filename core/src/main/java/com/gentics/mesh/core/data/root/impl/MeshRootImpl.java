@@ -19,7 +19,6 @@ import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -35,6 +34,7 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -308,7 +308,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	@Override
 	public Single<? extends MeshVertex> resolvePathToElement(String pathToElement) {
-		MeshRoot root = BootstrapInitializer.getBoot().meshRoot();
+		MeshRoot root = MeshCore.get().boot().meshRoot();
 		if (StringUtils.isEmpty(pathToElement)) {
 			return Single.error(new Exception("Could not resolve path. The path must must not be empty or null."));
 		}

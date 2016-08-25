@@ -8,7 +8,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -35,7 +35,7 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 
 	@Override
 	public Database getDatabase() {
-		return MeshSpringConfiguration.getInstance().database();
+		return MeshCore.get().database();
 	}
 
 	@Override

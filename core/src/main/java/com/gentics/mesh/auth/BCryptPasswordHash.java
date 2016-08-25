@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.dagger.MeshModule;
 
 /**
  * Wrapper for a bcrypted password hash.
@@ -15,7 +15,7 @@ public class BCryptPasswordHash {
 
 	private String accountPasswordHash;
 
-	private MeshSpringConfiguration springConfiguration;
+	private MeshModule springConfiguration;
 
 	/**
 	 * Create a new bcrypt password hash.
@@ -23,7 +23,7 @@ public class BCryptPasswordHash {
 	 * @param passwordHash
 	 * @param securityConfig
 	 */
-	public BCryptPasswordHash(String passwordHash, MeshSpringConfiguration securityConfig) {
+	public BCryptPasswordHash(String passwordHash, MeshModule securityConfig) {
 		// TODO inject securityConfiguration
 		this.accountPasswordHash = passwordHash;
 		this.springConfiguration = securityConfig;

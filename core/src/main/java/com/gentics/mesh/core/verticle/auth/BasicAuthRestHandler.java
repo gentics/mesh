@@ -6,12 +6,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -20,16 +21,17 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
 
+@Singleton
 public class BasicAuthRestHandler extends AbstractAuthRestHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(BasicAuthRestHandler.class);
 
-	private MeshSpringConfiguration springConfiguration;
+	private MeshAuthProvider authProvider;
 
 	@Inject
-	public BasicAuthRestHandler(Database db, MeshSpringConfiguration springConfiguration) {
+	public BasicAuthRestHandler(Database db, MeshAuthProvider authProvider) {
 		super(db);
-		this.springConfiguration = springConfiguration;
+		this.authProvider = authProvider;
 	}
 
 	/**
@@ -43,7 +45,7 @@ public class BasicAuthRestHandler extends AbstractAuthRestHandler {
 			LoginRequest request = JsonUtil.readValue(ac.getBodyAsString(), LoginRequest.class);
 			// TODO fail on missing field
 			JsonObject authInfo = new JsonObject().put("username", request.getUsername()).put("password", request.getPassword());
-			springConfiguration.authProvider(null, null).authenticate(authInfo, rh -> {
+			authProvider.authenticate(authInfo, rh -> {
 				if (rh.failed()) {
 					throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
 				} else {

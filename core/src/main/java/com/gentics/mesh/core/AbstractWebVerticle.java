@@ -5,11 +5,12 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
@@ -34,6 +35,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.AuthHandler;
 
 /**
  * An abstract class that should be used when creating verticles which expose a http server. The verticle will automatically start a http server and add the
@@ -63,7 +65,8 @@ public abstract class AbstractWebVerticle extends AbstractVerticle {
 
 	protected RouterStorage routerStorage;
 
-	public MeshSpringConfiguration springConfig;
+	@Inject
+	public AuthHandler authHandler;
 
 	protected AbstractWebVerticle(String basePath, RouterStorage routerStorage) {
 		this.basePath = basePath;
@@ -81,11 +84,12 @@ public abstract class AbstractWebVerticle extends AbstractVerticle {
 		if (localRouter == null) {
 			throw new MeshConfigurationException("The local router was not setup correctly. Startup failed.");
 		}
+		int port = config().getInteger("port");
 		if (log.isInfoEnabled()) {
-			log.info("Starting http server..");
+			log.info("Starting http server on port {" + port + "}..");
 		}
 		HttpServerOptions options = new HttpServerOptions();
-		options.setPort(config().getInteger("port"));
+		options.setPort(port);
 		options.setCompressionSupported(true);
 		MeshOptions meshOptions = Mesh.mesh().getOptions();
 		HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
@@ -125,7 +129,7 @@ public abstract class AbstractWebVerticle extends AbstractVerticle {
 	 * Add a route which will secure all endpoints.
 	 */
 	protected void secureAll() {
-		getRouter().route("/*").handler(springConfig.authHandler(null, null));
+		getRouter().route("/*").handler(authHandler);
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package com.gentics.mesh.etc;
+package com.gentics.mesh.dagger;
 
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_HTTP_ONLY_FLAG;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_SECURE_FLAG;
@@ -19,14 +19,12 @@ import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.verticle.auth.BasicAuthRestHandler;
 import com.gentics.mesh.core.verticle.auth.JWTAuthRestHandler;
+import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
-import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.impl.DummySearchProvider;
-import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 import dagger.Module;
 import dagger.Provides;
@@ -50,25 +48,20 @@ import io.vertx.ext.web.sstore.SessionStore;
  * Main spring bean providing configuration class.
  */
 @Module
-public class MeshSpringConfiguration {
+public class MeshModule {
 
-	private static final Logger log = LoggerFactory.getLogger(MeshSpringConfiguration.class);
-
-	public static MeshSpringConfiguration instance;
-
-	public MeshSpringConfiguration() {
-		System.out.println("conf");
-		instance = this;
-	}
+	private static final Logger log = LoggerFactory.getLogger(MeshModule.class);
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
 	@Provides
+	@Singleton
 	public ImageManipulatorService imageProviderService() {
 		return ImageManipulatorService.getInstance();
 	}
 
 	@Provides
+	@Singleton
 	public ImageManipulator imageProvider() {
 		// ImageManipulator provider = imageProviderService().getImageProvider();
 		// TODO assert provider
@@ -110,18 +103,7 @@ public class MeshSpringConfiguration {
 	}
 
 	@Provides
-	public SearchProvider searchProvider() {
-		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
-		SearchProvider searchProvider = null;
-		if (options == null || options.getDirectory() == null) {
-			searchProvider = new DummySearchProvider();
-		} else {
-			searchProvider = new ElasticSearchProvider().init(Mesh.mesh().getOptions().getSearchOptions());
-		}
-		return searchProvider;
-	}
-
-	@Provides
+	@Singleton
 	public SessionHandler sessionHandler() {
 		SessionStore store = LocalSessionStore.create(Mesh.vertx());
 		// TODO make session age configurable
@@ -130,11 +112,12 @@ public class MeshSpringConfiguration {
 	}
 
 	/**
-	 * Handler which will authenticate the user credentials
+	 * Handler which will authenticate the user credentials.
 	 * 
 	 * @return
 	 */
 	@Provides
+	@Singleton
 	public AuthHandler authHandler(Database db, BootstrapInitializer boot) {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
@@ -146,13 +129,14 @@ public class MeshSpringConfiguration {
 	}
 
 	@Provides
-	public AuthenticationRestHandler authRestHandler(Database db) {
+	@Singleton
+	public AuthenticationRestHandler authRestHandler(Database db, JWTAuthRestHandler jwtAuthHandler, BasicAuthRestHandler basicAuthHandler) {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
-			return new JWTAuthRestHandler(db, this);
+			return jwtAuthHandler;
 		case BASIC_AUTH:
 		default:
-			return new BasicAuthRestHandler(db, this);
+			return basicAuthHandler;
 		}
 	}
 
@@ -162,6 +146,7 @@ public class MeshSpringConfiguration {
 	 * @return
 	 */
 	@Provides
+	@Singleton
 	public UserSessionHandler userSessionHandler(Database db, BootstrapInitializer boot) {
 		return UserSessionHandler.create(authProvider(db, boot));
 	}
@@ -172,6 +157,7 @@ public class MeshSpringConfiguration {
 	 * @return
 	 */
 	@Provides
+	@Singleton
 	public MeshAuthProvider authProvider(Database db, BootstrapInitializer boot) {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
@@ -183,11 +169,12 @@ public class MeshSpringConfiguration {
 	}
 
 	/**
-	 * Return the configured mail client
+	 * Return the configured mail client.
 	 * 
 	 * @return
 	 */
 	@Provides
+	@Singleton
 	public MailClient mailClient() {
 		MailConfig config = Mesh.mesh().getOptions().getMailServerOptions();
 		MailClient mailClient = MailClient.createShared(Mesh.vertx(), config, "meshClient");
@@ -195,10 +182,12 @@ public class MeshSpringConfiguration {
 	}
 
 	/**
-	 * Return the configured CORS handler
+	 * Return the configured CORS handler.
 	 * 
 	 * @return
 	 */
+	@Provides
+	@Singleton
 	public CorsHandler corsHandler() {
 		String pattern = Mesh.mesh().getOptions().getHttpServerOptions().getCorsAllowedOriginPattern();
 		CorsHandler corsHandler = CorsHandler.create(pattern);
@@ -218,6 +207,7 @@ public class MeshSpringConfiguration {
 	 * @return
 	 */
 	@Provides
+	@Singleton
 	public Handler<RoutingContext> bodyHandler() {
 		String tempDirectory = Mesh.mesh().getOptions().getUploadOptions().getTempDirectory();
 		BodyHandler handler = new MeshBodyHandlerImpl(tempDirectory);
@@ -226,5 +216,6 @@ public class MeshSpringConfiguration {
 		handler.setUploadsDirectory(tempDirectory);
 		return handler;
 	}
+	
 
 }
