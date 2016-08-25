@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -15,6 +16,7 @@ import com.gentics.mesh.etc.RouterStorage;
 /**
  * Verticle for /api/v1/PROJECTNAME/schemas
  */
+@Singleton
 public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 
 	private SchemaContainerCrudHandler crudHandler;

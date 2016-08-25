@@ -37,7 +37,6 @@ import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -49,12 +48,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	private TagFamilyVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.tagFamilyVerticle());
 		return list;
 	}
 
@@ -89,8 +86,8 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			int totalPages = (int) Math.ceil(totalTags / (double) perPage);
 			List<TagResponse> allTags = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<TagListResponse> tagPageFut = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(),
-						new PagingParameters(page, perPage)).invoke();
+				MeshResponse<TagListResponse> tagPageFut = getClient()
+						.findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(page, perPage)).invoke();
 				latchFor(tagPageFut);
 				assertSuccess(future);
 				restResponse = tagPageFut.result();
@@ -116,7 +113,8 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			MeshResponse<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(-1, perPage)).invoke();
+			MeshResponse<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParameters(-1, perPage))
+					.invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
@@ -146,7 +144,8 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
-			MeshResponse<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParameters(1, 0)).invoke();
+			MeshResponse<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParameters(1, 0))
+					.invoke();
 			latchFor(pageFuture);
 			assertSuccess(pageFuture);
 			assertEquals(0, pageFuture.result().getData().size());
@@ -224,7 +223,8 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals(newName, tagUpdateRequest.getFields().getName());
 
 			// 3. Send the request to the server
-			MeshResponse<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest).invoke();
+			MeshResponse<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest)
+					.invoke();
 			latchFor(updatedTagFut);
 			assertSuccess(updatedTagFut);
 			TagResponse tag2 = updatedTagFut.result();

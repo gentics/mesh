@@ -17,6 +17,8 @@ import java.io.FileInputStream;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.Mesh;
@@ -64,6 +66,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	private BootstrapInitializer boot;
 
+	@Inject
 	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, BootstrapInitializer boot) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;

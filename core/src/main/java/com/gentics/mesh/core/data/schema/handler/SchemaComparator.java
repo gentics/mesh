@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -18,13 +19,13 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
  * result in different changes. (eg. a field rename can also be mapped as an field removal + field addition)
  *
  */
+@Singleton
 public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Schema> {
 
 	private static SchemaComparator instance;
 
 	@Inject
-	public SchemaComparator(FieldSchemaComparator fieldSchemaComparator) {
-		super(fieldSchemaComparator);
+	public SchemaComparator() {
 		SchemaComparator.instance = this;
 	}
 

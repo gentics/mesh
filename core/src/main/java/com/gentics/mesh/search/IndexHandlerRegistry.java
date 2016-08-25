@@ -12,9 +12,11 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
+import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
+import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
@@ -30,7 +32,7 @@ public class IndexHandlerRegistry {
 	private static IndexHandlerRegistry instance;
 
 	@Inject
-	public IndexHandlerRegistry(NodeIndexHandler nodeIndexHandler, UserIndexHandler userIndexHandler, GroupIndexHandler groupIndexHandler, RoleIndexHandler roleIndexHandler, ProjectIndexHandler projectIndexHandler, TagFamilyIndexHandler tagFamilyIndexHandler, TagIndexHandler tagIndexHandler) {
+	public IndexHandlerRegistry(NodeIndexHandler nodeIndexHandler, UserIndexHandler userIndexHandler, GroupIndexHandler groupIndexHandler, RoleIndexHandler roleIndexHandler, ProjectIndexHandler projectIndexHandler, TagFamilyIndexHandler tagFamilyIndexHandler, TagIndexHandler tagIndexHandler, SchemaContainerIndexHandler schemaContainerIndexHandler, MicroschemaContainerIndexHandler  microschemaContainerIndexHandler) {
 		instance = this;
 		registerHandler(nodeIndexHandler);
 		registerHandler(userIndexHandler);
@@ -39,6 +41,8 @@ public class IndexHandlerRegistry {
 		registerHandler(projectIndexHandler);
 		registerHandler(tagFamilyIndexHandler);
 		registerHandler(tagIndexHandler);
+		registerHandler(schemaContainerIndexHandler);
+		registerHandler(microschemaContainerIndexHandler);
 	}
 
 	/**

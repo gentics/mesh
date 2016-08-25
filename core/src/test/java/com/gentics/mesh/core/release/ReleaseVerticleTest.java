@@ -34,12 +34,6 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
-import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
-import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
-import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
-import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -50,22 +44,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	private ReleaseVerticle releaseVerticle;
-
-	private ProjectVerticle projectVerticle;
-
-	private SchemaVerticle schemaVerticle;
-
-	private MicroschemaVerticle microschemaVerticle;
-
-	private ProjectSchemaVerticle projectSchemaVerticle;
-
-	private ProjectMicroschemaVerticle projectMicroschemaVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
-		return new ArrayList<AbstractVerticle>(Arrays.asList(releaseVerticle, projectVerticle, schemaVerticle, microschemaVerticle,
-				projectSchemaVerticle, projectMicroschemaVerticle));
+		return new ArrayList<AbstractVerticle>(Arrays.asList(meshDagger.releaseVerticle(), meshDagger.projectVerticle(), meshDagger.schemaVerticle(),
+				meshDagger.microschemaVerticle(), meshDagger.projectSchemaVerticle(), meshDagger.projectMicroschemaVerticle()));
 	}
 
 	@Override

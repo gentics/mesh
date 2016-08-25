@@ -14,6 +14,7 @@ import dagger.Provides;
 public class ElasticSearchProviderModule {
 
 	@Provides
+	@Singleton
 	public SearchProvider searchProvider() {
 		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
 		SearchProvider searchProvider = null;

@@ -9,6 +9,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,6 +23,7 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * Verticle for /api/v1/schemas endpoint
  */
+@Singleton
 public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 	private SchemaContainerCrudHandler crudHandler;

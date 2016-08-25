@@ -10,6 +10,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.raml.model.Resource;
@@ -30,11 +31,10 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.ext.web.handler.AuthHandler;
-
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
+@Singleton
 public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	private NodeCrudHandler crudHandler;
@@ -48,8 +48,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Inject
-	public NodeVerticle(BootstrapInitializer boot, RouterStorage routerStorage, NodeCrudHandler crudHandler,
-			NodeFieldAPIHandler fieldAPIHandler) {
+	public NodeVerticle(BootstrapInitializer boot, RouterStorage routerStorage, NodeCrudHandler crudHandler, NodeFieldAPIHandler fieldAPIHandler) {
 		super("nodes", boot, routerStorage);
 		this.crudHandler = crudHandler;
 		this.fieldAPIHandler = fieldAPIHandler;

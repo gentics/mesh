@@ -38,7 +38,6 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -55,12 +54,10 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(GroupVerticleTest.class);
 
-	private GroupVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.groupVerticle());
 		return list;
 	}
 
@@ -296,7 +293,8 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Group group = group();
 			String uuid = group.getUuid();
 
-			MeshResponse<GroupResponse> future = getClient().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
+			MeshResponse<GroupResponse> future = getClient().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());

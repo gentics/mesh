@@ -9,6 +9,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -20,8 +21,7 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.ext.web.handler.AuthHandler;
-
+@Singleton
 public class ProjectVerticle extends AbstractCoreApiVerticle {
 
 	private ProjectCrudHandler crudHandler;

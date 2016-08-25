@@ -12,6 +12,7 @@ import dagger.Provides;
 public class DummySearchProviderModule {
 
 	@Provides
+	@Singleton
 	public SearchProvider searchProvider() {
 		return new DummySearchProvider();
 	}

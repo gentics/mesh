@@ -5,34 +5,24 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<MicroschemaContainer> {
 
-	private static MicroschemaContainerIndexHandler instance;
-
 	private final static Set<String> indices = Collections.singleton("microschema");
 
 	private MicroschemaTransformator transformator = new MicroschemaTransformator();
 
-	private BootstrapInitializer boot;
-
 	@Inject
-	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
+	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db) {
 		super(searchProvider, db);
-		this.boot = boot;
-		instance = this;
-	}
-
-	public static MicroschemaContainerIndexHandler getInstance() {
-		return instance;
 	}
 
 	public MicroschemaTransformator getTransformator() {
@@ -66,7 +56,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Override
 	protected RootVertex<MicroschemaContainer> getRootVertex() {
-		return boot.meshRoot().getMicroschemaContainerRoot();
+		return MeshCore.get().boot().meshRoot().getMicroschemaContainerRoot();
 	}
 
 }

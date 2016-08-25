@@ -5,38 +5,28 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaContainer> {
 
-	private static SchemaContainerIndexHandler instance;
-
 	private final static Set<String> indices = Collections.singleton("schema_container");
 
 	private SchemaTransformator transformator = new SchemaTransformator();
 
-	private BootstrapInitializer boot;
-
 	@Inject
-	public SchemaContainerIndexHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db) {
+	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db) {
 		super(searchProvider, db);
-		this.boot = boot;
-		instance = this;
 	}
 
 	public SchemaTransformator getTransformator() {
 		return transformator;
-	}
-
-	public static SchemaContainerIndexHandler getInstance() {
-		return instance;
 	}
 
 	@Override
@@ -66,7 +56,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	@Override
 	protected RootVertex<SchemaContainer> getRootVertex() {
-		return boot.meshRoot().getSchemaContainerRoot();
+		return MeshCore.get().boot().meshRoot().getSchemaContainerRoot();
 	}
 
 }

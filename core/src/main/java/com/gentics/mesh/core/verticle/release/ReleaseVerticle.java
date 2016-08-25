@@ -7,6 +7,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,6 +22,7 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * Verticle for REST endpoints to manage Releases
  */
+@Singleton
 public class ReleaseVerticle extends AbstractProjectRestVerticle {
 
 	private ReleaseCrudHandler crudHandler;

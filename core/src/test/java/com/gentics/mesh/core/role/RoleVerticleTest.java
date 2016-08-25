@@ -39,8 +39,6 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
-import com.gentics.mesh.core.verticle.role.RoleVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -52,15 +50,10 @@ import rx.Single;
 
 public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	private RoleVerticle roleVerticle;
-
-	private AuthenticationVerticle authVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(authVerticle);
-		list.add(roleVerticle);
+		list.add(meshDagger.roleVerticle());
 		return list;
 	}
 	// Create tests
@@ -203,7 +196,8 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Role role = role();
 			String uuid = role.getUuid();
 
-			MeshResponse<RoleResponse> future = getClient().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
+			MeshResponse<RoleResponse> future = getClient().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertNotNull(future.result().getRolePerms());

@@ -32,7 +32,6 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-
 	public Completable updateDocument(String index, String type, String uuid, JsonObject document) {
 		return Completable.fromAction(() -> {
 			updateEvents.put(index + "-" + type + "-" + uuid, document);

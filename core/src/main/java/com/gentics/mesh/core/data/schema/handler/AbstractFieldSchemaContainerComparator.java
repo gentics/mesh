@@ -26,11 +26,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractFieldSchemaContainerComparator.class);
 
-	protected FieldSchemaComparator fieldComparator;
-
-	protected AbstractFieldSchemaContainerComparator(FieldSchemaComparator fieldComparator) {
-		this.fieldComparator = fieldComparator;
-	}
+	protected FieldSchemaComparator fieldComparator = new FieldSchemaComparator();
 
 	/**
 	 * Compare the two field containers. The implementor should invoke {@link #diff(FieldSchemaContainer, FieldSchemaContainer, Class)} and specifiy the actual

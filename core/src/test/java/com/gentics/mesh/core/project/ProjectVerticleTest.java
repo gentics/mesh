@@ -40,8 +40,6 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
@@ -58,15 +56,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	private ProjectVerticle verticle;
-
-	private NodeVerticle nodeVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
-		list.add(nodeVerticle);
+		list.add(meshDagger.projectVerticle());
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

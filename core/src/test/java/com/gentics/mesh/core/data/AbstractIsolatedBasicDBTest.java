@@ -9,6 +9,7 @@ public class AbstractIsolatedBasicDBTest extends AbstractDBTest {
 
 	@Before
 	public void setup() throws Exception {
+		super.setup();
 		setupData();
 	}
 
