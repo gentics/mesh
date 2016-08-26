@@ -211,67 +211,77 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		invokeUpdateFromRestTestcase(MICRONODE_LIST, FETCH, CREATE_EMPTY);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestTestcase(MICRONODE_LIST, FETCH, CREATE_EMPTY);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(MICRONODE_LIST, FETCH);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestNullOnCreateRequiredTestcase(MICRONODE_LIST, FETCH);
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveFieldViaNullTestcase(MICRONODE_LIST, FETCH, FILL, (node) -> {
-			updateContainer(ac, node, MICRONODE_LIST, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveFieldViaNullTestcase(MICRONODE_LIST, FETCH, FILL, (node) -> {
+				updateContainer(ac, node, MICRONODE_LIST, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveRequiredFieldViaNullTestcase(MICRONODE_LIST, FETCH, FILL, (container) -> {
-			updateContainer(ac, container, MICRONODE_LIST, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveRequiredFieldViaNullTestcase(MICRONODE_LIST, FETCH, FILL, (container) -> {
+				updateContainer(ac, container, MICRONODE_LIST, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_LIST, FILL, (container) -> {
-			MicronodeFieldListImpl field = new MicronodeFieldListImpl();
-			MicronodeResponse micronodeA = new MicronodeResponse();
-			micronodeA.setMicroschema(new MicroschemaReference().setName("vcard"));
-			micronodeA.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname1"));
-			micronodeA.getFields().put("lastName", FieldUtil.createStringField("updatedLastname1"));
-			field.getItems().add(micronodeA);
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_LIST, FILL, (container) -> {
+				MicronodeFieldListImpl field = new MicronodeFieldListImpl();
+				MicronodeResponse micronodeA = new MicronodeResponse();
+				micronodeA.setMicroschema(new MicroschemaReference().setName("vcard"));
+				micronodeA.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname1"));
+				micronodeA.getFields().put("lastName", FieldUtil.createStringField("updatedLastname1"));
+				field.getItems().add(micronodeA);
 
-			MicronodeResponse micronodeB = new MicronodeResponse();
-			micronodeB.setMicroschema(new MicroschemaReference().setName("vcard"));
-			micronodeB.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname2"));
-			micronodeB.getFields().put("lastName", FieldUtil.createStringField("updatedLastname2"));
-			field.getItems().add(micronodeB);
+				MicronodeResponse micronodeB = new MicronodeResponse();
+				micronodeB.setMicroschema(new MicroschemaReference().setName("vcard"));
+				micronodeB.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname2"));
+				micronodeB.getFields().put("lastName", FieldUtil.createStringField("updatedLastname2"));
+				field.getItems().add(micronodeB);
 
-			updateContainer(ac, container, MICRONODE_LIST, field);
-		}, (container) -> {
-			MicronodeGraphFieldList field = container.getMicronodeList(MICRONODE_LIST);
-			assertNotNull("The graph field {" + MICRONODE_LIST + "} could not be found.", field);
-			assertEquals("The list of the field was not updated.", 2, field.getList().size());
-			assertEquals("The list item of the field was not updated.", "updatedLastname1",
-					field.getList().get(0).getMicronode().getString("lastName").getString());
-			assertEquals("The list item of the field was not updated.", "updatedFirstname1",
-					field.getList().get(0).getMicronode().getString("firstName").getString());
+				updateContainer(ac, container, MICRONODE_LIST, field);
+			}, (container) -> {
+				MicronodeGraphFieldList field = container.getMicronodeList(MICRONODE_LIST);
+				assertNotNull("The graph field {" + MICRONODE_LIST + "} could not be found.", field);
+				assertEquals("The list of the field was not updated.", 2, field.getList().size());
+				assertEquals("The list item of the field was not updated.", "updatedLastname1",
+						field.getList().get(0).getMicronode().getString("lastName").getString());
+				assertEquals("The list item of the field was not updated.", "updatedFirstname1",
+						field.getList().get(0).getMicronode().getString("firstName").getString());
 
-			assertEquals("The list item of the field was not updated.", "updatedLastname2",
-					field.getList().get(1).getMicronode().getString("lastName").getString());
-			assertEquals("The list item of the field was not updated.", "updatedFirstname2",
-					field.getList().get(1).getMicronode().getString("firstName").getString());
+				assertEquals("The list item of the field was not updated.", "updatedLastname2",
+						field.getList().get(1).getMicronode().getString("lastName").getString());
+				assertEquals("The list item of the field was not updated.", "updatedFirstname2",
+						field.getList().get(1).getMicronode().getString("firstName").getString());
 
-		});
+			});
+		}
 	}
 
 }

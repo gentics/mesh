@@ -162,45 +162,55 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		invokeUpdateFromRestTestcase(NODE_FIELD, FETCH, CREATE_EMPTY);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestTestcase(NODE_FIELD, FETCH, CREATE_EMPTY);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(NODE_FIELD, FETCH);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestNullOnCreateRequiredTestcase(NODE_FIELD, FETCH);
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveFieldViaNullTestcase(NODE_FIELD, FETCH, FILL, (node) -> {
-			updateContainer(ac, node, NODE_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveFieldViaNullTestcase(NODE_FIELD, FETCH, FILL, (node) -> {
+				updateContainer(ac, node, NODE_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveRequiredFieldViaNullTestcase(NODE_FIELD, FETCH, FILL, (container) -> {
-			updateContainer(ac, container, NODE_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveRequiredFieldViaNullTestcase(NODE_FIELD, FETCH, FILL, (container) -> {
+				updateContainer(ac, container, NODE_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeUpdateFromRestValidSimpleValueTestcase(NODE_FIELD, FILL, (container) -> {
-			NodeFieldImpl field = new NodeFieldImpl();
-			field.setUuid(content().getUuid());
-			updateContainer(ac, container, NODE_FIELD, field);
-		}, (container) -> {
-			NodeGraphField field = container.getNode(NODE_FIELD);
-			assertNotNull("The graph field {" + NODE_FIELD + "} could not be found.", field);
-			assertEquals("The node reference of the field was not updated.", content().getUuid(), field.getNode().getUuid());
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeUpdateFromRestValidSimpleValueTestcase(NODE_FIELD, FILL, (container) -> {
+				NodeFieldImpl field = new NodeFieldImpl();
+				field.setUuid(content().getUuid());
+				updateContainer(ac, container, NODE_FIELD, field);
+			}, (container) -> {
+				NodeGraphField field = container.getNode(NODE_FIELD);
+				assertNotNull("The graph field {" + NODE_FIELD + "} could not be found.", field);
+				assertEquals("The node reference of the field was not updated.", content().getUuid(), field.getNode().getUuid());
+			});
+		}
 	}
 }

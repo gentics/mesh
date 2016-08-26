@@ -23,6 +23,7 @@ public class AtomicTagTest extends AbstractDBTest {
 
 	@Test
 	public void testTagCreation() throws Exception {
+		initDagger();
 		try (NoTx noTx = db.noTx()) {
 			MeshRoot meshRoot = boot.meshRoot();
 			User user = meshRoot.getUserRoot().create("test", null);

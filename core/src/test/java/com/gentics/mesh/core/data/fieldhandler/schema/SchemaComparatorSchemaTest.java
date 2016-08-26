@@ -27,7 +27,7 @@ import com.gentics.mesh.test.AbstractDBTest;
 
 public class SchemaComparatorSchemaTest extends AbstractDBTest {
 
-	private SchemaComparator comparator;
+	private SchemaComparator comparator = new SchemaComparator();
 
 	@Test
 	public void testEmptySchema() throws IOException {

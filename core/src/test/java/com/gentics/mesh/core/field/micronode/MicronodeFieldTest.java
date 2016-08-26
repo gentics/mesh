@@ -107,102 +107,107 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void initDagger() throws Exception {
 		super.initDagger();
-		dummyMicroschema = createDummyMicroschema();
+		try (NoTx noTx = db.noTx()) {
+			dummyMicroschema = createDummyMicroschema();
+		}
 	}
 
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		Node newOverview = content("news overview");
-		Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
+		try (NoTx noTx = db.noTx()) {
+			Node newOverview = content("news overview");
+			Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
 
-		Microschema fullMicroschema = new MicroschemaModel();
-		fullMicroschema.setName("full");
+			Microschema fullMicroschema = new MicroschemaModel();
+			fullMicroschema.setName("full");
 
-		// fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
-		fullMicroschema.addField(new BooleanFieldSchemaImpl().setName("booleanfield").setLabel("Boolean Field"));
-		fullMicroschema.addField(new DateFieldSchemaImpl().setName("datefield").setLabel("Date Field"));
-		fullMicroschema.addField(new HtmlFieldSchemaImpl().setName("htmlfield").setLabel("HTML Field"));
-		// fullMicroschema.addField(new ListFieldSchemaImpl().setListType("binary").setName("listfield-binary").setLabel("Binary List Field"));
-		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("boolean").setName("listfield-boolean").setLabel("Boolean List Field"));
-		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("date").setName("listfield-date").setLabel("Date List Field"));
-		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("html").setName("listfield-html").setLabel("Html List Field"));
-		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("node").setName("listfield-node").setLabel("Node List Field"));
-		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("number").setName("listfield-number").setLabel("Number List Field"));
-		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("string").setName("listfield-string").setLabel("String List Field"));
-		fullMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield").setLabel("Node Field"));
-		fullMicroschema.addField(new NumberFieldSchemaImpl().setName("numberfield").setLabel("Number Field"));
-		fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
+			// fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
+			fullMicroschema.addField(new BooleanFieldSchemaImpl().setName("booleanfield").setLabel("Boolean Field"));
+			fullMicroschema.addField(new DateFieldSchemaImpl().setName("datefield").setLabel("Date Field"));
+			fullMicroschema.addField(new HtmlFieldSchemaImpl().setName("htmlfield").setLabel("HTML Field"));
+			// fullMicroschema.addField(new ListFieldSchemaImpl().setListType("binary").setName("listfield-binary").setLabel("Binary List Field"));
+			fullMicroschema.addField(new ListFieldSchemaImpl().setListType("boolean").setName("listfield-boolean").setLabel("Boolean List Field"));
+			fullMicroschema.addField(new ListFieldSchemaImpl().setListType("date").setName("listfield-date").setLabel("Date List Field"));
+			fullMicroschema.addField(new ListFieldSchemaImpl().setListType("html").setName("listfield-html").setLabel("Html List Field"));
+			fullMicroschema.addField(new ListFieldSchemaImpl().setListType("node").setName("listfield-node").setLabel("Node List Field"));
+			fullMicroschema.addField(new ListFieldSchemaImpl().setListType("number").setName("listfield-number").setLabel("Number List Field"));
+			fullMicroschema.addField(new ListFieldSchemaImpl().setListType("string").setName("listfield-string").setLabel("String List Field"));
+			fullMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield").setLabel("Node Field"));
+			fullMicroschema.addField(new NumberFieldSchemaImpl().setName("numberfield").setLabel("Number Field"));
+			fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 
-		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(fullMicroschema, getRequestUser());
+			MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(fullMicroschema, getRequestUser());
 
-		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			Node node = folder("2015");
+			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		MicronodeGraphField micronodeField = container.createMicronode("micronodefield", microschemaContainer.getLatestVersion());
-		Micronode micronode = micronodeField.getMicronode();
-		assertNotNull("Micronode must not be null", micronode);
-		// micronode.createBinary("binaryfield");
-		micronode.createBoolean("booleanfield").setBoolean(true);
-		micronode.createDate("datefield").setDate(date);
-		micronode.createHTML("htmlfield").setHtml("<b>HTML</b> value");
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			MicronodeGraphField micronodeField = container.createMicronode("micronodefield", microschemaContainer.getLatestVersion());
+			Micronode micronode = micronodeField.getMicronode();
+			assertNotNull("Micronode must not be null", micronode);
+			// micronode.createBinary("binaryfield");
+			micronode.createBoolean("booleanfield").setBoolean(true);
+			micronode.createDate("datefield").setDate(date);
+			micronode.createHTML("htmlfield").setHtml("<b>HTML</b> value");
 
-		BooleanGraphFieldList booleanList = micronode.createBooleanList("listfield-boolean");
-		booleanList.createBoolean(true);
-		booleanList.createBoolean(false);
+			BooleanGraphFieldList booleanList = micronode.createBooleanList("listfield-boolean");
+			booleanList.createBoolean(true);
+			booleanList.createBoolean(false);
 
-		DateGraphFieldList dateList = micronode.createDateList("listfield-date");
-		dateList.createDate(date);
-		dateList.createDate(0L);
+			DateGraphFieldList dateList = micronode.createDateList("listfield-date");
+			dateList.createDate(date);
+			dateList.createDate(0L);
 
-		HtmlGraphFieldList htmlList = micronode.createHTMLList("listfield-html");
-		htmlList.createHTML("<b>first</b>");
-		htmlList.createHTML("<i>second</i>");
+			HtmlGraphFieldList htmlList = micronode.createHTMLList("listfield-html");
+			htmlList.createHTML("<b>first</b>");
+			htmlList.createHTML("<i>second</i>");
 
-		NodeGraphFieldList nodeList = micronode.createNodeList("listfield-node");
-		nodeList.createNode("0", node);
-		nodeList.createNode("1", newOverview);
+			NodeGraphFieldList nodeList = micronode.createNodeList("listfield-node");
+			nodeList.createNode("0", node);
+			nodeList.createNode("1", newOverview);
 
-		NumberGraphFieldList numberList = micronode.createNumberList("listfield-number");
-		numberList.createNumber(47);
-		numberList.createNumber(11);
+			NumberGraphFieldList numberList = micronode.createNumberList("listfield-number");
+			numberList.createNumber(47);
+			numberList.createNumber(11);
 
-		// TODO create list of select fields
+			// TODO create list of select fields
 
-		StringGraphFieldList stringList = micronode.createStringList("listfield-string");
-		stringList.createString("first");
-		stringList.createString("second");
-		stringList.createString("third");
+			StringGraphFieldList stringList = micronode.createStringList("listfield-string");
+			stringList.createString("first");
+			stringList.createString("second");
+			stringList.createString("third");
 
-		micronode.createNode("nodefield", newOverview);
-		micronode.createNumber("numberfield").setNumber(4711);
-		// micronode.createSelect("selectfield");
-		micronode.createString("stringfield").setString("String Value");
+			micronode.createNode("nodefield", newOverview);
+			micronode.createNumber("numberfield").setNumber(4711);
+			// micronode.createSelect("selectfield");
+			micronode.createString("stringfield").setString("String Value");
 
-		JsonObject jsonObject = new JsonObject(getJson(node));
-		JsonObject fields = jsonObject.getJsonObject("fields");
-		assertNotNull("JSON Object must contain fields", fields);
-		JsonObject micronodeFieldObject = fields.getJsonObject("micronodefield");
-		assertNotNull("JSON Object must contain micronode field", micronodeFieldObject);
-		JsonObject micronodeFields = micronodeFieldObject.getJsonObject("fields");
-		assertNotNull("Micronode must contain fields", micronodeFields);
-		// TODO check binary field
-		assertEquals("Boolean Field", Boolean.TRUE, micronodeFields.getBoolean("booleanfield"));
-		assertEquals("Date Field", toISO8601(date), micronodeFields.getString("datefield"));
-		assertEquals("HTML Field", "<b>HTML</b> value", micronodeFields.getString("htmlfield"));
-		// TODO check binary list field
-		assertThat(micronodeFields.getJsonArray("listfield-boolean")).as("Boolean List Field").matches(true, false);
-		assertThat(micronodeFields.getJsonArray("listfield-date")).as("Date List Field").matches(toISO8601(date), toISO8601(0));
-		assertThat(micronodeFields.getJsonArray("listfield-html")).as("HTML List Field").matches("<b>first</b>", "<i>second</i>");
-		assertThat(micronodeFields.getJsonArray("listfield-node")).as("Node List Field").key("uuid").matches(node.getUuid(), newOverview.getUuid());
-		assertThat(micronodeFields.getJsonArray("listfield-number")).as("Number List Field").matches(47, 11);
-		assertThat(micronodeFields.getJsonArray("listfield-string")).as("String List Field").matches("first", "second", "third");
-		assertThat(micronodeFields.getJsonObject("nodefield")).as("Node Field").key("uuid").matches(newOverview.getUuid());
-		assertEquals("Number Field", 4711, micronodeFields.getInteger("numberfield").intValue());
-		assertEquals("String Field", "String Value", micronodeFields.getString("stringfield"));
+			JsonObject jsonObject = new JsonObject(getJson(node));
+			JsonObject fields = jsonObject.getJsonObject("fields");
+			assertNotNull("JSON Object must contain fields", fields);
+			JsonObject micronodeFieldObject = fields.getJsonObject("micronodefield");
+			assertNotNull("JSON Object must contain micronode field", micronodeFieldObject);
+			JsonObject micronodeFields = micronodeFieldObject.getJsonObject("fields");
+			assertNotNull("Micronode must contain fields", micronodeFields);
+			// TODO check binary field
+			assertEquals("Boolean Field", Boolean.TRUE, micronodeFields.getBoolean("booleanfield"));
+			assertEquals("Date Field", toISO8601(date), micronodeFields.getString("datefield"));
+			assertEquals("HTML Field", "<b>HTML</b> value", micronodeFields.getString("htmlfield"));
+			// TODO check binary list field
+			assertThat(micronodeFields.getJsonArray("listfield-boolean")).as("Boolean List Field").matches(true, false);
+			assertThat(micronodeFields.getJsonArray("listfield-date")).as("Date List Field").matches(toISO8601(date), toISO8601(0));
+			assertThat(micronodeFields.getJsonArray("listfield-html")).as("HTML List Field").matches("<b>first</b>", "<i>second</i>");
+			assertThat(micronodeFields.getJsonArray("listfield-node")).as("Node List Field").key("uuid").matches(node.getUuid(),
+					newOverview.getUuid());
+			assertThat(micronodeFields.getJsonArray("listfield-number")).as("Number List Field").matches(47, 11);
+			assertThat(micronodeFields.getJsonArray("listfield-string")).as("String List Field").matches("first", "second", "third");
+			assertThat(micronodeFields.getJsonObject("nodefield")).as("Node Field").key("uuid").matches(newOverview.getUuid());
+			assertEquals("Number Field", 4711, micronodeFields.getInteger("numberfield").intValue());
+			assertEquals("String Field", "String Value", micronodeFields.getString("stringfield"));
+		}
 	}
 
 	/**

@@ -8,11 +8,9 @@ import com.gentics.mesh.core.rest.schema.Schema;
 
 public class SchemaComparatorDateTest extends AbstractComparatorDateTest<Schema> {
 
-	protected SchemaComparator comparator;
-
 	@Override
 	public AbstractFieldSchemaContainerComparator<Schema> getComparator() {
-		return comparator;
+		return new SchemaComparator();
 	}
 
 	@Override

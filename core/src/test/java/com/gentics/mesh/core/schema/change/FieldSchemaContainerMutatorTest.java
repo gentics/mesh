@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
@@ -37,246 +38,257 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.AbstractEmptyDBTest;
+import com.gentics.mesh.test.AbstractDBTest;
 
 /**
  * Test for common mutator operations on a field containers.
  */
-public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
+public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
 
-	private FieldSchemaContainerMutator mutator;
+	private FieldSchemaContainerMutator mutator = new FieldSchemaContainerMutator();
+
+	@Before
+	public void init() throws Exception {
+		initDagger();
+	}
 
 	@Test
 	public void testNullOperation() {
-		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-		Schema schema = new SchemaModel();
-		version.setSchema(schema);
-		Schema updatedSchema = mutator.apply(version);
-		assertNotNull(updatedSchema);
-		assertEquals("No changes were specified. No modification should happen.", schema, updatedSchema);
+		try (NoTx noTx = db.noTx()) {
+			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			Schema schema = new SchemaModel();
+			version.setSchema(schema);
+			Schema updatedSchema = mutator.apply(version);
+			assertNotNull(updatedSchema);
+			assertEquals("No changes were specified. No modification should happen.", schema, updatedSchema);
+		}
 	}
 
 	@Test
 	public void testUpdateTypeAndAllowProperty() {
-		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-		// 1. Create schema
-		Schema schema = new SchemaModel("testschema");
+			// 1. Create schema
+			Schema schema = new SchemaModel("testschema");
 
-		NumberFieldSchema numberField = new NumberFieldSchemaImpl();
-		numberField.setName("testField");
-		numberField.setRequired(true);
-		numberField.setLabel("originalLabel");
-		schema.addField(numberField);
+			NumberFieldSchema numberField = new NumberFieldSchemaImpl();
+			numberField.setName("testField");
+			numberField.setRequired(true);
+			numberField.setLabel("originalLabel");
+			schema.addField(numberField);
 
-		version.setSchema(schema);
+			version.setSchema(schema);
 
-		FieldTypeChange fieldTypeChange = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
-		fieldTypeChange.setFieldName("testField");
-		fieldTypeChange.setRestProperty(SchemaChangeModel.TYPE_KEY, "string");
-		fieldTypeChange.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "testValue" });
-		version.setNextChange(fieldTypeChange);
+			FieldTypeChange fieldTypeChange = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			fieldTypeChange.setFieldName("testField");
+			fieldTypeChange.setRestProperty(SchemaChangeModel.TYPE_KEY, "string");
+			fieldTypeChange.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "testValue" });
+			version.setNextChange(fieldTypeChange);
 
-		// 3. Apply the changes
-		Schema updatedSchema = mutator.apply(version);
+			// 3. Apply the changes
+			Schema updatedSchema = mutator.apply(version);
 
-		StringFieldSchema stringFieldSchema = updatedSchema.getField("testField", StringFieldSchemaImpl.class);
-		assertNotNull(stringFieldSchema);
-		assertThat(stringFieldSchema.getAllowedValues()).containsExactly("testValue");
+			StringFieldSchema stringFieldSchema = updatedSchema.getField("testField", StringFieldSchemaImpl.class);
+			assertNotNull(stringFieldSchema);
+			assertThat(stringFieldSchema.getAllowedValues()).containsExactly("testValue");
+		}
 	}
 
 	@Test
 	public void testUpdateLabel() {
-		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-		// 1. Create schema
-		Schema schema = new SchemaModel("testschema");
+			// 1. Create schema
+			Schema schema = new SchemaModel("testschema");
 
-		StringFieldSchema stringField = new StringFieldSchemaImpl();
-		stringField.setAllowedValues("blub");
-		stringField.setName("stringField");
-		stringField.setRequired(true);
-		stringField.setLabel("originalLabel");
-		schema.addField(stringField);
+			StringFieldSchema stringField = new StringFieldSchemaImpl();
+			stringField.setAllowedValues("blub");
+			stringField.setName("stringField");
+			stringField.setRequired(true);
+			stringField.setLabel("originalLabel");
+			schema.addField(stringField);
 
-		version.setSchema(schema);
+			version.setSchema(schema);
 
-		UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		stringFieldUpdate.setFieldName("stringField");
-		stringFieldUpdate.setRestProperty(SchemaChangeModel.LABEL_KEY, "UpdatedLabel");
-		version.setNextChange(stringFieldUpdate);
+			UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			stringFieldUpdate.setFieldName("stringField");
+			stringFieldUpdate.setRestProperty(SchemaChangeModel.LABEL_KEY, "UpdatedLabel");
+			version.setNextChange(stringFieldUpdate);
 
-		// 3. Apply the changes
-		Schema updatedSchema = mutator.apply(version);
+			// 3. Apply the changes
+			Schema updatedSchema = mutator.apply(version);
 
-		StringFieldSchema stringFieldSchema = updatedSchema.getField("stringField", StringFieldSchemaImpl.class);
-		assertNotNull(stringFieldSchema);
-		assertEquals("UpdatedLabel", stringFieldSchema.getLabel());
-
+			StringFieldSchema stringFieldSchema = updatedSchema.getField("stringField", StringFieldSchemaImpl.class);
+			assertNotNull(stringFieldSchema);
+			assertEquals("UpdatedLabel", stringFieldSchema.getLabel());
+		}
 	}
 
 	@Test
 	public void testAUpdateFields() {
+		try (NoTx noTx = db.noTx()) {
+			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			// 1. Create schema
+			Schema schema = new SchemaModel("testschema");
 
-		// 1. Create schema
-		Schema schema = new SchemaModel("testschema");
+			BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
+			binaryField.setName("binaryField");
+			binaryField.setAllowedMimeTypes("oldTypes");
+			binaryField.setRequired(true);
+			schema.addField(binaryField);
 
-		BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
-		binaryField.setName("binaryField");
-		binaryField.setAllowedMimeTypes("oldTypes");
-		binaryField.setRequired(true);
-		schema.addField(binaryField);
+			StringFieldSchema stringField = new StringFieldSchemaImpl();
+			stringField.setAllowedValues("blub");
+			stringField.setName("stringField");
+			stringField.setRequired(true);
+			schema.addField(stringField);
 
-		StringFieldSchema stringField = new StringFieldSchemaImpl();
-		stringField.setAllowedValues("blub");
-		stringField.setName("stringField");
-		stringField.setRequired(true);
-		schema.addField(stringField);
+			NodeFieldSchema nodeField = new NodeFieldSchemaImpl();
+			nodeField.setAllowedSchemas("blub");
+			nodeField.setName("nodeField");
+			nodeField.setRequired(true);
+			schema.addField(nodeField);
 
-		NodeFieldSchema nodeField = new NodeFieldSchemaImpl();
-		nodeField.setAllowedSchemas("blub");
-		nodeField.setName("nodeField");
-		nodeField.setRequired(true);
-		schema.addField(nodeField);
+			MicronodeFieldSchema micronodeField = new MicronodeFieldSchemaImpl();
+			micronodeField.setAllowedMicroSchemas("blub");
+			micronodeField.setName("micronodeField");
+			micronodeField.setRequired(true);
+			schema.addField(micronodeField);
 
-		MicronodeFieldSchema micronodeField = new MicronodeFieldSchemaImpl();
-		micronodeField.setAllowedMicroSchemas("blub");
-		micronodeField.setName("micronodeField");
-		micronodeField.setRequired(true);
-		schema.addField(micronodeField);
+			NumberFieldSchema numberField = new NumberFieldSchemaImpl();
+			numberField.setName("numberField");
+			numberField.setRequired(true);
+			schema.addField(numberField);
 
-		NumberFieldSchema numberField = new NumberFieldSchemaImpl();
-		numberField.setName("numberField");
-		numberField.setRequired(true);
-		schema.addField(numberField);
+			HtmlFieldSchema htmlField = new HtmlFieldSchemaImpl();
+			htmlField.setName("htmlField");
+			htmlField.setRequired(true);
+			schema.addField(htmlField);
 
-		HtmlFieldSchema htmlField = new HtmlFieldSchemaImpl();
-		htmlField.setName("htmlField");
-		htmlField.setRequired(true);
-		schema.addField(htmlField);
+			BooleanFieldSchema booleanField = new BooleanFieldSchemaImpl();
+			booleanField.setName("booleanField");
+			booleanField.setRequired(true);
+			schema.addField(booleanField);
 
-		BooleanFieldSchema booleanField = new BooleanFieldSchemaImpl();
-		booleanField.setName("booleanField");
-		booleanField.setRequired(true);
-		schema.addField(booleanField);
+			DateFieldSchema dateField = new DateFieldSchemaImpl();
+			dateField.setName("dateField");
+			dateField.setRequired(true);
+			schema.addField(dateField);
 
-		DateFieldSchema dateField = new DateFieldSchemaImpl();
-		dateField.setName("dateField");
-		dateField.setRequired(true);
-		schema.addField(dateField);
+			ListFieldSchema listField = new ListFieldSchemaImpl();
+			listField.setName("listField");
+			listField.setListType("micronode");
+			listField.setRequired(true);
+			schema.addField(listField);
 
-		ListFieldSchema listField = new ListFieldSchemaImpl();
-		listField.setName("listField");
-		listField.setListType("micronode");
-		listField.setRequired(true);
-		schema.addField(listField);
+			version.setSchema(schema);
 
-		version.setSchema(schema);
+			// 2. Create schema field update change
+			UpdateFieldChange binaryFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			binaryFieldUpdate.setFieldName("binaryField");
+			binaryFieldUpdate.setRestProperty("allowedMimeTypes", new String[] { "newTypes" });
+			binaryFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			version.setNextChange(binaryFieldUpdate);
 
-		// 2. Create schema field update change
-		UpdateFieldChange binaryFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		binaryFieldUpdate.setFieldName("binaryField");
-		binaryFieldUpdate.setRestProperty("allowedMimeTypes", new String[] { "newTypes" });
-		binaryFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-		version.setNextChange(binaryFieldUpdate);
+			UpdateFieldChange nodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			nodeFieldUpdate.setFieldName("nodeField");
+			nodeFieldUpdate.setRestProperty("allowedSchemas", new String[] { "schemaA", "schemaB" });
+			nodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
-		UpdateFieldChange nodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		nodeFieldUpdate.setFieldName("nodeField");
-		nodeFieldUpdate.setRestProperty("allowedSchemas", new String[] { "schemaA", "schemaB" });
-		nodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-		binaryFieldUpdate.setNextChange(nodeFieldUpdate);
+			UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			stringFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "valueA", "valueB" });
+			stringFieldUpdate.setFieldName("stringField");
+			stringFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			nodeFieldUpdate.setNextChange(stringFieldUpdate);
 
-		UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		stringFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "valueA", "valueB" });
-		stringFieldUpdate.setFieldName("stringField");
-		stringFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-		nodeFieldUpdate.setNextChange(stringFieldUpdate);
+			UpdateFieldChange htmlFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			htmlFieldUpdate.setFieldName("htmlField");
+			htmlFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			stringFieldUpdate.setNextChange(htmlFieldUpdate);
 
-		UpdateFieldChange htmlFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		htmlFieldUpdate.setFieldName("htmlField");
-		htmlFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-		stringFieldUpdate.setNextChange(htmlFieldUpdate);
+			UpdateFieldChange numberFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			numberFieldUpdate.setFieldName("numberField");
+			numberFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			htmlFieldUpdate.setNextChange(numberFieldUpdate);
 
-		UpdateFieldChange numberFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		numberFieldUpdate.setFieldName("numberField");
-		numberFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-		htmlFieldUpdate.setNextChange(numberFieldUpdate);
+			UpdateFieldChange dateFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			dateFieldUpdate.setFieldName("dateField");
+			dateFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			numberFieldUpdate.setNextChange(dateFieldUpdate);
 
-		UpdateFieldChange dateFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		dateFieldUpdate.setFieldName("dateField");
-		dateFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-		numberFieldUpdate.setNextChange(dateFieldUpdate);
+			UpdateFieldChange booleanFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			booleanFieldUpdate.setFieldName("booleanField");
+			booleanFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			dateFieldUpdate.setNextChange(booleanFieldUpdate);
 
-		UpdateFieldChange booleanFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		booleanFieldUpdate.setFieldName("booleanField");
-		booleanFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-		dateFieldUpdate.setNextChange(booleanFieldUpdate);
+			UpdateFieldChange micronodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			micronodeFieldUpdate.setFieldName("micronodeField");
+			micronodeFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A", "B", "C" });
+			micronodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			booleanFieldUpdate.setNextChange(micronodeFieldUpdate);
 
-		UpdateFieldChange micronodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		micronodeFieldUpdate.setFieldName("micronodeField");
-		micronodeFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A", "B", "C" });
-		micronodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-		booleanFieldUpdate.setNextChange(micronodeFieldUpdate);
+			UpdateFieldChange listFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			listFieldUpdate.setFieldName("listField");
+			listFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			listFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A1", "B1", "C1" });
+			micronodeFieldUpdate.setNextChange(listFieldUpdate);
 
-		UpdateFieldChange listFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		listFieldUpdate.setFieldName("listField");
-		listFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-		listFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A1", "B1", "C1" });
-		micronodeFieldUpdate.setNextChange(listFieldUpdate);
+			// 3. Apply the changes
+			Schema updatedSchema = mutator.apply(version);
 
-		// 3. Apply the changes
-		Schema updatedSchema = mutator.apply(version);
+			// Binary 
+			BinaryFieldSchema binaryFieldSchema = updatedSchema.getField("binaryField", BinaryFieldSchemaImpl.class);
+			assertNotNull(binaryFieldSchema);
+			assertArrayEquals(new String[] { "newTypes" }, binaryFieldSchema.getAllowedMimeTypes());
+			assertFalse("The required flag should now be set to false.", binaryFieldSchema.isRequired());
 
-		// Binary 
-		BinaryFieldSchema binaryFieldSchema = updatedSchema.getField("binaryField", BinaryFieldSchemaImpl.class);
-		assertNotNull(binaryFieldSchema);
-		assertArrayEquals(new String[] { "newTypes" }, binaryFieldSchema.getAllowedMimeTypes());
-		assertFalse("The required flag should now be set to false.", binaryFieldSchema.isRequired());
+			// Node
+			NodeFieldSchema nodeFieldSchema = updatedSchema.getField("nodeField", NodeFieldSchemaImpl.class);
+			assertNotNull(nodeFieldSchema);
+			assertArrayEquals(new String[] { "schemaA", "schemaB" }, nodeFieldSchema.getAllowedSchemas());
+			assertFalse("The required flag should now be set to false.", nodeFieldSchema.isRequired());
 
-		// Node
-		NodeFieldSchema nodeFieldSchema = updatedSchema.getField("nodeField", NodeFieldSchemaImpl.class);
-		assertNotNull(nodeFieldSchema);
-		assertArrayEquals(new String[] { "schemaA", "schemaB" }, nodeFieldSchema.getAllowedSchemas());
-		assertFalse("The required flag should now be set to false.", nodeFieldSchema.isRequired());
+			// Microschema
+			MicronodeFieldSchema micronodeFieldSchema = updatedSchema.getField("micronodeField", MicronodeFieldSchemaImpl.class);
+			assertNotNull(micronodeFieldSchema);
+			assertArrayEquals(new String[] { "A", "B", "C" }, micronodeFieldSchema.getAllowedMicroSchemas());
+			assertFalse("The required flag should now be set to false.", micronodeFieldSchema.isRequired());
 
-		// Microschema
-		MicronodeFieldSchema micronodeFieldSchema = updatedSchema.getField("micronodeField", MicronodeFieldSchemaImpl.class);
-		assertNotNull(micronodeFieldSchema);
-		assertArrayEquals(new String[] { "A", "B", "C" }, micronodeFieldSchema.getAllowedMicroSchemas());
-		assertFalse("The required flag should now be set to false.", micronodeFieldSchema.isRequired());
+			// String
+			StringFieldSchema stringFieldSchema = updatedSchema.getField("stringField", StringFieldSchemaImpl.class);
+			assertNotNull(stringFieldSchema);
+			assertArrayEquals(new String[] { "valueA", "valueB" }, stringFieldSchema.getAllowedValues());
+			assertFalse("The required flag should now be set to false.", stringFieldSchema.isRequired());
 
-		// String
-		StringFieldSchema stringFieldSchema = updatedSchema.getField("stringField", StringFieldSchemaImpl.class);
-		assertNotNull(stringFieldSchema);
-		assertArrayEquals(new String[] { "valueA", "valueB" }, stringFieldSchema.getAllowedValues());
-		assertFalse("The required flag should now be set to false.", stringFieldSchema.isRequired());
+			// Html
+			HtmlFieldSchema htmlFieldSchema = updatedSchema.getField("htmlField", HtmlFieldSchemaImpl.class);
+			assertNotNull(htmlFieldSchema);
+			assertFalse("The required flag should now be set to false.", htmlFieldSchema.isRequired());
 
-		// Html
-		HtmlFieldSchema htmlFieldSchema = updatedSchema.getField("htmlField", HtmlFieldSchemaImpl.class);
-		assertNotNull(htmlFieldSchema);
-		assertFalse("The required flag should now be set to false.", htmlFieldSchema.isRequired());
+			// Boolean
+			BooleanFieldSchema booleanFieldSchema = updatedSchema.getField("booleanField", BooleanFieldSchemaImpl.class);
+			assertFalse("The required flag should now be set to false.", booleanFieldSchema.isRequired());
 
-		// Boolean
-		BooleanFieldSchema booleanFieldSchema = updatedSchema.getField("booleanField", BooleanFieldSchemaImpl.class);
-		assertFalse("The required flag should now be set to false.", booleanFieldSchema.isRequired());
+			// Date
+			DateFieldSchema dateFieldSchema = updatedSchema.getField("dateField", DateFieldSchemaImpl.class);
+			assertFalse("The required flag should now be set to false.", dateFieldSchema.isRequired());
 
-		// Date
-		DateFieldSchema dateFieldSchema = updatedSchema.getField("dateField", DateFieldSchemaImpl.class);
-		assertFalse("The required flag should now be set to false.", dateFieldSchema.isRequired());
+			// Number
+			NumberFieldSchema numberFieldSchema = updatedSchema.getField("numberField", NumberFieldSchemaImpl.class);
+			assertFalse("The required flag should now be set to false.", numberFieldSchema.isRequired());
 
-		// Number
-		NumberFieldSchema numberFieldSchema = updatedSchema.getField("numberField", NumberFieldSchemaImpl.class);
-		assertFalse("The required flag should now be set to false.", numberFieldSchema.isRequired());
-
-		// List
-		ListFieldSchema listFieldSchema = updatedSchema.getField("listField", ListFieldSchemaImpl.class);
-		assertFalse("The required flag should now be set to false.", listFieldSchema.isRequired());
-		assertNotNull(listFieldSchema.getAllowedSchemas());
-		assertThat(listFieldSchema.getAllowedSchemas()).contains("A1", "B1", "C1");
-
+			// List
+			ListFieldSchema listFieldSchema = updatedSchema.getField("listField", ListFieldSchemaImpl.class);
+			assertFalse("The required flag should now be set to false.", listFieldSchema.isRequired());
+			assertNotNull(listFieldSchema.getAllowedSchemas());
+			assertThat(listFieldSchema.getAllowedSchemas()).contains("A1", "B1", "C1");
+		}
 	}
 
 }

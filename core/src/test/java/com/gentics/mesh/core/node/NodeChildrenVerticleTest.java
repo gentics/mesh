@@ -36,12 +36,10 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeChildrenVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeVerticle verticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 
@@ -173,8 +171,8 @@ public class NodeChildrenVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 		role().revokePermissions(node, READ_PERM);
 
-		MeshResponse<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
-				new NodeParameters()).invoke();
+		MeshResponse<NodeListResponse> future = getClient()
+				.findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(), new NodeParameters()).invoke();
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 

@@ -164,13 +164,17 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		invokeUpdateFromRestTestcase(STRING_LIST, FETCH, CREATE_EMPTY);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestTestcase(STRING_LIST, FETCH, CREATE_EMPTY);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(STRING_LIST, FETCH);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestNullOnCreateRequiredTestcase(STRING_LIST, FETCH);
+		}
 	}
 
 	@Test
@@ -187,27 +191,31 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveRequiredFieldViaNullTestcase(STRING_LIST, FETCH, FILLTEXT, (container) -> {
-			updateContainer(ac, container, STRING_LIST, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveRequiredFieldViaNullTestcase(STRING_LIST, FETCH, FILLTEXT, (container) -> {
+				updateContainer(ac, container, STRING_LIST, null);
+			});
+		}
 	}
 
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeUpdateFromRestValidSimpleValueTestcase(STRING_LIST, FILLTEXT, (container) -> {
-			StringFieldListImpl field = new StringFieldListImpl();
-			field.getItems().add("someValue");
-			field.getItems().add("someValue2");
-			updateContainer(ac, container, STRING_LIST, field);
-		}, (container) -> {
-			StringGraphFieldList field = container.getStringList(STRING_LIST);
-			assertNotNull("The graph field {" + STRING_LIST + "} could not be found.", field);
-			assertEquals("The list of the field was not updated.", 2, field.getList().size());
-			assertEquals("The list item of the field was not updated.", "someValue", field.getList().get(0).getString());
-			assertEquals("The list item of the field was not updated.", "someValue2", field.getList().get(1).getString());
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeUpdateFromRestValidSimpleValueTestcase(STRING_LIST, FILLTEXT, (container) -> {
+				StringFieldListImpl field = new StringFieldListImpl();
+				field.getItems().add("someValue");
+				field.getItems().add("someValue2");
+				updateContainer(ac, container, STRING_LIST, field);
+			}, (container) -> {
+				StringGraphFieldList field = container.getStringList(STRING_LIST);
+				assertNotNull("The graph field {" + STRING_LIST + "} could not be found.", field);
+				assertEquals("The list of the field was not updated.", 2, field.getList().size());
+				assertEquals("The list item of the field was not updated.", "someValue", field.getList().get(0).getString());
+				assertEquals("The list item of the field was not updated.", "someValue2", field.getList().get(1).getString());
+			});
+		}
 	}
 
 }

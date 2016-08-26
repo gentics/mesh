@@ -48,30 +48,32 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		Node node = folder("2015");
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
 
-		// Update the schema and add a boolean field
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
-		booleanFieldSchema.setName(BOOLEAN_FIELD);
-		booleanFieldSchema.setLabel("Some boolean field");
-		booleanFieldSchema.setRequired(true);
-		schema.addField(booleanFieldSchema);
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			// Update the schema and add a boolean field
+			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
+			booleanFieldSchema.setName(BOOLEAN_FIELD);
+			booleanFieldSchema.setLabel("Some boolean field");
+			booleanFieldSchema.setRequired(true);
+			schema.addField(booleanFieldSchema);
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		BooleanGraphField field = container.createBoolean(BOOLEAN_FIELD);
-		field.setBoolean(true);
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			BooleanGraphField field = container.createBoolean(BOOLEAN_FIELD);
+			field.setBoolean(true);
 
-		String json = getJson(node);
-		assertTrue("The json should contain the boolean field but it did not.{" + json + "}", json.indexOf("booleanField\" : true") > 1);
-		assertNotNull(json);
-		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
-		assertNotNull(response);
+			String json = getJson(node);
+			assertTrue("The json should contain the boolean field but it did not.{" + json + "}", json.indexOf("booleanField\" : true") > 1);
+			assertNotNull(json);
+			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
+			assertNotNull(response);
 
-		com.gentics.mesh.core.rest.node.field.BooleanField deserializedNodeField = response.getFields().getBooleanField("booleanField");
-		assertNotNull(deserializedNodeField);
-		assertEquals(true, deserializedNodeField.getValue());
+			com.gentics.mesh.core.rest.node.field.BooleanField deserializedNodeField = response.getFields().getBooleanField("booleanField");
+			assertNotNull(deserializedNodeField);
+			assertEquals(true, deserializedNodeField.getValue());
+		}
 	}
 
 	@Test
@@ -194,46 +196,56 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		invokeUpdateFromRestTestcase(BOOLEAN_FIELD, FETCH, CREATE_EMPTY);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestTestcase(BOOLEAN_FIELD, FETCH, CREATE_EMPTY);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(BOOLEAN_FIELD, FETCH);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestNullOnCreateRequiredTestcase(BOOLEAN_FIELD, FETCH);
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (node) -> {
-			updateContainer(ac, node, BOOLEAN_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (node) -> {
+				updateContainer(ac, node, BOOLEAN_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (container) -> {
-			updateContainer(ac, container, BOOLEAN_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (container) -> {
+				updateContainer(ac, container, BOOLEAN_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeUpdateFromRestValidSimpleValueTestcase(BOOLEAN_FIELD, FILLTRUE, (container) -> {
-			BooleanField field = new BooleanFieldImpl();
-			field.setValue(false);
-			updateContainer(ac, container, BOOLEAN_FIELD, field);
-		}, (container) -> {
-			BooleanGraphField field = container.getBoolean(BOOLEAN_FIELD);
-			assertNotNull("The graph field {" + BOOLEAN_FIELD + "} could not be found.", field);
-			assertEquals("The boolean of the field was not updated.", false, field.getBoolean());
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeUpdateFromRestValidSimpleValueTestcase(BOOLEAN_FIELD, FILLTRUE, (container) -> {
+				BooleanField field = new BooleanFieldImpl();
+				field.setValue(false);
+				updateContainer(ac, container, BOOLEAN_FIELD, field);
+			}, (container) -> {
+				BooleanGraphField field = container.getBoolean(BOOLEAN_FIELD);
+				assertNotNull("The graph field {" + BOOLEAN_FIELD + "} could not be found.", field);
+				assertEquals("The boolean of the field was not updated.", false, field.getBoolean());
+			});
+		}
 	}
 
 }

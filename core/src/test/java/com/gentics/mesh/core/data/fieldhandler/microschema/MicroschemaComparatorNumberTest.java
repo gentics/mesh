@@ -8,11 +8,9 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 
 public class MicroschemaComparatorNumberTest extends AbstractComparatorNumberTest<Microschema> {
 
-	protected MicroschemaComparator comparator;
-
 	@Override
 	public AbstractFieldSchemaContainerComparator<Microschema> getComparator() {
-		return comparator;
+		return new MicroschemaComparator();
 	}
 
 	@Override
