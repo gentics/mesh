@@ -4,6 +4,7 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
@@ -13,6 +14,8 @@ import com.gentics.mesh.rest.Endpoint;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 
+
+@Singleton
 public class ProjectInfoVerticle extends AbstractCoreApiVerticle {
 
 	private ProjectCrudHandler crudHandler;

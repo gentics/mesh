@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -55,7 +56,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 					try {
 						Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 						SchemaChangesListModel model = new SchemaChangesListModel();
-						model.getChanges().addAll(MicroschemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
+						model.getChanges().addAll(MeshCore.get().microschemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
 						String name = element.getName();
 						if (model.getChanges().isEmpty()) {
 							return Single.just(message(ac, "schema_update_no_difference_detected", name));

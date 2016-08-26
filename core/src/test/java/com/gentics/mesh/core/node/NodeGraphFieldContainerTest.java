@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -10,6 +11,11 @@ import com.gentics.mesh.test.AbstractDBTest;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 
 public class NodeGraphFieldContainerTest extends AbstractDBTest {
+
+	@Before
+	public void initDagger() throws Exception {
+		super.initDagger();
+	}
 
 	@Test(expected = ORecordDuplicatedException.class)
 	public void testConflictingWebRootPath() {

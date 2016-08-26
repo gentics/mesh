@@ -188,7 +188,9 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(DATE_FIELD, FETCH);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestNullOnCreateRequiredTestcase(DATE_FIELD, FETCH);
+		}
 	}
 
 	@Test

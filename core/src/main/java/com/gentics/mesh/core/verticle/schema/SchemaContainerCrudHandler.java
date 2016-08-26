@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -60,7 +61,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 				try {
 					Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 					SchemaChangesListModel model = new SchemaChangesListModel();
-					model.getChanges().addAll(SchemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
+					model.getChanges().addAll(MeshCore.get().schemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
 					String schemaName = element.getName();
 					if (model.getChanges().isEmpty()) {
 						return Single.just(message(ac, "schema_update_no_difference_detected", schemaName));

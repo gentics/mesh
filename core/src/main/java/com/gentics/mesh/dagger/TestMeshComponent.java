@@ -7,7 +7,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.admin.RestInfoVerticle;
@@ -20,6 +22,7 @@ import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectInfoVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
@@ -50,7 +53,6 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 
 import dagger.Component;
-import io.vertx.core.AbstractVerticle;
 
 @Singleton
 @Component(modules = { MeshModule.class, DummySearchProviderModule.class })
@@ -145,5 +147,11 @@ public interface TestMeshComponent extends MeshComponent {
 	NodeFieldAPIHandler nodeFieldAPIHandler();
 
 	MicroschemaComparator microschemaComparator();
+
+	ImageManipulator imageManipulator();
+
+	SchemaComparator schemaComparator();
+
+	ProjectInfoVerticle projectInfoVerticle();
 
 }

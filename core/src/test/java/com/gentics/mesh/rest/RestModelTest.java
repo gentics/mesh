@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -35,6 +36,11 @@ import com.gentics.mesh.util.UUIDUtil;
 
 public class RestModelTest extends AbstractDBTest {
 
+	@Before
+	@Override
+	public void initDagger() throws Exception {
+		super.initDagger();
+	}
 
 	@Test
 	public void testNodeResponse() throws JsonParseException, JsonMappingException, IOException {
@@ -56,7 +62,7 @@ public class RestModelTest extends AbstractDBTest {
 		Schema schema = new SchemaModel();
 		schema.setName("content");
 		schema.setDisplayField("title");
-//		schema.setMeshVersion(Mesh.getVersion());
+		//		schema.setMeshVersion(Mesh.getVersion());
 
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");
@@ -168,8 +174,8 @@ public class RestModelTest extends AbstractDBTest {
 		listFieldSchema.setName("list");
 		listFieldSchema.setLabel("list field label");
 		listFieldSchema.setListType("node");
-//		listFieldSchema.setMin(5);
-//		listFieldSchema.setMax(10);
+		//		listFieldSchema.setMin(5);
+		//		listFieldSchema.setMax(10);
 		listFieldSchema.setAllowedSchemas(new String[] { "image", "gallery" });
 		// NodeField defaultNode = new NodeFieldImpl();
 		// defaultNode.setUuid(UUIDUtil.randomUUID());
@@ -231,8 +237,8 @@ public class RestModelTest extends AbstractDBTest {
 		listFieldSchema.setName("list field name");
 		listFieldSchema.setLabel("list field label");
 		listFieldSchema.setListType("node");
-//		listFieldSchema.setMin(5);
-//		listFieldSchema.setMax(10);
+		//		listFieldSchema.setMin(5);
+		//		listFieldSchema.setMax(10);
 		listFieldSchema.setAllowedSchemas(new String[] { "image", "gallery" });
 
 		for (FieldSchema fieldEntry : schema.getFields()) {

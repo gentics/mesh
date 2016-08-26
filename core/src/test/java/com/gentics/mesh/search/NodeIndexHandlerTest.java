@@ -9,12 +9,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.search.impl.DummySearchProvider;
 
 public class NodeIndexHandlerTest extends AbstractIsolatedBasicDBTest {
-
-	protected DummySearchProvider searchProvider;
-
 
 	@Test
 	public void testReindexAll() throws Exception {

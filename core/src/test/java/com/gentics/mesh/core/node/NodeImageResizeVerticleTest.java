@@ -207,7 +207,7 @@ public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTes
 		assertEquals(expectedHeight, img.getHeight());
 
 		if (binaryField != null) {
-			File cacheFile = springConfig.imageProvider().getCacheFile(binaryField.getSHA512Sum(), params);
+			File cacheFile = meshDagger.imageManipulator().getCacheFile(binaryField.getSHA512Sum(), params);
 			assertTrue("The cache file could not be found in the cache directory. {" + cacheFile.getAbsolutePath() + "}", cacheFile.exists());
 		}
 	}

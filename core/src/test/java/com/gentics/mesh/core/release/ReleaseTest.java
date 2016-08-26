@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
@@ -483,7 +482,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 		updatedSchema.addField(FieldUtil.createStringFieldSchema(newName));
 
 		SchemaChangesListModel model = new SchemaChangesListModel();
-		model.getChanges().addAll(SchemaComparator.getIntance().diff(schema, updatedSchema));
+		model.getChanges().addAll(new SchemaComparator().diff(schema, updatedSchema));
 
 		InternalActionContext ac = getMockedInternalActionContext();
 		schemaContainer.getLatestVersion().applyChanges(ac, model).toBlocking().value();
@@ -523,7 +522,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 		updatedMicroschema.addField(FieldUtil.createStringFieldSchema(newName));
 
 		SchemaChangesListModel model = new SchemaChangesListModel();
-		model.getChanges().addAll(MicroschemaComparator.getIntance().diff(microschema, updatedMicroschema));
+		model.getChanges().addAll(meshDagger.microschemaComparator().diff(microschema, updatedMicroschema));
 
 		InternalActionContext ac = getMockedInternalActionContext();
 		microschemaContainer.getLatestVersion().applyChanges(ac, model).toBlocking().value();

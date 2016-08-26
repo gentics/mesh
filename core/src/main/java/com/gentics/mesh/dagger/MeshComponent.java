@@ -5,6 +5,8 @@ import javax.inject.Singleton;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
@@ -40,5 +42,9 @@ public interface MeshComponent {
 	ServerSchemaStorage serverSchemaStorage();
 
 	WebRootLinkReplacer webRootLinkReplacer();
+
+	SchemaComparator schemaComparator();
+
+	MicroschemaComparator microschemaComparator();
 
 }

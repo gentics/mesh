@@ -22,15 +22,8 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 @Singleton
 public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Schema> {
 
-	private static SchemaComparator instance;
-
 	@Inject
 	public SchemaComparator() {
-		SchemaComparator.instance = this;
-	}
-
-	public static SchemaComparator getIntance() {
-		return instance;
 	}
 
 	@Override

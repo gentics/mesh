@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.dagger.MeshCore;
-import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.dagger.TestMeshComponent;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.demo.UserInfo;
@@ -43,8 +42,6 @@ public abstract class AbstractDBTest {
 	protected BootstrapInitializer boot;
 
 	private TestDataProvider dataProvider;
-
-	protected MeshModule springConfig;
 
 	protected Database db;
 

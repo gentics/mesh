@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
@@ -73,60 +74,68 @@ public class MicroschemaDiffVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testNoDiff() {
-		MicroschemaContainer microschema = microschemaContainer("vcard");
-		Microschema request = getMicroschema();
-		MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		SchemaChangesListModel changes = future.result();
-		assertNotNull(changes);
-		assertThat(changes.getChanges()).isEmpty();
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer microschema = microschemaContainer("vcard");
+			Microschema request = getMicroschema();
+			MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+			latchFor(future);
+			assertSuccess(future);
+			SchemaChangesListModel changes = future.result();
+			assertNotNull(changes);
+			assertThat(changes.getChanges()).isEmpty();
+		}
 	}
 
 	@Test
 	public void testAddField() {
-		MicroschemaContainer microschema = microschemaContainer("vcard");
-		Microschema request = getMicroschema();
-		StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
-		stringField.setAllowedValues("one", "two");
-		request.addField(stringField);
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer microschema = microschemaContainer("vcard");
+			Microschema request = getMicroschema();
+			StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
+			stringField.setAllowedValues("one", "two");
+			request.addField(stringField);
 
-		MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		SchemaChangesListModel changes = future.result();
-		assertNotNull(changes);
-		assertThat(changes.getChanges()).hasSize(2);
-		assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("someField");
-		assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order",
-				new String[] { "firstName", "lastName", "address", "postcode", "someField" });
+			MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+			latchFor(future);
+			assertSuccess(future);
+			SchemaChangesListModel changes = future.result();
+			assertNotNull(changes);
+			assertThat(changes.getChanges()).hasSize(2);
+			assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("someField");
+			assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order",
+					new String[] { "firstName", "lastName", "address", "postcode", "someField" });
+		}
 	}
 
 	@Test
 	public void testAddUnsupportedField() {
-		MicroschemaContainer microschema = microschemaContainer("vcard");
-		Microschema request = getMicroschema();
-		BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binaryField");
-		request.addField(binaryField);
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer microschema = microschemaContainer("vcard");
+			Microschema request = getMicroschema();
+			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binaryField");
+			request.addField(binaryField);
 
-		MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "microschema_error_field_type_not_allowed", "binaryField", "binary");
+			MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+			latchFor(future);
+			expectException(future, BAD_REQUEST, "microschema_error_field_type_not_allowed", "binaryField", "binary");
+		}
 	}
 
 	@Test
 	public void testRemoveField() {
-		MicroschemaContainer microschema = microschemaContainer("vcard");
-		Microschema request = getMicroschema();
-		request.removeField("postcode");
-		MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		SchemaChangesListModel changes = future.result();
-		assertNotNull(changes);
-		assertThat(changes.getChanges()).hasSize(2);
-		assertThat(changes.getChanges().get(0)).is(REMOVEFIELD).forField("postcode");
-		assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order", new String[] { "firstName", "lastName", "address" });
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer microschema = microschemaContainer("vcard");
+			Microschema request = getMicroschema();
+			request.removeField("postcode");
+			MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+			latchFor(future);
+			assertSuccess(future);
+			SchemaChangesListModel changes = future.result();
+			assertNotNull(changes);
+			assertThat(changes.getChanges()).hasSize(2);
+			assertThat(changes.getChanges().get(0)).is(REMOVEFIELD).forField("postcode");
+			assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order", new String[] { "firstName", "lastName", "address" });
+		}
 	}
 
 }
