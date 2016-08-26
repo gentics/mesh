@@ -6,6 +6,7 @@ import java.io.File;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.DeploymentUtil;
@@ -41,15 +42,18 @@ public class DemoRunner {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
-//		options.getStorageOptions().setStartServer(true);
+		//		options.getStorageOptions().setStartServer(true);
 		//options.getSearchOptions().setHttpEnabled(true);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
-			DeploymentUtil.deployAndWait(vertx, config, DemoVerticle.class, false);
-			DeploymentUtil.deployAndWait(vertx, config, AdminGUIVerticle.class, false);
+
+			DemoVerticle verticle = new DemoVerticle(new DemoDataProvider(MeshCore.get().database(), MeshCore.get().meshLocalClientImpl()),
+					MeshCore.get().routerStorage());
+			DeploymentUtil.deployAndWait(vertx, config, verticle, false);
+			DeploymentUtil.deployAndWait(vertx, config, new AdminGUIVerticle(MeshCore.get().routerStorage()), false);
 		});
 		mesh.run();
 	}

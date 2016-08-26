@@ -42,6 +42,7 @@ import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.Tuple;
 
+import dagger.Lazy;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -58,7 +59,7 @@ public class SearchRestHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchRestHandler.class);
 
-	private BootstrapInitializer boot;
+	private Lazy<BootstrapInitializer> boot;
 
 	private SearchProvider searchProvider;
 
@@ -67,7 +68,7 @@ public class SearchRestHandler {
 	private IndexHandlerRegistry registry;
 
 	@Inject
-	public SearchRestHandler(BootstrapInitializer boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
+	public SearchRestHandler(Lazy<BootstrapInitializer> boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
 		this.boot = boot;
 		this.searchProvider = searchProvider;
 		this.db = db;
@@ -255,9 +256,9 @@ public class SearchRestHandler {
 						//						}
 					}).await();
 				}
-				boot.meshRoot().getSearchQueue().clear();
-				boot.meshRoot().getSearchQueue().addFullIndex();
-				boot.meshRoot().getSearchQueue().processAll();
+				boot.get().meshRoot().getSearchQueue().clear();
+				boot.get().meshRoot().getSearchQueue().addFullIndex();
+				boot.get().meshRoot().getSearchQueue().processAll();
 				return Single.just(message(ac, "search_admin_reindex_invoked"));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");

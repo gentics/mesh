@@ -20,6 +20,7 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
+import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Inject
-	public TagFamilyVerticle(BootstrapInitializer boot, RouterStorage routerStorage, TagCrudHandler tagCrudHandler,
+	public TagFamilyVerticle(Lazy<BootstrapInitializer> boot, RouterStorage routerStorage, TagCrudHandler tagCrudHandler,
 			TagFamilyCrudHandler tagFamilyCrudHandler) {
 		super("tagFamilies", boot, routerStorage);
 		this.tagCrudHandler = tagCrudHandler;

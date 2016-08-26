@@ -25,16 +25,17 @@ import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
+import dagger.Lazy;
 import rx.Single;
 
 public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, Microschema> {
 
 	private MicroschemaComparator comparator;
 
-	private BootstrapInitializer boot;
+	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, BootstrapInitializer boot) {
+	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot) {
 		super(db);
 		this.comparator = comparator;
 		this.boot = boot;
@@ -42,7 +43,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	@Override
 	public RootVertex<MicroschemaContainer> getRootVertex(InternalActionContext ac) {
-		return boot.microschemaContainerRoot();
+		return boot.get().microschemaContainerRoot();
 	}
 
 	@Override
@@ -101,7 +102,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		db.asyncNoTx(() -> {
-			Single<MicroschemaContainer> obsSchema = boot.microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+			Single<MicroschemaContainer> obsSchema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
 			});

@@ -19,6 +19,8 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
+import dagger.Lazy;
+
 /**
  * Verticle for REST endpoints to manage Releases
  */
@@ -32,7 +34,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Inject
-	public ReleaseVerticle(RouterStorage routerStorage, BootstrapInitializer boot, ReleaseCrudHandler crudHandler) {
+	public ReleaseVerticle(RouterStorage routerStorage, Lazy<BootstrapInitializer> boot, ReleaseCrudHandler crudHandler) {
 		super("releases", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}

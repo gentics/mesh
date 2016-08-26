@@ -1,10 +1,11 @@
 package com.gentics.mesh.auth;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.etc.config.JWTAuthenticationOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -22,6 +23,7 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTOptions;
 import rx.Single;
 
+@Singleton
 public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshJWTAuthProvider.class);
@@ -31,8 +33,8 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	private static final String USERID_FIELD_NAME = "userUuid";
 
 	@Inject
-	public MeshJWTAuthProvider(MeshModule springConfiguration, Database database, BootstrapInitializer boot) {
-		super(springConfiguration, database, boot);
+	public MeshJWTAuthProvider(MeshModule springConfiguration, Database database) {
+		super(springConfiguration, database);
 		JWTAuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions().getJwtAuthenticationOptions();
 		String secret = options.getSignatureSecret();
 		if (secret == null) {
@@ -70,7 +72,7 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 		return db.asyncNoTx(() -> {
 			JsonObject authInfo = u.principal();
 			String userUuid = authInfo.getString(USERID_FIELD_NAME);
-			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
+			MeshAuthUser user = MeshCore.get().boot().userRoot().findMeshAuthUserByUuid(userUuid);
 			if (user != null) {
 				return Single.just(user);
 			} else {

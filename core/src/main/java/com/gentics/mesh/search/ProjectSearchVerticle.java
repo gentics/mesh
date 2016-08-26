@@ -24,6 +24,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.IndexHandler;
 
+import dagger.Lazy;
 import rx.functions.Func0;
 
 /**
@@ -41,7 +42,7 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Inject
-	public ProjectSearchVerticle(BootstrapInitializer boot, RouterStorage routerStorage, SearchRestHandler searchHandler,
+	public ProjectSearchVerticle(Lazy<BootstrapInitializer> boot, RouterStorage routerStorage, SearchRestHandler searchHandler,
 			IndexHandlerRegistry registry) {
 		super("search", boot, routerStorage);
 		this.searchHandler = searchHandler;
@@ -63,9 +64,9 @@ public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE, nodeExamples.getNodeListResponse());
-		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE, tagExamples.getTagListResponse());
-		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, TagFamily.TYPE,
+		registerSearchHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE, nodeExamples.getNodeListResponse());
+		registerSearchHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE, tagExamples.getTagListResponse());
+		registerSearchHandler("tagFamilies", () -> boot.get().meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, TagFamily.TYPE,
 				tagFamilyExamples.getTagFamilyListResponse());
 	}
 

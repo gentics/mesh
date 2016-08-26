@@ -46,6 +46,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 
+import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -64,10 +65,10 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	private Database db;
 
-	private BootstrapInitializer boot;
+	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, BootstrapInitializer boot) {
+	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
@@ -78,7 +79,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
-				Language language = boot.languageRoot().findByLanguageTag(languageTag);
+				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
@@ -122,7 +123,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
-				Language language = boot.languageRoot().findByLanguageTag(languageTag);
+				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
@@ -299,7 +300,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
-				Language language = boot.languageRoot().findByLanguageTag(languageTag);
+				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}

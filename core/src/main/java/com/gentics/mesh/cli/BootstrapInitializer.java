@@ -51,38 +51,16 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.core.verticle.admin.AdminVerticle;
-import com.gentics.mesh.core.verticle.admin.RestInfoVerticle;
-import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
-import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
-import com.gentics.mesh.core.verticle.group.GroupVerticle;
-import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
-import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectInfoVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
-import com.gentics.mesh.core.verticle.role.RoleVerticle;
-import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
-import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.core.verticle.user.UserVerticle;
-import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
-import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.MeshVerticleConfiguration;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
-import com.gentics.mesh.search.ProjectSearchVerticle;
-import com.gentics.mesh.search.SearchVerticle;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -111,9 +89,9 @@ public class BootstrapInitializer {
 
 	private IndexHandlerRegistry searchHandlerRegistry;
 
-	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
+	private Map<String, AbstractVerticle> mandatoryVerticles = new HashMap<>();
 
-	private Map<String, Class<? extends AbstractVerticle>> mandatoryWorkerVerticles = new HashMap<>();
+	private Map<String, AbstractVerticle> mandatoryWorkerVerticles = new HashMap<>();
 
 	private BCryptPasswordEncoder encoder;
 
@@ -131,35 +109,35 @@ public class BootstrapInitializer {
 		this.encoder = encoder;
 
 		// Add API Info Verticle
-		addMandatoryVerticle(RestInfoVerticle.class);
-		addMandatoryVerticle(ProjectInfoVerticle.class);
+		addMandatoryVerticle(MeshCore.get().restInfoVerticle());
+		addMandatoryVerticle(MeshCore.get().projectInfoVerticle());
 
 		// User Group Role verticles
-		addMandatoryVerticle(UserVerticle.class);
-		addMandatoryVerticle(GroupVerticle.class);
-		addMandatoryVerticle(RoleVerticle.class);
+		addMandatoryVerticle(MeshCore.get().userVerticle());
+		addMandatoryVerticle(MeshCore.get().groupVerticle());
+		addMandatoryVerticle(MeshCore.get().roleVerticle());
 
 		// Project specific verticles
-		addMandatoryVerticle(NodeVerticle.class);
-		addMandatoryVerticle(TagFamilyVerticle.class);
-		addMandatoryVerticle(ProjectSchemaVerticle.class);
-		addMandatoryVerticle(ReleaseVerticle.class);
+		addMandatoryVerticle(MeshCore.get().nodeVerticle());
+		addMandatoryVerticle(MeshCore.get().tagFamilyVerticle());
+		addMandatoryVerticle(MeshCore.get().projectSchemaVerticle());
+		addMandatoryVerticle(MeshCore.get().releaseVerticle());
 
 		// Global verticles
-		addMandatoryVerticle(WebRootVerticle.class);
-		addMandatoryVerticle(NavRootVerticle.class);
-		addMandatoryVerticle(ProjectVerticle.class);
-		addMandatoryVerticle(SchemaVerticle.class);
-		addMandatoryVerticle(MicroschemaVerticle.class);
-		addMandatoryVerticle(SearchVerticle.class);
-		addMandatoryVerticle(ProjectSearchVerticle.class);
-		addMandatoryVerticle(AuthenticationVerticle.class);
-		addMandatoryVerticle(AdminVerticle.class);
-		addMandatoryVerticle(EventbusVerticle.class);
-		addMandatoryVerticle(UtilityVerticle.class);
+		addMandatoryVerticle(MeshCore.get().webrootVerticle());
+		addMandatoryVerticle(MeshCore.get().navRootVerticle());
+		addMandatoryVerticle(MeshCore.get().projectVerticle());
+		addMandatoryVerticle(MeshCore.get().schemaVerticle());
+		addMandatoryVerticle(MeshCore.get().microschemaVerticle());
+		addMandatoryVerticle(MeshCore.get().searchVerticle());
+		addMandatoryVerticle(MeshCore.get().projectSearchVerticle());
+		addMandatoryVerticle(MeshCore.get().authenticationVerticle());
+		addMandatoryVerticle(MeshCore.get().adminVerticle());
+		addMandatoryVerticle(MeshCore.get().eventbusVerticle());
+		addMandatoryVerticle(MeshCore.get().utilityVerticle());
 
 		// Worker verticles
-		addMandatoryWorkerVerticle(NodeMigrationVerticle.class);
+		addMandatoryWorkerVerticle(MeshCore.get().nodeMigrationVerticle());
 	}
 
 	/**
@@ -167,11 +145,11 @@ public class BootstrapInitializer {
 	 * 
 	 * @param clazz
 	 */
-	private void addMandatoryVerticle(Class<? extends AbstractVerticle> clazz) {
-		mandatoryVerticles.put(clazz.getSimpleName(), clazz);
+	private void addMandatoryVerticle(AbstractVerticle verticle) {
+		mandatoryVerticles.put(verticle.getClass().getSimpleName(), verticle);
 	}
 
-	private Map<String, Class<? extends AbstractVerticle>> getMandatoryVerticleClasses() {
+	private Map<String, AbstractVerticle> getMandatoryVerticleClasses() {
 		return mandatoryVerticles;
 	}
 
@@ -180,8 +158,8 @@ public class BootstrapInitializer {
 	 *
 	 * @param clazz
 	 */
-	private void addMandatoryWorkerVerticle(Class<? extends AbstractVerticle> clazz) {
-		mandatoryWorkerVerticles.put(clazz.getSimpleName(), clazz);
+	private void addMandatoryWorkerVerticle(AbstractVerticle verticle) {
+		mandatoryWorkerVerticles.put(verticle.getClass().getSimpleName(), verticle);
 	}
 
 	/**
@@ -189,7 +167,7 @@ public class BootstrapInitializer {
 	 * 
 	 * @return
 	 */
-	private Map<String, Class<? extends AbstractVerticle>> getMandatoryWorkerVerticleClasses() {
+	private Map<String, AbstractVerticle> getMandatoryWorkerVerticleClasses() {
 		return mandatoryWorkerVerticles;
 	}
 
@@ -222,7 +200,7 @@ public class BootstrapInitializer {
 	}
 
 	/**
-	 * Initialize mesh.
+	 * Initialise mesh.
 	 * 
 	 * @param configuration
 	 * @param verticleLoader
@@ -332,50 +310,50 @@ public class BootstrapInitializer {
 		JsonObject defaultConfig = new JsonObject();
 		defaultConfig.put("port", configuration.getHttpServerOptions().getPort());
 
-		for (Class<? extends AbstractVerticle> clazz : getMandatoryVerticleClasses().values()) {
+		for (AbstractVerticle verticle : getMandatoryVerticleClasses().values()) {
 			try {
 				if (log.isInfoEnabled()) {
-					log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
+					log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
 				}
 				// TODO handle custom config? i assume we will not allow this
-				deployAndWait(Mesh.vertx(), defaultConfig, clazz, false);
+				deployAndWait(Mesh.vertx(), defaultConfig, verticle, false);
 			} catch (InterruptedException e) {
-				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
+				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
 			}
 		}
 
-		for (Class<? extends AbstractVerticle> clazz : getMandatoryWorkerVerticleClasses().values()) {
+		for (AbstractVerticle verticle : getMandatoryWorkerVerticleClasses().values()) {
 			try {
 				if (log.isInfoEnabled()) {
-					log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
+					log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
 				}
 				// TODO handle custom config? i assume we will not allow this
-				deployAndWait(Mesh.vertx(), defaultConfig, clazz, true);
+				deployAndWait(Mesh.vertx(), defaultConfig, verticle, true);
 			} catch (InterruptedException e) {
-				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
+				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
 			}
 		}
 
-		for (String verticleName : configuration.getVerticles().keySet()) {
-			if (getMandatoryVerticleClasses().containsKey(verticleName)) {
-				log.error("Can't configure mandatory verticles. Skipping configured verticle {" + verticleName + "}");
-				continue;
-			}
-			MeshVerticleConfiguration verticleConf = configuration.getVerticles().get(verticleName);
-			JsonObject mergedVerticleConfig = new JsonObject();
-			if (verticleConf.getVerticleConfig() != null) {
-				mergedVerticleConfig = verticleConf.getVerticleConfig().copy();
-			}
-			mergedVerticleConfig.put("port", configuration.getHttpServerOptions().getPort());
-			try {
-				if (log.isInfoEnabled()) {
-					log.info("Loading configured verticle {" + verticleName + "}.");
-				}
-				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName, false);
-			} catch (InterruptedException e) {
-				log.error("Could not load verticle {" + verticleName + "}.", e);
-			}
-		}
+		//		for (String verticleName : configuration.getVerticles().keySet()) {
+		//			if (getMandatoryVerticleClasses().containsKey(verticleName)) {
+		//				log.error("Can't configure mandatory verticles. Skipping configured verticle {" + verticleName + "}");
+		//				continue;
+		//			}
+		//			MeshVerticleConfiguration verticleConf = configuration.getVerticles().get(verticleName);
+		//			JsonObject mergedVerticleConfig = new JsonObject();
+		//			if (verticleConf.getVerticleConfig() != null) {
+		//				mergedVerticleConfig = verticleConf.getVerticleConfig().copy();
+		//			}
+		//			mergedVerticleConfig.put("port", configuration.getHttpServerOptions().getPort());
+		//			try {
+		//				if (log.isInfoEnabled()) {
+		//					log.info("Loading configured verticle {" + verticleName + "}.");
+		//				}
+		//				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName, false);
+		//			} catch (InterruptedException e) {
+		//				log.error("Could not load verticle {" + verticleName + "}.", e);
+		//			}
+		//		}
 
 	}
 

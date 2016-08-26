@@ -12,7 +12,6 @@ import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.auth.MeshBasicAuthHandler;
 import com.gentics.mesh.auth.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.MeshJWTAuthProvider;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
@@ -121,13 +120,13 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public AuthHandler authHandler(Database db, BootstrapInitializer boot) {
+	public AuthHandler authHandler(MeshAuthProvider provider) {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
-			return MeshJWTAuthHandler.create(authProvider(db, boot));
+			return MeshJWTAuthHandler.create(provider);
 		case BASIC_AUTH:
 		default:
-			return MeshBasicAuthHandler.create(authProvider(db, boot));
+			return MeshBasicAuthHandler.create(provider);
 		}
 	}
 
@@ -150,8 +149,8 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public UserSessionHandler userSessionHandler(Database db, BootstrapInitializer boot) {
-		return UserSessionHandler.create(authProvider(db, boot));
+	public UserSessionHandler userSessionHandler(Database db) {
+		return UserSessionHandler.create(authProvider(db));
 	}
 
 	/**
@@ -161,13 +160,13 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public MeshAuthProvider authProvider(Database db, BootstrapInitializer boot) {
+	public MeshAuthProvider authProvider(Database db) {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
-			return new MeshJWTAuthProvider(this, db, boot);
+			return new MeshJWTAuthProvider(this, db);
 		case BASIC_AUTH:
 		default:
-			return new MeshAuthProvider(this, db, boot);
+			return new MeshAuthProvider(this, db);
 		}
 	}
 

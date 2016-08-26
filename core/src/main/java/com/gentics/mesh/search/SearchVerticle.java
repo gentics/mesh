@@ -37,6 +37,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.IndexHandler;
 
+import dagger.Lazy;
 import rx.functions.Func0;
 
 @Singleton
@@ -46,11 +47,11 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 
 	private IndexHandlerRegistry registry;
 
-	private BootstrapInitializer boot;
+	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
 	public SearchVerticle(RouterStorage routerStorage, SearchRestHandler searchHandler, IndexHandlerRegistry registry,
-			BootstrapInitializer boot) {
+			Lazy<BootstrapInitializer> boot) {
 		super("search", routerStorage);
 		this.searchHandler = searchHandler;
 		this.registry = registry;
@@ -76,18 +77,18 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerHandler("users", () -> boot.meshRoot().getUserRoot(), UserListResponse.class, User.TYPE, userExamples.getUserListResponse());
-		registerHandler("groups", () -> boot.meshRoot().getGroupRoot(), GroupListResponse.class, Group.TYPE, groupExamples.getGroupListResponse());
-		registerHandler("roles", () -> boot.meshRoot().getRoleRoot(), RoleListResponse.class, Role.TYPE, roleExamples.getRoleListResponse());
-		registerHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE, nodeExamples.getNodeListResponse());
-		registerHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE, tagExamples.getTagListResponse());
-		registerHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, TagFamily.TYPE,
+		registerHandler("users", () -> boot.get().meshRoot().getUserRoot(), UserListResponse.class, User.TYPE, userExamples.getUserListResponse());
+		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, Group.TYPE, groupExamples.getGroupListResponse());
+		registerHandler("roles", () -> boot.get().meshRoot().getRoleRoot(), RoleListResponse.class, Role.TYPE, roleExamples.getRoleListResponse());
+		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE, nodeExamples.getNodeListResponse());
+		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE, tagExamples.getTagListResponse());
+		registerHandler("tagFamilies", () -> boot.get().meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, TagFamily.TYPE,
 				tagFamilyExamples.getTagFamilyListResponse());
-		registerHandler("projects", () -> boot.meshRoot().getProjectRoot(), ProjectListResponse.class, Project.TYPE,
+		registerHandler("projects", () -> boot.get().meshRoot().getProjectRoot(), ProjectListResponse.class, Project.TYPE,
 				projectExamples.getProjectListResponse());
-		registerHandler("schemas", () -> boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, SchemaContainer.TYPE,
+		registerHandler("schemas", () -> boot.get().meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, SchemaContainer.TYPE,
 				schemaExamples.getSchemaListResponse());
-		registerHandler("microschemas", () -> boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class, MicroschemaContainer.TYPE,
+		registerHandler("microschemas", () -> boot.get().meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class, MicroschemaContainer.TYPE,
 				microschemaExamples.getMicroschemaListResponse());
 		addAdminHandlers();
 	}

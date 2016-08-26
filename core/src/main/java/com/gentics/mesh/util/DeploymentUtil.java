@@ -24,11 +24,7 @@ public final class DeploymentUtil {
 	// TODO decrease
 	private static final long DEFAULT_TIMEOUT_IN_SECONDS = 10 * 1000;
 
-	public static String deployAndWait(Vertx vertx, JsonObject config, final Class<? extends AbstractVerticle> clazz, boolean worker) throws InterruptedException {
-		return deployAndWait(vertx, config, clazz.getCanonicalName(), worker);
-	}
-
-	public static String deployAndWait(Vertx vertx, JsonObject config, String verticleClass, boolean worker) throws InterruptedException {
+	public static String deployAndWait(Vertx vertx, JsonObject config, AbstractVerticle verticle, boolean worker) throws InterruptedException {
 		final CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<String> deploymentId = new AtomicReference<String>();
 		DeploymentOptions options = new DeploymentOptions();
@@ -36,11 +32,11 @@ public final class DeploymentUtil {
 			options = new DeploymentOptions(new JsonObject().put("config", config));
 		}
 		options.setWorker(worker);
-		vertx.deployVerticle(verticleClass, options, handler -> {
+		vertx.deployVerticle(verticle, options, handler -> {
 			if (handler.succeeded()) {
 				deploymentId.set(handler.result());
 				if (LOG.isInfoEnabled()) {
-					LOG.info("Deployed verticle {" + verticleClass + "} => " + deploymentId);
+					LOG.info("Deployed verticle {" + verticle.getClass().getName() + "} => " + deploymentId);
 				}
 			} else {
 				if (LOG.isInfoEnabled()) {

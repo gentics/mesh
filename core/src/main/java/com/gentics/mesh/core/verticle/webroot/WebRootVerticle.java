@@ -10,6 +10,8 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.Endpoint;
+
+import dagger.Lazy;
 @Singleton
 public class WebRootVerticle extends AbstractProjectRestVerticle {
 
@@ -20,7 +22,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Inject
-	public WebRootVerticle(BootstrapInitializer boot, RouterStorage routerStorage, WebRootHandler handler) {
+	public WebRootVerticle(Lazy<BootstrapInitializer> boot, RouterStorage routerStorage, WebRootHandler handler) {
 		super("webroot", boot, routerStorage);
 		this.handler = handler;
 	}

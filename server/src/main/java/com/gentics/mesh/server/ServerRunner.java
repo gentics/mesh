@@ -2,6 +2,7 @@ package com.gentics.mesh.server;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
@@ -28,7 +29,7 @@ public class ServerRunner {
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
-			DeploymentUtil.deployAndWait(vertx, config, AdminGUIVerticle.class, false);
+			DeploymentUtil.deployAndWait(vertx, config, new AdminGUIVerticle(MeshCore.get().routerStorage()), false);
 		});
 		mesh.run();
 	}

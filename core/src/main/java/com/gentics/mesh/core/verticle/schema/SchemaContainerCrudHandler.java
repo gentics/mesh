@@ -26,16 +26,17 @@ import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
+import dagger.Lazy;
 import rx.Single;
 
 public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContainer, Schema> {
 
 	private SchemaComparator comparator;
 
-	private BootstrapInitializer boot;
+	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public SchemaContainerCrudHandler(Database db, SchemaComparator comparator, BootstrapInitializer boot) {
+	public SchemaContainerCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot) {
 		super(db);
 		this.comparator = comparator;
 		this.boot = boot;
@@ -43,13 +44,13 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 
 	@Override
 	public RootVertex<SchemaContainer> getRootVertex(InternalActionContext ac) {
-		return boot.schemaContainerRoot();
+		return boot.get().schemaContainerRoot();
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> boot.schemaContainerRoot(), uuid);
+		HandlerUtilities.deleteElement(ac, () -> boot.get().schemaContainerRoot(), uuid);
 	}
 
 	@Override
@@ -119,7 +120,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			Single<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
+			Single<SchemaContainer> obsSchema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
 			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), GraphPermission.UPDATE_PERM);
 
 			// TODO check whether schema is assigned to project
@@ -145,7 +146,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		validateParameter(schemaUuid, "schemaUuid");
 
 		db.asyncNoTx(() -> {
-			Single<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+			Single<SchemaContainer> obsSchema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
 			});

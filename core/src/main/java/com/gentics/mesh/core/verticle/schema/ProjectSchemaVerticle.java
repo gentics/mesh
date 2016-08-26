@@ -13,6 +13,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 
+import dagger.Lazy;
+
 /**
  * Verticle for /api/v1/PROJECTNAME/schemas
  */
@@ -22,7 +24,7 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 	private SchemaContainerCrudHandler crudHandler;
 
 	@Inject
-	public ProjectSchemaVerticle(BootstrapInitializer boot, RouterStorage routerStorage, SchemaContainerCrudHandler crudHandler) {
+	public ProjectSchemaVerticle(Lazy<BootstrapInitializer> boot, RouterStorage routerStorage, SchemaContainerCrudHandler crudHandler) {
 		super("schemas", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}

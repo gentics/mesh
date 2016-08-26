@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus.Type;
 import com.gentics.mesh.graphdb.spi.Database;
 
+import dagger.Lazy;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -42,10 +43,10 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 	private Database db;
 
-	private BootstrapInitializer boot;
+	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public NodeMigrationVerticle(Database db, BootstrapInitializer boot, NodeMigrationHandler handler) {
+	public NodeMigrationVerticle(Database db, Lazy<BootstrapInitializer> boot, NodeMigrationHandler handler) {
 		this.db = db;
 		this.boot = boot;
 		this.nodeMigrationHandler = handler;
@@ -100,7 +101,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 					return;
 				} else {
 					db.noTx(() -> {
-						Project project = boot.projectRoot().findByUuidSync(projectUuid);
+						Project project = boot.get().projectRoot().findByUuidSync(projectUuid);
 						if (project == null) {
 							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
 						}
@@ -108,7 +109,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 						if (release == null) {
 							throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
 						}
-						SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(schemaUuid).toBlocking().value();
+						SchemaContainer schemaContainer = boot.get().schemaContainerRoot().findByUuid(schemaUuid).toBlocking().value();
 						if (schemaContainer == null) {
 							throw error(BAD_REQUEST, "Schema container for uuid {" + schemaUuid + "} can't be found.");
 						}
@@ -167,7 +168,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 					message.fail(0, "Migration for microschema " + microschemaUuid + " is already running");
 				} else {
 					db.noTx(() -> {
-						Project project = boot.projectRoot().findByUuidSync(projectUuid);
+						Project project = boot.get().projectRoot().findByUuidSync(projectUuid);
 						if (project == null) {
 							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
 						}
@@ -176,7 +177,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 							throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
 						}
 
-						MicroschemaContainer schemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().value();
+						MicroschemaContainer schemaContainer = boot.get().microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().value();
 
 						if (schemaContainer == null) {
 							throw error(BAD_REQUEST, "Microschema container for uuid {" + microschemaUuid + "} can't be found.");
@@ -220,7 +221,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 			Throwable error = db.noTx(() -> {
 				try {
-					Project project = boot.projectRoot().findByUuidSync(projectUuid);
+					Project project = boot.get().projectRoot().findByUuidSync(projectUuid);
 					if (project == null) {
 						throw error(BAD_REQUEST, "Project with uuid {" + projectUuid + "} cannot be found");
 					}

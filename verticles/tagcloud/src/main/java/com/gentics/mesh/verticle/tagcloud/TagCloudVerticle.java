@@ -16,12 +16,14 @@ import com.gentics.mesh.tagcloud.model.TagCloud;
 import com.gentics.mesh.tagcloud.model.TagCloudEntry;
 import com.gentics.mesh.tagcloud.model.TagCloudResult;
 
+import dagger.Lazy;
+
 public class TagCloudVerticle extends AbstractProjectRestVerticle {
 
 	private TagCloudService tagCloudService;
 
 	@Inject
-	public TagCloudVerticle(BootstrapInitializer boot, RouterStorage routerStorage,
+	public TagCloudVerticle(Lazy<BootstrapInitializer> boot, RouterStorage routerStorage,
 			TagCloudService tagCloudService) {
 		super("page", boot, routerStorage);
 		this.tagCloudService = tagCloudService;

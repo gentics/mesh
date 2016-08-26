@@ -26,21 +26,22 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 
+import dagger.Lazy;
 import rx.Single;
 
 public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> {
 
-	private BootstrapInitializer boot;
+	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public GroupCrudHandler(Database db, BootstrapInitializer boot) {
+	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot) {
 		super(db);
 		this.boot = boot;
 	}
 
 	@Override
 	public RootVertex<Group> getRootVertex(InternalActionContext ac) {
-		return boot.groupRoot();
+		return boot.get().groupRoot();
 	}
 
 	@Override
@@ -78,8 +79,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 
 		db.asyncNoTx(() -> {
-			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Single<Group> obsGroup = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Single<Role> obsRole = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsRole, (group, role) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
@@ -103,7 +104,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.asyncNoTx(() -> {
 			// TODO check whether the role is actually part of the group
 			Single<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Single<Role> obsRole = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsRole, (group, role) -> {
 				SearchQueueBatch sqBatch = db.tx(() -> {
@@ -131,7 +132,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.asyncNoTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameters pagingInfo = new PagingParameters(ac);
-			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
+			Single<Group> obsGroup = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
 			return obsGroup.flatMap(group -> {
 				try {
 					PageImpl<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
@@ -158,8 +159,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		db.asyncNoTx(() -> {
 
-			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+			Single<Group> obsGroup = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Single<User> obsUser = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsUser, (group, user) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 					group.addUser(user);
@@ -180,8 +181,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(userUuid, "userUuid");
 
 		db.asyncNoTx(() -> {
-			Single<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+			Single<Group> obsGroup = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Single<User> obsUser = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			return Single.zip(obsUser, obsGroup, (user, group) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);

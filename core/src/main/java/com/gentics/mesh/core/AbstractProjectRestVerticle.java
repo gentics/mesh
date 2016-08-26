@@ -4,6 +4,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.etc.RouterStorage;
 
+import dagger.Lazy;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
@@ -13,9 +14,9 @@ import io.vertx.ext.web.RoutingContext;
  */
 public abstract class AbstractProjectRestVerticle extends AbstractWebVerticle {
 
-	protected BootstrapInitializer boot;
+	protected Lazy<BootstrapInitializer> boot;
 
-	protected AbstractProjectRestVerticle(String basePath, BootstrapInitializer boot, RouterStorage routerStorage) {
+	protected AbstractProjectRestVerticle(String basePath, Lazy<BootstrapInitializer> boot, RouterStorage routerStorage) {
 		super(basePath, routerStorage);
 		this.boot = boot;
 	}
@@ -27,7 +28,7 @@ public abstract class AbstractProjectRestVerticle extends AbstractWebVerticle {
 	}
 
 	public Project getProject(RoutingContext rc) {
-		return boot.projectRoot().findByName(getProjectName(rc)).toBlocking().value();
+		return boot.get().projectRoot().findByName(getProjectName(rc)).toBlocking().value();
 	}
 
 	public String getProjectName(RoutingContext rc) {

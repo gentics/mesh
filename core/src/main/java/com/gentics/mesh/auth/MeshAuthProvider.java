@@ -1,11 +1,12 @@
 package com.gentics.mesh.auth;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -24,21 +25,19 @@ import io.vertx.ext.auth.jwt.JWTOptions;
 /**
  * Mesh auth provider
  */
+@Singleton
 public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshAuthProvider.class);
-
-	protected BootstrapInitializer boot;
 
 	protected Database db;
 
 	private MeshModule springConfiguration;
 
 	@Inject
-	public MeshAuthProvider(MeshModule springConfiguration, Database database, BootstrapInitializer boot) {
+	public MeshAuthProvider(MeshModule springConfiguration, Database database) {
 		this.springConfiguration = springConfiguration;
 		this.db = database;
-		this.boot = boot;
 	}
 
 	@Override
@@ -46,7 +45,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		db.asyncNoTx(() -> {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
-			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);
+			MeshAuthUser user = MeshCore.get().boot().userRoot().findMeshAuthUserByUsername(username);
 			if (user != null) {
 				String accountPasswordHash = user.getPasswordHash();
 				// TODO check if user is enabled

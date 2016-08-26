@@ -152,4 +152,5 @@ public interface MeshComponent {
 	SchemaComparator schemaComparator();
 
 	ProjectInfoVerticle projectInfoVerticle();
+
 }

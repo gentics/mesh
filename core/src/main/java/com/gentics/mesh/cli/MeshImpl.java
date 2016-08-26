@@ -80,13 +80,8 @@ public class MeshImpl implements Mesh {
 			invokeUpdateCheck();
 		}
 
-		// Start the spring context
-//		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MeshSpringConfiguration.class)) {
-//			BootstrapInitializer initalizer = ctx.getBean(BootstrapInitializer.class);
-//			initalizer.init(options, verticleLoader);
-//			ctx.registerShutdownHook();
-			dontExit();
-//		}
+		MeshCore.create().boot().init(options, verticleLoader);
+		dontExit();
 	}
 
 	private boolean isFirstApril() {
