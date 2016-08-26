@@ -52,7 +52,8 @@ public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Node targetNode = content("concorde");
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			call(()-> getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
+			call(() -> getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
+					"node_move_error_targetnode_is_no_folder");
 			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
 		}
 	}
@@ -117,7 +118,7 @@ public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 						sourceNode.getParentNode(releaseUuid).getUuid());
 				assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
 						targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-				assertEquals("A store event for each language variation per version should occure", 4, searchProvider.getStoreEvents().size());
+				assertEquals("A store event for each language variation per version should occure", 4, dummySearchProvider.getStoreEvents().size());
 			}
 			// TODO assert entries
 		}

@@ -120,11 +120,11 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 		request.setName("new microschema name");
 		request.setDescription("microschema description");
 
-		assertThat(searchProvider).recordedStoreEvents(0);
+		assertThat(dummySearchProvider).recordedStoreEvents(0);
 		MeshResponse<Microschema> future = getClient().createMicroschema(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
-		assertThat(searchProvider).recordedStoreEvents(1);
+		assertThat(dummySearchProvider).recordedStoreEvents(1);
 		Microschema microschemaResponse = future.result();
 		assertThat(microschemaResponse.getPermissions()).isNotEmpty().contains("read", "create", "delete", "update");
 		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");

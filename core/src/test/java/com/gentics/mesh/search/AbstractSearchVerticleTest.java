@@ -36,6 +36,13 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 	// private NodeIndexHandler nodeIndexHandler;
 
 	@Before
+	public void setupES() {
+		init();
+		initWithSearch();
+	}
+	
+	
+	@Before
 	public void setupVerticleTest() throws Exception {
 		super.setupVerticleTest();
 		for (IndexHandler handler : meshDagger.indexHandlerRegistry().getHandlers()) {

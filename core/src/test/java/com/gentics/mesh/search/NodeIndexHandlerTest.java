@@ -17,12 +17,12 @@ public class NodeIndexHandlerTest extends AbstractIsolatedBasicDBTest {
 		try (NoTx noTx = db.noTx()) {
 			assertThat(meshRoot().getNodeRoot().findAll()).as("Node list").isNotEmpty();
 			searchProvider.reset();
-			assertEquals("Initially no store event should have been recorded.", 0, searchProvider.getStoreEvents().size());
+			assertEquals("Initially no store event should have been recorded.", 0, dummySearchProvider.getStoreEvents().size());
 			meshDagger.nodeIndexHandler().reindexAll().await();
-			assertTrue("We expected to see more than one store event.", searchProvider.getStoreEvents().size() > 1);
+			assertTrue("We expected to see more than one store event.", dummySearchProvider.getStoreEvents().size() > 1);
 		}
 
-		for (String key : searchProvider.getStoreEvents().keySet()) {
+		for (String key : dummySearchProvider.getStoreEvents().keySet()) {
 			if (!key.startsWith("node")) {
 				fail("We found a document which was does not represent a node. Only nodes should have been reindexed. {" + key + "}");
 			}

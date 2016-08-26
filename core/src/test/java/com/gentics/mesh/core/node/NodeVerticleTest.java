@@ -99,11 +99,11 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setSchema(schemaReference);
 			request.setParentNodeUuid(folder("news").getUuid());
 
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_no_languagecode_specified");
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 		}
 	}
 
@@ -122,11 +122,11 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setSchema(schemaReference);
 			request.setParentNodeUuid(folder("news").getUuid());
 
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "language_not_found", "BOGUS");
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 		}
 	}
 
@@ -142,13 +142,13 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(project().getBaseNode().getUuid());
 
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			NodeResponse restNode = future.result();
 			test.assertMeshNode(request, restNode);
-			assertThat(searchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider).recordedStoreEvents(1);
 		}
 	}
 
@@ -166,13 +166,13 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
 			request.setParentNodeUuid(uuid);
 
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			NodeResponse restNode = future.result();
 			test.assertMeshNode(request, restNode);
-			assertThat(searchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider).recordedStoreEvents(1);
 		}
 	}
 
@@ -187,7 +187,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			long start = System.currentTimeMillis();
 			for (int i = 1; i < 100; i++) {
-				searchProvider.reset();
+				dummySearchProvider.reset();
 				NodeCreateRequest request = new NodeCreateRequest();
 				request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 				request.setLanguage("en");
@@ -224,13 +224,13 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			NodeResponse restNode = future.result();
 			test.assertMeshNode(request, restNode);
-			assertThat(searchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider).recordedStoreEvents(1);
 
 			// We created the node. The searchqueue batch should have been processed
 			assertThat(meshRoot().getSearchQueue()).hasEntries(0);
@@ -384,10 +384,10 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(folder("news").getUuid());
 
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			NodeResponse restNode = call(
 					() -> getClient().createNode(PROJECT_NAME, request, new NodeParameters().setLanguages("de"), new VersioningParameters().draft()));
-			assertThat(searchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider).recordedStoreEvents(1);
 			test.assertMeshNode(request, restNode);
 
 			Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid()).toBlocking().value();
@@ -471,11 +471,11 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
 
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 		}
 	}
 
@@ -1313,11 +1313,11 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			parameters.setLanguages("blabla", "edgsdg");
 			VersioningParameters versionParams = new VersioningParameters().draft();
 
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 		}
 	}
 
@@ -1405,7 +1405,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertThat(origContainer).as("orig container").hasNext(container);
 			assertThat(origContainer.getPreviousVersion()).isFirst();
 
-			assertEquals(1, searchProvider.getStoreEvents().size());
+			assertEquals(1, dummySearchProvider.getStoreEvents().size());
 
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
 			assertEquals("We updated the node. The search queue batch should have been processed.", 0, searchQueue.getSize());
@@ -1587,7 +1587,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			call(() -> getClient().deleteNode(PROJECT_NAME, uuid));
 
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
-			assertThat(searchProvider).as("Delete Events after node delete. We expect 4 since both languages have draft and publish version.")
+			assertThat(dummySearchProvider).as("Delete Events after node delete. We expect 4 since both languages have draft and publish version.")
 					.recordedDeleteEvents(4);
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
 			assertThat(searchQueue).hasEntries(0);

@@ -12,7 +12,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -26,13 +25,11 @@ public class AdminGUIVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	private AdminGUIVerticle adminGuiVerticle;
 
-	@Before
-	public void setupVerticle() {
-		adminGuiVerticle = new AdminGUIVerticle(meshDagger.routerStorage());
-	}
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
+		if (adminGuiVerticle == null) {
+			adminGuiVerticle = new AdminGUIVerticle(meshDagger.routerStorage());
+		}
 		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(adminGuiVerticle);
 		return list;

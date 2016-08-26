@@ -346,13 +346,13 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("New Name");
 
-			assertEquals(0, searchProvider.getStoreEvents().size());
+			assertEquals(0, dummySearchProvider.getStoreEvents().size());
 			MeshResponse<ProjectResponse> future = getClient().updateProject(uuid, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			ProjectResponse restProject = future.result();
 			test.assertProject(request, restProject);
-			assertTrue(searchProvider.getStoreEvents().size() != 0);
+			assertTrue(dummySearchProvider.getStoreEvents().size() != 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().value();
 			reloadedProject.reload();

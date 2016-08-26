@@ -1,7 +1,9 @@
 package com.gentics.mesh.test;
 
+import java.io.File;
 import java.util.Map;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -20,16 +22,21 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshCore;
-import com.gentics.mesh.dagger.TestMeshComponent;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.demo.UserInfo;
+import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
-import com.gentics.mesh.test.dagger.MeshTestModule;
+import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.RestAssert;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -47,25 +54,63 @@ public abstract class AbstractDBTest {
 
 	protected RestAssert test = new RestAssert();
 
-	protected TestMeshComponent meshDagger;
+	protected MeshComponent meshDagger;
 
 	protected RouterStorage routerStorage;
-	
+
 	protected ServerSchemaStorage schemaStorage;
-	
-	protected DummySearchProvider searchProvider;
+
+	protected SearchProvider searchProvider;
+
+	protected DummySearchProvider dummySearchProvider;
 
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
 
+	public static void initWithSearch() {
+		ElasticSearchOptions options = new ElasticSearchOptions();
+		options.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
+		//			options.setHttpEnabled(true);
+		//SearchProvider provider = new ElasticSearchProvider().init(options);
+		Mesh.mesh().getOptions().setSearchOptions(options);
+	}
+
+	public static void init() {
+		MeshFactoryImpl.clear();
+		MeshOptions options = new MeshOptions();
+
+		String uploads = "target/testuploads_" + UUIDUtil.randomUUID();
+		new File(uploads).mkdirs();
+		options.getUploadOptions().setDirectory(uploads);
+
+		String targetTmpDir = "target/tmp_" + UUIDUtil.randomUUID();
+		new File(targetTmpDir).mkdirs();
+		options.getUploadOptions().setTempDirectory(targetTmpDir);
+
+		String imageCacheDir = "target/image_cache_" + UUIDUtil.randomUUID();
+		new File(imageCacheDir).mkdirs();
+		options.getImageOptions().setImageCacheDirectory(imageCacheDir);
+
+		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());
+		// The database provider will switch to in memory mode when no directory has been specified.
+		options.getStorageOptions().setDirectory(null);
+		options.getAuthenticationOptions().setAuthenticationMethod(AuthenticationMethod.JWT);
+		options.getAuthenticationOptions().getJwtAuthenticationOptions().setSignatureSecret("secret");
+		options.getAuthenticationOptions().getJwtAuthenticationOptions().setKeystorePath("keystore.jceks");
+		Mesh.mesh(options);
+	}
+
 	public void initDagger() throws Exception {
-		MeshTestModule.init();
-		meshDagger = MeshCore.createTest();
+		init();
+		meshDagger = MeshCore.create();
 		dataProvider = meshDagger.testDataProvider();
 		routerStorage = meshDagger.routerStorage();
-		searchProvider = meshDagger.dummySearchProvider();
+		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
+			dummySearchProvider = meshDagger.dummySearchProvider();
+		}
+		searchProvider = meshDagger.searchProvider();
 		schemaStorage = meshDagger.serverSchemaStorage();
 		boot = meshDagger.boot();
 		db = meshDagger.database();

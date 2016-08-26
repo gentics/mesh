@@ -72,16 +72,16 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			assertThat(searchProvider)
+			assertThat(dummySearchProvider)
 					.as("Recorded store events after node update occured. Published and draft of the node should have been updated.")
 					.recordedStoreEvents(2);
 			// node-[:nodeUuid]-[draft/published]-[schemaname]-[schemaversion]-[release_uuid]
-			searchProvider.getStoreEvents().containsKey("node-" + node.getUuid() + "-published-folder-1-" + project().getLatestRelease().getUuid());
-			searchProvider.getStoreEvents().containsKey("node-" + node.getUuid() + "-draft-folder-1-" + project().getLatestRelease().getUuid());
+			dummySearchProvider.getStoreEvents().containsKey("node-" + node.getUuid() + "-published-folder-1-" + project().getLatestRelease().getUuid());
+			dummySearchProvider.getStoreEvents().containsKey("node-" + node.getUuid() + "-draft-folder-1-" + project().getLatestRelease().getUuid());
 
 			future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);

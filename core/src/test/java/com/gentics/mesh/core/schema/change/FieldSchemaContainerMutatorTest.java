@@ -50,8 +50,8 @@ public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
 	private FieldSchemaContainerMutator mutator = new FieldSchemaContainerMutator();
 
 	@Before
-	public void init() throws Exception {
-		initDagger();
+	public void initDagger() throws Exception {
+		super.initDagger();
 	}
 
 	@Test

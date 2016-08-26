@@ -61,11 +61,11 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			MeshResponse<Schema> future = getClient().createSchema(schema).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			assertThat(searchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider).recordedStoreEvents(1);
 			Schema restSchema = future.result();
 			assertThat(schema).matches(restSchema);
 			assertThat(restSchema.getPermissions()).isNotEmpty().contains("create", "read", "update", "delete");
@@ -83,13 +83,13 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		try (NoTx noTx = db.noTx()) {
-			assertThat(searchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
 			MeshResponse<Schema> createFuture = getClient().createSchema(schema).invoke();
 			latchFor(createFuture);
 			assertSuccess(createFuture);
-			assertThat(searchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider).recordedStoreEvents(1);
 			Schema restSchema = createFuture.result();
 			assertThat(schema).matches(restSchema);
 			assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
@@ -103,8 +103,8 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(deleteFuture);
 			assertSuccess(deleteFuture);
 			// TODO actually also the used nodes should have been deleted
-			assertThat(searchProvider).recordedDeleteEvents(1);
-			assertThat(searchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider).recordedDeleteEvents(1);
+			assertThat(dummySearchProvider).recordedStoreEvents(1);
 		}
 
 	}

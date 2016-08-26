@@ -14,17 +14,8 @@ public interface MeshCore {
 		return applicationComponent.get();
 
 	}
-	
-	static <T extends MeshComponent> T createTest() {
 
-		if (applicationComponent.get() == null) {
-			applicationComponent.set(DaggerTestMeshComponent.builder().build());
-		}
-		return (T) applicationComponent.get();
-
-	}
-
-	static <T extends MeshComponent>  T get() {
+	static <T extends MeshComponent> T get() {
 		return (T) applicationComponent.get();
 	}
 

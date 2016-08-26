@@ -19,12 +19,16 @@ import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.verticle.auth.BasicAuthRestHandler;
 import com.gentics.mesh.core.verticle.auth.JWTAuthRestHandler;
+import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
+import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.impl.DummySearchProvider;
+import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 import dagger.Module;
 import dagger.Provides;
@@ -215,6 +219,20 @@ public class MeshModule {
 		handler.setUploadsDirectory(tempDirectory);
 		return handler;
 	}
+
+	@Provides
+	@Singleton
+	public SearchProvider searchProvider() {
+		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
+		SearchProvider searchProvider = null;
+		if (options == null || options.getDirectory() == null) {
+			searchProvider = new DummySearchProvider();
+		} else {
+			searchProvider = new ElasticSearchProvider().init(Mesh.mesh().getOptions().getSearchOptions());
+		}
+		return searchProvider;
+	}
+	
 	
 
 }

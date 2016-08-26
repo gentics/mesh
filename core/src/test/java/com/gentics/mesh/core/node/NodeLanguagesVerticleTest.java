@@ -65,14 +65,14 @@ public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest 
 
 			// Check the deletion
 			node.reload();
-			assertThat(searchProvider).recordedDeleteEvents(2);
+			assertThat(dummySearchProvider).recordedDeleteEvents(2);
 			assertFalse(node.getAvailableLanguageNames().contains("en"));
 			assertEquals(nLanguagesBefore - 1, node.getAvailableLanguageNames().size());
 
 			// Now delete the remaining german version
 			future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "de").invoke();
 			latchFor(future);
-			assertThat(searchProvider).recordedDeleteEvents(2 + 2);
+			assertThat(dummySearchProvider).recordedDeleteEvents(2 + 2);
 			response = getClient().findNodeByUuid(PROJECT_NAME, uuid).invoke();
 			latchFor(response);
 			expectException(response, NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", uuid,
