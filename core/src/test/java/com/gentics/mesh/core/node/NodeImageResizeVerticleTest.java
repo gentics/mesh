@@ -47,7 +47,6 @@ public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTes
 
 	@Test
 	public void testImageResize() throws Exception {
-
 		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 

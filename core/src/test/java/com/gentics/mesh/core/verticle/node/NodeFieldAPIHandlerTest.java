@@ -29,13 +29,16 @@ public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 	private NodeFieldAPIHandler handler;
 
 	private MeshUploadOptions uploadOptions;
+
 	final String data = "bliblablub";
 	final String hash = "406d7d8188bb4556f7616628d1a5cd281ef6686034ddb3855b0ebb6affe6675e8ba9cde8f60f183341a0105223533e1ca09570e5d024cc8173d0b5087dfab4b5";
 	String segmentedPath = "some/path/to/file";
 
 	@Before
-	public void initDagger() {
+	public void initDagger() throws Exception {
+		super.initDagger();
 		uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		handler = meshDagger.nodeFieldAPIHandler();
 	}
 
 	@Test
