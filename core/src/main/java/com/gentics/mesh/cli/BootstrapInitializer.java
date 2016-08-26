@@ -110,7 +110,7 @@ public class BootstrapInitializer {
 
 		// Add API Info Verticle
 		addMandatoryVerticle(MeshCore.get().restInfoVerticle());
-		addMandatoryVerticle(MeshCore.get().projectInfoVerticle());
+		//		addMandatoryVerticle(MeshCore.get().projectInfoVerticle());
 
 		// User Group Role verticles
 		addMandatoryVerticle(MeshCore.get().userVerticle());
@@ -219,6 +219,9 @@ public class BootstrapInitializer {
 		}
 
 		initMandatoryData();
+		if (isEmptyInstallation) {
+			initPermissions();
+		}
 
 		// Mark all changelog entries as applied for new installations
 		if (isEmptyInstallation) {
