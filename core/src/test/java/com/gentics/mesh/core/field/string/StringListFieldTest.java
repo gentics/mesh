@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 
 public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
@@ -42,114 +43,122 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
+			prepareNode(node, "stringList", "string");
 
-		Node node = folder("2015");
-		prepareNode(node, "stringList", "string");
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			StringGraphFieldList stringList = container.createStringList("stringList");
+			stringList.createString("dummyString1");
+			stringList.createString("dummyString2");
 
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		StringGraphFieldList stringList = container.createStringList("stringList");
-		stringList.createString("dummyString1");
-		stringList.createString("dummyString2");
-
-		NodeResponse response = transform(node);
-		assertList(2, "stringList", "string", response);
-
+			NodeResponse response = transform(node);
+			assertList(2, "stringList", "string", response);
+		}
 	}
 
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		StringGraphFieldList list = container.createStringList("dummyList");
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			StringGraphFieldList list = container.createStringList("dummyList");
 
-		list.createString("1");
-		assertEquals("dummyList", list.getFieldKey());
-		assertNotNull(list.getList());
+			list.createString("1");
+			assertEquals("dummyList", list.getFieldKey());
+			assertNotNull(list.getList());
 
-		assertEquals(1, list.getList().size());
-		assertEquals(list.getSize(), list.getList().size());
-		list.createString("2");
-		assertEquals(2, list.getList().size());
-		list.createString("3").setString("Some string 3");
-		assertEquals(3, list.getList().size());
-		assertEquals("Some string 3", list.getList().get(2).getString());
+			assertEquals(1, list.getList().size());
+			assertEquals(list.getSize(), list.getList().size());
+			list.createString("2");
+			assertEquals(2, list.getList().size());
+			list.createString("3").setString("Some string 3");
+			assertEquals(3, list.getList().size());
+			assertEquals("Some string 3", list.getList().get(2).getString());
 
-		StringGraphFieldList loadedList = container.getStringList("dummyList");
-		assertNotNull(loadedList);
-		assertEquals(3, loadedList.getSize());
-		list.removeAll();
-		assertEquals(0, list.getSize());
-		assertEquals(0, list.getList().size());
-
+			StringGraphFieldList loadedList = container.getStringList("dummyList");
+			assertNotNull(loadedList);
+			assertEquals(3, loadedList.getSize());
+			list.removeAll();
+			assertEquals(0, list.getSize());
+			assertEquals(0, list.getList().size());
+		}
 	}
 
 	@Test
 	@Override
 	public void testClone() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		StringGraphFieldList testField = container.createStringList("testField");
-		testField.createString("one");
-		testField.createString("two");
-		testField.createString("three");
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			StringGraphFieldList testField = container.createStringList("testField");
+			testField.createString("one");
+			testField.createString("two");
+			testField.createString("three");
 
-		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		testField.cloneTo(otherContainer);
+			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			testField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getStringList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertThat(otherContainer.getStringList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+		}
 	}
 
 	@Test
 	@Override
 	public void testEquals() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		StringGraphFieldList fieldA = container.createStringList("fieldA");
-		StringGraphFieldList fieldB = container.createStringList("fieldB");
-		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-		fieldA.addItem(fieldA.createString("testString"));
-		assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			StringGraphFieldList fieldA = container.createStringList("fieldA");
+			StringGraphFieldList fieldB = container.createStringList("fieldB");
+			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+			fieldA.addItem(fieldA.createString("testString"));
+			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
 
-		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
-		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-		fieldB.addItem(fieldB.createString("testString"));
-		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+			fieldB.addItem(fieldB.createString("testString"));
+			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsNull() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		StringGraphFieldList fieldA = container.createStringList("fieldA");
-		assertFalse(fieldA.equals((Field) null));
-		assertFalse(fieldA.equals((GraphField) null));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			StringGraphFieldList fieldA = container.createStringList("fieldA");
+			assertFalse(fieldA.equals((Field) null));
+			assertFalse(fieldA.equals((GraphField) null));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		String dummyValue = "test123";
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			String dummyValue = "test123";
 
-		// rest null - graph null
-		StringGraphFieldList fieldA = container.createStringList(STRING_LIST);
+			// rest null - graph null
+			StringGraphFieldList fieldA = container.createStringList(STRING_LIST);
 
-		StringFieldListImpl restField = new StringFieldListImpl();
-		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+			StringFieldListImpl restField = new StringFieldListImpl();
+			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
-		// rest set - graph set - different values
-		fieldA.addItem(fieldA.createString(dummyValue));
-		restField.add(dummyValue + 1L);
-		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+			// rest set - graph set - different values
+			fieldA.addItem(fieldA.createString(dummyValue));
+			restField.add(dummyValue + 1L);
+			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 
-		// rest set - graph set - same value
-		restField.getItems().clear();
-		restField.add(dummyValue);
-		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+			// rest set - graph set - same value
+			restField.getItems().clear();
+			restField.add(dummyValue);
+			assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
 
-		HtmlFieldListImpl otherTypeRestField = new HtmlFieldListImpl();
-		otherTypeRestField.add(dummyValue);
-		// rest set - graph set - same value different type
-		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(otherTypeRestField));
-
+			HtmlFieldListImpl otherTypeRestField = new HtmlFieldListImpl();
+			otherTypeRestField.add(dummyValue);
+			// rest set - graph set - same value different type
+			assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(otherTypeRestField));
+		}
 	}
 
 	@Test
@@ -167,10 +176,12 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveFieldViaNullTestcase(STRING_LIST, FETCH, FILLTEXT, (node) -> {
-			updateContainer(ac, node, STRING_LIST, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveFieldViaNullTestcase(STRING_LIST, FETCH, FILLTEXT, (node) -> {
+				updateContainer(ac, node, STRING_LIST, null);
+			});
+		}
 	}
 
 	@Test
@@ -190,7 +201,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			field.getItems().add("someValue");
 			field.getItems().add("someValue2");
 			updateContainer(ac, container, STRING_LIST, field);
-		} , (container) -> {
+		}, (container) -> {
 			StringGraphFieldList field = container.getStringList(STRING_LIST);
 			assertNotNull("The graph field {" + STRING_LIST + "} could not be found.", field);
 			assertEquals("The list of the field was not updated.", 2, field.getList().size());

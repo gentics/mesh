@@ -22,6 +22,7 @@ import com.gentics.mesh.core.field.AbstractListFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.graphdb.NoTx;
 
 public class StringFieldListVerticleTest extends AbstractListFieldVerticleTest {
 
@@ -33,191 +34,216 @@ public class StringFieldListVerticleTest extends AbstractListFieldVerticleTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		StringFieldListImpl listField = new StringFieldListImpl();
-		listField.add("A");
-		listField.add("B");
+		try (NoTx noTx = db.noTx()) {
+			StringFieldListImpl listField = new StringFieldListImpl();
+			listField.add("A");
+			listField.add("B");
 
-		NodeResponse response = createNode(FIELD_NAME, listField);
-		StringFieldListImpl field = response.getFields().getStringFieldList(FIELD_NAME);
-		assertThat(field.getItems()).as("Only valid values should be stored").containsExactly("A", "B");
+			NodeResponse response = createNode(FIELD_NAME, listField);
+			StringFieldListImpl field = response.getFields().getStringFieldList(FIELD_NAME);
+			assertThat(field.getItems()).as("Only valid values should be stored").containsExactly("A", "B");
+		}
 	}
 
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		StringFieldListImpl listField = new StringFieldListImpl();
-		listField.add("A");
-		listField.add("B");
-		listField.add(null);
-		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+		try (NoTx noTx = db.noTx()) {
+			StringFieldListImpl listField = new StringFieldListImpl();
+			listField.add("A");
+			listField.add("B");
+			listField.add(null);
+			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+		}
 	}
 
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		StringFieldListImpl listField = new StringFieldListImpl();
-		listField.add("A");
-		listField.add("B");
-		listField.add(null);
-		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+		try (NoTx noTx = db.noTx()) {
+			StringFieldListImpl listField = new StringFieldListImpl();
+			listField.add("A");
+			listField.add("B");
+			listField.add(null);
+			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (Field) null);
-		assertThat(response.getFields().getStringFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
+		try (NoTx noTx = db.noTx()) {
+			NodeResponse response = createNode(FIELD_NAME, (Field) null);
+			assertThat(response.getFields().getStringFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		StringFieldListImpl listField = new StringFieldListImpl();
-		listField.add("A");
-		listField.add("B");
+		try (NoTx noTx = db.noTx()) {
+			StringFieldListImpl listField = new StringFieldListImpl();
+			listField.add("A");
+			listField.add("B");
 
-		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
-		String oldVersion = firstResponse.getVersion().getNumber();
+			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+			String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+			NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
+			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		// 1. Update an existing node
-		StringFieldListImpl listField = new StringFieldListImpl();
-		listField.add("A");
-		listField.add("B");
-		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		try (NoTx noTx = db.noTx()) {
+			// 1. Update an existing node
+			StringFieldListImpl listField = new StringFieldListImpl();
+			listField.add("A");
+			listField.add("B");
+			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
-		//2. Read the node
-		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
-		StringFieldListImpl deserializedField = response.getFields().getStringFieldList(FIELD_NAME);
-		assertNotNull(deserializedField);
-		assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly("A", "B");
+			//2. Read the node
+			NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
+			StringFieldListImpl deserializedField = response.getFields().getStringFieldList(FIELD_NAME);
+			assertNotNull(deserializedField);
+			assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly("A", "B");
+		}
 	}
 
 	@Test
 	public void testCreateNodeWithNullFieldValue() throws IOException {
-		NodeResponse response = createNode(FIELD_NAME, (Field) null);
-		StringFieldListImpl nodeField = response.getFields().getStringFieldList(FIELD_NAME);
-		assertNull("No string field should have been created.", nodeField);
+		try (NoTx noTx = db.noTx()) {
+			NodeResponse response = createNode(FIELD_NAME, (Field) null);
+			StringFieldListImpl nodeField = response.getFields().getStringFieldList(FIELD_NAME);
+			assertNull("No string field should have been created.", nodeField);
+		}
 	}
 
 	@Test
 	public void testCreateEmptyStringList() throws IOException {
-		StringFieldListImpl listField = new StringFieldListImpl();
-		NodeResponse response = createNode(FIELD_NAME, listField);
-		StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
-		assertEquals(0, listFromResponse.getItems().size());
+		try (NoTx noTx = db.noTx()) {
+			StringFieldListImpl listField = new StringFieldListImpl();
+			NodeResponse response = createNode(FIELD_NAME, listField);
+			StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
+			assertEquals(0, listFromResponse.getItems().size());
+		}
 	}
 
 	@Test
 	public void testCreateNullStringList() throws IOException {
-		StringFieldListImpl listField = new StringFieldListImpl();
-		listField.setItems(null);
-		NodeResponse response = createNode(FIELD_NAME, listField);
-		StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
-		assertNull("The string list should be null since the request was sending null instead of an array.", listFromResponse);
+		try (NoTx noTx = db.noTx()) {
+			StringFieldListImpl listField = new StringFieldListImpl();
+			listField.setItems(null);
+			NodeResponse response = createNode(FIELD_NAME, listField);
+			StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
+			assertNull("The string list should be null since the request was sending null instead of an array.", listFromResponse);
+		}
 	}
 
 	@Test
 	public void testStringList() throws IOException {
-		StringFieldListImpl listField = new StringFieldListImpl();
-		listField.add("A");
-		listField.add("B");
-		listField.add("C");
+		try (NoTx noTx = db.noTx()) {
+			StringFieldListImpl listField = new StringFieldListImpl();
+			listField.add("A");
+			listField.add("B");
+			listField.add("C");
 
-		NodeResponse response = createNode(FIELD_NAME, listField);
-		StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
-		assertEquals(3, listFromResponse.getItems().size());
-		assertEquals(Arrays.asList("A", "B", "C").toString(), listFromResponse.getItems().toString());
+			NodeResponse response = createNode(FIELD_NAME, listField);
+			StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
+			assertEquals(3, listFromResponse.getItems().size());
+			assertEquals(Arrays.asList("A", "B", "C").toString(), listFromResponse.getItems().toString());
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		Node node = folder("2015");
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
 
-		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
-				Arrays.asList("X", "Y"), Arrays.asList("C"));
+			List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
+					Arrays.asList("X", "Y"), Arrays.asList("C"));
 
-		NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-		for (int i = 0; i < 20; i++) {
-			List<String> oldValue = getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME);
-			List<String> newValue = valueCombinations.get(i % valueCombinations.size());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+			for (int i = 0; i < 20; i++) {
+				List<String> oldValue = getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME);
+				List<String> newValue = valueCombinations.get(i % valueCombinations.size());
 
-			StringFieldListImpl list = new StringFieldListImpl();
-			for (String value : newValue) {
-				list.add(value);
+				StringFieldListImpl list = new StringFieldListImpl();
+				for (String value : newValue) {
+					list.add(value);
+				}
+				NodeResponse response = updateNode(FIELD_NAME, list);
+				StringFieldListImpl field = response.getFields().getStringFieldList(FIELD_NAME);
+				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
+				node.reload();
+				container.reload();
+
+				NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
+				assertEquals("The old container version did not match", container.getVersion().nextDraft().toString(),
+						response.getVersion().toString());
+				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion().getNumber());
+				assertEquals("Check old value", oldValue, getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME));
+				assertEquals("Check new value", newValue, getListValues(newContainerVersion, StringGraphFieldListImpl.class, FIELD_NAME));
+				container = newContainerVersion;
 			}
-			NodeResponse response = updateNode(FIELD_NAME, list);
-			StringFieldListImpl field = response.getFields().getStringFieldList(FIELD_NAME);
-			assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
-			node.reload();
-			container.reload();
-
-			NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
-			assertEquals("The old container version did not match", container.getVersion().nextDraft().toString(), response.getVersion().toString());
-			assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion().getNumber());
-			assertEquals("Check old value", oldValue, getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME));
-			assertEquals("Check new value", newValue, getListValues(newContainerVersion, StringGraphFieldListImpl.class, FIELD_NAME));
-			container = newContainerVersion;
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		StringFieldListImpl list = new StringFieldListImpl();
-		list.add("A");
-		list.add("B");
-		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-		String oldVersion = firstResponse.getVersion().getNumber();
+		try (NoTx noTx = db.noTx()) {
+			StringFieldListImpl list = new StringFieldListImpl();
+			list.add("A");
+			list.add("B");
+			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+			String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
-		assertThat(secondResponse.getFields().getStringFieldList(FIELD_NAME)).as("Updated Field").isNull();
-		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+			assertThat(secondResponse.getFields().getStringFieldList(FIELD_NAME)).as("Updated Field").isNull();
+			assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
 
-		// Assert that the old version was not modified
-		Node node = folder("2015");
-		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
-		assertThat(latest.getStringList(FIELD_NAME)).isNull();
-		assertThat(latest.getPreviousVersion().getStringList(FIELD_NAME)).isNotNull();
-		List<String> oldValueList = latest.getPreviousVersion().getStringList(FIELD_NAME).getList().stream().map(item -> item.getString())
-				.collect(Collectors.toList());
-		assertThat(oldValueList).containsExactly("A", "B");
+			// Assert that the old version was not modified
+			Node node = folder("2015");
+			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getStringList(FIELD_NAME)).isNull();
+			assertThat(latest.getPreviousVersion().getStringList(FIELD_NAME)).isNotNull();
+			List<String> oldValueList = latest.getPreviousVersion().getStringList(FIELD_NAME).getList().stream().map(item -> item.getString())
+					.collect(Collectors.toList());
+			assertThat(oldValueList).containsExactly("A", "B");
 
-		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-				secondResponse.getVersion().getNumber());
-
+			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+					secondResponse.getVersion().getNumber());
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		StringFieldListImpl list = new StringFieldListImpl();
-		list.add("A");
-		list.add("B");
-		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-		String oldVersion = firstResponse.getVersion().getNumber();
+		try (NoTx noTx = db.noTx()) {
+			StringFieldListImpl list = new StringFieldListImpl();
+			list.add("A");
+			list.add("B");
+			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+			String oldVersion = firstResponse.getVersion().getNumber();
 
-		StringFieldListImpl emptyField = new StringFieldListImpl();
-		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
-		assertThat(secondResponse.getFields().getStringFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
-		assertThat(secondResponse.getFields().getStringFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number should be generated").isNotEqualTo(oldVersion);
+			StringFieldListImpl emptyField = new StringFieldListImpl();
+			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+			assertThat(secondResponse.getFields().getStringFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
+			assertThat(secondResponse.getFields().getStringFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
+			assertThat(secondResponse.getVersion().getNumber()).as("New version number should be generated").isNotEqualTo(oldVersion);
 
-		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-				secondResponse.getVersion().getNumber());
-		assertThat(secondResponse.getVersion().getNumber()).as("No new version number should be generated")
-				.isEqualTo(secondResponse.getVersion().getNumber());
-
+			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+					secondResponse.getVersion().getNumber());
+			assertThat(secondResponse.getVersion().getNumber()).as("No new version number should be generated")
+					.isEqualTo(secondResponse.getVersion().getNumber());
+		}
 	}
 
 }

@@ -10,7 +10,7 @@ import static org.junit.Assert.fail;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.AbstractBasicDBTest;
+import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
@@ -31,19 +31,20 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
 import rx.functions.Action1;
 
-public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractBasicDBTest implements FieldTestcases {
+public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractIsolatedBasicDBTest implements FieldTestcases {
 
 	abstract protected FS createFieldSchema(boolean isRequired);
 
 	protected ServerSchemaStorage schemaStorage;
 
 	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
-		SchemaContainer container = tx.getGraph().addFramedVertex(SchemaContainerImpl.class);
-		SchemaContainerVersionImpl version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersionImpl version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		version.setSchemaContainer(container);
 		container.setLatestVersion(version);
 		Schema schema = new SchemaModel();
@@ -54,10 +55,11 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 		version.setSchema(schema);
 		Node node = meshRoot().getNodeRoot().create(user(), version, project());
-		Release release = tx.getGraph().addFramedVertex(ReleaseImpl.class);
+		Release release = Database.getThreadLocalGraph().addFramedVertex(ReleaseImpl.class);
 		release.assignSchemaVersion(version);
 		project().getReleaseRoot().addItem(release);
 		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), release, user());
+
 		return Tuple.tuple(node, nodeContainer);
 	}
 

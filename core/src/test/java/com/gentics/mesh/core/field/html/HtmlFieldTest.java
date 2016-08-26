@@ -28,6 +28,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 
 public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
@@ -46,26 +47,28 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() {
-		// Create field
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
+		try (NoTx noTx = db.noTx()) {
+			// Create field
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
 
-		// Check field key
-		assertEquals(HTML_FIELD, htmlField.getFieldKey());
+			// Check field key
+			assertEquals(HTML_FIELD, htmlField.getFieldKey());
 
-		// Check field value
-		htmlField.setHtml("dummyHTML");
-		assertEquals("dummyHTML", htmlField.getHTML());
+			// Check field value
+			htmlField.setHtml("dummyHTML");
+			assertEquals("dummyHTML", htmlField.getHTML());
 
-		// Check bogus key
-		HtmlGraphField bogusField1 = container.getHtml("bogus");
-		assertNull(bogusField1);
+			// Check bogus key
+			HtmlGraphField bogusField1 = container.getHtml("bogus");
+			assertNull(bogusField1);
 
-		// Test field loading
-		HtmlGraphField reloadedHTMLField = container.getHtml(HTML_FIELD);
-		assertNotNull(reloadedHTMLField);
-		assertEquals(HTML_FIELD, reloadedHTMLField.getFieldKey());
-		assertEquals("dummyHTML", reloadedHTMLField.getHTML());
+			// Test field loading
+			HtmlGraphField reloadedHTMLField = container.getHtml(HTML_FIELD);
+			assertNotNull(reloadedHTMLField);
+			assertEquals(HTML_FIELD, reloadedHTMLField.getFieldKey());
+			assertEquals("dummyHTML", reloadedHTMLField.getHTML());
+		}
 	}
 
 	@Test
@@ -101,106 +104,124 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphField fieldA = container.createHTML("fieldA");
-		HtmlGraphField fieldB = container.createHTML("fieldB");
-		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-		fieldA.setHtml("someText");
-		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HtmlGraphField fieldA = container.createHTML("fieldA");
+			HtmlGraphField fieldB = container.createHTML("fieldB");
+			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+			fieldA.setHtml("someText");
+			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 
-		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
-		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-		fieldB.setHtml("someText");
-		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
-
+			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+			fieldB.setHtml("someText");
+			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsNull() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphField fieldA = container.createHTML("htmlField1");
-		assertFalse(fieldA.equals((Field) null));
-		assertFalse(fieldA.equals((GraphField) null));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HtmlGraphField fieldA = container.createHTML("htmlField1");
+			assertFalse(fieldA.equals((Field) null));
+			assertFalse(fieldA.equals((GraphField) null));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphField fieldA = container.createHTML("htmlField1");
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HtmlGraphField fieldA = container.createHTML("htmlField1");
 
-		// graph empty - rest empty 
-		assertTrue("The html field should be equal to the html rest field since both fields have no value.", fieldA.equals(new HtmlFieldImpl()));
+			// graph empty - rest empty 
+			assertTrue("The html field should be equal to the html rest field since both fields have no value.", fieldA.equals(new HtmlFieldImpl()));
 
-		// graph set - rest set - same value - different type
-		fieldA.setHtml("someText");
-		assertFalse("The html field should not be equal to a string rest field. Even if it has the same value",
-				fieldA.equals(new StringFieldImpl().setString("someText")));
-		// graph set - rest set - different value
-		assertFalse("The html field should not be equal to the html rest field since the rest field has a different value.",
-				fieldA.equals(new HtmlFieldImpl().setHTML("someText2")));
+			// graph set - rest set - same value - different type
+			fieldA.setHtml("someText");
+			assertFalse("The html field should not be equal to a string rest field. Even if it has the same value",
+					fieldA.equals(new StringFieldImpl().setString("someText")));
+			// graph set - rest set - different value
+			assertFalse("The html field should not be equal to the html rest field since the rest field has a different value.",
+					fieldA.equals(new HtmlFieldImpl().setHTML("someText2")));
 
-		// graph set - rest set - same value
-		assertTrue("The html field should be equal to a html rest field with the same value", fieldA.equals(new HtmlFieldImpl().setHTML("someText")));
+			// graph set - rest set - same value
+			assertTrue("The html field should be equal to a html rest field with the same value",
+					fieldA.equals(new HtmlFieldImpl().setHTML("someText")));
+		}
 	}
 
 	@Test
 	@Override
 	public void testClone() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
-		htmlField.setHtml("<i>HTML</i>");
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
+			htmlField.setHtml("<i>HTML</i>");
 
-		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		htmlField.cloneTo(otherContainer);
+			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			htmlField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getHtml(HTML_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(htmlField, "parentContainer");
+			assertThat(otherContainer.getHtml(HTML_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(htmlField, "parentContainer");
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveFieldViaNullTestcase(HTML_FIELD, FETCH, FILLTEXT, (node) -> {
-			updateContainer(ac, node, HTML_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveFieldViaNullTestcase(HTML_FIELD, FETCH, FILLTEXT, (node) -> {
+				updateContainer(ac, node, HTML_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		invokeUpdateFromRestTestcase(HTML_FIELD, FETCH, CREATE_EMPTY);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestTestcase(HTML_FIELD, FETCH, CREATE_EMPTY);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(HTML_FIELD, FETCH);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestNullOnCreateRequiredTestcase(HTML_FIELD, FETCH);
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveRequiredFieldViaNullTestcase(HTML_FIELD, FETCH, FILLTEXT, (container) -> {
-			updateContainer(ac, container, HTML_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveRequiredFieldViaNullTestcase(HTML_FIELD, FETCH, FILLTEXT, (container) -> {
+				updateContainer(ac, container, HTML_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeUpdateFromRestValidSimpleValueTestcase(HTML_FIELD, FILLTEXT, (container) -> {
-			HtmlField field = new HtmlFieldImpl();
-			field.setHTML("someValue");
-			updateContainer(ac, container, HTML_FIELD, field);
-		} , (container) -> {
-			HtmlGraphField field = container.getHtml(HTML_FIELD);
-			assertNotNull("The graph field {" + HTML_FIELD + "} could not be found.", field);
-			assertEquals("The html of the field was not updated.", "someValue", field.getHTML());
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeUpdateFromRestValidSimpleValueTestcase(HTML_FIELD, FILLTEXT, (container) -> {
+				HtmlField field = new HtmlFieldImpl();
+				field.setHTML("someValue");
+				updateContainer(ac, container, HTML_FIELD, field);
+			}, (container) -> {
+				HtmlGraphField field = container.getHtml(HTML_FIELD);
+				assertNotNull("The graph field {" + HTML_FIELD + "} could not be found.", field);
+				assertEquals("The html of the field was not updated.", "someValue", field.getHTML());
+			});
+		}
 	}
 
 }

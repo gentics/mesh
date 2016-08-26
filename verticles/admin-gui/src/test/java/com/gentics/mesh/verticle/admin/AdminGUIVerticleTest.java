@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,12 +24,17 @@ import io.vertx.core.http.HttpClientRequest;
 
 public class AdminGUIVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private AdminGUIVerticle verticle;
+	private AdminGUIVerticle adminGuiVerticle;
+
+	@Before
+	public void setupVerticle() {
+		adminGuiVerticle = new AdminGUIVerticle(meshDagger.routerStorage());
+	}
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(adminGuiVerticle);
 		return list;
 	}
 
@@ -50,10 +56,10 @@ public class AdminGUIVerticleTest extends AbstractIsolatedRestVerticleTest {
 		request.end();
 
 		String response = future.get(10, TimeUnit.SECONDS);
-//		String expectedUrl = "localhost:" + port;
-//		assertTrue("The meshConfig.js file did not contain the expected url {" + expectedUrl + "} Response {" + response + "}",
-//				response.contains(expectedUrl));
-//		System.out.println(response);
+		//		String expectedUrl = "localhost:" + port;
+		//		assertTrue("The meshConfig.js file did not contain the expected url {" + expectedUrl + "} Response {" + response + "}",
+		//				response.contains(expectedUrl));
+		//		System.out.println(response);
 		assertTrue("The response string should not contain any html specific characters but it was {" + response + "} ", response.indexOf("<") != 0);
 
 	}

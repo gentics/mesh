@@ -2,6 +2,8 @@ package com.gentics.mesh.test;
 
 import java.util.Map;
 
+import org.junit.Before;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -48,7 +50,7 @@ public abstract class AbstractDBTest {
 	protected Database db;
 
 	protected RestAssert test = new RestAssert();
-	
+
 	protected TestMeshComponent meshDagger;
 
 	protected RouterStorage routerStorage;

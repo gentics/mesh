@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 
 public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
@@ -42,155 +43,172 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
+			prepareNode(node, BOOLEAN_LIST, "boolean");
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 
-		Node node = folder("2015");
-		prepareNode(node, BOOLEAN_LIST, "boolean");
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			BooleanGraphFieldList booleanList = container.createBooleanList(BOOLEAN_LIST);
+			booleanList.createBoolean(true);
+			booleanList.createBoolean(null);
+			booleanList.createBoolean(false);
 
-		BooleanGraphFieldList booleanList = container.createBooleanList(BOOLEAN_LIST);
-		booleanList.createBoolean(true);
-		booleanList.createBoolean(null);
-		booleanList.createBoolean(false);
+			NodeResponse response = transform(node);
 
-		NodeResponse response = transform(node);
-
-		assertList(2, BOOLEAN_LIST, "boolean", response);
-
+			assertList(2, BOOLEAN_LIST, "boolean", response);
+		}
 	}
 
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		BooleanGraphFieldList list = container.createBooleanList("dummyList");
-		list.createBoolean(true);
-		list.createBoolean(false);
-		list.createBoolean(null);
-		assertEquals("Only non-null values are persisted.", 2, list.getList().size());
-		assertEquals(2, list.getSize());
-		assertNotNull(list.getBoolean(1));
-		assertTrue(list.getBoolean(1).getBoolean());
-		list.removeAll();
-		assertEquals(0, list.getSize());
-		assertEquals(0, list.getList().size());
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			BooleanGraphFieldList list = container.createBooleanList("dummyList");
+			list.createBoolean(true);
+			list.createBoolean(false);
+			list.createBoolean(null);
+			assertEquals("Only non-null values are persisted.", 2, list.getList().size());
+			assertEquals(2, list.getSize());
+			assertNotNull(list.getBoolean(1));
+			assertTrue(list.getBoolean(1).getBoolean());
+			list.removeAll();
+			assertEquals(0, list.getSize());
+			assertEquals(0, list.getList().size());
+		}
 	}
 
 	@Test
 	@Override
 	public void testClone() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		BooleanGraphFieldList testField = container.createBooleanList("testField");
-		testField.createBoolean(true);
-		testField.createBoolean(false);
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			BooleanGraphFieldList testField = container.createBooleanList("testField");
+			testField.createBoolean(true);
+			testField.createBoolean(false);
 
-		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		testField.cloneTo(otherContainer);
+			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			testField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getBooleanList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertThat(otherContainer.getBooleanList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+		}
 	}
 
 	@Test
 	@Override
 	public void testEquals() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		BooleanGraphFieldList fieldA = container.createBooleanList("fieldA");
-		BooleanGraphFieldList fieldB = container.createBooleanList("fieldB");
-		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-		fieldA.addItem(fieldA.createBoolean(true));
-		assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			BooleanGraphFieldList fieldA = container.createBooleanList("fieldA");
+			BooleanGraphFieldList fieldB = container.createBooleanList("fieldB");
+			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+			fieldA.addItem(fieldA.createBoolean(true));
+			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
 
-		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
-		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-		fieldB.addItem(fieldB.createBoolean(true));
-		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+			fieldB.addItem(fieldB.createBoolean(true));
+			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsNull() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		BooleanGraphFieldList fieldA = container.createBooleanList("fieldA");
-		assertFalse(fieldA.equals((Field) null));
-		assertFalse(fieldA.equals((GraphField) null));
-
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			BooleanGraphFieldList fieldA = container.createBooleanList("fieldA");
+			assertFalse(fieldA.equals((Field) null));
+			assertFalse(fieldA.equals((GraphField) null));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		Boolean dummyValue = true;
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			Boolean dummyValue = true;
 
-		// rest null - graph null
-		BooleanGraphFieldList fieldA = container.createBooleanList(BOOLEAN_LIST);
+			// rest null - graph null
+			BooleanGraphFieldList fieldA = container.createBooleanList(BOOLEAN_LIST);
 
-		BooleanFieldListImpl restField = new BooleanFieldListImpl();
-		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+			BooleanFieldListImpl restField = new BooleanFieldListImpl();
+			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
-		// rest set - graph set - different values
-		fieldA.addItem(fieldA.createBoolean(dummyValue));
-		restField.add(false);
-		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+			// rest set - graph set - different values
+			fieldA.addItem(fieldA.createBoolean(dummyValue));
+			restField.add(false);
+			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 
-		// rest set - graph set - same value
-		restField.getItems().clear();
-		restField.add(dummyValue);
-		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+			// rest set - graph set - same value
+			restField.getItems().clear();
+			restField.add(dummyValue);
+			assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
 
-		StringFieldListImpl otherTypeRestField = new StringFieldListImpl();
-		otherTypeRestField.add("true");
-		// rest set - graph set - same value different type
-		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(otherTypeRestField));
+			StringFieldListImpl otherTypeRestField = new StringFieldListImpl();
+			otherTypeRestField.add("true");
+			// rest set - graph set - same value different type
+			assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(otherTypeRestField));
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		invokeUpdateFromRestTestcase(BOOLEAN_LIST, FETCH, CREATE_EMPTY);
-
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestTestcase(BOOLEAN_LIST, FETCH, CREATE_EMPTY);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(BOOLEAN_LIST, FETCH);
-
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestNullOnCreateRequiredTestcase(BOOLEAN_LIST, FETCH);
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("", user());
-		invokeRemoveFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (node) -> {
-			updateContainer(ac, node, BOOLEAN_LIST, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext("", user());
+			invokeRemoveFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (node) -> {
+				updateContainer(ac, node, BOOLEAN_LIST, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext("", user());
-		invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (container) -> {
-			updateContainer(ac, container, BOOLEAN_LIST, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext("", user());
+			invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (container) -> {
+				updateContainer(ac, container, BOOLEAN_LIST, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext("", user());
-		invokeUpdateFromRestValidSimpleValueTestcase(BOOLEAN_LIST, FILL, (container) -> {
-			BooleanFieldListImpl field = new BooleanFieldListImpl();
-			field.getItems().add(true);
-			field.getItems().add(false);
-			updateContainer(ac, container, BOOLEAN_LIST, field);
-		} , (container) -> {
-			BooleanGraphFieldList field = container.getBooleanList(BOOLEAN_LIST);
-			assertNotNull("The graph field {" + BOOLEAN_LIST + "} could not be found.", field);
-			assertEquals("The list of the field was not updated.", 2, field.getList().size());
-			assertEquals("The list item of the field was not updated.", true, field.getList().get(0).getBoolean());
-			assertEquals("The list item of the field was not updated.", false, field.getList().get(1).getBoolean());
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext("", user());
+			invokeUpdateFromRestValidSimpleValueTestcase(BOOLEAN_LIST, FILL, (container) -> {
+				BooleanFieldListImpl field = new BooleanFieldListImpl();
+				field.getItems().add(true);
+				field.getItems().add(false);
+				updateContainer(ac, container, BOOLEAN_LIST, field);
+			}, (container) -> {
+				BooleanGraphFieldList field = container.getBooleanList(BOOLEAN_LIST);
+				assertNotNull("The graph field {" + BOOLEAN_LIST + "} could not be found.", field);
+				assertEquals("The list of the field was not updated.", 2, field.getList().size());
+				assertEquals("The list item of the field was not updated.", true, field.getList().get(0).getBoolean());
+				assertEquals("The list item of the field was not updated.", false, field.getList().get(1).getBoolean());
+			});
+		}
 	}
 
 }

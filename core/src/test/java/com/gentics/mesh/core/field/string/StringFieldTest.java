@@ -26,6 +26,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 
 public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
@@ -44,165 +45,191 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		Node node = folder("2015");
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
 
-		// Add a new string field to the schema
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		StringFieldSchemaImpl stringFieldSchema = new StringFieldSchemaImpl();
-		stringFieldSchema.setName("stringField");
-		stringFieldSchema.setLabel("Some string field");
-		stringFieldSchema.setRequired(true);
-		schema.addField(stringFieldSchema);
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			// Add a new string field to the schema
+			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			StringFieldSchemaImpl stringFieldSchema = new StringFieldSchemaImpl();
+			stringFieldSchema.setName("stringField");
+			stringFieldSchema.setLabel("Some string field");
+			stringFieldSchema.setRequired(true);
+			schema.addField(stringFieldSchema);
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		StringGraphField field = container.createString("stringField");
-		field.setString("someString");
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			StringGraphField field = container.createString("stringField");
+			field.setString("someString");
 
-		String json = getJson(node);
-		assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("someString") > 1);
-		assertNotNull(json);
-		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
-		assertNotNull(response);
+			String json = getJson(node);
+			assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("someString") > 1);
+			assertNotNull(json);
+			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
+			assertNotNull(response);
 
-		com.gentics.mesh.core.rest.node.field.StringField deserializedNodeField = response.getFields().getStringField("stringField");
-		assertNotNull(deserializedNodeField);
-		assertEquals("someString", deserializedNodeField.getString());
+			com.gentics.mesh.core.rest.node.field.StringField deserializedNodeField = response.getFields().getStringField("stringField");
+			assertNotNull(deserializedNodeField);
+			assertEquals("someString", deserializedNodeField.getString());
+		}
 	}
 
 	@Test
 	public void testSimpleString() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		StringGraphFieldImpl field = new StringGraphFieldImpl("test", container);
-		assertEquals(2, container.getPropertyKeys().size());
-		field.setString("dummyString");
-		assertEquals("dummyString", field.getString());
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			StringGraphFieldImpl field = new StringGraphFieldImpl("test", container);
+			assertEquals(2, container.getPropertyKeys().size());
+			field.setString("dummyString");
+			assertEquals("dummyString", field.getString());
+		}
 	}
 
 	@Test
 	@Override
 	public void testClone() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		StringGraphField testField = container.createString("testField");
-		testField.setString("this is the string");
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			StringGraphField testField = container.createString("testField");
+			testField.setString("this is the string");
 
-		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		testField.cloneTo(otherContainer);
+			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			testField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getString("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField, "parentContainer");
+			assertThat(otherContainer.getString("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField,
+					"parentContainer");
+		}
 	}
 
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		StringGraphField stringField = container.createString("stringField");
-		assertEquals("stringField", stringField.getFieldKey());
-		stringField.setString("dummyString");
-		assertEquals("dummyString", stringField.getString());
-		StringGraphField bogusField1 = container.getString("bogus");
-		assertNull(bogusField1);
-		StringGraphField reloadedStringField = container.getString("stringField");
-		assertNotNull(reloadedStringField);
-		assertEquals("stringField", reloadedStringField.getFieldKey());
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			StringGraphField stringField = container.createString("stringField");
+			assertEquals("stringField", stringField.getFieldKey());
+			stringField.setString("dummyString");
+			assertEquals("dummyString", stringField.getString());
+			StringGraphField bogusField1 = container.getString("bogus");
+			assertNull(bogusField1);
+			StringGraphField reloadedStringField = container.getString("stringField");
+			assertNotNull(reloadedStringField);
+			assertEquals("stringField", reloadedStringField.getFieldKey());
+		}
 	}
 
 	@Test
 	@Override
 	public void testEquals() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		String testValue = "test123";
-		StringGraphField fieldA = container.createString(STRING_FIELD);
-		StringGraphField fieldB = container.createString(STRING_FIELD + "_2");
-		fieldA.setString(testValue);
-		fieldB.setString(testValue);
-		assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			String testValue = "test123";
+			StringGraphField fieldA = container.createString(STRING_FIELD);
+			StringGraphField fieldB = container.createString(STRING_FIELD + "_2");
+			fieldA.setString(testValue);
+			fieldB.setString(testValue);
+			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsNull() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		StringGraphField fieldA = container.createString(STRING_FIELD);
-		StringGraphField fieldB = container.createString(STRING_FIELD + "_2");
-		assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			StringGraphField fieldA = container.createString(STRING_FIELD);
+			StringGraphField fieldB = container.createString(STRING_FIELD + "_2");
+			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		String dummyValue = "test123";
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			String dummyValue = "test123";
 
-		// rest null - graph null
-		StringGraphField fieldA = container.createString(STRING_FIELD);
-		StringFieldImpl restField = new StringFieldImpl();
-		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+			// rest null - graph null
+			StringGraphField fieldA = container.createString(STRING_FIELD);
+			StringFieldImpl restField = new StringFieldImpl();
+			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
-		// rest set - graph set - different values
-		fieldA.setString(dummyValue);
-		restField.setString(dummyValue + 1L);
-		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+			// rest set - graph set - different values
+			fieldA.setString(dummyValue);
+			restField.setString(dummyValue + 1L);
+			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 
-		// rest set - graph set - same value
-		restField.setString(dummyValue);
-		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+			// rest set - graph set - same value
+			restField.setString(dummyValue);
+			assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
 
-		// rest set - graph set - same value different type
-		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(new HtmlFieldImpl().setHTML(dummyValue)));
-
+			// rest set - graph set - same value different type
+			assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(new HtmlFieldImpl().setHTML(dummyValue)));
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		invokeUpdateFromRestTestcase(STRING_FIELD, FETCH, CREATE_EMPTY);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestTestcase(STRING_FIELD, FETCH, CREATE_EMPTY);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(STRING_FIELD, FETCH);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestNullOnCreateRequiredTestcase(STRING_FIELD, FETCH);
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (node) -> {
-			updateContainer(ac, node, STRING_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (node) -> {
+				updateContainer(ac, node, STRING_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveRequiredFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
-			updateContainer(ac, container, STRING_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveRequiredFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
+				updateContainer(ac, container, STRING_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	public void testRemoveSegmentField() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveSegmentFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
-			updateContainer(ac, container, STRING_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveSegmentFieldViaNullTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
+				updateContainer(ac, container, STRING_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeUpdateFromRestValidSimpleValueTestcase(STRING_FIELD, FILLTEXT, (container) -> {
-			StringField field = new StringFieldImpl();
-			field.setString("someValue");
-			updateContainer(ac, container, STRING_FIELD, field);
-		}, (container) -> {
-			StringGraphField field = container.getString(STRING_FIELD);
-			assertNotNull("The graph field {" + STRING_FIELD + "} could not be found.", field);
-			assertEquals("The string of the field was not updated.", "someValue", field.getString());
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeUpdateFromRestValidSimpleValueTestcase(STRING_FIELD, FILLTEXT, (container) -> {
+				StringField field = new StringFieldImpl();
+				field.setString("someValue");
+				updateContainer(ac, container, STRING_FIELD, field);
+			}, (container) -> {
+				StringGraphField field = container.getString(STRING_FIELD);
+				assertNotNull("The graph field {" + STRING_FIELD + "} could not be found.", field);
+				assertEquals("The string of the field was not updated.", "someValue", field.getString());
+			});
+		}
 	}
 }

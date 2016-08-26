@@ -28,6 +28,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 
 public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
@@ -46,103 +47,116 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			Node node = noTx.getGraph().addFramedVertex(NodeImpl.class);
 
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		NodeGraphField testField = container.createNode("testField", node);
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphField testField = container.createNode("testField", node);
 
-		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		testField.cloneTo(otherContainer);
+			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			testField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getNode("testField")).as("cloned field").isNotNull();
-		assertThat(otherContainer.getNode("testField").getNode()).as("cloned target node").isNotNull().isEqualToComparingFieldByField(node);
+			assertThat(otherContainer.getNode("testField")).as("cloned field").isNotNull();
+			assertThat(otherContainer.getNode("testField").getNode()).as("cloned target node").isNotNull().isEqualToComparingFieldByField(node);
+		}
 	}
 
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			Node node = noTx.getGraph().addFramedVertex(NodeImpl.class);
 
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		NodeGraphField field = container.createNode("testNodeField", node);
-		assertNotNull(field);
-		assertEquals("testNodeField", field.getFieldKey());
-		Node loadedNode = field.getNode();
-		assertNotNull(loadedNode);
-		assertEquals(node.getUuid(), loadedNode.getUuid());
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphField field = container.createNode("testNodeField", node);
+			assertNotNull(field);
+			assertEquals("testNodeField", field.getFieldKey());
+			Node loadedNode = field.getNode();
+			assertNotNull(loadedNode);
+			assertEquals(node.getUuid(), loadedNode.getUuid());
 
-		NodeGraphField loadedField = container.getNode("testNodeField");
-		assertNotNull(loadedField);
-		assertNotNull(loadedField.getNode());
-		assertEquals(node.getUuid(), loadedField.getNode().getUuid());
+			NodeGraphField loadedField = container.getNode("testNodeField");
+			assertNotNull(loadedField);
+			assertNotNull(loadedField.getNode());
+			assertEquals(node.getUuid(), loadedField.getNode().getUuid());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		Node newsNode = folder("news");
-		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		try (NoTx noTx = db.noTx()) {
+			Node newsNode = folder("news");
+			Node node = folder("2015");
+			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
-		// 1. Create the node field schema and add it to the schema of the node
-		NodeFieldSchema nodeFieldSchema = createFieldSchema(true);
-		schema.addField(nodeFieldSchema);
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		schemaStorage.addSchema(node.getSchemaContainer().getLatestVersion().getSchema());
+			// 1. Create the node field schema and add it to the schema of the node
+			NodeFieldSchema nodeFieldSchema = createFieldSchema(true);
+			schema.addField(nodeFieldSchema);
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			schemaStorage.addSchema(node.getSchemaContainer().getLatestVersion().getSchema());
 
-		// 2. Add the node reference to the node fields
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		container.createNode(NODE_FIELD, newsNode);
+			// 2. Add the node reference to the node fields
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			container.createNode(NODE_FIELD, newsNode);
 
-		// 3. Transform the node to json and examine the data
-		String json = getJson(node);
-		assertNotNull(json);
-		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
-		assertNotNull(response);
+			// 3. Transform the node to json and examine the data
+			String json = getJson(node);
+			assertNotNull(json);
+			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
+			assertNotNull(response);
 
-		NodeField deserializedNodeField = response.getFields().getNodeField(NODE_FIELD);
-		assertNotNull("The field {" + NODE_FIELD + "} should not be null. Json: {" + json + "}", deserializedNodeField);
-		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+			NodeField deserializedNodeField = response.getFields().getNodeField(NODE_FIELD);
+			assertNotNull("The field {" + NODE_FIELD + "} should not be null. Json: {" + json + "}", deserializedNodeField);
+			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+		}
 	}
 
 	@Test
 	@Override
 	public void testEquals() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		NodeGraphField fieldA = container.createNode("fieldA", folder("2015"));
-		NodeGraphField fieldB = container.createNode("fieldB", folder("2014"));
-		NodeGraphField fieldC = container.createNode("fieldC", folder("2015"));
-		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphField fieldA = container.createNode("fieldA", folder("2015"));
+			NodeGraphField fieldB = container.createNode("fieldB", folder("2014"));
+			NodeGraphField fieldC = container.createNode("fieldC", folder("2015"));
+			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 
-		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
-		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldC));
+			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldC));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsNull() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		NodeGraphField fieldA = container.createNode("field1", content());
-		assertFalse(fieldA.equals((Field) null));
-		assertFalse(fieldA.equals((GraphField) null));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphField fieldA = container.createNode("field1", content());
+			assertFalse(fieldA.equals((Field) null));
+			assertFalse(fieldA.equals((GraphField) null));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		NodeGraphField fieldA = container.createNode("field1", content());
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphField fieldA = container.createNode("field1", content());
 
-		// graph set - rest set - same value - different type
-		assertFalse("The field should not be equal to a string rest field. Even if it has the same value",
-				fieldA.equals(new StringFieldImpl().setString("someText")));
-		// graph set - rest set - different value
-		assertFalse("The field should not be equal to the rest field since the rest field has a different value.",
-				fieldA.equals(new NodeFieldImpl().setUuid(folder("2015").getUuid())));
+			// graph set - rest set - same value - different type
+			assertFalse("The field should not be equal to a string rest field. Even if it has the same value",
+					fieldA.equals(new StringFieldImpl().setString("someText")));
+			// graph set - rest set - different value
+			assertFalse("The field should not be equal to the rest field since the rest field has a different value.",
+					fieldA.equals(new NodeFieldImpl().setUuid(folder("2015").getUuid())));
 
-		// graph set - rest set - same value
-		assertTrue("The field should be equal to a rest field with the same value", fieldA.equals(new NodeFieldImpl().setUuid(content().getUuid())));
+			// graph set - rest set - same value
+			assertTrue("The field should be equal to a rest field with the same value",
+					fieldA.equals(new NodeFieldImpl().setUuid(content().getUuid())));
+		}
 	}
 
 	@Test
@@ -183,7 +197,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			NodeFieldImpl field = new NodeFieldImpl();
 			field.setUuid(content().getUuid());
 			updateContainer(ac, container, NODE_FIELD, field);
-		} , (container) -> {
+		}, (container) -> {
 			NodeGraphField field = container.getNode(NODE_FIELD);
 			assertNotNull("The graph field {" + NODE_FIELD + "} could not be found.", field);
 			assertEquals("The node reference of the field was not updated.", content().getUuid(), field.getNode().getUuid());

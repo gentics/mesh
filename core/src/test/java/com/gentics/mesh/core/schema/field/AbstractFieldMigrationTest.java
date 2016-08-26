@@ -16,7 +16,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 
-import com.gentics.mesh.core.data.AbstractBasicDBTest;
+import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
@@ -49,6 +49,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
@@ -56,7 +57,8 @@ import com.gentics.mesh.util.VersionNumber;
 /**
  * Base class for all field migration tests
  */
-public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest implements FieldMigrationTest {
+public abstract class AbstractFieldMigrationTest extends AbstractIsolatedBasicDBTest implements FieldMigrationTest {
+
 	protected final static String NEWFIELD = "New field";
 	protected final static String NEWFIELDVALUE = "New field value";
 	protected final static String OLDFIELD = "Old field";
@@ -88,10 +90,12 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 */
 	protected void removeField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher)
 			throws InterruptedException, ExecutionException, TimeoutException {
-		if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-			removeMicroschemaField(creator, dataProvider, fetcher);
-		} else {
-			removeSchemaField(creator, dataProvider, fetcher);
+		try (NoTx noTx = db.noTx()) {
+			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
+				removeMicroschemaField(creator, dataProvider, fetcher);
+			} else {
+				removeSchemaField(creator, dataProvider, fetcher);
+			}
 		}
 	}
 
@@ -232,10 +236,12 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 */
 	protected void renameField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
 			throws InterruptedException, ExecutionException, TimeoutException {
-		if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-			renameMicroschemaField(creator, dataProvider, fetcher, asserter);
-		} else {
-			renameSchemaField(creator, dataProvider, fetcher, asserter);
+		try (NoTx noTx = db.noTx()) {
+			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
+				renameMicroschemaField(creator, dataProvider, fetcher, asserter);
+			} else {
+				renameSchemaField(creator, dataProvider, fetcher, asserter);
+			}
 		}
 	}
 
@@ -398,10 +404,12 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 */
 	protected void changeType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
 			DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-			changeMicroschemaType(oldField, dataProvider, oldFieldFetcher, newField, asserter);
-		} else {
-			changeSchemaType(oldField, dataProvider, oldFieldFetcher, newField, asserter);
+		try (NoTx noTx = db.noTx()) {
+			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
+				changeMicroschemaType(oldField, dataProvider, oldFieldFetcher, newField, asserter);
+			} else {
+				changeSchemaType(oldField, dataProvider, oldFieldFetcher, newField, asserter);
+			}
 		}
 	}
 
@@ -582,10 +590,12 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 */
 	protected void customMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
 			DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-			customMicroschemaMigrationScript(creator, dataProvider, fetcher, migrationScript, asserter);
-		} else {
-			customSchemaMigrationScript(creator, dataProvider, fetcher, migrationScript, asserter);
+		try (NoTx noTx = db.noTx()) {
+			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
+				customMicroschemaMigrationScript(creator, dataProvider, fetcher, migrationScript, asserter);
+			} else {
+				customSchemaMigrationScript(creator, dataProvider, fetcher, migrationScript, asserter);
+			}
 		}
 	}
 
@@ -729,14 +739,16 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 * @throws Throwable
 	 */
 	protected void invalidMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws Throwable {
-		try {
-			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-				invalidMicroschemaMigrationScript(creator, dataProvider, script);
-			} else {
-				invalidSchemaMigrationScript(creator, dataProvider, script);
+		try (NoTx noTx = db.noTx()) {
+			try {
+				if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
+					invalidMicroschemaMigrationScript(creator, dataProvider, script);
+				} else {
+					invalidSchemaMigrationScript(creator, dataProvider, script);
+				}
+			} catch (RuntimeException e) {
+				throw e.getCause();
 			}
-		} catch (RuntimeException e) {
-			throw e.getCause();
 		}
 	}
 

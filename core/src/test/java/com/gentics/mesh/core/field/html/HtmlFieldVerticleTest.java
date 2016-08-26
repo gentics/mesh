@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,6 +20,7 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 
 public class HtmlFieldVerticleTest extends AbstractFieldVerticleTest {
 
@@ -26,116 +28,131 @@ public class HtmlFieldVerticleTest extends AbstractFieldVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
-		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
-		htmlFieldSchema.setName(FIELD_NAME);
-		htmlFieldSchema.setLabel("Some label");
-		schema.addField(htmlFieldSchema);
-		schemaContainer("folder").getLatestVersion().setSchema(schema);
+		try (NoTx noTx = db.noTx()) {
+			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
+			htmlFieldSchema.setName(FIELD_NAME);
+			htmlFieldSchema.setLabel("Some label");
+			schema.addField(htmlFieldSchema);
+			schemaContainer("folder").getLatestVersion().setSchema(schema);
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(null, (Field) null);
-		HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
-		assertNull("The response should not contain the field because it should still be null", htmlField);
+		try (NoTx noTx = db.noTx()) {
+			NodeResponse response = createNode(null, (Field) null);
+			HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
+			assertNull("The response should not contain the field because it should still be null", htmlField);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		Node node = folder("2015");
-		for (int i = 0; i < 20; i++) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-			String oldValue = getHtmlValue(container, FIELD_NAME);
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
+			for (int i = 0; i < 20; i++) {
+				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+				String oldValue = getHtmlValue(container, FIELD_NAME);
 
-			String newValue = "some<b>html <i>" + i + "</i>";
+				String newValue = "some<b>html <i>" + i + "</i>";
 
-			NodeResponse response = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML(newValue));
-			HtmlFieldImpl field = response.getFields().getHtmlField(FIELD_NAME);
-			assertEquals(newValue, field.getHTML());
-			node.reload();
-			container.reload();
+				NodeResponse response = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML(newValue));
+				HtmlFieldImpl field = response.getFields().getHtmlField(FIELD_NAME);
+				assertEquals(newValue, field.getHTML());
+				node.reload();
+				container.reload();
 
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
-			assertEquals("Check old value", oldValue, getHtmlValue(container, FIELD_NAME));
+				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+				assertEquals("Check old value", oldValue, getHtmlValue(container, FIELD_NAME));
+			}
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-		String oldVersion = firstResponse.getVersion().getNumber();
+		try (NoTx noTx = db.noTx()) {
+			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
+			String oldVersion = firstResponse.getVersion().getNumber();
 
-		NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+			NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
+			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-		String oldVersion = firstResponse.getVersion().getNumber();
+		try (NoTx noTx = db.noTx()) {
+			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
+			String oldVersion = firstResponse.getVersion().getNumber();
 
-		// Simple field with no value results in a request JSON null value.
-		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
-		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			// Simple field with no value results in a request JSON null value.
+			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+			assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNull();
+			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 
-		// Assert that the old version was not modified
-		Node node = folder("2015");
-		NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-		assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
-		assertThat(latest.getHtml(FIELD_NAME)).isNull();
-		assertThat(latest.getPreviousVersion().getHtml(FIELD_NAME)).isNotNull();
-		String oldValue = latest.getPreviousVersion().getHtml(FIELD_NAME).getHTML();
-		assertThat(oldValue).isEqualTo("bla");
+			// Assert that the old version was not modified
+			Node node = folder("2015");
+			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getHtml(FIELD_NAME)).isNull();
+			assertThat(latest.getPreviousVersion().getHtml(FIELD_NAME)).isNotNull();
+			String oldValue = latest.getPreviousVersion().getHtml(FIELD_NAME).getHTML();
+			assertThat(oldValue).isEqualTo("bla");
 
-		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-				secondResponse.getVersion().getNumber());
-
+			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+					secondResponse.getVersion().getNumber());
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-		String oldVersion = firstResponse.getVersion().getNumber();
+		try (NoTx noTx = db.noTx()) {
+			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
+			String oldVersion = firstResponse.getVersion().getNumber();
 
-		HtmlFieldImpl emptyField = new HtmlFieldImpl();
-		emptyField.setHTML("");
-		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
-		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNotNull();
-		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME).getHTML()).as("Updated Field Value").isEqualTo("");
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			HtmlFieldImpl emptyField = new HtmlFieldImpl();
+			emptyField.setHTML("");
+			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+			assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNotNull();
+			assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME).getHTML()).as("Updated Field Value").isEqualTo("");
+			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 
-		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-				secondResponse.getVersion().getNumber());
+			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+					secondResponse.getVersion().getNumber());
+		}
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode(FIELD_NAME, new HtmlFieldImpl().setHTML("Some<b>html"));
-		HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
-		assertEquals("Some<b>html", htmlField.getHTML());
+		try (NoTx noTx = db.noTx()) {
+			NodeResponse response = createNode(FIELD_NAME, new HtmlFieldImpl().setHTML("Some<b>html"));
+			HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
+			assertEquals("Some<b>html", htmlField.getHTML());
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		Node node = folder("2015");
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		container.createHTML(FIELD_NAME).setHtml("some<b>html");
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			container.createHTML(FIELD_NAME).setHtml("some<b>html");
 
-		NodeResponse response = readNode(node);
-		HtmlFieldImpl deserializedHtmlField = response.getFields().getHtmlField(FIELD_NAME);
-		assertNotNull(deserializedHtmlField);
-		assertEquals("some<b>html", deserializedHtmlField.getHTML());
+			NodeResponse response = readNode(node);
+			HtmlFieldImpl deserializedHtmlField = response.getFields().getHtmlField(FIELD_NAME);
+			assertNotNull(deserializedHtmlField);
+			assertEquals("some<b>html", deserializedHtmlField.getHTML());
+		}
 	}
 
 	/**

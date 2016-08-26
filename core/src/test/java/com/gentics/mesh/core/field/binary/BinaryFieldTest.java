@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 
 public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
@@ -45,185 +46,205 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		Node node = folder("2015");
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
 
-		// Update the schema and add a binary field
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			// Update the schema and add a binary field
+			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
-		schema.addField(createFieldSchema(true));
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			schema.addField(createFieldSchema(true));
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		BinaryGraphField field = container.createBinary(BINARY_FIELD);
-		field.setMimeType("image/jpg");
-		field.setSHA512Sum(
-				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
-		field.setImageHeight(200);
-		field.setImageWidth(300);
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			BinaryGraphField field = container.createBinary(BINARY_FIELD);
+			field.setMimeType("image/jpg");
+			field.setSHA512Sum(
+					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+			field.setImageHeight(200);
+			field.setImageWidth(300);
 
-		String json = getJson(node);
-		System.out.println(json);
-		assertNotNull(json);
-		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
-		assertNotNull(response);
+			String json = getJson(node);
+			System.out.println(json);
+			assertNotNull(json);
+			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
+			assertNotNull(response);
 
-		BinaryField deserializedNodeField = response.getFields().getBinaryField(BINARY_FIELD);
-		assertNotNull(deserializedNodeField);
-		assertEquals(200, deserializedNodeField.getHeight().intValue());
-		assertEquals(300, deserializedNodeField.getWidth().intValue());
-
+			BinaryField deserializedNodeField = response.getFields().getBinaryField(BINARY_FIELD);
+			assertNotNull(deserializedNodeField);
+			assertEquals(200, deserializedNodeField.getHeight().intValue());
+			assertEquals(300, deserializedNodeField.getWidth().intValue());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFieldUpdate() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-		BinaryGraphField field = container.createBinary(BINARY_FIELD);
-		assertNotNull(field);
-		assertEquals(BINARY_FIELD, field.getFieldKey());
+			BinaryGraphField field = container.createBinary(BINARY_FIELD);
+			assertNotNull(field);
+			assertEquals(BINARY_FIELD, field.getFieldKey());
 
-		field.setFileName("blume.jpg");
-		field.setMimeType("image/jpg");
-		field.setFileSize(220);
-		field.setImageDominantColor("#22A7F0");
-		field.setImageHeight(133);
-		field.setImageWidth(7);
-		field.setSHA512Sum(
-				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
-		System.out.println(field.getSegmentedPath());
+			field.setFileName("blume.jpg");
+			field.setMimeType("image/jpg");
+			field.setFileSize(220);
+			field.setImageDominantColor("#22A7F0");
+			field.setImageHeight(133);
+			field.setImageWidth(7);
+			field.setSHA512Sum(
+					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+			System.out.println(field.getSegmentedPath());
 
-		BinaryGraphField loadedField = container.getBinary(BINARY_FIELD);
-		assertNotNull("The previously created field could not be found.", loadedField);
-		assertEquals(220, loadedField.getFileSize());
+			BinaryGraphField loadedField = container.getBinary(BINARY_FIELD);
+			assertNotNull("The previously created field could not be found.", loadedField);
+			assertEquals(220, loadedField.getFileSize());
 
-		assertEquals("blume.jpg", loadedField.getFileName());
-		assertEquals("image/jpg", loadedField.getMimeType());
-		assertEquals(220, loadedField.getFileSize());
-		assertEquals("#22A7F0", loadedField.getImageDominantColor());
-		assertEquals(133, loadedField.getImageHeight().intValue());
-		assertEquals(7, loadedField.getImageWidth().intValue());
-		assertEquals(
-				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
-				loadedField.getSHA512Sum());
-
+			assertEquals("blume.jpg", loadedField.getFileName());
+			assertEquals("image/jpg", loadedField.getMimeType());
+			assertEquals(220, loadedField.getFileSize());
+			assertEquals("#22A7F0", loadedField.getImageDominantColor());
+			assertEquals(133, loadedField.getImageHeight().intValue());
+			assertEquals(7, loadedField.getImageWidth().intValue());
+			assertEquals(
+					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
+					loadedField.getSHA512Sum());
+		}
 	}
 
 	@Test
 	@Override
 	public void testClone() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-		BinaryGraphField field = container.createBinary(BINARY_FIELD);
-		assertNotNull(field);
-		assertEquals(BINARY_FIELD, field.getFieldKey());
+			BinaryGraphField field = container.createBinary(BINARY_FIELD);
+			assertNotNull(field);
+			assertEquals(BINARY_FIELD, field.getFieldKey());
 
-		field.setFileName("blume.jpg");
-		field.setMimeType("image/jpg");
-		field.setFileSize(220);
-		field.setImageDominantColor("#22A7F0");
-		field.setImageHeight(133);
-		field.setImageWidth(7);
-		field.setSHA512Sum(
-				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+			field.setFileName("blume.jpg");
+			field.setMimeType("image/jpg");
+			field.setFileSize(220);
+			field.setImageDominantColor("#22A7F0");
+			field.setImageHeight(133);
+			field.setImageWidth(7);
+			field.setSHA512Sum(
+					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
 
-		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		field.cloneTo(otherContainer);
+			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			field.cloneTo(otherContainer);
 
-		BinaryGraphField clonedField = otherContainer.getBinary(BINARY_FIELD);
-		assertThat(clonedField).as("cloned field").isNotNull().isEqualToComparingFieldByField(field);
+			BinaryGraphField clonedField = otherContainer.getBinary(BINARY_FIELD);
+			assertThat(clonedField).as("cloned field").isNotNull().isEqualToComparingFieldByField(field);
+		}
 	}
 
 	@Test
 	@Override
 	public void testEquals() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		BinaryGraphField fieldA = container.createBinary("fieldA");
-		BinaryGraphField fieldB = container.createBinary("fieldB");
-		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-		fieldA.setFileName("someText");
-		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			BinaryGraphField fieldA = container.createBinary("fieldA");
+			BinaryGraphField fieldB = container.createBinary("fieldB");
+			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+			fieldA.setFileName("someText");
+			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 
-		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
-		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-		fieldB.setFileName("someText");
-		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+			fieldB.setFileName("someText");
+			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsNull() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		BinaryGraphField fieldA = container.createBinary(BINARY_FIELD);
-		assertFalse(fieldA.equals((Field) null));
-		assertFalse(fieldA.equals((GraphField) null));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			BinaryGraphField fieldA = container.createBinary(BINARY_FIELD);
+			assertFalse(fieldA.equals((Field) null));
+			assertFalse(fieldA.equals((GraphField) null));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		BinaryGraphField fieldA = container.createBinary("fieldA");
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			BinaryGraphField fieldA = container.createBinary("fieldA");
 
-		// graph empty - rest empty 
-		assertTrue("The field should be equal to the html rest field since both fields have no value.", fieldA.equals(new BinaryFieldImpl()));
+			// graph empty - rest empty 
+			assertTrue("The field should be equal to the html rest field since both fields have no value.", fieldA.equals(new BinaryFieldImpl()));
 
-		// graph set - rest set - same value - different type
-		fieldA.setFileName("someText");
-		assertFalse("The field should not be equal to a string rest field. Even if it has the same value",
-				fieldA.equals(new StringFieldImpl().setString("someText")));
-		// graph set - rest set - different value
-		assertFalse("The field should not be equal to the rest field since the rest field has a different value.",
-				fieldA.equals(new BinaryFieldImpl().setFileName("blub")));
+			// graph set - rest set - same value - different type
+			fieldA.setFileName("someText");
+			assertFalse("The field should not be equal to a string rest field. Even if it has the same value",
+					fieldA.equals(new StringFieldImpl().setString("someText")));
+			// graph set - rest set - different value
+			assertFalse("The field should not be equal to the rest field since the rest field has a different value.",
+					fieldA.equals(new BinaryFieldImpl().setFileName("blub")));
 
-		// graph set - rest set - same value
-		assertTrue("The binary field filename value should be equal to a rest field with the same value",
-				fieldA.equals(new BinaryFieldImpl().setFileName("someText")));
+			// graph set - rest set - same value
+			assertTrue("The binary field filename value should be equal to a rest field with the same value",
+					fieldA.equals(new BinaryFieldImpl().setFileName("someText")));
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		invokeUpdateFromRestTestcase(BINARY_FIELD, FETCH, CREATE_EMPTY);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestTestcase(BINARY_FIELD, FETCH, CREATE_EMPTY);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(BINARY_FIELD, FETCH, false);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestNullOnCreateRequiredTestcase(BINARY_FIELD, FETCH, false);
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (node) -> {
-			updateContainer(ac, node, BINARY_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (node) -> {
+				updateContainer(ac, node, BINARY_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveRequiredFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (container) -> {
-			updateContainer(ac, container, BINARY_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveRequiredFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (container) -> {
+				updateContainer(ac, container, BINARY_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeUpdateFromRestValidSimpleValueTestcase(BINARY_FIELD, FILL_BASIC, (container) -> {
-			BinaryField field = new BinaryFieldImpl();
-			field.setFileName("someFile.txt");
-			updateContainer(ac, container, BINARY_FIELD, field);
-		}, (container) -> {
-			BinaryGraphField field = container.getBinary(BINARY_FIELD);
-			assertNotNull("The graph field {" + BINARY_FIELD + "} could not be found.", field);
-			assertEquals("The html of the field was not updated.", "someFile.txt", field.getFileName());
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeUpdateFromRestValidSimpleValueTestcase(BINARY_FIELD, FILL_BASIC, (container) -> {
+				BinaryField field = new BinaryFieldImpl();
+				field.setFileName("someFile.txt");
+				updateContainer(ac, container, BINARY_FIELD, field);
+			}, (container) -> {
+				BinaryGraphField field = container.getBinary(BINARY_FIELD);
+				assertNotNull("The graph field {" + BINARY_FIELD + "} could not be found.", field);
+				assertEquals("The html of the field was not updated.", "someFile.txt", field.getFileName());
+			});
+		}
 	}
 
 }

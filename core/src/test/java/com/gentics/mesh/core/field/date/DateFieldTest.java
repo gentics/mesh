@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.util.DateUtils;
@@ -48,125 +49,140 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
 	@Test
 	public void testSimpleDate() {
-		Long nowEpoch = System.currentTimeMillis() / 1000;
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		DateGraphFieldImpl field = new DateGraphFieldImpl("test", container);
-		assertEquals(2, container.getPropertyKeys().size());
-		assertNull(container.getProperty("test-date"));
-		field.setDate(nowEpoch);
-		assertEquals(nowEpoch, Long.valueOf(container.getProperty("test-date")));
-		assertEquals(3, container.getPropertyKeys().size());
-		field.setDate(null);
-		assertNull(container.getProperty("test-date"));
+		try (NoTx noTx = db.noTx()) {
+			Long nowEpoch = System.currentTimeMillis() / 1000;
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			DateGraphFieldImpl field = new DateGraphFieldImpl("test", container);
+			assertEquals(2, container.getPropertyKeys().size());
+			assertNull(container.getProperty("test-date"));
+			field.setDate(nowEpoch);
+			assertEquals(nowEpoch, Long.valueOf(container.getProperty("test-date")));
+			assertEquals(3, container.getPropertyKeys().size());
+			field.setDate(null);
+			assertNull(container.getProperty("test-date"));
+		}
 	}
 
 	@Test
 	@Override
 	public void testClone() {
-		Long nowEpoch = System.currentTimeMillis() / 1000;
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		DateGraphField dateField = container.createDate(DATE_FIELD);
-		dateField.setDate(nowEpoch);
+		try (NoTx noTx = db.noTx()) {
+			Long nowEpoch = System.currentTimeMillis() / 1000;
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			DateGraphField dateField = container.createDate(DATE_FIELD);
+			dateField.setDate(nowEpoch);
 
-		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		dateField.cloneTo(otherContainer);
+			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			dateField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getDate(DATE_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(dateField, "parentContainer");
+			assertThat(otherContainer.getDate(DATE_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(dateField, "parentContainer");
+		}
 	}
 
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		Long nowEpoch = System.currentTimeMillis() / 1000;
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		DateGraphField dateField = container.createDate(DATE_FIELD);
-		assertEquals(DATE_FIELD, dateField.getFieldKey());
-		dateField.setDate(nowEpoch);
-		assertEquals(nowEpoch, Long.valueOf(dateField.getDate()));
-		StringGraphField bogusField1 = container.getString("bogus");
-		assertNull(bogusField1);
-		DateGraphField reloadedDateField = container.getDate(DATE_FIELD);
-		assertNotNull(reloadedDateField);
-		assertEquals(DATE_FIELD, reloadedDateField.getFieldKey());
+		try (NoTx noTx = db.noTx()) {
+			Long nowEpoch = System.currentTimeMillis() / 1000;
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			DateGraphField dateField = container.createDate(DATE_FIELD);
+			assertEquals(DATE_FIELD, dateField.getFieldKey());
+			dateField.setDate(nowEpoch);
+			assertEquals(nowEpoch, Long.valueOf(dateField.getDate()));
+			StringGraphField bogusField1 = container.getString("bogus");
+			assertNull(bogusField1);
+			DateGraphField reloadedDateField = container.getDate(DATE_FIELD);
+			assertNotNull(reloadedDateField);
+			assertEquals(DATE_FIELD, reloadedDateField.getFieldKey());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		Node node = folder("2015");
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
 
-		// Add html field schema to the schema
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		DateFieldSchema dateFieldSchema = createFieldSchema(true);
-		schema.addField(dateFieldSchema);
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			// Add html field schema to the schema
+			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			DateFieldSchema dateFieldSchema = createFieldSchema(true);
+			schema.addField(dateFieldSchema);
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		DateGraphField field = container.createDate(DATE_FIELD);
-		long date = fromISO8601(toISO8601(System.currentTimeMillis()));
-		field.setDate(date);
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			DateGraphField field = container.createDate(DATE_FIELD);
+			long date = fromISO8601(toISO8601(System.currentTimeMillis()));
+			field.setDate(date);
 
-		String json = getJson(node);
-		assertNotNull(json);
-		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
-		assertNotNull(response);
+			String json = getJson(node);
+			assertNotNull(json);
+			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
+			assertNotNull(response);
 
-		com.gentics.mesh.core.rest.node.field.DateField deserializedNodeField = response.getFields().getDateField("dateField");
-		assertNotNull(deserializedNodeField);
-		assertEquals(Long.valueOf(date), fromISO8601(deserializedNodeField.getDate()));
+			com.gentics.mesh.core.rest.node.field.DateField deserializedNodeField = response.getFields().getDateField("dateField");
+			assertNotNull(deserializedNodeField);
+			assertEquals(Long.valueOf(date), fromISO8601(deserializedNodeField.getDate()));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEquals() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		Long date = System.currentTimeMillis();
-		DateGraphField fieldA = container.createDate(DATE_FIELD);
-		DateGraphField fieldB = container.createDate(DATE_FIELD + "_2");
-		fieldA.setDate(date);
-		fieldB.setDate(date);
-		assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			Long date = System.currentTimeMillis();
+			DateGraphField fieldA = container.createDate(DATE_FIELD);
+			DateGraphField fieldB = container.createDate(DATE_FIELD + "_2");
+			fieldA.setDate(date);
+			fieldB.setDate(date);
+			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsNull() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		DateGraphField fieldA = container.createDate(DATE_FIELD);
-		DateGraphField fieldB = container.createDate(DATE_FIELD + "_2");
-		assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			DateGraphField fieldA = container.createDate(DATE_FIELD);
+			DateGraphField fieldB = container.createDate(DATE_FIELD + "_2");
+			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		Long date = System.currentTimeMillis();
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			Long date = System.currentTimeMillis();
 
-		// rest null - graph null
-		DateGraphField fieldA = container.createDate(DATE_FIELD);
-		DateFieldImpl restField = new DateFieldImpl();
-		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+			// rest null - graph null
+			DateGraphField fieldA = container.createDate(DATE_FIELD);
+			DateFieldImpl restField = new DateFieldImpl();
+			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
-		// rest set - graph set - different values
-		fieldA.setDate(fromISO8601(toISO8601(date)));
-		restField.setDate(DateUtils.toISO8601(date + 1000L));
-		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+			// rest set - graph set - different values
+			fieldA.setDate(fromISO8601(toISO8601(date)));
+			restField.setDate(DateUtils.toISO8601(date + 1000L));
+			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 
-		// rest set - graph set - same value
-		restField.setDate(toISO8601(date));
-		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+			// rest set - graph set - same value
+			restField.setDate(toISO8601(date));
+			assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
 
-		// rest set - graph set - same value different type
-		assertFalse("Fields should not be equal since the type does not match.",
-				fieldA.equals(new StringFieldImpl().setString(String.valueOf(date))));
-
+			// rest set - graph set - same value different type
+			assertFalse("Fields should not be equal since the type does not match.",
+					fieldA.equals(new StringFieldImpl().setString(String.valueOf(date))));
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		invokeUpdateFromRestTestcase(DATE_FIELD, FETCH, CREATE_EMPTY);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestTestcase(DATE_FIELD, FETCH, CREATE_EMPTY);
+		}
 	}
 
 	@Test
@@ -178,33 +194,39 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
-		invokeRemoveFieldViaNullTestcase(DATE_FIELD, FETCH, FILL, (node) -> {
-			updateContainer(ac, node, DATE_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
+			invokeRemoveFieldViaNullTestcase(DATE_FIELD, FETCH, FILL, (node) -> {
+				updateContainer(ac, node, DATE_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
-		invokeRemoveRequiredFieldViaNullTestcase(DATE_FIELD, FETCH, FILL, (container) -> {
-			updateContainer(ac, container, DATE_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
+			invokeRemoveRequiredFieldViaNullTestcase(DATE_FIELD, FETCH, FILL, (container) -> {
+				updateContainer(ac, container, DATE_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
-		invokeUpdateFromRestValidSimpleValueTestcase(DATE_FIELD, FILL, (container) -> {
-			DateField field = new DateFieldImpl();
-			field.setDate(DateUtils.toISO8601(0L, 0));
-			updateContainer(ac, container, DATE_FIELD, field);
-		}, (container) -> {
-			DateGraphField field = container.getDate(DATE_FIELD);
-			assertNotNull("The graph field {" + DATE_FIELD + "} could not be found.", field);
-			assertEquals("The date of the field was not updated.", 0L, field.getDate().longValue());
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
+			invokeUpdateFromRestValidSimpleValueTestcase(DATE_FIELD, FILL, (container) -> {
+				DateField field = new DateFieldImpl();
+				field.setDate(DateUtils.toISO8601(0L, 0));
+				updateContainer(ac, container, DATE_FIELD, field);
+			}, (container) -> {
+				DateGraphField field = container.getDate(DATE_FIELD);
+				assertNotNull("The graph field {" + DATE_FIELD + "} could not be found.", field);
+				assertEquals("The date of the field was not updated.", 0L, field.getDate().longValue());
+			});
+		}
 	}
 }

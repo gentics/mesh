@@ -58,6 +58,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.MeshJsonException;
 
 import io.vertx.core.json.JsonObject;
@@ -211,201 +212,224 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	 */
 	@Test
 	public void testCreateMicronodeField() throws Exception {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
-		assertNotNull(field);
-		Micronode micronode = field.getMicronode();
-		assertNotNull(micronode);
-		assertTrue("Micronode must have a uuid", StringUtils.isNotEmpty(micronode.getUuid()));
+			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+			assertNotNull(field);
+			Micronode micronode = field.getMicronode();
+			assertNotNull(micronode);
+			assertTrue("Micronode must have a uuid", StringUtils.isNotEmpty(micronode.getUuid()));
 
-		StringGraphField micronodeStringField = micronode.createString("stringfield");
-		assertNotNull(micronodeStringField);
-		micronodeStringField.setString("dummyString");
+			StringGraphField micronodeStringField = micronode.createString("stringfield");
+			assertNotNull(micronodeStringField);
+			micronodeStringField.setString("dummyString");
 
-		MicronodeGraphField reloadedField = container.getMicronode("testMicronodeField");
-		assertNotNull(reloadedField);
-		Micronode reloadedMicronode = reloadedField.getMicronode();
-		assertNotNull(reloadedMicronode);
-		assertEquals(micronode.getUuid(), reloadedMicronode.getUuid());
+			MicronodeGraphField reloadedField = container.getMicronode("testMicronodeField");
+			assertNotNull(reloadedField);
+			Micronode reloadedMicronode = reloadedField.getMicronode();
+			assertNotNull(reloadedMicronode);
+			assertEquals(micronode.getUuid(), reloadedMicronode.getUuid());
 
-		StringGraphField reloadedMicronodeStringField = reloadedMicronode.getString("stringfield");
-		assertNotNull(reloadedMicronodeStringField);
+			StringGraphField reloadedMicronodeStringField = reloadedMicronode.getString("stringfield");
+			assertNotNull(reloadedMicronodeStringField);
 
-		assertEquals(micronodeStringField.getString(), reloadedMicronodeStringField.getString());
+			assertEquals(micronodeStringField.getString(), reloadedMicronodeStringField.getString());
+		}
 	}
 
 	@Test
 	public void testMicronodeUpdateFromRest() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
-		Micronode micronode = field.getMicronode();
+			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+			Micronode micronode = field.getMicronode();
 
-		Microschema schema = micronode.getSchemaContainerVersion().getSchema();
-		schema.addField(FieldUtil.createStringFieldSchema("stringfield"));
-		micronode.getSchemaContainerVersion().setSchema(schema);
-		InternalActionContext ac = getMockedInternalActionContext();
-		MeshCore.get().serverSchemaStorage().clear();
+			Microschema schema = micronode.getSchemaContainerVersion().getSchema();
+			schema.addField(FieldUtil.createStringFieldSchema("stringfield"));
+			micronode.getSchemaContainerVersion().setSchema(schema);
+			InternalActionContext ac = getMockedInternalActionContext();
+			MeshCore.get().serverSchemaStorage().clear();
 
-		FieldMap restFields = new FieldMapImpl();
-		restFields.put("stringfield", new StringFieldImpl().setString("test"));
-		field.getMicronode().updateFieldsFromRest(ac, restFields);
+			FieldMap restFields = new FieldMapImpl();
+			restFields.put("stringfield", new StringFieldImpl().setString("test"));
+			field.getMicronode().updateFieldsFromRest(ac, restFields);
 
-		field.getMicronode().reload();
-		assertNotNull("The field should have been created.", field.getMicronode().getString("stringfield"));
-		assertEquals("The field did not contain the expected value", "test", field.getMicronode().getString("stringfield").getString());
+			field.getMicronode().reload();
+			assertNotNull("The field should have been created.", field.getMicronode().getString("stringfield"));
+			assertEquals("The field did not contain the expected value", "test", field.getMicronode().getString("stringfield").getString());
+		}
 	}
 
 	@Test
 	@Override
 	public void testClone() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 
-		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		field.cloneTo(otherContainer);
+			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			field.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getMicronode("testMicronodeField")).as("cloned field").isNotNull();
-		assertThat(otherContainer.getMicronode("testMicronodeField").getMicronode()).as("cloned micronode").isNotNull()
-				.isEqualToComparingFieldByField(field.getMicronode());
+			assertThat(otherContainer.getMicronode("testMicronodeField")).as("cloned field").isNotNull();
+			assertThat(otherContainer.getMicronode("testMicronodeField").getMicronode()).as("cloned micronode").isNotNull()
+					.isEqualToComparingFieldByField(field.getMicronode());
+		}
 	}
 
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
-		Micronode micronode = field.getMicronode();
-		String originalUuid = micronode.getUuid();
+			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+			Micronode micronode = field.getMicronode();
+			String originalUuid = micronode.getUuid();
 
-		Set<? extends MicronodeImpl> existingMicronodes = tx.getGraph().v().has(MicronodeImpl.class).toSetExplicit(MicronodeImpl.class);
-		for (Micronode foundMicronode : existingMicronodes) {
-			assertEquals(micronode.getUuid(), foundMicronode.getUuid());
-		}
+			Set<? extends MicronodeImpl> existingMicronodes = noTx.getGraph().v().has(MicronodeImpl.class).toSetExplicit(MicronodeImpl.class);
+			for (Micronode foundMicronode : existingMicronodes) {
+				assertEquals(micronode.getUuid(), foundMicronode.getUuid());
+			}
 
-		// update by recreation
-		MicronodeGraphField updatedField = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
-		Micronode updatedMicronode = updatedField.getMicronode();
+			// update by recreation
+			MicronodeGraphField updatedField = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+			Micronode updatedMicronode = updatedField.getMicronode();
 
-		assertFalse("Uuid of micronode must be different after update", StringUtils.equalsIgnoreCase(originalUuid, updatedMicronode.getUuid()));
+			assertFalse("Uuid of micronode must be different after update", StringUtils.equalsIgnoreCase(originalUuid, updatedMicronode.getUuid()));
 
-		existingMicronodes = tx.getGraph().v().has(MicronodeImpl.class).toSetExplicit(MicronodeImpl.class);
-		for (MicronodeImpl foundMicronode : existingMicronodes) {
-			assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid());
+			existingMicronodes = noTx.getGraph().v().has(MicronodeImpl.class).toSetExplicit(MicronodeImpl.class);
+			for (MicronodeImpl foundMicronode : existingMicronodes) {
+				assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid());
+			}
 		}
 	}
 
 	@Test
 	@Override
 	public void testEquals() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
-		MicronodeGraphField fieldB = container.createMicronode("fieldB", microschemaContainer("vcard").getLatestVersion());
-		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-		fieldA.getMicronode().createString("firstName").setString("someStringValue");
-		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
+			MicronodeGraphField fieldB = container.createMicronode("fieldB", microschemaContainer("vcard").getLatestVersion());
+			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+			fieldA.getMicronode().createString("firstName").setString("someStringValue");
+			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 
-		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
-		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-		fieldB.getMicronode().createString("firstName").setString("someStringValue");
-		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+			fieldB.getMicronode().createString("firstName").setString("someStringValue");
+			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsNull() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
-		assertFalse(fieldA.equals((Field) null));
-		assertFalse(fieldA.equals((GraphField) null));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
+			assertFalse(fieldA.equals((Field) null));
+			assertFalse(fieldA.equals((GraphField) null));
+		}
 	}
 
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		// Create microschema for the micronode
-		MicroschemaContainerVersion containerVersion = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
-		Microschema microschema = new MicroschemaModel();
-		microschema.setVersion(1);
-		microschema.addField(FieldUtil.createStringFieldSchema("string"));
-		microschema.addField(FieldUtil.createDateFieldSchema("date"));
+		try (NoTx noTx = db.noTx()) {
+			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			// Create microschema for the micronode
+			MicroschemaContainerVersion containerVersion = noTx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			Microschema microschema = new MicroschemaModel();
+			microschema.setVersion(1);
+			microschema.addField(FieldUtil.createStringFieldSchema("string"));
+			microschema.addField(FieldUtil.createDateFieldSchema("date"));
 
-		// rest null - graph null
-		containerVersion.setSchema(microschema);
-		MicronodeGraphField fieldA = container.createMicronode(MICRONODE_FIELD, containerVersion);
-		MicronodeResponse restField = new MicronodeResponse();
-		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+			// rest null - graph null
+			containerVersion.setSchema(microschema);
+			MicronodeGraphField fieldA = container.createMicronode(MICRONODE_FIELD, containerVersion);
+			MicronodeResponse restField = new MicronodeResponse();
+			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
-		// rest set - graph set - different values
-		Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
-		fieldA.getMicronode().createString("string").setString("someString");
-		fieldA.getMicronode().createDate("date").setDate(date);
-		restField.getFields().put("string", FieldUtil.createStringField("someOtherString"));
-		restField.getFields().put("date", FieldUtil.createDateField(toISO8601(date)));
-		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+			// rest set - graph set - different values
+			Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
+			fieldA.getMicronode().createString("string").setString("someString");
+			fieldA.getMicronode().createDate("date").setDate(date);
+			restField.getFields().put("string", FieldUtil.createStringField("someOtherString"));
+			restField.getFields().put("date", FieldUtil.createDateField(toISO8601(date)));
+			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 
-		// rest set - graph set - same value
-		restField.getFields().getStringField("string").setString("someString");
-		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+			// rest set - graph set - same value
+			restField.getFields().getStringField("string").setString("someString");
+			assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
 
-		// rest set - graph set - same value different type
-		restField.getFields().put("string", FieldUtil.createHtmlField("someString"));
-		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(restField));
-		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(new StringFieldImpl().setString("blub")));
-
+			// rest set - graph set - same value different type
+			restField.getFields().put("string", FieldUtil.createHtmlField("someString"));
+			assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(restField));
+			assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(new StringFieldImpl().setString("blub")));
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		invokeUpdateFromRestTestcase(MICRONODE_FIELD, FETCH, CREATE_EMPTY);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestTestcase(MICRONODE_FIELD, FETCH, CREATE_EMPTY);
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(MICRONODE_FIELD, FETCH);
+		try (NoTx noTx = db.noTx()) {
+			invokeUpdateFromRestNullOnCreateRequiredTestcase(MICRONODE_FIELD, FETCH);
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveFieldViaNullTestcase(MICRONODE_FIELD, FETCH, FILL, (node) -> {
-			updateContainer(ac, node, MICRONODE_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveFieldViaNullTestcase(MICRONODE_FIELD, FETCH, FILL, (node) -> {
+				updateContainer(ac, node, MICRONODE_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeRemoveRequiredFieldViaNullTestcase(MICRONODE_FIELD, FETCH, FILL, (container) -> {
-			updateContainer(ac, container, MICRONODE_FIELD, null);
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeRemoveRequiredFieldViaNullTestcase(MICRONODE_FIELD, FETCH, FILL, (container) -> {
+				updateContainer(ac, container, MICRONODE_FIELD, null);
+			});
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		InternalActionContext ac = getMockedInternalActionContext();
-		invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_FIELD, FILL, (container) -> {
-			MicronodeResponse field = new MicronodeResponse();
-			field.setMicroschema(new MicroschemaReference().setName("vcard"));
-			field.getFields().put("firstName", FieldUtil.createStringField("vcard_firstname_value"));
-			field.getFields().put("lastName", FieldUtil.createStringField("vcard_lastname_value"));
-			updateContainer(ac, container, MICRONODE_FIELD, field);
-		}, (container) -> {
-			MicronodeGraphField field = container.getMicronode(MICRONODE_FIELD);
-			assertNotNull("The graph field {" + MICRONODE_FIELD + "} could not be found.", field);
-			assertEquals("The micronode of the field was not updated.", "vcard_firstname_value",
-					field.getMicronode().getString("firstName").getString());
-			assertEquals("The micronode of the field was not updated.", "vcard_lastname_value",
-					field.getMicronode().getString("lastName").getString());
-		});
+		try (NoTx noTx = db.noTx()) {
+			InternalActionContext ac = getMockedInternalActionContext();
+			invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_FIELD, FILL, (container) -> {
+				MicronodeResponse field = new MicronodeResponse();
+				field.setMicroschema(new MicroschemaReference().setName("vcard"));
+				field.getFields().put("firstName", FieldUtil.createStringField("vcard_firstname_value"));
+				field.getFields().put("lastName", FieldUtil.createStringField("vcard_lastname_value"));
+				updateContainer(ac, container, MICRONODE_FIELD, field);
+			}, (container) -> {
+				MicronodeGraphField field = container.getMicronode(MICRONODE_FIELD);
+				assertNotNull("The graph field {" + MICRONODE_FIELD + "} could not be found.", field);
+				assertEquals("The micronode of the field was not updated.", "vcard_firstname_value",
+						field.getMicronode().getString("firstName").getString());
+				assertEquals("The micronode of the field was not updated.", "vcard_lastname_value",
+						field.getMicronode().getString("lastName").getString());
+			});
+		}
 	}
 
 }

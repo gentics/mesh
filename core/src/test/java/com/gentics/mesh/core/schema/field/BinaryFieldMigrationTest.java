@@ -25,13 +25,10 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
-import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 
 import io.vertx.rxjava.core.buffer.Buffer;
 
 public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest implements BinaryFieldTestHelper {
-
-	private NodeFieldAPIHandler nodeFieldAPIHandler;
 
 	String sha512Sum;
 
@@ -39,7 +36,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		BinaryGraphField field = container.createBinary(name);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
-		sha512Sum = nodeFieldAPIHandler.hashAndStoreBinaryFile(Buffer.buffer(FILECONTENTS), field.getUuid(), field.getSegmentedPath()).toBlocking()
+		sha512Sum = meshDagger.nodeFieldAPIHandler().hashAndStoreBinaryFile(Buffer.buffer(FILECONTENTS), field.getUuid(), field.getSegmentedPath()).toBlocking()
 				.value();
 		field.setSHA512Sum(sha512Sum);
 	};
