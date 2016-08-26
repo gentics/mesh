@@ -47,13 +47,15 @@ public class MicronodeFieldVerticleTest extends AbstractFieldVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
-		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
-		microschemaFieldSchema.setName(FIELD_NAME);
-		microschemaFieldSchema.setLabel("Some label");
-		microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
-		schema.addField(microschemaFieldSchema);
-		schemaContainer("folder").getLatestVersion().setSchema(schema);
+		try (NoTx noTx = db.noTx()) {
+			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
+			microschemaFieldSchema.setName(FIELD_NAME);
+			microschemaFieldSchema.setLabel("Some label");
+			microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
+			schema.addField(microschemaFieldSchema);
+			schemaContainer("folder").getLatestVersion().setSchema(schema);
+		}
 	}
 
 	@Test

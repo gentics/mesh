@@ -18,6 +18,7 @@ public class MocksTest extends AbstractDBTest {
 
 	@Test
 	public void testMockParameters() throws Exception {
+		initDagger();
 		setupData();
 		String query = "lang=de,en";
 		RoutingContext rc = Mocks.getMockedRoutingContext(query);

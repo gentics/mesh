@@ -36,7 +36,6 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -57,8 +56,6 @@ import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
 public class NodeTest extends AbstractBasicIsolatedObjectTest {
-
-	private NodeMigrationHandler nodeMigrationHandler;
 
 	@Test
 	@Override
@@ -468,7 +465,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 3. migrate nodes
-			nodeMigrationHandler.migrateNodes(newRelease).await();
+			meshDagger.nodeMigrationHandler().migrateNodes(newRelease).await();
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
@@ -614,7 +611,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 2. create new release and migrate nodes
 			db.noTx(() -> {
 				Release newRelease = project.getReleaseRoot().create("newrelease", user());
-				nodeMigrationHandler.migrateNodes(newRelease).await();
+				meshDagger.nodeMigrationHandler().migrateNodes(newRelease).await();
 				return newRelease.getUuid();
 			});
 

@@ -74,31 +74,32 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		Node node = folder("2015");
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("2015");
 
-		// Add html field schema to the schema
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		HtmlFieldSchemaImpl htmlFieldSchema = new HtmlFieldSchemaImpl();
-		htmlFieldSchema.setName(HTML_FIELD);
-		htmlFieldSchema.setLabel("Some html field");
-		htmlFieldSchema.setRequired(true);
-		schema.addField(htmlFieldSchema);
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			// Add html field schema to the schema
+			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			HtmlFieldSchemaImpl htmlFieldSchema = new HtmlFieldSchemaImpl();
+			htmlFieldSchema.setName(HTML_FIELD);
+			htmlFieldSchema.setLabel("Some html field");
+			htmlFieldSchema.setRequired(true);
+			schema.addField(htmlFieldSchema);
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-		HtmlGraphField field = container.createHTML(HTML_FIELD);
-		field.setHtml("Some<b>htmlABCDE");
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			HtmlGraphField field = container.createHTML(HTML_FIELD);
+			field.setHtml("Some<b>htmlABCDE");
 
-		String json = getJson(node);
-		assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("ABCDE") > 1);
-		assertNotNull(json);
-		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
-		assertNotNull(response);
+			String json = getJson(node);
+			assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("ABCDE") > 1);
+			assertNotNull(json);
+			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
+			assertNotNull(response);
 
-		com.gentics.mesh.core.rest.node.field.HtmlField deserializedNodeField = response.getFields().getHtmlField("htmlField");
-		assertNotNull(deserializedNodeField);
-		assertEquals("Some<b>htmlABCDE", deserializedNodeField.getHTML());
-
+			com.gentics.mesh.core.rest.node.field.HtmlField deserializedNodeField = response.getFields().getHtmlField("htmlField");
+			assertNotNull(deserializedNodeField);
+			assertEquals("Some<b>htmlABCDE", deserializedNodeField.getHTML());
+		}
 	}
 
 	@Test

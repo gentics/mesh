@@ -2,8 +2,6 @@ package com.gentics.mesh.test;
 
 import java.util.Map;
 
-import org.junit.Before;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -21,6 +19,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.dagger.TestMeshComponent;
@@ -54,7 +53,9 @@ public abstract class AbstractDBTest {
 	protected TestMeshComponent meshDagger;
 
 	protected RouterStorage routerStorage;
-
+	
+	protected ServerSchemaStorage schemaStorage;
+	
 	protected DummySearchProvider searchProvider;
 
 	static {
@@ -68,6 +69,7 @@ public abstract class AbstractDBTest {
 		dataProvider = meshDagger.testDataProvider();
 		routerStorage = meshDagger.routerStorage();
 		searchProvider = meshDagger.dummySearchProvider();
+		schemaStorage = meshDagger.serverSchemaStorage();
 		boot = meshDagger.boot();
 		db = meshDagger.database();
 	}

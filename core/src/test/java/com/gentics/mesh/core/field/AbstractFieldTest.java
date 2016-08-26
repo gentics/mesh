@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -39,8 +38,6 @@ import rx.functions.Action1;
 public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractIsolatedBasicDBTest implements FieldTestcases {
 
 	abstract protected FS createFieldSchema(boolean isRequired);
-
-	protected ServerSchemaStorage schemaStorage;
 
 	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);

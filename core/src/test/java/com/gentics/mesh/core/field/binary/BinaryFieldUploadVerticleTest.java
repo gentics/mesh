@@ -43,12 +43,10 @@ import io.vertx.core.buffer.Buffer;
 
 public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeVerticle nodeVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(nodeVerticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 
@@ -140,7 +138,8 @@ public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleT
 			schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "nonBinary", binaryLen, contentType, fileName).invoke();
+			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "nonBinary", binaryLen, contentType, fileName)
+					.invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_found_field_is_not_binary", "nonBinary");
 		}
@@ -154,7 +153,8 @@ public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleT
 		try (NoTx noTrx = db.noTx()) {
 			Node node = folder("news");
 
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "nonBinary", binaryLen, contentType, fileName).invoke();
+			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "nonBinary", binaryLen, contentType, fileName)
+					.invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_schema_definition_not_found", "nonBinary");
 		}
@@ -282,7 +282,8 @@ public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleT
 			assertNull("The data did contain image information.", binaryField.getWidth());
 			assertNull("The data did contain image information.", binaryField.getHeight());
 
-			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary").invoke();
+			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary")
+					.invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 			NodeDownloadResponse downloadResponse = downloadFuture.result();
@@ -312,7 +313,8 @@ public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleT
 			folder2014.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// upload file to folder 2014
-			MeshResponse<GenericMessageResponse> uploadFuture = uploadRandomData(folder2014.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
+			MeshResponse<GenericMessageResponse> uploadFuture = uploadRandomData(folder2014.getUuid(), "en", "binary", binaryLen, contentType,
+					fileName).invoke();
 			latchFor(uploadFuture);
 			assertSuccess(uploadFuture);
 
@@ -347,7 +349,8 @@ public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleT
 			assertEquals("The data did not contain correct image width information.", 1160, binaryField.getWidth().intValue());
 			assertEquals("The data did not contain correct image height information.", 1376, binaryField.getHeight().intValue());
 
-			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName).invoke();
+			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName)
+					.invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 			NodeDownloadResponse downloadResponse = downloadFuture.result();
@@ -364,8 +367,8 @@ public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleT
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
-		MeshResponse<GenericMessageResponse> future = getClient().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldname, buffer, filename,
-				contentType).invoke();
+		MeshResponse<GenericMessageResponse> future = getClient()
+				.updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldname, buffer, filename, contentType).invoke();
 
 		latchFor(future);
 		assertSuccess(future);
