@@ -26,6 +26,7 @@
 	<logger name="io.vertx" level="TRACE"/>
 	<logger name="com.gentics.mesh" level="INFO"/>
 	<logger name="org.elasticsearch" level="INFO"/>
+	<logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/>
 	<logger name="com.gentics.mesh.rest.MeshResponseHandler" level="INFO"/>
 	<logger name="com.gentics.mesh.search.index.NodeIndexHandler" level="DEBUG"/>
 	<logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/>
