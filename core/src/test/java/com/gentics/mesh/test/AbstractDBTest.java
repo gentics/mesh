@@ -77,15 +77,7 @@ public abstract class AbstractDBTest {
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
 
-	public static void initWithSearch() {
-		ElasticSearchOptions options = new ElasticSearchOptions();
-		options.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
-		//			options.setHttpEnabled(true);
-		//SearchProvider provider = new ElasticSearchProvider().init(options);
-		Mesh.mesh().getOptions().setSearchOptions(options);
-	}
-
-	public static void init() throws IOException {
+	public static void init(boolean enableES) throws IOException {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 
@@ -113,12 +105,20 @@ public abstract class AbstractDBTest {
 		options.getAuthenticationOptions().setAuthenticationMethod(AuthenticationMethod.JWT);
 		options.getAuthenticationOptions().getJwtAuthenticationOptions().setSignatureSecret("secret");
 		options.getAuthenticationOptions().getJwtAuthenticationOptions().setKeystorePath("keystore.jceks");
+
+		ElasticSearchOptions searchOptions = new ElasticSearchOptions();
+		if (enableES) {
+			searchOptions.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
+		} else {
+			searchOptions.setDirectory(null);
+		}
+		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);
 	}
 
 	@Before
 	public void initMesh() throws Exception {
-		init();
+		init(false);
 		initDagger();
 	}
 

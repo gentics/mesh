@@ -36,8 +36,7 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 
 	@Override
 	public void setupVerticleTest() throws Exception {
-		init();
-		initWithSearch();
+		init(true);
 		initDagger();
 		super.setupVerticleTest();
 	}

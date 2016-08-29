@@ -134,7 +134,6 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 			verticle.stop();
 		}
 		resetDatabase();
-
 	}
 
 	public abstract List<AbstractVerticle> getAdditionalVertices();
