@@ -10,14 +10,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -86,21 +84,6 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	@Before
 	public void setupVerticleTest() throws Exception {
-		super.initDagger();
-
-		//TODO move dir creation to init of MeshTestModule
-		File uploadDir = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory());
-		FileUtils.deleteDirectory(uploadDir);
-		uploadDir.mkdirs();
-
-		File tempDir = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
-		FileUtils.deleteDirectory(tempDir);
-		tempDir.mkdirs();
-
-		File imageCacheDir = new File(Mesh.mesh().getOptions().getImageOptions().getImageCacheDirectory());
-		FileUtils.deleteDirectory(imageCacheDir);
-		imageCacheDir.mkdirs();
-
 		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
 		setupData();
@@ -146,9 +129,6 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() throws Exception {
-		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getImageOptions().getImageCacheDirectory()));
-		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
-		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
 		searchProvider.reset();
 		for (AbstractVerticle verticle : getVertices()) {
 			verticle.stop();

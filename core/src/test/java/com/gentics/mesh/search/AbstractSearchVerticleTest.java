@@ -29,22 +29,21 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchVerticleTest.class);
 
-	// protected SearchProvider searchProvider;
-	//
-	// private IndexHandlerRegistry registry;
-	//
-	// private NodeIndexHandler nodeIndexHandler;
+	@Override
+	public void initMesh() throws Exception {
+		//NOP
+	}
 
-	@Before
-	public void setupES() {
+	@Override
+	public void setupVerticleTest() throws Exception {
 		init();
 		initWithSearch();
-	}
-	
-	
-	@Before
-	public void setupVerticleTest() throws Exception {
+		initDagger();
 		super.setupVerticleTest();
+	}
+
+	@Before
+	public void setupHandlers() throws Exception {
 		for (IndexHandler handler : meshDagger.indexHandlerRegistry().getHandlers()) {
 			handler.init().await();
 		}

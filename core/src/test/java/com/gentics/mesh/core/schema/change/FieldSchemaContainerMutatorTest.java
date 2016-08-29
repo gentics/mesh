@@ -7,7 +7,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
@@ -48,11 +47,6 @@ import com.gentics.mesh.test.AbstractDBTest;
 public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
 
 	private FieldSchemaContainerMutator mutator = new FieldSchemaContainerMutator();
-
-	@Before
-	public void initDagger() throws Exception {
-		super.initDagger();
-	}
 
 	@Test
 	public void testNullOperation() {

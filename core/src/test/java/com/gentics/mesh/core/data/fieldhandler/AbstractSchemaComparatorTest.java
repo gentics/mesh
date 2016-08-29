@@ -19,9 +19,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.test.AbstractEmptyDBTest;
+import com.gentics.mesh.test.AbstractDBTest;
 
-public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C extends FieldSchemaContainer> extends AbstractEmptyDBTest {
+public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C extends FieldSchemaContainer> extends AbstractDBTest {
 
 	public abstract AbstractFieldSchemaContainerComparator<C> getComparator();
 

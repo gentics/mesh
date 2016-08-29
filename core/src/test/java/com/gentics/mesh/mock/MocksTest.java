@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -16,10 +17,14 @@ import io.vertx.ext.web.RoutingContext;
 
 public class MocksTest extends AbstractDBTest {
 
+	@Before
+	public void setup() throws Exception {
+		setupData();
+	}
+
 	@Test
 	public void testMockParameters() throws Exception {
-		initDagger();
-		setupData();
+
 		String query = "lang=de,en";
 		RoutingContext rc = Mocks.getMockedRoutingContext(query);
 		assertEquals("The query did not match up.", query, rc.request().query());

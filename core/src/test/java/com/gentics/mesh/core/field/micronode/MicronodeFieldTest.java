@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -104,9 +105,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	 */
 	protected MicroschemaContainer dummyMicroschema;
 
-	@Override
-	public void initDagger() throws Exception {
-		super.initDagger();
+	@Before
+	public void addDummySchema() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			dummyMicroschema = createDummyMicroschema();
 		}

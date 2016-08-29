@@ -2,7 +2,6 @@ package com.gentics.mesh.core.language;
 
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Language;
@@ -14,12 +13,6 @@ import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class AtomicLanguageTest extends AbstractDBTest {
-
-	@Before
-	@Override
-	public void initDagger() throws Exception {
-		super.initDagger();
-	}
 
 	@Test
 	public void testLanguageIndex() {

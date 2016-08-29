@@ -70,18 +70,21 @@ import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeSearchVerticleTest.class);
 
 	@BeforeClass
 	public static void debug() {
 		// new RxDebugger().start();
 	}
 
-	@Override
 	@Before
-	public void setupVerticleTest() throws Exception {
-		super.setupVerticleTest();
+	public void deployWorker() throws Exception {
+		log.info("Deploying worker verticle...");
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);

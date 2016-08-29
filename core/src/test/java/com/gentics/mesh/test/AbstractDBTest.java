@@ -1,7 +1,12 @@
 package com.gentics.mesh.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -40,6 +45,7 @@ import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.RestAssert;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -64,6 +70,8 @@ public abstract class AbstractDBTest {
 
 	protected DummySearchProvider dummySearchProvider;
 
+	private static final Logger log = LoggerFactory.getLogger(AbstractDBTest.class);
+
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
@@ -77,20 +85,26 @@ public abstract class AbstractDBTest {
 		Mesh.mesh().getOptions().setSearchOptions(options);
 	}
 
-	public static void init() {
+	public static void init() throws IOException {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 
 		String uploads = "target/testuploads_" + UUIDUtil.randomUUID();
-		new File(uploads).mkdirs();
+		File uploadDir = new File(uploads);
+		FileUtils.deleteDirectory(uploadDir);
+		uploadDir.mkdirs();
 		options.getUploadOptions().setDirectory(uploads);
 
 		String targetTmpDir = "target/tmp_" + UUIDUtil.randomUUID();
-		new File(targetTmpDir).mkdirs();
+		File tmpDir = new File(targetTmpDir);
+		FileUtils.deleteDirectory(tmpDir);
+		tmpDir.mkdirs();
 		options.getUploadOptions().setTempDirectory(targetTmpDir);
 
 		String imageCacheDir = "target/image_cache_" + UUIDUtil.randomUUID();
-		new File(imageCacheDir).mkdirs();
+		File cacheDir = new File(imageCacheDir);
+		FileUtils.deleteDirectory(cacheDir);
+		cacheDir.mkdirs();
 		options.getImageOptions().setImageCacheDirectory(imageCacheDir);
 
 		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());
@@ -102,8 +116,14 @@ public abstract class AbstractDBTest {
 		Mesh.mesh(options);
 	}
 
-	public void initDagger() throws Exception {
+	@Before
+	public void initMesh() throws Exception {
 		init();
+		initDagger();
+	}
+
+	public void initDagger() {
+		log.info("Initializing dagger context");
 		meshDagger = MeshCore.create();
 		dataProvider = meshDagger.testDataProvider();
 		routerStorage = meshDagger.routerStorage();
@@ -114,6 +134,16 @@ public abstract class AbstractDBTest {
 		schemaStorage = meshDagger.serverSchemaStorage();
 		boot = meshDagger.boot();
 		db = meshDagger.database();
+	}
+
+	@After
+	public void cleanupFolders() throws IOException {
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getImageOptions().getImageCacheDirectory()));
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
+		if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
+			FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
+		}
 	}
 
 	protected void resetDatabase() {

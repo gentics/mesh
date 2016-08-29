@@ -49,7 +49,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-
 		<!-- Database -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>

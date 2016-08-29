@@ -25,14 +25,14 @@ import com.gentics.mesh.core.field.html.HtmlFieldTestHelper;
 
 public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlFieldTestHelper {
 
-	@Override
 	@Test
+	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATEHTML, FILLTEXT, FETCH);
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testRename() throws Exception {
 		renameField(CREATEHTML, FILLTEXT, FETCH, (container, name) -> {
 			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
@@ -40,16 +40,16 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToBinary() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToBoolean() throws Exception {
 		changeType(CREATEHTML, FILLTRUE, FETCH, CREATEBOOLEAN, (container, name) -> {
 			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
@@ -76,8 +76,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToBooleanList() throws Exception {
 		changeType(CREATEHTML, FILLTRUE, FETCH, CREATEBOOLEANLIST, (container, name) -> {
 			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
@@ -104,8 +104,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToDate() throws Exception {
 		changeType(CREATEHTML, FILL0, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
@@ -123,8 +123,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATEHTML, FILL0, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
@@ -142,8 +142,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToHtml() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEHTML, (container, name) -> {
 			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
@@ -151,8 +151,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEHTMLLIST, (container, name) -> {
 			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
@@ -160,40 +160,40 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToMicronode() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEMICRONODE, (container, name) -> {
 			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToMicronodeList() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEMICRONODELIST, (container, name) -> {
 			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToNode() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENODE, (container, name) -> {
 			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToNodeList() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENODELIST, (container, name) -> {
 			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATEHTML, FILL0, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
@@ -210,8 +210,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEHTML, FILL0, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
@@ -228,8 +228,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToString() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATESTRING, (container, name) -> {
 			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
@@ -237,8 +237,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATESTRINGLIST, (container, name) -> {
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
@@ -246,8 +246,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testCustomMigrationScript() throws Exception {
 		customMigrationScript(CREATEHTML, FILLTEXT, FETCH,
 				"function migrate(node, fieldname) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}",

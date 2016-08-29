@@ -35,8 +35,7 @@ public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 	String segmentedPath = "some/path/to/file";
 
 	@Before
-	public void initDagger() throws Exception {
-		super.initDagger();
+	public void setup() throws Exception {
 		uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		handler = meshDagger.nodeFieldAPIHandler();
 	}

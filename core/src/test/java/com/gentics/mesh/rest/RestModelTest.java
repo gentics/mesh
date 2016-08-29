@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -35,12 +34,6 @@ import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.UUIDUtil;
 
 public class RestModelTest extends AbstractDBTest {
-
-	@Before
-	@Override
-	public void initDagger() throws Exception {
-		super.initDagger();
-	}
 
 	@Test
 	public void testNodeResponse() throws JsonParseException, JsonMappingException, IOException {

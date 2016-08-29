@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -15,11 +14,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class SchemaComparatorMicroschemaTest extends AbstractDBTest {
-
-	@Before
-	public void setup() throws Exception {
-		initDagger();
-	}
 
 	@Test
 	public void testEmptyMicroschema() throws IOException {

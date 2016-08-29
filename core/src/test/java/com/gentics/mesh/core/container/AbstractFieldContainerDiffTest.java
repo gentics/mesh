@@ -6,8 +6,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import org.junit.Before;
-
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
@@ -23,11 +21,6 @@ import com.gentics.mesh.test.AbstractDBTest;
 import com.syncleus.ferma.FramedGraph;
 
 public class AbstractFieldContainerDiffTest extends AbstractDBTest {
-
-	@Before
-	public void setup() throws Exception {
-		initDagger();
-	}
 
 	protected NodeGraphFieldContainer createContainer(FieldSchema field) {
 		FramedGraph graph = Database.getThreadLocalGraph();

@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -53,9 +52,6 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 		// 3. Apply the changes
 		version.setNextChange(fieldTypeUpdate);
 		version.setSchema(schema);
-		for (FieldSchema field : version.getSchema().getFields()) {
-			System.out.println(field.getName());
-		}
 
 		Schema updatedSchema = mutator.apply(version);
 		assertNotNull(updatedSchema);
