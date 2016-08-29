@@ -36,8 +36,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshCore;
-import com.gentics.mesh.dagger.TestMeshComponent;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
@@ -60,7 +60,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private DummySearchProvider provider;
 
-	private static TestMeshComponent meshDagger;
+	private static MeshComponent meshDagger;
 
 	// private AnnotationConfigApplicationContext ctx;
 
@@ -78,12 +78,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputDir.getAbsolutePath() + "}");
 		outputDir.mkdirs();
 
-		meshDagger = MeshCore.createTest();
-		// try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(SpringNoDBConfiguration.class)) {
-		// this.ctx = ctx;
-		// ctx.start();
-		// ctx.registerShutdownHook();
-		// provider = ctx.getBean("dummySearchProvider", DummySearchProvider.class);
+		meshDagger = MeshCore.create();
+		provider = (DummySearchProvider) meshDagger.searchProvider();
 
 		try {
 			writeNodeDocumentExample();
