@@ -66,10 +66,8 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 		return list;
 	}
 
-	@Override
 	@Before
-	public void setupVerticleTest() throws Exception {
-		super.setupVerticleTest();
+	public void deployWorkerVerticle() throws Exception {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);

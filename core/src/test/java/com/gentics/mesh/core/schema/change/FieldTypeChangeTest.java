@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 
 public class FieldTypeChangeTest extends AbstractChangeTest {
@@ -25,113 +26,120 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
-		change.setFieldName("name");
-		assertEquals("name", change.getFieldName());
+		try (NoTx noTx = db.noTx()) {
+			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			change.setFieldName("name");
+			assertEquals("name", change.getFieldName());
+		}
 	}
 
 	@Test
 	@Override
 	public void testApply() {
+		try (NoTx noTx = db.noTx()) {
+			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			// 1. Create schema
+			Schema schema = new SchemaModel();
+			schema.setName("testschema");
 
-		// 1. Create schema
-		Schema schema = new SchemaModel();
-		schema.setName("testschema");
+			StringFieldSchema stringField = new StringFieldSchemaImpl();
+			stringField.setName("stringField");
+			stringField.setRequired(true);
+			schema.addField(stringField);
 
-		StringFieldSchema stringField = new StringFieldSchemaImpl();
-		stringField.setName("stringField");
-		stringField.setRequired(true);
-		schema.addField(stringField);
+			FieldTypeChange fieldTypeUpdate = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			fieldTypeUpdate.setFieldName("stringField");
+			fieldTypeUpdate.setType("html");
 
-		FieldTypeChange fieldTypeUpdate = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
-		fieldTypeUpdate.setFieldName("stringField");
-		fieldTypeUpdate.setType("html");
+			// 3. Apply the changes
+			version.setNextChange(fieldTypeUpdate);
+			version.setSchema(schema);
 
-		// 3. Apply the changes
-		version.setNextChange(fieldTypeUpdate);
-		version.setSchema(schema);
-
-		Schema updatedSchema = mutator.apply(version);
-		assertNotNull(updatedSchema);
-		assertEquals("html", updatedSchema.getField("stringField").getType());
-
+			Schema updatedSchema = mutator.apply(version);
+			assertNotNull(updatedSchema);
+			assertEquals("html", updatedSchema.getField("stringField").getType());
+		}
 	}
 
 	@Test
 	public void testChangeFieldTypeToList() {
+		try (NoTx noTx = db.noTx()) {
+			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			// 1. Create schema
+			Schema schema = new SchemaModel();
+			schema.setName("testschema");
 
-		// 1. Create schema
-		Schema schema = new SchemaModel();
-		schema.setName("testschema");
+			StringFieldSchema stringField = new StringFieldSchemaImpl();
+			stringField.setName("stringField");
+			stringField.setRequired(true);
+			stringField.setLabel("test123");
+			schema.addField(stringField);
 
-		StringFieldSchema stringField = new StringFieldSchemaImpl();
-		stringField.setName("stringField");
-		stringField.setRequired(true);
-		stringField.setLabel("test123");
-		schema.addField(stringField);
+			FieldTypeChange fieldTypeUpdate = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			fieldTypeUpdate.setFieldName("stringField");
+			fieldTypeUpdate.setType("list");
+			fieldTypeUpdate.setListType("html");
 
-		FieldTypeChange fieldTypeUpdate = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
-		fieldTypeUpdate.setFieldName("stringField");
-		fieldTypeUpdate.setType("list");
-		fieldTypeUpdate.setListType("html");
+			version.setNextChange(fieldTypeUpdate);
+			version.setSchema(schema);
 
-		version.setNextChange(fieldTypeUpdate);
-		version.setSchema(schema);
-
-		// 3. Apply the changes
-		Schema updatedSchema = mutator.apply(version);
-		assertNotNull(updatedSchema);
-		ListFieldSchema fieldSchema = updatedSchema.getField("stringField", ListFieldSchemaImpl.class);
-		assertEquals("list", fieldSchema.getType());
-		assertEquals("html", fieldSchema.getListType());
-		assertEquals("test123", fieldSchema.getLabel());
-
+			// 3. Apply the changes
+			Schema updatedSchema = mutator.apply(version);
+			assertNotNull(updatedSchema);
+			ListFieldSchema fieldSchema = updatedSchema.getField("stringField", ListFieldSchemaImpl.class);
+			assertEquals("list", fieldSchema.getType());
+			assertEquals("html", fieldSchema.getListType());
+			assertEquals("test123", fieldSchema.getLabel());
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRest() throws IOException {
-		SchemaChangeModel model = SchemaChangeModel.createChangeFieldTypeChange("testField", "list");
-		model.setMigrationScript("test");
-		model.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
-		FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
-		change.updateFromRest(model);
+		try (NoTx noTx = db.noTx()) {
+			SchemaChangeModel model = SchemaChangeModel.createChangeFieldTypeChange("testField", "list");
+			model.setMigrationScript("test");
+			model.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
+			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			change.updateFromRest(model);
 
-		assertEquals("test", change.getMigrationScript());
-		assertEquals("testField", change.getFieldName());
-		assertEquals("list", change.getType());
-		assertEquals("html", change.getListType());
+			assertEquals("test", change.getMigrationScript());
+			assertEquals("testField", change.getFieldName());
+			assertEquals("list", change.getType());
+			assertEquals("html", change.getListType());
+		}
 	}
 
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
-		assertNotNull("Field Type changes have a auto migation script.", change.getAutoMigrationScript());
+		try (NoTx noTx = db.noTx()) {
+			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			assertNotNull("Field Type changes have a auto migation script.", change.getAutoMigrationScript());
 
-		assertNotNull("Intitially the default migration script should be set.", change.getMigrationScript());
-		change.setCustomMigrationScript("test");
-		assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
+			assertNotNull("Intitially the default migration script should be set.", change.getMigrationScript());
+			change.setCustomMigrationScript("test");
+			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
+		}
 	}
 
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
-		change.setFieldName("test");
-		change.setCustomMigrationScript("script");
-		change.setListType("html");
-		change.setType("list");
+		try (NoTx noTx = db.noTx()) {
+			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			change.setFieldName("test");
+			change.setCustomMigrationScript("script");
+			change.setListType("html");
+			change.setType("list");
 
-		SchemaChangeModel model = change.transformToRest();
-		assertEquals("html", model.getProperty(SchemaChangeModel.LIST_TYPE_KEY));
-		assertEquals("list", model.getProperty(SchemaChangeModel.TYPE_KEY));
-		assertEquals("script", model.getMigrationScript());
-
+			SchemaChangeModel model = change.transformToRest();
+			assertEquals("html", model.getProperty(SchemaChangeModel.LIST_TYPE_KEY));
+			assertEquals("list", model.getProperty(SchemaChangeModel.TYPE_KEY));
+			assertEquals("script", model.getMigrationScript());
+		}
 	}
 
 }

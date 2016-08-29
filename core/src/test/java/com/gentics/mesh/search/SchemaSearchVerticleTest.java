@@ -37,10 +37,8 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		return list;
 	}
 
-	@Override
 	@Before
-	public void setupVerticleTest() throws Exception {
-		super.setupVerticleTest();
+	public void setupWorkerVerticle() throws Exception {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);

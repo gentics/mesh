@@ -17,6 +17,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 
 public class RemoveFieldChangeTest extends AbstractChangeTest {
@@ -24,70 +25,78 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		try (NoTx noTx = db.noTx()) {
+			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 
-		change.setFieldName("someField");
-		assertEquals("someField", change.getFieldName());
+			change.setFieldName("someField");
+			assertEquals("someField", change.getFieldName());
+		}
 	}
 
 	@Test
 	@Override
 	public void testApply() {
+		try (NoTx noTx = db.noTx()) {
+			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			// 1. Create schema with field
+			Schema schema = new SchemaModel();
+			schema.addField(FieldUtil.createStringFieldSchema("test"));
 
-		// 1. Create schema with field
-		Schema schema = new SchemaModel();
-		schema.addField(FieldUtil.createStringFieldSchema("test"));
+			// 2. Create remove field change
+			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			change.setFieldName("test");
 
-		// 2. Create remove field change
-		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-		change.setFieldName("test");
+			version.setNextChange(change);
+			version.setSchema(schema);
 
-		version.setNextChange(change);
-		version.setSchema(schema);
+			// 3. Apply the change
+			FieldSchemaContainer updatedSchema = mutator.apply(version);
 
-		// 3. Apply the change
-		FieldSchemaContainer updatedSchema = mutator.apply(version);
-
-		assertThat(updatedSchema).hasNoField("test");
-
+			assertThat(updatedSchema).hasNoField("test");
+		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRest() throws IOException {
-		SchemaChangeModel model = new SchemaChangeModel();
-		model.setMigrationScript("test");
-		model.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "someField");
-		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-		change.updateFromRest(model);
-		assertEquals("test", change.getMigrationScript());
-		assertEquals("someField", change.getFieldName());
+		try (NoTx noTx = db.noTx()) {
+			SchemaChangeModel model = new SchemaChangeModel();
+			model.setMigrationScript("test");
+			model.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "someField");
+			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			change.updateFromRest(model);
+			assertEquals("test", change.getMigrationScript());
+			assertEquals("someField", change.getFieldName());
+		}
 	}
 
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-		assertNotNull("Remove Type changes have a auto migation script.", change.getAutoMigrationScript());
+		try (NoTx noTx = db.noTx()) {
+			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			assertNotNull("Remove Type changes have a auto migation script.", change.getAutoMigrationScript());
 
-		assertNotNull("Intitially the default migration script should be set.", change.getMigrationScript());
-		change.setCustomMigrationScript("test");
-		assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
+			assertNotNull("Intitially the default migration script should be set.", change.getMigrationScript());
+			change.setCustomMigrationScript("test");
+			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
+		}
 	}
 
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-		assertEquals(RemoveFieldChange.OPERATION, change.transformToRest().getOperation());
-		change.setCustomMigrationScript("test");
-		change.setFieldName("test2");
+		try (NoTx noTx = db.noTx()) {
+			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			assertEquals(RemoveFieldChange.OPERATION, change.transformToRest().getOperation());
+			change.setCustomMigrationScript("test");
+			change.setFieldName("test2");
 
-		SchemaChangeModel model = change.transformToRest();
-		assertEquals("test", model.getMigrationScript());
-		assertEquals("test2", model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
+			SchemaChangeModel model = change.transformToRest();
+			assertEquals("test", model.getMigrationScript());
+			assertEquals("test2", model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
+		}
 	}
 
 }
