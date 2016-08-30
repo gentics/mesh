@@ -12,12 +12,9 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.search.AbstractSearchVerticleTest;
-import com.gentics.mesh.search.ProjectSearchVerticle;
-import com.gentics.mesh.search.SearchVerticle;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
 import io.vertx.core.AbstractVerticle;
@@ -26,18 +23,12 @@ public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
-	protected SearchVerticle searchVerticle;
-
-	private NodeVerticle nodeVerticle;
-
-	protected ProjectSearchVerticle projectSearchVerticle;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(searchVerticle);
-		list.add(projectSearchVerticle);
-		list.add(nodeVerticle);
+		list.add(meshDagger.searchVerticle());
+		list.add(meshDagger.projectSearchVerticle());
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

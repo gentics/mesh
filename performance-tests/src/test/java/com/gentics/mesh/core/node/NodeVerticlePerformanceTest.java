@@ -12,7 +12,6 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -24,14 +23,12 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
 
-	private NodeVerticle verticle;
-
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.nodeVerticle());
 		return list;
 	}
 

@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
@@ -18,14 +17,12 @@ import io.vertx.core.AbstractVerticle;
 
 public class ProjectVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
 
-	private ProjectVerticle verticle;
-
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.projectVerticle());
 		return list;
 	}
 

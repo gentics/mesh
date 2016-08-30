@@ -10,7 +10,6 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
-import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -21,14 +20,12 @@ import io.vertx.core.AbstractVerticle;
 
 public class UserVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
 
-	private UserVerticle verticle;
-
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.userVerticle());
 		return list;
 	}
 

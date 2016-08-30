@@ -8,7 +8,6 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
-import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
@@ -17,14 +16,12 @@ import io.vertx.core.AbstractVerticle;
 
 public class GroupVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
 
-	private GroupVerticle verticle;
-
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(meshDagger.groupVerticle());
 		return list;
 	}
 
