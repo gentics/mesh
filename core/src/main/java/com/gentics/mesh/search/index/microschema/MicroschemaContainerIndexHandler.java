@@ -5,11 +5,11 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
@@ -21,8 +21,8 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	private MicroschemaTransformator transformator = new MicroschemaTransformator();
 
 	@Inject
-	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db) {
-		super(searchProvider, db);
+	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
+		super(searchProvider, db, boot);
 	}
 
 	public MicroschemaTransformator getTransformator() {
@@ -56,7 +56,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Override
 	protected RootVertex<MicroschemaContainer> getRootVertex() {
-		return MeshCore.get().boot().meshRoot().getMicroschemaContainerRoot();
+		return boot.meshRoot().getMicroschemaContainerRoot();
 	}
 
 }

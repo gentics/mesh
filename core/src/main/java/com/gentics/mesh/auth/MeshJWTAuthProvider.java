@@ -3,10 +3,11 @@ package com.gentics.mesh.auth;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.dagger.MeshCore;
-import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.etc.config.JWTAuthenticationOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -33,8 +34,8 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	private static final String USERID_FIELD_NAME = "userUuid";
 
 	@Inject
-	public MeshJWTAuthProvider(MeshModule springConfiguration, Database database) {
-		super(springConfiguration, database);
+	public MeshJWTAuthProvider(BCryptPasswordEncoder passwordEncoder, Database database) {
+		super(passwordEncoder, database);
 		JWTAuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions().getJwtAuthenticationOptions();
 		String secret = options.getSignatureSecret();
 		if (secret == null) {
@@ -55,7 +56,7 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 			} else {
 				getUserByJWT(rh.result()).subscribe(user -> {
 					resultHandler.handle(Future.succeededFuture(user));
-				} , error -> {
+				}, error -> {
 					resultHandler.handle(Future.failedFuture(error));
 				});
 			}

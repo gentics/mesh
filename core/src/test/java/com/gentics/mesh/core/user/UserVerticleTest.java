@@ -80,13 +80,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			assertNotNull("The UUID of the user must not be null.", user.getUuid());
-
-			MeshResponse<UserResponse> response = getClient().findUserByUuid(user.getUuid()).invoke();
-
-			latchFor(response);
-			assertSuccess(response);
-			UserResponse restUser = response.result();
-
+			UserResponse restUser = call(()->getClient().findUserByUuid(user.getUuid()));
 			assertThat(restUser).matches(user);
 			// TODO assert groups
 			// TODO assert perms

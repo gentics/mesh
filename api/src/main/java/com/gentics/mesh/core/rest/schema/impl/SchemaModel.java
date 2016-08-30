@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 
 public class SchemaModel extends AbstractFieldSchemaContainer implements Schema {
@@ -87,6 +88,15 @@ public class SchemaModel extends AbstractFieldSchemaContainer implements Schema 
 		if (getSegmentField() != null && !getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getSegmentField()))) {
 			throw error(BAD_REQUEST, "schema_error_segmentfield_invalid", getSegmentField());
 		}
+	}
+
+	@Override
+	public SchemaReference toReference() {
+		SchemaReference reference = new SchemaReference();
+		reference.setUuid(getUuid());
+		reference.setVersion(getVersion());
+		reference.setName(getName());
+		return reference;
 	}
 
 }

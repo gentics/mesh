@@ -16,6 +16,7 @@ import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -92,10 +93,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private NodeGraphFieldContainerTransformator transformator = new NodeGraphFieldContainerTransformator();
 
-
 	@Inject
-	public NodeIndexHandler(SearchProvider searchProvider, Database db) {
-		super(searchProvider, db);
+	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
+		super(searchProvider, db, boot);
 		NodeIndexHandler.instance = this;
 	}
 
@@ -127,13 +127,15 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Set<String> getIndices() {
 		return db.noTx(() -> {
 			Set<String> indexNames = new HashSet<>();
-			MeshCore.get().boot().meshRoot().getProjectRoot().reload();
-			List<? extends Project> projects = MeshCore.get().boot().meshRoot().getProjectRoot().findAll();
+
+			//Iterate over all projects and construct the index names
+			boot.meshRoot().getProjectRoot().reload();
+			List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
 			projects.forEach((project) -> {
 				List<? extends Release> releases = project.getReleaseRoot().findAll();
-				releases.forEach((r) -> {
-					indexNames.add(getIndexName(project.getUuid(), r.getUuid(), "draft"));
-					indexNames.add(getIndexName(project.getUuid(), r.getUuid(), "published"));
+				releases.forEach((release) -> {
+					indexNames.add(getIndexName(project.getUuid(), release.getUuid(), "draft"));
+					indexNames.add(getIndexName(project.getUuid(), release.getUuid(), "published"));
 				});
 			});
 			return indexNames;
@@ -148,7 +150,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				return Collections
 						.singleton(getIndexName(project.getUuid(), ac.getRelease(null).getUuid(), ac.getVersioningParameters().getVersion()));
 			} else {
-				List<? extends Project> projects = MeshCore.get().boot().meshRoot().getProjectRoot().findAll();
+				List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
 				return projects.stream()
 						.map(p -> getIndexName(p.getUuid(), p.getLatestRelease().getUuid(), ac.getVersioningParameters().getVersion()))
 						.collect(Collectors.toSet());
@@ -183,7 +185,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	protected RootVertex<Node> getRootVertex() {
-		return MeshCore.get().boot().meshRoot().getNodeRoot();
+		return boot.meshRoot().getNodeRoot();
 	}
 
 	@Override

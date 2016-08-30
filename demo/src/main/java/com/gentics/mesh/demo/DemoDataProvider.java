@@ -1,5 +1,7 @@
 package com.gentics.mesh.demo;
 
+import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -21,15 +23,14 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -37,6 +38,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -45,14 +47,15 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -69,8 +72,6 @@ public class DemoDataProvider {
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
 	private Database db;
-
-	protected MeshModule springConfig;
 
 	private MeshLocalClientImpl client;
 
@@ -120,13 +121,9 @@ public class DemoDataProvider {
 	 * @throws InterruptedException
 	 */
 	private void publishAllNodes() throws InterruptedException {
-
 		for (ProjectResponse project : projects.values()) {
-			MeshResponse<PublishStatusResponse> future = client
-					.publishNode(PROJECT_NAME, project.getRootNodeUuid(), new PublishParameters().setRecursive(true)).invoke();
-			latchFor(future);
+			call(() -> client.publishNode(PROJECT_NAME, project.getRootNodeUuid(), new PublishParameters().setRecursive(true)));
 		}
-
 	}
 
 	/**
@@ -139,12 +136,8 @@ public class DemoDataProvider {
 		request.setRecursive(true);
 		request.getPermissions().add("read");
 		request.getPermissions().add("update");
-		MeshResponse<GenericMessageResponse> future = client
-				.updateRolePermissions(getRole("Client Role").getUuid(), "projects/" + getProject("demo").getUuid(), request).invoke();
-		latchFor(future);
-
-		future = client.updateRolePermissions(getRole("Client Role").getUuid(), "users/" + users.get("webclient").getUuid(), request).invoke();
-		latchFor(future);
+		call(() -> client.updateRolePermissions(getRole("Client Role").getUuid(), "projects/" + getProject("demo").getUuid(), request));
+		call(() -> client.updateRolePermissions(getRole("Client Role").getUuid(), "users/" + users.get("webclient").getUuid(), request));
 	}
 
 	/**
@@ -178,7 +171,8 @@ public class DemoDataProvider {
 
 			JsonArray groupArray = userJson.getJsonArray("groups");
 			for (int e = 0; e < groupArray.size(); e++) {
-				client.addUserToGroup(groups.get(groupArray.getString(e)).getUuid(), future.result().getUuid());
+				String groupUuid = groups.get(groupArray.getString(e)).getUuid();
+				call(() -> client.addUserToGroup(groupUuid, future.result().getUuid()));
 			}
 		}
 
@@ -208,19 +202,23 @@ public class DemoDataProvider {
 
 			JsonArray rolesNode = groupJson.getJsonArray("roles");
 			for (int e = 0; e < rolesNode.size(); e++) {
-				MeshResponse<GroupResponse> future = client.addRoleToGroup(group.getUuid(), getRole(rolesNode.getString(e)).getUuid()).invoke();
-				latchFor(future);
+				final int r = e;
+				call(() -> client.addRoleToGroup(group.getUuid(), getRole(rolesNode.getString(r)).getUuid()));
 			}
 		}
 	}
 
-	private void latchFor(MeshResponse<?> future) throws InterruptedException {
+	private void latchFor(MeshResponse<?> future) {
 		CountDownLatch latch = new CountDownLatch(1);
 		future.setHandler(rh -> {
 			latch.countDown();
 		});
-		if (!latch.await(35, TimeUnit.SECONDS)) {
-			throw new RuntimeException("Timeout reached");
+		try {
+			if (!latch.await(11135, TimeUnit.SECONDS)) {
+				throw new RuntimeException("Timeout reached");
+			}
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
 
 		if (future.failed()) {
@@ -244,10 +242,8 @@ public class DemoDataProvider {
 			log.info("Creating role {" + name + "}");
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName(name);
-			MeshResponse<RoleResponse> roleFuture = client.createRole(request).invoke();
-			latchFor(roleFuture);
-
-			roles.put(name, roleFuture.result());
+			RoleResponse role = call(() -> client.createRole(request));
+			roles.put(name, role);
 		}
 	}
 
@@ -335,10 +331,7 @@ public class DemoDataProvider {
 				}
 			}
 			// englishContainer.updateWebrootPathInfo("node_conflicting_segmentfield_update");
-
-			MeshResponse<NodeResponse> nodeCreateFuture = client.createNode(project.getName(), nodeCreateRequest).invoke();
-			latchFor(nodeCreateFuture);
-			NodeResponse createdNode = nodeCreateFuture.result();
+			NodeResponse createdNode = call(() -> client.createNode(project.getName(), nodeCreateRequest));
 
 			// Upload binary data
 			JsonObject binNode = nodeJson.getJsonObject("bin");
@@ -353,9 +346,7 @@ public class DemoDataProvider {
 				byte[] bytes = IOUtils.toByteArray(ins);
 				Buffer fileData = Buffer.buffer(bytes);
 
-				MeshResponse<GenericMessageResponse> binaryUpdateFuture = client
-						.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image", fileData, filenName, contentType).invoke();
-				latchFor(binaryUpdateFuture);
+				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image", fileData, filenName, contentType));
 
 			}
 
@@ -363,9 +354,7 @@ public class DemoDataProvider {
 			JsonArray tagArray = nodeJson.getJsonArray("tags");
 			for (int e = 0; e < tagArray.size(); e++) {
 				String tagName = tagArray.getString(e);
-				MeshResponse<NodeResponse> tagAddedFuture = client.addTagToNode(PROJECT_NAME, createdNode.getUuid(), getTag(tagName).getUuid())
-						.invoke();
-				latchFor(tagAddedFuture);
+				call(() -> client.addTagToNode(PROJECT_NAME, createdNode.getUuid(), getTag(tagName).getUuid()));
 			}
 
 			nodes.put(name, createdNode);
@@ -392,9 +381,8 @@ public class DemoDataProvider {
 			// TODO determine project of tag family automatically or use json field to assign it
 			TagCreateRequest createRequest = new TagCreateRequest();
 			createRequest.getFields().setName(name);
-			MeshResponse<TagResponse> tagFuture = client.createTag(PROJECT_NAME, tagFamily.getUuid(), createRequest).invoke();
-			latchFor(tagFuture);
-			tags.put(name, tagFuture.result());
+			TagResponse result = call(() -> client.createTag(PROJECT_NAME, tagFamily.getUuid(), createRequest));
+			tags.put(name, result);
 		}
 	}
 
@@ -415,14 +403,7 @@ public class DemoDataProvider {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setSchemaReference(new SchemaReference().setName("folder"));
 			request.setName(name);
-			MeshResponse<ProjectResponse> projectFuture = client.createProject(request).invoke();
-			latchFor(projectFuture);
-
-			// TODO impl. once endpoint exists
-			// client.assignLanguageToProject(projectFuture.result().getUuid(), getEnglish().getUuid());
-			// client.assignLanguageToProject(projectFuture.result().getUuid(), getGerman().getUuid());
-			ProjectResponse project = projectFuture.result();
-
+			ProjectResponse project = call(() -> client.createProject(request));
 			projects.put(name, project);
 		}
 	}
@@ -439,9 +420,8 @@ public class DemoDataProvider {
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName(name);
 			// request.setDescription("Description for basic tag family");
-			MeshResponse<TagFamilyResponse> future = client.createTagFamily(PROJECT_NAME, request).invoke();
-			latchFor(future);
-			tagFamilies.put(name, future.result());
+			TagFamilyResponse result = call(() -> client.createTagFamily(PROJECT_NAME, request));
+			tagFamilies.put(name, result);
 		}
 	}
 
@@ -458,9 +438,7 @@ public class DemoDataProvider {
 			if (ins != null) {
 				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
 				Schema schema = JsonUtil.readValue(writer.toString(), SchemaModel.class);
-				MeshResponse<Schema> future = client.createSchema(schema).invoke();
-				latchFor(future);
-				Schema schemaResponse = future.result();
+				Schema schemaResponse = call(() -> client.createSchema(schema));
 				schemas.put(schemaName, schemaResponse);
 			}
 
@@ -470,11 +448,32 @@ public class DemoDataProvider {
 				String projectName = projectsArray.getString(e);
 				ProjectResponse project = getProject(projectName);
 				for (Schema schema : schemas.values()) {
-					MeshResponse<Schema> updateFuture = client.assignSchemaToProject(project.getName(), schema.getUuid()).invoke();
-					latchFor(updateFuture);
+					call(() -> client.assignSchemaToProject(project.getName(), schema.getUuid()));
 				}
+				// Assign all schema versions to the latest release of the project
+				ReleaseListResponse list = call(() -> client.findReleases(projectName));
+				String releaseUuid = list.getData().get(0).getUuid();
+
+				SchemaReferenceList schemaVersionReferences = new SchemaReferenceList();
+				for (Schema schema : schemas.values()) {
+					schemaVersionReferences.add(schema.toReference());
+				}
+				call(() -> client.assignReleaseSchemaVersions(projectName, releaseUuid, schemaVersionReferences));
 			}
+
 		}
+	}
+
+	protected <T> T call(ClientHandler<T> handler) {
+		MeshResponse<T> future;
+		try {
+			future = handler.handle().invoke();
+		} catch (Exception e) {
+			future = new MeshResponse<>(Future.failedFuture(e));
+		}
+		latchFor(future);
+		assertSuccess(future);
+		return future.result();
 	}
 
 	private JsonObject loadJson(String name) throws IOException {
@@ -517,6 +516,11 @@ public class DemoDataProvider {
 		NodeResponse node = nodes.get(name);
 		Objects.requireNonNull(node, "Node with name {" + name + "} could not be found.");
 		return node;
+	}
+
+	@FunctionalInterface
+	protected static interface ClientHandler<T> {
+		MeshRequest<T> handle() throws Exception;
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -21,8 +22,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	private SchemaTransformator transformator = new SchemaTransformator();
 
 	@Inject
-	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db) {
-		super(searchProvider, db);
+	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
+		super(searchProvider, db, boot);
 	}
 
 	public SchemaTransformator getTransformator() {
@@ -56,7 +57,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	@Override
 	protected RootVertex<SchemaContainer> getRootVertex() {
-		return MeshCore.get().boot().meshRoot().getSchemaContainerRoot();
+		return boot.meshRoot().getSchemaContainerRoot();
 	}
 
 }

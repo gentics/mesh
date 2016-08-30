@@ -74,6 +74,7 @@ import com.gentics.mesh.core.verticle.microschema.MicroschemaCrudHandler;
 import com.gentics.mesh.core.verticle.node.NodeCrudHandler;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.project.ProjectCrudHandler;
+import com.gentics.mesh.core.verticle.release.ReleaseCrudHandler;
 import com.gentics.mesh.core.verticle.role.RoleCrudHandler;
 import com.gentics.mesh.core.verticle.schema.SchemaContainerCrudHandler;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
@@ -137,13 +138,15 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	private AuthenticationRestHandler authRestHandler;
 
 	private UtilityHandler utilityHandler;
+	
+	private ReleaseCrudHandler releaseCrudHandler;
 
 	@Inject
 	public MeshLocalClientImpl(UtilityHandler utilityHandler, AuthenticationRestHandler authRestHandler, AdminHandler adminHandler,
 			WebRootHandler webrootHandler, NodeFieldAPIHandler fieldAPIHandler, NodeCrudHandler nodeCrudHandler,
 			ProjectCrudHandler projectCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler, TagCrudHandler tagCrudHandler,
 			MicroschemaCrudHandler microschemaCrudHandler, SchemaContainerCrudHandler schemaCrudHandler, GroupCrudHandler groupCrudHandler,
-			RoleCrudHandler roleCrudHandler, UserCrudHandler userCrudHandler, Database database, BootstrapInitializer boot) {
+			RoleCrudHandler roleCrudHandler, UserCrudHandler userCrudHandler, Database database, BootstrapInitializer boot, ReleaseCrudHandler releaseCrudHandler) {
 
 		this.utilityHandler = utilityHandler;
 		this.authRestHandler = authRestHandler;
@@ -161,6 +164,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		this.userCrudHandler = userCrudHandler;
 		this.database = database;
 		this.boot = boot;
+		this.releaseCrudHandler = releaseCrudHandler;
 
 	}
 
@@ -1072,8 +1076,10 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ReleaseListResponse> findReleases(String projectName, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<ReleaseListResponse> ac = createContext(ReleaseListResponse.class, parameters);
+		ac.setProject(projectName);
+		releaseCrudHandler.handleReadList(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
@@ -1091,10 +1097,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
 			SchemaReferenceList schemaVersionReferences) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<SchemaReferenceList> ac = createContext(SchemaReferenceList.class);
+		ac.setProject(projectName);
+		ac.setPayloadObject(schemaVersionReferences);
+		releaseCrudHandler.handleAssignSchemaVersion(ac, releaseUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
-
 	@Override
 	public MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
 			SchemaReference... schemaVersionReferences) {

@@ -3,8 +3,7 @@ package com.gentics.mesh.auth;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.gentics.mesh.dagger.MeshModule;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * Wrapper for a bcrypted password hash.
@@ -15,7 +14,7 @@ public class BCryptPasswordHash {
 
 	private String accountPasswordHash;
 
-	private MeshModule springConfiguration;
+	private BCryptPasswordEncoder passwordEncoder;
 
 	/**
 	 * Create a new bcrypt password hash.
@@ -23,10 +22,10 @@ public class BCryptPasswordHash {
 	 * @param passwordHash
 	 * @param securityConfig
 	 */
-	public BCryptPasswordHash(String passwordHash, MeshModule securityConfig) {
+	public BCryptPasswordHash(String passwordHash, BCryptPasswordEncoder passwordEncoder) {
 		// TODO inject securityConfiguration
 		this.accountPasswordHash = passwordHash;
-		this.springConfiguration = securityConfig;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	@Override
@@ -39,7 +38,7 @@ public class BCryptPasswordHash {
 				}
 				return false;
 			}
-			return springConfiguration.passwordEncoder().matches(tokenPasswordStr, accountPasswordHash);
+			return passwordEncoder.matches(tokenPasswordStr, accountPasswordHash);
 		} catch (ClassCastException e) {
 			if (log.isErrorEnabled()) {
 				log.error("The given token password could not be transformed", e);

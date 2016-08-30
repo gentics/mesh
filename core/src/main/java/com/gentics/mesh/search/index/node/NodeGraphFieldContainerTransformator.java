@@ -490,8 +490,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 
 	@Override
 	public JsonObject getMappingProperties() {
-		JsonObject props = new JsonObject();
-		return props;
+		return new JsonObject();
 	}
 
 	/**

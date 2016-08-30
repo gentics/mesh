@@ -42,9 +42,9 @@ public class DemoRunner {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
-		//		options.getStorageOptions().setStartServer(true);
+		//options.getStorageOptions().setStartServer(true);
 		//options.getSearchOptions().setHttpEnabled(true);
-//		options.getStorageOptions().setDirectory(null);
+		//options.getStorageOptions().setDirectory(null);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {

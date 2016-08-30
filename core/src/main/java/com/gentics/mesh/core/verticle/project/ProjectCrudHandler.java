@@ -15,21 +15,19 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import dagger.Lazy;
-
 public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResponse> {
 
-	private Lazy<BootstrapInitializer> boot;
+	private BootstrapInitializer boot;
 
 	@Inject
-	public ProjectCrudHandler(Database db, Lazy<BootstrapInitializer> boot) {
+	public ProjectCrudHandler(Database db, BootstrapInitializer boot) {
 		super(db);
 		this.boot = boot;
 	}
 
 	@Override
 	public RootVertex<Project> getRootVertex(InternalActionContext ac) {
-		return boot.get().projectRoot();
+		return boot.projectRoot();
 	}
 
 	@Override

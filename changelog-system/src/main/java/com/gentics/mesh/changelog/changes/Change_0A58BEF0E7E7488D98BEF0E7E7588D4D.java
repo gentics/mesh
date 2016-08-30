@@ -15,7 +15,7 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 	@Override
 	public String getName() {
-		return "Add versioing support";
+		return "Add versioning support";
 	}
 
 	@Override

@@ -42,6 +42,9 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import rx.Completable;
 import rx.Single;
 
+/**
+ * @see Release
+ */
 public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release> implements Release {
 
 	public static final String UNIQUENAME_PROPERTY_KEY = "uniqueName";
@@ -133,8 +136,9 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public void setActive(boolean active) {
+	public Release setActive(boolean active) {
 		setProperty(ACTIVE_PROPERTY_KEY, active);
+		return this;
 	}
 
 	@Override
@@ -143,8 +147,9 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public void setMigrated(boolean migrated) {
+	public Release setMigrated(boolean migrated) {
 		setProperty(MIGRATED_PROPERTY_KEY, migrated);
+		return this;
 	}
 
 	@Override
@@ -153,8 +158,9 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public void setNextRelease(Release release) {
+	public Release setNextRelease(Release release) {
 		setUniqueLinkOutTo(release.getImpl(), HAS_NEXT_RELEASE);
+		return this;
 	}
 
 	@Override
@@ -168,13 +174,15 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public void assignSchemaVersion(SchemaContainerVersion schemaContainerVersion) {
+	public Release assignSchemaVersion(SchemaContainerVersion schemaContainerVersion) {
 		assign(schemaContainerVersion);
+		return this;
 	}
 
 	@Override
-	public void unassignSchema(SchemaContainer schemaContainer) {
+	public Release unassignSchema(SchemaContainer schemaContainer) {
 		unassign(schemaContainer);
+		return this;
 	}
 
 	@Override
@@ -203,13 +211,15 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public void assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion) {
+	public Release assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion) {
 		assign(microschemaContainerVersion);
+		return this;
 	}
 
 	@Override
-	public void unassignMicroschema(MicroschemaContainer microschemaContainer) {
+	public Release unassignMicroschema(MicroschemaContainer microschemaContainer) {
 		unassign(microschemaContainer);
+		return this;
 	}
 
 	@Override
@@ -262,7 +272,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	/**
-	 * Unassign all version of the container from the release
+	 * Unassigns all version of the container from the release
 	 * 
 	 * @param container
 	 */
@@ -292,7 +302,8 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public void setProject(Project project) {
+	public Release setProject(Project project) {
 		setUniqueLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+		return this;
 	}
 }

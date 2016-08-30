@@ -32,8 +32,39 @@ public class IndexHandlerRegistry {
 	private static IndexHandlerRegistry instance;
 
 	@Inject
-	public IndexHandlerRegistry(NodeIndexHandler nodeIndexHandler, UserIndexHandler userIndexHandler, GroupIndexHandler groupIndexHandler, RoleIndexHandler roleIndexHandler, ProjectIndexHandler projectIndexHandler, TagFamilyIndexHandler tagFamilyIndexHandler, TagIndexHandler tagIndexHandler, SchemaContainerIndexHandler schemaContainerIndexHandler, MicroschemaContainerIndexHandler  microschemaContainerIndexHandler) {
+	NodeIndexHandler nodeIndexHandler;
+
+	@Inject
+	UserIndexHandler userIndexHandler;
+
+	@Inject
+	GroupIndexHandler groupIndexHandler;
+
+	@Inject
+	RoleIndexHandler roleIndexHandler;
+
+	@Inject
+	ProjectIndexHandler projectIndexHandler;
+
+	@Inject
+	TagFamilyIndexHandler tagFamilyIndexHandler;
+
+	@Inject
+	TagIndexHandler tagIndexHandler;
+
+	@Inject
+	SchemaContainerIndexHandler schemaContainerIndexHandler;
+
+	@Inject
+	MicroschemaContainerIndexHandler microschemaContainerIndexHandler;
+
+	@Inject
+	public IndexHandlerRegistry() {
 		instance = this;
+
+	}
+
+	public void init() {
 		registerHandler(nodeIndexHandler);
 		registerHandler(userIndexHandler);
 		registerHandler(groupIndexHandler);

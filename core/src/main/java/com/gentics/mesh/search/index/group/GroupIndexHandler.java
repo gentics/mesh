@@ -5,11 +5,11 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
@@ -21,8 +21,8 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	private GroupTransformator transformator = new GroupTransformator();
 
 	@Inject
-	public GroupIndexHandler(SearchProvider searchProvider, Database db) {
-		super(searchProvider, db);
+	public GroupIndexHandler(SearchProvider searchProvider, Database db,  BootstrapInitializer boot) {
+		super(searchProvider, db, boot);
 	}
 
 	public GroupTransformator getTransformator() {
@@ -56,7 +56,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Override
 	protected RootVertex<Group> getRootVertex() {
-		return MeshCore.get().boot().meshRoot().getGroupRoot();
+		return boot.meshRoot().getGroupRoot();
 	}
 
 }

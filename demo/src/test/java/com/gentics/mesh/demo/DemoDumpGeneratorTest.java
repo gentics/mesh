@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -17,11 +18,12 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
-import com.gentics.mesh.util.RxDebugger;
 
 public class DemoDumpGeneratorTest {
 
@@ -38,11 +40,21 @@ public class DemoDumpGeneratorTest {
 	@BeforeClass
 	public static void cleanupFolders() throws IOException {
 		generator.cleanup();
+
+	}
+
+	@Before
+	public void setup() {
+		DemoDumpGenerator.initPaths();
+		MeshComponent meshDagger = MeshCore.create();
+		boot = meshDagger.boot();
+		searchProvider = meshDagger.searchProvider();
+		db = meshDagger.database();
+		dataProvider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl());
 	}
 
 	@Test
 	public void testSetup() throws Exception {
-		new RxDebugger().start();
 		generator.invokeDump(boot, dataProvider);
 		NoTx tx = db.noTx();
 		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().value().getNodeRoot().findAll().size() > 0);

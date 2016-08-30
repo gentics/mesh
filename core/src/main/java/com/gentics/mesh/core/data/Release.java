@@ -12,9 +12,13 @@ import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 /**
- * Interface for Release Vertex
+ * The Release domain model interface.
+ *
+ * A release is a bundle of specific schema versions which are used within a project. Releases can be used to create multiple tree structures within a single
+ * project.
  */
 public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, NamedElement, ReferenceableElement<ReleaseReference>, UserTrackingVertex {
+
 	public static final String TYPE = "release";
 
 	/**
@@ -29,8 +33,9 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * 
 	 * @param active
 	 *            true for active
+	 * @return Fluent API
 	 */
-	void setActive(boolean active);
+	Release setActive(boolean active);
 
 	/**
 	 * Get whether all nodes of the previous release have been migrated
@@ -44,8 +49,9 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * 
 	 * @param migrated
 	 *            true iff all nodes have been migrated
+	 * @return Fluent API
 	 */
-	void setMigrated(boolean migrated);
+	Release setMigrated(boolean migrated);
 
 	/**
 	 * Get the next Release
@@ -59,8 +65,9 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * 
 	 * @param release
 	 *            next Release
+	 * @return Fluent API
 	 */
-	void setNextRelease(Release release);
+	Release setNextRelease(Release release);
 
 	/**
 	 * Get the previous Release
@@ -80,15 +87,17 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * Assign the given schema version to the release. Unassign all other schema versions of the schema
 	 * 
 	 * @param schemaContainerVersion
+	 * @return Fluent API
 	 */
-	void assignSchemaVersion(SchemaContainerVersion schemaContainerVersion);
+	Release assignSchemaVersion(SchemaContainerVersion schemaContainerVersion);
 
 	/**
 	 * Unassign all schema versions of the given schema from this release
 	 * 
 	 * @param schemaContainer
+	 * @return Fluent API
 	 */
-	void unassignSchema(SchemaContainer schemaContainer);
+	Release unassignSchema(SchemaContainer schemaContainer);
 
 	/**
 	 * Check whether a version of this schema container is assigned to this release
@@ -129,15 +138,17 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * Assign the given microschema version to the release Unassign all other versions of the microschema
 	 * 
 	 * @param microschemaContainerVersion
+	 * @return Fluent API
 	 */
-	void assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion);
+	Release assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion);
 
 	/**
-	 * Unassign all versions of the given microschema from this release
+	 * Unassigns all versions of the given microschema from this release
 	 * 
 	 * @param microschemaContainer
+	 * @return Fluent API
 	 */
-	void unassignMicroschema(MicroschemaContainer microschemaContainer);
+	Release unassignMicroschema(MicroschemaContainer microschemaContainer);
 
 	/**
 	 * Check whether a version of this microschema container is assigned to this release
@@ -185,7 +196,8 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * Assign the release to a specific project.
 	 * 
 	 * @param project
+	 * @return Fluent API
 	 */
-	void setProject(Project project);
+	Release setProject(Project project);
 
 }

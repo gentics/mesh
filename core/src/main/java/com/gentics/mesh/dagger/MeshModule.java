@@ -48,7 +48,7 @@ import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.sstore.SessionStore;
 
 /**
- * Main spring bean providing configuration class.
+ * Main dagger module class.
  */
 @Module
 public class MeshModule {
@@ -149,8 +149,8 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public UserSessionHandler userSessionHandler(Database db) {
-		return UserSessionHandler.create(authProvider(db));
+	public UserSessionHandler userSessionHandler(BCryptPasswordEncoder passwordEncoder, Database db) {
+		return UserSessionHandler.create(authProvider(passwordEncoder, db));
 	}
 
 	/**
@@ -160,13 +160,13 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public MeshAuthProvider authProvider(Database db) {
+	public MeshAuthProvider authProvider(BCryptPasswordEncoder passwordEncoder, Database db) {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
-			return new MeshJWTAuthProvider(this, db);
+			return new MeshJWTAuthProvider(passwordEncoder, db);
 		case BASIC_AUTH:
 		default:
-			return new MeshAuthProvider(this, db);
+			return new MeshAuthProvider(passwordEncoder, db);
 		}
 	}
 
@@ -219,6 +219,11 @@ public class MeshModule {
 		return handler;
 	}
 
+	/**
+	 * Return the configured search provider.
+	 * 
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public SearchProvider searchProvider() {
@@ -227,11 +232,9 @@ public class MeshModule {
 		if (options == null || options.getDirectory() == null) {
 			searchProvider = new DummySearchProvider();
 		} else {
-			searchProvider = new ElasticSearchProvider().init(Mesh.mesh().getOptions().getSearchOptions());
+			searchProvider = new ElasticSearchProvider().init(options);
 		}
 		return searchProvider;
 	}
-	
-	
 
 }

@@ -85,14 +85,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		removeItem(project);
 	}
 
-	// TODO unique
-
 	@Override
 	public Project create(String name, User creator, SchemaContainerVersion schemaContainerVersion) {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		project.setName(name);
 		project.getNodeRoot();
-		project.getReleaseRoot().create(name, creator).setMigrated(true);
+
+		Release release = project.getReleaseRoot().create(name, creator).setMigrated(true);
 
 		// Assign the provided schema container to the project
 		project.getSchemaContainerRoot().addItem(schemaContainerVersion.getSchemaContainer());
@@ -105,6 +104,16 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		project.getTagFamilyRoot();
 
 		addItem(project);
+
+		// Add project permissions
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project);
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
+		creator.addPermissionsOnRole(this, CREATE_PERM, project.getBaseNode(), READ_PUBLISHED_PERM, PUBLISH_PERM);
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
+		// TODO add microschema root crud perms
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
+		creator.addPermissionsOnRole(this, CREATE_PERM, release);
 
 		return project;
 	}
@@ -183,14 +192,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			Tuple<SearchQueueBatch, Project> tuple = db.tx(() -> {
 				requestUser.reload();
 				Project project = create(requestModel.getName(), requestUser, schemaContainerVersion);
-
-				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project);
-				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
-				requestUser.addPermissionsOnRole(this, CREATE_PERM, project.getBaseNode(), READ_PUBLISHED_PERM, PUBLISH_PERM);
-				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
-				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
-				// TODO add microschema root crud perms
-				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
 
 				SearchQueueBatch batch = project.createIndexBatch(STORE_ACTION);
 

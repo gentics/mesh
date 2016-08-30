@@ -32,7 +32,6 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
@@ -41,17 +40,17 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandler.class);
 
-	private Lazy<BootstrapInitializer> boot;
+	private BootstrapInitializer boot;
 
 	@Inject
-	public RoleCrudHandler(Database db, Lazy<BootstrapInitializer> boot) {
+	public RoleCrudHandler(Database db, BootstrapInitializer boot) {
 		super(db);
 		this.boot = boot;
 	}
 
 	@Override
 	public RootVertex<Role> getRootVertex(InternalActionContext ac) {
-		return boot.get().roleRoot();
+		return boot.roleRoot();
 	}
 
 	@Override
@@ -74,7 +73,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
 			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-			return boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).flatMap(role -> {
+			return boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).flatMap(role -> {
 				return db.noTx(() -> {
 					// 2. Resolve the path to element that is targeted
 					return MeshRoot.getInstance().resolvePathToElement(pathToElement).flatMap(targetElement -> {
@@ -108,7 +107,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			}
 
 			// 1. Load the role that should be used
-			Single<Role> obsRole = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
+			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 			// 2. Resolve the path to element that is targeted
 			Single<? extends MeshVertex> obsElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
 

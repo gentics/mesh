@@ -10,7 +10,7 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 /**
- * Graph Domain Model interface for a tag.
+ * Graph domain model interface for a tag.
  * 
  * Tags can currently only hold a single string value. Tags are not localizable. A tag can only be assigned to a single tag family.
  */

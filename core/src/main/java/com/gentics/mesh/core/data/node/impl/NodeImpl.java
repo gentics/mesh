@@ -972,19 +972,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return obs;
 	}
 
-	//	@Override
-	//	public Completable publish(InternalActionContext ac) {
-	//		Database db = MeshSpringConfiguration.getInstance().database();
-	//
-	//		// TODO check whether all required fields are filled
-	//		return db.trx(() -> {
-	//			Release release = ac.getRelease(getProject());
-	//			List<Completable> obs = publish(ac, release);
-	//			return Completable.merge(obs);
-	//		});
-	//
-	//	}
-
 	@Override
 	public Completable publish(InternalActionContext ac) {
 		Database db = MeshCore.get().database();
@@ -1700,8 +1687,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// editor etag - (can be omitted since update would also affect the NGFC)
 		// creator etag
-//		keyBuilder.append("-");
-//		keyBuilder.append(getCreator().getETag(ac));
+		//		keyBuilder.append("-");
+		//		keyBuilder.append(getCreator().getETag(ac));
 
 		// availableLanguages
 		keyBuilder.append("-");

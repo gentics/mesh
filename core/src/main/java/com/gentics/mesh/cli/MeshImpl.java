@@ -62,7 +62,7 @@ public class MeshImpl implements Mesh {
 	}
 
 	/**
-	 * Main entry point for mesh. This method will initialize the spring context and deploy mandatory verticles and extensions.
+	 * Main entry point for mesh. This method will initialise the spring context and deploy mandatory verticles and extensions.
 	 * 
 	 * @throws Exception
 	 */
@@ -79,7 +79,7 @@ public class MeshImpl implements Mesh {
 		if (options.isUpdateCheckEnabled()) {
 			invokeUpdateCheck();
 		}
-
+		// Create dagger context and invoke bootstrap init in order to startup mesh
 		MeshCore.create().boot().init(options, verticleLoader);
 		dontExit();
 	}
@@ -128,6 +128,11 @@ public class MeshImpl implements Mesh {
 		request.end();
 	}
 
+	/**
+	 * Return the computer hostname.
+	 * 
+	 * @return System hostname or null if no hostname could be determined
+	 */
 	public String getHostname() {
 		try {
 			return InetAddress.getLocalHost().getHostName();

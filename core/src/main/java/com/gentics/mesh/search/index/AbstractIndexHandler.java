@@ -11,6 +11,7 @@ import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -26,6 +27,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
 
+/**
+ * Abstract class for index handlers. 
+ */
 public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> implements IndexHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
@@ -34,9 +38,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected Database db;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db) {
+	protected BootstrapInitializer boot;
+
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
 		this.searchProvider = searchProvider;
 		this.db = db;
+		this.boot = boot;
 	}
 
 	/**
@@ -141,7 +148,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		case REINDEX_ALL:
 			return reindexAll();
 		case CREATE_INDEX:
-			return createIndex(uuid).doOnCompleted(() -> updateMapping(uuid));
+			return createIndex(uuid).andThen(updateMapping(uuid));
 		default:
 			return Completable.error(new Exception("Action type {" + action + "} is unknown."));
 		}

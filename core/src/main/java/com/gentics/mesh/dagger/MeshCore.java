@@ -2,6 +2,9 @@ package com.gentics.mesh.dagger;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Central singleton which provides the dagger mesh dependency context.
+ */
 public interface MeshCore {
 
 	static AtomicReference<MeshComponent> applicationComponent = new AtomicReference<>(null);

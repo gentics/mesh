@@ -23,7 +23,6 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
@@ -32,17 +31,17 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(UserCrudHandler.class);
 
-	private Lazy<BootstrapInitializer> boot;
+	private BootstrapInitializer boot;
 
 	@Inject
-	public UserCrudHandler(Database db, Lazy<BootstrapInitializer> boot) {
+	public UserCrudHandler(Database db, BootstrapInitializer boot) {
 		super(db);
 		this.boot = boot;
 	}
 
 	@Override
 	public RootVertex<User> getRootVertex(InternalActionContext ac) {
-		return boot.get().userRoot();
+		return boot.userRoot();
 	}
 
 	@Override
@@ -72,7 +71,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 			return db.noTx(() -> {
 				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-				Single<User> obsUser = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+				Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
 				Single<? extends MeshVertex> resolvedElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);

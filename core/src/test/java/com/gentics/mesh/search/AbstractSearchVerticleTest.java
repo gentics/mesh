@@ -110,11 +110,15 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
 				String type = version.getName() + "-" + version.getVersion();
 				String drafIndex = "node-" + project.getUuid() + "-" + release.getUuid() + "-draft";
-				log.debug("Creating schema mapping for index {" + drafIndex + "}");
+				if (log.isDebugEnabled()) {
+					log.debug("Creating schema mapping for index {" + drafIndex + "}");
+				}
 				meshDagger.nodeIndexHandler().updateNodeIndexMapping(drafIndex, type, version.getSchema()).await();
 
 				String publishIndex = "node-" + project.getUuid() + "-" + release.getUuid() + "-published";
-				log.debug("Creating schema mapping for index {" + publishIndex + "}");
+				if (log.isDebugEnabled()) {
+					log.debug("Creating schema mapping for index {" + publishIndex + "}");
+				}
 				meshDagger.nodeIndexHandler().updateNodeIndexMapping(publishIndex, type, version.getSchema()).await();
 			}
 		}

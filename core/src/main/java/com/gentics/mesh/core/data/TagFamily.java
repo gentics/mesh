@@ -13,7 +13,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import rx.Single;
 
 /**
- * The TagFamily Domain Model interface.
+ * The TagFamily domain model interface.
  * 
  * A tag family is the parent element for multiple tags. A typical tag family would be "colors" for tags "red", "blue", "green". Tag families are bound to
  * projects via the {@link TagFamilyRootImpl} class.

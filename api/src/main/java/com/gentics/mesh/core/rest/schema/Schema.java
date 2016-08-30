@@ -50,5 +50,11 @@ public interface Schema extends FieldSchemaContainer {
 	 */
 	void setSegmentField(String segmentField);
 
+	/**
+	 * Create a schema reference using the schema as source.
+	 * 
+	 * @return
+	 */
+	SchemaReference toReference();
 
 }

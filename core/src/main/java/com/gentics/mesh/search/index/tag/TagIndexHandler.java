@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -28,8 +29,8 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	private TagTransformator transformator = new TagTransformator();
 
 	@Inject
-	public TagIndexHandler(SearchProvider searchProvider, Database db) {
-		super(searchProvider, db);
+	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
+		super(searchProvider, db, boot);
 	}
 
 	@Override
@@ -45,7 +46,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	@Override
 	public Set<String> getIndices() {
 		return db.noTx(() -> {
-			ProjectRoot projectRoot = MeshCore.get().boot().meshRoot().getProjectRoot();
+			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
 			projectRoot.reload();
 			List<? extends Project> projects = projectRoot.findAll();
 			Set<String> indices = projects.stream().map(project -> getIndexName(project.getUuid())).collect(Collectors.toSet());
@@ -90,7 +91,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	@Override
 	protected RootVertex<Tag> getRootVertex() {
-		return MeshCore.get().boot().meshRoot().getTagRoot();
+		return boot.meshRoot().getTagRoot();
 	}
 
 }

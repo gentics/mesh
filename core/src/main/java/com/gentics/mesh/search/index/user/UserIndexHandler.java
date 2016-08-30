@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -23,8 +24,8 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	private UserTransformator transformator = new UserTransformator();
 
 	@Inject
-	public UserIndexHandler(SearchProvider searchProvider, Database db) {
-		super(searchProvider, db);
+	public UserIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
+		super(searchProvider, db, boot);
 	}
 
 	public UserTransformator getTransformator() {
@@ -58,6 +59,6 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	@Override
 	protected RootVertex<User> getRootVertex() {
-		return MeshCore.get().boot().meshRoot().getUserRoot();
+		return boot.meshRoot().getUserRoot();
 	}
 }

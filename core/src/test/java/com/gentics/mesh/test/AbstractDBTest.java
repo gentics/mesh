@@ -156,6 +156,7 @@ public abstract class AbstractDBTest {
 	}
 
 	public void setupData() throws Exception {
+		boot.initSearchIndexHandlers();
 		dataProvider.setup();
 	}
 

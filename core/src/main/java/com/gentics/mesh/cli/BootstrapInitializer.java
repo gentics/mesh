@@ -4,11 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -51,11 +49,11 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
@@ -65,15 +63,14 @@ import com.gentics.mesh.search.index.IndexHandler;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
-import io.vertx.core.AbstractVerticle;
+import dagger.Lazy;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
- * The bootstrap initializer takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
+ * The bootstrap initialiser takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
  * GroupRoot, UserRoot and various element such as the Admin User, Admin Group, Admin Role.
  */
 @Singleton
@@ -81,94 +78,35 @@ public class BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
-	private MeshOptions configuration;
-
 	private ServerSchemaStorage schemaStorage;
 
 	private Database db;
 
-	private IndexHandlerRegistry searchHandlerRegistry;
-
-	private Map<String, AbstractVerticle> mandatoryVerticles = new HashMap<>();
-
-	private Map<String, AbstractVerticle> mandatoryWorkerVerticles = new HashMap<>();
-
 	private BCryptPasswordEncoder encoder;
+
+	private RouterStorage routerStorage;
+
+	private Lazy<IndexHandlerRegistry> searchHandlerRegistry;
+
+	private Lazy<CoreVerticleLoader> loader;
 
 	private static MeshRoot meshRoot;
 
 	public static boolean isInitialSetup = true;
 
 	@Inject
-	public BootstrapInitializer(Database db, IndexHandlerRegistry searchHandlerRegistry, BCryptPasswordEncoder encoder) {
+	public BootstrapInitializer(Database db, Lazy<IndexHandlerRegistry> searchHandlerRegistry, BCryptPasswordEncoder encoder,
+			RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
+
 		clearReferences();
 
 		this.db = db;
 		this.searchHandlerRegistry = searchHandlerRegistry;
 		this.schemaStorage = new ServerSchemaStorage(this);
 		this.encoder = encoder;
+		this.routerStorage = routerStorage;
+		this.loader = loader;
 
-		// Add API Info Verticle
-		addMandatoryVerticle(MeshCore.get().restInfoVerticle());
-		//		addMandatoryVerticle(MeshCore.get().projectInfoVerticle());
-
-		// User Group Role verticles
-		addMandatoryVerticle(MeshCore.get().userVerticle());
-		addMandatoryVerticle(MeshCore.get().groupVerticle());
-		addMandatoryVerticle(MeshCore.get().roleVerticle());
-
-		// Project specific verticles
-		addMandatoryVerticle(MeshCore.get().nodeVerticle());
-		addMandatoryVerticle(MeshCore.get().tagFamilyVerticle());
-		addMandatoryVerticle(MeshCore.get().projectSchemaVerticle());
-		addMandatoryVerticle(MeshCore.get().releaseVerticle());
-
-		// Global verticles
-		addMandatoryVerticle(MeshCore.get().webrootVerticle());
-		addMandatoryVerticle(MeshCore.get().navRootVerticle());
-		addMandatoryVerticle(MeshCore.get().projectVerticle());
-		addMandatoryVerticle(MeshCore.get().schemaVerticle());
-		addMandatoryVerticle(MeshCore.get().microschemaVerticle());
-		addMandatoryVerticle(MeshCore.get().searchVerticle());
-		addMandatoryVerticle(MeshCore.get().projectSearchVerticle());
-		addMandatoryVerticle(MeshCore.get().authenticationVerticle());
-		addMandatoryVerticle(MeshCore.get().adminVerticle());
-		addMandatoryVerticle(MeshCore.get().eventbusVerticle());
-		addMandatoryVerticle(MeshCore.get().utilityVerticle());
-
-		// Worker verticles
-		addMandatoryWorkerVerticle(MeshCore.get().nodeMigrationVerticle());
-	}
-
-	/**
-	 * Add the given verticle class to the list of mandatory verticles
-	 * 
-	 * @param clazz
-	 */
-	private void addMandatoryVerticle(AbstractVerticle verticle) {
-		mandatoryVerticles.put(verticle.getClass().getSimpleName(), verticle);
-	}
-
-	private Map<String, AbstractVerticle> getMandatoryVerticleClasses() {
-		return mandatoryVerticles;
-	}
-
-	/**
-	 * Add the given verticle class to the list of mandatory worker verticles
-	 *
-	 * @param clazz
-	 */
-	private void addMandatoryWorkerVerticle(AbstractVerticle verticle) {
-		mandatoryWorkerVerticles.put(verticle.getClass().getSimpleName(), verticle);
-	}
-
-	/**
-	 * Get the map of mandatory worker verticle classes
-	 * 
-	 * @return
-	 */
-	private Map<String, AbstractVerticle> getMandatoryWorkerVerticleClasses() {
-		return mandatoryWorkerVerticles;
 	}
 
 	/**
@@ -178,7 +116,7 @@ public class BootstrapInitializer {
 	 */
 	private void initProjects() throws InvalidNameException {
 		for (Project project : meshRoot().getProjectRoot().findAll()) {
-			MeshCore.get().routerStorage().addProjectRouter(project.getName());
+			routerStorage.addProjectRouter(project.getName());
 			if (log.isInfoEnabled()) {
 				log.info("Initalized project {" + project.getName() + "}");
 			}
@@ -207,7 +145,6 @@ public class BootstrapInitializer {
 	 * @throws Exception
 	 */
 	public void init(MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
-		this.configuration = configuration;
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
@@ -229,21 +166,20 @@ public class BootstrapInitializer {
 		}
 
 		// initPermissions();
-		initSearchIndex();
+		initSearchIndexHandlers();
 		try {
 			invokeSearchQueueProcessing();
 		} catch (Exception e) {
 			log.error("Could not handle existing search queue entries", e);
 		}
 
-		loadConfiguredVerticles();
+		loader.get().loadVerticles(configuration);
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}
-		db.asyncNoTx(() -> {
+		try (NoTx noTx = db.noTx()) {
 			initProjects();
-			return null;
-		}).toBlocking().value();
+		}
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
 
@@ -296,68 +232,14 @@ public class BootstrapInitializer {
 	}
 
 	/**
-	 * Initialize the search queue handlers.
+	 * Initialise the search queue handlers.
 	 */
-	public void initSearchIndex() {
-		for (IndexHandler handler : searchHandlerRegistry.getHandlers()) {
+	public void initSearchIndexHandlers() {
+		IndexHandlerRegistry registry = searchHandlerRegistry.get();
+		registry.init();
+		for (IndexHandler handler : registry.getHandlers()) {
 			handler.init().await();
 		}
-	}
-
-	/**
-	 * Load verticles that are configured within the mesh configuration.
-	 * 
-	 * @throws InterruptedException
-	 */
-	private void loadConfiguredVerticles() throws InterruptedException {
-		JsonObject defaultConfig = new JsonObject();
-		defaultConfig.put("port", configuration.getHttpServerOptions().getPort());
-
-		for (AbstractVerticle verticle : getMandatoryVerticleClasses().values()) {
-			try {
-				if (log.isInfoEnabled()) {
-					log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
-				}
-				// TODO handle custom config? i assume we will not allow this
-				deployAndWait(Mesh.vertx(), defaultConfig, verticle, false);
-			} catch (InterruptedException e) {
-				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
-			}
-		}
-
-		for (AbstractVerticle verticle : getMandatoryWorkerVerticleClasses().values()) {
-			try {
-				if (log.isInfoEnabled()) {
-					log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
-				}
-				// TODO handle custom config? i assume we will not allow this
-				deployAndWait(Mesh.vertx(), defaultConfig, verticle, true);
-			} catch (InterruptedException e) {
-				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
-			}
-		}
-
-		//		for (String verticleName : configuration.getVerticles().keySet()) {
-		//			if (getMandatoryVerticleClasses().containsKey(verticleName)) {
-		//				log.error("Can't configure mandatory verticles. Skipping configured verticle {" + verticleName + "}");
-		//				continue;
-		//			}
-		//			MeshVerticleConfiguration verticleConf = configuration.getVerticles().get(verticleName);
-		//			JsonObject mergedVerticleConfig = new JsonObject();
-		//			if (verticleConf.getVerticleConfig() != null) {
-		//				mergedVerticleConfig = verticleConf.getVerticleConfig().copy();
-		//			}
-		//			mergedVerticleConfig.put("port", configuration.getHttpServerOptions().getPort());
-		//			try {
-		//				if (log.isInfoEnabled()) {
-		//					log.info("Loading configured verticle {" + verticleName + "}.");
-		//				}
-		//				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName, false);
-		//			} catch (InterruptedException e) {
-		//				log.error("Could not load verticle {" + verticleName + "}.", e);
-		//			}
-		//		}
-
 	}
 
 	/**

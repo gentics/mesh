@@ -4,10 +4,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.dagger.MeshCore;
-import com.gentics.mesh.dagger.MeshModule;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
@@ -32,11 +32,11 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	protected Database db;
 
-	private MeshModule springConfiguration;
+	private BCryptPasswordEncoder passwordEncoder;
 
 	@Inject
-	public MeshAuthProvider(MeshModule springConfiguration, Database database) {
-		this.springConfiguration = springConfiguration;
+	public MeshAuthProvider(BCryptPasswordEncoder passwordEncoder, Database database) {
+		this.passwordEncoder = passwordEncoder;
 		this.db = database;
 	}
 
@@ -59,7 +59,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 					if (log.isDebugEnabled()) {
 						log.debug("Validating password using the bcrypt password encoder");
 					}
-					hashMatches = springConfiguration.passwordEncoder().matches(password, accountPasswordHash);
+					hashMatches = passwordEncoder.matches(password, accountPasswordHash);
 				}
 				if (hashMatches) {
 					resultHandler.handle(Future.succeededFuture(user));
