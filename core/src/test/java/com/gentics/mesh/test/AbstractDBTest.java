@@ -151,8 +151,9 @@ public abstract class AbstractDBTest {
 		db.clear();
 		DatabaseHelper helper = new DatabaseHelper(db);
 		helper.init();
-		// databaseService.getDatabase().reset();
-
+		if(dummySearchProvider!=null) {
+			dummySearchProvider.reset();
+		}
 	}
 
 	public void setupData() throws Exception {
