@@ -141,9 +141,9 @@ public abstract class AbstractDBTest {
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getImageOptions().getImageCacheDirectory()));
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
-		if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
-			FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
-		}
+//		if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
+//			FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
+//		}
 	}
 
 	protected void resetDatabase() {

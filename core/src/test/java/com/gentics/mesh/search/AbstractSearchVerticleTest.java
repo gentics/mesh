@@ -59,6 +59,8 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 	public static void clean() throws IOException {
 		FileUtils.deleteDirectory(new File("data"));
 	}
+	
+	
 
 	protected String getSimpleQuery(String text) throws JSONException {
 		QueryBuilder qb = QueryBuilders.queryStringQuery(text);
