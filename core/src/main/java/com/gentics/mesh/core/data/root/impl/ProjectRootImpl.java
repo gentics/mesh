@@ -109,16 +109,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 		addItem(project);
 
-		// Add project permissions
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project);
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
-		creator.addPermissionsOnRole(this, CREATE_PERM, project.getBaseNode(), READ_PUBLISHED_PERM, PUBLISH_PERM);
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
-		// TODO add microschema root crud perms
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
-		creator.addPermissionsOnRole(this, CREATE_PERM, release);
-
 		return project;
 	}
 
@@ -173,13 +163,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		// ObjectSchema defaultContentSchema = objectSchemaRoot.findByName(, name)
 		ProjectCreateRequest requestModel = ac.fromJson(ProjectCreateRequest.class);
 		String projectName = requestModel.getName();
-		MeshAuthUser requestUser = ac.getUser();
+		MeshAuthUser creator = ac.getUser();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_missing_name");
 		}
 		return db.noTx(() -> {
-			if (!requestUser.hasPermissionSync(ac, boot.projectRoot(), CREATE_PERM)) {
+			if (!creator.hasPermissionSync(ac, boot.projectRoot(), CREATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid());
 			}
 			// TODO instead of this check, a constraint in the db should be added
@@ -194,12 +184,22 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 					.fromReference(requestModel.getSchemaReference()).toBlocking().value();
 
 			Tuple<SearchQueueBatch, Project> tuple = db.tx(() -> {
-				requestUser.reload();
-				Project project = create(requestModel.getName(), requestUser, schemaContainerVersion);
+				creator.reload();
+				Project project = create(requestModel.getName(), creator, schemaContainerVersion);
+				Release initialRelease = project.getInitialRelease();
+
+				// Add project permissions
+				creator.addCRUDPermissionOnRole(this, CREATE_PERM, project);
+				creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
+				creator.addPermissionsOnRole(this, CREATE_PERM, project.getBaseNode(), READ_PUBLISHED_PERM, PUBLISH_PERM);
+				creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
+				creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
+				// TODO add microschema root crud perms
+				creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
+				creator.addPermissionsOnRole(this, CREATE_PERM, initialRelease);
 
 				SearchQueueBatch batch = project.createIndexBatch(STORE_ACTION);
 
-				Release initialRelease = project.getInitialRelease();
 				String releaseUuid = initialRelease.getUuid();
 				String projectUuid = project.getUuid();
 
@@ -232,7 +232,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			Single<Project> single = Single.create(sub -> {
 
 				try {
-					//TODO BUG project should only be added to router when trx and ES finished successfully
+					// TODO BUG project should only be added to router when trx and ES finished successfully
 					routerStorage.addProjectRouter(name);
 					if (log.isInfoEnabled()) {
 						log.info("Registered project {" + name + "}");
