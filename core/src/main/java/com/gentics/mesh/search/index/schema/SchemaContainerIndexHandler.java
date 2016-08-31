@@ -36,6 +36,11 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
+	protected String getDocumentType(SearchQueueEntry entry) {
+		return "schema_container";
+	}
+
+	@Override
 	public Set<String> getIndices() {
 		return indices;
 	}
@@ -43,11 +48,6 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
 		return indices;
-	}
-
-	@Override
-	protected String getType() {
-		return "schemaContainer";
 	}
 
 	@Override

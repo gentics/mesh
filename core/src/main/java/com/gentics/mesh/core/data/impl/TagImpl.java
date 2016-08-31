@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -48,7 +49,6 @@ import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -246,7 +246,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		batch.addEntry(this, action, Arrays.asList(Tuple.tuple(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
+		batch.addEntry(this, action).set(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
 		addRelatedEntries(batch, action);
 		return batch;
 	}
@@ -263,7 +263,8 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 				}
 			}
 		}
-		batch.addEntry(getTagFamily(), STORE_ACTION, Arrays.asList(Tuple.tuple(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
+		SearchQueueEntry entry = batch.addEntry(getTagFamily(), STORE_ACTION);
+		entry.set(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
 	}
 
 	@Override

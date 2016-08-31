@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
@@ -40,7 +39,12 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	@Override
 	protected String getIndex(SearchQueueEntry entry) {
-		return getIndexName(entry.getCustomProperty(CUSTOM_PROJECT_UUID));
+		return getIndexName(entry.get(CUSTOM_PROJECT_UUID));
+	}
+
+	@Override
+	protected String getDocumentType(SearchQueueEntry entry) {
+		return Tag.TYPE;
 	}
 
 	@Override
@@ -77,11 +81,6 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 		StringBuilder indexName = new StringBuilder(Tag.TYPE);
 		indexName.append("-").append(projectUuid);
 		return indexName.toString();
-	}
-
-	@Override
-	protected String getType() {
-		return Tag.TYPE;
 	}
 
 	@Override

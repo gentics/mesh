@@ -28,6 +28,9 @@ import rx.Single;
  */
 public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableElement<UserReference>, UserTrackingVertex {
 
+	/**
+	 * Type Value: {@value #TYPE}
+	 */
 	public static final String TYPE = "user";
 
 	/**

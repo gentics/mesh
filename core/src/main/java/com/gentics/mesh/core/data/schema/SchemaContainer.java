@@ -11,6 +11,9 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
  */
 public interface SchemaContainer extends GraphFieldSchemaContainer<Schema, SchemaReference, SchemaContainer, SchemaContainerVersion> {
 
+	/**
+	 * Type Value: {@value #TYPE}
+	 */
 	public static final String TYPE = "schemaContainer";
 
 	/**

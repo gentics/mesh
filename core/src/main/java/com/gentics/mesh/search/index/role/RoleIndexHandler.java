@@ -21,12 +21,17 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	private final static Set<String> indices = Collections.singleton(Role.TYPE);
 
 	@Inject
-	public RoleIndexHandler(SearchProvider searchProvider, Database db,  BootstrapInitializer boot) {
+	public RoleIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
 		super(searchProvider, db, boot);
 	}
 
 	@Override
 	protected String getIndex(SearchQueueEntry entry) {
+		return Role.TYPE;
+	}
+
+	@Override
+	protected String getDocumentType(SearchQueueEntry entry) {
 		return Role.TYPE;
 	}
 
@@ -43,11 +48,6 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
 		return indices;
-	}
-
-	@Override
-	protected String getType() {
-		return Role.TYPE;
 	}
 
 	@Override

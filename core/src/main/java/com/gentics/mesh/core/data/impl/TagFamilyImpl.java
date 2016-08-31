@@ -15,7 +15,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -35,6 +36,7 @@ import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -274,14 +276,18 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		List<Tuple<String, Object>> customProperties = Arrays.asList(Tuple.tuple(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid()));
+		Map<String, Object> properties = new HashMap<>();
+		properties.put(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
+		
 		if (action == DELETE_ACTION) {
 			for (Tag tag : getTagRoot().findAll()) {
-				batch.addEntry(tag, DELETE_ACTION, customProperties);
+				SearchQueueEntry entry = batch.addEntry(tag, DELETE_ACTION);
+				entry.set(properties);
 			}
 		} else {
 			for (Tag tag : getTagRoot().findAll()) {
-				batch.addEntry(tag, STORE_ACTION, customProperties);
+				SearchQueueEntry entry = batch.addEntry(tag, STORE_ACTION);
+				entry.set(properties);
 			}
 		}
 	}
@@ -290,7 +296,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		batch.addEntry(this, action, Arrays.asList(Tuple.tuple(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
+		batch.addEntry(this, action).set(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
 		addRelatedEntries(batch, action);
 		return batch;
 	}

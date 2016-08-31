@@ -70,24 +70,29 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public final static String FIELD_CONTAINER_UUID_NAME = "fieldContainerUuid";
 
 	/**
-	 * Name of the custom property of SearchQueueEntry containing the language tag
+	 * Key of the custom property of SearchQueueEntry containing the language tag. Value: {@value #CUSTOM_LANGUAGE_TAG}
 	 */
 	public final static String CUSTOM_LANGUAGE_TAG = "languageTag";
 
 	/**
-	 * Name of the custom property of SearchQueueEntry containing the release uuid.
+	 * Key of the custom property of SearchQueueEntry containing the release uuid. Value: {@value #CUSTOM_RELEASE_UUID}
 	 */
 	public final static String CUSTOM_RELEASE_UUID = "releaseUuid";
 
 	/**
-	 * Name of the custom property of SearchQueueEntry containing the version ("draft" or "published")
+	 * Key of the custom property of SearchQueueEntry containing the version ("draft" or "published"). Value: {@value #CUSTOM_VERSION}
 	 */
 	public final static String CUSTOM_VERSION = "version";
 
 	/**
-	 * Name of the custom property of SearchQueueEntry containing the project uuid.
+	 * Key of the custom property of SearchQueueEntry containing the project uuid. Value: {@value #CUSTOM_PROJECT_UUID}
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
+
+	/**
+	 * Custom index type property key. Value: {@value #CUSTOM_INDEX_TYPE}
+	 */
+	public static final String CUSTOM_INDEX_TYPE = "indexType";
 
 	private static NodeIndexHandler instance;
 
@@ -121,6 +126,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	@Override
 	protected String getIndex(SearchQueueEntry entry) {
 		return Node.TYPE;
+	}
+
+	@Override
+	protected String getDocumentType(SearchQueueEntry entry) {
+		return entry.get(CUSTOM_INDEX_TYPE);
 	}
 
 	@Override
@@ -174,11 +184,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	protected String getType() {
-		return Node.TYPE;
-	}
-
-	@Override
 	public String getKey() {
 		return Node.TYPE;
 	}
@@ -192,9 +197,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Completable store(Node node, String documentType, SearchQueueEntry entry) {
 		return Completable.defer(() -> {
 			try (NoTx noTrx = db.noTx()) {
-				String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
-				String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
-				ContainerType type = ContainerType.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
+				String languageTag = entry.get(CUSTOM_LANGUAGE_TAG);
+				String releaseUuid = entry.get(CUSTOM_RELEASE_UUID);
+				ContainerType type = ContainerType.forVersion(entry.get(CUSTOM_VERSION));
 				String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, type.toString().toLowerCase());
 
 				if (log.isDebugEnabled()) {
@@ -280,13 +285,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Completable delete(String uuid, String documentType, SearchQueueEntry entry) {
-		String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
-		String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
-		String projectUuid = entry.getCustomProperty(CUSTOM_PROJECT_UUID);
-		ContainerType type = ContainerType.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
+	public Completable delete(SearchQueueEntry entry) {
+		String languageTag = entry.get(CUSTOM_LANGUAGE_TAG);
+		String releaseUuid = entry.get(CUSTOM_RELEASE_UUID);
+		String projectUuid = entry.get(CUSTOM_PROJECT_UUID);
+		ContainerType type = ContainerType.forVersion(entry.get(CUSTOM_VERSION));
 		String indexName = getIndexName(projectUuid, releaseUuid, type.toString().toLowerCase());
-
+		String documentType = getDocumentType(entry);
+		String uuid = entry.getElementUuid();
 		return searchProvider.deleteDocument(indexName, documentType, composeDocumentId(uuid, languageTag));
 	}
 
@@ -347,6 +353,17 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		Set<Completable> obs = new HashSet<>();
 		getIndices().forEach(index -> obs.add(updateNodeIndexMapping(index, type, schema)));
 		return Completable.merge(obs);
+	}
+
+	@Override
+	public Completable updateMapping(SearchQueueEntry entry) {
+		String containerVersionUuid = entry.get("schemaContainerVersionUuuid");
+		String containerUuid = entry.get("schemaContainerUuid");
+		SchemaContainerVersion version = boot.findSchemaContainerRoot().findByUuidSync(containerUuid).findVersionByUuid(containerVersionUuid);
+		Schema schema = version.getSchema();
+		String indexName = entry.getElementUuid();
+		String type = schema.getName() + "-" + schema.getVersion();
+		return updateNodeIndexMapping(indexName, type, schema);
 	}
 
 	/**

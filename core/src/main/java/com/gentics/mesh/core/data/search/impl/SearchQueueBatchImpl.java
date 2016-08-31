@@ -39,43 +39,27 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType,
-			Collection<Tuple<String, Object>> customProperties) {
+	public SearchQueueEntry addEntry(String uuid, String elementType, SearchQueueEntryAction action) {
 		SearchQueueEntry entry = getGraph().addFramedVertex(SearchQueueEntryImpl.class);
 		entry.setElementUuid(uuid);
 		entry.setElementType(elementType);
 		entry.setElementAction(action.getName());
-		entry.setElementIndexType(indexType);
 		entry.setTime(System.currentTimeMillis());
-
-		if (customProperties != null) {
-			for (Tuple<String, Object> custom : customProperties) {
-				entry.setCustomProperty(custom.v1(), custom.v2());
-			}
-		}
-
-		addEntry(entry);
+		return addEntry(entry);
 	}
 
 	@Override
-	public void addEntry(SearchQueueEntry batch) {
-		setUniqueLinkOutTo(batch.getImpl(), HAS_ITEM);
+	public SearchQueueEntry addEntry(SearchQueueEntry entry) {
+		setUniqueLinkOutTo(entry.getImpl(), HAS_ITEM);
+		return entry;
 	}
 
 	@Override
 	public List<? extends SearchQueueEntry> getEntries() {
 		List<? extends SearchQueueEntryImpl> list = out(HAS_ITEM).has(SearchQueueEntryImpl.class).order((o1, o2) -> {
-			Long a = o1.getProperty(SearchQueueEntryImpl.ENTRY_TIME);
-			Long b = o2.getProperty(SearchQueueEntryImpl.ENTRY_TIME);
 			String actionA = o1.getProperty(SearchQueueEntryImpl.ACTION_KEY);
 			String actionB = o1.getProperty(SearchQueueEntryImpl.ACTION_KEY);
-			if (actionA.equals("create_index")) {
-				return Integer.MIN_VALUE;
-			}
-			if (actionB.equals("create_index")) {
-				return Integer.MIN_VALUE;
-			}
-			return a.compareTo(b);
+			return SearchQueueEntryAction.valueOfName(actionA).compareTo(SearchQueueEntryAction.valueOfName(actionB));
 		}).toListExplicit(SearchQueueEntryImpl.class);
 
 		if (log.isDebugEnabled()) {

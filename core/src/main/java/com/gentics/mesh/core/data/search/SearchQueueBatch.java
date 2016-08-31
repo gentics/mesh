@@ -1,13 +1,11 @@
 package com.gentics.mesh.core.data.search;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.util.Tuple;
 
 import rx.Completable;
 
@@ -25,9 +23,10 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @param uuid
 	 * @param type
 	 * @param action
+	 * @return Created entry
 	 */
-	default void addEntry(String uuid, String type, SearchQueueEntryAction action) {
-		addEntry(uuid, type, action, null, null);
+	default SearchQueueEntry addEntry(String uuid, String type, SearchQueueEntryAction action) {
+		return addEntry(uuid, type, action, null);
 	}
 
 	/**
@@ -35,21 +34,10 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * 
 	 * @param vertex
 	 * @param action
+	 * @return Created entry
 	 */
-	default void addEntry(MeshCoreVertex<?, ?> vertex, SearchQueueEntryAction action) {
-		addEntry(vertex.getUuid(), vertex.getType(), action, null, null);
-	}
-
-	/**
-	 * Add an entry to this batch.
-	 * 
-	 * @param vertex
-	 * @param action
-	 * @param customProperties
-	 */
-	default void addEntry(MeshCoreVertex<?, ?> vertex, SearchQueueEntryAction action,
-			Collection<Tuple<String, Object>> customProperties) {
-		addEntry(vertex.getUuid(), vertex.getType(), action, null, customProperties);
+	default SearchQueueEntry addEntry(MeshCoreVertex<?, ?> vertex, SearchQueueEntryAction action) {
+		return addEntry(vertex.getUuid(), vertex.getType(), action);
 	}
 
 	/**
@@ -62,29 +50,19 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @param action
 	 * @param indexType
 	 *            Search index type
+	 * @return Created entry
 	 */
-	default void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType) {
-		addEntry(uuid, elementType, action, indexType, null);
+	default SearchQueueEntry addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType) {
+		return addEntry(uuid, elementType, action, indexType);
 	}
 
 	/**
 	 * Add an entry to this batch.
 	 * 
-	 * @param uuid Uuid of the element to be added
-	 * @param elementType Type of the element to be added
-	 * @param action
-	 * @param indexType
-	 * @param customProperties
-	 */
-	void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType,
-			Collection<Tuple<String, Object>> customProperties);
-
-	/**
-	 * Add an entry to this batch.
-	 * 
 	 * @param entry
+	 * @return Added entry
 	 */
-	void addEntry(SearchQueueEntry entry);
+	SearchQueueEntry addEntry(SearchQueueEntry entry);
 
 	/**
 	 * Return a list of entries for this batch.

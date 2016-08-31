@@ -31,7 +31,12 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Override
 	protected String getIndex(SearchQueueEntry entry) {
-		return "microschema";
+		return MicroschemaContainer.TYPE;
+	}
+
+	@Override
+	protected String getDocumentType(SearchQueueEntry entry) {
+		return MicroschemaContainer.TYPE;
 	}
 
 	@Override
@@ -42,11 +47,6 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
 		return indices;
-	}
-
-	@Override
-	protected String getType() {
-		return "microschema";
 	}
 
 	@Override

@@ -9,6 +9,9 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 public interface MicroschemaContainer
 		extends GraphFieldSchemaContainer<Microschema, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion> {
 
+	/**
+	 * Type Value: {@value #TYPE}
+	 */
 	public static final String TYPE = "microschema";
 
 }

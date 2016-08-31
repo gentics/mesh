@@ -19,6 +19,9 @@ import com.gentics.mesh.util.InvalidArgumentException;
  */
 public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, NamedElement, ReferenceableElement<ReleaseReference>, UserTrackingVertex {
 
+	/**
+	 * Type Value: {@value #TYPE}
+	 */
 	public static final String TYPE = "release";
 
 	/**

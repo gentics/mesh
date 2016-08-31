@@ -39,7 +39,12 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	protected String getIndex(SearchQueueEntry entry) {
-		return getIndexName(entry.getCustomProperty(CUSTOM_PROJECT_UUID));
+		return getIndexName(entry.get(CUSTOM_PROJECT_UUID));
+	}
+
+	@Override
+	protected String getDocumentType(SearchQueueEntry entry) {
+		return TagFamily.TYPE;
 	}
 
 	@Override
@@ -75,11 +80,6 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 		StringBuilder indexName = new StringBuilder("tag-family");
 		indexName.append("-").append(projectUuid);
 		return indexName.toString();
-	}
-
-	@Override
-	protected String getType() {
-		return "tagFamily";
 	}
 
 	@Override

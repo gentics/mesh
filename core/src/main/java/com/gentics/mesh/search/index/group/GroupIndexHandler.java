@@ -21,7 +21,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	private GroupTransformator transformator = new GroupTransformator();
 
 	@Inject
-	public GroupIndexHandler(SearchProvider searchProvider, Database db,  BootstrapInitializer boot) {
+	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
 		super(searchProvider, db, boot);
 	}
 
@@ -31,7 +31,12 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Override
 	protected String getIndex(SearchQueueEntry entry) {
-		return "group";
+		return Group.TYPE;
+	}
+
+	@Override
+	protected String getDocumentType(SearchQueueEntry entry) {
+		return Group.TYPE;
 	}
 
 	@Override
@@ -44,10 +49,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 		return indices;
 	}
 
-	@Override
-	protected String getType() {
-		return "group";
-	}
+
 
 	@Override
 	public String getKey() {

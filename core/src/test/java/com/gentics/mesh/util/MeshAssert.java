@@ -134,18 +134,18 @@ public final class MeshAssert {
 								return false;
 							}
 							if (entry.getProjectUuid() != null
-									&& !entry.getProjectUuid().equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_PROJECT_UUID))) {
+									&& !entry.getProjectUuid().equals(e.get(NodeIndexHandler.CUSTOM_PROJECT_UUID))) {
 								return false;
 							}
 							if (entry.getReleaseUuid() != null
-									&& !entry.getReleaseUuid().equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_RELEASE_UUID))) {
+									&& !entry.getReleaseUuid().equals(e.get(NodeIndexHandler.CUSTOM_RELEASE_UUID))) {
 								return false;
 							}
 							if (entry.getType() != null
-									&& !entry.getType().toString().equalsIgnoreCase(e.getCustomProperty(NodeIndexHandler.CUSTOM_VERSION))) {
+									&& !entry.getType().toString().equalsIgnoreCase(e.get(NodeIndexHandler.CUSTOM_VERSION))) {
 								return false;
 							}
-							if (!language.equals(e.getCustomProperty(NodeIndexHandler.CUSTOM_LANGUAGE_TAG))) {
+							if (!language.equals(e.get(NodeIndexHandler.CUSTOM_LANGUAGE_TAG))) {
 								return false;
 							}
 							return true;

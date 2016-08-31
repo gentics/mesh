@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.search;
 
+import java.util.Map;
+
 import com.gentics.mesh.core.data.MeshVertex;
 
 import rx.Completable;
@@ -66,21 +68,6 @@ public interface SearchQueueEntry extends MeshVertex {
 	String getElementActionName();
 
 	/**
-	 * Return the element index type.
-	 * 
-	 * @return
-	 */
-	String getElementIndexType();
-
-	/**
-	 * Set the element index type.
-	 * 
-	 * @param indexType
-	 * @return
-	 */
-	SearchQueueEntry setElementIndexType(String indexType);
-
-	/**
 	 * Process the entry.
 	 * 
 	 * @return
@@ -88,23 +75,32 @@ public interface SearchQueueEntry extends MeshVertex {
 	Completable process();
 
 	/**
-	 * Get property with given name
+	 * Get property with given key
 	 * 
 	 * @param name
-	 *            property name
+	 *            property key
 	 * @return property
 	 */
-	<T> T getCustomProperty(final String name);
+	<T> T get(final String key);
 
 	/**
-	 * Set the property with given name
+	 * Set the property with given key
 	 * 
 	 * @param name
-	 *            property name
+	 *            property key
 	 * @param value
 	 *            property value
+	 * @return Fluent API
 	 */
-	void setCustomProperty(final String name, final Object value);
+	SearchQueueEntry set(final String key, final Object value);
+
+	/**
+	 * Set custom properties.
+	 * 
+	 * @param properties
+	 * @return Fluent API
+	 */
+	SearchQueueEntry set(Map<String, Object> properties);
 
 	/**
 	 * Set the timestamp for the entry.
@@ -125,4 +121,5 @@ public interface SearchQueueEntry extends MeshVertex {
 	 * Delete the entry.
 	 */
 	void delete();
+
 }

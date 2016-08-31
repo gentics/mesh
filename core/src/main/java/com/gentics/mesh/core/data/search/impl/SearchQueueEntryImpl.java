@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.search.impl;
 
+import java.util.Map;
+
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
@@ -65,16 +67,16 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 		return this;
 	}
 
-	@Override
-	public String getElementIndexType() {
-		return getProperty(ELEMENT_INDEX_TYPE);
-	}
-
-	@Override
-	public SearchQueueEntry setElementIndexType(String indexType) {
-		setProperty(ELEMENT_INDEX_TYPE, indexType);
-		return this;
-	}
+	//	@Override
+	//	public String getElementIndexType() {
+	//		return getProperty(ELEMENT_INDEX_TYPE);
+	//	}
+	//
+	//	@Override
+	//	public SearchQueueEntry setElementIndexType(String indexType) {
+	//		setProperty(ELEMENT_INDEX_TYPE, indexType);
+	//		return this;
+	//	}
 
 	@Override
 	public void delete(SearchQueueBatch batch) {
@@ -102,13 +104,22 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	}
 
 	@Override
-	public <T> T getCustomProperty(String name) {
+	public <T> T get(String name) {
 		return getProperty(CUSTOM_PREFIX + name);
 	}
 
 	@Override
-	public void setCustomProperty(String name, Object value) {
+	public SearchQueueEntry set(String name, Object value) {
 		setProperty(CUSTOM_PREFIX + name, value);
+		return this;
+	}
+
+	@Override
+	public SearchQueueEntry set(Map<String, Object> properties) {
+		for (Map.Entry<String, Object> entry : properties.entrySet()) {
+			setProperty(entry.getKey(), entry.getValue());
+		}
+		return this;
 	}
 
 	@Override
@@ -124,8 +135,7 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 
 	@Override
 	public int compareTo(SearchQueueEntry o) {
-		//TODO impl compare check using time
-		return 0;
+		return getElementAction().getOrder().compareTo(o.getElementAction().getOrder());
 	}
 
 	@Override

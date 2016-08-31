@@ -35,6 +35,11 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
+	protected String getDocumentType(SearchQueueEntry entry) {
+		return Project.TYPE;
+	}
+
+	@Override
 	public Set<String> getIndices() {
 		return indices;
 	}
@@ -42,11 +47,6 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
 		return indices;
-	}
-
-	@Override
-	protected String getType() {
-		return Project.TYPE;
 	}
 
 	@Override

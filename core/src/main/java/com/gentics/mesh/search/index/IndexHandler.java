@@ -42,20 +42,12 @@ public interface IndexHandler {
 	Completable createIndex();
 
 	/**
-	 * Update the index specific mapping.
+	 * Handle the search queue upate mapping entry.
 	 * 
+	 * @param entry
 	 * @return
 	 */
-	Completable updateMapping();
-
-	/**
-	 * Update the mapping for the given index.
-	 * 
-	 * @param indexName
-	 *            index name
-	 * @return
-	 */
-	Completable updateMapping(String indexName);
+	Completable updateMapping(SearchQueueEntry entry);
 
 	/**
 	 * Handle search index action.
@@ -75,18 +67,16 @@ public interface IndexHandler {
 	 *            search queue entry
 	 * @return
 	 */
-	Completable delete(String uuid, String documentType, SearchQueueEntry entry);
+	Completable delete(SearchQueueEntry entry);
 
 	/**
 	 * Load the given element and invoke store(T element) to store it in the index.
 	 * 
-	 * @param uuid
-	 * @param documentType
 	 * @param entry
 	 *            search queue entry
 	 * @return
 	 */
-	Completable store(String uuid, String documentType, SearchQueueEntry entry);
+	Completable store(SearchQueueEntry entry);
 
 	/**
 	 * Reindex all documents for the type which the handler is capable of.

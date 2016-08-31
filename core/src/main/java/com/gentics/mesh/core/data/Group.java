@@ -13,6 +13,9 @@ import com.gentics.mesh.util.InvalidArgumentException;
  */
 public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex {
 
+	/**
+	 * Type Value: {@value #TYPE}
+	 */
 	public static final String TYPE = "group";
 
 	/**

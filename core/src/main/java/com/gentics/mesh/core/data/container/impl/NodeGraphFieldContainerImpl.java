@@ -44,6 +44,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -317,11 +318,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, ContainerType type) {
 		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainerVersion());
 		Node node = getParentNode();
-		batch.addEntry(node.getUuid(), node.getType(), action, indexType,
-				Arrays.asList(Tuple.tuple(NodeIndexHandler.CUSTOM_LANGUAGE_TAG, getLanguage().getLanguageTag()),
-						Tuple.tuple(NodeIndexHandler.CUSTOM_RELEASE_UUID, releaseUuid),
-						Tuple.tuple(NodeIndexHandler.CUSTOM_VERSION, type.toString().toLowerCase()),
-						Tuple.tuple(NodeIndexHandler.CUSTOM_PROJECT_UUID, node.getProject().getUuid())));
+		SearchQueueEntry entry = batch.addEntry(node.getUuid(), node.getType(), action);
+		entry.set(NodeIndexHandler.CUSTOM_LANGUAGE_TAG, getLanguage().getLanguageTag());
+		entry.set(NodeIndexHandler.CUSTOM_RELEASE_UUID, releaseUuid);
+		entry.set(NodeIndexHandler.CUSTOM_VERSION, type.toString().toLowerCase());
+		entry.set(NodeIndexHandler.CUSTOM_PROJECT_UUID, node.getProject().getUuid());
+		entry.set(NodeIndexHandler.CUSTOM_INDEX_TYPE, indexType);
 	}
 
 	@Override

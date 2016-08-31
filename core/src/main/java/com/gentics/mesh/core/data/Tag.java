@@ -16,6 +16,9 @@ import com.gentics.mesh.util.InvalidArgumentException;
  */
 public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElement<TagReference>, UserTrackingVertex {
 
+	/**
+	 * Type Value: {@value #TYPE}
+	 */
 	public static final String TYPE = "tag";
 
 	List<? extends TagGraphFieldContainer> getFieldContainers();

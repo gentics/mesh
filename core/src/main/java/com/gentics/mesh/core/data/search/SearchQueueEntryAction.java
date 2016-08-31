@@ -4,15 +4,23 @@ package com.gentics.mesh.core.data.search;
  * A search queue entry action defines how the index search should be modified.
  */
 public enum SearchQueueEntryAction {
-	DELETE_ACTION("delete"),
-	REINDEX_ALL("reindex_all"), 
-	STORE_ACTION("store"),
-	CREATE_INDEX("create_index");
+	DELETE_ACTION("delete", 5),
+
+	REINDEX_ALL("reindex_all", 3),
+
+	STORE_ACTION("store", 4),
+
+	CREATE_INDEX("create_index", 0),
+
+	UPDATE_MAPPING("update_mapping", 1);
 
 	private String name;
 
-	private SearchQueueEntryAction(String name) {
+	private int order;
+
+	private SearchQueueEntryAction(String name, int order) {
 		this.name = name;
+		this.order = order;
 	}
 
 	/**
@@ -22,6 +30,15 @@ public enum SearchQueueEntryAction {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * Return the order of the action. Lower order means the action should be executed earlier compared to entries with higher order.
+	 * 
+	 * @return
+	 */
+	public Integer getOrder() {
+		return new Integer(order);
 	}
 
 	/**
@@ -37,6 +54,17 @@ public enum SearchQueueEntryAction {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Compare the order of both entries.
+	 * 
+	 * @param o
+	 * @return
+	 */
+	public int compareOrder(SearchQueueEntryAction o) {
+		//TODO handle null
+		return getOrder().compareTo(o.getOrder());
 	}
 
 }

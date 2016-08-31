@@ -12,6 +12,9 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
  */
 public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableElement<RoleReference>, UserTrackingVertex {
 
+	/**
+	 * Type Value: {@value #TYPE}
+	 */
 	public static final String TYPE = "role";
 
 	/**

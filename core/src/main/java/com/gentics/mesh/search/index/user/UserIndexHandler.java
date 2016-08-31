@@ -38,6 +38,11 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
+	protected String getDocumentType(SearchQueueEntry entry) {
+		return User.TYPE;
+	}
+
+	@Override
 	public Set<String> getIndices() {
 		return indices;
 	}
@@ -45,11 +50,6 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
 		return indices;
-	}
-
-	@Override
-	protected String getType() {
-		return User.TYPE;
 	}
 
 	@Override

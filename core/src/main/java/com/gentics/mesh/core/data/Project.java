@@ -22,6 +22,9 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
  */
 public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex {
 
+	/**
+	 * Type Value: {@value #TYPE}
+	 */
 	public static final String TYPE = "project";
 
 	/**
