@@ -1,9 +1,10 @@
 package com.gentics.mesh.search.index.tagfamily;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -44,16 +45,25 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	protected String getDocumentType(SearchQueueEntry entry) {
+		// The document type for tag families is not specific.
+		return getDocumentType();
+	}
+
+	private String getDocumentType() {
 		return TagFamily.TYPE;
 	}
 
 	@Override
-	public Set<String> getIndices() {
+	public Map<String, Set<String>> getIndices() {
 		return db.noTx(() -> {
 			ProjectRoot root = boot.meshRoot().getProjectRoot();
 			root.reload();
 			List<? extends Project> projects = root.findAll();
-			return projects.stream().map(project -> getIndexName(project.getUuid())).collect(Collectors.toSet());
+			Map<String, Set<String>> indexInfo = new HashMap<>();
+			for (Project project : projects) {
+				indexInfo.put(getIndexName(project.getUuid()), Collections.singleton(getDocumentType()));
+			}
+			return indexInfo;
 		});
 	}
 
@@ -64,7 +74,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 			if (project != null) {
 				return Collections.singleton(getIndexName(project.getUuid()));
 			} else {
-				return getIndices();
+				return getIndices().keySet();
 			}
 		});
 	}

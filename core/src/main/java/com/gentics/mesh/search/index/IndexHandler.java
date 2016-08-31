@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index;
 
+import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -28,18 +29,11 @@ public interface IndexHandler {
 	Completable clearIndex();
 
 	/**
-	 * Initialize the search index by creating it first and setting the mapping afterwards.
+	 * Initialise the search index by creating it first and setting the mapping afterwards.
 	 * 
 	 * @return
 	 */
 	Completable init();
-
-	/**
-	 * Create the search index.
-	 * 
-	 * @return
-	 */
-	Completable createIndex();
 
 	/**
 	 * Handle the search queue upate mapping entry.
@@ -86,11 +80,11 @@ public interface IndexHandler {
 	Completable reindexAll();
 
 	/**
-	 * Get the name of all indices.
+	 * Load a map which contains sets of document types per index. The key of the map is the index name.
 	 * 
-	 * @return name of all indices
+	 * @return Index info
 	 */
-	Set<String> getIndices();
+	Map<String, Set<String>> getIndices();
 
 	/**
 	 * Get the name of all affected indices.

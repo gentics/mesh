@@ -16,8 +16,6 @@ import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<MicroschemaContainer> {
 
-	private final static Set<String> indices = Collections.singleton("microschema");
-
 	private MicroschemaTransformator transformator = new MicroschemaTransformator();
 
 	@Inject
@@ -40,13 +38,8 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	public Set<String> getIndices() {
-		return indices;
-	}
-
-	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
-		return indices;
+		return Collections.singleton(MicroschemaContainer.TYPE);
 	}
 
 	@Override

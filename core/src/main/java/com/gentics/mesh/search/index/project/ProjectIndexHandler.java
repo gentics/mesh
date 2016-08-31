@@ -16,8 +16,6 @@ import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
-	private final static Set<String> indices = Collections.singleton(Project.TYPE);
-
 	private ProjectTransformator transformator = new ProjectTransformator();
 
 	@Inject
@@ -40,13 +38,8 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	public Set<String> getIndices() {
-		return indices;
-	}
-
-	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
-		return indices;
+		return Collections.singleton(Project.TYPE);
 	}
 
 	@Override

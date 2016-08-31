@@ -251,7 +251,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node) {
 		// String mapKey = "permissions:" + node.getUuid();
 		// return (Set<GraphPermission>) ac.data().computeIfAbsent(mapKey, key -> {

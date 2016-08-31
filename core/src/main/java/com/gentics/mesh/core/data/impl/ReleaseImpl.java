@@ -206,7 +206,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public List<? extends SchemaContainerVersion> findAllSchemaVersions() throws InvalidArgumentException {
+	public List<? extends SchemaContainerVersion> findAllSchemaVersions() {
 		return out(HAS_VERSION).has(SchemaContainerVersionImpl.class).toListExplicit(SchemaContainerVersionImpl.class);
 	}
 

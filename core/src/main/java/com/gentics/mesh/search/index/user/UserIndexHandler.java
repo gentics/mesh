@@ -11,7 +11,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
@@ -40,11 +39,6 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	@Override
 	protected String getDocumentType(SearchQueueEntry entry) {
 		return User.TYPE;
-	}
-
-	@Override
-	public Set<String> getIndices() {
-		return indices;
 	}
 
 	@Override

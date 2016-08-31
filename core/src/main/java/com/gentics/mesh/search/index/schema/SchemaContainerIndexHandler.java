@@ -10,14 +10,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaContainer> {
-
-	private final static Set<String> indices = Collections.singleton("schema_container");
 
 	private SchemaTransformator transformator = new SchemaTransformator();
 
@@ -41,13 +38,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	public Set<String> getIndices() {
-		return indices;
-	}
-
-	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
-		return indices;
+		return Collections.singleton(getIndex(null));
 	}
 
 	@Override

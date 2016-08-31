@@ -4,13 +4,15 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACT
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -55,6 +57,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * @return
 	 */
 	abstract protected String getIndex(SearchQueueEntry entry);
+
+	@Override
+	public Map<String, Set<String>> getIndices() {
+		Map<String, Set<String>> indexInfo = new HashMap<>();
+		indexInfo.put(getIndex(null), Collections.singleton(getDocumentType(null)));
+		return indexInfo;
+	}
 
 	/**
 	 * Extract the search index document type from the entry.
@@ -156,14 +165,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		}
 	}
 
-	@Override
-	public Completable updateMapping(SearchQueueEntry entry) {
-		String indexName = entry.getElementUuid();
+	public Completable updateMapping(String indexName, String documentType) {
+
 		if (searchProvider.getNode() != null) {
 			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
-			mappingRequestBuilder.setType(getDocumentType(entry));
+			mappingRequestBuilder.setType(documentType);
 
-			JsonObject mapping = getTransformator().getMapping(getDocumentType(entry));
+			JsonObject mapping = getTransformator().getMapping(documentType);
 
 			mappingRequestBuilder.setSource(mapping.toString());
 
@@ -190,6 +198,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
+	public Completable updateMapping(SearchQueueEntry entry) {
+		String indexName = entry.getElementUuid();
+		String documentType = getDocumentType(entry);
+		return updateMapping(indexName, documentType);
+	}
+
+	@Override
 	public Completable reindexAll() {
 		return Completable.create(sub -> {
 			log.info("Handling full reindex entry");
@@ -206,17 +221,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		});
 	}
 
-	@Override
-	public Completable createIndex() {
-		Set<Completable> obs = new HashSet<>();
-		getIndices().forEach(index -> obs.add(searchProvider.createIndex(index)));
-		if (obs.isEmpty()) {
-			return Completable.complete();
-		} else {
-			return Completable.merge(obs);
-		}
-	}
-
 	/**
 	 * Create the index, if it is one of the indices handled by this index handler. If the index name is not handled by this index handler, an error will be
 	 * thrown
@@ -227,8 +231,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 */
 	protected Completable createIndex(SearchQueueEntry entry) {
 		String indexName = entry.getElementUuid();
-		if (getIndices().contains(indexName)) {
-			return searchProvider.createIndex(indexName);
+		Map<String, Set<String>> indexInfo = getIndices();
+		if (indexInfo.containsKey(indexName)) {
+
+			// Iterate over all document types of the found index and add completables which will create/update the mapping
+			Set<String> documentTypes = indexInfo.get(indexName);
+			Set<Completable> mappingObs = new HashSet<>();
+			for (String documentType : documentTypes) {
+				mappingObs.add(updateMapping(indexName, documentType));
+			}
+			return searchProvider.createIndex(indexName).andThen(Completable.merge(mappingObs));
 		} else {
 			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
 		}
@@ -236,13 +248,27 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable init() {
-		return createIndex();
+		Map<String, Set<String>> indexInfo = getIndices();
+		Set<Completable> indexCreationObs = new HashSet<>();
+		indexInfo.keySet().forEach(index -> indexCreationObs.add(searchProvider.createIndex(index)));
+		if (indexCreationObs.isEmpty()) {
+			return Completable.complete();
+		} else {
+			Set<Completable> mappingUpdateObs = new HashSet<>();
+			for (String indexName : indexInfo.keySet()) {
+				for (String documentType : indexInfo.get(indexName)) {
+					mappingUpdateObs.add(updateMapping(indexName, documentType));
+				}
+			}
+
+			return Completable.merge(indexCreationObs).andThen(Completable.merge(mappingUpdateObs));
+		}
 	}
 
 	@Override
 	public Completable clearIndex() {
 		Set<Completable> obs = new HashSet<>();
-		getIndices().forEach(index -> obs.add(searchProvider.clearIndex(index)));
+		getIndices().keySet().forEach(index -> obs.add(searchProvider.clearIndex(index)));
 		if (obs.isEmpty()) {
 			return Completable.complete();
 		} else {

@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.node.NodeFieldTestHelper;
-import com.gentics.mesh.graphdb.NoTx;
 
 public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implements NodeFieldTestHelper {
 

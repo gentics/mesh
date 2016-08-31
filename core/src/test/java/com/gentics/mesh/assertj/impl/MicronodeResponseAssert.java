@@ -18,7 +18,6 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 		super(actual, MicronodeResponseAssert.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	public MicronodeResponseAssert matches(MicronodeResponse expected, Microschema schema) {
 		if (expected == null) {
 			assertNull(descriptionText() + " must be null", actual);

@@ -16,8 +16,6 @@ import com.gentics.mesh.search.index.AbstractIndexHandler;
 
 public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
-	private final static Set<String> indices = Collections.singleton("group");
-
 	private GroupTransformator transformator = new GroupTransformator();
 
 	@Inject
@@ -36,20 +34,14 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Override
 	protected String getDocumentType(SearchQueueEntry entry) {
+		// The document type for groups is not entry specific.
 		return Group.TYPE;
 	}
 
 	@Override
-	public Set<String> getIndices() {
-		return indices;
-	}
-
-	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
-		return indices;
+		return Collections.singleton(Group.TYPE);
 	}
-
-
 
 	@Override
 	public String getKey() {

@@ -107,7 +107,6 @@ public final class MavenUtilities {
 	 * @throws Exception
 	 * @throws Exception
 	 */
-	@SuppressWarnings("restriction")
 	public static MavenMetadata getMavenMetadata(URL sourceUrl) throws Exception {
 
 		try {

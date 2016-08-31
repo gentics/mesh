@@ -133,9 +133,8 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * Get list of all schema container versions
 	 * 
 	 * @return list
-	 * @throws InvalidArgumentException
 	 */
-	List<? extends SchemaContainerVersion> findAllSchemaVersions() throws InvalidArgumentException;
+	List<? extends SchemaContainerVersion> findAllSchemaVersions();
 
 	/**
 	 * Assign the given microschema version to the release Unassign all other versions of the microschema

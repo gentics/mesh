@@ -3,8 +3,10 @@ package com.gentics.mesh.search.index.node;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -134,9 +136,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Set<String> getIndices() {
+	public Map<String, Set<String>> getIndices() {
 		return db.noTx(() -> {
-			Set<String> indexNames = new HashSet<>();
+			Map<String, Set<String>> indexInfo = new HashMap<>();
 
 			//Iterate over all projects and construct the index names
 			boot.meshRoot().getProjectRoot().reload();
@@ -144,11 +146,17 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			projects.forEach((project) -> {
 				List<? extends Release> releases = project.getReleaseRoot().findAll();
 				releases.forEach((release) -> {
-					indexNames.add(getIndexName(project.getUuid(), release.getUuid(), "draft"));
-					indexNames.add(getIndexName(project.getUuid(), release.getUuid(), "published"));
+					String draftIndexName = getIndexName(project.getUuid(), release.getUuid(), "draft");
+					String publishIndexName = getIndexName(project.getUuid(), release.getUuid(), "published");
+					Set<String> documentTypes = new HashSet<>();
+					indexInfo.put(draftIndexName, documentTypes);
+					indexInfo.put(publishIndexName, documentTypes);
+					for (SchemaContainerVersion containerVersion : release.findAllSchemaVersions()) {
+						documentTypes.add(getDocumentType(containerVersion));
+					}
 				});
 			});
-			return indexNames;
+			return indexInfo;
 		});
 	}
 
@@ -351,7 +359,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	public Completable updateNodeIndexMapping(String type, Schema schema) {
 		Set<Completable> obs = new HashSet<>();
-		getIndices().forEach(index -> obs.add(updateNodeIndexMapping(index, type, schema)));
+		for(String indexName : getIndices().keySet()) {
+			obs.add(updateNodeIndexMapping(indexName, type, schema));
+		}
 		return Completable.merge(obs);
 	}
 
@@ -410,13 +420,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		} else {
 			return Completable.complete();
 		}
-	}
-
-	// TODO Combine updateMapping with setNodeIndexMapping
-	@Override
-	public Completable init() {
-		// Omit regular mapping creation for now.
-		return createIndex();
 	}
 
 	@Override

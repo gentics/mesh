@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.search.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 
-import java.util.Collection;
 import java.util.List;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -16,8 +15,6 @@ import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.util.Tuple;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;

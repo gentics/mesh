@@ -18,8 +18,6 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	private RoleTransformator transformator = new RoleTransformator();
 
-	private final static Set<String> indices = Collections.singleton(Role.TYPE);
-
 	@Inject
 	public RoleIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
 		super(searchProvider, db, boot);
@@ -41,13 +39,8 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	public Set<String> getIndices() {
-		return indices;
-	}
-
-	@Override
 	public Set<String> getAffectedIndices(InternalActionContext ac) {
-		return indices;
+		return Collections.singleton(Role.TYPE);
 	}
 
 	@Override
