@@ -129,7 +129,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() throws Exception {
-		searchProvider.reset();
+//		searchProvider.reset();
 		for (AbstractVerticle verticle : getVertices()) {
 			verticle.stop();
 		}

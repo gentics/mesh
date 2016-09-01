@@ -141,9 +141,9 @@ public abstract class AbstractDBTest {
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getImageOptions().getImageCacheDirectory()));
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
-		if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
-			FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
-		}
+//		if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
+//			FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
+//		}
 	}
 
 	protected void resetDatabase() {
@@ -151,8 +151,9 @@ public abstract class AbstractDBTest {
 		db.clear();
 		DatabaseHelper helper = new DatabaseHelper(db);
 		helper.init();
-		// databaseService.getDatabase().reset();
-
+		if(dummySearchProvider!=null) {
+			dummySearchProvider.reset();
+		}
 	}
 
 	public void setupData() throws Exception {
