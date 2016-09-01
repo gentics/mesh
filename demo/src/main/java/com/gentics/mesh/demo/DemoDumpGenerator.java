@@ -90,11 +90,10 @@ public class DemoDumpGenerator {
 		boot.initSearchIndexHandlers();
 		boot.initMandatoryData();
 		boot.initPermissions();
-		//boot.invokeChangelog();
+		boot.markChangelogApplied();
 
 		// Setup demo data
 		provider.setup();
-		//boot.initSearchIndex();
 	}
 
 }

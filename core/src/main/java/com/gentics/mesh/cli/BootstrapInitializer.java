@@ -224,11 +224,10 @@ public class BootstrapInitializer {
 	/***
 	 * Marking all changes as applied since this is an initial mesh setup
 	 */
-	private void markChangelogApplied() {
+	public void markChangelogApplied() {
 		log.info("This is the initial setup.. marking all found changelog entries as applied");
 		ChangelogSystem cls = new ChangelogSystem(db);
 		cls.markAllAsApplied();
-
 	}
 
 	/**
