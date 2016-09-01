@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,6 +28,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
+/**
+ * Handler which contains methods for user related requests.
+ */
+@Singleton
 public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(UserCrudHandler.class);

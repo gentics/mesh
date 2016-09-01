@@ -28,6 +28,12 @@ public class MeshGraphHelper {
 			if (itLegacy.hasNext()) {
 				return itLegacy.next();
 			} else {
+				// Legacy index less handling
+				for (Vertex vertex : graph.getVertices()) {
+					if (MESH_ROOT_LEGACY_TYPE.equals(vertex.getProperty("ferma_type"))) {
+						return vertex;
+					}
+				}
 				return null;
 			}
 		}

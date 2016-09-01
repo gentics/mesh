@@ -60,7 +60,8 @@ public final class TraversalHelper {
 			throw new GenericRestException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(pageSize));
 		}
 
-		// Internally we start with page 0
+		// Internally we start with page 0 in order to comply with the tinkerpop range traversal values which start with 0.
+		// External (for the enduser) all pages start with 1.
 		page = page - 1;
 
 		int low = page * pageSize;
@@ -93,7 +94,7 @@ public final class TraversalHelper {
 		}
 
 		int totalPages = (int) Math.ceil(count / (double) pageSize);
-		// Cap totalpages to 1
+		// Cap totalpages to 1 since we start with page 1 instead of 0.
 		if (totalPages == 0) {
 			totalPages = 1;
 		}

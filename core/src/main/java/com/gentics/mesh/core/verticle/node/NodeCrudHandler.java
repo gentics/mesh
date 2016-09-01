@@ -135,6 +135,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
+	/**
+	 * Handle the navigation request.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the start node for which the navigation should be generated.
+	 */
 	public void handleNavigation(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
@@ -144,6 +151,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
+	/**
+	 * Handle a read children of node request.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the node from which the children should be loaded.
+	 */
 	public void handleReadChildren(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
@@ -171,6 +185,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
+	/**
+	 * Handle the read node tags request.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the node for which the tags should be loaded
+	 */
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
@@ -193,6 +214,16 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.send((RestModel) model, OK), ac::fail);
 	}
 
+	/**
+	 * Handle the add tag request.
+	 * 
+	 * @param ac
+	 *            Action context which also contains the release information.
+	 * @param uuid
+	 *            Uuid of the node to which tags should be added.
+	 * @param tagUuid
+	 *            Uuid of the tag which should be added to the node.
+	 */
 	public void handleAddTag(InternalActionContext ac, String uuid, String tagUuid) {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
@@ -356,7 +387,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * 
 	 * @param ac
 	 * @param uuid
+	 *            Uuid of the node that should be handled
 	 * @param languageTag
+	 *            Language tag of the language variation which should be taken offline
 	 */
 	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
@@ -372,6 +405,15 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
+	/**
+	 * Read a single node and responde with a transformed node.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the node which should be read
+	 * @param handler
+	 *            Handler which provides the root vertex which will be used to locate the node
+	 */
 	protected void readElement(InternalActionContext ac, String uuid, TxHandler<RootVertex<?>> handler) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {

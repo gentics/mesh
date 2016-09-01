@@ -4,7 +4,6 @@ src/main/resources/mesh-demo.zip
 /target/
 mesh-dump.zip
 orient-plugins/studio*.zip
-
 mesh-ui-config.js
-data_ma27
-restore.sh
+data_*
+restore*.sh

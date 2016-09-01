@@ -31,6 +31,8 @@ import rx.Completable;
 
 /**
  * Abstract class for index handlers.
+ * 
+ * @see IndexHandler
  */
 public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> implements IndexHandler {
 

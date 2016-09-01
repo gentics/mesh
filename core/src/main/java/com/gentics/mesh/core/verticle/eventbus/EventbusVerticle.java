@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRA
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -17,7 +17,7 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
 @Singleton
-public class EventbusVerticle extends AbstractCoreApiVerticle {
+public class EventbusVerticle extends AbstractWebVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(EventbusVerticle.class);
 

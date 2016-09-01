@@ -100,6 +100,14 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	}
 
+	/**
+	 * Handle a schema apply changes request.
+	 * 
+	 * @param ac
+	 *            Context which contains the changes data
+	 * @param schemaUuid
+	 *            Schema which should be modified
+	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		db.asyncNoTx(() -> {
 			Single<MicroschemaContainer> obsSchema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
@@ -110,10 +118,23 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	}
 
+	/**
+	 * Handle a microschema read list request.
+	 * 
+	 * @param ac
+	 */
 	public void handleReadMicroschemaList(InternalActionContext ac) {
 		HandlerUtilities.readElementList(ac, () -> ac.getProject().getMicroschemaContainerRoot());
 	}
 
+	/**
+	 * Handle a request which will add a microschema to a project.
+	 * 
+	 * @param ac
+	 *            Internal Action Context which also contains the project to which the microschema will be added.
+	 * @param microschemaUuid
+	 *            Microschema uuid which should be added to the project.
+	 */
 	public void handleAddMicroschemaToProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
 

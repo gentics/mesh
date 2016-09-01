@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Project;
@@ -41,7 +41,7 @@ import dagger.Lazy;
 import rx.functions.Func0;
 
 @Singleton
-public class SearchVerticle extends AbstractCoreApiVerticle {
+public class SearchVerticle extends AbstractWebVerticle {
 
 	private SearchRestHandler searchHandler;
 

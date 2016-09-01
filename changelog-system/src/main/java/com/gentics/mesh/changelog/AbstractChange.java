@@ -45,6 +45,9 @@ public abstract class AbstractChange implements Change {
 	 */
 	private ChangelogRootWrapper changelogRoot() {
 		Vertex meshRoot = getMeshRootVertex();
+		if (meshRoot == null) {
+			throw new RuntimeException("Could not find mesh root node. The change can't be applied without the mesh root vertex.");
+		}
 		Iterator<Vertex> it = meshRoot.getVertices(Direction.OUT, ChangelogRootWrapper.HAS_CHANGELOG_ROOT).iterator();
 		Vertex changelogRoot = null;
 		if (it.hasNext()) {

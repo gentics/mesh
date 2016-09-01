@@ -78,6 +78,14 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
+	/**
+	 * Handle a schema diff request.
+	 * 
+	 * @param ac
+	 *            Context which contains the schema data to compare with
+	 * @param uuid
+	 *            Uuid of the schema which should also be used for comparision
+	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		db.asyncNoTx(() -> {
 			Single<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
@@ -86,10 +94,23 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
+	/**
+	 * Handle a read project list request.
+	 * 
+	 * @param ac
+	 */
 	public void handleReadProjectList(InternalActionContext ac) {
 		HandlerUtilities.readElementList(ac, () -> ac.getProject().getSchemaContainerRoot());
 	}
 
+	/**
+	 * Handle a add schema to project request.
+	 * 
+	 * @param ac
+	 *            Context which provides the project reference
+	 * @param schemaUuid
+	 *            Uuid of the schema which should be added to the project
+	 */
 	public void handleAddSchemaToProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
@@ -114,6 +135,13 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 
 	}
 
+	/**
+	 * Handle a remove schema from project request.
+	 * 
+	 * @param ac
+	 * @param schemaUuid
+	 *            Uuid of the schema which should be removed from the project.
+	 */
 	public void handleRemoveSchemaFromProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
@@ -142,6 +170,14 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 
 	}
 
+	/**
+	 * Handle an apply changes to schema request.
+	 * 
+	 * @param ac
+	 *            Context which contains the changes request data
+	 * @param schemaUuid
+	 *            Uuid of the schema which should be modified
+	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 

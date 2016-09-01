@@ -21,6 +21,11 @@ import com.gentics.mesh.core.data.User;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Abstract search document transformator which provides various helper methods which are commonly used among transformer implementations.
+ *
+ * @param <T>
+ */
 public abstract class AbstractTransformator<T> implements Transformator<T> {
 
 	/**
@@ -112,6 +117,11 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 		return mapping;
 	}
 
+	/**
+	 * Return the user reference mapping.
+	 * 
+	 * @return
+	 */
 	private JsonObject getUserReferenceMapping() {
 		JsonObject mapping = new JsonObject();
 		mapping.put("type", "object");

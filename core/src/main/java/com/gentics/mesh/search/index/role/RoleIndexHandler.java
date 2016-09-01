@@ -14,6 +14,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
+/**
+ * Handler for the elasticsearch role index.
+ */
 public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	private RoleTransformator transformator = new RoleTransformator();

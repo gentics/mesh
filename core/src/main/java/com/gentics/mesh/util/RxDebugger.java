@@ -13,6 +13,9 @@ import rx.plugins.DebugNotification.Kind;
 import rx.plugins.DebugNotificationListener;
 import rx.plugins.RxJavaPlugins;
 
+/**
+ * RxJava debugger class which can be used to trace observables which do not complete or which do not emit elements.
+ */
 public class RxDebugger extends Thread implements Runnable {
 
 	private Map<String, RxEventInfo> runningObservables = new ConcurrentHashMap<>();

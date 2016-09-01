@@ -14,6 +14,7 @@ import rx.Completable;
  * an index handler in order to interact with search index specific documents in the index (CRUD on search index documents).
  */
 public interface IndexHandler {
+
 	/**
 	 * Index handler key for the registry
 	 * 
@@ -36,7 +37,7 @@ public interface IndexHandler {
 	Completable init();
 
 	/**
-	 * Handle the search queue upate mapping entry.
+	 * Handle the search queue update mapping entry.
 	 * 
 	 * @param entry
 	 * @return

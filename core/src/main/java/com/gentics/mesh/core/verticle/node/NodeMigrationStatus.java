@@ -4,6 +4,7 @@ package com.gentics.mesh.core.verticle.node;
  * JMX MBean for the node migrations
  */
 public class NodeMigrationStatus implements NodeMigrationStatusMBean {
+
 	protected Type type;
 
 	protected String name;

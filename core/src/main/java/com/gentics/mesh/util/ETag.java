@@ -21,7 +21,9 @@ public class ETag {
 	 * Wrap the given etag with the needed quotes and add the weak flag if needed.
 	 * 
 	 * @param entityTag
+	 *            Tag to be used for construction.
 	 * @param isWeak
+	 *            Flag which indicates whether the provides tag is an weak tag.
 	 * @return
 	 */
 	public static String prepareHeader(String entityTag, boolean isWeak) {
@@ -38,7 +40,7 @@ public class ETag {
 	/**
 	 * Extracts the etag from the provided header value.
 	 * 
-	 * @param etag
+	 * @param headerValue
 	 * @return
 	 */
 	public static String extract(String headerValue) {

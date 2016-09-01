@@ -2,6 +2,9 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.FileUtils;
 
@@ -103,9 +106,17 @@ public abstract class AbstractDatabase implements Database {
 		});
 
 	}
-	
+
 	@Override
 	public <T> Single<T> asyncNoTx(TxHandler<Single<T>> trxHandler) {
+		// Create an exception which we can use to enhance error information in case of timeout or other tranaction errors
+		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
+		try {
+			throw new Exception("Transaction timeout exception");
+		} catch (Exception e1) {
+			reference.set(e1);
+		}
+
 		return Single.create(sub -> {
 			Mesh.vertx().executeBlocking(bc -> {
 				try (NoTx noTx = noTx()) {
@@ -113,8 +124,14 @@ public abstract class AbstractDatabase implements Database {
 					if (result == null) {
 						bc.complete();
 					} else {
-						T ele = result.toBlocking().value();
-						bc.complete(ele);
+						try {
+							T ele = result.toBlocking().toFuture().get(20, TimeUnit.SECONDS);
+							bc.complete(ele);
+						} catch (TimeoutException e2) {
+							log.error("Timeout while processing result of transaction handler.", e2);
+							log.error("Calling transaction stacktrace.", reference.get());
+							bc.fail(reference.get());
+						}
 					}
 				} catch (Exception e) {
 					log.error("Error while handling no-transaction.", e);

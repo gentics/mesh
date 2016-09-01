@@ -14,6 +14,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
+/**
+ * Handler for the elastic search group index
+ */
 public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	private GroupTransformator transformator = new GroupTransformator();

@@ -24,6 +24,20 @@ public final class DeploymentUtil {
 	// TODO decrease
 	private static final long DEFAULT_TIMEOUT_IN_SECONDS = 10 * 1000;
 
+	/**
+	 * Deploy the given verticle.
+	 * 
+	 * @param vertx
+	 *            Vertex instance which should be deployed into
+	 * @param config
+	 *            Verticle configuration
+	 * @param verticle
+	 *            Verticle which should be deployed
+	 * @param worker
+	 *            Flag which indicates whether the verticle should be deployed as worker verticle
+	 * @return
+	 * @throws InterruptedException
+	 */
 	public static String deployAndWait(Vertx vertx, JsonObject config, AbstractVerticle verticle, boolean worker) throws InterruptedException {
 		final CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<String> deploymentId = new AtomicReference<String>();

@@ -146,12 +146,9 @@ public abstract class AbstractWebVerticle extends AbstractVerticle {
 	 */
 	public abstract String getDescription();
 
-	/**
-	 * Setup the local router.
-	 * 
-	 * @return
-	 */
-	public abstract Router setupLocalRouter();
+	public Router setupLocalRouter() {
+		return routerStorage.getAPISubRouter(basePath);
+	}
 
 	@Override
 	public void stop() throws Exception {

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -35,6 +36,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
+@Singleton
 public class WebRootHandler {
 
 	private WebRootService webrootService;
@@ -50,10 +52,16 @@ public class WebRootHandler {
 		this.webrootService = webrootService;
 	}
 
+	/**
+	 * Handle a webroot get request.
+	 * 
+	 * @param rc
+	 */
 	public void handleGetPath(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		String path = ac.getParameter("param0");
 		try {
+			//TODO BUG URL Decoder is not the correct choice. Use URI instead or see https://github.com/vert-x3/vertx-web/issues/441 
 			path = URLDecoder.decode(path, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			ac.fail(e);

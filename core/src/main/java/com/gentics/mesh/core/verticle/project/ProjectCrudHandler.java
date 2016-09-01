@@ -15,6 +15,9 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 
+/**
+ * Handler for project specific requests.
+ */
 public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResponse> {
 
 	private BootstrapInitializer boot;
@@ -36,6 +39,13 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
 
+	/**
+	 * Handle a read project by name request.
+	 * 
+	 * @param ac
+	 * @param projectName
+	 *            Name of the project which should be read.
+	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
 		Database db = MeshCore.get().database();
 		db.asyncNoTx(() -> {

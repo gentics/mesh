@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -22,7 +22,7 @@ import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 @Singleton
-public class UserVerticle extends AbstractCoreApiVerticle {
+public class UserVerticle extends AbstractWebVerticle {
 
 	private UserCrudHandler crudHandler;
 

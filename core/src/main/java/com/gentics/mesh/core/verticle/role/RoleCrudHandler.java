@@ -59,6 +59,15 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
 
+	/**
+	 * Handle a permission read request.
+	 * 
+	 * @param ac
+	 * @param roleUuid
+	 *            Uuid of the role which should be used to load the permissions
+	 * @param pathToElement
+	 *            Path to the element for which the permission should be loaded.
+	 */
 	public void handlePermissionRead(InternalActionContext ac, String roleUuid, String pathToElement) {
 		if (isEmpty(roleUuid)) {
 			throw error(BAD_REQUEST, "error_uuid_must_be_specified");
@@ -93,6 +102,15 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 	}
 
+	/**
+	 * Handle a permission update request.
+	 * 
+	 * @param ac
+	 * @param roleUuid
+	 *            Uuid of the role
+	 * @param pathToElement
+	 *            Path to the element for which the permissions should be updated
+	 */
 	public void handlePermissionUpdate(InternalActionContext ac, String roleUuid, String pathToElement) {
 		db.asyncNoTx(() -> {
 			if (log.isDebugEnabled()) {
@@ -108,6 +126,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 			// 1. Load the role that should be used
 			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
+
 			// 2. Resolve the path to element that is targeted
 			Single<? extends MeshVertex> obsElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
 

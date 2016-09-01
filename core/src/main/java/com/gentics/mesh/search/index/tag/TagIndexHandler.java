@@ -19,6 +19,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
+/**
+ * Handler for the tag specific search index.
+ */
 public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	/**
@@ -82,9 +85,9 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	/**
 	 * Get the index name for the given project.
 	 * 
-	 * @param project
-	 *            Uuid
-	 * @return index name
+	 * @param projectUuid
+	 *            Uuid of the project
+	 * @return Index name
 	 */
 	public static String getIndexName(String projectUuid) {
 		StringBuilder indexName = new StringBuilder(Tag.TYPE);

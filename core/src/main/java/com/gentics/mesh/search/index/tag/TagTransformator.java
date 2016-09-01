@@ -15,6 +15,9 @@ import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Transformator for tag search index documents.
+ */
 public class TagTransformator extends AbstractTransformator<Tag> {
 
 	@Override
@@ -42,5 +45,5 @@ public class TagTransformator extends AbstractTransformator<Tag> {
 		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
 		return props;
 	}
-	
+
 }

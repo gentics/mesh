@@ -65,11 +65,13 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -282,6 +284,23 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 			assertNotNull(nodeResponse.getUuid());
 		}
 
+	}
+
+	/**
+	 * Test searching for a node which is only persisted in the search index but no longer in the graph.
+	 * 
+	 * @throws InterruptedException
+	 * @throws JSONException
+	 */
+	@Test
+	public void testSearchMissingVertex() throws Exception {
+		fullIndex();
+
+		Node node = content("honda nr");
+		node.getImpl().remove();
+		NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("the"), new PagingParameters().setPage(1).setPerPage(2)));
+		assertEquals(0, response.getData().size());
+		assertEquals(0, response.getMetainfo().getTotalCount());
 	}
 
 	@Test

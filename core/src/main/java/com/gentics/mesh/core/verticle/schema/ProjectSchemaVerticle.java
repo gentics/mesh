@@ -12,6 +12,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.rest.Endpoint;
 
 import dagger.Lazy;
 
@@ -43,13 +44,21 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addReadHandlers() {
-		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/");
+		endpoint.method(GET);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			crudHandler.handleReadProjectList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addUpdateHandlers() {
-		route("/:uuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(POST);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleAddSchemaToProject(ac, uuid);
@@ -57,7 +66,11 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addDeleteHandlers() {
-		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:uuid");
+		endpoint.method(DELETE);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("uuid");
 			crudHandler.handleRemoveSchemaFromProject(ac, uuid);

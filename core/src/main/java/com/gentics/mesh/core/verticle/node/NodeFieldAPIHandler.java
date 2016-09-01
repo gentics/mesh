@@ -57,6 +57,9 @@ import io.vertx.rxjava.core.file.FileSystem;
 import rx.Completable;
 import rx.Single;
 
+/**
+ * Handler which contains field API specific request handlers.
+ */
 public class NodeFieldAPIHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeFieldAPIHandler.class);

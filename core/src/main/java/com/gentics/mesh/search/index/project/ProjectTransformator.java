@@ -10,6 +10,9 @@ import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Transformator for project search index documents.
+ */
 public class ProjectTransformator extends AbstractTransformator<Project> {
 
 	@Override

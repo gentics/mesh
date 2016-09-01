@@ -65,6 +65,8 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeGraphFieldContainer {
 
+	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
+
 	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
 
 	public static final String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
@@ -74,8 +76,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public static final String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
 
 	public static final String VERSION_PROPERTY_KEY = "version";
-
-	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
 	public static void init(Database database) {
 		database.addVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);

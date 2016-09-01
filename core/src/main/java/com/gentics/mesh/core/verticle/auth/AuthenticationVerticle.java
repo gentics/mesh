@@ -9,12 +9,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
 @Singleton
-public class AuthenticationVerticle extends AbstractCoreApiVerticle {
+public class AuthenticationVerticle extends AbstractWebVerticle {
 
 	private AuthenticationRestHandler authRestHandler;
 

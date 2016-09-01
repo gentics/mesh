@@ -14,6 +14,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
+/**
+ * Handler for schema container index.
+ */
 public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaContainer> {
 
 	private SchemaTransformator transformator = new SchemaTransformator();

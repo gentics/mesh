@@ -148,6 +148,9 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 		message.fail(0, msg);
 	}
 
+	/**
+	 * Register handler for microschema migration events.
+	 */
 	private void registerMicroschemaMigration() {
 		vertx.eventBus().consumer(MICROSCHEMA_MIGRATION_ADDRESS, (message) -> {
 
@@ -209,7 +212,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 	}
 
 	/**
-	 * Register handler for release migration
+	 * Register handler for release migration events.
 	 */
 	private void registerReleaseMigration() {
 		vertx.eventBus().consumer(RELEASE_MIGRATION_ADDRESS, (message) -> {

@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -22,7 +22,7 @@ import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 @Singleton
-public class ProjectVerticle extends AbstractCoreApiVerticle {
+public class ProjectVerticle extends AbstractWebVerticle {
 
 	private ProjectCrudHandler crudHandler;
 

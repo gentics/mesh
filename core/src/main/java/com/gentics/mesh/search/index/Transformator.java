@@ -2,6 +2,11 @@ package com.gentics.mesh.search.index;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Transformator which can be used to transform a mesh specific element type into an object which is specific to the search provider implementation.
+ * 
+ * @param <T>
+ */
 public interface Transformator<T> {
 
 	JsonObject toDocument(T object);
@@ -14,7 +19,7 @@ public interface Transformator<T> {
 	JsonObject getMappingProperties();
 
 	/**
-	 * Return the type specific mapping.
+	 * Return the type specific elastic search mapping for the given type.
 	 * 
 	 * @param type
 	 * @return

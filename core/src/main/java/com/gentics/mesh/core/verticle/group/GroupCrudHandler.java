@@ -29,6 +29,9 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import dagger.Lazy;
 import rx.Single;
 
+/**
+ * Handler for group specific request methods.
+ */
 public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> {
 
 	private Lazy<BootstrapInitializer> boot;
@@ -50,6 +53,13 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
 
+	/**
+	 * Handle a read roles of group request.
+	 * 
+	 * @param ac
+	 * @param groupUuid
+	 *            Group Uuid from which the roles should be loaded
+	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		db.asyncNoTx(() -> {
 			Single<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
@@ -97,6 +107,15 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 	}
 
+	/**
+	 * Handle a remove role from group request.
+	 * 
+	 * @param ac
+	 * @param groupUuid
+	 *            Group Uuid from which the role should be removed.
+	 * @param roleUuid
+	 *            Role Uuid which should be removed from the group.
+	 */
 	public void handleRemoveRoleFromGroup(InternalActionContext ac, String groupUuid, String roleUuid) {
 		validateParameter(roleUuid, "roleUuid");
 		validateParameter(groupUuid, "groupUuid");
@@ -158,7 +177,6 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(userUuid, "userUuid");
 
 		db.asyncNoTx(() -> {
-
 			Single<Group> obsGroup = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Single<User> obsUser = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			Single<Single<GroupResponse>> obs = Single.zip(obsGroup, obsUser, (group, user) -> {
@@ -176,6 +194,15 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 	}
 
+	/**
+	 * Handle a remove user from group request.
+	 * 
+	 * @param ac
+	 * @param groupUuid
+	 *            Uuid of the group from which the user should be removed.
+	 * @param userUuid
+	 *            Uuid of the user which should be removed from the group.
+	 */
 	public void handleRemoveUserFromGroup(InternalActionContext ac, String groupUuid, String userUuid) {
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
