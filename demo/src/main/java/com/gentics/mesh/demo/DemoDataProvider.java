@@ -1,7 +1,5 @@
 package com.gentics.mesh.demo;
 
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -471,8 +469,10 @@ public class DemoDataProvider {
 		} catch (Exception e) {
 			future = new MeshResponse<>(Future.failedFuture(e));
 		}
+		if (future.failed()) {
+			throw new RuntimeException("Error while handling request.", future.cause());
+		}
 		latchFor(future);
-		assertSuccess(future);
 		return future.result();
 	}
 
