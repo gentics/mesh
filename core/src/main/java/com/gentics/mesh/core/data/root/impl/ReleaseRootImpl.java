@@ -38,7 +38,6 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.util.Tuple;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Single;
@@ -141,7 +140,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 						// Create index queue entries for creating indices
 						SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
-						SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+						SearchQueueBatch batch = queue.createBatch();
 						batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"), Node.TYPE,
 								SearchQueueEntryAction.CREATE_INDEX);
 						batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "published"), Node.TYPE,

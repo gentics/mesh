@@ -2,8 +2,6 @@ package com.gentics.mesh.changelog;
 
 import java.util.Iterator;
 import java.util.UUID;
-import java.util.regex.Pattern;
-
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.tinkerpop.blueprints.Direction;
@@ -84,8 +82,6 @@ public abstract class AbstractChange implements Change {
 
 	public static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
 
-	private static Pattern p = Pattern.compile("^[A-Fa-f0-9]+$");
-
 	/**
 	 * Create a random UUID string which does not include dashes.
 	 * 
@@ -97,6 +93,10 @@ public abstract class AbstractChange implements Change {
 				+ digits(uuid.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4)
 				+ digits(uuid.getLeastSignificantBits(), 12));
 		return randomUuid;
+	}
+
+	protected void fail(String msg) {
+		throw new RuntimeException(msg);
 	}
 
 	/**

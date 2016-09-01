@@ -24,6 +24,10 @@ import rx.Single;
 
 public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
+	/**
+	 * Initialise the indices and type.
+	 * @param database
+	 */
 	public static void init(Database database) {
 		database.addVertexType(TagRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.RELEASE_UUID_KEY);

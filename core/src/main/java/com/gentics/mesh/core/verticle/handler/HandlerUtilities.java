@@ -9,12 +9,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import org.elasticsearch.common.collect.Tuple;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -25,11 +22,14 @@ import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
 public final class HandlerUtilities {
+
+	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
 
 	/**
 	 * Create an object using the given aggregation node and respond with a transformed object.
@@ -70,27 +70,21 @@ public final class HandlerUtilities {
 			RootVertex<T> root = handler.call();
 			return root.loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(element -> {
 				return db.noTx(() -> {
-					Tuple<String, SearchQueueBatch> tuple = db.tx(() -> {
-						String elementUuid = element.getUuid();
+					String elementUuid = element.getUuid();
+					SearchQueueBatch sqb = db.tx(() -> {
+
+						// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 						if (element instanceof IndexableElement) {
 							SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
-							SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-							String name = null;
-							if (element instanceof NamedElement) {
-								name = ((NamedElement) element).getName();
-							}
-							final String objectName = name;
-							String id = objectName != null ? elementUuid + "/" + objectName : elementUuid;
+							SearchQueueBatch batch = queue.createBatch();
 							element.delete(batch);
-							return Tuple.tuple(id, batch);
+							return batch;
 						} else {
 							throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 						}
 					});
-					//TODO add log output
-					//					String id = tuple.v1();
-					SearchQueueBatch batch = tuple.v2();
-					return batch.process().andThen(Single.just(null));
+					log.info("Deleted element {" + elementUuid + "}");
+					return sqb.process().andThen(Single.just(null));
 				});
 			});
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);

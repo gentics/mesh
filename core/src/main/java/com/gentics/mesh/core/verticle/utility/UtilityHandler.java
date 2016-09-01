@@ -13,6 +13,9 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
+/**
+ * Handler for utility request methods.
+ */
 public class UtilityHandler extends AbstractHandler {
 
 	private Database db;

@@ -278,7 +278,7 @@ public abstract class AbstractDBTest {
 	}
 
 	public SearchQueueBatch createBatch() {
-		return meshRoot().getSearchQueue().createBatch(UUIDUtil.randomUUID());
+		return meshRoot().getSearchQueue().createBatch();
 	}
 
 	/**

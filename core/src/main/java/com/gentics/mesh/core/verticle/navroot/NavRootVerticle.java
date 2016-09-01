@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
@@ -51,6 +52,10 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 		endpoint.addQueryParameters(NavigationParameters.class);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, nodeExamples.getNavigationResponse(), "Loaded navigation.");
-		endpoint.handler(rc -> handler.handleGetPath(rc));
+		endpoint.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String path = ac.getParameter("param0");
+			handler.handleGetPath(ac, path);
+		});
 	}
 }

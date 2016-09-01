@@ -4,6 +4,7 @@ package com.gentics.mesh.core.data.search;
  * A search queue entry action defines how the index search should be modified.
  */
 public enum SearchQueueEntryAction {
+
 	DELETE_ACTION("delete", 5),
 
 	REINDEX_ALL("reindex_all", 3),
@@ -18,6 +19,14 @@ public enum SearchQueueEntryAction {
 
 	private int order;
 
+	/**
+	 * Create a new action.
+	 * 
+	 * @param name
+	 *            Name of the action
+	 * @param order
+	 *            Order of the action. A higher order means that the action will be execute later.
+	 */
 	private SearchQueueEntryAction(String name, int order) {
 		this.name = name;
 		this.order = order;

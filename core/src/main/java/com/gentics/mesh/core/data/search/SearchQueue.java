@@ -32,12 +32,11 @@ public interface SearchQueue extends MeshVertex {
 	long getSize();
 
 	/**
-	 * Create a new batch with the given id and add it to the queue.
+	 * Create a new batch with a new id and add it to the queue.
 	 * 
-	 * @param batchId
 	 * @return
 	 */
-	SearchQueueBatch createBatch(String batchId);
+	SearchQueueBatch createBatch();
 
 	/**
 	 * Add all objects within the graph via a single batch to the search queue.

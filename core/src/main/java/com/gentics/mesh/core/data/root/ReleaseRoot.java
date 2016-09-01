@@ -8,6 +8,9 @@ import com.gentics.mesh.core.data.User;
  * Aggregation vertex for Releases
  */
 public interface ReleaseRoot extends RootVertex<Release> {
+
+	public static final String TYPE = "releases";
+
 	/**
 	 * Get the project of this release root
 	 * @return

@@ -27,7 +27,7 @@ public class SearchQueueTest extends AbstractIsolatedBasicDBTest {
 	public void testQueue() throws InterruptedException, JSONException {
 		try (NoTx noTx = db.noTx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-			SearchQueueBatch batch = searchQueue.createBatch("0");
+			SearchQueueBatch batch = searchQueue.createBatch();
 			int i = 0;
 			for (Node node : boot.nodeRoot().findAll()) {
 				batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION);
@@ -57,7 +57,7 @@ public class SearchQueueTest extends AbstractIsolatedBasicDBTest {
 		try (NoTx noTx = db.noTx()) {
 			// Add some entries to the search queue
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-			SearchQueueBatch batch = searchQueue.createBatch("0");
+			SearchQueueBatch batch = searchQueue.createBatch();
 			for (Node node : boot.nodeRoot().findAll()) {
 				batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION);
 			}

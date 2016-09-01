@@ -30,8 +30,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.UUIDUtil;
-
 import rx.Single;
 
 /**
@@ -254,7 +252,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	@Override
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		SearchQueueBatch batch = queue.createBatch();
 		batch.addEntry(this.getSchemaContainer(), action);
 		addRelatedEntries(batch, action);
 		return batch;

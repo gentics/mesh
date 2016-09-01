@@ -51,7 +51,6 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.rxjava.core.buffer.Buffer;
 import jdk.nashorn.api.scripting.ClassFilter;
@@ -114,7 +113,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return Completable.error(e);
 		}
 		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		SearchQueueBatch batch = queue.createBatch();
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
@@ -233,7 +232,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		}
 
 		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		SearchQueueBatch batch = queue.createBatch();
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
@@ -336,7 +335,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
 
 		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		SearchQueueBatch batch = queue.createBatch();
 		for (Node node : nodes) {
 			db.tx(() -> {
 				if (!node.getGraphFieldContainers(newRelease, ContainerType.INITIAL).isEmpty()) {

@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.User;
 
 /**
  * Aggregation node for tag families.
- *
  */
 public interface TagFamilyRoot extends RootVertex<TagFamily> {
 

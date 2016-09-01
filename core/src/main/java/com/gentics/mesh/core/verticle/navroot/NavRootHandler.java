@@ -19,7 +19,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
-import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
 public class NavRootHandler {
@@ -34,10 +33,14 @@ public class NavRootHandler {
 		this.webrootService = webRootService;
 	}
 
-	public void handleGetPath(RoutingContext rc) {
-		InternalActionContext ac = InternalActionContext.create(rc);
-		String path = ac.getParameter("param0");
+	/**
+	 * Handle navigation request.
+	 * @param rc
+	 */
+	public void handleGetPath(InternalActionContext ac, String path) {
+		
 		try {
+			// TODO BUG Decoding url segments using urldecoder is plainly wrong. Use uri instead or see #441 of vertx-web
 			path = URLDecoder.decode(path, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			ac.fail(e);

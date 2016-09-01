@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -124,6 +125,9 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				} else {
 					String nestedRootNode = stack.pop();
 					switch (nestedRootNode) {
+					case ReleaseRoot.TYPE:
+						ReleaseRoot releasesRoot = project.getReleaseRoot();
+						return releasesRoot.resolveToElement(stack);
 					case TagFamilyRoot.TYPE:
 						TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 						return tagFamilyRoot.resolveToElement(stack);

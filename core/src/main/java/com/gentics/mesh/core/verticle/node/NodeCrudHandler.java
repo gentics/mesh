@@ -42,7 +42,6 @@ import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Single;
@@ -70,7 +69,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return db.tx(() -> {
 					// Create the batch first since we can't delete the container and access it later in batch creation
 					SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
-					SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+					SearchQueueBatch batch = queue.createBatch();
 					node.deleteFromRelease(ac.getRelease(null), batch);
 					return batch;
 				}).process().andThen(Single.just(null));
@@ -99,7 +98,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				}
 				// Create the batch first since we can't delete the container and access it later in batch creation
 				SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+				SearchQueueBatch batch = queue.createBatch();
 				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
 				return batch.process().andThen(Single.just(null));
 			});

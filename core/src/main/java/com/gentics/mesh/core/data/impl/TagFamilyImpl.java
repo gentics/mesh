@@ -49,7 +49,6 @@ import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.Tuple;
-import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -294,7 +293,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		SearchQueueBatch batch = queue.createBatch();
 		batch.addEntry(this, action).set(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
 		addRelatedEntries(batch, action);
 		return batch;

@@ -98,7 +98,6 @@ import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
-import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
@@ -1524,7 +1523,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
 
 		// Create a new batch
-		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		SearchQueueBatch batch = queue.createBatch();
 
 		// Add all graph field containers for all releases to the batch
 		getProject().getReleaseRoot().findAll().forEach((release) -> {
@@ -1555,7 +1554,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action, List<? extends NodeGraphFieldContainer> containers, String releaseUuid,
 			ContainerType type) {
 		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		SearchQueueBatch batch = queue.createBatch();
 		for (NodeGraphFieldContainer container : containers) {
 			container.addIndexBatchEntry(batch, action, releaseUuid, type);
 		}

@@ -165,7 +165,11 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			}
 
 			// Migrate editor
-			Edge editorEdge = node.getEdges(Direction.OUT, "HAS_EDITOR").iterator().next();
+			Iterator<Edge> editorIterator = node.getEdges(Direction.OUT, "HAS_EDITOR").iterator();
+			if(!editorIterator.hasNext()) {
+				fail("The node {" + node.getProperty("uuid") + "} has no editor edge.");
+			}
+			Edge editorEdge = 		editorIterator.next();
 			fieldContainer.addEdge("HAS_EDITOR", editorEdge.getVertex(Direction.IN));
 			editorEdge.remove();
 

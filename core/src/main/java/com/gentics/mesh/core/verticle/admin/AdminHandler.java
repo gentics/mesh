@@ -8,8 +8,6 @@ import java.io.File;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
@@ -20,9 +18,10 @@ import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
+/**
+ * Handler for admin request methods.
+ */
 public class AdminHandler extends AbstractHandler {
-
-	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
 	private Database db;
 
@@ -48,6 +47,11 @@ public class AdminHandler extends AbstractHandler {
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
+	/**
+	 * Handle graph restore action.
+	 * 
+	 * @param rc
+	 */
 	public void handleRestore(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTx(() -> {
@@ -57,6 +61,11 @@ public class AdminHandler extends AbstractHandler {
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
+	/**
+	 * Handle graph export action.
+	 * 
+	 * @param rc
+	 */
 	public void handleExport(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTx(() -> {
@@ -66,6 +75,11 @@ public class AdminHandler extends AbstractHandler {
 
 	}
 
+	/**
+	 * Handle graph import action.
+	 * 
+	 * @param rc
+	 */
 	public void handleImport(RoutingContext rc) {
 
 		InternalActionContext ac = InternalActionContext.create(rc);
@@ -76,6 +90,11 @@ public class AdminHandler extends AbstractHandler {
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
+	/**
+	 * Handle migration status request.
+	 * 
+	 * @param ac
+	 */
 	public void handleMigrationStatus(InternalActionContext ac) {
 
 		if (vertx.isClustered()) {

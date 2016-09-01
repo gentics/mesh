@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshCore;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -65,9 +66,9 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	}
 
 	@Override
-	public SearchQueueBatch createBatch(String batchId) {
+	public SearchQueueBatch createBatch() {
 		SearchQueueBatch batch = getGraph().addFramedVertex(SearchQueueBatchImpl.class);
-		batch.setBatchId(batchId);
+		batch.setBatchId(UUIDUtil.randomUUID());
 		batch.setTimestamp(System.currentTimeMillis());
 		add(batch);
 		return batch;
