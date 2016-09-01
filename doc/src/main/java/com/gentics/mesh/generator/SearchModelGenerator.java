@@ -11,21 +11,18 @@ import static com.gentics.mesh.mock.Mocks.mockSchemaContainer;
 import static com.gentics.mesh.mock.Mocks.mockTag;
 import static com.gentics.mesh.mock.Mocks.mockTagFamily;
 import static com.gentics.mesh.mock.Mocks.mockUser;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
@@ -36,8 +33,11 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
@@ -48,6 +48,7 @@ import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
 
@@ -62,14 +63,35 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private static MeshComponent meshDagger;
 
-	// private AnnotationConfigApplicationContext ctx;
-
 	public static void main(String[] args) throws Exception {
 		new SearchModelGenerator().start();
 	}
 
-	private void start() throws Exception {
+	public static void initPaths() {
+		MeshFactoryImpl.clear();
+		MeshOptions options = new MeshOptions();
 
+		// Prefix all default directories in order to place them into the dump directory
+		String uploads = "target/dump/" + options.getUploadOptions().getDirectory();
+		new File(uploads).mkdirs();
+		options.getUploadOptions().setDirectory(uploads);
+
+		String targetTmpDir = "target/dump/" + options.getUploadOptions().getTempDirectory();
+		new File(targetTmpDir).mkdirs();
+		options.getUploadOptions().setTempDirectory(targetTmpDir);
+
+		String imageCacheDir = "target/dump/" + options.getImageOptions().getImageCacheDirectory();
+		new File(imageCacheDir).mkdirs();
+		options.getImageOptions().setImageCacheDirectory(imageCacheDir);
+
+		// The database provider will switch to in memory mode when no directory has been specified.
+		options.getStorageOptions().setDirectory(null);
+		options.getSearchOptions().setDirectory(null);
+		Mesh.mesh(options);
+	}
+
+	private void start() throws Exception {
+		initPaths();
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
 			baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "json";
@@ -96,8 +118,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 			System.exit(10);
 		}
 		System.exit(0);
-		// }
-
 	}
 
 	private void writeNodeDocumentExample() throws Exception {
@@ -111,7 +131,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeIndexHandler();
-		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), null, null);
+		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), null, null).await();
 		writeStoreEvent("node.search");
 
 	}
@@ -164,7 +184,9 @@ public class SearchModelGenerator extends AbstractGenerator {
 			return tagList;
 		});
 		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();
-		tagFamilyIndexHandler.store(tagFamily, "tagFamily", null).await();
+		SearchQueueEntry entry = mock(SearchQueueEntry.class);
+		when(entry.get("projectUuid")).thenReturn(UUIDUtil.randomUUID());
+		tagFamilyIndexHandler.store(tagFamily, "tagFamily", entry).await();
 		writeStoreEvent("tagFamily.search");
 	}
 
@@ -192,45 +214,25 @@ public class SearchModelGenerator extends AbstractGenerator {
 		TagFamily tagFamily = mockTagFamily("colors", user, project);
 		Tag tag = mockTag("red", user, tagFamily, project);
 		TagIndexHandler tagIndexHandler = meshDagger.tagIndexHandler();
-		tagIndexHandler.store(tag, "tag", null).await();
+		SearchQueueEntry entry = mock(SearchQueueEntry.class);
+		when(entry.get("projectUuid")).thenReturn(UUIDUtil.randomUUID());
+		tagIndexHandler.store(tag, "tag", entry).await();
 		writeStoreEvent("tag.search");
 	}
 
 	private void writeStoreEvent(String name) throws Exception {
-		JsonObject eventMap = provider.getStoreEvents().values().iterator().next();
-		if (eventMap == null) {
+		JsonObject json = provider.getStoreEvents().values().iterator().next();
+		if (json == null) {
 			throw new RuntimeException("Could not find event to handle");
 		}
-		Map<String, Object> outputMap = new TreeMap<>();
-		// System.out.println(new JSONObject(eventMap).toString(4));
-		// TODO flatten json?
-		// flatten(eventMap, outputMap, null);
-		JSONObject json = new JSONObject(outputMap);
 		write(json, name);
 		provider.reset();
 	}
 
-	private void write(JSONObject jsonObject, String filename) throws Exception {
+	private void write(JsonObject jsonObject, String filename) throws Exception {
 		File file = new File(outputDir, filename + ".json");
 		System.out.println("Writing to {" + file.getAbsolutePath() + "}");
 		JsonNode node = getMapper().readTree(jsonObject.toString());
 		getMapper().writerWithDefaultPrettyPrinter().writeValue(file, node);
-	}
-
-	private void flatten(Map<String, Object> map, Map<String, Object> output, String key) throws JSONException {
-		String prefix = "";
-		if (key != null) {
-			prefix = key + ".";
-		}
-		for (Entry<String, Object> entry : map.entrySet()) {
-			String currentKey = prefix + entry.getKey();
-			if (entry.getValue() instanceof Map) {
-				flatten((Map<String, Object>) entry.getValue(), output, prefix + entry.getKey());
-			} else if (entry.getValue() instanceof List) {
-				output.put(currentKey, entry.getValue());
-			} else {
-				output.put(currentKey, entry.getValue());
-			}
-		}
 	}
 }

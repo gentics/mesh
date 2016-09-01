@@ -41,6 +41,12 @@
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.github.fge</groupId>
+					<artifactId>json-schema-validator</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 

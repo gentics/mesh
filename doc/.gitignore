@@ -1,5 +1,6 @@
 node
 node_modules
+/data
 /target/
 bower_components
 src/main/changelog/test.html
