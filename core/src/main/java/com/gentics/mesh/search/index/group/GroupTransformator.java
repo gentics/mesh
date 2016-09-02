@@ -10,6 +10,9 @@ import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Transformator for group search index documents.
+ */
 public class GroupTransformator extends AbstractTransformator<Group> {
 
 	@Override

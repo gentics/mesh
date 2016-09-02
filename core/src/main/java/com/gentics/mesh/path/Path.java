@@ -9,10 +9,20 @@ public class Path {
 
 	private String targetPath;
 
+	/**
+	 * Return the list of segments which describe the path.
+	 * 
+	 * @return
+	 */
 	public List<PathSegment> getSegments() {
 		return segments;
 	}
 
+	/**
+	 * Add the path segment to the path.
+	 * 
+	 * @param segment
+	 */
 	public void addSegment(PathSegment segment) {
 		segments.add(segment);
 	}

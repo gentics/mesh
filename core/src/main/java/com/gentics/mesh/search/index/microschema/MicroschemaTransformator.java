@@ -12,6 +12,9 @@ import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Transformator for microschema search index documents.
+ */
 public class MicroschemaTransformator extends AbstractTransformator<MicroschemaContainer> {
 
 	@Override
