@@ -405,6 +405,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_update");
 			draftEdge.remove();
 		}
+		// We need to update the display field property since we created a new node graph field container.
+		container.updateDisplayFieldValue();
 
 		// create a new draft edge
 		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(), GraphFieldContainerEdgeImpl.class);
@@ -1295,8 +1297,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
+		// 1. Generate a key so that we can load the display name from the action context data map. 
+		// It may have been loaded previously so we could reuse the loaded displayName by loading it from the context.
 		String langInfo = Arrays.toString(nodeParameters.getLanguageList().toArray());
 		String key = getUuid() + langInfo + versioningParameters.getVersion() + ac.getRelease(getProject()).getUuid();
+
 		String displayFieldName = (String) ac.data().computeIfAbsent(key, (key2) -> {
 
 			try {
@@ -1642,11 +1647,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		StringBuilder keyBuilder = new StringBuilder();
 
-		// node uuid
+		/**
+		 * node uuid
+		 * 
+		 * The node uuid must be part of the etag computation.
+		 */
 		keyBuilder.append(getUuid());
 		keyBuilder.append("-");
 
-		// parent node
+		/**
+		 * parent node
+		 * 
+		 * The node can be moved and this would also affect the response. The etag must also be changed when the node is moved.
+		 */
 		if (parentNode != null) {
 			keyBuilder.append("-");
 			keyBuilder.append(parentNode.getUuid());
@@ -1658,7 +1671,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			keyBuilder.append(container.getETag(ac));
 		}
 
-		// expansion (all)
+		/**
+		 * expansion (all)
+		 * 
+		 * The expandAll parameter changes the json response and thus must be included in the etag computation.
+		 */
 		if (ac.getNodeParameters().getExpandAll()) {
 			keyBuilder.append("-");
 			keyBuilder.append("expand:true");
@@ -1712,7 +1729,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 
-		// webroot path & language paths
+		/**
+		 * webroot path & language paths
+		 * 
+		 * The webroot and language paths must be included in the etag computation in order to invalidate the etag once a node language gets updated or once the
+		 * display name of any parent node changes.
+		 */
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 
 			WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
@@ -1731,7 +1753,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		}
 
-		// permissions (&roleUuid query parameter aware)
+		/**
+		 * permissions (&roleUuid query parameter aware)
+		 * 
+		 * Permissions can change and thus must be included in the etag computation in order to invalidate the etag once the permissions change.
+		 */
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
 			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuidSync(ac, roleUuid, READ_PERM);

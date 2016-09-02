@@ -454,7 +454,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				return handlerResult;
 			}
 		}
-		throw new RuntimeException("Retry limit for trx exceeded");
+		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded");
 	}
 
 	@Override

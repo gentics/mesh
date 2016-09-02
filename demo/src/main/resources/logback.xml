@@ -2,12 +2,12 @@
 <configuration>
 
 	<conversionRule conversionWord="meshName" converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
+	<statusListener class="ch.qos.logback.core.status.NopStatusListener" />
 
 	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
 		<target>System.err</target>
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n
-			</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.classic.filter.LevelFilter">
 			<level>ERROR</level>
@@ -18,20 +18,14 @@
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n
-			</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n</pattern>
 		</encoder>
 	</appender>
 
-	<logger name="io.vertx" level="TRACE"/>
-	<logger name="com.gentics.mesh" level="INFO"/>
-	<logger name="org.elasticsearch" level="INFO"/>
-	<logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/>
-	<logger name="com.gentics.mesh.rest.MeshResponseHandler" level="INFO"/>
-	<logger name="com.gentics.mesh.search.index.NodeIndexHandler" level="DEBUG"/>
-	<logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/>
-	<logger name="com.gentics.mesh.search.index.AbstractIndexHandler" level="DEBUG"/>
-	<!-- <logger name="com.gentics" level="ERROR" additivity="false"> <appender-ref ref="STDERR"/> </logger> -->
+	<logger name="io.vertx" level="INFO"/>
+	<logger name="com.gentics" level="INFO"/>
+	<logger name="org.elasticsearch" level="ERROR"/>
+	<logger name="ch.qos" level="ERROR"/>
 	<root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>

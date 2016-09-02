@@ -138,7 +138,7 @@ public class BootstrapInitializer {
 	}
 
 	/**
-	 * Initialise mesh.
+	 * Initialise mesh using the given configuration.
 	 * 
 	 * @param configuration
 	 * @param verticleLoader
@@ -167,6 +167,9 @@ public class BootstrapInitializer {
 
 		// initPermissions();
 		initSearchIndexHandlers();
+		if (isEmptyInstallation) {
+			createSearchIndicesAndMappings();
+		}
 		try {
 			invokeSearchQueueProcessing();
 		} catch (Exception e) {
@@ -236,6 +239,10 @@ public class BootstrapInitializer {
 	public void initSearchIndexHandlers() {
 		IndexHandlerRegistry registry = searchHandlerRegistry.get();
 		registry.init();
+	}
+
+	public void createSearchIndicesAndMappings() {
+		IndexHandlerRegistry registry = searchHandlerRegistry.get();
 		for (IndexHandler handler : registry.getHandlers()) {
 			handler.init().await();
 		}

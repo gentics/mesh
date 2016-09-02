@@ -83,11 +83,11 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
-		endpoint.description("Update the schema.");
+		endpoint.description("Assign the schema to the project.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
-		endpoint.exampleResponse(OK, schemaExamples.getSchema(), "Updated schema.");
+		endpoint.exampleResponse(OK, schemaExamples.getSchema(), "Assigned schema.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("schemaUuid");
@@ -100,9 +100,9 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
-		endpoint.description("Delete the schema with the given uuid.");
+		endpoint.description("Remove the schema with the given uuid from the project.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully deleted.");
+		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully removed.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String uuid = ac.getParameter("schemaUuid");

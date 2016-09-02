@@ -75,6 +75,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public static final String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
 
+	public static final String DISPLAY_FIELD_PROPERTY_KEY = "displayFieldValue";
+
 	public static final String VERSION_PROPERTY_KEY = "version";
 
 	public static void init(Database database) {
@@ -95,14 +97,23 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public String getDisplayFieldValue() {
+		// Normally the display field value would be loaded by 
+		// 1. Loading the displayField name from the used schema
+		// 2. Loading the string field with the found name
+		// 3. Loading the value from that field
+		// This is very costly and thus we store the precomputed display field within a local property.
+		return getProperty(DISPLAY_FIELD_PROPERTY_KEY);
+	}
+
+	@Override
+	public void updateDisplayFieldValue() {
 		//TODO use schema storage instead
 		Schema schema = getSchemaContainerVersion().getSchema();
 		String displayFieldName = schema.getDisplayField();
 		StringGraphField field = getString(displayFieldName);
 		if (field != null) {
-			return field.getString();
+			setProperty(DISPLAY_FIELD_PROPERTY_KEY, field.getString());
 		}
-		return null;
 	}
 
 	@Override
@@ -150,6 +161,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		if (restFields.hasField(segmentFieldName)) {
 			updateWebrootPathInfo(ac.getRelease(null).getUuid(), "node_conflicting_segmentfield_update");
 		}
+		updateDisplayFieldValue();
 	}
 
 	@Override

@@ -19,7 +19,6 @@ import com.gentics.mesh.util.VersionNumber;
 
 /**
  * A node field container is a aggregation node that holds localized fields.
- *
  */
 public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
 
@@ -196,4 +195,9 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	String getETag(InternalActionContext ac);
+
+	/**
+	 * Determine the display field value by checking the schema and the referenced field and store it as a property.
+	 */
+	void updateDisplayFieldValue();
 }

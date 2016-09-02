@@ -16,6 +16,10 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.SearchProvider;
 
+/**
+ * The demo dump generator is used to create a mesh database dump which contains the demo data. This dump is packaged and later placed within the final mesh jar
+ * in order to accelerate demo startup.
+ */
 public class DemoDumpGenerator {
 
 	public static void main(String[] args) throws Exception {
@@ -47,12 +51,17 @@ public class DemoDumpGenerator {
 		Mesh.mesh(options);
 	}
 
+	/**
+	 * Invoke the demo data dump.
+	 * 
+	 * @throws Exception
+	 */
 	private void dump() throws Exception {
 		// Cleanup in preparation for dumping the demo data
 		cleanup();
 		MeshComponent meshDagger = MeshInternal.create();
 
-		// Initialize mesh
+		// Initialise mesh
 		BootstrapInitializer boot = meshDagger.boot();
 		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl());
 		SearchProvider searchProvider = meshDagger.searchProvider();
@@ -91,6 +100,7 @@ public class DemoDumpGenerator {
 		boot.initMandatoryData();
 		boot.initPermissions();
 		boot.markChangelogApplied();
+		boot.createSearchIndicesAndMappings();
 
 		// Setup demo data
 		provider.setup();
