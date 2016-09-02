@@ -196,7 +196,7 @@ public class Endpoint implements Route {
 
 	/**
 	 * Return the path used for RAML. If non null the path which was previously set using {@link #setRAMLPath(String)} will be returned. Otherwise the converted
-	 * vert.x route path is returned. A vert.x path /:uuid is converted to a RAML path /{uuid}.
+	 * vert.x route path is returned. A vert.x path /:nodeUuid is converted to a RAML path /{nodeUuid}.
 	 * 
 	 * @return
 	 */
@@ -208,7 +208,7 @@ public class Endpoint implements Route {
 	}
 
 	/**
-	 * Convert the provided vertx path to a raml path.
+	 * Convert the provided vertx path to a RAML path.
 	 * 
 	 * @param path
 	 * @return
@@ -232,11 +232,23 @@ public class Endpoint implements Route {
 		return builder.toString();
 	}
 
+	/**
+	 * Set the endpoint display name.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public Endpoint displayName(String name) {
 		this.displayName = name;
 		return this;
 	}
 
+	/**
+	 * Set the endpoint description.
+	 * 
+	 * @param description
+	 * @return
+	 */
 	public Endpoint description(String description) {
 		this.description = description;
 		return this;
@@ -303,6 +315,12 @@ public class Endpoint implements Route {
 		return this;
 	}
 
+	/**
+	 * Set the endpoint example request.
+	 * 
+	 * @param model
+	 * @return
+	 */
 	public Endpoint exampleRequest(Object model) {
 		this.exampleRequest = model;
 		return this;
@@ -328,10 +346,20 @@ public class Endpoint implements Route {
 		return traits;
 	}
 
+	/**
+	 * Return the map of example responses. The map contains examples per http status code.
+	 * 
+	 * @return
+	 */
 	public Map<Integer, Response> getExampleResponses() {
 		return exampleResponses;
 	}
 
+	/**
+	 * Return the endpoint http example request body.
+	 * 
+	 * @return
+	 */
 	public Object getExampleRequest() {
 		return exampleRequest;
 	}
@@ -363,6 +391,12 @@ public class Endpoint implements Route {
 		return parameters;
 	}
 
+	/**
+	 * Add a query parameter provider to the endpoint. The query parameter provider will in turn provide examples, descriptions for all query parameters which
+	 * the parameter provider provides.
+	 * 
+	 * @param clazz
+	 */
 	public void addQueryParameters(Class<? extends ParameterProvider> clazz) {
 		try {
 			ParameterProvider provider = clazz.newInstance();
@@ -382,10 +416,23 @@ public class Endpoint implements Route {
 		this.ramlPath = path;
 	}
 
+	/**
+	 * Return the uri parameters for the endpoint.
+	 * 
+	 * @return
+	 */
 	public Map<String, UriParameter> getUriParameters() {
 		return uriParameters;
 	}
 
+	/**
+	 * Add an uri parameter with description and example to the endpoint.
+	 * 
+	 * @param key
+	 *            Key of the endpoint (e.g.: query, perPage)
+	 * @param description
+	 * @param example
+	 */
 	public void addUriParameter(String key, String description, String example) {
 		UriParameter param = new UriParameter(key);
 		param.setDescription(description);

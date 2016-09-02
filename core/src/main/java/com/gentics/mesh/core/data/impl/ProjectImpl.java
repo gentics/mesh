@@ -50,7 +50,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
@@ -193,12 +193,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			baseNode.setSchemaContainer(schemaContainerVersion.getSchemaContainer());
 			baseNode.setProject(this);
 			baseNode.setCreated(creator);
-			Language language = MeshCore.get().boot().languageRoot().findByLanguageTag(Mesh.mesh().getOptions().getDefaultLanguage());
+			Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(Mesh.mesh().getOptions().getDefaultLanguage());
 			baseNode.createGraphFieldContainer(language, getLatestRelease(), creator);
 			setBaseNode(baseNode);
 			// Add the node to the aggregation nodes
 			getNodeRoot().addNode(baseNode);
-			MeshCore.get().boot().nodeRoot().addNode(baseNode);
+			MeshInternal.get().boot().nodeRoot().addNode(baseNode);
 		}
 		return baseNode;
 	}
@@ -226,7 +226,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Single<? extends Project> update(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
 		return db.tx(() -> {

@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -108,7 +108,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 	@Override
 	public Single<Release> create(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 
 		ReleaseCreateRequest createRequest = ac.fromJson(ReleaseCreateRequest.class);
 		MeshAuthUser requestUser = ac.getUser();
@@ -139,7 +139,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 						NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft");
 
 						// Create index queue entries for creating indices
-						SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+						SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 						SearchQueueBatch batch = queue.createBatch();
 						batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"), Node.TYPE,
 								SearchQueueEntryAction.CREATE_INDEX);

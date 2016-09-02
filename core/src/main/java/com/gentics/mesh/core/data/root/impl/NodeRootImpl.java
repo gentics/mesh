@@ -43,7 +43,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -162,10 +162,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	//TODO use schema container version instead of container
 	private Single<Node> createNode(InternalActionContext ac, Single<SchemaContainer> obsSchemaContainer) {
 
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
-		BootstrapInitializer boot = MeshCore.get().boot();
+		BootstrapInitializer boot = MeshInternal.get().boot();
 
 		return obsSchemaContainer.flatMap(schemaContainer -> {
 
@@ -214,7 +214,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
 
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 
 		return db.noTx(() -> {
 

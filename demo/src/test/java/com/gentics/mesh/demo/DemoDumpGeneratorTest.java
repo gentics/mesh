@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -46,7 +46,7 @@ public class DemoDumpGeneratorTest {
 	@Before
 	public void setup() {
 		DemoDumpGenerator.initPaths();
-		MeshComponent meshDagger = MeshCore.create();
+		MeshComponent meshDagger = MeshInternal.create();
 		boot = meshDagger.boot();
 		searchProvider = meshDagger.searchProvider();
 		db = meshDagger.database();

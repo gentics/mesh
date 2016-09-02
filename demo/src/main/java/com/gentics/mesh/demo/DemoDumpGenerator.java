@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
@@ -50,7 +50,7 @@ public class DemoDumpGenerator {
 	private void dump() throws Exception {
 		// Cleanup in preparation for dumping the demo data
 		cleanup();
-		MeshComponent meshDagger = MeshCore.create();
+		MeshComponent meshDagger = MeshInternal.create();
 
 		// Initialize mesh
 		BootstrapInitializer boot = meshDagger.boot();

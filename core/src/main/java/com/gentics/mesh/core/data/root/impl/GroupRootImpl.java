@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import rx.Single;
@@ -75,8 +75,8 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		MeshAuthUser requestUser = ac.getUser();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
-		Database db = MeshCore.get().database();
-		BootstrapInitializer boot = MeshCore.get().boot();
+		Database db = MeshInternal.get().database();
+		BootstrapInitializer boot = MeshInternal.get().boot();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "error_name_must_be_set");

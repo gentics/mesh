@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
@@ -77,22 +77,22 @@ public class MicroschemaContainerVersionImpl
 
 	@Override
 	public Microschema getSchema() {
-		Microschema microschema = MeshCore.get().serverSchemaStorage().getMicroschema(getName(), getVersion());
+		Microschema microschema = MeshInternal.get().serverSchemaStorage().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
 			try {
 				microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			MeshCore.get().serverSchemaStorage().addMicroschema(microschema);
+			MeshInternal.get().serverSchemaStorage().addMicroschema(microschema);
 		}
 		return microschema;
 	}
 
 	@Override
 	public void setSchema(Microschema microschema) {
-		MeshCore.get().serverSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
-		MeshCore.get().serverSchemaStorage().addMicroschema(microschema);
+		MeshInternal.get().serverSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
+		MeshInternal.get().serverSchemaStorage().addMicroschema(microschema);
 		String json = JsonUtil.toJson(microschema);
 		setJson(json);
 		setProperty(VERSION_PROPERTY_KEY, microschema.getVersion());

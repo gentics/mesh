@@ -58,7 +58,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -625,7 +625,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 			schemaUuid = concorde.getSchemaContainer().getUuid();
 		}
 		// Clear the schema storage in order to purge the reference from the storage which we would otherwise modify.
-		MeshCore.get().serverSchemaStorage().clear();
+		MeshInternal.get().serverSchemaStorage().clear();
 
 		try (NoTx noTx = db.noTx()) {
 			meshRoot().getSearchQueue().reload();

@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.generic;
 
 import com.gentics.ferma.annotation.GraphElement;
 import com.gentics.mesh.core.data.MeshEdge;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractEdgeFrame;
@@ -70,7 +70,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	public void reload() {
-		MeshCore.get().database().reload(this);
+		MeshInternal.get().database().reload(this);
 	}
 
 }

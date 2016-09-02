@@ -7,7 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.JWTAuthenticationOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -73,7 +73,7 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 		return db.asyncNoTx(() -> {
 			JsonObject authInfo = u.principal();
 			String userUuid = authInfo.getString(USERID_FIELD_NAME);
-			MeshAuthUser user = MeshCore.get().boot().userRoot().findMeshAuthUserByUuid(userUuid);
+			MeshAuthUser user = MeshInternal.get().boot().userRoot().findMeshAuthUserByUuid(userUuid);
 			if (user != null) {
 				return Single.just(user);
 			} else {

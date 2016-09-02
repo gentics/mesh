@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -99,7 +99,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					if (log.isDebugEnabled()) {
 						log.debug("Stored object in index.");
 					}
-					MeshCore.get().searchProvider().refreshIndex();
+					MeshInternal.get().searchProvider().refreshIndex();
 				});
 	}
 

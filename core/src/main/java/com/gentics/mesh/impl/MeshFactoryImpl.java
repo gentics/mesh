@@ -8,7 +8,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 
 /**
  * Factory which will create and maintain the state of a single mesh instance.
- *
  */
 public class MeshFactoryImpl implements MeshFactory {
 

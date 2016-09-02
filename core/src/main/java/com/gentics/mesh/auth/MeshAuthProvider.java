@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
@@ -45,7 +45,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		db.asyncNoTx(() -> {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
-			MeshAuthUser user = MeshCore.get().boot().userRoot().findMeshAuthUserByUsername(username);
+			MeshAuthUser user = MeshInternal.get().boot().userRoot().findMeshAuthUserByUsername(username);
 			if (user != null) {
 				String accountPasswordHash = user.getPasswordHash();
 				// TODO check if user is enabled

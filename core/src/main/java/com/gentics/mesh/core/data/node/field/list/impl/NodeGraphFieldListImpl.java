@@ -18,7 +18,7 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -85,7 +85,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 				NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(item.getNode().getUuid());
 
 				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-					listItem.setUrl(MeshCore.get().webRootLinkReplacer()
+					listItem.setUrl(MeshInternal.get().webRootLinkReplacer()
 							.resolve(releaseUuid, type, item.getNode(), ac.getNodeParameters().getResolveLinks(), lTagsArray).toBlocking().value());
 				}
 

@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
@@ -80,7 +80,7 @@ public class MeshImpl implements Mesh {
 			invokeUpdateCheck();
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
-		MeshCore.create().boot().init(options, verticleLoader);
+		MeshInternal.create().boot().init(options, verticleLoader);
 		dontExit();
 	}
 
@@ -228,8 +228,8 @@ public class MeshImpl implements Mesh {
 	@Override
 	public void shutdown() throws Exception {
 		log.info("Mesh shutting down...");
-		MeshCore.get().database().stop();
-		MeshCore.get().searchProvider().stop();
+		MeshInternal.get().database().stop();
+		MeshInternal.get().searchProvider().stop();
 		getVertx().close();
 		MeshFactoryImpl.clear();
 		latch.countDown();

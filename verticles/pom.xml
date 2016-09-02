@@ -17,11 +17,7 @@
 	</properties>
 
 	<modules>
-		<module>admin</module>
 		<module>admin-gui</module>
-		<module>navigation</module>
-		<module>tagcloud</module>
-		<module>sitemap</module>
 	</modules>
 
 	<dependencies>

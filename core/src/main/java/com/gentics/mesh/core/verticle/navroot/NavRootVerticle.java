@@ -14,8 +14,6 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.rest.Endpoint;
 
-import dagger.Lazy;
-
 @Singleton
 public class NavRootVerticle extends AbstractProjectRestVerticle {
 
@@ -26,7 +24,7 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Inject
-	public NavRootVerticle(Lazy<BootstrapInitializer> boot, RouterStorage routerStorage, NavRootHandler handler) {
+	public NavRootVerticle(BootstrapInitializer boot, RouterStorage routerStorage, NavRootHandler handler) {
 		super("navroot", boot, routerStorage);
 		this.handler = handler;
 	}

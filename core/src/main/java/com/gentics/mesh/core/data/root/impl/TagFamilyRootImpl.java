@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -70,7 +70,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		tagFamily.setProject(getProject());
 
 		// Add created tag family to tag family root 
-		TagFamilyRoot root = MeshCore.get().boot().tagFamilyRoot();
+		TagFamilyRoot root = MeshInternal.get().boot().tagFamilyRoot();
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);
 		}
@@ -105,7 +105,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	@Override
 	public Single<TagFamily> create(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 
 		return db.noTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();

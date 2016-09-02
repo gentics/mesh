@@ -44,7 +44,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -159,9 +159,9 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Single<Project> create(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		RouterStorage routerStorage = RouterStorage.getIntance();
-		BootstrapInitializer boot = MeshCore.get().boot();
+		BootstrapInitializer boot = MeshInternal.get().boot();
 
 		// TODO also create a default object schema for the project. Move this into service class
 		// ObjectSchema defaultContentSchema = objectSchemaRoot.findByName(, name)
@@ -184,7 +184,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			if (requestModel.getSchemaReference() == null || !requestModel.getSchemaReference().isSet()) {
 				throw error(BAD_REQUEST, "project_error_no_schema_reference");
 			}
-			SchemaContainerVersion schemaContainerVersion = MeshCore.get().boot().schemaContainerRoot()
+			SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot()
 					.fromReference(requestModel.getSchemaReference()).toBlocking().value();
 
 			Tuple<SearchQueueBatch, Project> tuple = db.tx(() -> {

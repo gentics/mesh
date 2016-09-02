@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -60,7 +60,7 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 		graphNodeFieldList = container.createNodeList(fieldKey);
 
 		// Handle Update
-		BootstrapInitializer boot = MeshCore.get().boot();
+		BootstrapInitializer boot = MeshInternal.get().boot();
 		// Remove all and add the listed items
 		graphNodeFieldList.removeAll();
 		AtomicInteger integer = new AtomicInteger();

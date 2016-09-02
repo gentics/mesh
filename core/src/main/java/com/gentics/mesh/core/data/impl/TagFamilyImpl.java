@@ -41,7 +41,7 @@ import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
@@ -138,7 +138,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Single<Tag> create(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 
 		return db.noTx(() -> {
 			Project project = ac.getProject();
@@ -185,7 +185,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				project.reload();
 				Tag newTag = create(requestModel.getFields().getName(), project, requestUser);
 				ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
-				MeshCore.get().boot().meshRoot().getTagRoot().addTag(newTag);
+				MeshInternal.get().boot().meshRoot().getTagRoot().addTag(newTag);
 				getTagRoot().addTag(newTag);
 
 				SearchQueueBatch batch = newTag.createIndexBatch(STORE_ACTION);
@@ -231,7 +231,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public Single<TagFamily> update(InternalActionContext ac) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		return db.tx(() -> {
 			Project project = ac.getProject();
 			String newName = requestModel.getName();
@@ -292,7 +292,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch();
 		batch.addEntry(this, action).set(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
 		addRelatedEntries(batch, action);

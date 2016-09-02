@@ -30,6 +30,7 @@ import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
+import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
@@ -42,9 +43,16 @@ import com.gentics.mesh.search.SearchVerticle;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
+/**
+ * Generator for RAML documentation.
+ */
 public class RAMLGenerator {
+
+	private static final Logger log = LoggerFactory.getLogger(RAMLGenerator.class);
 
 	private Raml raml = new Raml();
 
@@ -54,11 +62,16 @@ public class RAMLGenerator {
 		if (outputFolder.exists()) {
 			FileUtils.deleteDirectory(outputFolder);
 		}
-		new RAMLGenerator().generator();
+		new RAMLGenerator().run();
 	}
 
-	public void generator() throws Exception {
-
+	/**
+	 * Run the RAML generation.
+	 * 
+	 * @throws Exception
+	 */
+	public void run() throws Exception {
+		log.info("Starting RAML generation...");
 		raml.setTitle("Gentics Mesh REST API");
 		raml.setVersion("1");
 		raml.setBaseUri("http://localhost:8080/api/v1");
@@ -71,10 +84,19 @@ public class RAMLGenerator {
 
 		RamlEmitter emitter = new RamlEmitter();
 		String dumpFromRaml = emitter.dump(raml);
-		writeJson("api.raml", dumpFromRaml);
-		System.out.println(dumpFromRaml);
+		writeFile("api.raml", dumpFromRaml);
+		log.info("RAML generation completed.");
 	}
 
+	/**
+	 * Add the endpoinnts for the given verticle to the RAML data structure.
+	 * 
+	 * @param basePath
+	 * @param resources
+	 * @param verticle
+	 *            Verticle which provides endpoints
+	 * @throws IOException
+	 */
 	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractWebVerticle verticle) throws IOException {
 
 		Resource verticleResource = new Resource();
@@ -95,7 +117,7 @@ public class RAMLGenerator {
 				String filename = "response/" + fullPath + "/" + key + "/example.json";
 				if (response.getBody() != null && response.getBody().get("application/json") != null) {
 					String json = response.getBody().get("application/json").getExample();
-					writeJson(filename, json);
+					writeFile(filename, json);
 				}
 				action.getResponses().put(key, response);
 			}
@@ -111,7 +133,7 @@ public class RAMLGenerator {
 
 				//write example request to dedicated file
 				String filename = "request/" + fullPath + "/" + endpoint.getExampleRequest().getClass().getSimpleName() + ".json";
-				writeJson(filename, json);
+				writeFile(filename, json);
 			}
 
 			String path = endpoint.getRamlPath();
@@ -138,8 +160,17 @@ public class RAMLGenerator {
 
 	}
 
-	private void writeJson(String filename, String json) throws IOException {
-		FileUtils.writeStringToFile(new File(outputFolder, filename), json);
+	/**
+	 * Save the string content to the given file in the output folder.
+	 * 
+	 * @param filename
+	 * @param content
+	 * @throws IOException
+	 */
+	private void writeFile(String filename, String content) throws IOException {
+		File outputFile = new File(outputFolder, filename);
+		FileUtils.writeStringToFile(outputFile, content);
+		log.info("File saved to {" + outputFile.getPath() + "}");
 	}
 
 	/**
@@ -154,16 +185,15 @@ public class RAMLGenerator {
 
 	private void initVerticle(AbstractWebVerticle verticle) throws Exception {
 		Mockito.when(verticle.getRouter()).thenReturn(Router.router(Vertx.vertx()));
-//		MeshSpringConfiguration mockConfig = Mockito.mock(MeshSpringConfiguration.class);
-//		Mockito.when(verticle.springConfig).thenReturn(mockConfig);
-		// Router mockRouter = Mockito.mock(Router.class);
-		// Mockito.when(verticle.getRouter()).thenReturn(mockRouter);
-		// NodeCrudHandler mockHandler = Mockito.mock(NodeCrudHandler.class);
-		// Mockito.when(verticle.getCrudHandler()).thenReturn(mockHandler);
-
 		verticle.registerEndPoints();
 	}
 
+	/**
+	 * Add all project verticles to the list resources.
+	 * 
+	 * @param resources
+	 * @throws Exception
+	 */
 	private void addProjectVerticles(Map<String, Resource> resources) throws Exception {
 		NodeVerticle nodeVerticle = Mockito.spy(new NodeVerticle());
 		initVerticle(nodeVerticle);
@@ -178,10 +208,6 @@ public class RAMLGenerator {
 		initVerticle(navVerticle);
 		addEndpoints(projectBasePath, resources, navVerticle);
 
-		// TagCloudVerticle tagCloudVerticle = Mockito.spy(new TagCloudVerticle());
-		// initVerticle(tagCloudVerticle);
-		// addEndpoints(apiResource, tagCloudVerticle);
-
 		WebRootVerticle webVerticle = Mockito.spy(new WebRootVerticle());
 		initVerticle(webVerticle);
 		addEndpoints(projectBasePath, resources, webVerticle);
@@ -194,12 +220,22 @@ public class RAMLGenerator {
 		initVerticle(projectSearchVerticle);
 		addEndpoints(projectBasePath, resources, projectSearchVerticle);
 
+		ProjectSchemaVerticle projectSchemaVerticle = Mockito.spy(new ProjectSchemaVerticle());
+		initVerticle(projectSchemaVerticle);
+		addEndpoints(projectBasePath, resources, projectSchemaVerticle);
+
 		ProjectMicroschemaVerticle projectMicroschemaVerticle = Mockito.spy(new ProjectMicroschemaVerticle());
 		initVerticle(projectMicroschemaVerticle);
 		addEndpoints(projectBasePath, resources, projectMicroschemaVerticle);
 
 	}
 
+	/**
+	 * Add all core verticles to the map of RAML resources.
+	 * 
+	 * @param resources
+	 * @throws Exception
+	 */
 	private void addCoreVerticles(Map<String, Resource> resources) throws Exception {
 		String coreBasePath = "";
 		UserVerticle userVerticle = Mockito.spy(new UserVerticle());

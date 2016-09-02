@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.ElasticSearchOptions;
@@ -124,7 +124,7 @@ public abstract class AbstractDBTest {
 
 	public void initDagger() {
 		log.info("Initializing dagger context");
-		meshDagger = MeshCore.create();
+		meshDagger = MeshInternal.create();
 		dataProvider = meshDagger.testDataProvider();
 		routerStorage = meshDagger.routerStorage();
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {

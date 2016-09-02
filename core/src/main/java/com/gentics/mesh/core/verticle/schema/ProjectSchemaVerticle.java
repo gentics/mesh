@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.verticle.schema;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -8,13 +10,14 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
-
-import dagger.Lazy;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Verticle for /api/v1/PROJECTNAME/schemas
@@ -24,8 +27,12 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 
 	private SchemaContainerCrudHandler crudHandler;
 
+	public ProjectSchemaVerticle() {
+		super("schemas", null, null);
+	}
+
 	@Inject
-	public ProjectSchemaVerticle(Lazy<BootstrapInitializer> boot, RouterStorage routerStorage, SchemaContainerCrudHandler crudHandler) {
+	public ProjectSchemaVerticle(BootstrapInitializer boot, RouterStorage routerStorage, SchemaContainerCrudHandler crudHandler) {
 		super("schemas", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}
@@ -44,35 +51,61 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addReadHandlers() {
-		Endpoint endpoint = createEndpoint();
-		endpoint.path("/");
-		endpoint.method(GET);
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.handler(rc -> {
+		Endpoint readOne = createEndpoint();
+		readOne.path("/:schemaUuid");
+		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
+		readOne.method(GET);
+		readOne.description("Load the schema with the given uuid.");
+		readOne.exampleResponse(OK, schemaExamples.getSchema(), "Loaded schema.");
+		readOne.produces(APPLICATION_JSON);
+		readOne.handler(rc -> {
+			String uuid = rc.request().params().get("schemaUuid");
+			if (StringUtils.isEmpty(uuid)) {
+				rc.next();
+			} else {
+				crudHandler.handleRead(InternalActionContext.create(rc), uuid);
+			}
+		});
+
+		Endpoint readAll = createEndpoint();
+		readAll.path("/");
+		readAll.method(GET);
+		readAll.description("Read multiple schemas and return a paged list response.");
+		readAll.exampleResponse(OK, schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
+		readAll.produces(APPLICATION_JSON);
+		readAll.handler(rc -> {
 			crudHandler.handleReadProjectList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addUpdateHandlers() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:schemaUuid");
+		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
+		endpoint.description("Update the schema.");
+		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
+		endpoint.exampleResponse(OK, schemaExamples.getSchema(), "Updated schema.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleAddSchemaToProject(ac, uuid);
 		});
 	}
 
 	private void addDeleteHandlers() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:uuid");
+		endpoint.path("/:schemaUuid");
+		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
+		endpoint.description("Delete the schema with the given uuid.");
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully deleted.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleRemoveSchemaFromProject(ac, uuid);
 		});
 	}

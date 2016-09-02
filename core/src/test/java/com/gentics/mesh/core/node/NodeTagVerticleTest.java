@@ -194,19 +194,19 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 		// Assert that the node is tagged with red in release one
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
-			// via /nodes/:uuid/tags
+			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
 					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("red")).count());
 
-			// via /nodes/:uuid
+			// via /nodes/:nodeUuid
 			NodeResponse response = call(
 					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
 
-			// via /tagFamilies/:uuid/tags/:uuid/nodes
+			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
 					new VersioningParameters().setRelease(releaseOne)));
@@ -235,7 +235,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 		// Assert that the node is tagged with both tags in releaseTwo
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
-			// via /nodes/:uuid/tags
+			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
 					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
@@ -243,7 +243,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("blue")).count());
 
-			// via /nodes/:uuid
+			// via /nodes/:nodeUuid
 			NodeResponse response = call(
 					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
@@ -251,7 +251,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("blue")).count());
 
-			// via /tagFamilies/:uuid/tags/:uuid/nodes
+			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
 					new VersioningParameters().setRelease(releaseTwo)));
@@ -276,7 +276,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 		// Assert that the node is still tagged with both tags in releaseTwo
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
-			// via /nodes/:uuid/tags
+			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
 					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
@@ -284,7 +284,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("blue")).count());
 
-			// via /nodes/:uuid
+			// via /nodes/:nodeUuid
 			NodeResponse response = call(
 					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
@@ -292,7 +292,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("blue")).count());
 
-			// via /tagFamilies/:uuid/tags/:uuid/nodes
+			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
 					new VersioningParameters().setRelease(releaseTwo)));
@@ -310,17 +310,17 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 		// Assert that the node is tagged with no tag in release one
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
-			// via /nodes/:uuid/tags
+			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
 					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected to find no tags for the node in release one.", 0, tagsForNode.getData().size());
 
-			// via /nodes/:uuid
+			// via /nodes/:nodeUuid
 			NodeResponse response = call(
 					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected to find no tags for the node in release one.", 0, response.getTags().size());
 
-			// via /tagFamilies/:uuid/tags/:uuid/nodes
+			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
 					new VersioningParameters().setRelease(releaseOne)));

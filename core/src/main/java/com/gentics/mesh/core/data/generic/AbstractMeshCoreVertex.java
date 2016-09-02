@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.core.logging.Logger;
@@ -114,7 +114,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch();
 		batch.addEntry(this, action);
 		addRelatedEntries(batch, action);

@@ -46,7 +46,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -112,7 +112,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		} catch (IOException e) {
 			return Completable.error(e);
 		}
-		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch();
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
@@ -231,7 +231,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return Completable.error(e);
 		}
 
-		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch();
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
@@ -334,7 +334,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
 		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
 
-		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch();
 		for (Node node : nodes) {
 			db.tx(() -> {

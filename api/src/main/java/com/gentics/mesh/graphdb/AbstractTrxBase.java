@@ -27,7 +27,7 @@ public class AbstractTrxBase<T extends FramedGraph> {
 	private T currentGraph;
 
 	/**
-	 * Initialize the transaction.
+	 * Initialise the transaction.
 	 * 
 	 * @param transactionalGraph
 	 */

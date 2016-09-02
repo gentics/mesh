@@ -17,8 +17,6 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-import dagger.Lazy;
-
 /**
  * Verticle for /api/v1/PROJECTNAME/microschemas
  */
@@ -32,7 +30,7 @@ public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Inject
-	public ProjectMicroschemaVerticle(Lazy<BootstrapInitializer> boot, RouterStorage routerStorage, MicroschemaCrudHandler crudHandler) {
+	public ProjectMicroschemaVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MicroschemaCrudHandler crudHandler) {
 		super("microschemas", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}

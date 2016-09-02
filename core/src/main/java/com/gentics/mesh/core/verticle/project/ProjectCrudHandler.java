@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
@@ -47,7 +47,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	 *            Name of the project which should be read.
 	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		db.asyncNoTx(() -> {
 			RootVertex<Project> root = getRootVertex(ac);
 			return root.findByName(ac, projectName, READ_PERM).flatMap(project -> {

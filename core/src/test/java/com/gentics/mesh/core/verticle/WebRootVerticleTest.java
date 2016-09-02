@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -140,7 +140,7 @@ public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 			Schema schema = folderSchema.getLatestVersion().getSchema();
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
 			folderSchema.getLatestVersion().setSchema(schema);
-			MeshCore.get().serverSchemaStorage().addSchema(schema);
+			MeshInternal.get().serverSchemaStorage().addSchema(schema);
 
 			// Create content which is only german
 			SchemaContainer contentSchema = schemaContainer("content");

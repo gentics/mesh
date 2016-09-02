@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.LinkType;
 
 import rx.Single;
@@ -29,7 +29,7 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 					if (project == null) {
 						project = parentNode.getProject();
 					}
-					model.setHTML(MeshCore.get().webRootLinkReplacer().replace(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
+					model.setHTML(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
 							model.getHTML(), ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
 				}
 				return model;

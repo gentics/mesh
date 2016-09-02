@@ -48,7 +48,7 @@ import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -283,7 +283,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			Vertex role = roleEdge.getVertex(Direction.IN);
 			// Find all permission edges between the found role and target vertex with the specified label
 			Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
-					MeshCore.get().database().createComposedIndexKey(role.getId(), vertex.getImpl().getId()));
+					MeshInternal.get().database().createComposedIndexKey(role.getId(), vertex.getImpl().getId()));
 			boolean foundPermEdge = edges.iterator().hasNext();
 			if (foundPermEdge) {
 				return true;
@@ -316,7 +316,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				return Single.just(perm);
 			}
 		}
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		return db.asyncNoTx(() -> Single.just(hasPermission(vertex, permission)));
 	}
 
@@ -475,18 +475,18 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 */
 	@Override
 	public void setPassword(String password) {
-		setPasswordHash(MeshCore.get().passwordEncoder().encode(password));
+		setPasswordHash(MeshInternal.get().passwordEncoder().encode(password));
 	}
 
 	@Override
 	public Single<User> update(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 
 		try {
 			UserUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserUpdateRequest.class);
 			return db.tx(() -> {
 				if (shouldUpdate(requestModel.getUsername(), getUsername())) {
-					User conflictingUser = MeshCore.get().boot().userRoot().findByUsername(requestModel.getUsername());
+					User conflictingUser = MeshInternal.get().boot().userRoot().findByUsername(requestModel.getUsername());
 					if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
 						throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 					}
@@ -506,7 +506,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				}
 
 				if (!isEmpty(requestModel.getPassword())) {
-					setPasswordHash(MeshCore.get().passwordEncoder().encode(requestModel.getPassword()));
+					setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
 				}
 
 				// TODO use fillRest method instead
@@ -523,7 +523,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 						String referencedNodeUuid = basicReference.getUuid();
 						String projectName = basicReference.getProjectName();
 						/* TODO decide whether we need to check perms on the project as well */
-						Project project = MeshCore.get().boot().projectRoot().findByName(projectName).toBlocking().value();
+						Project project = MeshInternal.get().boot().projectRoot().findByName(projectName).toBlocking().value();
 						if (project == null) {
 							throw error(BAD_REQUEST, "project_not_found", projectName);
 						}

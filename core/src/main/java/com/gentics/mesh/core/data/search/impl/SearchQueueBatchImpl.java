@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -106,7 +106,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	@Override
 	public Completable process() {
 
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 
 		Completable obs = Completable.complete();
 		try (NoTx noTrx = db.noTx()) {
@@ -127,7 +127,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 				return null;
 			});
 			// Refresh index
-			SearchProvider provider = MeshCore.get().searchProvider();
+			SearchProvider provider = MeshInternal.get().searchProvider();
 			if (provider != null) {
 				provider.refreshIndex();
 			} else {
@@ -145,8 +145,8 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 	@Override
 	public Completable process(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
-		BootstrapInitializer boot = MeshCore.get().boot();
+		Database db = MeshInternal.get().database();
+		BootstrapInitializer boot = MeshInternal.get().boot();
 
 		// 1. Remove the batch from the queue
 		SearchQueueBatch removedBatch = db.tx(() -> {

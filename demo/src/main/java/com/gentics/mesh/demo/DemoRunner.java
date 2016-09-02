@@ -6,7 +6,7 @@ import java.io.File;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.DeploymentUtil;
@@ -51,10 +51,10 @@ public class DemoRunner {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 
-			DemoVerticle verticle = new DemoVerticle(new DemoDataProvider(MeshCore.get().database(), MeshCore.get().meshLocalClientImpl()),
-					MeshCore.get().routerStorage());
+			DemoVerticle verticle = new DemoVerticle(new DemoDataProvider(MeshInternal.get().database(), MeshInternal.get().meshLocalClientImpl()),
+					MeshInternal.get().routerStorage());
 			DeploymentUtil.deployAndWait(vertx, config, verticle, false);
-			DeploymentUtil.deployAndWait(vertx, config, new AdminGUIVerticle(MeshCore.get().routerStorage()), false);
+			DeploymentUtil.deployAndWait(vertx, config, new AdminGUIVerticle(MeshInternal.get().routerStorage()), false);
 		});
 		mesh.run();
 	}

@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import rx.Single;
@@ -196,7 +196,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		if (listOfChanges.getChanges().isEmpty()) {
 			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
 		}
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		return db.tx(() -> {
 			SchemaChange<?> current = null;
 			for (SchemaChangeModel restChange : listOfChanges.getChanges()) {
@@ -251,7 +251,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	 */
 	@Override
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch();
 		batch.addEntry(this.getSchemaContainer(), action);
 		addRelatedEntries(batch, action);
@@ -260,7 +260,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public Single<GenericMessageResponse> applyChanges(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		try {
 			SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
 

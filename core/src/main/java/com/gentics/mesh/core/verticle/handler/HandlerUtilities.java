@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -39,7 +39,7 @@ public final class HandlerUtilities {
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac,
 			TxHandler<RootVertex<?>> handler) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		db.asyncNoTx(() -> {
 			RootVertex<?> root = handler.call();
 			return root.create(ac).flatMap(created -> {
@@ -65,7 +65,7 @@ public final class HandlerUtilities {
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac,
 			TxHandler<RootVertex<T>> handler, String uuid) {
 
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		db.asyncNoTx(() -> {
 			RootVertex<T> root = handler.call();
 			return root.loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(element -> {
@@ -75,7 +75,7 @@ public final class HandlerUtilities {
 
 						// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 						if (element instanceof IndexableElement) {
-							SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+							SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 							SearchQueueBatch batch = queue.createBatch();
 							element.delete(batch);
 							return batch;
@@ -103,7 +103,7 @@ public final class HandlerUtilities {
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 			TxHandler<RootVertex<T>> handler) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		db.asyncNoTx(() -> {
 			RootVertex<T> root = handler.call();
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
@@ -130,7 +130,7 @@ public final class HandlerUtilities {
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 			TxHandler<RootVertex<?>> handler) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		db.asyncNoTx(() -> {
 			RootVertex<?> root = handler.call();
 			return root.loadObjectByUuid(ac, uuid, READ_PERM).flatMap(element -> {
@@ -154,7 +154,7 @@ public final class HandlerUtilities {
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac,
 			TxHandler<RootVertex<T>> handler) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		db.asyncNoTx(() -> {
 			RootVertex<T> root = handler.call();
 

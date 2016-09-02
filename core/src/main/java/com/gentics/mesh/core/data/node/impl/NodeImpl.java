@@ -83,7 +83,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.LinkType;
@@ -521,7 +521,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release) {
 		// We need to use the (meshRoot)--(nodeRoot) node instead of the (project)--(nodeRoot) node.
-		Node node = MeshCore.get().boot().nodeRoot().create(creator, schemaVersion, project);
+		Node node = MeshInternal.get().boot().nodeRoot().create(creator, schemaVersion, project);
 		node.setParentNode(release.getUuid(), this);
 		node.setSchemaContainer(schemaVersion.getSchemaContainer());
 		// setCreated(creator);
@@ -726,7 +726,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				ContainerType type = ContainerType.forVersion(versioiningParameters.getVersion());
 
 				// Path
-				WebRootLinkReplacer linkReplacer = MeshCore.get().webRootLinkReplacer();
+				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
 				String path = linkReplacer.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
 						restNode.getLanguage()).toBlocking().value();
 				restNode.setPath(path);
@@ -768,7 +768,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			reference.setDisplayName(current.getDisplayName(ac));
 
 			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-				WebRootLinkReplacer linkReplacer = MeshCore.get().webRootLinkReplacer();
+				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
 						getProject().getName(), restNode.getLanguage()).toBlocking().value();
@@ -787,7 +787,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		return db.asyncNoTx(() -> {
 			// TODO assure that the schema version is correct
 			if (!getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
@@ -973,7 +973,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Completable publish(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
@@ -1005,7 +1005,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Completable takeOffline(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
@@ -1055,7 +1055,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Completable publish(InternalActionContext ac, String languageTag) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
@@ -1085,7 +1085,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Completable takeOffline(InternalActionContext ac, String languageTag) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
@@ -1348,14 +1348,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public Single<? extends Node> update(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 
 		return db.tx(() -> {
 			NodeUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), NodeUpdateRequest.class);
 			if (isEmpty(requestModel.getLanguage())) {
 				throw error(BAD_REQUEST, "error_language_not_set");
 			}
-			Language language = MeshCore.get().boot().languageRoot().findByLanguageTag(requestModel.getLanguage());
+			Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 			if (language == null) {
 				throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 			}
@@ -1457,7 +1457,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Completable moveTo(InternalActionContext ac, Node targetNode) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 
 		// TODO should we add a guard that terminates this loop when it runs to
 		// long?
@@ -1520,7 +1520,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 
 		// Create a new batch
 		SearchQueueBatch batch = queue.createBatch();
@@ -1553,7 +1553,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action, List<? extends NodeGraphFieldContainer> containers, String releaseUuid,
 			ContainerType type) {
-		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch();
 		for (NodeGraphFieldContainer container : containers) {
 			container.addIndexBatchEntry(batch, action, releaseUuid, type);
@@ -1702,7 +1702,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				String key = current.getUuid() + current.getDisplayName(ac);
 				keyBuilder.append(key);
 				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-					WebRootLinkReplacer linkReplacer = MeshCore.get().webRootLinkReplacer();
+					WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
 					String url = linkReplacer.resolve(release.getUuid(), type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
 							getProject().getName(), container.getLanguage().getLanguageTag()).toBlocking().value();
 					keyBuilder.append(url);
@@ -1715,7 +1715,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// webroot path & language paths
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 
-			WebRootLinkReplacer linkReplacer = MeshCore.get().webRootLinkReplacer();
+			WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
 			String path = linkReplacer.resolve(release.getUuid(), type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
 					container.getLanguage().getLanguageTag()).toBlocking().value();
 			keyBuilder.append(path);

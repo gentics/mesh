@@ -13,13 +13,12 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 
-import dagger.Lazy;
 import io.vertx.ext.web.Route;
 
 public class LanguageVerticle extends AbstractProjectRestVerticle {
 
 	@Inject
-	public LanguageVerticle(Lazy<BootstrapInitializer> boot, RouterStorage routerStorage) {
+	public LanguageVerticle(BootstrapInitializer boot, RouterStorage routerStorage) {
 		super("languages", boot, routerStorage);
 	}
 

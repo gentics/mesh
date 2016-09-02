@@ -31,8 +31,6 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-import dagger.Lazy;
-
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
@@ -50,7 +48,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	}
 
 	@Inject
-	public NodeVerticle(Lazy<BootstrapInitializer> boot, RouterStorage routerStorage, NodeCrudHandler crudHandler, NodeFieldAPIHandler fieldAPIHandler) {
+	public NodeVerticle(BootstrapInitializer boot, RouterStorage routerStorage, NodeCrudHandler crudHandler, NodeFieldAPIHandler fieldAPIHandler) {
 		super("nodes", boot, routerStorage);
 		this.crudHandler = crudHandler;
 		this.fieldAPIHandler = fieldAPIHandler;
@@ -65,7 +63,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		if (getCrudHandler() != null) {
-			route("/:uuid").handler(getCrudHandler().getUuidHandler("node_not_found_for_uuid"));
+			route("/:nodeUuid").handler(getCrudHandler().getUuidHandler("node_not_found_for_uuid"));
 		}
 
 		addCreateHandler();
@@ -279,12 +277,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			String fieldName = rc.request().getParam("field");
 			fieldAPIHandler.handleMoveFieldItem(ac, uuid);
 		});
-
-		// TODO copy?
-		// route("/:uuid/fields/:field/:itemIndex/copy/:newItemIndex").method(POST).handler(rc -> {
-		// crudHandler.handleMoveFieldItem(ActionContext.create(rc));
-		// });
-
 	}
 
 	private void addMoveHandler() {

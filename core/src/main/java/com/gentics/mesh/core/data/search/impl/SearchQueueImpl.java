@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -81,7 +81,7 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
 	@Override
 	public void addFullIndex() {
-		BootstrapInitializer boot = MeshCore.get().boot();
+		BootstrapInitializer boot = MeshInternal.get().boot();
 		for (Node node : boot.nodeRoot().findAll()) {
 			node.createIndexBatch(STORE_ACTION);
 		}
@@ -130,7 +130,7 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 			count++;
 		}
 		if (count > 0) {
-			MeshCore.get().searchProvider().refreshIndex();
+			MeshInternal.get().searchProvider().refreshIndex();
 		}
 		return count;
 	}

@@ -30,7 +30,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.FramedGraph;
@@ -100,7 +100,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		Iterator<Vertex> it = db.getVertices(UserImpl.class, new String[] { "uuid" }, new Object[] { userUuid });
 		if (!it.hasNext()) {
 			return null;
@@ -130,8 +130,8 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public Single<User> create(InternalActionContext ac) {
-		BootstrapInitializer boot = MeshCore.get().boot();
-		Database db = MeshCore.get().database();
+		BootstrapInitializer boot = MeshInternal.get().boot();
+		Database db = MeshInternal.get().database();
 
 		try {
 			UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
@@ -159,7 +159,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 					user.setUsername(requestModel.getUsername());
 					user.setLastname(requestModel.getLastname());
 					user.setEmailAddress(requestModel.getEmailAddress());
-					user.setPasswordHash(MeshCore.get().passwordEncoder().encode(requestModel.getPassword()));
+					user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
 					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 					NodeReference reference = requestModel.getNodeReference();
 					SearchQueueBatch batch = user.createIndexBatch(STORE_ACTION);

@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -36,7 +36,7 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 *            optional list of language tags to be used for language fallback
 	 */
 	default Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		return db.asyncNoTx(() -> {
 			return transformToRestSync(ac, level, languageTags);
 		});

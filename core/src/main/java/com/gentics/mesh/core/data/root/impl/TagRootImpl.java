@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -82,7 +82,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		addTag(tag);
 
 		// Add to global list of tags
-		TagRoot globalTagRoot = MeshCore.get().boot().tagRoot();
+		TagRoot globalTagRoot = MeshInternal.get().boot().tagRoot();
 		if (this != globalTagRoot) {
 			globalTagRoot.addTag(tag);
 		}

@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
@@ -97,12 +97,12 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public String getName() {
-		return getFieldContainer(MeshCore.get().boot().languageRoot().getTagDefaultLanguage()).getName();
+		return getFieldContainer(MeshInternal.get().boot().languageRoot().getTagDefaultLanguage()).getName();
 	}
 
 	@Override
 	public void setName(String name) {
-		getOrCreateFieldContainer(MeshCore.get().boot().languageRoot().getTagDefaultLanguage()).setName(name);
+		getOrCreateFieldContainer(MeshInternal.get().boot().languageRoot().getTagDefaultLanguage()).setName(name);
 	}
 
 	@Override
@@ -216,7 +216,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public Single<Tag> update(InternalActionContext ac) {
-		Database db = MeshCore.get().database();
+		Database db = MeshInternal.get().database();
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		return db.tx(() -> {
 			String newTagName = requestModel.getFields().getName();
@@ -243,7 +243,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = MeshCore.get().boot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch();
 		batch.addEntry(this, action).set(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
 		addRelatedEntries(batch, action);

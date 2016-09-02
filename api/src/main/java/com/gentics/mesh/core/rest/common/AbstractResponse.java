@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.common;
 
+/**
+ * Abstract response which provides the uuid.
+ */
 public abstract class AbstractResponse implements RestResponse {
 
 	private String uuid;

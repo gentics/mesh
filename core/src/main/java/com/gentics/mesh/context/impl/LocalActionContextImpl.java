@@ -16,7 +16,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.dagger.MeshCore;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.util.HttpQueryUtils;
@@ -190,8 +190,8 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param projectName
 	 */
 	public void setProject(String projectName) {
-		MeshCore.get().database().noTx(() -> {
-			BootstrapInitializer boot = MeshCore.get().boot();
+		MeshInternal.get().database().noTx(() -> {
+			BootstrapInitializer boot = MeshInternal.get().boot();
 			boot.projectRoot().reload();
 			Project project = boot.projectRoot().findByName(projectName).toBlocking().value();
 			this.project = project;
