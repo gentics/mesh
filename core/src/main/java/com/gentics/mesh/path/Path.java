@@ -3,6 +3,9 @@ package com.gentics.mesh.path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A webroot path consists of multiple segments. This class provides a useful container which can be used when resolving webroot paths.
+ */
 public class Path {
 
 	private List<PathSegment> segments = new ArrayList<>();

@@ -46,7 +46,7 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 	public void registerEndPoints() throws Exception {
 		secureAll();
 		addReadHandlers();
-		addUpdateHandlers();
+		addAssignHandler();
 		addDeleteHandlers();
 	}
 
@@ -78,13 +78,12 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 		});
 	}
 
-	private void addUpdateHandlers() {
+	private void addAssignHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
 		endpoint.description("Assign the schema to the project.");
-		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchema(), "Assigned schema.");
