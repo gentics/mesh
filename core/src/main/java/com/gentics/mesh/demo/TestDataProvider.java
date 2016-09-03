@@ -147,6 +147,7 @@ public class TestDataProvider {
 			addPermissions(project.getSchemaContainerRoot());
 			addPermissions(project.getReleaseRoot());
 			addPermissions(project.getInitialRelease());
+			addPermissions(project.getTagFamilyRoot());
 			addPermissions(boot.projectRoot());
 			addPermissions(boot.userRoot());
 			addPermissions(boot.groupRoot());
