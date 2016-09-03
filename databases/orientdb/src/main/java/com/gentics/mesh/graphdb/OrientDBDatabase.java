@@ -26,6 +26,7 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
+import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
@@ -560,7 +561,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public String getVersion() {
-		//TODO determine correct version
-		return "2.2.x";
+		return OConstants.getVersion();
 	}
 }
