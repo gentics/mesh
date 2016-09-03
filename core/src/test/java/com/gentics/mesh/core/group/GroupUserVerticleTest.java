@@ -107,8 +107,10 @@ public class GroupUserVerticleTest extends AbstractIsolatedRestVerticleTest {
 			GroupResponse restGroup = future.result();
 			assertThat(restGroup).matches(group());
 
+			group.reload();
 			assertTrue("User should be member of the group.", group().hasUser(extraUser));
 		}
+
 	}
 
 	@Test
