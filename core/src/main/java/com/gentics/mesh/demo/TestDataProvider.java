@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -49,8 +48,6 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -144,14 +141,28 @@ public class TestDataProvider {
 			addPermissions(tags.values());
 			addPermissions(schemaContainers.values());
 			addPermissions(microschemaContainers.values());
-			addPermissions(Arrays.asList(getProject()));
-			addPermissions(Arrays.asList(getProject().getBaseNode()));
+			addPermissions(project);
+			addPermissions(project.getBaseNode());
+			addPermissions(project.getMicroschemaContainerRoot());
+			addPermissions(project.getSchemaContainerRoot());
+			addPermissions(project.getReleaseRoot());
+			addPermissions(project.getInitialRelease());
+			addPermissions(boot.projectRoot());
+			addPermissions(boot.userRoot());
+			addPermissions(boot.groupRoot());
+			addPermissions(boot.roleRoot());
+			addPermissions(boot.microschemaContainerRoot());
+			addPermissions(boot.schemaContainerRoot());
 			log.info("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
 			tx.getGraph().commit();
 		}
 
 		long duration = System.currentTimeMillis() - start;
 		log.info("Setup took: {" + duration + "}");
+	}
+
+	private void addPermissions(MeshVertex vertex) {
+		addPermissions(Arrays.asList(vertex));
 	}
 
 	private void addPermissions(Collection<? extends MeshVertex> elements) {
