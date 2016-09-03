@@ -315,4 +315,9 @@ public interface Database {
 	 */
 	String getVersion();
 
+	/**
+	 * Configure the current transaction that way that mass inserts can be performed.
+	 */
+	void enableMassInsert();
+
 }

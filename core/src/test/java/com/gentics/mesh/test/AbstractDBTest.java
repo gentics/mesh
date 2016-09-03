@@ -164,13 +164,13 @@ public abstract class AbstractDBTest {
 
 	public MicroschemaContainer microschemaContainer(String key) {
 		MicroschemaContainer container = dataProvider.getMicroschemaContainers().get(key);
-		container.reload();
+//		container.reload();
 		return container;
 	}
 
 	public SchemaContainer schemaContainer(String key) {
 		SchemaContainer container = dataProvider.getSchemaContainer(key);
-		container.reload();
+//		container.reload();
 		return container;
 	}
 
@@ -184,31 +184,31 @@ public abstract class AbstractDBTest {
 
 	public Tag tag(String key) {
 		Tag tag = dataProvider.getTag(key);
-		tag.reload();
+//		tag.reload();
 		return tag;
 	}
 
 	public TagFamily tagFamily(String key) {
 		TagFamily family = dataProvider.getTagFamily(key);
-		family.reload();
+//		family.reload();
 		return family;
 	}
 
 	public Project project() {
 		Project project = dataProvider.getProject();
-		project.reload();
+//		project.reload();
 		return project;
 	}
 
 	public Node content(String key) {
 		Node node = dataProvider.getContent(key);
-		node.reload();
+//		node.reload();
 		return node;
 	}
 
 	public Node folder(String key) {
 		Node node = dataProvider.getFolder(key);
-		node.reload();
+//		node.reload();
 		return node;
 	}
 
@@ -242,19 +242,19 @@ public abstract class AbstractDBTest {
 
 	public Language english() {
 		Language language = dataProvider.getEnglish();
-		language.reload();
+//		language.reload();
 		return language;
 	}
 
 	public Language german() {
 		Language language = dataProvider.getGerman();
-		language.reload();
+//		language.reload();
 		return language;
 	}
 
 	public User user() {
 		User user = dataProvider.getUserInfo().getUser();
-		user.reload();
+//		user.reload();
 		return user;
 	}
 
@@ -264,13 +264,13 @@ public abstract class AbstractDBTest {
 
 	public Group group() {
 		Group group = dataProvider.getUserInfo().getGroup();
-		group.reload();
+//		group.reload();
 		return group;
 	}
 
 	public Role role() {
 		Role role = dataProvider.getUserInfo().getRole();
-		role.reload();
+//		role.reload();
 		return role;
 	}
 
@@ -289,7 +289,7 @@ public abstract class AbstractDBTest {
 	 */
 	public Node content() {
 		Node content = dataProvider.getContent("news overview");
-		content.reload();
+//		content.reload();
 		return content;
 	}
 
@@ -299,7 +299,7 @@ public abstract class AbstractDBTest {
 
 	public SchemaContainer getSchemaContainer() {
 		SchemaContainer container = dataProvider.getSchemaContainer("content");
-		container.reload();
+//		container.reload();
 		return container;
 	}
 

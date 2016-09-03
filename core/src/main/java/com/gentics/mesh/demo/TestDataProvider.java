@@ -8,6 +8,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLI
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,6 +46,7 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
 import com.tinkerpop.blueprints.Vertex;
@@ -103,8 +106,9 @@ public class TestDataProvider {
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		long start = System.currentTimeMillis();
 
-		db.noTx(() -> {
+		try (Tx tx = db.tx()) {
 			boot.initMandatoryData();
+			tx.getGraph().commit();
 			schemaContainers.clear();
 			microschemaContainers.clear();
 			tagFamilies.clear();
@@ -128,39 +132,36 @@ public class TestDataProvider {
 			addTags();
 			addFolderStructure();
 			addContents();
+			tx.getGraph().commit();
 
-			log.info("Nodes:        " + getNodeCount());
-			log.info("Folders:      " + folders.size());
-			log.info("Contents:     " + contents.size());
-			log.info("Tags:         " + tags.size());
-			log.info("Schemas:      " + schemaContainers.size());
-			log.info("Microschemas: " + microschemaContainers.size());
-			log.info("TagFamilies:  " + tagFamilies.size());
-			log.info("Users:        " + users.size());
-			log.info("Groups:       " + groups.size());
-			log.info("Roles:        " + roles.size());
-			return null;
-		});
+			long startPerm = System.currentTimeMillis();
+			addPermissions(tagFamilies.values());
+			addPermissions(roles.values());
+			addPermissions(groups.values());
+			addPermissions(users.values());
+			addPermissions(folders.values());
+			addPermissions(contents.values());
+			addPermissions(tags.values());
+			addPermissions(schemaContainers.values());
+			addPermissions(microschemaContainers.values());
+			addPermissions(Arrays.asList(getProject()));
+			addPermissions(Arrays.asList(getProject().getBaseNode()));
+			log.info("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
+			tx.getGraph().commit();
+		}
 
-		updatePermissions();
 		long duration = System.currentTimeMillis() - start;
 		log.info("Setup took: {" + duration + "}");
 	}
 
-	private void updatePermissions() {
-		db.noTx(() -> {
-			Role role = userInfo.getRole();
-			for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
-				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-				MeshVertex meshVertex = Database.getThreadLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-				if (log.isTraceEnabled()) {
-					log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
-				}
-				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
+	private void addPermissions(Collection<? extends MeshVertex> elements) {
+		Role role = userInfo.getRole();
+		for (MeshVertex meshVertex : elements) {
+			if (log.isTraceEnabled()) {
+				log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
 			}
-			return null;
-		});
-		log.info("Added BasicPermissions to nodes");
+			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
+		}
 	}
 
 	/**
@@ -288,9 +289,7 @@ public class TestDataProvider {
 		role.grantPermissions(role, READ_PERM);
 		roles.put(roleName, role);
 
-		UserInfo userInfo = new UserInfo(user, group, role, password);
-		return userInfo;
-
+		return new UserInfo(user, group, role, password);
 	}
 
 	private void addUserGroupRoleProject() {

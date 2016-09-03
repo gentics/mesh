@@ -36,6 +36,7 @@ import com.orientechnologies.orient.core.exception.OConcurrentModificationExcept
 import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
+import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
@@ -82,7 +83,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
 		super.init(options, vertx);
-		//resolver = new OrientDBTypeResolver(basePaths);
+		// resolver = new OrientDBTypeResolver(basePaths);
 		resolver = new MeshTypeResolver(basePaths);
 		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
@@ -234,6 +235,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph tx = ((OrientBaseGraph) baseGraph);
 		return tx;
+	}
+
+	@Override
+	public void enableMassInsert() {
+		OrientBaseGraph tx = unwrapCurrentGraph();
+		tx.getRawGraph().getTransaction().setUsingLog(false);
+		tx.declareIntent(new OIntentMassiveInsert().setDisableHooks(true).setDisableValidation(true).setDisableSecurity(true));
 	}
 
 	@Override

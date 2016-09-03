@@ -80,7 +80,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			User user = user();
 			assertNotNull("The UUID of the user must not be null.", user.getUuid());
-			UserResponse restUser = call(()->getClient().findUserByUuid(user.getUuid()));
+			UserResponse restUser = call(() -> getClient().findUserByUuid(user.getUuid()));
 			assertThat(restUser).matches(user);
 			// TODO assert groups
 			// TODO assert perms
@@ -430,7 +430,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			UserResponse restUser = future.result();
-
+			user().reload();
 			assertNotNull(user().getReferencedNode());
 			assertNotNull(restUser.getNodeReference());
 			assertEquals(PROJECT_NAME, ((NodeReferenceImpl) restUser.getNodeReference()).getProjectName());
