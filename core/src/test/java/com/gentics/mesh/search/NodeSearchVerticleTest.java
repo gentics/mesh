@@ -292,13 +292,15 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	 */
 	@Test
 	public void testSearchMissingVertex() throws Exception {
-		fullIndex();
+		try (NoTx noTx = db.noTx()) {
+			fullIndex();
 
-		Node node = content("honda nr");
-		node.getImpl().remove();
-		NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("the"), new PagingParameters().setPage(1).setPerPage(2)));
-		assertEquals(0, response.getData().size());
-		assertEquals(0, response.getMetainfo().getTotalCount());
+			Node node = content("honda nr");
+			node.getImpl().remove();
+			NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("the"), new PagingParameters().setPage(1).setPerPage(2)));
+			assertEquals(0, response.getData().size());
+			assertEquals(0, response.getMetainfo().getTotalCount());
+		}
 	}
 
 	@Test
@@ -444,7 +446,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			//image
+			// image
 			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.jpg").setFileSize(200).setImageHeight(200)
 					.setImageWidth(400).setMimeType("image/jpeg").setSHA512Sum("someHash").setImageDominantColor("#super");
 

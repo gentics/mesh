@@ -104,12 +104,11 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			InternalActionContext ac = getMockedVoidInternalActionContext(user());
 			User user = user();
-			Language language = english();
 			for (int e = 0; e < 10; e++) {
 				long start = System.currentTimeMillis();
-				int nChecks = 50000;
+				int nChecks = 2000;
 				for (int i = 0; i < nChecks; i++) {
-					assertTrue(user.hasPermissionAsync(ac, language, READ_PERM).toBlocking().value());
+					assertTrue(user.hasPermissionAsync(ac, content(), READ_PERM).toBlocking().value());
 				}
 				long duration = System.currentTimeMillis() - start;
 				System.out.println("Duration: " + duration);
@@ -243,7 +242,6 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testGetPermissionsViaHandle() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			Language language = english();
 			String[] perms = { "create", "update", "delete", "read", "publish", "readpublished" };
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -251,12 +249,12 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			int nChecks = 10000;
 			List<Completable> obsList = new ArrayList<>();
 			for (int i = 0; i < nChecks; i++) {
-				obsList.add(user().getPermissionNamesAsync(ac, language).map(list -> {
+				obsList.add(user().getPermissionNamesAsync(ac, content()).map(list -> {
 					String[] loadedPerms = list.toArray(new String[list.size()]);
 					Arrays.sort(perms);
 					Arrays.sort(loadedPerms);
 					assertArrayEquals("Permissions do not match", perms, loadedPerms);
-					assertNotNull(ac.data().get("permissions:" + language.getUuid()));
+					assertNotNull(ac.data().get("permissions:" + content().getUuid()));
 					return null;
 				}).toCompletable());
 			}
@@ -269,14 +267,13 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testGetPermissions() {
 		try (NoTx noTx = db.noTx()) {
-			Language language = english();
 			String[] perms = { "create", "update", "delete", "read", "readpublished", "publish" };
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
 			for (int i = 0; i < nChecks; i++) {
-				String[] loadedPerms = user().getPermissionNames(ac, language);
+				String[] loadedPerms = user().getPermissionNames(ac, content());
 				assertThat(loadedPerms).containsOnly(perms);
 				// assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 			}
