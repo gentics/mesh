@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -30,6 +31,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -146,22 +148,20 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 		MeshAuthUser requestUser = ac.getUser();
 
-		// TODO use index over elements
-		VertexTraversal<?, ?, ?> traversal = out(getRootLabel());
-
 		// Iterate over all vertices that are managed by this root vertex
 		int count = 0;
-		Iterator<VertexFrame> it = traversal.iterator();
+		FramedGraph graph = Database.getThreadLocalGraph();
+		Iterable<Edge> itemEdges = graph.getEdges("e." + getRootLabel() + "_out", this.getId());
 		List<T> elementsOfPage = new ArrayList<>();
-		while (it.hasNext()) {
-			VertexFrame ele = it.next();
+		for (Edge itemEdge : itemEdges) {
+			Vertex item = itemEdge.getVertex(Direction.IN);
 
 			// Only handle those vertices which the user can read
-			if (requestUser.hasPermissionForId(ele.getId(), READ_PERM)) {
+			if (requestUser.hasPermissionForId(item.getId(), READ_PERM)) {
 
 				// Only add those vertices to the list which are within the bounds of the requested page
 				if (count >= low && count <= upper) {
-					elementsOfPage.add(ele.reframeExplicit(getPersistanceClass()));
+					elementsOfPage.add(graph.frameElementExplicit(item, getPersistanceClass()));
 				}
 				count++;
 			}

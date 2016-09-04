@@ -202,6 +202,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			List<String> fields = new ArrayList<>(Arrays.asList("out", "in"));
 			if (e.getClassIndex(indexName) == null) {
 				e.createIndex(indexName, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields.toArray(new String[fields.size()]));
+				e.createIndex(indexName + "_out", OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, new String[] { "out" });
 			}
 
 			if (extraFields.length != 0) {

@@ -49,6 +49,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	public static void init(Database database) {
 		database.addVertexType(UserRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_USER);
+//		database.addEdgeIndexSource(HAS_USER);
 	}
 
 	@Override
