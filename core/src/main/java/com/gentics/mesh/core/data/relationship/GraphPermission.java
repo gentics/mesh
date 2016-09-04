@@ -11,8 +11,8 @@ public enum GraphPermission {
 
 	READ_PERM("HAS_READ_PERMISSION", "read"),
 
-
 	UPDATE_PERM("HAS_UPDATE_PERMISSION", "update"),
+
 	DELETE_PERM("HAS_DELETE_PERMISSION", "delete"),
 
 	READ_PUBLISHED_PERM("HAS_READ_PUBLISHED_PERMISSION", "readpublished"),
