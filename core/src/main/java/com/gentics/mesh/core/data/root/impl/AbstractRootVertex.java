@@ -1,13 +1,12 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -23,12 +22,13 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -121,13 +121,59 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
+
+		int page = pagingInfo.getPage();
+		int perPage = pagingInfo.getPerPage();
+
+		if (page < 1) {
+			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
+		}
+		if (perPage < 0) {
+			throw new GenericRestException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(perPage));
+		}
+
+		// Internally we start with page 0 instead of 1 to keep page range calculations simple.
+		// External (for the enduser) all pages start with 1.
+		page = page - 1;
+
+		int low = page * perPage;
+		int upper = low + perPage - 1;
+
+		if (perPage == 0) {
+			low = 0;
+			upper = 0;
+		}
+
 		MeshAuthUser requestUser = ac.getUser();
-		VertexTraversal<?, ?, ?> traversal = out(getRootLabel()).mark().in(READ_PERM.label()).in(ASSIGNED_TO_ROLE)
-				.retain(requestUser.getImpl()).back();
-		VertexTraversal<?, ?, ?> countTraversal = out(getRootLabel()).mark().in(READ_PERM.label()).in(ASSIGNED_TO_ROLE)
-				.retain(requestUser.getImpl()).back();
-		PageImpl<? extends T> items = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, getPersistanceClass());
-		return items;
+
+		// TODO use index over elements
+		VertexTraversal<?, ?, ?> traversal = out(getRootLabel());
+
+		// Iterate over all vertices that are managed by this root vertex
+		int count = 0;
+		Iterator<VertexFrame> it = traversal.iterator();
+		List<T> elementsOfPage = new ArrayList<>();
+		while (it.hasNext()) {
+			VertexFrame ele = it.next();
+
+			// Only handle those vertices which the user can read
+			if (requestUser.hasPermissionForId(ele.getId(), READ_PERM)) {
+
+				// Only add those vertices to the list which are within the bounds of the requested page
+				if (count >= low && count <= upper) {
+					elementsOfPage.add(ele.reframeExplicit(getPersistanceClass()));
+				}
+				count++;
+			}
+		}
+
+		// Cap totalpages to 1 since we start with page 1 instead of 0.
+		int totalPages = (int) Math.ceil(count / (double) perPage);
+		if (totalPages == 0) {
+			totalPages = 1;
+		}
+
+		return new PageImpl<T>(elementsOfPage, count, ++page, totalPages, elementsOfPage.size(), perPage);
 	}
 
 	@Override

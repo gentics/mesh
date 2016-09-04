@@ -278,6 +278,15 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	boolean hasPermission(MeshVertex element, GraphPermission permission);
 
 	/**
+	 * Check whether the user has the given permission on the element with the given id.
+	 * 
+	 * @param elementId
+	 * @param permission
+	 * @return
+	 */
+	boolean hasPermissionForId(Object elementId, GraphPermission permission);
+
+	/**
 	 * Check whether the admin role was assigned to the user.
 	 * 
 	 * @return

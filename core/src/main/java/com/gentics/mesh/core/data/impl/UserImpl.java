@@ -275,7 +275,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public boolean hasPermission(MeshVertex vertex, GraphPermission permission) {
+	public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		// Find all roles that are assigned to the user by checking the shortcut edge from the index
 		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
@@ -283,14 +283,19 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			Vertex role = roleEdge.getVertex(Direction.IN);
 			// Find all permission edges between the found role and target vertex with the specified label
 			Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
-					MeshInternal.get().database().createComposedIndexKey(role.getId(), vertex.getImpl().getId()));
+					MeshInternal.get().database().createComposedIndexKey(role.getId(), elementId));
 			boolean foundPermEdge = edges.iterator().hasNext();
 			if (foundPermEdge) {
 				return true;
 			}
 		}
-
 		return false;
+
+	}
+
+	@Override
+	public boolean hasPermission(MeshVertex vertex, GraphPermission permission) {
+		return hasPermissionForId(vertex.getImpl().getId(), permission);
 	}
 
 	@Override
