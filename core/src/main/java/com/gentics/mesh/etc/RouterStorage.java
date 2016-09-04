@@ -99,7 +99,7 @@ public class RouterStorage {
 			rootRouter = Router.router(vertx);
 
 			// Root handlers
-			rootRouter.route().handler(LoggerHandler.create());
+			//rootRouter.route().handler(LoggerHandler.create());
 			// TODO add a dedicated error for api router that informs about APPLICATION_JSON requirements. This may not be true for other routes (eg. custom
 			// routes)
 			rootRouter.route().last().handler(DefaultNotFoundHandler.create());

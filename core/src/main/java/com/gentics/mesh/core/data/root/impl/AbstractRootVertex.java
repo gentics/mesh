@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -104,7 +105,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	@Override
 	public T findByUuidSync(String uuid) {
 		FramedGraph graph = Database.getThreadLocalGraph();
-		//1. Find the element with given uuid within the whole graph
+		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = MeshInternal.get().database().getVertices(getPersistanceClass(), new String[] { "uuid" }, new String[] { uuid });
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
@@ -121,10 +122,10 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	@Override
 	public PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
 		MeshAuthUser requestUser = ac.getUser();
-		VertexTraversal<?, ?, ?> traversal = out(getRootLabel()).has(getPersistanceClass()).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
+		VertexTraversal<?, ?, ?> traversal = out(getRootLabel()).mark().in(READ_PERM.label()).in(ASSIGNED_TO_ROLE)
 				.retain(requestUser.getImpl()).back();
-		VertexTraversal<?, ?, ?> countTraversal = out(getRootLabel()).has(getPersistanceClass()).mark().in(READ_PERM.label()).out(HAS_ROLE)
-				.in(HAS_USER).retain(requestUser.getImpl()).back();
+		VertexTraversal<?, ?, ?> countTraversal = out(getRootLabel()).mark().in(READ_PERM.label()).in(ASSIGNED_TO_ROLE)
+				.retain(requestUser.getImpl()).back();
 		PageImpl<? extends T> items = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, getPersistanceClass());
 		return items;
 	}
