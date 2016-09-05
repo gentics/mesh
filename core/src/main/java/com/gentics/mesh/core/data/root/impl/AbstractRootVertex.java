@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -29,8 +28,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -138,8 +135,8 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		// External (for the enduser) all pages start with 1.
 		page = page - 1;
 
-		int low = page * perPage;
-		int upper = low + perPage - 1;
+		int low = page * perPage - 1;
+		int upper = low + perPage;
 
 		if (perPage == 0) {
 			low = 0;
@@ -160,17 +157,17 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			if (requestUser.hasPermissionForId(item.getId(), READ_PERM)) {
 
 				// Only add those vertices to the list which are within the bounds of the requested page
-				if (count >= low && count <= upper) {
+				if (count > low && count <= upper) {
 					elementsOfPage.add(graph.frameElementExplicit(item, getPersistanceClass()));
 				}
 				count++;
 			}
 		}
 
-		// Cap totalpages to 1 since we start with page 1 instead of 0.
-		int totalPages = (int) Math.ceil(count / (double) perPage);
-		if (totalPages == 0) {
-			totalPages = 1;
+		// The totalPages of the list response must be zero if the perPage parameter is also zero.
+		int totalPages = 0;
+		if (perPage != 0) {
+			totalPages = (int) Math.ceil(count / (double) (perPage));
 		}
 
 		return new PageImpl<T>(elementsOfPage, count, ++page, totalPages, elementsOfPage.size(), perPage);

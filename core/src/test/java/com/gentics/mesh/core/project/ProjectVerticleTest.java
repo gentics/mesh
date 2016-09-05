@@ -256,11 +256,40 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	}
 
 	@Test
-	public void testReadProjectCountInfoOnly() {
-		MeshResponse<ProjectListResponse> future = getClient().findProjects(new PagingParameters(1, 0)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(0, future.result().getData().size());
+	public void testReadProjects() {
+
+		for(int i = 0; i< 10; i++) {
+			final String name = "test12345_" +i;
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName(name);
+			request.setSchemaReference(new SchemaReference().setName("folder"));
+			call(() -> getClient().createProject(request));
+		}
+
+		// perPage: 0
+		ProjectListResponse list = call(() -> getClient().findProjects(new PagingParameters(1, 0)));
+		assertEquals("The page count should be one.", 0, list.getMetainfo().getPageCount());
+		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
+		assertEquals("Total data size should be zero", 0, list.getData().size());
+
+		// perPage: 1
+		list = call(() -> getClient().findProjects(new PagingParameters(1, 1)));
+		assertEquals("The page count should be one.", 11, list.getMetainfo().getPageCount());
+		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
+		assertEquals("Total data size should be one.", 1, list.getData().size());
+
+		// perPage: 2
+		list = call(() -> getClient().findProjects(new PagingParameters(1, 2)));
+		assertEquals("The page count should be one.", 6, list.getMetainfo().getPageCount());
+		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
+		assertEquals("Total data size should be one.", 2, list.getData().size());
+
+		// page: 6
+		list = call(() -> getClient().findProjects(new PagingParameters(6, 2)));
+		assertEquals("The page count should be one.", 6, list.getMetainfo().getPageCount());
+		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
+		assertEquals("Total data size should be one.", 1, list.getData().size());
+
 	}
 
 	@Test
