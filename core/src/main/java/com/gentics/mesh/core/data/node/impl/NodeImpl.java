@@ -550,7 +550,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
 		try {
-			NodeParameters nodeParameters = ac.getNodeParameters();
 			VersioningParameters versioiningParameters = ac.getVersioningParameters();
 
 			Set<Completable> tasks = new HashSet<>();
@@ -562,16 +561,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Release release = ac.getRelease(getProject());
 
 			// Parent node reference
-			Node parentNode = getParentNode(release.getUuid());
-			if (parentNode != null) {
-				tasks.add(parentNode.transformToReference(ac).map(transformedParentNode -> {
-					restNode.setParentNode(transformedParentNode);
-					return restNode;
-				}).toCompletable());
-			} else {
-				// Only the base node of the project has no parent. Therefore this node must be a container.
-				restNode.setContainer(true);
-			}
+			tasks.add(setParentNodeInfo(ac, release, restNode));
 
 			// Role permissions
 			tasks.add(setRolePermissions(ac, restNode));
@@ -579,24 +569,50 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Languages
 			restNode.setAvailableLanguages(getAvailableLanguageNames(release, ContainerType.forVersion(versioiningParameters.getVersion())));
 
-			// Load the children information
-			for (Node child : getChildren(release.getUuid())) {
-				if (ac.getUser().hasPermission(child, READ_PERM)) {
-					String schemaName = child.getSchemaContainer().getName();
-					NodeChildrenInfo info = restNode.getChildrenInfo().get(schemaName);
-					if (info == null) {
-						info = new NodeChildrenInfo();
-						String schemaUuid = child.getSchemaContainer().getUuid();
-						info.setSchemaUuid(schemaUuid);
-						info.setCount(1);
-						restNode.getChildrenInfo().put(schemaName, info);
-					} else {
-						info.setCount(info.getCount() + 1);
-					}
-				}
-			}
+			// Children information
+			tasks.add(setChildrenInfo(ac, release, restNode));
 
-			// Fields
+			// Tags
+			tasks.add(setTagsToRest(ac, restNode, release));
+
+			// Add common fields
+			tasks.add(fillCommonRestFields(ac, restNode));
+
+			// breadcrumb
+			tasks.add(setBreadcrumbToRest(ac, restNode));
+
+			// Add webroot path & lanuagePaths
+			tasks.add(setPathsToRest(ac, restNode, release));
+
+			// set fields and finally merge and complete
+			return setFields(ac, release, restNode, level, languageTags).andThen(Completable.merge(tasks).toSingleDefault(restNode));
+		} catch (Exception e) {
+			return Single.error(e);
+		}
+	}
+
+	private Completable setParentNodeInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
+		return Completable.defer(() -> {
+			Node parentNode = getParentNode(release.getUuid());
+			if (parentNode != null) {
+				return parentNode.transformToReference(ac).map(transformedParentNode -> {
+					restNode.setParentNode(transformedParentNode);
+					return restNode;
+				}).toCompletable();
+			} else {
+				// Only the base node of the project has no parent. Therefore this node must be a container.
+				restNode.setContainer(true);
+				return Completable.complete();
+			}
+		});
+	}
+
+	private Completable setFields(InternalActionContext ac, Release release, NodeResponse restNode, int level, String... languageTags) {
+		return Completable.defer(() -> {
+			Set<Completable> tasks = new HashSet<>();
+			VersioningParameters versioiningParameters = ac.getVersioningParameters();
+			NodeParameters nodeParameters = ac.getNodeParameters();
+
 			NodeGraphFieldContainer fieldContainer = null;
 			List<String> requestedLanguageTags = null;
 			if (languageTags != null && languageTags.length > 0) {
@@ -683,24 +699,31 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					tasks.add(obsFields.toCompletable());
 				}
 			}
+			return Completable.merge(tasks);
+		});
+	}
 
-			// Tags
-			tasks.add(setTagsToRest(ac, restNode, release));
-
-			// Add common fields
-			tasks.add(fillCommonRestFields(ac, restNode));
-
-			// breadcrumb
-			tasks.add(setBreadcrumbToRest(ac, restNode));
-
-			// Add webroot path & lanuagePaths
-			tasks.add(setPathsToRest(ac, restNode, release));
-
-			// Merge and complete
-			return Completable.merge(tasks).toSingleDefault(restNode);
-		} catch (Exception e) {
-			return Single.error(e);
-		}
+	private Completable setChildrenInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
+		return Completable.create(sub -> {
+			Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
+			for (Node child : getChildren(release.getUuid())) {
+				if (ac.getUser().hasPermission(child, READ_PERM)) {
+					String schemaName = child.getSchemaContainer().getName();
+					NodeChildrenInfo info = childrenInfo.get(schemaName);
+					if (info == null) {
+						info = new NodeChildrenInfo();
+						String schemaUuid = child.getSchemaContainer().getUuid();
+						info.setSchemaUuid(schemaUuid);
+						info.setCount(1);
+						childrenInfo.put(schemaName, info);
+					} else {
+						info.setCount(info.getCount() + 1);
+					}
+				}
+			}
+			restNode.setChildrenInfo(childrenInfo);
+			sub.onCompleted();
+		});
 	}
 
 	private Completable setTagsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
@@ -722,6 +745,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		});
 	}
 
+	/**
+	 * Add the release specific webroot and language paths to the given rest node.
+	 * 
+	 * @param ac
+	 * @param restNode
+	 * @param release
+	 * @return
+	 */
 	private Completable setPathsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
 		return Completable.create(sub -> {
 			VersioningParameters versioiningParameters = ac.getVersioningParameters();
@@ -753,36 +784,39 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Completable setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
-		String releaseUuid = ac.getRelease(getProject()).getUuid();
-		Node current = this.getParentNode(releaseUuid);
-		// The project basenode has no breadcrumb
-		if (current == null) {
-			return Completable.complete();
-		}
-
-		List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
-		while (current != null) {
-			// Don't add the base node to the breadcrumb
-			// TODO should we add the basenode to the breadcrumb?
-			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
-				break;
+		return Completable.create(sub -> {
+			String releaseUuid = ac.getRelease(getProject()).getUuid();
+			Node current = this.getParentNode(releaseUuid);
+			// The project basenode has no breadcrumb
+			if (current == null) {
+				sub.onCompleted();
 			}
-			NodeReferenceImpl reference = new NodeReferenceImpl();
-			reference.setUuid(current.getUuid());
-			reference.setDisplayName(current.getDisplayName(ac));
 
-			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-						getProject().getName(), restNode.getLanguage()).toBlocking().value();
-				reference.setPath(url);
+			List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
+			while (current != null) {
+				// Don't add the base node to the breadcrumb
+				// TODO should we add the basenode to the breadcrumb?
+				if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
+					break;
+				}
+				NodeReferenceImpl reference = new NodeReferenceImpl();
+				reference.setUuid(current.getUuid());
+				reference.setDisplayName(current.getDisplayName(ac));
+
+				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+					WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
+					ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+					System.out.println(restNode.getLanguage());
+					String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
+							getProject().getName(), restNode.getLanguage()).toBlocking().value();
+					reference.setPath(url);
+				}
+				breadcrumb.add(reference);
+				current = current.getParentNode(releaseUuid);
 			}
-			breadcrumb.add(reference);
-			current = current.getParentNode(releaseUuid);
-		}
-		restNode.setBreadcrumb(breadcrumb);
-		return Completable.complete();
+			restNode.setBreadcrumb(breadcrumb);
+			sub.onCompleted();
+		});
 	}
 
 	@Override
@@ -1297,7 +1331,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
-		// 1. Generate a key so that we can load the display name from the action context data map. 
+		// 1. Generate a key so that we can load the display name from the action context data map.
 		// It may have been loaded previously so we could reuse the loaded displayName by loading it from the context.
 		String langInfo = Arrays.toString(nodeParameters.getLanguageList().toArray());
 		String key = getUuid() + langInfo + versioningParameters.getVersion() + ac.getRelease(getProject()).getUuid();
@@ -1703,8 +1737,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// editor etag - (can be omitted since update would also affect the NGFC)
 		// creator etag
-		//		keyBuilder.append("-");
-		//		keyBuilder.append(getCreator().getETag(ac));
+		// keyBuilder.append("-");
+		// keyBuilder.append(getCreator().getETag(ac));
 
 		// availableLanguages
 		keyBuilder.append("-");

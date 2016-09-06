@@ -26,7 +26,7 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	String getAPIPath(InternalActionContext ac);
 
 	/**
-	 * Transform the node into the matching rest model response asynchronously.
+	 * Transform the element into the matching rest model response asynchronously.
 	 * 
 	 * @param ac
 	 *            Context of the calling action
@@ -43,7 +43,7 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	}
 
 	/**
-	 * Transform the node into the matching rest model response synchronously
+	 * Transform the element into the matching rest model response synchronously.
 	 *
 	 * @param ac
 	 *            Context of the calling action
