@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.performance.TestUtils;
@@ -92,6 +93,15 @@ public final class MeshAssert {
 		} catch (UnknownHostException | InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static <T> T getResult(MeshRequest<T> future) {
+		return getResult(future.invoke());
+	}
+
+	public static <T> T getResult(MeshResponse<T> future) {
+		latchFor(future);
+		return future.result();
 	}
 
 	public static void failingLatch(CountDownLatch latch, int timeoutInSeconds) throws InterruptedException {

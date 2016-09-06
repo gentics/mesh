@@ -175,7 +175,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			rootUuid = root.getUuid();
 			role().revokePermissions(root, CREATE_PERM);
 			User user = user();
-			assertFalse("The create permission to the groups root node should have been revoked.",
+			assertFalse("The create permissions to the groups root node should have been revoked.",
 					user.hasPermissionAsync(ac, root, CREATE_PERM).toBlocking().value());
 
 			MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();

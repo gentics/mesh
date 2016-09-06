@@ -50,6 +50,7 @@ public final class MeshRestRequestUtil {
 		HttpClientRequest request = client.request(method, uri, handler);
 		// Let the response handler fail when an error ocures
 		request.exceptionHandler(e -> {
+			String p = path;
 			handler.getFuture().fail(e);
 		});
 		if (log.isDebugEnabled()) {

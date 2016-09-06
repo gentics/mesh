@@ -25,7 +25,7 @@ public abstract class AbstractAuthRestHandler extends AbstractHandler implements
 	@Override
 	public void handleMe(InternalActionContext ac) {
 		db.asyncNoTx(() -> {
-			//TODO add permission check
+			//TODO add permissions check
 			MeshAuthUser requestUser = ac.getUser();
 			return requestUser.transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);

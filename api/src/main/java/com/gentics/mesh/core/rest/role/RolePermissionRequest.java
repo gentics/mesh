@@ -6,7 +6,7 @@ import java.util.Set;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
- * POJO for a role permission request.
+ * POJO for a role permissions request.
  *
  */
 public class RolePermissionRequest implements RestModel {
@@ -32,9 +32,11 @@ public class RolePermissionRequest implements RestModel {
 	 * 
 	 * @param permissions
 	 *            Permissions to be set to the affected elements. Omitted permissions will be revoked.
+	 * @return Fluent API
 	 */
-	public void setPermissions(Set<String> permissions) {
+	public RolePermissionRequest setPermissions(Set<String> permissions) {
 		this.permissions = permissions;
+		return this;
 	}
 
 	/**
@@ -47,13 +49,15 @@ public class RolePermissionRequest implements RestModel {
 	}
 
 	/**
-	 * Set the flag which indicated whether the permission changes should be applied recursively.
+	 * Set the flag which indicated whether the permissions changes should be applied recursively.
 	 * 
 	 * @param recursive
 	 *            Recursive flag value
+	 * @return Fluent API
 	 */
-	public void setRecursive(Boolean recursive) {
+	public RolePermissionRequest setRecursive(Boolean recursive) {
 		this.recursive = recursive;
+		return this;
 	}
 
 }

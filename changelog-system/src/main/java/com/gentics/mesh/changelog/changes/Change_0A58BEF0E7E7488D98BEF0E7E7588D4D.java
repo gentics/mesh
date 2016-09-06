@@ -242,13 +242,13 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 		}
 
 		log.info("Granting permissions to node {" + node.getProperty("uuid") + "}");
-		// Grant publish permission to all roles+objects which grant update
+		// Grant publish permissions to all roles+objects which grant update
 		for (Edge edge : node.getEdges(Direction.IN, "HAS_UPDATE_PERMISSION")) {
 			Vertex role = edge.getVertex(Direction.OUT);
 			role.addEdge("HAS_PUBLISH_PERMISSION", node);
 		}
 
-		// Grant read published permission to all roles+objects which grant read
+		// Grant read published permissions to all roles+objects which grant read
 		for (Edge edge : node.getEdges(Direction.IN, "HAS_READ_PERMISSION")) {
 			Vertex role = edge.getVertex(Direction.OUT);
 			role.addEdge("HAS_READ_PUBLISHED_PERMISSION", node);

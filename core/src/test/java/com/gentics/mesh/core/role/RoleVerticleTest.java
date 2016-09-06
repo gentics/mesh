@@ -125,7 +125,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		request.setName("new_role");
 
 		try (NoTx noTx = db.noTx()) {
-			// Add needed permission to group
+			// Add needed permissions to group
 			role().revokePermissions(meshRoot().getRoleRoot(), CREATE_PERM);
 		}
 
@@ -212,7 +212,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
-			// Revoke read permission from the role
+			// Revoke read permissions from the role
 			role().revokePermissions(extraRole, READ_PERM);
 
 			assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
@@ -254,7 +254,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				group().addRole(extraRole);
 				role().grantPermissions(extraRole, READ_PERM);
 			}
-			// Role with no permission
+			// Role with no permissions
 			group().addRole(noPermRole);
 
 			noPermRoleName = noPermRole.getName();
@@ -417,7 +417,7 @@ public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-			// Add the missing permission and try again
+			// Add the missing permissions and try again
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 
 			future = getClient().updateRole(uuid, restRole).invoke();

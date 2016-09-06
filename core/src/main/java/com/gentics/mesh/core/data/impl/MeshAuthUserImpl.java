@@ -75,10 +75,10 @@ public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 		throw new NotImplementedException("Please use the MeshAuthUserImpl method instead.");
 	}
 
-	// public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, GraphPermission permission, Handler<AsyncResult<Boolean>> resultHandler) {
+	// public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, GraphPermission permissions, Handler<AsyncResult<Boolean>> resultHandler) {
 	// final MeshAuthUserImpl user = this;
-	// //Mesh.vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
-	// resultHandler.handle(Future.succeededFuture(user.hasPermission(targetNode, permission)));
+	// //Mesh.vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permissions)), false, resultHandler);
+	// resultHandler.handle(Future.succeededFuture(user.hasPermission(targetNode, permissions)));
 	// return this;
 	// }
 

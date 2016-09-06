@@ -96,7 +96,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			user = user();
 			tagFamily = tagFamily("colors");
 
-			// Add permission on own role
+			// Add permissions on own role
 			role().grantPermissions(tagFamily, GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
 			pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily.getUuid();
@@ -112,7 +112,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		}
 
 		try (NoTx noTx = db.noTx()) {
-			// Revoke single permission and check again
+			// Revoke single permissions and check again
 			role().revokePermissions(tagFamily, GraphPermission.UPDATE_PERM);
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
 		}
@@ -738,7 +738,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			User user = userRoot.create("existing_username", user());
 			user.addGroup(group());
 
-			// Add update permission to group in order to create the user in that group
+			// Add update permissions to group in order to create the user in that group
 			role().grantPermissions(group(), CREATE_PERM);
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setUsername("existing_username");

@@ -115,7 +115,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @param type
 	 *            type
 	 * @param permLabel
-	 *            permission label
+	 *            permissions label
 	 * @return vertex traversal
 	 */
 	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, ContainerType type, String permLabel) {

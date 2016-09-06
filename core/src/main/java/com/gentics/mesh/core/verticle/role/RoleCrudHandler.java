@@ -60,13 +60,13 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	}
 
 	/**
-	 * Handle a permission read request.
+	 * Handle a permissions read request.
 	 * 
 	 * @param ac
 	 * @param roleUuid
 	 *            Uuid of the role which should be used to load the permissions
 	 * @param pathToElement
-	 *            Path to the element for which the permission should be loaded.
+	 *            Path to the element for which the permissions should be loaded.
 	 */
 	public void handlePermissionRead(InternalActionContext ac, String roleUuid, String pathToElement) {
 		if (isEmpty(roleUuid)) {
@@ -79,7 +79,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 		db.asyncNoTx(() -> {
 
 			if (log.isDebugEnabled()) {
-				log.debug("Handling permission request for element on path {" + pathToElement + "}");
+				log.debug("Handling permissions request for element on path {" + pathToElement + "}");
 			}
 			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
 			return boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).flatMap(role -> {
@@ -103,7 +103,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	}
 
 	/**
-	 * Handle a permission update request.
+	 * Handle a permissions update request.
 	 * 
 	 * @param ac
 	 * @param roleUuid
@@ -114,7 +114,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	public void handlePermissionUpdate(InternalActionContext ac, String roleUuid, String pathToElement) {
 		db.asyncNoTx(() -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Handling permission request for element on path {" + pathToElement + "}");
+				log.debug("Handling permissions request for element on path {" + pathToElement + "}");
 			}
 			if (isEmpty(roleUuid)) {
 				throw error(BAD_REQUEST, "error_uuid_must_be_specified");
@@ -153,21 +153,21 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 								throw error(BAD_REQUEST, "role_error_permission_name_unknown", permName);
 							}
 							if (log.isDebugEnabled()) {
-								log.debug("Adding permission {" + permission.getSimpleName() + "} to list of permissions to add.");
+								log.debug("Adding permissions {" + permission.getSimpleName() + "} to list of permissions to add.");
 							}
 							permissionsToRevoke.remove(permission);
 							permissionsToGrant.add(permission);
 						}
 						if (log.isDebugEnabled()) {
 							for (GraphPermission p : permissionsToGrant) {
-								log.debug("Granting permission: " + p);
+								log.debug("Granting permissions: " + p);
 							}
 							for (GraphPermission p : permissionsToRevoke) {
-								log.debug("Revoking permission: " + p);
+								log.debug("Revoking permissions: " + p);
 							}
 						}
 
-						// 3. Apply the permission actions
+						// 3. Apply the permissions actions
 						element.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
 						return role;
 					});

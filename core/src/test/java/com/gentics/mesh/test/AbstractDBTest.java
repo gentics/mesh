@@ -107,6 +107,7 @@ public abstract class AbstractDBTest {
 		options.getAuthenticationOptions().getJwtAuthenticationOptions().setKeystorePath("keystore.jceks");
 
 		ElasticSearchOptions searchOptions = new ElasticSearchOptions();
+		searchOptions.setHttpEnabled(true);
 		if (enableES) {
 			searchOptions.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
 		} else {

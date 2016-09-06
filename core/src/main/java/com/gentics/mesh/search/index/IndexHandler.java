@@ -97,11 +97,11 @@ public interface IndexHandler {
 	Set<String> getAffectedIndices(InternalActionContext ac);
 
 	/**
-	 * Get the permission required to read the elements found in the index.
+	 * Get the permissions required to read the elements found in the index.
 	 * 
 	 * @param ac
 	 *            action context
-	 * @return read permission
+	 * @return read permissions
 	 */
 	default GraphPermission getReadPermission(InternalActionContext ac) {
 		return GraphPermission.READ_PERM;

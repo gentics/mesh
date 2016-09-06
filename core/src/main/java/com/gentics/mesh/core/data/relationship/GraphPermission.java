@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.relationship;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
- * Internal enum which provides labels for graph permission edges that are created between the target element and a role.
+ * Internal enum which provides labels for graph permissions edges that are created between the target element and a role.
  */
 public enum GraphPermission {
 
@@ -34,7 +34,7 @@ public enum GraphPermission {
 	}
 
 	/**
-	 * Return an array of graph permission labels.
+	 * Return an array of graph permissions labels.
 	 * 
 	 * @return
 	 */
@@ -50,7 +50,7 @@ public enum GraphPermission {
 	}
 
 	/**
-	 * Return the label of the graph permission.
+	 * Return the label of the graph permissions.
 	 * 
 	 * @return
 	 */
@@ -59,7 +59,7 @@ public enum GraphPermission {
 	}
 
 	/**
-	 * Convert a label name back into a graph permission object.
+	 * Convert a label name back into a graph permissions object.
 	 * 
 	 * @param labelName
 	 * @return
@@ -74,7 +74,7 @@ public enum GraphPermission {
 	}
 
 	/**
-	 * Convert the human readable permission name back into a graph permission object.
+	 * Convert the human readable permissions name back into a graph permissions object.
 	 * 
 	 * @param simpleName
 	 * @return
@@ -89,7 +89,7 @@ public enum GraphPermission {
 	}
 
 	/**
-	 * Return the human friendly name for the permission.
+	 * Return the human friendly name for the permissions.
 	 * 
 	 * @return
 	 */

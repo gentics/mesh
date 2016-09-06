@@ -49,7 +49,7 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	List<? extends Group> getGroups();
 
 	/**
-	 * Check whether the role grants the given permission on the given element.
+	 * Check whether the role grants the given permissions on the given element.
 	 * 
 	 * @param permission
 	 * @param element

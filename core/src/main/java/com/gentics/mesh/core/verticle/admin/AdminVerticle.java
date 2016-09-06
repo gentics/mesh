@@ -37,8 +37,8 @@ public class AdminVerticle extends AbstractWebVerticle {
 
 	@Override
 	public String getDescription() {
-		// TODO what is a admin permission?
-		return "Collection of administrative endpoints which usually require admin permission";
+		// TODO what is a admin permissions?
+		return "Collection of administrative endpoints which usually require admin permissions";
 	}
 
 	@Override

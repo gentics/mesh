@@ -281,7 +281,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.getVertex(Direction.IN);
-			// Find all permission edges between the found role and target vertex with the specified label
+			// Find all permissions edges between the found role and target vertex with the specified label
 			Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
 					MeshInternal.get().database().createComposedIndexKey(role.getId(), elementId));
 			boolean foundPermEdge = edges.iterator().hasNext();
@@ -326,7 +326,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	/**
-	 * Return the map key for the action context data field that may hold the fetched permission.
+	 * Return the map key for the action context data field that may hold the fetched permissions.
 	 * 
 	 * @param vertex
 	 * @param permission
@@ -433,11 +433,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
-		// 1. Determine all roles that grant given permission on the source node.
+		// 1. Determine all roles that grant given permissions on the source node.
 		List<? extends Role> rolesThatGrantPermission = sourceNode.getImpl().in(permission.label()).has(RoleImpl.class)
 				.toListExplicit(RoleImpl.class);
 
-		// 2. Add CRUD permission to identified roles and target node
+		// 2. Add CRUD permissions to identified roles and target node
 		for (Role role : rolesThatGrantPermission) {
 			role.grantPermissions(targetNode, toGrant);
 		}
@@ -452,7 +452,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			List<? extends Role> rolesWithPerm = sourceNode.getImpl().in(perm.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
 			for (Role role : rolesWithPerm) {
 				if (log.isDebugEnabled()) {
-					log.debug("Granting permission {" + perm.name() + "} to node {" + targetNode.getUuid() + "} on role {" + role.getName() + "}");
+					log.debug("Granting permissions {" + perm.name() + "} to node {" + targetNode.getUuid() + "} on role {" + role.getName() + "}");
 				}
 				role.grantPermissions(targetNode, perm);
 			}

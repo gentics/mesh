@@ -34,3 +34,5 @@ doc/src/main/docs/changelog.asciidoc
 alltests
 inclusions.txt
 /includes-*
+.idea
+*.iml

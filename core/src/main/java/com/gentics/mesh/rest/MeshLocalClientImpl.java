@@ -1,12 +1,5 @@
 package com.gentics.mesh.rest;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
@@ -21,14 +14,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.PublishStatusModel;
-import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
+import com.gentics.mesh.core.rest.node.*;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -37,36 +23,13 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
-import com.gentics.mesh.core.rest.role.RoleCreateRequest;
-import com.gentics.mesh.core.rest.role.RoleListResponse;
-import com.gentics.mesh.core.rest.role.RolePermissionRequest;
-import com.gentics.mesh.core.rest.role.RolePermissionResponse;
-import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
-import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
+import com.gentics.mesh.core.rest.role.*;
+import com.gentics.mesh.core.rest.schema.*;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.core.rest.tag.TagCreateRequest;
-import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
-import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
-import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
-import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.core.rest.user.UserCreateRequest;
-import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.core.rest.user.UserPermissionResponse;
-import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.core.rest.tag.*;
+import com.gentics.mesh.core.rest.user.*;
 import com.gentics.mesh.core.verticle.admin.AdminHandler;
 import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.verticle.group.GroupCrudHandler;
@@ -90,7 +53,6 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.MeshLocalRequestImpl;
 import com.gentics.mesh.util.UUIDUtil;
-
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -98,6 +60,12 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.WebSocket;
 import io.vertx.ext.web.FileUpload;
 import rx.Single;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests.

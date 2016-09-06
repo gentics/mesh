@@ -9,7 +9,7 @@ import org.raml.model.parameter.QueryParameter;
 import com.gentics.mesh.handler.ActionContext;
 
 /**
- * The role permission parameter can be used to set the role parameter value in form of an UUID which will cause mesh to add the rolePerm field to the rest
+ * The role permissions parameter can be used to set the role parameter value in form of an UUID which will cause mesh to add the rolePerm field to the rest
  * response.
  */
 public class RolePermissionParameters extends AbstractParameters {
@@ -55,7 +55,7 @@ public class RolePermissionParameters extends AbstractParameters {
 		// role
 		QueryParameter pageParameter = new QueryParameter();
 		pageParameter.setDescription(
-				"The role permission parameter can be used to set the role parameter value in form of an UUID which will cause mesh to add the rolePerm field to the rest response.");
+				"The role permissions parameter can be used to set the role parameter value in form of an UUID which will cause mesh to add the rolePerm field to the rest response.");
 		pageParameter.setExample("24cf92691c7641158f92691c76c115ef");
 		pageParameter.setRequired(false);
 		pageParameter.setType(ParamType.STRING);

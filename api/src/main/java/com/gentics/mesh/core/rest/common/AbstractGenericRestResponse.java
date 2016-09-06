@@ -102,7 +102,7 @@ public class AbstractGenericRestResponse extends AbstractResponse {
 	}
 
 	/**
-	 * Set the human readable permission names for the element.
+	 * Set the human readable permissions names for the element.
 	 * 
 	 * @param permissions
 	 *            Human readable permissions

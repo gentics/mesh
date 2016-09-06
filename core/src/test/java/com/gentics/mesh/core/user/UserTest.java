@@ -416,7 +416,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			newUser.reload();
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(
-						"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
+						"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permissions {"
 								+ perm.name() + "}",
 						newUser.hasPermissionSync(ac, targetNode, perm));
 			}
@@ -424,7 +424,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			// roleWithAllPerm
 			roleWithAllPerm.reload();
 			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue("The role should grant all permissions to the target node. Failed for permission {" + perm.name() + "}",
+				assertTrue("The role should grant all permissions to the target node. Failed for permissions {" + perm.name() + "}",
 						roleWithAllPerm.hasPermission(perm, targetNode));
 			}
 
@@ -432,7 +432,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			roleWithNoPerm.reload();
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertFalse(
-						"No extra permissions should be assigned to the role that did not have any permissions on the source element. Failed for permission {"
+						"No extra permissions should be assigned to the role that did not have any permissions on the source element. Failed for permissions {"
 								+ perm.name() + "}",
 						roleWithNoPerm.hasPermission(perm, targetNode));
 			}
@@ -462,7 +462,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			roleWithCreatePerm.reload();
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(
-						"The role should have all permission on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permission {"
+						"The role should have all permissions on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permissions {"
 								+ perm.name() + "}",
 						roleWithCreatePerm.hasPermission(perm, targetNode));
 			}

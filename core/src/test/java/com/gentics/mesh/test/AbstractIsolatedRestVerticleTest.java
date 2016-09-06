@@ -88,6 +88,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 		setupData();
 		port = com.gentics.mesh.test.performance.TestUtils.getRandomPort();
+		System.out.println("Starting mesh on port " + port);
 		vertx = Mesh.vertx();
 
 		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);

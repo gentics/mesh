@@ -684,7 +684,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			List<Node> nodes = new ArrayList<>(Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015")));
 			nodes.stream().forEach(node -> call(() -> getClient().publishNode(PROJECT_NAME, node.getUuid())));
 
-			// revoke permission on one folder after the other
+			// revoke permissions on one folder after the other
 			while (!nodes.isEmpty()) {
 				Node folder = nodes.remove(0);
 				db.tx(() -> {
