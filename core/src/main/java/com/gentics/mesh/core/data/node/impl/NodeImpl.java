@@ -478,12 +478,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public SchemaContainer getSchemaContainer() {
-		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+		return out(HAS_SCHEMA_CONTAINER).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
 
 	@Override
 	public List<? extends Node> getChildren() {
-		return in(HAS_PARENT_NODE).has(NodeImpl.class).toListExplicit(NodeImpl.class);
+		return in(HAS_PARENT_NODE).toListExplicit(NodeImpl.class);
 	}
 
 	@Override
@@ -581,7 +581,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Load the children information
 			for (Node child : getChildren(release.getUuid())) {
-				if (ac.getUser().hasPermissionSync(ac, child, READ_PERM)) {
+				if (ac.getUser().hasPermission(child, READ_PERM)) {
 					String schemaName = child.getSchemaContainer().getName();
 					NodeChildrenInfo info = restNode.getChildrenInfo().get(schemaName);
 					if (info == null) {
@@ -671,7 +671,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 											+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
 								}
 								if (restField == null) {
-									log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+									if (log.isDebugEnabled()) {
+										log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+									}
 								} else {
 									restNode.getFields().put(fieldEntry.getName(), restField);
 								}
@@ -1269,16 +1271,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
 			PagingParameters pagingInfo) throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = getChildrenTraversal(requestUser, releaseUuid, type);
-		VertexTraversal<?, ?, ?> countTraversal = getChildrenTraversal(requestUser, releaseUuid, type);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
+		return TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
 	}
 
 	@Override
 	public PageImpl<? extends Tag> getTags(Release release, PagingParameters params) throws InvalidArgumentException {
 		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, release);
-		VertexTraversal<?, ?, ?> countTraversal = TagEdgeImpl.getTagTraversal(this, release);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, params, TagImpl.class);
+		return TraversalHelper.getPagedResult(traversal, params, TagImpl.class);
 	}
 
 	@Override
@@ -1695,7 +1695,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// release specific children
 		for (Node child : getChildren(release.getUuid())) {
-			if (ac.getUser().hasPermissionSync(ac, child, READ_PERM)) {
+			if (ac.getUser().hasPermission(child, READ_PERM)) {
 				keyBuilder.append("-");
 				keyBuilder.append(child.getSchemaContainer().getName());
 			}

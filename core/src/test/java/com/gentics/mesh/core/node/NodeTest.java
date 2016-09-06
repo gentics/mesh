@@ -256,10 +256,10 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = getMockedInternalActionContext("");
-			assertFalse(user().hasPermissionAsync(ac, node, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertFalse(user().hasPermission(node, GraphPermission.CREATE_PERM));
 			user().addCRUDPermissionOnRole(folder("2015"), GraphPermission.CREATE_PERM, node);
 			ac.data().clear();
-			assertTrue(user().hasPermissionAsync(ac, node, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertTrue(user().hasPermission(node, GraphPermission.CREATE_PERM));
 		}
 	}
 

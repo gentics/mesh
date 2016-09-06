@@ -119,7 +119,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		return Single.defer(() -> {
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			requestModel.validate();
-			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
+			if (requestUser.hasPermission(this, CREATE_PERM)) {
 
 				Tuple<SearchQueueBatch, SchemaContainer> tuple = db.tx(() -> {
 

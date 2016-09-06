@@ -82,7 +82,7 @@ public class WebRootHandler {
 				if (node == null) {
 					throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 				}
-				if (requestUser.hasPermissionSync(ac, node, READ_PERM)) {
+				if (requestUser.hasPermission(node, READ_PERM)) {
 					GraphField field = lastSegment.getPathField();
 					if (field instanceof BinaryGraphField) {
 						BinaryGraphField binaryField = (BinaryGraphField) field;

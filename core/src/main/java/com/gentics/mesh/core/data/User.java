@@ -129,25 +129,6 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	void setReferencedNode(Node node);
 
 	/**
-	 * Check given permissions on the given vertex.
-	 * 
-	 * @param ac
-	 * @param vertex
-	 * @param permission
-	 * @return
-	 */
-	boolean hasPermissionSync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
-
-	/**
-	 * Check whether the user has the given permission for the given vertex.
-	 * 
-	 * @param ac
-	 * @param vertex
-	 * @param permission
-	 */
-	Single<Boolean> hasPermissionAsync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
-
-	/**
 	 * Return an array of human readable permissions for the given vertex.
 	 * 
 	 * @param ac

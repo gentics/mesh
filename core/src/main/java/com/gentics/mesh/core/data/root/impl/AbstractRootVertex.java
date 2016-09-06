@@ -85,7 +85,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			T result = db.noTx(() -> {
 				MeshAuthUser requestUser = ac.getUser();
 				String elementUuid = element.getUuid();
-				if (requestUser.hasPermissionSync(ac, element, perm)) {
+				if (requestUser.hasPermission(element, perm)) {
 					return element;
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", elementUuid);
@@ -217,7 +217,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			T result = db.noTx(() -> {
 				MeshAuthUser requestUser = ac.getUser();
 				String elementUuid = element.getUuid();
-				if (requestUser.hasPermissionSync(ac, element, perm)) {
+				if (requestUser.hasPermission(element, perm)) {
 					return element;
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", elementUuid);
@@ -241,7 +241,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		T result = db.noTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			String elementUuid = element.getUuid();
-			if (requestUser.hasPermissionSync(ac, element, perm)) {
+			if (requestUser.hasPermission(element, perm)) {
 				return element;
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", elementUuid);

@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
@@ -57,7 +56,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 					try {
 						Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 						SchemaChangesListModel model = new SchemaChangesListModel();
-						model.getChanges().addAll(MeshInternal.get().microschemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
+						model.getChanges()
+								.addAll(MeshInternal.get().microschemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
 						String name = element.getName();
 						if (model.getChanges().isEmpty()) {
 							return Single.just(message(ac, "schema_update_no_difference_detected", name));
@@ -140,20 +140,17 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
-			String projectUuid = project.getUuid();
-			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), UPDATE_PERM);
-			Single<MicroschemaContainer> obsMicroschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
-
-			return Single.zip(obsPerm, obsMicroschema, (perm, microschema) -> {
-				if (!perm.booleanValue()) {
-					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
-				}
-				return db.tx(() -> {
-					project.getMicroschemaContainerRoot().addMicroschema(microschema);
-					return microschema.transformToRest(ac, 0);
+			if (ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
+				return getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM).flatMap(microschema -> {
+					return db.tx(() -> {
+						project.getMicroschemaContainerRoot().addMicroschema(microschema);
+						return microschema.transformToRest(ac, 0);
+					});
 				});
-			}).flatMap(x -> x);
-
+			} else {
+				String projectUuid = project.getUuid();
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -163,19 +160,18 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), UPDATE_PERM);
-			// TODO check whether microschema is assigned to project
-			Single<MicroschemaContainer> obsMicroschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
-
-			return Single.zip(obsPerm, obsMicroschema, (perm, microschema) -> {
-				if (!perm.booleanValue()) {
-					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
-				}
-				return db.tx(() -> {
-					project.getMicroschemaContainerRoot().removeMicroschema(microschema);
-					return Single.just(null);
+			if(ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
+//				TODO check whether microschema is assigned to project
+				return getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM).flatMap(microschema -> { 
+					return db.tx(() -> {
+						project.getMicroschemaContainerRoot().removeMicroschema(microschema);
+						return Single.just(null);
+					});
 				});
-			}).flatMap(x -> x);
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+			}
+		});
+			// 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 }

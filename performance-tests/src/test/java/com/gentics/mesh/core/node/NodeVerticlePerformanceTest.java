@@ -65,7 +65,7 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 					new NavigationParameters().setMaxDepth(4)));
 		});
 
-		loggingStopWatch(logger, "node.read-by-uuid", 200, (step) -> {
+		loggingStopWatch(logger, "node.read-by-uuid", 400, (step) -> {
 			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
 		});
 

@@ -126,8 +126,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public PageImpl<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
 		// TODO check perms
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
-		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
+		return TraversalHelper.getPagedResult(traversal, pagingInfo, TagImpl.class);
 	}
 
 	@Override
@@ -170,7 +169,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			//			}
 
 			MeshAuthUser requestUser = ac.getUser();
-			if (!requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
+			if (!requestUser.hasPermission(this, CREATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", getUuid());
 			}
 

@@ -15,6 +15,7 @@ import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -87,6 +88,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		for (Role role : getRoles()) {
 			user.getImpl().unlinkOut(role.getImpl(), ASSIGNED_TO_ROLE);
 		}
+		PermissionStore.invalidate();
 	}
 
 	public List<? extends Role> getRoles() {
@@ -110,7 +112,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		for (User user : getUsers()) {
 			user.getImpl().unlinkOut(role.getImpl(), ASSIGNED_TO_ROLE);
 		}
-
+		PermissionStore.invalidate();
 	}
 
 	// TODO add java handler
@@ -129,18 +131,13 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
 				.retain(requestUser.getImpl()).back().has(UserImpl.class);
-		VertexTraversal<?, ?, ?> countTraversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser.getImpl()).back().has(UserImpl.class);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, UserImpl.class);
+		return TraversalHelper.getPagedResult(traversal, pagingInfo, UserImpl.class);
 	}
 
 	@Override
 	public PageImpl<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
-
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
-		VertexTraversal<?, ?, ?> countTraversal = in(HAS_ROLE);
-
-		PageImpl<? extends Role> page = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, RoleImpl.class);
+		PageImpl<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
 		return page;
 
 	}
@@ -187,6 +184,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		batch.addEntry(this, DELETE_ACTION);
 		addRelatedEntries(batch, DELETE_ACTION);
 		getElement().remove();
+		PermissionStore.invalidate();
 	}
 
 	@Override

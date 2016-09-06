@@ -58,7 +58,7 @@ public class NavRootHandler {
 				if (node == null) {
 					throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 				}
-				if (requestUser.hasPermissionSync(ac, node, READ_PERM)) {
+				if (requestUser.hasPermission(node, READ_PERM)) {
 					return node.transformToNavigation(ac);
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
