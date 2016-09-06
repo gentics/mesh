@@ -57,42 +57,7 @@ public final class MeshRestRequestUtil {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
 
-		if (authentication != null) {
-			authentication.addAuthenticationInformation(request).subscribe(() -> {
-				request.headers().add("Accept", "application/json");
-
-				if (bodyData.length() != 0) {
-					request.headers().add("content-length", String.valueOf(bodyData.length()));
-					if (!StringUtils.isEmpty(contentType)) {
-						request.headers().add("content-type", contentType);
-					}
-					// Somehow the buffer gets mix up after some requests. It seems that the buffer object is somehow reused and does not return the correct data. toString seems to alleviate the problem.
-					if (contentType != null && contentType.startsWith("application/json")) {
-						request.write(bodyData.toString());
-					} else {
-						request.write(bodyData);
-					}
-				}
-
-			});
-		} else {
-			request.headers().add("Accept", "application/json");
-
-			if (bodyData.length() != 0) {
-				request.headers().add("content-length", String.valueOf(bodyData.length()));
-				if (!StringUtils.isEmpty(contentType)) {
-					request.headers().add("content-type", contentType);
-				}
-				// Somehow the buffer gets mix up after some requests. It seems that the buffer object is somehow reused and does not return the correct data. toString seems to alleviate the problem.
-				if (contentType != null && contentType.startsWith("application/json")) {
-					request.write(bodyData.toString());
-				} else {
-					request.write(bodyData);
-				}
-			}
-		}
-
-		return new MeshHttpRequestImpl<T>(request, handler);
+		return new MeshHttpRequestImpl<T>(request, handler, bodyData, contentType, authentication);
 	}
 
 	/**

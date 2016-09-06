@@ -636,7 +636,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			request.headers().add("Accept", "*/*");
 		});
 
-		return new MeshHttpRequestImpl<>(request, handler);
+		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication);
 
 	}
 
@@ -823,7 +823,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "application/json");
 		});
-		return new MeshHttpRequestImpl<>(request, handler);
+		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication);
 	}
 
 	@Override
