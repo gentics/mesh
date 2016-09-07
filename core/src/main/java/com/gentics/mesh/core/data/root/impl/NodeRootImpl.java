@@ -6,8 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -88,8 +86,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	public PageImpl<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameters pagingInfo)
 			throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(NodeImpl.class);
-		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(NodeImpl.class);
-		PageImpl<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
+		PageImpl<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
 		return nodePage;
 	}
 
@@ -98,11 +95,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		MeshAuthUser requestUser = ac.getUser();
 		Release release = ac.getRelease(null);
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		String permLabel = type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM.label() : READ_PERM.label();
+		GraphPermission perm = type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 
-		VertexTraversal<?, ?, ?> traversal = getAllTraversal(requestUser, release, type, permLabel);
-		VertexTraversal<?, ?, ?> countTraversal = getAllTraversal(requestUser, release, type, permLabel);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, getPersistanceClass());
+		VertexTraversal<?, ?, ?> traversal = getAllTraversal(requestUser, release, type, perm);
+		return TraversalHelper.getPagedResult(traversal, pagingInfo, getPersistanceClass());
 	}
 
 	/**
@@ -114,13 +110,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 *            release
 	 * @param type
 	 *            type
-	 * @param permLabel
-	 *            permissions label
+	 * @param permission
+	 *            permission to filter by
 	 * @return vertex traversal
 	 */
-	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, ContainerType type, String permLabel) {
-		return out(getRootLabel()).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back().mark()
-				.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
+	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, ContainerType type, GraphPermission permission) {
+		return out(getRootLabel()).filter(vertex -> {
+			return requestUser.hasPermissionForId(vertex.getId(), permission);
+		}).mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();
 	}
 
@@ -247,13 +244,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				if (containerByName != null) {
 					String schemaName = containerByName.getName();
 					String schemaUuid = containerByName.getUuid();
-					return requestUser.hasPermissionAsync(ac, containerByName, GraphPermission.READ_PERM).flatMap(hasPerm -> {
-						if (hasPerm) {
-							return createNode(ac, Single.just(containerByName));
-						} else {
-							throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);
-						}
-					});
+					if (requestUser.hasPermission(containerByName, GraphPermission.READ_PERM)) {
+						return createNode(ac, Single.just(containerByName));
+					} else {
+						throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);
+					}
 
 				} else {
 					throw error(NOT_FOUND, "schema_not_found", schemaInfo.getSchema().getName());

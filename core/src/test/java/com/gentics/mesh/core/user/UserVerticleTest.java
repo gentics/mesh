@@ -453,7 +453,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			InternalActionContext ac = getMockedInternalActionContext(user());
-			assertTrue(user().hasPermissionAsync(ac, node, READ_PERM).toBlocking().value());
+			assertTrue(user().hasPermission(node, READ_PERM));
 
 			NodeReferenceImpl reference = new NodeReferenceImpl();
 			reference.setProjectName(PROJECT_NAME);

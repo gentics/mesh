@@ -282,12 +282,10 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 	public void testCRUDPermissions() {
 		try (NoTx noTx = db.noTx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
-			InternalActionContext ac = getMockedInternalActionContext();
 			TagFamily tagFamily = root.create("test123", user());
-			assertFalse(user().hasPermissionAsync(ac, tagFamily, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
 			user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, tagFamily);
-			ac.data().clear();
-			assertTrue(user().hasPermissionAsync(ac, tagFamily, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertTrue(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
 		}
 	}
 

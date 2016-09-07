@@ -167,6 +167,13 @@
 			</exclusions>
 		</dependency>
 
+		<!-- Caching -->
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+			<version>2.3.3</version>
+		</dependency>
+
 		<!-- Dagger -->
 		<dependency>
 			<groupId>com.google.dagger</groupId>

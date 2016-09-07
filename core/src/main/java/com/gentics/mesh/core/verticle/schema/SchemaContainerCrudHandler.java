@@ -117,19 +117,17 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			Single<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
-			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), GraphPermission.UPDATE_PERM);
-
-			return Single.zip(obsPerm, obsSchema, (perm, schema) -> {
-				if (!perm.booleanValue()) {
-					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
-				}
-				return db.tx(() -> {
-					//TODO SQB ?
-					project.getSchemaContainerRoot().addSchemaContainer(schema);
-					return schema.transformToRest(ac, 0);
+			if (ac.getUser().hasPermission(project.getImpl(), GraphPermission.UPDATE_PERM)) {
+				return getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM).flatMap(schema -> {
+					return db.tx(() -> {
+						//TODO SQB ?
+						project.getSchemaContainerRoot().addSchemaContainer(schema);
+						return schema.transformToRest(ac, 0);
+					});
 				});
-			}).flatMap(x -> x);
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+			}
 
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -148,20 +146,21 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			Single<SchemaContainer> obsSchema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
-			Single<Boolean> obsPerm = ac.getUser().hasPermissionAsync(ac, project.getImpl(), GraphPermission.UPDATE_PERM);
+			if (ac.getUser().hasPermission(project.getImpl(), GraphPermission.UPDATE_PERM)) {
+				// TODO check whether schema is assigned to project
 
-			// TODO check whether schema is assigned to project
+				return boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM).flatMap(schema -> {
 
-			return Single.zip(obsPerm, obsSchema, (perm, schema) -> {
-				if (!perm.booleanValue()) {
-					throw error(FORBIDDEN, "error_missing_perm", projectUuid);
-				}
-				return db.tx(() -> {
-					project.getSchemaContainerRoot().removeSchemaContainer(schema);
-					return Single.just(null);
+					return db.tx(() -> {
+						project.getSchemaContainerRoot().removeSchemaContainer(schema);
+						return Single.just(null);
+					});
 				});
-			}).flatMap(x -> x);
+
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+			}
+
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 

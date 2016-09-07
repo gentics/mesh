@@ -129,25 +129,6 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	void setReferencedNode(Node node);
 
 	/**
-	 * Check given permissions on the given vertex.
-	 * 
-	 * @param ac
-	 * @param vertex
-	 * @param permission
-	 * @return
-	 */
-	boolean hasPermissionSync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
-
-	/**
-	 * Check whether the user has the given permissions for the given vertex.
-	 * 
-	 * @param ac
-	 * @param vertex
-	 * @param permission
-	 */
-	Single<Boolean> hasPermissionAsync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
-
-	/**
 	 * Return an array of human readable permissions for the given vertex.
 	 * 
 	 * @param ac
@@ -178,7 +159,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex vertex);
 
 	/**
-	 * This method will set CRUD permissions to the target node for all roles that would grant the given permissions on the node. The method is most often used
+	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used
 	 * to assign CRUD permissions on newly created elements. Example for adding CRUD permissions on a newly created project: The method will first determine the
 	 * list of roles that would initially enable you to create a new project. It will do so by examining the projectRoot node. After this step the CRUD
 	 * permissions will be added to the newly created project and the found roles. In this case the call would look like this:
@@ -187,7 +168,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * permissions of the source node are inherited by the target node. All permissions between the source node and roles are copied to the target node.
 	 * 
 	 * @param sourceNode
-	 *            Node that will be checked against to find all roles that would grant the given permissions.
+	 *            Node that will be checked against to find all roles that would grant the given permission.
 	 * @param permission
 	 *            Permission that is used in conjunction with the node to determine the list of affected roles.
 	 * @param targetNode
@@ -202,7 +183,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param sourceNode
 	 *            Node that will be checked
 	 * @param permission
-	 *            checked permissions
+	 *            checked permission
 	 * @param targetNode
 	 *            target node
 	 * @param toGrant
@@ -269,7 +250,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	void deactivate();
 
 	/**
-	 * Check whether the user has the given permissions on the given element.
+	 * Check whether the user has the given permission on the given element.
 	 * 
 	 * @param element
 	 * @param permission
@@ -278,7 +259,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	boolean hasPermission(MeshVertex element, GraphPermission permission);
 
 	/**
-	 * Check whether the user has the given permissions on the element with the given id.
+	 * Check whether the user has the given permission on the element with the given id.
 	 * 
 	 * @param elementId
 	 * @param permission

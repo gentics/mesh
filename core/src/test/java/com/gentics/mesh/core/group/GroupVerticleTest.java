@@ -168,15 +168,13 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			final String name = "test12345";
 			GroupCreateRequest request = new GroupCreateRequest();
-			InternalActionContext ac = getMockedInternalActionContext();
 			request.setName(name);
-			String rootUuid;
 			GroupRoot root = meshRoot().getGroupRoot();
-			rootUuid = root.getUuid();
+			String rootUuid = root.getUuid();
 			role().revokePermissions(root, CREATE_PERM);
 			User user = user();
-			assertFalse("The create permissions to the groups root node should have been revoked.",
-					user.hasPermissionAsync(ac, root, CREATE_PERM).toBlocking().value());
+			assertFalse("The create permission to the groups root node should have been revoked.",
+					user.hasPermission(root, CREATE_PERM));
 
 			MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
 			latchFor(future);

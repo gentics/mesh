@@ -1,12 +1,10 @@
 package com.gentics.mesh.util;
 
-import static com.gentics.mesh.api.common.SortOrder.DESCENDING;
-import static com.gentics.mesh.api.common.SortOrder.UNSORTED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.data.TransformableElement;
@@ -28,12 +26,10 @@ public final class TraversalHelper {
 
 	/**
 	 * Create a page result for the given traversal and the specified paging parameters. Due to Tinkerpop Gremlin limitation it is needed to manually duplicate
-	 * the traverals. TP 3.x will be able to reuse existing traversals.
+	 * the traversals. TP 3.x will be able to reuse existing traversals.
 	 * 
 	 * @param traversal
 	 *            Base traversal that is used to find the affected elements
-	 * @param countTraversal
-	 *            Base traversal that is used to find the affected element (used for counting)
 	 * @param sortBy
 	 *            Order by element property (eg. name, creator..). When null no extra sorting will be applied.
 	 * @param order
@@ -49,9 +45,8 @@ public final class TraversalHelper {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	private static <T extends TransformableElement<? extends RestModel>> PageImpl<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
-			VertexTraversal<?, ?, ?> countTraversal, String sortBy, SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT)
-					throws InvalidArgumentException {
+	private static <T extends TransformableElement<? extends RestModel>> PageImpl<T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy,
+			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) throws InvalidArgumentException {
 
 		if (page < 1) {
 			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
@@ -64,43 +59,34 @@ public final class TraversalHelper {
 		// External (for the enduser) all pages start with 1.
 		page = page - 1;
 
-		int low = page * pageSize;
-		int upper = low + pageSize - 1;
+		int low = page * pageSize -1;
+		int upper = low + pageSize;
 
 		if (pageSize == 0) {
 			low = 0;
 			upper = 0;
 		}
 
-		int count = (int) countTraversal.count();
-
-		List<? extends T> list = new ArrayList<>();
-		if (pageSize != 0) {
-			// Only add the filter to the pipeline when the needed parameters were correctly specified.
-			if (order != UNSORTED && sortBy != null) {
-				traversal = traversal.order((VertexFrame f1, VertexFrame f2) -> {
-					if (order == DESCENDING) {
-						VertexFrame tmp = f1;
-						f1 = f2;
-						f2 = tmp;
-					}
-					Object prop1 = f1.getProperty(sortBy);
-					Object prop2 = f2.getProperty(sortBy);
-					return Objects.equals(prop1, prop2) ? 1 : 0;
-				});
+		Iterator<VertexFrame> iterator = traversal.iterator();
+		int count = 0;
+		List<T> elementsOfPage = new ArrayList<>();
+		while (iterator.hasNext()) {
+			VertexFrame element = iterator.next();
+			// Only add those vertices to the list which are within the bounds of the requested page
+			if (count > low && count <= upper) {
+				elementsOfPage.add(element.reframeExplicit(classOfT));
 			}
-
-			list = traversal.range(low, upper).toListExplicit(classOfT);
+			count++;
 		}
 
-		int totalPages = (int) Math.ceil(count / (double) pageSize);
-		// Cap totalpages to 1 since we start with page 1 instead of 0.
-		if (totalPages == 0) {
-			totalPages = 1;
+		// The totalPages of the list response must be zero if the perPage parameter is also zero.
+		int totalPages = 0;
+		if (perPage != 0) {
+			totalPages = (int) Math.ceil(count / (double) (perPage));
 		}
 
 		// Internally the page size was reduced. We need to increment it now that we are finished.
-		return new PageImpl<T>(list, count, ++page, totalPages, list.size(), perPage);
+		return new PageImpl<T>(elementsOfPage, count, ++page, totalPages, elementsOfPage.size(), perPage);
 
 	}
 
@@ -108,15 +94,14 @@ public final class TraversalHelper {
 	 * Return a paged result for the given traversal and paging parameters.
 	 * 
 	 * @param traversal
-	 * @param countTraversal
 	 * @param pagingInfo
 	 * @param classOfT
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
 	public static <T extends TransformableElement<? extends RestModel>> PageImpl<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
-			VertexTraversal<?, ?, ?> countTraversal, PagingParameters pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
-		return getPagedResult(traversal, countTraversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
+			PagingParameters pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
+		return getPagedResult(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
 				pagingInfo.getPerPage(), classOfT);
 	}
 

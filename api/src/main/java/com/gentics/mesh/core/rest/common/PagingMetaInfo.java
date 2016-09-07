@@ -30,9 +30,11 @@ public class PagingMetaInfo {
 	 * 
 	 * @param currentPage
 	 *            Current page number
+	 * @return Fluent API
 	 */
-	public void setCurrentPage(long currentPage) {
+	public PagingMetaInfo setCurrentPage(long currentPage) {
 		this.currentPage = currentPage;
+		return this;
 	}
 
 	/**
@@ -49,9 +51,11 @@ public class PagingMetaInfo {
 	 * 
 	 * @param perPage
 	 *            Per page count
+	 * @return Fluent API
 	 */
-	public void setPerPage(long perPage) {
+	public PagingMetaInfo setPerPage(long perPage) {
 		this.perPage = perPage;
+		return this;
 	}
 
 	/**
@@ -68,9 +72,11 @@ public class PagingMetaInfo {
 	 * 
 	 * @param pageCount
 	 *            Total page count
+	 * @return Fluent API
 	 */
-	public void setPageCount(long pageCount) {
+	public PagingMetaInfo setPageCount(long pageCount) {
 		this.pageCount = pageCount;
+		return this;
 	}
 
 	/**
@@ -87,9 +93,11 @@ public class PagingMetaInfo {
 	 * 
 	 * @param totalCount
 	 *            Total element count
+	 * @return Fluent API
 	 */
-	public void setTotalCount(long totalCount) {
+	public PagingMetaInfo setTotalCount(long totalCount) {
 		this.totalCount = totalCount;
+		return this;
 	}
 
 }

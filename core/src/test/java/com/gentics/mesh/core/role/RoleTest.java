@@ -111,7 +111,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			role.grantPermissions(extraNode, READ_PERM);
 			assertEquals(1, countEdges(role, READ_PERM.label(), Direction.OUT));
 			role.grantPermissions(extraNode, READ_PERM);
-			assertEquals("We already got a permissions edge. No additional edge should have been created.", 1,
+			assertEquals("We already got a permission edge. No additional edge should have been created.", 1,
 					countEdges(role, READ_PERM.label(), Direction.OUT));
 		}
 	}
@@ -128,10 +128,9 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	public void testIsPermitted() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			User user = user();
-			InternalActionContext ac = getMockedInternalActionContext();
 			int nRuns = 2000;
 			for (int i = 0; i < nRuns; i++) {
-				user.hasPermissionAsync(ac, folder("news"), READ_PERM);
+				user.hasPermission(folder("news"), READ_PERM);
 			}
 		}
 	}
@@ -183,10 +182,9 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	public void testRevokePermissionOnGroupRoot() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
-			InternalActionContext ac = getMockedInternalActionContext();
 			User user = user();
-			assertFalse("The create permissions to the groups root node should have been revoked.",
-					user.hasPermissionSync(ac, meshRoot().getGroupRoot(), CREATE_PERM));
+			assertFalse("The create permission to the groups root node should have been revoked.",
+					user.hasPermission(meshRoot().getGroupRoot(), CREATE_PERM));
 		}
 	}
 
@@ -235,7 +233,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 					for (GraphPermission permission : GraphPermission.values()) {
 						assertTrue(
 								"The role {" + role.getName() + "} does not grant perm {" + permission.getSimpleName() + "} to the node {"
-										+ node.getUuid() + "} but it should since the parent object got this role permissions.",
+										+ node.getUuid() + "} but it should since the parent object got this role permission.",
 								role.hasPermission(permission, node));
 					}
 				}
@@ -347,10 +345,10 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
 			Role role = root.getRoleRoot().create("SuperUser", user());
-			assertFalse(user().hasPermissionAsync(ac, role, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertFalse(user().hasPermission(role, GraphPermission.CREATE_PERM));
 			user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);
 			ac.data().clear();
-			assertTrue(user().hasPermissionAsync(ac, role, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertTrue(user().hasPermission(role, GraphPermission.CREATE_PERM));
 		}
 	}
 

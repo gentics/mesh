@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
@@ -224,7 +225,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				// }
 				// });
 
-				obs.onNext(new PermResult(perm, hasPermissionSync(ac, node, perm)));
+				obs.onNext(new PermResult(perm, hasPermission(node, perm)));
 				obs.onCompleted();
 
 			}
@@ -252,16 +253,13 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node) {
-		// String mapKey = "permissions:" + node.getUuid();
-		// return (Set<GraphPermission>) ac.data().computeIfAbsent(mapKey, key -> {
 		Set<GraphPermission> graphPermissions = new HashSet<>();
 		for (GraphPermission perm : GraphPermission.values()) {
-			if (hasPermissionSync(ac, node, perm)) {
+			if (hasPermission(node, perm)) {
 				graphPermissions.add(perm);
 			}
 		}
 		return graphPermissions;
-		// });
 	}
 
 	@Override
@@ -281,7 +279,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.getVertex(Direction.IN);
-			// Find all permissions edges between the found role and target vertex with the specified label
+			// Find all permission edges between the found role and target vertex with the specified label
 			Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
 					MeshInternal.get().database().createComposedIndexKey(role.getId(), elementId));
 			boolean foundPermEdge = edges.iterator().hasNext();
@@ -295,45 +293,21 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean hasPermission(MeshVertex vertex, GraphPermission permission) {
-		return hasPermissionForId(vertex.getImpl().getId(), permission);
-	}
-
-	@Override
-	public boolean hasPermissionSync(InternalActionContext ac, MeshVertex node, GraphPermission permission) {
 		if (log.isTraceEnabled()) {
-			log.debug("Checking permissions for vertex {" + node.getUuid() + "}");
+			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
 		}
-
-		if (ac.data() == null) {
-			return hasPermission(node, permission);
-		}
-		String mapKey = getPermissionMapKey(node, permission);
-		return (boolean) ac.data().computeIfAbsent(mapKey, key -> {
-			return hasPermission(node, permission);
-		});
-	}
-
-	@Override
-	public Single<Boolean> hasPermissionAsync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission) {
-		if (ac.data() != null) {
-			Boolean perm = (Boolean) ac.data().get(getPermissionMapKey(vertex, permission));
-			if (perm != null) {
-				return Single.just(perm);
+		
+		if(PermissionStore.hasPermission(getId(), permission, vertex.getImpl().getId())) {
+			return true;
+		} else {
+			boolean hasPerm = hasPermissionForId(vertex.getImpl().getId(), permission);
+			// We only store granting permissions in the store in order reduce the invalidation calls.
+			// This way we do not need to invalidate the cache if a role is removed from a group or a role is deleted.
+			if(hasPerm) {
+				PermissionStore.store(getId(), permission, vertex.getImpl().getId());
 			}
+			return hasPerm;
 		}
-		Database db = MeshInternal.get().database();
-		return db.asyncNoTx(() -> Single.just(hasPermission(vertex, permission)));
-	}
-
-	/**
-	 * Return the map key for the action context data field that may hold the fetched permissions.
-	 * 
-	 * @param vertex
-	 * @param permission
-	 * @return
-	 */
-	private String getPermissionMapKey(MeshVertex vertex, GraphPermission permission) {
-		return "perm:" + permission.label() + ":" + vertex.getUuid();
 	}
 
 	@Override
@@ -433,11 +407,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
-		// 1. Determine all roles that grant given permissions on the source node.
+		// 1. Determine all roles that grant given permission on the source node.
 		List<? extends Role> rolesThatGrantPermission = sourceNode.getImpl().in(permission.label()).has(RoleImpl.class)
 				.toListExplicit(RoleImpl.class);
 
-		// 2. Add CRUD permissions to identified roles and target node
+		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : rolesThatGrantPermission) {
 			role.grantPermissions(targetNode, toGrant);
 		}
@@ -452,7 +426,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			List<? extends Role> rolesWithPerm = sourceNode.getImpl().in(perm.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
 			for (Role role : rolesWithPerm) {
 				if (log.isDebugEnabled()) {
-					log.debug("Granting permissions {" + perm.name() + "} to node {" + targetNode.getUuid() + "} on role {" + role.getName() + "}");
+					log.debug("Granting permission {" + perm.name() + "} to node {" + targetNode.getUuid() + "} on role {" + role.getName() + "}");
 				}
 				role.grantPermissions(targetNode, perm);
 			}
@@ -471,6 +445,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// outE(HAS_USER).removeAll();
 		batch.addEntry(this, DELETE_ACTION);
 		getElement().remove();
+		PermissionStore.invalidate();
 	}
 
 	/**

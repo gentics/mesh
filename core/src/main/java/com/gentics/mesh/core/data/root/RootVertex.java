@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 import rx.Single;
 
@@ -25,6 +26,20 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	List<? extends T> findAll();
+
+	/**
+	 * Find the visible elements and return a paged result.
+	 * 
+	 * @param ac
+	 *            action context
+	 * @param pagingInfo
+	 *            Paging information object that contains page options.
+	 * 
+	 * @return
+	 * @throws InvalidArgumentException
+	 *             if the paging options are malformed.
+	 */
+	PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Find the element with the given name.
@@ -65,20 +80,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	T findByUuidSync(String uuid);
-
-	/**
-	 * Find the visible elements and return a paged result.
-	 * 
-	 * @param ac
-	 *            action context
-	 * @param pagingInfo
-	 *            Paging information object that contains page options.
-	 * 
-	 * @return
-	 * @throws InvalidArgumentException
-	 *             if the paging options are malformed.
-	 */
-	PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Resolve the given stack to the vertex.

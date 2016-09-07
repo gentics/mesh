@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
@@ -86,12 +87,10 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	public Single<MicroschemaContainer> create(InternalActionContext ac) {
 		MeshAuthUser requestUser = ac.getUser();
 		Database db = MeshInternal.get().database();
-
 		try {
 			Microschema microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			microschema.validate();
-
-			return requestUser.hasPermissionAsync(ac, this, GraphPermission.CREATE_PERM).flatMap(hasPerm -> {
+			if (requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
 				Tuple<SearchQueueBatch, MicroschemaContainer> tuple = db.tx(() -> {
 					requestUser.reload();
 					MicroschemaContainer container = create(microschema, requestUser);
@@ -103,7 +102,9 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 				SearchQueueBatch batch = tuple.v1();
 				MicroschemaContainer microschemaContainer = tuple.v2();
 				return batch.process().andThen(Single.just(microschemaContainer));
-			});
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", microschema.getUuid());
+			}
 		} catch (IOException e) {
 			return Single.error(e);
 		}
