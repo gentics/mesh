@@ -7,12 +7,15 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Vertex;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -79,7 +82,7 @@ public class SearchRestHandler {
 	 * Handle a search request.
 	 * 
 	 * @param ac
-	 * @param rootVertex
+	 * @param rootVertexGetter
 	 *            Root Vertex of the elements that should be searched
 	 * @param classOfRL
 	 *            Class of the rest model list that should be used when creating the response
@@ -93,7 +96,7 @@ public class SearchRestHandler {
 	 * @throws MeshJsonException
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
-			Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
+			Func0<RootVertex<T>> rootVertexGetter, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
 		PagingParameters pagingInfo = ac.getPagingParameters();
@@ -139,6 +142,8 @@ public class SearchRestHandler {
 				db.noTx(() -> {
 					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
 					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
+					RootVertex<T> rootVertex = rootVertexGetter.call();
+
 
 					for (SearchHit hit : response.getHits()) {
 
@@ -151,20 +156,21 @@ public class SearchRestHandler {
 						ObservableFuture<Tuple<T, String>> obsResult = RxHelper.observableFuture();
 						obs.add(obsResult);
 
-						// TODO check permissions without loading the vertex
+						FramedGraph graph = Database.getThreadLocalGraph();
+						// TODO maybe we should also check whether this element is indeed part of the root vertex?
+						// The current index access is the fastest option but it would also be possible to utilize an
+						// edge index and only retrieve elements that are part of the provided root vertex.
+						Iterator<Vertex> it = graph.getVertices("MeshVertexImpl.uuid", uuid).iterator();
+						if (it.hasNext()) {
+							Vertex elementVertex = it.next();
 
-						// Locate the node
-						rootVertex.call().findByUuid(uuid).subscribe(element -> {
-							if (element == null) {
-								log.error("Object could not be found for uuid {" + uuid + "} in root vertex {"
-										+ rootVertex.call().getImpl().getFermaType() + "}");
-								obsResult.toHandler().handle(Future.succeededFuture());
-							} else {
-								obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
-							}
-						}, error -> {
-							obsResult.toHandler().handle(Future.failedFuture(error));
-						});
+							T element = graph.frameElementExplicit(elementVertex, rootVertex.getPersistanceClass());
+							obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
+						} else {
+							log.error(
+									"Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.getImpl().getFermaType() + "}");
+							obsResult.toHandler().handle(Future.succeededFuture());
+						}
 					}
 
 					Observable.merge(obs).collect(() -> {
