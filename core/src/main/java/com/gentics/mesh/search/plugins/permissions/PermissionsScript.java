@@ -8,7 +8,7 @@ import org.elasticsearch.script.AbstractSearchScript;
 public class PermissionsScript extends AbstractSearchScript {
 	@Override
 	public Object run() {
-		System.out.println(String.format("UUID: %s", source().get("uuid")));
+//		System.out.println(String.format("UUID: %s", source().get("uuid")));
 		return true;
 	}
 }

@@ -18,6 +18,6 @@ public class PermissionsPlugin extends Plugin {
 	}
 
 	public void onModule(ScriptModule scriptModule) {
-		scriptModule.registerScript("my_script", PermissionsPluginFactory.class);
+		scriptModule.registerScript("hasPermission", PermissionsPluginFactory.class);
 	}
 }
