@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.gentics.mesh.search.plugins.empty.EmptyPlugin;
+import com.gentics.mesh.search.plugins.permissions.PermissionsPlugin;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
@@ -87,6 +89,8 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();
 		classpathPlugins.add(DeleteByQueryPlugin.class);
+		classpathPlugins.add(PermissionsPlugin.class);
+		classpathPlugins.add(EmptyPlugin.class);
 		// TODO configure ES cluster options
 		node = new MeshNode(settings, classpathPlugins).start();
 		if (log.isDebugEnabled()) {
