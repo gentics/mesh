@@ -122,10 +122,10 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid()).toBlocking().value();
 			assertNotNull(project);
-			assertTrue(user().hasPermissionAsync(ac, project, CREATE_PERM).toBlocking().value());
-			assertTrue(user().hasPermissionAsync(ac, project.getBaseNode(), CREATE_PERM).toBlocking().value());
-			assertTrue(user().hasPermissionAsync(ac, project.getTagFamilyRoot(), CREATE_PERM).toBlocking().value());
-			assertTrue(user().hasPermissionAsync(ac, project.getNodeRoot(), CREATE_PERM).toBlocking().value());
+			assertTrue(user().hasPermission(project, CREATE_PERM));
+			assertTrue(user().hasPermission(project.getBaseNode(), CREATE_PERM));
+			assertTrue(user().hasPermission(project.getTagFamilyRoot(), CREATE_PERM));
+			assertTrue(user().hasPermission(project.getNodeRoot(), CREATE_PERM));
 
 			assertEquals("folder", project.getBaseNode().getSchemaContainer().getLatestVersion().getName());
 		}

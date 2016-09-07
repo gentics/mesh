@@ -173,7 +173,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			throw error(BAD_REQUEST, "project_missing_name");
 		}
 		return db.noTx(() -> {
-			if (!creator.hasPermissionSync(ac, boot.projectRoot(), CREATE_PERM)) {
+			if (!creator.hasPermission(boot.projectRoot(), CREATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid());
 			}
 			// TODO instead of this check, a constraint in the db should be added

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -122,6 +123,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		for (GraphPermission permission : permissions) {
 			outE(permission.label()).mark().inV().retain((MeshVertexImpl) node).back().removeAll();
 		}
+		PermissionStore.invalidate();
 	}
 
 	@Override
@@ -132,6 +134,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 			batch.addEntry(group, STORE_ACTION);
 		}
 		getVertex().remove();
+		PermissionStore.invalidate();
 	}
 
 	@Override

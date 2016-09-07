@@ -198,10 +198,10 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
 			Project project = root.getProjectRoot().create("TestProject", user(), schemaContainer("folder").getLatestVersion());
-			assertFalse("The user should not have create permissions on the project.",user().hasPermissionAsync(ac, project, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertFalse("The user should not have create permissions on the project.",user().hasPermission(project, GraphPermission.CREATE_PERM));
 			user().addCRUDPermissionOnRole(root.getProjectRoot(), GraphPermission.CREATE_PERM, project);
 			ac.data().clear();
-			assertTrue(user().hasPermissionAsync(ac, project, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertTrue(user().hasPermission(project, GraphPermission.CREATE_PERM));
 		}
 	}
 

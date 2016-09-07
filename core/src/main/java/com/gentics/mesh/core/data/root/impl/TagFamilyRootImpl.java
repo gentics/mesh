@@ -122,7 +122,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 				throw conflict(conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name", name);
 			}
 
-			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
+			if (requestUser.hasPermission(this, CREATE_PERM)) {
 				Tuple<SearchQueueBatch, TagFamily> tuple = db.tx(() -> {
 					requestUser.reload();
 					this.reload();

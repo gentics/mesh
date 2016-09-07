@@ -122,51 +122,49 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 			Project project = getProject();
 			String projectName = project.getName();
 			String projectUuid = project.getUuid();
-			Single<Release> obsFlat = requestUser.hasPermissionAsync(ac, project, GraphPermission.UPDATE_PERM).flatMap(hasPerm -> {
-				if (hasPerm) {
-					Tuple<SearchQueueBatch, Release> tuple = db.tx(() -> {
-						requestUser.reload();
 
-						// Check for uniqueness of release name (per project)
-						Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class,
-								getUniqueNameKey(createRequest.getName()));
-						if (conflictingRelease != null) {
-							throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name",
-									createRequest.getName());
-						}
+			if (requestUser.hasPermission(project, GraphPermission.UPDATE_PERM)) {
+				Tuple<SearchQueueBatch, Release> tuple = db.tx(() -> {
+					requestUser.reload();
 
-						Release release = create(createRequest.getName(), requestUser);
-						NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft");
+					// Check for uniqueness of release name (per project)
+					Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class,
+							getUniqueNameKey(createRequest.getName()));
+					if (conflictingRelease != null) {
+						throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name",
+								createRequest.getName());
+					}
 
-						// Create index queue entries for creating indices
-						SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-						SearchQueueBatch batch = queue.createBatch();
-						batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"), Node.TYPE,
-								SearchQueueEntryAction.CREATE_INDEX);
-						batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "published"), Node.TYPE,
-								SearchQueueEntryAction.CREATE_INDEX);
+					Release release = create(createRequest.getName(), requestUser);
+					NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft");
 
-						return Tuple.tuple(batch, release);
-					});
+					// Create index queue entries for creating indices
+					SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+					SearchQueueBatch batch = queue.createBatch();
+					batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"), Node.TYPE,
+							SearchQueueEntryAction.CREATE_INDEX);
+					batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "published"), Node.TYPE,
+							SearchQueueEntryAction.CREATE_INDEX);
 
-					SearchQueueBatch batch = tuple.v1();
-					Release release = tuple.v2();
-					Single<Release> result = batch.process().andThen(Single.create(sub -> {
-						try (NoTx noTrx = db.noTx()) {
-							// start the node migration
-							DeliveryOptions options = new DeliveryOptions();
-							options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
-							options.addHeader(NodeMigrationVerticle.UUID_HEADER, tuple.v2().getUuid());
-							Mesh.vertx().eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options);
-						}
-						sub.onSuccess(release);
-					}));
-					return result;
-				} else {
-					throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName);
-				}
-			});
-			return obsFlat;
+					return Tuple.tuple(batch, release);
+				});
+
+				SearchQueueBatch batch = tuple.v1();
+				Release release = tuple.v2();
+				Single<Release> result = batch.process().andThen(Single.create(sub -> {
+					try (NoTx noTrx = db.noTx()) {
+						// start the node migration
+						DeliveryOptions options = new DeliveryOptions();
+						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
+						options.addHeader(NodeMigrationVerticle.UUID_HEADER, tuple.v2().getUuid());
+						Mesh.vertx().eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options);
+					}
+					sub.onSuccess(release);
+				}));
+				return result;
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName);
+			}
 		});
 	}
 

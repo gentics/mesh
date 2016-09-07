@@ -184,8 +184,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 			PagingParameters pagingInfo) throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(requestUser, release, languageTags, type);
-		VertexTraversal<?, ?, ?> countTraversal = getTaggedNodesTraversal(requestUser, release, languageTags, type);
-		PageImpl<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
+		PageImpl<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
 		return nodePage;
 	}
 

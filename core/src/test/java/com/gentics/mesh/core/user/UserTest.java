@@ -8,7 +8,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLI
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
-import static com.gentics.mesh.mock.Mocks.getMockedVoidInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -16,23 +15,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -53,8 +47,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import rx.Completable;
-import rx.Observable;
-import rx.Single;
 
 public class UserTest extends AbstractBasicIsolatedObjectTest {
 
@@ -102,48 +94,18 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testHasPermission() {
 		try (NoTx noTx = db.noTx()) {
-			InternalActionContext ac = getMockedVoidInternalActionContext(user());
 			User user = user();
-			for (int e = 0; e < 10; e++) {
-				long start = System.currentTimeMillis();
-				int nChecks = 2000;
+			long start = System.currentTimeMillis();
+			int nChecks = 9000;
+			int runs = 90;
+			for (int e = 0; e < runs; e++) {
 				for (int i = 0; i < nChecks; i++) {
-					assertTrue(user.hasPermissionAsync(ac, content(), READ_PERM).toBlocking().value());
+					assertTrue(user.hasPermission(content(), READ_PERM));
 				}
-				long duration = System.currentTimeMillis() - start;
-				System.out.println("Duration: " + duration);
-				System.out.println("Duration per check: " + ((double) duration / (double) nChecks));
 			}
-		}
-	}
-
-	@Test
-	@Ignore
-	public void testHasPermissionAsync() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			InternalActionContext ac = getMockedVoidInternalActionContext(user());
-			User user = user();
-			Language language = english();
-			Set<Observable<Boolean>> obs = new HashSet<>();
-			for (int e = 0; e < 10; e++) {
-				long start = System.currentTimeMillis();
-				int nChecks = 1000;
-				for (int i = 0; i < nChecks; i++) {
-					Single<Boolean> permObs = user.hasPermissionAsync(ac, language, READ_PERM);
-					obs.add(permObs.toObservable());
-				}
-
-				Observable.merge(obs).subscribe(result -> {
-					assertTrue(result);
-				}, error -> {
-					fail(error.getMessage());
-				}, () -> {
-					long duration = System.currentTimeMillis() - start;
-					System.out.println("Duration: " + duration);
-					System.out.println("Duration per check: " + ((double) duration / (double) nChecks));
-				});
-
-			}
+			long duration = System.currentTimeMillis() - start;
+			System.out.println("Duration: " + duration);
+			System.out.println("Duration per check: " + ((double) duration / (double) (nChecks * runs)));
 		}
 	}
 
@@ -359,12 +321,10 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			MeshRoot root = meshRoot();
 			User user = user();
-			InternalActionContext ac = getMockedInternalActionContext("");
 			User newUser = root.getUserRoot().create("Anton", user());
-			assertFalse(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertFalse(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
 			user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
-			ac.data().clear();
-			assertTrue(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertTrue(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
 		}
 	}
 
@@ -418,7 +378,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 				assertTrue(
 						"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
 								+ perm.name() + "}",
-						newUser.hasPermissionSync(ac, targetNode, perm));
+						newUser.hasPermission(targetNode, perm));
 			}
 
 			// roleWithAllPerm

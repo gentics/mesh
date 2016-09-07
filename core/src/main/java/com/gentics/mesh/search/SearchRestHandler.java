@@ -171,7 +171,7 @@ public class SearchRestHandler {
 						return new ArrayList<Tuple<T, String>>();
 					}, (x, y) -> {
 						// Check permissions and language
-						if (y != null && requestUser.hasPermissionSync(ac, y.v1(), permission)
+						if (y != null && requestUser.hasPermission(y.v1(), permission)
 								&& (y.v2() == null || requestedLanguageTags.contains(y.v2()))) {
 							x.add(y);
 						}

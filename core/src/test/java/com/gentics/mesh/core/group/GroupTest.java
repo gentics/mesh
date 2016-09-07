@@ -158,10 +158,10 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 			User user = user();
 			InternalActionContext ac = getMockedInternalActionContext();
 			Group group = root.getGroupRoot().create("newGroup", user);
-			assertFalse(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertFalse(user.hasPermission(group, GraphPermission.CREATE_PERM));
 			user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
 			ac.data().clear();
-			assertTrue(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().value());
+			assertTrue(user.hasPermission(group, GraphPermission.CREATE_PERM));
 		}
 	}
 
