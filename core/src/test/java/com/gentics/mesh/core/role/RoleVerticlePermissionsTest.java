@@ -36,7 +36,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 	@Test
 	public void testRevokeAllPermissionFromProject() {
 		try (NoTx noTx = db.noTx()) {
-			// Add permissions on own role
+			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 
@@ -54,7 +54,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 	@Test
 	public void testAddPermissionToProjectTagFamily() {
 		try (NoTx noTx = db.noTx()) {
-			// Add permissions on own role
+			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 
@@ -76,7 +76,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 	@Test
 	public void testAddPermissionToMicroschema() {
 		try (NoTx noTx = db.noTx()) {
-			// Add permissions on own role
+			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
 			// Revoke all permissions to vcard microschema
@@ -111,13 +111,13 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			request.getPermissions().add("read");
 			request.getPermissions().add("update");
 			request.getPermissions().add("create");
-			assertTrue("The role should have delete permissions on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
+			assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 
 			MeshResponse<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), pathToElement, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "role_updated_permission", role().getName());
-			assertFalse("The role should no longer have delete permissions on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
+			assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 		}
 
 	}
@@ -125,7 +125,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 	@Test
 	public void testReadPermissionsOnProjectTagFamily() {
 		try (NoTx noTx = db.noTx()) {
-			// Add permissions on own role
+			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 

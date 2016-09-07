@@ -22,7 +22,7 @@ public interface NodeRoot extends RootVertex<Node> {
 	 * Find all nodes that are visible for the user.
 	 * 
 	 * @param requestUser
-	 *            User that is used to check view permissions
+	 *            User that is used to check view permission
 	 * @param languageTags
 	 * @param pagingInfo
 	 *            Paging parameters

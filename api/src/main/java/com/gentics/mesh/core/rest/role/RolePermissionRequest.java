@@ -6,7 +6,7 @@ import java.util.Set;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
- * POJO for a role permissions request.
+ * POJO for a role permission request.
  *
  */
 public class RolePermissionRequest implements RestModel {

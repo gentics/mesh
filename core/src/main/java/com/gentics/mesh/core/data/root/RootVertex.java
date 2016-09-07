@@ -50,7 +50,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	Single<T> findByName(String name);
 
 	/**
-	 * Load the object by name and check the given permissions.
+	 * Load the object by name and check the given permission.
 	 * 
 	 * @param ac
 	 *            Context to be used in order to check user permissions
@@ -97,7 +97,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	Single<T> create(InternalActionContext ac);
 
 	/**
-	 * Load the object by uuid and check the given permissions.
+	 * Load the object by uuid and check the given permission.
 	 * 
 	 * @param ac
 	 *            Context to be used in order to check user permissions
@@ -109,7 +109,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	Single<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
 
 	/**
-	 * Load the object by uuid and check the given permissions.
+	 * Load the object by uuid and check the given permission.
 	 * 
 	 * @param ac
 	 * @param uuid

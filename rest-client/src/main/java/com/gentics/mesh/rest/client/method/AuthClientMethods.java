@@ -35,7 +35,7 @@ public interface AuthClientMethods {
 	 * Assign permissions in between the given role and the object uuid.
 	 * 
 	 * @param roleUuid
-	 *            Role uuid that is used to assign permissions to
+	 *            Role uuid that is used to assign permission to
 	 * @param objectUuid
 	 *            Uuid of the object to which permissions are granted or revoked
 	 * @param permission

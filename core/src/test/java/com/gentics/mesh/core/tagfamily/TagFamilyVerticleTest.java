@@ -81,7 +81,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 					.findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			assertNotNull("The response did not contain the expected role permissions field value", future.result().getRolePerms());
+			assertNotNull("The response did not contain the expected role permission field value", future.result().getRolePerms());
 			assertEquals("The response did not contain the expected amount of role permissions.", 6, future.result().getRolePerms().length);
 		}
 

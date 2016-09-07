@@ -86,7 +86,7 @@ public class SearchRestHandler {
 	 * @param indices
 	 *            index names to search
 	 * @param permission
-	 *            required permissions
+	 *            required permission
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 * @throws InvalidArgumentException

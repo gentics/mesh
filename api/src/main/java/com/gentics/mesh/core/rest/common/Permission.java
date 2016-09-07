@@ -6,7 +6,7 @@ public enum Permission {
 	private String name;
 
 	/**
-	 * Create a new permissions
+	 * Create a new permission
 	 * 
 	 * @param name
 	 *            human readable name
@@ -16,7 +16,7 @@ public enum Permission {
 	}
 
 	/**
-	 * Return the human readable name of the permissions.
+	 * Return the human readable name of the permission.
 	 * 
 	 * @return
 	 */

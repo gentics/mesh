@@ -19,13 +19,13 @@ public final class RestModelHelper {
 	}
 
 	/**
-	 * Examine the role permissions parameter query value and set the role perms field in the rest model.
+	 * Examine the role permission parameter query value and set the role perms field in the rest model.
 	 * 
 	 * @param ac
 	 * @param sourceElement
-	 *            Element to be used for permissions retrieval
+	 *            Element to be used for permission retrieval
 	 * @param restModel
-	 *            Rest model which contains the role permissions field
+	 *            Rest model which contains the role permission field
 	 */
 	public static void setRolePermissions(InternalActionContext ac, GraphFieldSchemaContainer<?, ?, ?, ?> sourceElement,
 			FieldSchemaContainer restModel) {

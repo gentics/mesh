@@ -1268,7 +1268,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	/**
-	 * Get a vertex traversal to find the children of this node, this user has read permissions for
+	 * Get a vertex traversal to find the children of this node, this user has read permission for
 	 *
 	 * @param requestUser
 	 *            user

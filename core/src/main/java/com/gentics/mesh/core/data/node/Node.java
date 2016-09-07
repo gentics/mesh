@@ -230,7 +230,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends Node> getChildren(String releaseUuid);
 
 	/**
-	 * Return the list of children for this node, that the given user has read permissions for
+	 * Return the list of children for this node, that the given user has read permission for
 	 *
 	 * @param requestUser
 	 *            user

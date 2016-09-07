@@ -55,7 +55,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	}
 
 	/**
-	 * Handle a permissions read request.
+	 * Handle a permission read request.
 	 * 
 	 * @param ac
 	 * @param userUuid
@@ -70,7 +70,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			throw error(BAD_REQUEST, "user_permission_path_missing");
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Handling permissions request for element on path {" + pathToElement + "}");
+			log.debug("Handling permission request for element on path {" + pathToElement + "}");
 		}
 		db.asyncNoTx(() -> {
 
