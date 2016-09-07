@@ -43,20 +43,18 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 		return list;
 	}
 
-	@Test
-	public void testPermissionPerformance() throws Exception {
-		// 1. Preperation
+	private MeshRestClient createTestData() {
 		UserCreateRequest req = new UserCreateRequest();
 		GroupResponse group = createGroup("restrictedGroup");
-		ProjectResponse project = getResult(getClient().findProjects().invoke()).getData().get(0);
+		ProjectResponse project = call(() -> getClient().findProjects()).getData().get(0);
 
 		req.setUsername("restrictedUser").setPassword("test1234");
 		req.setGroupUuid(group.getUuid());
-		UserResponse user = getResult(getClient().createUser(req).invoke());
+		UserResponse user = call(() -> getClient().createUser(req));
 		RoleResponse role = createRole("restrictedRole", group.getUuid());
-		call(() -> getClient().addUserToGroup(group.getUuid(), user.getUuid()));
+		call(() -> getClient().addRoleToGroup(group.getUuid(), role.getUuid()));
 
-		int nodeCount = 50;
+		int nodeCount = 500;
 		int batchSize = 100;
 
 		NodeResponse lastNode = null;
@@ -67,10 +65,10 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 		nqr.setLanguage("en");
 		nqr.setSchema(new SchemaReference().setName("folder"));
 		while (i < nodeCount) {
-				for (int j = 0; j < batchSize && i + j < nodeCount; j++) {
-					nqr.getFields().put("name", new StringFieldImpl().setString("searchNode" + (i+j)));
-					lastNode = call(() -> getClient().createNode(PROJECT_NAME, nqr));
-				}
+			for (int j = 0; j < batchSize && i + j < nodeCount; j++) {
+				nqr.getFields().put("name", new StringFieldImpl().setString("searchNode" + (i+j)));
+				lastNode = call(() -> getClient().createNode(PROJECT_NAME, nqr));
+			}
 			i += batchSize;
 			long newStamp = System.currentTimeMillis();
 			long diff = newStamp - timestamp;
@@ -80,25 +78,59 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 
 		// Grant permission on last node
 		latchFor(getClient().updateRolePermissions(role.getUuid(), String.format("projects/%s/nodes/%s", project.getUuid(), lastNode.getUuid()), new RolePermissionRequest().setPermissions(Sets.newHashSet("read"))).invoke());
-		NodeListResponse res = call(() -> getClient().findNodes(PROJECT_NAME, new VersioningParameters().setVersion("draft")));
 
 		MeshRestClient restrictedClient = MeshRestClient.create("localhost", getPort(), vertx,
 				Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
 		restrictedClient.setLogin(user.getUsername(), "test1234");
 		restrictedClient.login().toBlocking().value();
 
-		// 2. Execute Test
+		return restrictedClient;
+	}
+
+	private void runQuery(MeshRestClient client, String query, int runs) {
+		long timestamp;
+		long totalDiff = 0;
+		long longestDiff = 0;
+		long shortestDiff = Long.MAX_VALUE;
+		for (int j = 0; j < runs; j++) {
+			timestamp = System.currentTimeMillis();
+			NodeListResponse resultList = call(() -> client.searchNodes(query, new VersioningParameters().setVersion("draft")));
+			long newStamp = System.currentTimeMillis();
+			long diff = newStamp - timestamp;
+			if (diff > longestDiff) longestDiff = diff;
+			if (diff < shortestDiff) shortestDiff = diff;
+			totalDiff += diff;
+			assertEquals(1, resultList.getData().size());
+		}
+		System.out.println(String.format("Search complete. Shortest took %dms. Longest took %dms, avg: %.3fms", shortestDiff, longestDiff, totalDiff / (float)runs));
+
+	}
+
+	@Test
+	public void testPermissionPerformanceNoScript() throws Exception {
+		MeshRestClient client = createTestData();
 		String query = "{\n" +
 				"  \"query\": {\n" +
-				"    \"match_all\": {}\n" +
+				"     \"match_all\": { }\n" +
 				"  }\n" +
 				"}";
-		timestamp = System.currentTimeMillis();
-		NodeListResponse resultList = call(() -> restrictedClient.searchNodes(query, new VersioningParameters().setVersion("draft")));
-		long newStamp = System.currentTimeMillis();
-		long diff = newStamp - timestamp;
+		runQuery(client, query, 200);
+	}
 
-		System.out.println(String.format("Search complete. Took %.3f seconds", diff/1000f));
-		assertEquals(1, resultList.getData().size());
+	@Test
+	public void testPermissionPerformanceEmptyScript() throws Exception {
+		MeshRestClient client = createTestData();
+		String query = "{\n" +
+				"  \"query\": {\n" +
+				"     \"match_all\": { }\n" +
+				"  },\n" +
+				"  \"script_fields\": {\n" +
+				"    \"meshscript.hasPermission\": {\n" +
+				"        \"script\": \"empty\",\n" +
+				"        \"lang\": \"native\"\n" +
+				"    }\n" +
+				"  }\n" +
+				"}";
+		runQuery(client, query, 200);
 	}
 }
