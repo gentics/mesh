@@ -162,4 +162,13 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, node));
 		}
 	}
+
+	@Test
+	public void testAddPermissionToNonExistingProject() {
+		try (NoTx noTx = db.noTx()) {
+			RolePermissionRequest request = new RolePermissionRequest();
+			request.getPermissions().add("read");
+			call(() -> getClient().updateRolePermissions(role().getUuid(), "projects/bogus1234/nodes", request));
+		}
+	}
 }
