@@ -7,6 +7,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -22,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.MeshAssert.getResult;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
@@ -30,6 +30,12 @@ import static org.junit.Assert.assertEquals;
  * Created by philippguertler on 05.09.16.
  */
 public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
+
+	private static String QUERY_MATCH_ALL = "{\n" +
+			"  \"query\": {\n" +
+			"     \"match_all\": { }\n" +
+			"  }\n" +
+			"}";
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
@@ -106,15 +112,31 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	}
 
+	private void createRoles(int count) {
+		RoleCreateRequest req = new RoleCreateRequest();
+		MeshRestClient client = getClient();
+		for (int i = 0; i < count; i++) {
+			req.setName("testRole" + i);
+			RoleResponse role = call(() -> client.createRole(req));
+			call(() -> client.updateRolePermissions(role.getUuid(), String.format("projects/%s/nodes", PROJECT_NAME), createPermissionRequest("read")));
+		}
+	}
+
+	private RolePermissionRequest createPermissionRequest(String... permissions) {
+		return new RolePermissionRequest().setPermissions(Sets.newHashSet(permissions));
+	}
+
 	@Test
 	public void testPermissionPerformanceNoScript() throws Exception {
 		MeshRestClient client = createTestData();
-		String query = "{\n" +
-				"  \"query\": {\n" +
-				"     \"match_all\": { }\n" +
-				"  }\n" +
-				"}";
-		runQuery(client, query, 200);
+		runQuery(client, QUERY_MATCH_ALL, 200);
+	}
+
+	@Test
+	public void testPermissionPerformanceNoScriptManyRoles() throws Exception {
+		createRoles(100);
+		MeshRestClient client = createTestData();
+		runQuery(client, QUERY_MATCH_ALL, 200);
 	}
 
 	@Test
