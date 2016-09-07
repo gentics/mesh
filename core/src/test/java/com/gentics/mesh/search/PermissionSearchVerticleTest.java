@@ -17,6 +17,7 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.google.common.collect.Sets;
 import io.vertx.core.AbstractVerticle;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 			"     \"match_all\": { }\n" +
 			"  }\n" +
 			"}";
+	private ProjectResponse project;
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
@@ -49,10 +51,14 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 		return list;
 	}
 
+	@Before
+	public void fetchTestData() {
+		project = call(() -> getClient().findProjects()).getData().get(0);
+	}
+
 	private MeshRestClient createTestData() {
 		UserCreateRequest req = new UserCreateRequest();
 		GroupResponse group = createGroup("restrictedGroup");
-		ProjectResponse project = call(() -> getClient().findProjects()).getData().get(0);
 
 		req.setUsername("restrictedUser").setPassword("test1234");
 		req.setGroupUuid(group.getUuid());
@@ -115,11 +121,14 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 	private void createRoles(int count) {
 		RoleCreateRequest req = new RoleCreateRequest();
 		MeshRestClient client = getClient();
+		long timestamp = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
 			req.setName("testRole" + i);
 			RoleResponse role = call(() -> client.createRole(req));
-			call(() -> client.updateRolePermissions(role.getUuid(), String.format("projects/%s/nodes", PROJECT_NAME), createPermissionRequest("read")));
+			call(() -> client.updateRolePermissions(role.getUuid(), String.format("projects/%s/nodes", project.getUuid()), createPermissionRequest("read")));
 		}
+		long diff = System.currentTimeMillis() - timestamp;
+		System.out.println(String.format("Creating %d roles took %.3f seconds", count, diff / 1000f));
 	}
 
 	private RolePermissionRequest createPermissionRequest(String... permissions) {
@@ -134,7 +143,7 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testPermissionPerformanceNoScriptManyRoles() throws Exception {
-		createRoles(100);
+		createRoles(500);
 		MeshRestClient client = createTestData();
 		runQuery(client, QUERY_MATCH_ALL, 200);
 	}
