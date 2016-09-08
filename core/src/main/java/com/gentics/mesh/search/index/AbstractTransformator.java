@@ -1,10 +1,6 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.search.index.MappingHelper.DATE;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+import static com.gentics.mesh.search.index.MappingHelper.*;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 
 import java.util.ArrayList;
@@ -19,6 +15,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 
+import com.orientechnologies.orient.core.id.ORecordId;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -36,6 +33,13 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 	 */
 	protected void addBasicReferences(JsonObject document, MeshCoreVertex<?, ?> vertex) {
 		document.put("uuid", vertex.getUuid());
+		Object id = vertex.getElement().getId();
+		if (id instanceof ORecordId) {
+			ORecordId oid = (ORecordId) id;
+			document.put("odbclusterid", oid.clusterId);
+			document.put("odbposition", oid.clusterPosition);
+		}
+
 		if (vertex instanceof CreatorTrackingVertex) {
 			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex) vertex;
 			addUser(document, "creator", createdVertex.getCreator());
@@ -109,6 +113,8 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 		mappingProperties.put("edited", fieldType(DATE, NOT_ANALYZED));
 		mappingProperties.put("editor", getUserReferenceMapping());
 		mappingProperties.put("creator", getUserReferenceMapping());
+		mappingProperties.put("odbclusterid", fieldType(INTEGER, NOT_ANALYZED));
+		mappingProperties.put("odbposition", fieldType(LONG, NOT_ANALYZED));
 
 		JsonObject typeMapping = new JsonObject();
 		typeMapping.put("properties", mappingProperties);

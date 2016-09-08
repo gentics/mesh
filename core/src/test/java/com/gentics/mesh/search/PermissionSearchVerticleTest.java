@@ -32,12 +32,24 @@ import static org.junit.Assert.assertEquals;
  */
 public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 
-	private static String QUERY_MATCH_ALL = "{\n" +
+	private static final String QUERY_EMPTY_SCRIPT = "{\n" +
+			"  \"query\": {\n" +
+			"     \"match_all\": { }\n" +
+			"  },\n" +
+			"  \"script_fields\": {\n" +
+			"    \"meshscript.hasPermission\": {\n" +
+			"        \"script\": \"empty\",\n" +
+			"        \"lang\": \"native\"\n" +
+			"    }\n" +
+			"  }\n" +
+			"}";
+	private static final String QUERY_MATCH_ALL = "{\n" +
 			"  \"query\": {\n" +
 			"     \"match_all\": { }\n" +
 			"  }\n" +
 			"}";
 	private ProjectResponse project;
+	private UserResponse restrictedUser;
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
@@ -62,7 +74,7 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 
 		req.setUsername("restrictedUser").setPassword("test1234");
 		req.setGroupUuid(group.getUuid());
-		UserResponse user = call(() -> getClient().createUser(req));
+		this.restrictedUser = call(() -> getClient().createUser(req));
 		RoleResponse role = createRole("restrictedRole", group.getUuid());
 		call(() -> getClient().addRoleToGroup(group.getUuid(), role.getUuid()));
 
@@ -93,7 +105,7 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 
 		MeshRestClient restrictedClient = MeshRestClient.create("localhost", getPort(), vertx,
 				Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
-		restrictedClient.setLogin(user.getUsername(), "test1234");
+		restrictedClient.setLogin(restrictedUser.getUsername(), "test1234");
 		restrictedClient.login().toBlocking().value();
 
 		return restrictedClient;
@@ -104,7 +116,7 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 		long totalDiff = 0;
 		long longestDiff = 0;
 		long shortestDiff = Long.MAX_VALUE;
-		for (int j = 0; j < runs; j++) {
+		for (int i = 0; i < runs; i++) {
 			timestamp = System.currentTimeMillis();
 			NodeListResponse resultList = call(() -> client.searchNodes(query, new VersioningParameters().setVersion("draft")));
 			long newStamp = System.currentTimeMillis();
@@ -112,9 +124,9 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 			if (diff > longestDiff) longestDiff = diff;
 			if (diff < shortestDiff) shortestDiff = diff;
 			totalDiff += diff;
-			assertEquals(1, resultList.getData().size());
+//			assertEquals(1, resultList.getData().size());
 		}
-		System.out.println(String.format("Search complete. Shortest took %dms. Longest took %dms, avg: %.3fms", shortestDiff, longestDiff, totalDiff / (float)runs));
+		System.out.println(String.format("%d searches complete. Shortest took %dms. Longest took %dms, avg: %.3fms", runs, shortestDiff, longestDiff, totalDiff / (float)runs));
 
 	}
 
@@ -135,6 +147,23 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 		return new RolePermissionRequest().setPermissions(Sets.newHashSet(permissions));
 	}
 
+	private String createPermissionScriptQuery() {
+		return "{\n" +
+				"  \"query\": {\n" +
+				"     \"match_all\": { }\n" +
+				"  },\n" +
+				"  \"script_fields\": {\n" +
+				"    \"meshscript.hasPermission\": {\n" +
+				"        \"script\": \"hasPermission\",\n" +
+				"        \"params\": {\n" +
+				"          \"userUuid\": \"" + restrictedUser.getUuid() + "\"\n" +
+				"        },\n" +
+				"        \"lang\": \"native\"\n" +
+				"    }\n" +
+				"  }\n" +
+				"}";
+	}
+
 	@Test
 	public void testPermissionPerformanceNoScript() throws Exception {
 		MeshRestClient client = createTestData();
@@ -145,23 +174,26 @@ public class PermissionSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testPermissionPerformanceNoScriptManyRoles() throws Exception {
 		createRoles(500);
 		MeshRestClient client = createTestData();
-		runQuery(client, QUERY_MATCH_ALL, 200);
+		runQuery(client, QUERY_MATCH_ALL, 1000);
 	}
 
 	@Test
 	public void testPermissionPerformanceEmptyScript() throws Exception {
 		MeshRestClient client = createTestData();
-		String query = "{\n" +
-				"  \"query\": {\n" +
-				"     \"match_all\": { }\n" +
-				"  },\n" +
-				"  \"script_fields\": {\n" +
-				"    \"meshscript.hasPermission\": {\n" +
-				"        \"script\": \"empty\",\n" +
-				"        \"lang\": \"native\"\n" +
-				"    }\n" +
-				"  }\n" +
-				"}";
-		runQuery(client, query, 200);
+		runQuery(client, QUERY_EMPTY_SCRIPT, 200);
+	}
+
+	@Test
+	public void testPermissionPerformanceEmptyScriptManyRoles() throws Exception {
+		createRoles(500);
+		MeshRestClient client = createTestData();
+		runQuery(client, QUERY_EMPTY_SCRIPT, 1000);
+	}
+
+	@Test
+	public void testPermissionPerformancePermissionScriptManyRoles() throws Exception {
+		createRoles(500);
+		MeshRestClient client = createTestData();
+		runQuery(client, createPermissionScriptQuery(), 1000);
 	}
 }

@@ -19,6 +19,7 @@ public final class MappingHelper {
 	public static final String BOOLEAN = "boolean";
 	public static final String DATE = "date";
 	public static final String LONG = "long";
+	public static final String INTEGER = "integer";
 	public static final String DOUBLE = "double";
 
 	// Index Types

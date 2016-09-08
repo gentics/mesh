@@ -116,10 +116,6 @@ public class SearchRestHandler {
 			log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
 		}
 
-		/*
-		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
-		 * to be written that deals with Document Level Permissions/Security (common known as DLS)
-		 */
 		SearchRequestBuilder builder = null;
 		try {
 			JSONObject queryStringObject = new JSONObject(searchQuery);
@@ -127,8 +123,8 @@ public class SearchRestHandler {
 			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
 			 * efficient ways to do deep scrolling.
 			 */
-			queryStringObject.put("from", 0);
-			queryStringObject.put("size", Integer.MAX_VALUE);
+			queryStringObject.put("from", (pagingInfo.getPage() - 1) * pagingInfo.getPerPage());
+			queryStringObject.put("size", pagingInfo.getPerPage());
 			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
@@ -143,7 +139,6 @@ public class SearchRestHandler {
 					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
 					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 					RootVertex<T> rootVertex = rootVertexGetter.call();
-
 
 					for (SearchHit hit : response.getHits()) {
 
@@ -173,31 +168,14 @@ public class SearchRestHandler {
 						}
 					}
 
-					Observable.merge(obs).collect(() -> {
-						return new ArrayList<Tuple<T, String>>();
-					}, (x, y) -> {
-						// Check permissions and language
-						if (y != null && requestUser.hasPermission(y.v1(), permission)
-								&& (y.v2() == null || requestedLanguageTags.contains(y.v2()))) {
-							x.add(y);
-						}
-					}).subscribe(list -> {
-						// Internally we start with page 0
-						int page = pagingInfo.getPage() - 1;
-
-						int low = page * pagingInfo.getPerPage();
-						int upper = low + pagingInfo.getPerPage() - 1;
-
-						int n = 0;
+					Observable.merge(obs).toList().subscribe(list -> {
 						List<Single<TR>> transformedElements = new ArrayList<>();
 						for (Tuple<T, String> objectAndLanguageTag : list) {
 
 							// Only transform elements that we want to list in our resultset
-							if (n >= low && n <= upper) {
 								// Transform node and add it to the list of nodes
 								transformedElements.add(objectAndLanguageTag.v1().transformToRest(ac, 0, objectAndLanguageTag.v2()));
-							}
-							n++;
+							break;
 						}
 
 						// Set meta information to the rest response

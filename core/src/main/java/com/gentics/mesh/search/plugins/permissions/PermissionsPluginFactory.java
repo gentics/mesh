@@ -11,8 +11,8 @@ import java.util.Map;
  */
 public class PermissionsPluginFactory implements NativeScriptFactory {
 	@Override
-	public ExecutableScript newScript(@Nullable Map<String, Object> map) {
-		return new PermissionsScript();
+	public ExecutableScript newScript(@Nullable Map<String, Object> params) {
+		return new PermissionsScript(params);
 	}
 
 	@Override
