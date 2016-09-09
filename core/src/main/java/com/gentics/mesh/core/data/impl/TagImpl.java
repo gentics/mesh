@@ -112,7 +112,6 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public Single<TagResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-
 		TagResponse restTag = new TagResponse();
 
 		TagFamily tagFamily = getTagFamily();
@@ -124,13 +123,9 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 		}
 		restTag.getFields().setName(getName());
 
-		// Add common fields
 		Completable filledFields = fillCommonRestFields(ac, restTag);
-
-		// Role permissions
 		Completable setPerms = setRolePermissions(ac, restTag);
 
-		// Merge and complete
 		return Completable.merge(filledFields, setPerms).andThen(Single.just(restTag));
 	}
 

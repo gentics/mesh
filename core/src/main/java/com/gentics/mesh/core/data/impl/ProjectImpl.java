@@ -175,13 +175,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		restProject.setName(getName());
 		restProject.setRootNodeUuid(getBaseNode().getUuid());
 
-		// Add common fields
 		Completable commonFields = fillCommonRestFields(ac, restProject);
-
-		// Role permissions
 		Completable setRoles = setRolePermissions(ac, restProject);
 
-		// Merge and complete
 		return Completable.merge(commonFields, setRoles).andThen(Single.just(restProject));
 	}
 

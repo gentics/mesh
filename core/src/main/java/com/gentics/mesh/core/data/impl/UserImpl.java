@@ -320,19 +320,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		restUser.setLastname(getLastname());
 		restUser.setEnabled(isEnabled());
 
-		// Users's node reference
 		Completable nodeReference = setNodeReference(ac, restUser, level);
-
-		// User's groups
 		Completable userGroups = setGroups(ac, restUser);
-
-		// User's role permissions
 		Completable rolePermissions = setRolePermissions(ac, restUser);
-
-		// User's common fields
 		Completable commonFields = fillCommonRestFields(ac, restUser);
 
-		// Wait for all async processes to complete
 		return Completable.merge(rolePermissions, commonFields, nodeReference, userGroups).andThen(Single.just(restUser));
 	}
 

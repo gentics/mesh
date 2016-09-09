@@ -29,8 +29,6 @@ import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
 import rx.Single;
 
@@ -38,8 +36,6 @@ import rx.Single;
  * @see Role
  */
 public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> implements Role {
-
-	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
 
 	public static void init(Database database) {
 		database.addVertexType(RoleImpl.class, MeshVertexImpl.class);
@@ -100,22 +96,23 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public Single<RoleResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-
 		RoleResponse restRole = new RoleResponse();
 		restRole.setName(getName());
 
-		for (Group group : getGroups()) {
-			restRole.getGroups().add(group.transformToReference());
-		}
-
-		// Add common fields
+		Completable setGroups = setGroups(ac, restRole);
 		Completable commonFields = fillCommonRestFields(ac, restRole);
-
-		// Role permissions
 		Completable rolePerms = setRolePermissions(ac, restRole);
 
-		// Merge and complete
-		return Completable.merge(rolePerms, commonFields).toSingleDefault(restRole);
+		return Completable.merge(setGroups, rolePerms, commonFields).toSingleDefault(restRole);
+	}
+
+	private Completable setGroups(InternalActionContext ac, RoleResponse restRole) {
+		return Completable.create(sub -> {
+			for (Group group : getGroups()) {
+				restRole.getGroups().add(group.transformToReference());
+			}
+			sub.onCompleted();
+		});
 	}
 
 	@Override

@@ -144,38 +144,26 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public Single<GroupResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-
 		GroupResponse restGroup = new GroupResponse();
 		restGroup.setName(getName());
 
-		// for (User user : group.getUsers()) {
-		// String name = user.getUsername();
-		// if (name != null) {
-		// restGroup.getUsers().add(name);
-		// }
-		// Collections.sort(restGroup.getUsers());
-
-		for (Role role : getRoles()) {
-			String name = role.getName();
-			if (name != null) {
-				restGroup.getRoles().add(role.transformToReference());
-			}
-		}
-
-		// // Set<Group> children = groupRepository.findChildren(group);
-		// Set<Group> children = group.getGroups();
-		// for (Group childGroup : children) {
-		// restGroup.getGroups().add(childGroup.getName());
-		// }
-
-		// Add common fields
+		Completable setRoles = setRoles(ac, restGroup);
 		Completable fillCommonFields = fillCommonRestFields(ac, restGroup);
+		Completable setRolePerms = setRolePermissions(ac, restGroup);
 
-		// Role permissions
-		Completable setRoles = setRolePermissions(ac, restGroup);
+		return Completable.merge(setRoles, setRolePerms, fillCommonFields).andThen(Single.just(restGroup));
+	}
 
-		// Merge and complete
-		return Completable.merge(setRoles, fillCommonFields).andThen(Single.just(restGroup));
+	private Completable setRoles(InternalActionContext ac, GroupResponse restGroup) {
+		return Completable.create(sub -> {
+			for (Role role : getRoles()) {
+				String name = role.getName();
+				if (name != null) {
+					restGroup.getRoles().add(role.transformToReference());
+				}
+			}
+			sub.onCompleted();
+		});
 	}
 
 	@Override

@@ -559,38 +559,32 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 			}
 			Release release = ac.getRelease(getProject());
-
-			// Parent node reference
-			tasks.add(setParentNodeInfo(ac, release, restNode));
-
-			// Role permissions
-			tasks.add(setRolePermissions(ac, restNode));
-
-			// Languages
 			restNode.setAvailableLanguages(getAvailableLanguageNames(release, ContainerType.forVersion(versioiningParameters.getVersion())));
 
-			// Children information
+			tasks.add(setParentNodeInfo(ac, release, restNode));
+			tasks.add(setRolePermissions(ac, restNode));
 			tasks.add(setChildrenInfo(ac, release, restNode));
-
-			// Tags
 			tasks.add(setTagsToRest(ac, restNode, release));
-
-			// Add common fields
 			tasks.add(fillCommonRestFields(ac, restNode));
-
-			// breadcrumb
 			tasks.add(setBreadcrumbToRest(ac, restNode));
-
-			// Add webroot path & lanuagePaths
 			tasks.add(setPathsToRest(ac, restNode, release));
 
-			// set fields and finally merge and complete
 			return setFields(ac, release, restNode, level, languageTags).andThen(Completable.merge(tasks)).toSingleDefault(restNode);
 		} catch (Exception e) {
 			return Single.error(e);
 		}
 	}
 
+	/**
+	 * Set the parent node reference to the rest model.
+	 * 
+	 * @param ac
+	 * @param release
+	 *            Use the given release to identify the release specific parent node
+	 * @param restNode
+	 *            Model to be updated
+	 * @return
+	 */
 	private Completable setParentNodeInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
 		return Completable.defer(() -> {
 			Node parentNode = getParentNode(release.getUuid());
@@ -607,6 +601,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		});
 	}
 
+	/**
+	 * Set the node fields to the given rest model.
+	 * 
+	 * @param ac
+	 * @param release
+	 *            Release which will be used to locate the correct field container
+	 * @param restNode
+	 *            Rest model which will be updated
+	 * @param level
+	 *            Current level of transformation
+	 * @param languageTags
+	 * @return
+	 */
 	private Completable setFields(InternalActionContext ac, Release release, NodeResponse restNode, int level, String... languageTags) {
 		Set<Completable> tasks = new HashSet<>();
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
@@ -701,6 +708,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return Completable.merge(tasks);
 	}
 
+	/**
+	 * Set the children info to the rest model.
+	 * 
+	 * @param ac
+	 * @param release
+	 *            Release which will be used to identify the release specific child nodes
+	 * @param restNode
+	 *            Rest model which will be updated
+	 * @return
+	 */
 	private Completable setChildrenInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
 		return Completable.create(sub -> {
 			Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
@@ -724,6 +741,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		});
 	}
 
+	/**
+	 * Set the tag information to the rest model.
+	 * 
+	 * @param ac
+	 * @param restNode
+	 *            Rest model which will be updated
+	 * @param release
+	 *            Release which will be used to identify the release specific tags
+	 * @return
+	 */
 	private Completable setTagsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
 		return Completable.create(sub -> {
 			for (Tag tag : getTags(release)) {
@@ -748,7 +775,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * 
 	 * @param ac
 	 * @param restNode
+	 *            Rest model which will be updated
 	 * @param release
+	 *            Release which will be used to identify the nodes relations and thus the correct path can be determined
 	 * @return
 	 */
 	private Completable setPathsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
@@ -1102,18 +1131,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
 
-		// if published -> done
+		// If the located draft version was already published we are done
 		if (draftVersion.isPublished(releaseUuid)) {
 			return Completable.complete();
 		}
 
-		// check whether all required fields are filled, if not -> unable to publish
-		// TODO
+		// TODO check whether all required fields are filled, if not -> unable to publish
 
 		return db.tx(() -> {
 			NodeGraphFieldContainer published = publish(draftVersion.getLanguage(), release, ac.getUser());
 
-			// reindex
+			// Invoke a store of the document since it must now also be added to the published index
 			return createIndexBatch(STORE_ACTION, Arrays.asList(published), release.getUuid(), ContainerType.PUBLISHED);
 		}).process();
 	}
@@ -1136,7 +1164,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			assertPublishConsistency(ac);
 
-			// reindex
+			// Invoke a delete on the document since it must be removed from the published index
 			return createIndexBatch(DELETE_ACTION, Arrays.asList(published), releaseUuid, ContainerType.PUBLISHED);
 		}).process();
 	}
