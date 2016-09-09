@@ -100,8 +100,12 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -120,6 +124,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	public static void init(Database database) {
 		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
+		database.addEdgeIndex(HAS_PARENT_NODE);
+		database.addCustomEdgeIndex(HAS_PARENT_NODE, "release", "in", RELEASE_UUID_KEY);
 	}
 
 	@Override
@@ -488,7 +494,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public List<? extends Node> getChildren(String releaseUuid) {
-		return inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).outV().has(NodeImpl.class).toListExplicit(NodeImpl.class);
+		// return inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).outV().has(NodeImpl.class).toListExplicit(NodeImpl.class);
+		Database db = MeshInternal.get().database();
+		FramedGraph graph = Database.getThreadLocalGraph();
+		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_release", db.createComposedIndexKey(getId(), releaseUuid));
+		List<Node> nodes = new ArrayList<>();
+		Iterator<Edge> it = edges.iterator();
+		while (it.hasNext()) {
+			Vertex vertex = it.next().getVertex(Direction.OUT);
+			nodes.add(graph.frameElementExplicit(vertex, NodeImpl.class));
+		}
+		return nodes;
 	}
 
 	@Override
@@ -1209,6 +1225,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		ContainerType type = ContainerType.forVersion(version);
 
 		for (String languageTag : languageTags) {
+			//TODO Add index usage!
 			fieldContainer = getGraphFieldContainer(languageTag, releaseUuid, type);
 
 			if (fieldContainer != null && type == ContainerType.INITIAL) {

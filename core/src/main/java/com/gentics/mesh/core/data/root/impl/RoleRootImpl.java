@@ -37,7 +37,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	public static void init(Database database) {
 		database.addVertexType(RoleRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_ROLE);
+		database.addEdgeIndex(HAS_ROLE, true, false, true);
 	}
 
 	@Override

@@ -59,7 +59,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	public static void init(Database database) {
 		database.addVertexType(NodeRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_NODE);
+		database.addEdgeIndex(HAS_NODE, true, false, false);
 	}
 
 	@Override

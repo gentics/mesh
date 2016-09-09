@@ -189,22 +189,43 @@ public interface Database {
 	void restoreGraph(String backupFile) throws IOException;
 
 	/**
-	 * Adds an edge index for the given label.
+	 * Add an edge index for the given label.
 	 * 
 	 * @param label
 	 *            Label for which the edge index should be created
+	 * @param includeInOut
+	 *            If set to true the in/out information will be added to the edge index with postfix _inout
+	 * @param includeIn
+	 *            If set to true the in information will be added to the edge index with postfix _in
+	 * @param includeOut
+	 *            If set to true the in information will be added to the edge index with postfix _out
 	 * @param extraFields
-	 *            Additional fields that should be indexed
+	 *            Additional fields that should be indexed. All fields will be to an index with postfix _extra.
 	 */
-	void addEdgeIndex(String label, String... extraFields);
+	void addEdgeIndex(String label, boolean includeInOut, boolean includeIn, boolean includeOut, String... extraFields);
 
 	/**
-	 * Add an edge index for the given label which only contains the outgoing edge within the index. This is useful for finding all edges which reference the
-	 * given vertex via the outgoing edge.
+	 * Add an edge index for the given label.
 	 * 
 	 * @param label
+	 * @param extraFields
+	 *            Additional fields that should be indexed. All fields will be to an index with postfix _extra.
 	 */
-	void addEdgeIndexSource(String label);
+	default void addEdgeIndex(String label, String... extraFields) {
+		addEdgeIndex(label, false, false, false);
+	}
+
+	/**
+	 * Add edge index for the given fields.
+	 * 
+	 * The index name will be constructed using the label and the index postfix (e.g: has_node_postfix)
+	 * 
+	 * @param label
+	 * @param indexPostfix
+	 *            postfix of the index
+	 * @param fields
+	 */
+	void addCustomEdgeIndex(String label, String indexPostfix, String... fields);
 
 	/**
 	 * Create a composed index key

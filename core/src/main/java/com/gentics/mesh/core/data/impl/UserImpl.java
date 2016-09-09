@@ -87,6 +87,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	public static void init(Database database) {
 		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
+		database.addEdgeIndex(ASSIGNED_TO_ROLE, false, false, true);
 	}
 
 	@Override
@@ -276,12 +277,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		// Find all roles that are assigned to the user by checking the shortcut edge from the index
-		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
+		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE + "_out", this.getId());
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.getVertex(Direction.IN);
 			// Find all permission edges between the found role and target vertex with the specified label
-			Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
-					MeshInternal.get().database().createComposedIndexKey(role.getId(), elementId));
+			Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
+					MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
 			boolean foundPermEdge = edges.iterator().hasNext();
 			if (foundPermEdge) {
 				return true;
@@ -296,14 +297,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
 		}
-		
-		if(PermissionStore.hasPermission(getId(), permission, vertex.getImpl().getId())) {
+
+		if (PermissionStore.hasPermission(getId(), permission, vertex.getImpl().getId())) {
 			return true;
 		} else {
 			boolean hasPerm = hasPermissionForId(vertex.getImpl().getId(), permission);
 			// We only store granting permissions in the store in order reduce the invalidation calls.
 			// This way we do not need to invalidate the cache if a role is removed from a group or a role is deleted.
-			if(hasPerm) {
+			if (hasPerm) {
 				PermissionStore.store(getId(), permission, vertex.getImpl().getId());
 			}
 			return hasPerm;

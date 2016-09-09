@@ -4,14 +4,17 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * Main class that holds all the graph relationship names.
- *
  */
 public class GraphRelationships {
 
+	/**
+	 * Initialise the graph database by adding all needed edge types and indices.
+	 * 
+	 * @param db
+	 */
 	public static void init(Database db) {
 
 		db.noTx(() -> {
-			db.addEdgeIndexSource(ASSIGNED_TO_ROLE);
 			db.addEdgeType(HAS_SEARCH_QUEUE_ROOT);
 
 			db.addEdgeType(HAS_INITIAL_RELEASE);
@@ -34,7 +37,7 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_ROOT_NODE);
 
 			db.addEdgeType(HAS_SCHEMA_TYPE);
-			
+
 			db.addEdgeType(HAS_SCHEMA_CONTAINER);
 			db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
 			db.addEdgeType(HAS_MICROSCHEMA_ROOT);
@@ -47,7 +50,7 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_PROJECT_ROOT);
 			db.addEdgeType(HAS_RELEASE_ROOT);
 
-			//db.addEdgeType(HAS_FIELD);
+			// db.addEdgeType(HAS_FIELD);
 			db.addEdgeType(HAS_ITEM);
 			db.addEdgeType(HAS_BATCH);
 			db.addEdgeType(HAS_LIST);
@@ -60,7 +63,7 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_SCHEMA_CONTAINER_VERSION);
 
 			// Changelog
-			db.addEdgeIndex(HAS_CHANGELOG_ROOT);
+			db.addEdgeType(HAS_CHANGELOG_ROOT);
 			return null;
 		});
 
@@ -102,7 +105,7 @@ public class GraphRelationships {
 	public static final String HAS_FIELD_CONTAINER = "HAS_FIELD_CONTAINER";
 
 	public static final String HAS_PARENT_NODE = "HAS_PARENT_NODE";
-	
+
 	/**
 	 * Edge type which is used to connect project and base node
 	 */

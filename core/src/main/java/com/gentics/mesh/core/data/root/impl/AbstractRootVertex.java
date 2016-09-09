@@ -109,8 +109,8 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase(),
-					MeshInternal.get().database().createComposedIndexKey(getId(), potentialElement.getId()));
+			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
+					MeshInternal.get().database().createComposedIndexKey(potentialElement.getId(), getId()));
 			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
 			}
@@ -148,7 +148,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		// Iterate over all vertices that are managed by this root vertex
 		int count = 0;
 		FramedGraph graph = Database.getThreadLocalGraph();
-		Iterable<Edge> itemEdges = graph.getEdges("e." + getRootLabel() + "_out", this.getId());
+		Iterable<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", this.getId());
 		List<T> elementsOfPage = new ArrayList<>();
 		for (Edge itemEdge : itemEdges) {
 			Vertex item = itemEdge.getVertex(Direction.IN);

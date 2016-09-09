@@ -40,7 +40,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	public static void init(Database database) {
 		database.addVertexType(TagFamilyRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_TAG_FAMILY);
+		database.addEdgeIndex(HAS_TAG_FAMILY, true, false, true);
 	}
 
 	@Override
@@ -66,10 +66,10 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		addTagFamily(tagFamily);
 		tagFamily.setCreated(creator);
 
-		// Add tag family to project 
+		// Add tag family to project
 		tagFamily.setProject(getProject());
 
-		// Add created tag family to tag family root 
+		// Add created tag family to tag family root
 		TagFamilyRoot root = MeshInternal.get().boot().tagFamilyRoot();
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);

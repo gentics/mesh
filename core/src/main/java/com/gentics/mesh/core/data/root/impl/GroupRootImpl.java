@@ -32,7 +32,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 
 	public static void init(Database database) {
 		database.addVertexType(GroupRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_GROUP);
+		database.addEdgeIndex(HAS_GROUP, true, false, true);
 	}
 
 	@Override

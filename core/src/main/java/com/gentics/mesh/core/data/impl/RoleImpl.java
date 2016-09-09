@@ -80,8 +80,8 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
 		FramedGraph graph = Database.getThreadLocalGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
-				MeshInternal.get().database().createComposedIndexKey(getId(), vertex.getImpl().getId()));
+		Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
+				MeshInternal.get().database().createComposedIndexKey(vertex.getImpl().getId(), getId()));
 		return edges.iterator().hasNext();
 	}
 

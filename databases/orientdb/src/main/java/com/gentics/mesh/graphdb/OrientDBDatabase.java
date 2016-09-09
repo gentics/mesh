@@ -11,11 +11,8 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -180,17 +177,46 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void addEdgeIndex(String label, String... extraFields) {
+	public void addCustomEdgeIndex(String label, String indexPostfix, String... fields) {
+		OrientGraphNoTx tx = factory.getNoTx();
+		try {
+			OrientEdgeType e = tx.getEdgeType(label);
+			if (e == null) {
+				throw new RuntimeException("Could not find edge type {" + label + "}. Create edge type before creating indices.");
+			}
+
+			for (String key : fields) {
+				if (e.getProperty(key) == null) {
+					OType type = OType.STRING;
+					if (key.equals("out") || key.equals("in")) {
+						type = OType.LINK;
+					}
+					e.createProperty(key, type);
+				}
+			}
+			String name = "e." + label + "_" + indexPostfix;
+			name = name.toLowerCase();
+			if (fields.length != 0 && e.getClassIndex(name) == null) {
+				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields);
+			}
+
+		} finally {
+			tx.shutdown();
+		}
+	}
+
+	@Override
+	public void addEdgeIndex(String label, boolean includeInOut, boolean includeIn, boolean includeOut, String... extraFields) {
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
 			OrientEdgeType e = tx.getEdgeType(label);
 			if (e == null) {
 				e = tx.createEdgeType(label);
 			}
-			if (e.getProperty("in") == null) {
+			if ((includeIn || includeInOut) && e.getProperty("in") == null) {
 				e.createProperty("in", OType.LINK);
 			}
-			if (e.getProperty("out") == null) {
+			if ((includeOut || includeInOut) && e.getProperty("out") == null) {
 				e.createProperty("out", OType.LINK);
 			}
 			for (String key : extraFields) {
@@ -199,18 +225,22 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 			String indexName = "e." + label.toLowerCase();
-			List<String> fields = new ArrayList<>(Arrays.asList("out", "in"));
-			if (e.getClassIndex(indexName) == null) {
-				e.createIndex(indexName, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields.toArray(new String[fields.size()]));
-				e.createIndex(indexName + "_out", OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, new String[] { "out" });
-			}
 
-			if (extraFields.length != 0) {
-				indexName += "_extra";
-				fields.addAll(Arrays.asList(extraFields));
-				if (e.getClassIndex(indexName) == null) {
-					e.createIndex(indexName, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields.toArray(new String[fields.size()]));
-				}
+			String name = indexName + "_inout";
+			if (includeInOut && e.getClassIndex(name) == null) {
+				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, new String[] { "in", "out" });
+			}
+			name = indexName + "_out";
+			if (includeOut && e.getClassIndex(name) == null) {
+				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, new String[] { "out" });
+			}
+			name = indexName + "_in";
+			if (includeIn && e.getClassIndex(name) == null) {
+				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, new String[] { "in" });
+			}
+			name = indexName + "_extra";
+			if (extraFields.length != 0 && e.getClassIndex(name) == null) {
+				e.createIndex(name, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, extraFields);
 			}
 
 		} finally {
@@ -310,30 +340,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 					}
 					vertexType.setSuperClass(superType);
 				}
-			}
-		} finally {
-			tx.shutdown();
-		}
-	}
-
-	@Override
-	public void addEdgeIndexSource(String label) {
-		if (log.isDebugEnabled()) {
-			log.debug("Adding source edge index for label {" + label + "}");
-		}
-		OrientGraphNoTx tx = factory.getNoTx();
-		try {
-			OrientEdgeType e = tx.getEdgeType(label);
-			if (e == null) {
-				e = tx.createEdgeType(label);
-			}
-			if (e.getProperty("out") == null) {
-				e.createProperty("out", OType.LINK);
-			}
-			String indexName = "e." + label.toLowerCase();
-			String[] fields = { "out" };
-			if (e.getClassIndex(indexName) == null) {
-				e.createIndex(indexName, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields);
 			}
 		} finally {
 			tx.shutdown();

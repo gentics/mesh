@@ -21,7 +21,7 @@ public enum GraphPermission {
 
 	public static void init(Database database) {
 		for (String label : GraphPermission.labels()) {
-			database.addEdgeIndex(label);
+			database.addEdgeIndex(label, true, false, false);
 		}
 	}
 

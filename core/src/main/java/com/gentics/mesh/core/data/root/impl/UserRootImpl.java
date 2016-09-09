@@ -48,8 +48,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	 */
 	public static void init(Database database) {
 		database.addVertexType(UserRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_USER);
-//		database.addEdgeIndexSource(HAS_USER);
+		database.addEdgeIndex(HAS_USER, true, false, true);
 	}
 
 	@Override
@@ -95,7 +94,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
-		//TODO use index
+		// TODO use index
 		return out(HAS_USER).has(UserImpl.class).has(UserImpl.USERNAME_PROPERTY_KEY, username).nextOrDefaultExplicit(MeshAuthUserImpl.class, null);
 	}
 
