@@ -6,7 +6,7 @@
 	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
 		<target>System.err</target>
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n
+			<pattern>TEST %-5level [%thread] [%file:%line] - %msg%n
 			</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.classic.filter.LevelFilter">
@@ -18,22 +18,22 @@
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n
+			<pattern>TEST %-5level [%thread] [%file:%line] - %msg%n
 			</pattern>
 		</encoder>
 	</appender>
 	<!-- <logger name="io.vertx" level="INFO"/> <logger name="com.gentics.mesh" level="INFO"/> <logger name="org.elasticsearch" level="INFO"/> <logger name="com.gentics.mesh.rest.MeshResponseHandler" 
 		level="TRACE"/> -->
 	<!-- <logger name="com.gentics" level="ERROR" additivity="false"> <appender-ref ref="STDERR"/> </logger> -->
+	<logger name="com.gentics.mesh.rest.client.handler.impl.MeshJsonResponseHandler" level="DEBUG"/>
+	<logger name="com.gentics.mesh.rest.MeshRestRequestUtil" level="DEBUG"/>
 <!-- 
 	<logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/>
-	<logger name="com.gentics.mesh.rest.client.handler.impl.MeshJsonResponseHandler" level="DEBUG"/>
 	<logger name="com.gentics.mesh.search.index.NodeIndexHandler" level="DEBUG"/>
-	<logger name="com.gentics.mesh.rest.MeshRestRequestUtil" level="DEBUG"/>
 	<logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/>
 	 -->
 	<!-- <logger name="com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl" level="DEBUG" /> -->
-	<root level="ERROR">
+	<root level="DEBUG">
 		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>

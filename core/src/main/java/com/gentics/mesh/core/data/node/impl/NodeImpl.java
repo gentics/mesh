@@ -552,7 +552,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		try {
 			VersioningParameters versioiningParameters = ac.getVersioningParameters();
 
-			Set<Completable> tasks = new HashSet<>();
+			List<Completable> tasks = new ArrayList<>();
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();
 			if (container == null) {
@@ -585,7 +585,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			tasks.add(setPathsToRest(ac, restNode, release));
 
 			// set fields and finally merge and complete
-			return setFields(ac, release, restNode, level, languageTags).andThen(Completable.merge(tasks).toSingleDefault(restNode));
+			return setFields(ac, release, restNode, level, languageTags).andThen(Completable.merge(tasks)).toSingleDefault(restNode);
 		} catch (Exception e) {
 			return Single.error(e);
 		}
@@ -608,99 +608,97 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	private Completable setFields(InternalActionContext ac, Release release, NodeResponse restNode, int level, String... languageTags) {
-		return Completable.defer(() -> {
-			Set<Completable> tasks = new HashSet<>();
-			VersioningParameters versioiningParameters = ac.getVersioningParameters();
-			NodeParameters nodeParameters = ac.getNodeParameters();
+		Set<Completable> tasks = new HashSet<>();
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		NodeParameters nodeParameters = ac.getNodeParameters();
 
-			NodeGraphFieldContainer fieldContainer = null;
-			List<String> requestedLanguageTags = null;
-			if (languageTags != null && languageTags.length > 0) {
-				requestedLanguageTags = Arrays.asList(languageTags);
-			} else {
-				requestedLanguageTags = nodeParameters.getLanguageList();
+		NodeGraphFieldContainer fieldContainer = null;
+		List<String> requestedLanguageTags = null;
+		if (languageTags != null && languageTags.length > 0) {
+			requestedLanguageTags = Arrays.asList(languageTags);
+		} else {
+			requestedLanguageTags = nodeParameters.getLanguageList();
+		}
+		fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(), versioiningParameters.getVersion());
+		if (fieldContainer == null) {
+			// if a published version was requested, we check whether any published language variant exists for the node, if not, response with NOT_FOUND
+			if (ContainerType.forVersion(versioiningParameters.getVersion()) == ContainerType.PUBLISHED
+					&& getGraphFieldContainers(release, ContainerType.PUBLISHED).isEmpty()) {
+				log.error("Could not find field container for languages {" + requestedLanguageTags + "} and release {" + release.getUuid()
+						+ "} and version params version {" + versioiningParameters.getVersion() + "}, release {" + release.getUuid() + "}");
+				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", getUuid(), release.getUuid());
 			}
-			fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(), versioiningParameters.getVersion());
-			if (fieldContainer == null) {
-				// if a published version was requested, we check whether any published language variant exists for the node, if not, response with NOT_FOUND
-				if (ContainerType.forVersion(versioiningParameters.getVersion()) == ContainerType.PUBLISHED
-						&& getGraphFieldContainers(release, ContainerType.PUBLISHED).isEmpty()) {
-					log.error("Could not find field container for languages {" + requestedLanguageTags + "} and release {" + release.getUuid()
-							+ "} and version params version {" + versioiningParameters.getVersion() + "}, release {" + release.getUuid() + "}");
-					throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", getUuid(), release.getUuid());
-				}
 
-				// if a specific version was requested, that does not exist, we also return NOT_FOUND
-				if (ContainerType.forVersion(versioiningParameters.getVersion()) == ContainerType.INITIAL) {
-					throw error(NOT_FOUND, "object_not_found_for_version", versioiningParameters.getVersion());
-				}
-
-				String langInfo = getLanguageInfo(requestedLanguageTags);
-				if (log.isDebugEnabled()) {
-					log.debug("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
-							+ langInfo + "}. Fields will be empty.");
-				}
-				// No field container was found so we can only set the schema reference that points to the container (no version information will be included)
-				restNode.setSchema(getSchemaContainer().transformToReference());
-				// TODO return a 404 and adapt mesh rest client in order to return a mesh response
-				// ac.data().put("statuscode", NOT_FOUND.code());
-			} else {
-				Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
-				restNode.setContainer(schema.isContainer());
-				restNode.setDisplayField(schema.getDisplayField());
-
-				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
-				// List<String> fieldsToExpand = ac.getExpandedFieldnames();
-				// modify the language fallback list by moving the container's language to the front
-				List<String> containerLanguageTags = new ArrayList<>(requestedLanguageTags);
-				containerLanguageTags.remove(restNode.getLanguage());
-				containerLanguageTags.add(0, restNode.getLanguage());
-
-				// Schema reference
-				restNode.setSchema(fieldContainer.getSchemaContainerVersion().transformToReference());
-
-				// Version reference
-				if (fieldContainer.getVersion() != null) {
-					restNode.setVersion(new VersionReference(fieldContainer.getUuid(), fieldContainer.getVersion().toString()));
-				}
-
-				// editor and edited
-				User editor = fieldContainer.getEditor();
-				if (editor != null) {
-					restNode.setEditor(editor.transformToReference());
-				} else {
-					// TODO throw error and log something
-				}
-
-				// Convert unixtime to iso-8601
-				String date = DateUtils.toISO8601(fieldContainer.getLastEditedTimestamp(), 0);
-				restNode.setEdited(date);
-
-				// Fields
-				for (FieldSchema fieldEntry : schema.getFields()) {
-					// boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
-					Single<NodeResponse> obsFields = fieldContainer
-							.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level).map(restField -> {
-								if (fieldEntry.isRequired() && restField == null) {
-									// TODO i18n
-									throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
-											+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
-								}
-								if (restField == null) {
-									if (log.isDebugEnabled()) {
-										log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-									}
-								} else {
-									restNode.getFields().put(fieldEntry.getName(), restField);
-								}
-								return restNode;
-
-							});
-					tasks.add(obsFields.toCompletable());
-				}
+			// if a specific version was requested, that does not exist, we also return NOT_FOUND
+			if (ContainerType.forVersion(versioiningParameters.getVersion()) == ContainerType.INITIAL) {
+				throw error(NOT_FOUND, "object_not_found_for_version", versioiningParameters.getVersion());
 			}
-			return Completable.merge(tasks);
-		});
+
+			String langInfo = getLanguageInfo(requestedLanguageTags);
+			if (log.isDebugEnabled()) {
+				log.debug("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
+						+ langInfo + "}. Fields will be empty.");
+			}
+			// No field container was found so we can only set the schema reference that points to the container (no version information will be included)
+			restNode.setSchema(getSchemaContainer().transformToReference());
+			// TODO return a 404 and adapt mesh rest client in order to return a mesh response
+			// ac.data().put("statuscode", NOT_FOUND.code());
+		} else {
+			Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
+			restNode.setContainer(schema.isContainer());
+			restNode.setDisplayField(schema.getDisplayField());
+
+			restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
+			// List<String> fieldsToExpand = ac.getExpandedFieldnames();
+			// modify the language fallback list by moving the container's language to the front
+			List<String> containerLanguageTags = new ArrayList<>(requestedLanguageTags);
+			containerLanguageTags.remove(restNode.getLanguage());
+			containerLanguageTags.add(0, restNode.getLanguage());
+
+			// Schema reference
+			restNode.setSchema(fieldContainer.getSchemaContainerVersion().transformToReference());
+
+			// Version reference
+			if (fieldContainer.getVersion() != null) {
+				restNode.setVersion(new VersionReference(fieldContainer.getUuid(), fieldContainer.getVersion().toString()));
+			}
+
+			// editor and edited
+			User editor = fieldContainer.getEditor();
+			if (editor != null) {
+				restNode.setEditor(editor.transformToReference());
+			} else {
+				// TODO throw error and log something
+			}
+
+			// Convert unixtime to iso-8601
+			String date = DateUtils.toISO8601(fieldContainer.getLastEditedTimestamp(), 0);
+			restNode.setEdited(date);
+
+			// Fields
+			for (FieldSchema fieldEntry : schema.getFields()) {
+				// boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
+				Single<NodeResponse> obsFields = fieldContainer
+						.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level).map(restField -> {
+							if (fieldEntry.isRequired() && restField == null) {
+								// TODO i18n
+								throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
+										+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+							}
+							if (restField == null) {
+								if (log.isDebugEnabled()) {
+									log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+								}
+							} else {
+								restNode.getFields().put(fieldEntry.getName(), restField);
+							}
+							return restNode;
+
+						});
+				tasks.add(obsFields.toCompletable());
+			}
+		}
+		return Completable.merge(tasks);
 	}
 
 	private Completable setChildrenInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
@@ -806,7 +804,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
 					WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
 					ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-					System.out.println(restNode.getLanguage());
 					String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
 							getProject().getName(), restNode.getLanguage()).toBlocking().value();
 					reference.setPath(url);

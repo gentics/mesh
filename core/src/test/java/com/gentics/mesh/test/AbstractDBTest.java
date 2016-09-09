@@ -11,6 +11,7 @@ import org.junit.Before;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -118,6 +119,7 @@ public abstract class AbstractDBTest {
 
 	@Before
 	public void initMesh() throws Exception {
+		PermissionStore.invalidate();
 		init(false);
 		initDagger();
 	}

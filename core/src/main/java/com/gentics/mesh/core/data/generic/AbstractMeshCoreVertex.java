@@ -68,7 +68,6 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 */
 	protected <R extends AbstractGenericRestResponse> Completable fillCommonRestFields(InternalActionContext ac, R model) {
 		return Completable.defer(() -> {
-
 			model.setUuid(getUuid());
 
 			if (this instanceof EditorTrackingVertex) {

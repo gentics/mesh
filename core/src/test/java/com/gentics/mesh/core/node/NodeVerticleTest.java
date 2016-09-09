@@ -71,10 +71,14 @@ import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
+	static {
+		// Use slf4j instead of jul
+		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+	}
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
@@ -715,6 +719,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Ignore("Disabled since test is unstable - CL-246")
 	public void testCreateUpdateReadDeleteMultithreaded() throws Exception {
 
+		Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
+
 		int nJobs = 200;
 		try (NoTx noTx = db.noTx()) {
 			CountDownLatch latch = new CountDownLatch(nJobs);
@@ -822,7 +828,6 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// Trx.setBarrier(barrier);
 			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				log.debug("Invoking createNode REST call");
 				set.add(getClient().createNode(PROJECT_NAME, request).invoke());
 			}
 
@@ -868,7 +873,6 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		// Trx.setBarrier(barrier);
 		Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			log.debug("Invoking updateNode REST call");
 			set.add(getClient().updateNode(PROJECT_NAME, uuid, request, parameters).invoke());
 		}
 
@@ -893,7 +897,6 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		// Trx.setBarrier(barrier);
 		Set<MeshResponse<Void>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			log.debug("Invoking deleteNode REST call");
 			set.add(getClient().deleteNode(PROJECT_NAME, uuid).invoke());
 		}
 
@@ -909,7 +912,6 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				log.debug("Invoking findNodeByUuid REST call");
 				set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParameters().draft()).invoke());
 			}
 			for (MeshResponse<NodeResponse> future : set) {
@@ -926,7 +928,6 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		try (NoTx noTx = db.noTx()) {
 			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				log.debug("Invoking findNodeByUuid REST call");
 				set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParameters().draft()).invoke());
 			}
 			for (MeshResponse<NodeResponse> future : set) {
