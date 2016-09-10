@@ -21,8 +21,6 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 */
 	public static final String TYPE = "tag";
 
-	List<? extends TagGraphFieldContainer> getFieldContainers();
-
 	/**
 	 * Return the tag family to which the tag belongs.
 	 * 
@@ -39,7 +37,9 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 
 	/**
 	 * Return a list of nodes that were tagged by this tag in the given release
-	 * @param release release
+	 * 
+	 * @param release
+	 *            release
 	 * 
 	 * @return
 	 */
@@ -56,24 +56,8 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, ContainerType type, PagingParameters pagingInfo)
-			throws InvalidArgumentException;
-
-	/**
-	 * Return the tag graph field container that hold the tag name for the given language.
-	 * 
-	 * @param language
-	 * @return
-	 */
-	TagGraphFieldContainer getFieldContainer(Language language);
-
-	/**
-	 * Return the tag graph field container. Create the container for the given language if non could be found.
-	 * 
-	 * @param language
-	 * @return
-	 */
-	TagGraphFieldContainer getOrCreateFieldContainer(Language language);
+	PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, ContainerType type,
+			PagingParameters pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Set the tag family of this tag.

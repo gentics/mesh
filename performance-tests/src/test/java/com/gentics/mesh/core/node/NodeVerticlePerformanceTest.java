@@ -71,7 +71,7 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 	@Test
 	public void testReadSingle() {
 		String uuid = db.noTx(() -> folder("news").getUuid());
-		loggingStopWatch(logger, "node.read-by-uuid", 800, (step) -> {
+		loggingStopWatch(logger, "node.read-by-uuid", 2000, (step) -> {
 			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
 		});
 

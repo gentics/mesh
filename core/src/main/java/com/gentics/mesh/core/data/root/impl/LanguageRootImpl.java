@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
-import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -78,15 +77,6 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 		} else {
 			return null;
 		}
-	}
-
-	/**
-	 * The tag language is currently fixed to english since we only want to store tags based on a single language. The idea is that tags will be localizable in
-	 * the future.
-	 */
-	@Override
-	public Language getTagDefaultLanguage() {
-		return findByLanguageTag(TagImpl.DEFAULT_TAG_LANGUAGE_TAG);
 	}
 
 	@Override

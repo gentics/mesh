@@ -4,6 +4,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -101,6 +102,7 @@ public class DatabaseHelper {
 		ReleaseImpl.init(database);
 
 		// Fields
+		AbstractGenericFieldContainerVertex.init(database);
 		NodeGraphFieldContainerImpl.init(database);
 		StringGraphFieldListImpl.init(database);
 		BooleanGraphFieldListImpl.init(database);

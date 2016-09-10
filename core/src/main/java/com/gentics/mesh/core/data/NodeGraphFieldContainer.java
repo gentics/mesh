@@ -18,7 +18,7 @@ import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 
 /**
- * A node field container is a aggregation node that holds localized fields.
+ * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
  */
 public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
 
@@ -99,7 +99,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	NodeGraphFieldContainer getPreviousVersion();
 
 	/**
-	 * Make this container a clone of the given container. Property Vertices are reused
+	 * Make this container a clone of the given container. Property Vertices are reused.
 	 *
 	 * @param container
 	 *            container
@@ -107,7 +107,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	void clone(NodeGraphFieldContainer container);
 
 	/**
-	 * Check whether this field container is the draft version for the given release
+	 * Check whether this field container is the draft version for the given release.
 	 * 
 	 * @param releaseUuid
 	 *            release Uuid
@@ -116,7 +116,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	boolean isDraft(String releaseUuid);
 
 	/**
-	 * Check whether this field container is the published version for the given release
+	 * Check whether this field container is the published version for the given release.
 	 * 
 	 * @param releaseUuid
 	 *            release Uuid
@@ -125,14 +125,14 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	boolean isPublished(String releaseUuid);
 
 	/**
-	 * Get tuples of type and release Uuids specifying for which release the container is a container of a type
+	 * Get tuples of type and release Uuids specifying for which release the container is a container of a type.
 	 *
 	 * @return set of tuples (may be empty, but never null)
 	 */
 	Set<Tuple<String, ContainerType>> getReleaseTypes();
 
 	/**
-	 * Get the release Uuids for which this container is the container of given type
+	 * Get the release Uuids for which this container is the container of given type.
 	 * 
 	 * @param type
 	 *            type
@@ -171,7 +171,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	SchemaContainerVersion getSchemaContainerVersion();
 
 	/**
-	 * Get all micronode fields that have a micronode using the given microschema container version
+	 * Get all micronode fields that have a micronode using the given microschema container version.
 	 * 
 	 * @param version
 	 *            microschema container version
@@ -180,7 +180,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version);
 
 	/**
-	 * Get all micronode list fields that have at least one micronode using the given microschema container version
+	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
 	 * 
 	 * @param version
 	 *            microschema container version
@@ -192,7 +192,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Return the etag for the field container.
 	 * 
 	 * @param ac
-	 * @return
+	 * @return Generated entity tag
 	 */
 	String getETag(InternalActionContext ac);
 

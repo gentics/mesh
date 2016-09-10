@@ -2,6 +2,10 @@ package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -19,15 +23,49 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 		return getGraphFieldContainer(language.getLanguageTag(), release != null ? release.getUuid() : null, type, classOfU);
 	}
 
-	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String releaseUuid, ContainerType type, Class<U> classOfU) {
-		EdgeTraversal<?,?,?> traversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
+	
+//	static Map<String, BasicFieldContainer> map = new HashMap<>();
+
+	/**
+	 * Locate the field container using the provided information.
+	 * 
+	 * @param languageTag
+	 *            Language tag of the field container
+	 * @param releaseUuid
+	 *            Optional release to search within
+	 * @param type
+	 *            Optional type of the field container (published, draft)
+	 * @param classOfU
+	 * @return
+	 */
+	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String releaseUuid, ContainerType type,
+			Class<U> classOfU) {
+		Objects.requireNonNull(languageTag);
+		Objects.requireNonNull(classOfU);
+
+//		String key = "l:" + languageTag + "r:" + releaseUuid + "t:" + type + "i:" + getId();
+//		System.out.println(key);
+//		if(map.containsKey(key)) {
+//			return (U) map.get(key);
+//		}
+		
+//		System.out.println("not found");
+		// TODO Add index usage!
+		// (nodeId, languageTag)
+		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
+
+		// + releaseUuid)
 		if (releaseUuid != null) {
 			traversal = traversal.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid);
 		}
+		// + edgetype)
 		if (type != null) {
 			traversal = traversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		}
 		U container = traversal.inV().nextOrDefault(classOfU, null);
+		
+//		map.put(key, container);
+		
 		return container;
 	}
 
@@ -36,8 +74,10 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 * 
 	 * @param language
 	 *            Language of the field container
-	 * @param release release to which the field container belongs (may be null)
-	 * @param type type of the field container relation (may be null)
+	 * @param release
+	 *            release to which the field container belongs (may be null)
+	 * @param type
+	 *            type of the field container relation (may be null)
 	 * @param classOfU
 	 *            Container implementation class to be used for element creation
 	 * @return i18n properties vertex entity

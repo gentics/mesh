@@ -29,7 +29,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
+import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -60,11 +60,11 @@ import rx.Single;
 /**
  * @see Tag
  */
-public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Tag> implements Tag {
+public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements Tag {
 
 	private static final Logger log = LoggerFactory.getLogger(TagImpl.class);
 
-	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
+	public static final String TAG_VALUE_KEY = "tagValue";
 
 	public static void init(Database database) {
 		database.addVertexType(TagImpl.class, MeshVertexImpl.class);
@@ -81,28 +81,13 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public List<? extends TagGraphFieldContainer> getFieldContainers() {
-		return out(HAS_FIELD_CONTAINER).has(TagGraphFieldContainerImpl.class).toListExplicit(TagGraphFieldContainerImpl.class);
-	}
-
-	@Override
-	public TagGraphFieldContainer getFieldContainer(Language language) {
-		return getGraphFieldContainer(language, null, null, TagGraphFieldContainerImpl.class);
-	}
-
-	@Override
-	public TagGraphFieldContainer getOrCreateFieldContainer(Language language) {
-		return getOrCreateGraphFieldContainer(language, TagGraphFieldContainerImpl.class);
-	}
-
-	@Override
 	public String getName() {
-		return getFieldContainer(MeshInternal.get().boot().languageRoot().getTagDefaultLanguage()).getName();
+		return getProperty(TAG_VALUE_KEY);
 	}
 
 	@Override
 	public void setName(String name) {
-		getOrCreateFieldContainer(MeshInternal.get().boot().languageRoot().getTagDefaultLanguage()).setName(name);
+		setProperty(TAG_VALUE_KEY, name);
 	}
 
 	@Override

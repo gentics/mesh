@@ -32,6 +32,7 @@ public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements Gr
 	public static void init(Database db) {
 		db.addEdgeType(GraphFieldContainerEdgeImpl.class.getSimpleName());
 		db.addEdgeType(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
+//		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "lang", "out", LANGUAGE_TAG_KEY);
 	}
 
 	/**

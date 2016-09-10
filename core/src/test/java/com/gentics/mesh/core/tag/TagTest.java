@@ -97,7 +97,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	public void testReadFieldContainer() {
 		try (NoTx noTx = db.noTx()) {
 			Tag tag = tags().get("red");
-			assertEquals(1, tag.getFieldContainers().size());
+			assertEquals("red", tag.getName());
 		}
 	}
 

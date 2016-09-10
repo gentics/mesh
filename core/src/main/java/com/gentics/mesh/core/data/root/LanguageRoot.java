@@ -31,11 +31,4 @@ public interface LanguageRoot extends RootVertex<Language> {
 	 */
 	Language findByLanguageTag(String languageTag);
 
-	/**
-	 * Return the default language.
-	 * 
-	 * @return
-	 */
-	Language getTagDefaultLanguage();
-
 }

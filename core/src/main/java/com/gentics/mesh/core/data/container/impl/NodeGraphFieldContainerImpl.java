@@ -60,12 +60,10 @@ import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
+/**
+ * @see NodeGraphFieldContainer
+ */
 public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeGraphFieldContainer {
-
-	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
 	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
 

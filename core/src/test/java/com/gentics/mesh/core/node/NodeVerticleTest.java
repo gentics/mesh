@@ -75,11 +75,6 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	static {
-		// Use slf4j instead of jul
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-	}
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
