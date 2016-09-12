@@ -18,7 +18,7 @@
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<ferma.version>2.2.0-SNAPSHOT</ferma.version>
 		<elasticsearch.version>2.3.3</elasticsearch.version>
-		<orientdb.version>2.2.8</orientdb.version>
+		<orientdb.version>2.2.9</orientdb.version>
 		<ferma.extensions.version>0.0.3-SNAPSHOT</ferma.extensions.version>
 		<dagger.version>2.6</dagger.version>
 
@@ -37,7 +37,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.3.2</version>
+		<version>3.3.3</version>
 	</parent>
 
 	<developers>
