@@ -39,6 +39,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	public static void init(Database database) {
 		database.addVertexType(RoleImpl.class, MeshVertexImpl.class);
+		database.addVertexIndex(RoleImpl.class, true, "name");
 	}
 
 	@Override

@@ -33,7 +33,6 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -323,23 +322,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return getGraphFieldContainers(release.getUuid(), type);
 	}
 
-	
-//	static Map<String, Object> map2 = new HashMap<>();
+	// static Map<String, Object> map2 = new HashMap<>();
 
 	@Override
 	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type) {
-		//TODO ADD INDEX!
-//		String key =  "r:" + releaseUuid + "t:" + type + "i:" + getId();
-//
-//		Object result = map2.get(key);
-//		if(result!=null) {
-//			return (List<? extends NodeGraphFieldContainer>) result;
-//		}
-		
+		// TODO ADD INDEX!
+		// String key = "r:" + releaseUuid + "t:" + type + "i:" + getId();
+		//
+		// Object result = map2.get(key);
+		// if(result!=null) {
+		// return (List<? extends NodeGraphFieldContainer>) result;
+		// }
+
 		List<? extends NodeGraphFieldContainerImpl> list = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().has(NodeGraphFieldContainerImpl.class)
 				.toListExplicit(NodeGraphFieldContainerImpl.class);
-//		map2.put(key, list);
+		// map2.put(key, list);
 		return list;
 	}
 

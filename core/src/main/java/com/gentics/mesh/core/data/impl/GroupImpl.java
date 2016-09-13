@@ -45,10 +45,9 @@ import rx.Single;
  */
 public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> implements Group {
 
-	public static final String NAME_KEY = "name";
-
 	public static void init(Database database) {
 		database.addVertexType(GroupImpl.class, MeshVertexImpl.class);
+		database.addVertexIndex(GroupImpl.class, true, "name");
 	}
 
 	public GroupReference createEmptyReferenceModel() {
@@ -61,11 +60,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public String getName() {
-		return getProperty(NAME_KEY);
+		return getProperty("name");
 	}
 
 	public void setName(String name) {
-		setProperty(NAME_KEY, name);
+		setProperty("name", name);
 	}
 
 	public List<? extends User> getUsers() {

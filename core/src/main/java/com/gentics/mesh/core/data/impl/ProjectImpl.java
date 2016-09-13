@@ -71,7 +71,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public static void init(Database database) {
 		// TODO index to name + unique constraint
 		database.addVertexType(ProjectImpl.class, MeshVertexImpl.class);
-//		database.addVertexIndex(ProjectImpl.class.getName(), ProjectImpl.class, true, "name");
+		database.addVertexIndex(ProjectImpl.class, true, "name");
 	}
 
 	@Override

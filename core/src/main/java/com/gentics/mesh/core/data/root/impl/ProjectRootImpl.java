@@ -66,27 +66,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		database.addVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_PROJECT);
 		database.addEdgeIndex(HAS_PROJECT, true, false, true);
-		// database.addCustomEdgeIndex(HAS_PROJECT, "out", "out");
-		// database.addCustomEdgeIndex(HAS_PROJECT, "inout", "in", "out");
-		// database.addCustomEdgeIndex(HAS_PROJECT, "uuid", "in", "uuid");
 	}
-
-	// @Override
-	// public <T extends Project> T findByName(String name) {
-	// FramedGraph graph = Database.getThreadLocalGraph();
-	// // 1. Find the element with given uuid within the whole graph
-	// Iterator<Vertex> it = MeshInternal.get().database().getVertices(getPersistanceClass(), new String[] { "name" }, new String[] { name });
-	// if (it.hasNext()) {
-	// Vertex potentialElement = it.next();
-	// // 2. Use the edge index to determine whether the element is part of this root vertex
-	// Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-	// MeshInternal.get().database().createComposedIndexKey(potentialElement.getId(), getId()));
-	// if (edges.iterator().hasNext()) {
-	// return graph.frameElementExplicit(potentialElement, getPersistanceClass());
-	// }
-	// }
-	// return null;
-	// }
 
 	@Override
 	public Class<? extends Project> getPersistanceClass() {
