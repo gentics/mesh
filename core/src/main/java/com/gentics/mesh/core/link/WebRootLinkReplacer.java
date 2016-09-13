@@ -134,7 +134,7 @@ public class WebRootLinkReplacer {
 			String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().value();
+		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid);
 
 		// check for null
 		if (node == null) {

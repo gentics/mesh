@@ -117,7 +117,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 			}
 
 			// Check whether the name is already in-use.
-			TagFamily conflictingTagFamily = findByName(name).toBlocking().value();
+			TagFamily conflictingTagFamily = findByName(name);
 			if (conflictingTagFamily != null) {
 				throw conflict(conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name", name);
 			}
@@ -151,18 +151,17 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 			return Single.just(this);
 		} else {
 			String uuidSegment = stack.pop();
-			return findByUuid(uuidSegment).flatMap(tagFamily -> {
-				if (stack.isEmpty()) {
-					return Single.just(tagFamily);
+			TagFamily tagFamily = findByUuid(uuidSegment);
+			if (stack.isEmpty()) {
+				return Single.just(tagFamily);
+			} else {
+				String nestedRootNode = stack.pop();
+				if ("tags".contentEquals(nestedRootNode)) {
+					return tagFamily.getTagRoot().resolveToElement(stack);
 				} else {
-					String nestedRootNode = stack.pop();
-					if ("tags".contentEquals(nestedRootNode)) {
-						return tagFamily.getTagRoot().resolveToElement(stack);
-					} else {
-						return Single.error(new Exception("Unknown tagFamily element {" + nestedRootNode + "}"));
-					}
+					return Single.error(new Exception("Unknown tagFamily element {" + nestedRootNode + "}"));
 				}
-			});
+			}
 		}
 	}
 

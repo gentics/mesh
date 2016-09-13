@@ -107,7 +107,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
-			Release foundRelease = releaseRoot.findByName(project.getName()).toBlocking().value();
+			Release foundRelease = releaseRoot.findByName(project.getName());
 			assertThat(foundRelease).as("Release with name " + project.getName()).isNotNull().matches(project.getInitialRelease());
 		}
 	}
@@ -120,7 +120,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release initialRelease = project.getInitialRelease();
 
-			Release foundRelease = releaseRoot.findByUuid(initialRelease.getUuid()).toBlocking().value();
+			Release foundRelease = releaseRoot.findByUuid(initialRelease.getUuid());
 			assertThat(foundRelease).as("Release with uuid " + initialRelease.getUuid()).isNotNull().matches(initialRelease);
 		}
 	}

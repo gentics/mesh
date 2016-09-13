@@ -137,7 +137,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			GroupResponse restGroup = future.result();
 			test.assertGroup(request, restGroup);
 
-			Group foundGroup = boot.groupRoot().findByUuid(restGroup.getUuid()).toBlocking().value();
+			Group foundGroup = boot.groupRoot().findByUuid(restGroup.getUuid());
 			assertNotNull("Group should have been created.", foundGroup);
 
 			MeshResponse<GroupResponse> readFuture = getClient().findGroupByUuid(restGroup.getUuid()).invoke();
@@ -341,7 +341,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			return restGroup;
 		});
 		try (Tx tx = db.tx()) {
-			Group reloadedGroup = boot.groupRoot().findByUuid(updatedGroup.getUuid()).toBlocking().value();
+			Group reloadedGroup = boot.groupRoot().findByUuid(updatedGroup.getUuid());
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -376,7 +376,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
-			Group reloadedGroup = boot.groupRoot().findByUuid(group.getUuid()).toBlocking().value();
+			Group reloadedGroup = boot.groupRoot().findByUuid(group.getUuid());
 			assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 		}
 	}
@@ -396,7 +396,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, CONFLICT, "group_conflicting_name", alreadyUsedName);
 
-			Group reloadedGroup = groupRoot.findByUuid(group().getUuid()).toBlocking().value();
+			Group reloadedGroup = groupRoot.findByUuid(group().getUuid());
 			assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
 		}
 	}

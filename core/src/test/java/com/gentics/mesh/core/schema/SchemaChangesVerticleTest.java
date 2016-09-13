@@ -75,7 +75,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 			container.reload();
 			assertEquals("The name of the old version should not be updated", "content", currentVersion.getName());
 			assertEquals("The name of the schema was not updated", name, currentVersion.getNextVersion().getName());
-			SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(container.getUuid()).toBlocking().value();
+			SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(container.getUuid());
 			assertEquals("The name should have been updated", name, reloaded.getName());
 		}
 	}

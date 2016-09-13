@@ -83,7 +83,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 			TagFamilyRoot projectTagFamilyRoot = project().getTagFamilyRoot();
 			assertNotNull(projectTagFamilyRoot);
 
-			TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors").toBlocking().value();
+			TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors");
 			assertNotNull(projectTagFamily);
 
 			assertNotNull(projectTagFamilyRoot.create("bogus", user()));
@@ -110,7 +110,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			assertNotNull(root);
-			assertNotNull(root.findByName("colors").toBlocking().value());
+			assertNotNull(root.findByName("colors"));
 		}
 	}
 
@@ -121,7 +121,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = tagFamily("colors");
 
-			TagFamily foundTagFamily = root.findByUuid(tagFamily.getUuid()).toBlocking().value();
+			TagFamily foundTagFamily = root.findByUuid(tagFamily.getUuid());
 			assertNotNull(foundTagFamily);
 		}
 	}
@@ -144,7 +144,7 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily family = root.create("test", user());
-			TagFamily family2 = root.findByName(family.getName()).toBlocking().value();
+			TagFamily family2 = root.findByName(family.getName());
 			assertNotNull(family2);
 			assertEquals("test", family2.getName());
 			assertEquals(family.getUuid(), family2.getUuid());
@@ -266,12 +266,12 @@ public class TagFamilyTest extends AbstractBasicIsolatedObjectTest {
 			TagFamily tagFamily = root.create("test123", user());
 			assertNotNull(tagFamily);
 			String uuid = tagFamily.getUuid();
-			TagFamily foundTagFamily = root.findByUuid(uuid).toBlocking().value();
+			TagFamily foundTagFamily = root.findByUuid(uuid);
 			assertNotNull(foundTagFamily);
 			SearchQueueBatch batch = createBatch();
 			tagFamily.delete(batch);
 			// TODO check for attached nodes
-			Project project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().value();
+			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNull(project);
 		}
 

@@ -191,7 +191,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	public Project getProject() {
 		if (project == null) {
 			String projectName = get(RouterStorage.PROJECT_CONTEXT_KEY);
-			project = MeshInternal.get().boot().meshRoot().getProjectRoot().findByName(projectName).toBlocking().value();
+			project = MeshInternal.get().boot().meshRoot().getProjectRoot().findByName(projectName);
 		}
 		return project;
 	}

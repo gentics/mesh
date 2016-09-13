@@ -29,7 +29,7 @@ public class TagCrudHandler extends AbstractHandler {
 	}
 
 	public TagFamily getTagFamily(InternalActionContext ac, String uuid) {
-		return ac.getProject().getTagFamilyRoot().findByUuidSync(uuid);
+		return ac.getProject().getTagFamilyRoot().findByUuid(uuid);
 	}
 
 	/**

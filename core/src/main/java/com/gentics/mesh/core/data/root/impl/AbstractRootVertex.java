@@ -69,40 +69,34 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public Single<T> findByName(String name) {
-		return Single.just(out(getRootLabel()).has(getPersistanceClass()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null));
+	public T findByName(String name) {
+		return out(getRootLabel()).has(getPersistanceClass()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 	@Override
-	public Single<T> findByName(InternalActionContext ac, String name, GraphPermission perm) {
+	public T findByName(InternalActionContext ac, String name, GraphPermission perm) {
 		Database db = MeshInternal.get().database();
 		reload();
-		return findByName(name).map(element -> {
-			if (element == null) {
-				throw error(NOT_FOUND, "object_not_found_for_name", name);
+		T element = findByName(name);
+		if (element == null) {
+			throw error(NOT_FOUND, "object_not_found_for_name", name);
+		}
+
+		T result = db.noTx(() -> {
+			MeshAuthUser requestUser = ac.getUser();
+			String elementUuid = element.getUuid();
+			if (requestUser.hasPermission(element, perm)) {
+				return element;
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
 			}
-
-			T result = db.noTx(() -> {
-				MeshAuthUser requestUser = ac.getUser();
-				String elementUuid = element.getUuid();
-				if (requestUser.hasPermission(element, perm)) {
-					return element;
-				} else {
-					throw error(FORBIDDEN, "error_missing_perm", elementUuid);
-				}
-			});
-
-			return result;
 		});
+
+		return result;
 	}
 
 	@Override
-	public Single<T> findByUuid(String uuid) {
-		return Single.just(findByUuidSync(uuid));
-	}
-
-	@Override
-	public T findByUuidSync(String uuid) {
+	public T findByUuid(String uuid) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = MeshInternal.get().database().getVertices(getPersistanceClass(), new String[] { "uuid" }, new String[] { uuid });
@@ -188,7 +182,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		} else {
 			String uuid = stack.pop();
 			if (stack.isEmpty()) {
-				return findByUuid(uuid);
+				return Single.just(findByUuid(uuid));
 			} else {
 				return Single.error(new Exception("Can't resolve remaining segments. Next segment would be: " + stack.peek()));
 			}
@@ -209,31 +203,28 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	public Single<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		Database db = MeshInternal.get().database();
 		reload();
-		return findByUuid(uuid).map(element -> {
-			if (element == null) {
-				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
+		T element = findByUuid(uuid);
+		if (element == null) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
+		}
+
+		T result = db.noTx(() -> {
+			MeshAuthUser requestUser = ac.getUser();
+			String elementUuid = element.getUuid();
+			if (requestUser.hasPermission(element, perm)) {
+				return element;
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
 			}
-
-			T result = db.noTx(() -> {
-				MeshAuthUser requestUser = ac.getUser();
-				String elementUuid = element.getUuid();
-				if (requestUser.hasPermission(element, perm)) {
-					return element;
-				} else {
-					throw error(FORBIDDEN, "error_missing_perm", elementUuid);
-				}
-			});
-
-			return result;
 		});
-
+		return Single.just(result);
 	}
 
 	@Override
 	public T loadObjectByUuidSync(InternalActionContext ac, String uuid, GraphPermission perm) {
 		Database db = MeshInternal.get().database();
 		reload();
-		T element = findByUuidSync(uuid);
+		T element = findByUuid(uuid);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}

@@ -51,7 +51,7 @@ public class AtomicTagTest extends AbstractDBTest {
 			tag.setName("renamed tag");
 			assertEquals("renamed tag", tag.getName());
 
-			Tag reloadedTag = boot.tagRoot().findByUuid(uuid).toBlocking().value();
+			Tag reloadedTag = boot.tagRoot().findByUuid(uuid);
 			assertNotNull(reloadedTag);
 			assertEquals("renamed tag", reloadedTag.getName());
 		}

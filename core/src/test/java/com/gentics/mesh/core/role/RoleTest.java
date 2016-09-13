@@ -70,7 +70,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			Role createdRole = root.create(roleName, user());
 			assertNotNull(createdRole);
 			String uuid = createdRole.getUuid();
-			Role role = boot.roleRoot().findByUuid(uuid).toBlocking().value();
+			Role role = boot.roleRoot().findByUuid(uuid);
 			assertNotNull(role);
 			assertEquals(roleName, role.getName());
 		}
@@ -287,8 +287,8 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByName() {
 		try (NoTx noTx = db.noTx()) {
-			assertNotNull(boot.roleRoot().findByName(role().getName()).toBlocking().value());
-			assertNull(boot.roleRoot().findByName("bogus").toBlocking().value());
+			assertNotNull(boot.roleRoot().findByName(role().getName()));
+			assertNull(boot.roleRoot().findByName("bogus"));
 		}
 	}
 
@@ -296,9 +296,9 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByUUID() {
 		try (NoTx noTx = db.noTx()) {
-			Role role = boot.roleRoot().findByUuid(role().getUuid()).toBlocking().value();
+			Role role = boot.roleRoot().findByUuid(role().getUuid());
 			assertNotNull(role);
-			role = boot.roleRoot().findByUuid("bogus").toBlocking().value();
+			role = boot.roleRoot().findByUuid("bogus");
 			assertNull(role);
 		}
 	}
@@ -328,11 +328,11 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 			Role role = root.create(roleName, user());
 			String uuid = role.getUuid();
-			role = boot.roleRoot().findByUuid(uuid).toBlocking().value();
+			role = boot.roleRoot().findByUuid(uuid);
 			assertNotNull(role);
 			SearchQueueBatch batch = createBatch();
 			role.delete(batch);
-			Role foundRole = boot.roleRoot().findByUuid(uuid).toBlocking().value();
+			Role foundRole = boot.roleRoot().findByUuid(uuid);
 			assertNull(foundRole);
 		}
 

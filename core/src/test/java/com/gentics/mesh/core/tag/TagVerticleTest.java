@@ -314,17 +314,16 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Tag tag = tag("vehicle");
 			TagFamily parentTagFamily = tagFamily("basic");
 
-			String name = tag.getName();
 			String uuid = tag.getUuid();
 
 			MeshResponse<Void> future = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
-			tag = boot.tagRoot().findByUuid(uuid).toBlocking().value();
+			tag = boot.tagRoot().findByUuid(uuid);
 			assertNull("The tag should have been deleted", tag);
 
-			Project project = boot.projectRoot().findByName(PROJECT_NAME).toBlocking().value();
+			Project project = boot.projectRoot().findByName(PROJECT_NAME);
 			assertNotNull(project);
 		}
 	}
@@ -342,7 +341,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(messageFut);
 			expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
 
-			tag = boot.tagRoot().findByUuid(uuid).toBlocking().value();
+			tag = boot.tagRoot().findByUuid(uuid);
 			assertNotNull("The tag should not have been deleted", tag);
 		}
 	}
@@ -382,9 +381,9 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals("SomeName", future.result().getFields().getName());
 
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
-					meshRoot().getTagRoot().findByUuid(future.result().getUuid()).toBlocking().value());
+					meshRoot().getTagRoot().findByUuid(future.result().getUuid()));
 			assertNotNull("The tag could not be found within the project.tagRoot node.",
-					project().getTagRoot().findByUuid(future.result().getUuid()).toBlocking().value());
+					project().getTagRoot().findByUuid(future.result().getUuid()));
 
 			future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), future.result().getUuid()).invoke();
 			latchFor(future);

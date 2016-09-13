@@ -120,40 +120,38 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
 		Integer version = release == null ? reference.getVersion() : null;
-		Single<MicroschemaContainer> containerObs = null;
+		MicroschemaContainer container = null;
 		if (!isEmpty(microschemaName)) {
-			containerObs = findByName(microschemaName);
+			container = findByName(microschemaName);
 		} else {
-			containerObs = findByUuid(microschemaUuid);
+			container = findByUuid(microschemaUuid);
 		}
 		// Return the specified version or fallback to latest version.
-		return containerObs.map(container -> {
-			if (container == null) {
-				throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
-						isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
-			}
+		if (container == null) {
+			throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
+					isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
+		}
 
-			MicroschemaContainerVersion foundVersion = null;
+		MicroschemaContainerVersion foundVersion = null;
 
-			if (release != null) {
-				foundVersion = release.getVersion(container);
-			} else if (version != null) {
-				foundVersion = container.findVersionByRev(version);
-			} else {
-				foundVersion = container.getLatestVersion();
-			}
+		if (release != null) {
+			foundVersion = release.getVersion(container);
+		} else if (version != null) {
+			foundVersion = container.findVersionByRev(version);
+		} else {
+			foundVersion = container.getLatestVersion();
+		}
 
-			if (foundVersion == null) {
-				throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
-						isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
-			}
-			return foundVersion;
-		});
+		if (foundVersion == null) {
+			throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
+					isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
+		}
+		return Single.just(foundVersion);
 	}
 
 	@Override
 	public boolean contains(MicroschemaContainer microschema) {
-		if (findByUuidSync(microschema.getUuid()) == null) {
+		if (findByUuid(microschema.getUuid()) == null) {
 			return false;
 		} else {
 			return true;

@@ -52,9 +52,9 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 
 		String releaseNameOrUuid = getVersioningParameters().getRelease();
 		if (!isEmpty(releaseNameOrUuid)) {
-			release = project.getReleaseRoot().findByUuid(releaseNameOrUuid).toBlocking().value();
+			release = project.getReleaseRoot().findByUuid(releaseNameOrUuid);
 			if (release == null) {
-				release = project.getReleaseRoot().findByName(releaseNameOrUuid).toBlocking().value();
+				release = project.getReleaseRoot().findByName(releaseNameOrUuid);
 			}
 			if (release == null) {
 				throw error(BAD_REQUEST, "error_release_not_found", releaseNameOrUuid);

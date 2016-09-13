@@ -108,7 +108,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByName() {
 		try (NoTx noTx = db.noTx()) {
-			assertNotNull(boot.groupRoot().findByName("guests").toBlocking().value());
+			assertNotNull(boot.groupRoot().findByName("guests"));
 		}
 	}
 
@@ -116,7 +116,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByUUID() {
 		try (NoTx noTx = db.noTx()) {
-			Group group = boot.groupRoot().findByUuid(group().getUuid()).toBlocking().value();
+			Group group = boot.groupRoot().findByUuid(group().getUuid());
 			assertNotNull(group);
 		}
 	}
@@ -145,7 +145,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(group);
 			String uuid = group.getUuid();
 			group.delete(batch);
-			group = meshRoot().getGroupRoot().findByUuid(uuid).toBlocking().value();
+			group = meshRoot().getGroupRoot().findByUuid(uuid);
 			assertNull(group);
 		}
 	}

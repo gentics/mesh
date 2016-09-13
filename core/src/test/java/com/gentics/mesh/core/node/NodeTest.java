@@ -206,7 +206,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindByUUID() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
-			Node node = boot.nodeRoot().findByUuid(newsNode.getUuid()).toBlocking().value();
+			Node node = boot.nodeRoot().findByUuid(newsNode.getUuid());
 			assertNotNull(node);
 			assertEquals(newsNode.getUuid(), node.getUuid());
 		}
@@ -558,7 +558,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 3. delete
 			SearchQueueBatch batch = db.noTx(() -> {
 				SearchQueueBatch innerBatch = createBatch();
-				meshRoot().getNodeRoot().findByUuidSync(folderUuid).deleteFromRelease(initialRelease, innerBatch);
+				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(initialRelease, innerBatch);
 				return innerBatch;
 			});
 
@@ -618,7 +618,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 3. delete from initial release
 			SearchQueueBatch batch = db.noTx(() -> {
 				SearchQueueBatch innerBatch = createBatch();
-				meshRoot().getNodeRoot().findByUuidSync(folderUuid).deleteFromRelease(initialRelease, innerBatch);
+				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(initialRelease, innerBatch);
 				return innerBatch;
 			});
 

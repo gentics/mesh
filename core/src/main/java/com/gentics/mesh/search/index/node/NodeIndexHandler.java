@@ -369,7 +369,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Completable updateMapping(SearchQueueEntry entry) {
 		String containerVersionUuid = entry.get("schemaContainerVersionUuuid");
 		String containerUuid = entry.get("schemaContainerUuid");
-		SchemaContainerVersion version = boot.findSchemaContainerRoot().findByUuidSync(containerUuid).findVersionByUuid(containerVersionUuid);
+		SchemaContainerVersion version = boot.findSchemaContainerRoot().findByUuid(containerUuid).findVersionByUuid(containerVersionUuid);
 		Schema schema = version.getSchema();
 		String indexName = entry.getElementUuid();
 		String type = schema.getName() + "-" + schema.getVersion();

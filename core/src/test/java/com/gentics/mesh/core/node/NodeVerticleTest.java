@@ -71,7 +71,6 @@ import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
@@ -264,7 +263,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					() -> getClient().createNode(project.getName(), request, new VersioningParameters().setRelease(initialRelease.getName())));
 
 			meshRoot().getNodeRoot().reload();
-			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().value();
+			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
 						.isNotNull().hasVersion("0.1");
@@ -295,7 +294,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					() -> getClient().createNode(project.getName(), request, new VersioningParameters().setRelease(initialRelease.getUuid())));
 
 			meshRoot().getNodeRoot().reload();
-			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().value();
+			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
 						.isNotNull().hasVersion("0.1");
@@ -325,7 +324,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			NodeResponse nodeResponse = call(() -> getClient().createNode(project.getName(), request));
 
 			meshRoot().getNodeRoot().reload();
-			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().value();
+			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
@@ -389,7 +388,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertThat(dummySearchProvider).recordedStoreEvents(1);
 			test.assertMeshNode(request, restNode);
 
-			Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid()).toBlocking().value();
+			Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid());
 			assertNotNull(node);
 			test.assertMeshNode(request, node);
 
@@ -403,7 +402,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(deleteFut);
 
 			meshRoot().getNodeRoot().reload();
-			Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid()).toBlocking().value();
+			Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid());
 			assertNull("The node should have been deleted.", deletedNode);
 		}
 	}
@@ -1569,7 +1568,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			call(() -> getClient().deleteNode(PROJECT_NAME, uuid), METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
-			Node foundNode = meshRoot().getNodeRoot().findByUuid(uuid).toBlocking().value();
+			Node foundNode = meshRoot().getNodeRoot().findByUuid(uuid);
 			assertNotNull("The node should still exist.", foundNode);
 		}
 	}
@@ -1670,7 +1669,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-			assertNotNull(meshRoot().getNodeRoot().findByUuid(uuid).toBlocking().value());
+			assertNotNull(meshRoot().getNodeRoot().findByUuid(uuid));
 		}
 	}
 

@@ -80,7 +80,7 @@ public class SchemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest 
 			request.setName("extraProject");
 			request.setSchemaReference(new SchemaReference().setName("folder"));
 			ProjectResponse created = call(() -> getClient().createProject(request));
-			Project extraProject = projectRoot.findByUuidSync(created.getUuid());
+			Project extraProject = projectRoot.findByUuid(created.getUuid());
 
 			// Add only read perms
 			role().grantPermissions(schema, READ_PERM);
@@ -90,7 +90,7 @@ public class SchemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest 
 			assertThat(restSchema).matches(schema);
 			extraProject.getSchemaContainerRoot().reload();
 			assertNotNull("The schema should be added to the extra project",
-					extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().value());
+					extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()));
 		}
 	}
 

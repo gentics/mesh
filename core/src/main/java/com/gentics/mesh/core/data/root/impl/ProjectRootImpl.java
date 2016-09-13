@@ -66,7 +66,27 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		database.addVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_PROJECT);
 		database.addEdgeIndex(HAS_PROJECT, true, false, true);
+		// database.addCustomEdgeIndex(HAS_PROJECT, "out", "out");
+		// database.addCustomEdgeIndex(HAS_PROJECT, "inout", "in", "out");
+		// database.addCustomEdgeIndex(HAS_PROJECT, "uuid", "in", "uuid");
 	}
+
+	// @Override
+	// public <T extends Project> T findByName(String name) {
+	// FramedGraph graph = Database.getThreadLocalGraph();
+	// // 1. Find the element with given uuid within the whole graph
+	// Iterator<Vertex> it = MeshInternal.get().database().getVertices(getPersistanceClass(), new String[] { "name" }, new String[] { name });
+	// if (it.hasNext()) {
+	// Vertex potentialElement = it.next();
+	// // 2. Use the edge index to determine whether the element is part of this root vertex
+	// Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
+	// MeshInternal.get().database().createComposedIndexKey(potentialElement.getId(), getId()));
+	// if (edges.iterator().hasNext()) {
+	// return graph.frameElementExplicit(potentialElement, getPersistanceClass());
+	// }
+	// }
+	// return null;
+	// }
 
 	@Override
 	public Class<? extends Project> getPersistanceClass() {
@@ -119,35 +139,34 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			return Single.just(this);
 		} else {
 			String uuidSegment = stack.pop();
-			return findByUuid(uuidSegment).flatMap(project -> {
-				if (stack.isEmpty()) {
-					return Single.just(project);
-				} else {
-					String nestedRootNode = stack.pop();
-					switch (nestedRootNode) {
-					case ReleaseRoot.TYPE:
-						ReleaseRoot releasesRoot = project.getReleaseRoot();
-						return releasesRoot.resolveToElement(stack);
-					case TagFamilyRoot.TYPE:
-						TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
-						return tagFamilyRoot.resolveToElement(stack);
-					case SchemaContainerRoot.TYPE:
-						SchemaContainerRoot schemaRoot = project.getSchemaContainerRoot();
-						return schemaRoot.resolveToElement(stack);
-					case MicroschemaContainerRoot.TYPE:
-						// MicroschemaContainerRoot microschemaRoot =
-						// project.get
-						// project.getMicroschemaRoot();
-						throw new NotImplementedException();
-						// break;
-					case NodeRoot.TYPE:
-						NodeRoot nodeRoot = project.getNodeRoot();
-						return nodeRoot.resolveToElement(stack);
-					default:
-						return Single.error(new Exception("Unknown project element {" + nestedRootNode + "}"));
-					}
+			Project project = findByUuid(uuidSegment);
+			if (stack.isEmpty()) {
+				return Single.just(project);
+			} else {
+				String nestedRootNode = stack.pop();
+				switch (nestedRootNode) {
+				case ReleaseRoot.TYPE:
+					ReleaseRoot releasesRoot = project.getReleaseRoot();
+					return releasesRoot.resolveToElement(stack);
+				case TagFamilyRoot.TYPE:
+					TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
+					return tagFamilyRoot.resolveToElement(stack);
+				case SchemaContainerRoot.TYPE:
+					SchemaContainerRoot schemaRoot = project.getSchemaContainerRoot();
+					return schemaRoot.resolveToElement(stack);
+				case MicroschemaContainerRoot.TYPE:
+					// MicroschemaContainerRoot microschemaRoot =
+					// project.get
+					// project.getMicroschemaRoot();
+					throw new NotImplementedException();
+					// break;
+				case NodeRoot.TYPE:
+					NodeRoot nodeRoot = project.getNodeRoot();
+					return nodeRoot.resolveToElement(stack);
+				default:
+					return Single.error(new Exception("Unknown project element {" + nestedRootNode + "}"));
 				}
-			});
+			}
 		}
 
 	}
@@ -177,7 +196,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid());
 			}
 			// TODO instead of this check, a constraint in the db should be added
-			Project conflictingProject = boot.projectRoot().findByName(requestModel.getName()).toBlocking().value();
+			Project conflictingProject = boot.projectRoot().findByName(requestModel.getName());
 			if (conflictingProject != null) {
 				throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 			}

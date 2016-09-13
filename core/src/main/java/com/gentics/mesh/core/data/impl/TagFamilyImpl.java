@@ -173,7 +173,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				throw error(FORBIDDEN, "error_missing_perm", getUuid());
 			}
 
-			Tag conflictingTag = getTagRoot().findByName(tagName).toBlocking().value();
+			Tag conflictingTag = getTagRoot().findByName(tagName);
 			if (conflictingTag != null) {
 				throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
 			}
@@ -235,20 +235,18 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				throw error(BAD_REQUEST, "tagfamily_name_not_set");
 			}
 
-			Single<TagFamily> tagFamilyWithSameNameObs = project.getTagFamilyRoot().findByName(newName);
-			Single<TagFamily> obs = tagFamilyWithSameNameObs.map(tagFamilyWithSameName -> {
-				if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
-					throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
-				}
-				SearchQueueBatch batch = db.tx(() -> {
-					this.setName(newName);
-					return createIndexBatch(STORE_ACTION);
-				});
-
-				batch.process().await();
-				return this;
+			TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
+			if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
+				throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
+			}
+			SearchQueueBatch batch = db.tx(() -> {
+				this.setName(newName);
+				return createIndexBatch(STORE_ACTION);
 			});
-			return obs;
+
+			batch.process().await();
+			return Single.just(this);
+
 		});
 	}
 

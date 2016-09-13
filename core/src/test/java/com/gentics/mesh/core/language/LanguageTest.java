@@ -101,14 +101,14 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByName() {
 		try (NoTx noTx = db.noTx()) {
-			Language language = meshRoot().getLanguageRoot().findByName("German").toBlocking().value();
+			Language language = meshRoot().getLanguageRoot().findByName("German");
 			assertNotNull(language);
 
 			assertEquals("German", language.getName());
 			assertEquals("Deutsch", language.getNativeName());
 			assertEquals("de", language.getLanguageTag());
 
-			language = meshRoot().getLanguageRoot().findByName("bogus").toBlocking().value();
+			language = meshRoot().getLanguageRoot().findByName("bogus");
 			assertNull(language);
 		}
 	}
@@ -117,11 +117,11 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			Language language = meshRoot().getLanguageRoot().findByName("German").toBlocking().value();
-			Language foundLanguage = meshRoot().getLanguageRoot().findByUuid(language.getUuid()).toBlocking().value();
+			Language language = meshRoot().getLanguageRoot().findByName("German");
+			Language foundLanguage = meshRoot().getLanguageRoot().findByUuid(language.getUuid());
 			assertNotNull(foundLanguage);
 
-			foundLanguage = meshRoot().getLanguageRoot().findByUuid("bogus").toBlocking().value();
+			foundLanguage = meshRoot().getLanguageRoot().findByUuid("bogus");
 			assertNull(foundLanguage);
 		}
 
@@ -168,7 +168,7 @@ public class LanguageTest extends AbstractBasicIsolatedObjectTest {
 			final String languageName = "klingon";
 			Language lang = languageRoot.create(languageName, languageTag);
 
-			lang = languageRoot.findByName(languageName).toBlocking().value();
+			lang = languageRoot.findByName(languageName);
 			assertNotNull(lang);
 			assertEquals(languageName, lang.getName());
 

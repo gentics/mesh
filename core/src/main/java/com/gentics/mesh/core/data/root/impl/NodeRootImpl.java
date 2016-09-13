@@ -240,7 +240,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			//TODO handle schema version as well? Decide whether it should be possible to create a node and specify the schema version.
 			// 3. Or just schema reference by name
 			if (!isEmpty(schemaInfo.getSchema().getName())) {
-				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName()).toBlocking().value();
+				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
 				if (containerByName != null) {
 					String schemaName = containerByName.getName();
 					String schemaUuid = containerByName.getUuid();

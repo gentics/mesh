@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -27,6 +25,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	/**
 	 * Initialise the indices and type.
+	 * 
 	 * @param database
 	 */
 	public static void init(Database database) {
@@ -58,9 +57,8 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public Single<Tag> findByName(String name) {
-		return Single.just(out(getRootLabel()).mark().has(TagImpl.TAG_VALUE_KEY, name).back()
-				.nextOrDefaultExplicit(TagImpl.class, null));
+	public Tag findByName(String name) {
+		return out(getRootLabel()).mark().has(TagImpl.TAG_VALUE_KEY, name).back().nextOrDefaultExplicit(TagImpl.class, null);
 	}
 
 	@Override

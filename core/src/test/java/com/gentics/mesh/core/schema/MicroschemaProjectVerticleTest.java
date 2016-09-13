@@ -80,7 +80,7 @@ public class MicroschemaProjectVerticleTest extends AbstractIsolatedRestVerticle
 			request.setSchemaReference(new SchemaReference().setName("folder"));
 			request.setName("extraProject");
 			ProjectResponse created = call(() -> getClient().createProject(request));
-			Project extraProject = projectRoot.findByUuidSync(created.getUuid());
+			Project extraProject = projectRoot.findByUuid(created.getUuid());
 
 			// Add only read perms
 			role().grantPermissions(microschema, READ_PERM);
@@ -91,7 +91,7 @@ public class MicroschemaProjectVerticleTest extends AbstractIsolatedRestVerticle
 			extraProject.reload();
 			extraProject.getMicroschemaContainerRoot().reload();
 			assertNotNull("The microschema should be added to the extra project",
-					extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().value());
+					extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()));
 		}
 	}
 

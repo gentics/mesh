@@ -61,7 +61,7 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 
 		// Handle Update / Create 
 		BootstrapInitializer boot = MeshInternal.get().boot();
-		Node node = boot.nodeRoot().findByUuidSync(nodeField.getUuid());
+		Node node = boot.nodeRoot().findByUuid(nodeField.getUuid());
 		if (node == null) {
 			// TODO We want to delete the field when the field has been explicitly set to null
 			if (log.isDebugEnabled()) {

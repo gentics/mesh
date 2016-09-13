@@ -68,7 +68,7 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().value();
+			Node node = boot.nodeRoot().findByUuid(item.getUuid());
 			if (node == null) {
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
 			}

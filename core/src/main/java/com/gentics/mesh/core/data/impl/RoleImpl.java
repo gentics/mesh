@@ -142,7 +142,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflict
-			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName()).toBlocking().value();
+			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName());
 			if (roleWithSameName != null && !roleWithSameName.getUuid().equals(getUuid())) {
 				throw conflict(roleWithSameName.getUuid(), requestModel.getName(), "role_conflicting_name");
 			}

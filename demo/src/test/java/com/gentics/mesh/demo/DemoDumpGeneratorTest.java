@@ -57,7 +57,7 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		generator.invokeDump(boot, dataProvider);
 		NoTx tx = db.noTx();
-		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().value().getNodeRoot().findAll().size() > 0);
+		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().findAll().size() > 0);
 		User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 		assertNotNull("The webclient user should have been created but could not be found.", user);
 		assertFalse("The webclient user should also have at least one group assigned to it.", user.getGroups().isEmpty());

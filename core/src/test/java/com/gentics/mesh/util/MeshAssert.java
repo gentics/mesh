@@ -46,7 +46,7 @@ public final class MeshAssert {
 
 	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws Exception {
 		root.reload();
-		Object element = root.findByUuid(uuid).toBlocking().value();
+		Object element = root.findByUuid(uuid);
 		if (exists) {
 			assertNotNull("The element should exist.", element);
 		} else {

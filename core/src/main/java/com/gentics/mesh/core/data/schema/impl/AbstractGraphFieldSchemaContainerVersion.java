@@ -223,7 +223,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 			// Check for conflicting container names
 			String newName = resultingSchema.getName();
-			SC foundContainer = getSchemaContainer().getRoot().findByName(resultingSchema.getName()).toBlocking().value();
+			SC foundContainer = getSchemaContainer().getRoot().findByName(resultingSchema.getName());
 			if (foundContainer != null && !foundContainer.getUuid().equals(getSchemaContainer().getUuid())) {
 				throw conflict(foundContainer.getUuid(), newName, "schema_conflicting_name", newName);
 			}

@@ -56,7 +56,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			Project project = projectRoot.create("test", user(), schemaContainer("folder").getLatestVersion());
-			Project project2 = projectRoot.findByName(project.getName()).toBlocking().value();
+			Project project2 = projectRoot.findByName(project.getName());
 			assertNotNull(project2);
 			assertEquals("test", project2.getName());
 			assertEquals(project.getUuid(), project2.getUuid());
@@ -144,8 +144,8 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByName() {
 		try (NoTx noTx = db.noTx()) {
-			assertNull(meshRoot().getProjectRoot().findByName("bogus").toBlocking().value());
-			assertNotNull(meshRoot().getProjectRoot().findByName("dummy").toBlocking().value());
+			assertNull(meshRoot().getProjectRoot().findByName("bogus"));
+			assertNotNull(meshRoot().getProjectRoot().findByName("dummy"));
 		}
 	}
 
@@ -153,9 +153,9 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			Project project = meshRoot().getProjectRoot().findByUuid(project().getUuid()).toBlocking().value();
+			Project project = meshRoot().getProjectRoot().findByUuid(project().getUuid());
 			assertNotNull(project);
-			project = meshRoot().getProjectRoot().findByUuid("bogus").toBlocking().value();
+			project = meshRoot().getProjectRoot().findByUuid("bogus");
 			assertNull(project);
 		}
 	}
@@ -182,11 +182,11 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(project);
 			String uuid = project.getUuid();
 			SearchQueueBatch batch = createBatch();
-			Project foundProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().value();
+			Project foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull(foundProject);
 			project.delete(batch);
 			// TODO check for attached nodes
-			foundProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().value();
+			foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNull(foundProject);
 		}
 	}

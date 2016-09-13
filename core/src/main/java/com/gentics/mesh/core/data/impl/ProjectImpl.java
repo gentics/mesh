@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -70,6 +71,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public static void init(Database database) {
 		// TODO index to name + unique constraint
 		database.addVertexType(ProjectImpl.class, MeshVertexImpl.class);
+//		database.addVertexIndex(ProjectImpl.class.getName(), ProjectImpl.class, true, "name");
 	}
 
 	@Override
@@ -228,7 +230,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		return db.tx(() -> {
 			if (shouldUpdate(requestModel.getName(), getName())) {
 				// Check for conflicting project name
-				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()).toBlocking().value();
+				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName());
 				if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(projectWithSameName.getUuid(), requestModel.getName(), "project_conflicting_name");
 				}

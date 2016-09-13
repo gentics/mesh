@@ -205,7 +205,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 				TagFamily tagFamily = getTagFamily();
 
 				// Check for conflicts
-				Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName).toBlocking().value();
+				Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName);
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
 							tagFamily.getName());

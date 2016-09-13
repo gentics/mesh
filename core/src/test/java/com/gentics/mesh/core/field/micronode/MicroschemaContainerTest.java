@@ -93,7 +93,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			String invalidName = "thereIsNoMicroschemaWithThisName";
 
 			for (String name : microschemaContainers().keySet()) {
-				MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name).toBlocking().value();
+				MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name);
 				assertNotNull("Could not find microschema container for name " + name, container);
 				Microschema microschema = container.getLatestVersion().getSchema();
 				assertNotNull("Container for microschema " + name + " did not contain a microschema", microschema);
@@ -101,7 +101,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			}
 
 			assertNull("Must not find microschema with name " + invalidName,
-					boot.microschemaContainerRoot().findByName(invalidName).toBlocking().value());
+					boot.microschemaContainerRoot().findByName(invalidName));
 		}
 	}
 
@@ -114,10 +114,10 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			MicroschemaContainerRoot root = boot.microschemaContainerRoot();
 			for (MicroschemaContainer container : microschemaContainers().values()) {
 				String uuid = container.getUuid();
-				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid).toBlocking().value());
+				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid));
 			}
 
-			assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID).toBlocking().value());
+			assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID));
 		}
 	}
 
@@ -170,10 +170,10 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			Microschema schema = new MicroschemaModel();
 			schema.setName("test");
 			MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
-			assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().value());
+			assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test"));
 			SearchQueueBatch batch = createBatch();
 			container.delete(batch);
-			assertNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().value());
+			assertNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test"));
 		}
 	}
 

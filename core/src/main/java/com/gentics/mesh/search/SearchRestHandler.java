@@ -154,17 +154,15 @@ public class SearchRestHandler {
 						// TODO check permissions without loading the vertex
 
 						// Locate the node
-						rootVertex.call().findByUuid(uuid).subscribe(element -> {
-							if (element == null) {
-								log.error("Object could not be found for uuid {" + uuid + "} in root vertex {"
-										+ rootVertex.call().getImpl().getFermaType() + "}");
-								obsResult.toHandler().handle(Future.succeededFuture());
-							} else {
-								obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
-							}
-						}, error -> {
-							obsResult.toHandler().handle(Future.failedFuture(error));
-						});
+						T element = rootVertex.call().findByUuid(uuid);
+						if (element == null) {
+							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {"
+									+ rootVertex.call().getImpl().getFermaType() + "}");
+							obsResult.toHandler().handle(Future.succeededFuture());
+						} else {
+							obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
+						}
+
 					}
 
 					Observable.merge(obs).collect(() -> {
@@ -248,12 +246,12 @@ public class SearchRestHandler {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler handler : registry.getHandlers()) {
 					handler.clearIndex().onErrorComplete(error -> {
-						//						if (error instanceof IndexMissingException) {
-						//							return true;
-						//						} else {
+						// if (error instanceof IndexMissingException) {
+						// return true;
+						// } else {
 						log.error("Can't clear index for {" + handler.getKey() + "}", error);
 						return false;
-						//						}
+						// }
 					}).await();
 				}
 				boot.get().meshRoot().getSearchQueue().clear();

@@ -274,7 +274,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindByUUID() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			String uuid = user().getUuid();
-			User foundUser = boot.userRoot().findByUuid(uuid).toBlocking().value();
+			User foundUser = boot.userRoot().findByUuid(uuid);
 			assertNotNull(foundUser);
 			assertEquals(uuid, foundUser.getUuid());
 		}
@@ -310,7 +310,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			String uuid = user.getUuid();
 			SearchQueueBatch batch = createBatch();
 			user.delete(batch);
-			User foundUser = root.getUserRoot().findByUuid(uuid).toBlocking().value();
+			User foundUser = root.getUserRoot().findByUuid(uuid);
 			assertNull(foundUser);
 		}
 	}
@@ -487,7 +487,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			user.setPasswordHash(PASSWDHASH);
 			assertTrue(user.isEnabled());
 
-			User reloadedUser = userRoot.findByUuid(user.getUuid()).toBlocking().value();
+			User reloadedUser = userRoot.findByUuid(user.getUuid());
 			assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 			assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
 			assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
@@ -506,7 +506,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			assertTrue(user.isEnabled());
 			SearchQueueBatch batch = createBatch();
 			user.delete(batch);
-			User foundUser = meshRoot().getUserRoot().findByUuid(uuid).toBlocking().value();
+			User foundUser = meshRoot().getUserRoot().findByUuid(uuid);
 			assertNull(foundUser);
 		}
 	}

@@ -667,7 +667,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
-			User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().value();
+			User reloadedUser = boot.userRoot().findByUuid(user.getUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		}
 	}
@@ -689,7 +689,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			MeshResponse<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
-			User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().value();
+			User reloadedUser = boot.userRoot().findByUuid(user.getUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 			assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 			assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
@@ -870,7 +870,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			try (NoTx noTx2 = db.noTx()) {
 				test.assertUser(request, restUser);
 
-				User user = boot.userRoot().findByUuid(restUser.getUuid()).toBlocking().value();
+				User user = boot.userRoot().findByUuid(restUser.getUuid());
 				assertThat(restUser).matches(user);
 			}
 		}
@@ -968,7 +968,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(future);
 
 			try (Tx tx = db.tx()) {
-				User loadedUser = boot.userRoot().findByUuid(uuid).toBlocking().value();
+				User loadedUser = boot.userRoot().findByUuid(uuid);
 				assertNull("The user should have been deleted.", loadedUser);
 			}
 
@@ -1012,7 +1012,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 			userRoot = meshRoot().getUserRoot();
-			assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid).toBlocking().value());
+			assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid));
 		}
 	}
 
@@ -1041,7 +1041,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			assertTrue(role().hasPermission(DELETE_PERM, extraUser));
 
-			User user = userRoot.findByUuid(uuid).toBlocking().value();
+			User user = userRoot.findByUuid(uuid);
 			assertEquals(1, user.getGroups().size());
 			assertTrue("The user should be enabled", user.isEnabled());
 
@@ -1049,7 +1049,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			userRoot.reload();
-			assertNull("The user was not deleted.", userRoot.findByUuid(uuid).toBlocking().value());
+			assertNull("The user was not deleted.", userRoot.findByUuid(uuid));
 
 			// // Check whether the user was correctly disabled
 			// try (NoTrx noTx = db.noTrx()) {

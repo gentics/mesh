@@ -50,9 +50,8 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 		Database db = MeshInternal.get().database();
 		db.asyncNoTx(() -> {
 			RootVertex<Project> root = getRootVertex(ac);
-			return root.findByName(ac, projectName, READ_PERM).flatMap(project -> {
-				return project.transformToRest(ac, 0);
-			});
+			Project project = root.findByName(ac, projectName, READ_PERM);
+			return project.transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 

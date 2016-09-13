@@ -270,7 +270,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 		try (NoTx noTx = db.noTx()) {
 			TagFamily basicTagFamily = tagFamily("basic");
 			String uuid = basicTagFamily.getUuid();
-			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid).toBlocking().value());
+			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid));
 
 			MeshResponse<Void> future = getClient().deleteTagFamily(PROJECT_NAME, uuid).invoke();
 			latchFor(future);

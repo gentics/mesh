@@ -27,7 +27,7 @@ public abstract class AbstractProjectRestVerticle extends AbstractWebVerticle {
 	}
 
 	public Project getProject(RoutingContext rc) {
-		return boot.projectRoot().findByName(getProjectName(rc)).toBlocking().value();
+		return boot.projectRoot().findByName(getProjectName(rc));
 	}
 
 	public String getProjectName(RoutingContext rc) {

@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.syncleus.ferma.traversals.VertexTraversal;
 
 import rx.Single;
 
@@ -47,7 +46,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param name
 	 * @return
 	 */
-	Single<T> findByName(String name);
+	T findByName(String name);
 
 	/**
 	 * Load the object by name and check the given permission.
@@ -61,25 +60,16 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	Single<T> findByName(InternalActionContext ac, String projectName, GraphPermission perm);
+	T findByName(InternalActionContext ac, String projectName, GraphPermission perm);
 
 	/**
 	 * Find the element with the given uuid.
 	 * 
 	 * @param uuid
 	 *            Uuid of the element to be located
-	 * @return Observable which may emit the located element
+	 * @return Found element or null if the element could not be located
 	 */
-	Single<T> findByUuid(String uuid);
-
-	/**
-	 * Find the element with the given uuid.
-	 * 
-	 * @param uuid
-	 *            Uuid of the element to be located
-	 * @return
-	 */
-	T findByUuidSync(String uuid);
+	T findByUuid(String uuid);
 
 	/**
 	 * Resolve the given stack to the vertex.

@@ -233,7 +233,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			latchFor(future);
 			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().value();
+			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
 	}
@@ -246,7 +246,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			assertNotNull(microschema);
 			call(() -> getClient().deleteMicroschema(microschema.getUuid()));
 
-			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().value();
+			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid());
 			assertNull("The microschema should have been deleted.", reloaded);
 		}
 	}

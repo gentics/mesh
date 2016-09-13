@@ -362,15 +362,15 @@ public class TestDataProvider {
 	private void addBootstrapSchemas() {
 
 		// folder
-		SchemaContainer folderSchemaContainer = boot.schemaContainerRoot().findByName("folder").toBlocking().value();
+		SchemaContainer folderSchemaContainer = boot.schemaContainerRoot().findByName("folder");
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		SchemaContainer contentSchemaContainer = boot.schemaContainerRoot().findByName("content").toBlocking().value();
+		SchemaContainer contentSchemaContainer = boot.schemaContainerRoot().findByName("content");
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary-content
-		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary-content").toBlocking().value();
+		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary-content");
 		schemaContainers.put("binary-content", binaryContentSchemaContainer);
 
 	}

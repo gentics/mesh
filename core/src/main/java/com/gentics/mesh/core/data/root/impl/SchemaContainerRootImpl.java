@@ -96,7 +96,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public boolean contains(SchemaContainer schema) {
-		if (findByUuidSync(schema.getUuid()) == null) {
+		if (findByUuid(schema.getUuid()) == null) {
 			return false;
 		} else {
 			return true;
@@ -124,7 +124,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				Tuple<SearchQueueBatch, SchemaContainer> tuple = db.tx(() -> {
 
 					String schemaName = requestModel.getName();
-					SchemaContainer conflictingSchema = findByName(schemaName).toBlocking().value();
+					SchemaContainer conflictingSchema = findByName(schemaName);
 					if (conflictingSchema != null) {
 						throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
 					}
@@ -155,29 +155,27 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		String schemaUuid = reference.getUuid();
 		Integer schemaVersion = reference.getVersion();
 
-		Single<SchemaContainer> obs = null;
+		SchemaContainer schemaContainer = null;
 		if (!isEmpty(schemaName)) {
-			obs = findByName(schemaName);
+			schemaContainer = findByName(schemaName);
 		} else {
-			obs = findByUuid(schemaUuid);
+			schemaContainer = findByUuid(schemaUuid);
 		}
 
-		return obs.map(schemaContainer -> {
-			if (schemaContainer == null) {
+		if (schemaContainer == null) {
+			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
+					isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+		}
+		if (schemaVersion == null) {
+			return Single.just(schemaContainer.getLatestVersion());
+		} else {
+			SchemaContainerVersion foundVersion = schemaContainer.findVersionByRev(schemaVersion);
+			if (foundVersion == null) {
 				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
 						isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
-			}
-			if (schemaVersion == null) {
-				return schemaContainer.getLatestVersion();
 			} else {
-				SchemaContainerVersion foundVersion = schemaContainer.findVersionByRev(schemaVersion);
-				if (foundVersion == null) {
-					throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
-							isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
-				} else {
-					return foundVersion;
-				}
+				return Single.just(foundVersion);
 			}
-		});
+		}
 	}
 }
