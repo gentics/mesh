@@ -95,18 +95,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Uuid of the object that should be loaded
 	 * @param perm
 	 *            Permission that must be granted in order to load the object
+	 * @return Loaded element. A not found error will be thrown if the element could not be found
 	 */
-	Single<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
-
-	/**
-	 * Load the object by uuid and check the given permission.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @return
-	 */
-	T loadObjectByUuidSync(InternalActionContext ac, String uuid, GraphPermission perm);
+	T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
 
 	/**
 	 * Add the given item to the this root vertex.

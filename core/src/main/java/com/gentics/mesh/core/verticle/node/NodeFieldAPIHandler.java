@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.image.spi.ImageInfo;
@@ -81,23 +82,22 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
-				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
-				if (language == null) {
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
-				}
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
+			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+			if (language == null) {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
 
-				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
-				if (container == null) {
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
-				}
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
+			if (container == null) {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
 
-				BinaryGraphField binaryField = container.getBinary(fieldName);
-				if (binaryField == null) {
-					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
-				}
-				return binaryField;
-			});
+			BinaryGraphField binaryField = container.getBinary(fieldName);
+			if (binaryField == null) {
+				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+			}
+			return Single.just(binaryField);
 		}).subscribe(binaryField -> {
 			db.noTx(() -> {
 				BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
@@ -125,91 +125,89 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
-			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
-				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
-				if (language == null) {
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+			if (language == null) {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
+
+			// Create new field container as clone of the existing
+			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(language, release, ContainerType.DRAFT);
+
+			if (latestDraftVersion == null) {
+				// Create a new field container
+				// latestDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser());
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
+
+			Optional<FieldSchema> fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
+			if (!fieldSchema.isPresent()) {
+				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+			}
+			if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
+				// TODO Add support for other field types
+				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+			}
+
+			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+			BinaryGraphField field = newDraftVersion.createBinary(fieldName);
+
+			MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+			Set<FileUpload> fileUploads = ac.getFileUploads();
+			if (fileUploads.isEmpty()) {
+				throw error(BAD_REQUEST, "node_error_no_binarydata_found");
+			}
+			if (fileUploads.size() > 1) {
+				throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
+			}
+			FileUpload ul = fileUploads.iterator().next();
+			long byteLimit = uploadOptions.getByteLimit();
+			if (ul.size() > byteLimit) {
+				if (log.isDebugEnabled()) {
+					log.debug("Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
+				}
+				String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
+				String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
+				throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
+			}
+			String contentType = ul.contentType();
+			String fileName = ul.fileName();
+			String fieldUuid = field.getUuid();
+			Single<ImageInfo> obsImage;
+
+			// Only gather image info for actual images. Otherwise return an empty image info object.
+			if (contentType.startsWith("image/")) {
+				try {
+					obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
+				} catch (Exception e) {
+					log.error("Could not load schema for node {" + node.getUuid() + "}");
+					throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
 				}
 
-				// Create new field container as clone of the existing
-				NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(language, release, ContainerType.DRAFT);
+			} else {
+				obsImage = Single.just(new ImageInfo());
+			}
 
-				if (latestDraftVersion == null) {
-					// Create a new field container
-					// latestDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser());
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
-				}
+			Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
+			return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
+				SearchQueueBatch batch = db.tx(() -> {
+					field.setFileName(fileName);
+					field.setFileSize(ul.size());
+					field.setMimeType(contentType);
+					field.setSHA512Sum(sha512sum);
+					field.setImageDominantColor(imageInfo.getDominantColor());
+					field.setImageHeight(imageInfo.getHeight());
+					field.setImageWidth(imageInfo.getWidth());
 
-				Optional<FieldSchema> fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
-				if (!fieldSchema.isPresent()) {
-					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-				}
-				if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
-					// TODO Add support for other field types
-					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
-				}
-
-				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
-				BinaryGraphField field = newDraftVersion.createBinary(fieldName);
-
-				MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-				Set<FileUpload> fileUploads = ac.getFileUploads();
-				if (fileUploads.isEmpty()) {
-					throw error(BAD_REQUEST, "node_error_no_binarydata_found");
-				}
-				if (fileUploads.size() > 1) {
-					throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
-				}
-				FileUpload ul = fileUploads.iterator().next();
-				long byteLimit = uploadOptions.getByteLimit();
-				if (ul.size() > byteLimit) {
-					if (log.isDebugEnabled()) {
-						log.debug(
-								"Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
+					// if the binary field is the segment field, we need to update the webroot info in the node
+					if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+						newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 					}
-					String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
-					String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
-					throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
-				}
-				String contentType = ul.contentType();
-				String fileName = ul.fileName();
-				String fieldUuid = field.getUuid();
-				Single<ImageInfo> obsImage;
 
-				// Only gather image info for actual images. Otherwise return an empty image info object. 
-				if (contentType.startsWith("image/")) {
-					try {
-						obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
-					} catch (Exception e) {
-						log.error("Could not load schema for node {" + node.getUuid() + "}");
-						throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
-					}
+					return node.createIndexBatch(STORE_ACTION);
+				});
 
-				} else {
-					obsImage = Single.just(new ImageInfo());
-				}
-
-				Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
-				return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
-					SearchQueueBatch batch = db.tx(() -> {
-						field.setFileName(fileName);
-						field.setFileSize(ul.size());
-						field.setMimeType(contentType);
-						field.setSHA512Sum(sha512sum);
-						field.setImageDominantColor(imageInfo.getDominantColor());
-						field.setImageHeight(imageInfo.getHeight());
-						field.setImageWidth(imageInfo.getWidth());
-
-						// if the binary field is the segment field, we need to update the webroot info in the node
-						if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-							newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
-						}
-
-						return node.createIndexBatch(STORE_ACTION);
-					});
-
-					return batch.process().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
-				}).flatMap(x -> x);
+				return batch.process().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
 
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
@@ -245,49 +243,44 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		validateParameter(fieldName, "fieldName");
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
-				// TODO Update SQB
-				return new GenericMessageResponse("Not yet implemented");
-			});
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			// TODO Update SQB
+			return Single.just(new GenericMessageResponse("Not yet implemented"));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	public void handleRemoveFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
-				// TODO Update SQB
-				return new GenericMessageResponse("Not yet implemented");
-			});
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			// TODO Update SQB
+			return Single.just(new GenericMessageResponse("Not yet implemented"));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	public void handleUpdateFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
-				// TODO Update SQB
-				return new GenericMessageResponse("Not yet implemented");
-			});
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			// TODO Update SQB
+			return Single.just(new GenericMessageResponse("Not yet implemented"));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleReadFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
-				return new GenericMessageResponse("Not yet implemented");
-			});
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
+			return Single.just(new GenericMessageResponse("Not yet implemented"));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	public void handleMoveFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
-				// TODO Update SQB
-				return new GenericMessageResponse("Not yet implemented");
-			});
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			// TODO Update SQB
+			return Single.just(new GenericMessageResponse("Not yet implemented"));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -301,80 +294,79 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
-				// TODO Update SQB
-				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
-				if (language == null) {
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
-				}
-				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
-				if (container == null) {
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
-				}
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			// TODO Update SQB
+			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+			if (language == null) {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
+			if (container == null) {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
 
-				Optional<FieldSchema> fieldSchema = container.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
-				if (!fieldSchema.isPresent()) {
-					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-				}
-				if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
-					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
-				}
+			Optional<FieldSchema> fieldSchema = container.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
+			if (!fieldSchema.isPresent()) {
+				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+			}
+			if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
+				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+			}
 
-				BinaryGraphField field = container.getBinary(fieldName);
-				if (field == null) {
-					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+			BinaryGraphField field = container.getBinary(fieldName);
+			if (field == null) {
+				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+			}
+
+			if (!field.hasImage()) {
+				throw error(BAD_REQUEST, "error_transformation_non_image", fieldName);
+			}
+
+			try {
+				BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
+				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParameters().setWidth(transformation.getWidth())
+						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
+						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
+				if (!imageManipulationParameter.isSet()) {
+					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}
+				String fieldUuid = field.getUuid();
+				String fieldSegmentedPath = field.getSegmentedPath();
 
-				if (!field.hasImage()) {
-					throw error(BAD_REQUEST, "error_transformation_non_image", fieldName);
-				}
-
-				try {
-					BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
-					ImageManipulationParameters imageManipulationParameter = new ImageManipulationParameters().setWidth(transformation.getWidth())
-							.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
-							.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
-					if (!imageManipulationParameter.isSet()) {
-						throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
-					}
-					String fieldUuid = field.getUuid();
-					String fieldSegmentedPath = field.getSegmentedPath();
-
-					Single<Tuple<String, Integer>> obsHashAndSize = imageManipulator
-							.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
-								return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).map(hash -> {
-									return Tuple.tuple(hash, buffer.length());
-								});
+				Single<Tuple<String, Integer>> obsHashAndSize = imageManipulator
+						.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
+							return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).map(hash -> {
+								return Tuple.tuple(hash, buffer.length());
 							});
-
-					return obsHashAndSize.flatMap(hashAndSize -> {
-						Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
-							field.setSHA512Sum(hashAndSize.v1());
-							field.setFileSize(hashAndSize.v2());
-							// resized images will always be jpeg
-							field.setMimeType("image/jpeg");
-
-							// TODO should we rename the image, if the extension is wrong?
-
-							// TODO handle image properties as well
-							// node.setBinaryImageDPI(dpi);
-							// node.setBinaryImageHeight(heigth);
-							// node.setBinaryImageWidth(width);
-							SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
-							return Tuple.tuple(batch, node.getUuid());
 						});
 
-						SearchQueueBatch batch = tuple.v1();
-						String updatedNodeUuid = tuple.v2();
-						return batch.process().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
+				return obsHashAndSize.flatMap(hashAndSize -> {
+					Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
+						field.setSHA512Sum(hashAndSize.v1());
+						field.setFileSize(hashAndSize.v2());
+						// resized images will always be jpeg
+						field.setMimeType("image/jpeg");
+
+						// TODO should we rename the image, if the extension is wrong?
+
+						// TODO handle image properties as well
+						// node.setBinaryImageDPI(dpi);
+						// node.setBinaryImageHeight(heigth);
+						// node.setBinaryImageWidth(width);
+						SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
+						return Tuple.tuple(batch, node.getUuid());
 					});
-				} catch (GenericRestException e) {
-					throw e;
-				} catch (Exception e) {
-					log.error("Error while transforming image", e);
-					throw error(INTERNAL_SERVER_ERROR, "error_internal");
-				}
-			}).flatMap(x -> x);
+
+					SearchQueueBatch batch = tuple.v1();
+					String updatedNodeUuid = tuple.v2();
+					return batch.process().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
+				});
+			} catch (GenericRestException e) {
+				throw e;
+			} catch (Exception e) {
+				log.error("Error while transforming image", e);
+				throw error(INTERNAL_SERVER_ERROR, "error_internal");
+			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 

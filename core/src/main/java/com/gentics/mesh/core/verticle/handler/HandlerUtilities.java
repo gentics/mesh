@@ -68,24 +68,23 @@ public final class HandlerUtilities {
 		Database db = MeshInternal.get().database();
 		db.asyncNoTx(() -> {
 			RootVertex<T> root = handler.call();
-			return root.loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(element -> {
-				return db.noTx(() -> {
-					String elementUuid = element.getUuid();
-					SearchQueueBatch sqb = db.tx(() -> {
+			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+			return db.noTx(() -> {
+				String elementUuid = element.getUuid();
+				SearchQueueBatch sqb = db.tx(() -> {
 
-						// Check whether the element is indexable. Indexable elements must also be purged from the search index.
-						if (element instanceof IndexableElement) {
-							SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-							SearchQueueBatch batch = queue.createBatch();
-							element.delete(batch);
-							return batch;
-						} else {
-							throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
-						}
-					});
-					log.info("Deleted element {" + elementUuid + "}");
-					return sqb.process().andThen(Single.just(null));
+					// Check whether the element is indexable. Indexable elements must also be purged from the search index.
+					if (element instanceof IndexableElement) {
+						SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+						SearchQueueBatch batch = queue.createBatch();
+						element.delete(batch);
+						return batch;
+					} else {
+						throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
+					}
 				});
+				log.info("Deleted element {" + elementUuid + "}");
+				return sqb.process().andThen(Single.just(null));
 			});
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 
@@ -106,17 +105,15 @@ public final class HandlerUtilities {
 		Database db = MeshInternal.get().database();
 		db.asyncNoTx(() -> {
 			RootVertex<T> root = handler.call();
-			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
-				return element.update(ac).flatMap(updatedElement -> {
-					// Transform the vertex using a fresh transaction in order to start with a clean cache
-					return db.noTx(() -> {
-						updatedElement.reload();
-						return updatedElement.transformToRest(ac, 0);
-					});
+			T element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			return element.update(ac).flatMap(updatedElement -> {
+				// Transform the vertex using a fresh transaction in order to start with a clean cache
+				return db.noTx(() -> {
+					updatedElement.reload();
+					return updatedElement.transformToRest(ac, 0);
 				});
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
-
 	}
 
 	/**
@@ -129,19 +126,18 @@ public final class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
-			TxHandler<RootVertex<?>> handler) {
+			TxHandler<RootVertex<T>> handler) {
 		Database db = MeshInternal.get().database();
 		db.asyncNoTx(() -> {
-			RootVertex<?> root = handler.call();
-			return root.loadObjectByUuid(ac, uuid, READ_PERM).flatMap(element -> {
-				String etag = element.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					return Single.error(new NotModifiedException());
-				} else {
-					return element.transformToRest(ac, 0);
-				}
-			});
+			RootVertex<T> root = handler.call();
+			T element = root.loadObjectByUuid(ac, uuid, READ_PERM);
+			String etag = element.getETag(ac);
+			ac.setEtag(etag, true);
+			if (ac.matches(etag, true)) {
+				return Single.error(new NotModifiedException());
+			} else {
+				return element.transformToRestSync(ac, 0);
+			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 

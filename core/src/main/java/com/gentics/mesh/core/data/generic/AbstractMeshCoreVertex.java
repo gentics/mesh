@@ -11,6 +11,7 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
@@ -39,23 +40,23 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @return
 	 */
 	protected <R extends AbstractGenericRestResponse> Completable setRolePermissions(InternalActionContext ac, R model) {
-		return Completable.defer(() -> {
+		return Completable.create(sub -> {
 			String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 			if (isEmpty(roleUuid)) {
-				return Completable.complete();
-			} else
-				return MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).map(role -> {
-					if (role != null) {
-						Set<GraphPermission> permSet = role.getPermissions(this);
-						Set<String> humanNames = new HashSet<>();
-						for (GraphPermission permission : permSet) {
-							humanNames.add(permission.getSimpleName());
-						}
-						String[] names = humanNames.toArray(new String[humanNames.size()]);
-						model.setRolePerms(names);
+				sub.onCompleted();
+			} else {
+				Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+				if (role != null) {
+					Set<GraphPermission> permSet = role.getPermissions(this);
+					Set<String> humanNames = new HashSet<>();
+					for (GraphPermission permission : permSet) {
+						humanNames.add(permission.getSimpleName());
 					}
-					return model;
-				}).toCompletable();
+					String[] names = humanNames.toArray(new String[humanNames.size()]);
+					model.setRolePerms(names);
+				}
+				sub.onCompleted();
+			}
 		});
 
 	}

@@ -58,23 +58,22 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
-			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
-				try {
-					Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
-					SchemaChangesListModel model = new SchemaChangesListModel();
-					model.getChanges().addAll(MeshInternal.get().schemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
-					String schemaName = element.getName();
-					if (model.getChanges().isEmpty()) {
-						return Single.just(message(ac, "schema_update_no_difference_detected", schemaName));
-					} else {
-						return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
-							return Single.just(message(ac, "migration_invoked", schemaName));
-						});
-					}
-				} catch (Exception e) {
-					return Single.error(e);
+			SchemaContainer element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			try {
+				Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+				SchemaChangesListModel model = new SchemaChangesListModel();
+				model.getChanges().addAll(MeshInternal.get().schemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
+				String schemaName = element.getName();
+				if (model.getChanges().isEmpty()) {
+					return Single.just(message(ac, "schema_update_no_difference_detected", schemaName));
+				} else {
+					return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
+						return Single.just(message(ac, "migration_invoked", schemaName));
+					});
 				}
-			});
+			} catch (Exception e) {
+				return Single.error(e);
+			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -88,9 +87,9 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		db.asyncNoTx(() -> {
-			Single<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
-			return obsSchema.flatMap(schema -> schema.getLatestVersion().diff(ac, comparator, requestModel));
+			return schema.getLatestVersion().diff(ac, comparator, requestModel);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -118,12 +117,11 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (ac.getUser().hasPermission(project.getImpl(), GraphPermission.UPDATE_PERM)) {
-				return getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM).flatMap(schema -> {
-					return db.tx(() -> {
-						//TODO SQB ?
-						project.getSchemaContainerRoot().addSchemaContainer(schema);
-						return schema.transformToRest(ac, 0);
-					});
+				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				return db.tx(() -> {
+					// TODO SQB ?
+					project.getSchemaContainerRoot().addSchemaContainer(schema);
+					return schema.transformToRest(ac, 0);
 				});
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
@@ -149,14 +147,11 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 			if (ac.getUser().hasPermission(project.getImpl(), GraphPermission.UPDATE_PERM)) {
 				// TODO check whether schema is assigned to project
 
-				return boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM).flatMap(schema -> {
-
-					return db.tx(() -> {
-						project.getSchemaContainerRoot().removeSchemaContainer(schema);
-						return Single.just(null);
-					});
+				SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				return db.tx(() -> {
+					project.getSchemaContainerRoot().removeSchemaContainer(schema);
+					return Single.just(null);
 				});
-
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
@@ -181,10 +176,8 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		validateParameter(schemaUuid, "schemaUuid");
 
 		db.asyncNoTx(() -> {
-			Single<SchemaContainer> obsSchema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			return obsSchema.flatMap(schema -> {
-				return schema.getLatestVersion().applyChanges(ac);
-			});
+			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+			return schema.getLatestVersion().applyChanges(ac);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}

@@ -156,7 +156,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @param obsSchemaContainer
 	 * @return
 	 */
-	//TODO use schema container version instead of container
+	// TODO use schema container version instead of container
 	private Single<Node> createNode(InternalActionContext ac, Single<SchemaContainer> obsSchemaContainer) {
 
 		Database db = MeshInternal.get().database();
@@ -179,23 +179,22 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				requestUser.reload();
 				project.reload();
 				// Load the parent node in order to create the node
-				return project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM).map(parentNode -> {
-					return db.tx(() -> {
-						Release release = ac.getRelease(project);
-						Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release);
-						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-						requestUser.addPermissionsOnRole(parentNode, READ_PUBLISHED_PERM, node, READ_PUBLISHED_PERM);
-						requestUser.addPermissionsOnRole(parentNode, PUBLISH_PERM, node, PUBLISH_PERM);
-						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-						if (language == null) {
-							throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
-						}
-						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release, requestUser);
-						container.updateFieldsFromRest(ac, requestModel.getFields());
-						// TODO add container specific batch
-						SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
-						return Tuple.tuple(batch, node);
-					});
+				Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM);
+				return db.tx(() -> {
+					Release release = ac.getRelease(project);
+					Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release);
+					requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+					requestUser.addPermissionsOnRole(parentNode, READ_PUBLISHED_PERM, node, READ_PUBLISHED_PERM);
+					requestUser.addPermissionsOnRole(parentNode, PUBLISH_PERM, node, PUBLISH_PERM);
+					Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+					if (language == null) {
+						throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
+					}
+					NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release, requestUser);
+					container.updateFieldsFromRest(ac, requestModel.getFields());
+					// TODO add container specific batch
+					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
+					return Single.just(Tuple.tuple(batch, node));
 				});
 			});
 			return obsTuple.flatMap(tuple -> {
@@ -228,16 +227,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				throw error(BAD_REQUEST, "error_schema_parameter_missing");
 			}
 
-			//TODO use fromReference call to load the schema container
+			// TODO use fromReference call to load the schema container
 
 			if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 				// 2. Use schema reference by uuid first
-				return project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM).flatMap(schemaContainer -> {
-					return createNode(ac, Single.just(schemaContainer));
-				});
+				SchemaContainer schemaContainer = project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM);
+				return createNode(ac, Single.just(schemaContainer));
 			}
 
-			//TODO handle schema version as well? Decide whether it should be possible to create a node and specify the schema version.
+			// TODO handle schema version as well? Decide whether it should be possible to create a node and specify the schema version.
 			// 3. Or just schema reference by name
 			if (!isEmpty(schemaInfo.getSchema().getName())) {
 				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());

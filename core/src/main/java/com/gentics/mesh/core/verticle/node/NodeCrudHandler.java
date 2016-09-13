@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -62,18 +61,17 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(node -> {
-				if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
-					throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
-				}
-				return db.tx(() -> {
-					// Create the batch first since we can't delete the container and access it later in batch creation
-					SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-					SearchQueueBatch batch = queue.createBatch();
-					node.deleteFromRelease(ac.getRelease(null), batch);
-					return batch;
-				}).process().andThen(Single.just(null));
-			});
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
+			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
+				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
+			}
+			return db.tx(() -> {
+				// Create the batch first since we can't delete the container and access it later in batch creation
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+				node.deleteFromRelease(ac.getRelease(null), batch);
+				return batch;
+			}).process().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -89,19 +87,18 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDeleteLanguage(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(node -> {
-				// TODO Don't we need a trx here?!
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
+			// TODO Don't we need a trx here?!
 
-				Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
-				if (language == null) {
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
-				}
-				// Create the batch first since we can't delete the container and access it later in batch creation
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch();
-				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
-				return batch.process().andThen(Single.just(null));
-			});
+			Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
+			if (language == null) {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
+			// Create the batch first since we can't delete the container and access it later in batch creation
+			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueueBatch batch = queue.createBatch();
+			node.deleteLanguageContainer(ac.getRelease(null), language, batch);
+			return batch.process().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 
 	}
@@ -123,13 +120,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Project project = ac.getProject();
 			// Load the node that should be moved
 
-			Single<Node> obsSourceNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Single<Node> obsTargetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
-
-			Single<Single<GenericMessageResponse>> obs = Single.zip(obsSourceNode, obsTargetNode, (sourceNode, targetNode) -> {
-				return sourceNode.moveTo(ac, targetNode).andThen(Single.just(null));
-			});
-			return Single.merge(obs);
+			Node sourceNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Node targetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
+			return sourceNode.moveTo(ac, targetNode).andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 
 	}
@@ -144,9 +137,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleNavigation(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
-				return node.transformToNavigation(ac);
-			}).flatMap(x -> x);
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return node.transformToNavigation(ac);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -164,22 +156,21 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			NodeParameters nodeParams = ac.getNodeParameters();
 			PagingParameters pagingParams = ac.getPagingParameters();
 			VersioningParameters versionParams = ac.getVersioningParameters();
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
-				try {
-					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(),
-							ac.getRelease(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
-					// Handle etag
-					String etag = page.getETag(ac);
-					ac.setEtag(etag, true);
-					if (ac.matches(etag, true)) {
-						return Single.error(new NotModifiedException());
-					} else {
-						return page.transformToRest(ac, 0);
-					}
-				} catch (Exception e) {
-					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			try {
+				PageImpl<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(),
+						ac.getRelease(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
+				// Handle etag
+				String etag = page.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					return Single.error(new NotModifiedException());
+				} else {
+					return page.transformToRest(ac, 0);
 				}
-			}).flatMap(x -> x);
+			} catch (Exception e) {
+				throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
+			}
 		}).subscribe(model -> ac.send((RestModel) model, OK), ac::fail);
 
 	}
@@ -195,21 +186,20 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
-				try {
-					PageImpl<? extends Tag> tagPage = node.getTags(ac.getRelease(null), ac.getPagingParameters());
-					// Handle etag
-					String etag = tagPage.getETag(ac);
-					ac.setEtag(etag, true);
-					if (ac.matches(etag, true)) {
-						return Single.error(new NotModifiedException());
-					} else {
-						return tagPage.transformToRest(ac, 0);
-					}
-				} catch (Exception e) {
-					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			try {
+				PageImpl<? extends Tag> tagPage = node.getTags(ac.getRelease(null), ac.getPagingParameters());
+				// Handle etag
+				String etag = tagPage.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					return Single.error(new NotModifiedException());
+				} else {
+					return tagPage.transformToRest(ac, 0);
 				}
-			}).flatMap(x -> x);
+			} catch (Exception e) {
+				throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
+			}
 		}).subscribe(model -> ac.send((RestModel) model, OK), ac::fail);
 	}
 
@@ -230,22 +220,18 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
-			Single<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Single<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Tag tag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
-			Single<Single<NodeResponse>> obs = Single.zip(obsNode, obsTag, (node, tag) -> {
-				Tuple<SearchQueueBatch, Node> tuple = db.tx(() -> {
-					node.addTag(tag, release);
-					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
-					return Tuple.tuple(batch, node);
-				});
-				SearchQueueBatch batch = tuple.v1();
-				Node updatedNode = tuple.v2();
-				return batch.process().andThen(updatedNode.transformToRest(ac, 0));
+			Tuple<SearchQueueBatch, Node> tuple = db.tx(() -> {
+				node.addTag(tag, release);
+				SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
+				return Tuple.tuple(batch, node);
 			});
-			return obs.flatMap(x -> x);
-
+			SearchQueueBatch batch = tuple.v1();
+			Node updatedNode = tuple.v2();
+			return batch.process().andThen(updatedNode.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -264,25 +250,19 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(tagUuid, "tagUuid");
 
 		db.asyncNoTx(() -> {
-
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
-			Single<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Single<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Tag tag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
-			Single<Single<NodeResponse>> obs = Single.zip(obsNode, obsTag, (node, tag) -> {
-				SearchQueueBatch sqBatch = db.tx(() -> {
-					// TODO get release specific containers
-					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
-					node.removeTag(tag, release);
-					return batch;
-				});
-				return sqBatch.process(ac).andThen(Single.just(null));
+			SearchQueueBatch sqBatch = db.tx(() -> {
+				// TODO get release specific containers
+				SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
+				node.removeTag(tag, release);
+				return batch;
 			});
-			return obs.flatMap(x -> x);
-
+			return sqBatch.process(ac).andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
-
 	}
 
 	/**
@@ -295,9 +275,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
-				return node.transformToPublishStatus(ac);
-			}).flatMap(x -> x);
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return node.transformToPublishStatus(ac);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -311,14 +290,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
-				return node.publish(ac).andThen(Single.defer(() -> {
-					return db.noTx(() -> {
-						node.reload();
-						return node.transformToPublishStatus(ac);
-					});
-				}));
-			}).flatMap(x -> x);
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+			return node.publish(ac).andThen(Single.defer(() -> {
+				return db.noTx(() -> {
+					node.reload();
+					return node.transformToPublishStatus(ac);
+				});
+			}));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -332,15 +310,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
-				return node.takeOffline(ac).andThen(Single.defer(() -> {
-					return db.noTx(() -> {
-						node.reload();
-						//						return node.transformToPublishStatus(ac);
-						return Single.just(null);
-					});
-				}));
-			}).flatMap(x -> x);
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+			return node.takeOffline(ac).andThen(Single.defer(() -> {
+				return db.noTx(() -> {
+					node.reload();
+					// return node.transformToPublishStatus(ac);
+					return Single.just(null);
+				});
+			}));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -354,9 +331,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
-				return node.transformToPublishStatus(ac, languageTag);
-			}).flatMap(x -> x);
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return node.transformToPublishStatus(ac, languageTag);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -370,14 +346,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
-				return node.publish(ac, languageTag).andThen(Single.defer(() -> {
-					return db.noTx(() -> {
-						node.reload();
-						return node.transformToPublishStatus(ac, languageTag);
-					});
-				}));
-			}).flatMap(x -> x);
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+			return node.publish(ac, languageTag).andThen(Single.defer(() -> {
+				return db.noTx(() -> {
+					node.reload();
+					return node.transformToPublishStatus(ac, languageTag);
+				});
+			}));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -393,13 +368,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
-				return node.takeOffline(ac, languageTag).toSingle(() -> {
-					return db.noTx(() -> {
-						node.reload();
-						return Single.just(null);
-					});
-				}).flatMap(x -> x);
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+			return node.takeOffline(ac, languageTag).toSingle(() -> {
+				return db.noTx(() -> {
+					node.reload();
+					return Single.just(null);
+				});
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
@@ -413,15 +387,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * @param handler
 	 *            Handler which provides the root vertex which will be used to locate the node
 	 */
-	protected void readElement(InternalActionContext ac, String uuid, TxHandler<RootVertex<?>> handler) {
+	protected void readElement(InternalActionContext ac, String uuid, TxHandler<RootVertex<Node>> handler) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			RootVertex<?> root = handler.call();
+			RootVertex<Node> root = handler.call();
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-			return root.loadObjectByUuid(ac, uuid, requiredPermission).flatMap(node -> {
-				return node.transformToRest(ac, 0);
-			});
-
+			Node node = root.loadObjectByUuid(ac, uuid, requiredPermission);
+			return node.transformToRest(ac, 0);
 		}).subscribe(model -> {
 			HttpResponseStatus code = HttpResponseStatus.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
 			ac.send(model, code);

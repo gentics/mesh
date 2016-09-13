@@ -218,7 +218,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public Single<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		Database db = MeshInternal.get().database();
 		reload();
 		T element = findByUuid(uuid);
@@ -235,30 +235,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
 			}
 		});
-		return Single.just(result);
-	}
-
-	@Override
-	public T loadObjectByUuidSync(InternalActionContext ac, String uuid, GraphPermission perm) {
-		Database db = MeshInternal.get().database();
-		reload();
-		T element = findByUuid(uuid);
-		if (element == null) {
-			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
-		}
-
-		T result = db.noTx(() -> {
-			MeshAuthUser requestUser = ac.getUser();
-			String elementUuid = element.getUuid();
-			if (requestUser.hasPermission(element, perm)) {
-				return element;
-			} else {
-				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
-			}
-		});
-
 		return result;
-
 	}
 
 }

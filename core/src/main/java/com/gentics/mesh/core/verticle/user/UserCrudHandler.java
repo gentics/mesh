@@ -76,13 +76,11 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 			return db.noTx(() -> {
 				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-				Single<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
 				Single<? extends MeshVertex> resolvedElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
-
-				Single<UserPermissionResponse> respObs = Single.zip(obsUser, resolvedElement, (user, targetElement) -> {
-
+				return resolvedElement.map(targetElement -> {
 					return db.noTx(() -> {
 						if (targetElement == null) {
 							throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
@@ -94,7 +92,6 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 						return response;
 					});
 				});
-				return respObs;
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 

@@ -1847,7 +1847,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		 */
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuidSync(ac, roleUuid, READ_PERM);
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(this);
 				Set<String> humanNames = new HashSet<>();

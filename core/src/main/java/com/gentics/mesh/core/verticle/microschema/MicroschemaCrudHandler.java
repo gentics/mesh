@@ -51,25 +51,23 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 		db.asyncNoTx(() -> {
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
-			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
-				return db.tx(() -> {
-					try {
-						Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
-						SchemaChangesListModel model = new SchemaChangesListModel();
-						model.getChanges()
-								.addAll(MeshInternal.get().microschemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
-						String name = element.getName();
-						if (model.getChanges().isEmpty()) {
-							return Single.just(message(ac, "schema_update_no_difference_detected", name));
-						} else {
-							return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
-								return Single.just(message(ac, "migration_invoked", name));
-							});
-						}
-					} catch (Exception e) {
-						return Single.error(e);
+			MicroschemaContainer element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			return db.tx(() -> {
+				try {
+					Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
+					SchemaChangesListModel model = new SchemaChangesListModel();
+					model.getChanges().addAll(MeshInternal.get().microschemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
+					String name = element.getName();
+					if (model.getChanges().isEmpty()) {
+						return Single.just(message(ac, "schema_update_no_difference_detected", name));
+					} else {
+						return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
+							return Single.just(message(ac, "migration_invoked", name));
+						});
 					}
-				});
+				} catch (Exception e) {
+					return Single.error(e);
+				}
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -83,15 +81,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	/**
 	 * Compare the latest schema version with the given schema model.
 	 * 
+	 * @param ac
 	 * @param uuid
 	 *            Schema uuid
-	 * @param ac
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		db.asyncNoTx(() -> {
-			Single<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
-			return obsSchema.flatMap(microschema -> microschema.getLatestVersion().diff(ac, comparator, requestModel));
+			return microschema.getLatestVersion().diff(ac, comparator, requestModel);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -110,10 +108,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		db.asyncNoTx(() -> {
-			Single<MicroschemaContainer> obsSchema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			return obsSchema.flatMap(schema -> {
-				return schema.getLatestVersion().applyChanges(ac);
-			});
+			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+			return schema.getLatestVersion().applyChanges(ac);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -141,11 +137,10 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			if (ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
-				return getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM).flatMap(microschema -> {
-					return db.tx(() -> {
-						project.getMicroschemaContainerRoot().addMicroschema(microschema);
-						return microschema.transformToRest(ac, 0);
-					});
+				MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+				return db.tx(() -> {
+					project.getMicroschemaContainerRoot().addMicroschema(microschema);
+					return microschema.transformToRest(ac, 0);
 				});
 			} else {
 				String projectUuid = project.getUuid();
@@ -160,18 +155,17 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			if(ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
-//				TODO check whether microschema is assigned to project
-				return getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM).flatMap(microschema -> { 
-					return db.tx(() -> {
-						project.getMicroschemaContainerRoot().removeMicroschema(microschema);
-						return Single.just(null);
-					});
+			if (ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
+				// TODO check whether microschema is assigned to project
+				MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+				return db.tx(() -> {
+					project.getMicroschemaContainerRoot().removeMicroschema(microschema);
+					return Single.just(null);
 				});
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
 		});
-			// 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+		// }).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 }

@@ -82,20 +82,19 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
 			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-			return boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM).flatMap(role -> {
-				return db.noTx(() -> {
-					// 2. Resolve the path to element that is targeted
-					return MeshRoot.getInstance().resolvePathToElement(pathToElement).flatMap(targetElement -> {
-						if (targetElement == null) {
-							throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-						}
-						RolePermissionResponse response = new RolePermissionResponse();
-						for (GraphPermission perm : role.getPermissions(targetElement)) {
-							response.getPermissions().add(perm.getSimpleName());
-						}
-						return Single.just(response);
+			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			return db.noTx(() -> {
+				// 2. Resolve the path to element that is targeted
+				return MeshRoot.getInstance().resolvePathToElement(pathToElement).flatMap(targetElement -> {
+					if (targetElement == null) {
+						throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+					}
+					RolePermissionResponse response = new RolePermissionResponse();
+					for (GraphPermission perm : role.getPermissions(targetElement)) {
+						response.getPermissions().add(perm.getSimpleName());
+					}
+					return Single.just(response);
 
-					});
 				});
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -125,12 +124,11 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			}
 
 			// 1. Load the role that should be used
-			Single<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
+			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 			// 2. Resolve the path to element that is targeted
 			Single<? extends MeshVertex> obsElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
-
-			return Single.zip(obsRole, obsElement, (role, element) -> {
+			return obsElement.map(element -> {
 
 				if (element == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);

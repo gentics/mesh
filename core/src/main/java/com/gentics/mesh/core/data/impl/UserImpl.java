@@ -501,7 +501,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 							throw error(BAD_REQUEST, "project_not_found", projectName);
 						}
 						NodeRoot nodeRoot = project.getNodeRoot();
-						Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().value();
+						Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
 						setReferencedNode(node);
 					}
 				}

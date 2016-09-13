@@ -65,7 +65,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM).flatMap((release) -> getSchemaVersions(release));
+			Release release = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
+			return getSchemaVersions(release);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -80,40 +81,39 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
-			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(release -> {
-				SchemaReferenceList schemaReferenceList = ac.fromJson(SchemaReferenceList.class);
-				Project project = ac.getProject();
-				SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
-				return db.tx(() -> {
-					// Resolve the list of references to graph schema container versions
-					Observable<SchemaContainerVersion> obs = Observable.from(schemaReferenceList)
-							.flatMap(reference -> schemaContainerRoot.fromReference(reference).toObservable());
+			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			SchemaReferenceList schemaReferenceList = ac.fromJson(SchemaReferenceList.class);
+			Project project = ac.getProject();
+			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
+			return db.tx(() -> {
+				// Resolve the list of references to graph schema container versions
+				Observable<SchemaContainerVersion> obs = Observable.from(schemaReferenceList)
+						.flatMap(reference -> schemaContainerRoot.fromReference(reference).toObservable());
 
-					// Invoke schema migration for each found schema version
-					obs.toBlocking().forEach(version -> {
-						SchemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
-						if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
-							throw error(BAD_REQUEST, "error_release_downgrade_schema_version", version.getName(),
-									Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
-						}
-						release.assignSchemaVersion(version);
+				// Invoke schema migration for each found schema version
+				obs.toBlocking().forEach(version -> {
+					SchemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
+					if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
+						throw error(BAD_REQUEST, "error_release_downgrade_schema_version", version.getName(),
+								Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
+					}
+					release.assignSchemaVersion(version);
 
-						// Update the index type specific ES mapping
-						nodeIndexHandler.updateNodeIndexMapping("node-" + project.getUuid() + "-" + release.getUuid() + "-draft",
-								version.getName() + "-" + version.getVersion(), version.getSchema()).await();
-						nodeIndexHandler.updateNodeIndexMapping("node-" + project.getUuid() + "-" + release.getUuid() + "-published",
-								version.getName() + "-" + version.getVersion(), version.getSchema()).await();
+					// Update the index type specific ES mapping
+					nodeIndexHandler.updateNodeIndexMapping("node-" + project.getUuid() + "-" + release.getUuid() + "-draft",
+							version.getName() + "-" + version.getVersion(), version.getSchema()).await();
+					nodeIndexHandler.updateNodeIndexMapping("node-" + project.getUuid() + "-" + release.getUuid() + "-published",
+							version.getName() + "-" + version.getVersion(), version.getSchema()).await();
 
-						DeliveryOptions options = new DeliveryOptions();
-						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
-						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
-						options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
-						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
-						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
-						Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options);
-					});
-					return getSchemaVersions(release);
+					DeliveryOptions options = new DeliveryOptions();
+					options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
+					options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
+					options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
+					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
+					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
+					Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options);
 				});
+				return getSchemaVersions(release);
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -129,7 +129,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
-			return getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM).flatMap((release) -> getMicroschemaVersions(release));
+			Release release = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
+			return getMicroschemaVersions(release);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -144,34 +145,33 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 		validateParameter(uuid, "uuid");
 		db.asyncNoTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
-			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(release -> {
-				MicroschemaReferenceList microschemaReferenceList = ac.fromJson(MicroschemaReferenceList.class);
-				MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
+			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			MicroschemaReferenceList microschemaReferenceList = ac.fromJson(MicroschemaReferenceList.class);
+			MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
-				return db.tx(() -> {
-					// Transform the list of references into microschema container version vertices
-					Observable<MicroschemaContainerVersion> obs = Observable.from(microschemaReferenceList)
-							.flatMap(reference -> microschemaContainerRoot.fromReference(reference).toObservable());
+			return db.tx(() -> {
+				// Transform the list of references into microschema container version vertices
+				Observable<MicroschemaContainerVersion> obs = Observable.from(microschemaReferenceList)
+						.flatMap(reference -> microschemaContainerRoot.fromReference(reference).toObservable());
 
-					obs.toBlocking().forEach(version -> {
-						MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
-						if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
-							throw error(BAD_REQUEST, "error_release_downgrade_microschema_version", version.getName(),
-									Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
-						}
-						release.assignMicroschemaVersion(version);
+				obs.toBlocking().forEach(version -> {
+					MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
+					if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
+						throw error(BAD_REQUEST, "error_release_downgrade_microschema_version", version.getName(),
+								Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
+					}
+					release.assignMicroschemaVersion(version);
 
-						// start microschema migration
-						DeliveryOptions options = new DeliveryOptions();
-						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
-						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
-						options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
-						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
-						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
-						Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options);
-					});
-					return getMicroschemaVersions(release);
+					// start microschema migration
+					DeliveryOptions options = new DeliveryOptions();
+					options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
+					options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
+					options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
+					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
+					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
+					Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options);
 				});
+				return getMicroschemaVersions(release);
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
