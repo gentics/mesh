@@ -17,7 +17,7 @@ public class PermissionsScript extends AbstractSearchScript {
 
 	@Override
 	public Object run() {
-		System.out.println(fields().get("odbclusterid") + ":" + fields().get("odbposistion"));
+		System.out.println(source().get("odbclusterid") + ":" + source().get("odbposistion"));
 		return true;
 	}
 }

@@ -462,6 +462,8 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 		addUser(document, "creator", node.getCreator());
 		document.put("created", toISO8601(node.getCreationTimestamp()));
 
+		addOrientDBInformation(document, container.getVertex());
+
 		addProject(document, node.getProject());
 		addTags(document, node.getTags(node.getProject().getLatestRelease()));
 

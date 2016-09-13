@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 
 import com.orientechnologies.orient.core.id.ORecordId;
+import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -33,12 +34,8 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 	 */
 	protected void addBasicReferences(JsonObject document, MeshCoreVertex<?, ?> vertex) {
 		document.put("uuid", vertex.getUuid());
-		Object id = vertex.getElement().getId();
-		if (id instanceof ORecordId) {
-			ORecordId oid = (ORecordId) id;
-			document.put("odbclusterid", oid.clusterId);
-			document.put("odbposition", oid.clusterPosition);
-		}
+
+		addOrientDBInformation(document, vertex.getVertex());
 
 		if (vertex instanceof CreatorTrackingVertex) {
 			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex) vertex;
@@ -49,6 +46,15 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 			EditorTrackingVertex editedVertex = (EditorTrackingVertex) vertex;
 			addUser(document, "editor", editedVertex.getEditor());
 			document.put("edited", toISO8601(editedVertex.getLastEditedTimestamp()));
+		}
+	}
+
+	protected void addOrientDBInformation(JsonObject document, Vertex vertex) {
+		Object id = vertex.getId();
+		if (id instanceof ORecordId) {
+			ORecordId oid = (ORecordId) id;
+			document.put("odbclusterid", oid.clusterId);
+			document.put("odbposition", oid.clusterPosition);
 		}
 	}
 
