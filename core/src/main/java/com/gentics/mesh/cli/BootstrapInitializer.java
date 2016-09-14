@@ -222,6 +222,9 @@ public class BootstrapInitializer {
 		}
 
 		initMandatoryData();
+		if (isEmptyInstallation) {
+			initPermissions();
+		}
 
 		// Mark all changelog entries as applied for new installations
 		if (isEmptyInstallation) {

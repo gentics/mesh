@@ -8,6 +8,11 @@
         // The URL to the Mesh API
         apiUrl: '/api/v1/',
 
+        // The ISO-639-1 code of the default language
+        defaultLanguage: 'en',
+        // The ISO-639-1 codes of the available languages
+        availableLanguages: ['en', 'de'],
+
         // Provide an array or URLs for previewing nodes, in the following format:
         //
         // ```
