@@ -83,7 +83,7 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
-		endpoint.description("Assign the schema to the project.");
+		endpoint.description("Assign the schema to the project. This will automatically assign the latest schema version to all releases of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchema(), "Assigned schema.");
@@ -99,7 +99,7 @@ public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
-		endpoint.description("Remove the schema with the given uuid from the project.");
+		endpoint.description("Remove the schema with the given uuid from the project. This will automatically remove all schema versions of the given schema from all releases of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully removed.");
 		endpoint.handler(rc -> {
