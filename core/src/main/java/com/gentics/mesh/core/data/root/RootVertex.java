@@ -60,7 +60,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	T findByName(InternalActionContext ac, String projectName, GraphPermission perm);
+	T findByName(InternalActionContext ac, String name, GraphPermission perm);
 
 	/**
 	 * Find the element with the given uuid.

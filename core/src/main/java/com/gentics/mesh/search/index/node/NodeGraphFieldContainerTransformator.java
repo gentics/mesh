@@ -297,8 +297,9 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 	/**
 	 * Return the mapping JSON info for the field.
 	 * 
-	 * @param field
-	 * @return
+	 * @param fieldSchema
+	 *            Field schema which will be used to construct the mapping info
+	 * @return JSON object which contains the mapping info
 	 */
 	public JsonObject getMappingInfo(FieldSchema fieldSchema) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
@@ -316,11 +317,11 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 			break;
 		case BOOLEAN:
 			fieldInfo.put("type", BOOLEAN);
-			//addRawInfo(fieldInfo, "boolean");
+			// addRawInfo(fieldInfo, "boolean");
 			break;
 		case DATE:
 			fieldInfo.put("type", DATE);
-			//addRawInfo(fieldInfo, "date");
+			// addRawInfo(fieldInfo, "date");
 			break;
 		case BINARY:
 			fieldInfo.put("type", OBJECT);
@@ -391,7 +392,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 				case "micronode":
 					fieldInfo.put("type", NESTED);
 					fieldInfo.put("dynamic", true);
-					//fieldProps.put(field.getName(), fieldInfo);
+					// fieldProps.put(field.getName(), fieldInfo);
 					break;
 				case "string":
 					fieldInfo.put("type", NESTED);
@@ -409,7 +410,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 			fieldInfo.put("type", OBJECT);
 			JsonObject micronodeMappingProperties = new JsonObject();
 
-			//microschema
+			// microschema
 			JsonObject microschemaMapping = new JsonObject();
 			micronodeMappingProperties.put("microschema", microschemaMapping);
 
@@ -418,7 +419,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 			microschemaMappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
 			microschemaMapping.put("properties", microschemaMappingProperties);
 			fieldInfo.put("dynamic", true);
-			//TODO add version
+			// TODO add version
 			fieldInfo.put("properties", micronodeMappingProperties);
 			break;
 		default:
@@ -438,7 +439,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 		JsonObject info = new JsonObject();
 		info.put(NAME_KEY, microschemaContainerVersion.getName());
 		info.put(UUID_KEY, microschemaContainerVersion.getUuid());
-		//TODO add version
+		// TODO add version
 		document.put("microschema", info);
 	}
 
@@ -504,7 +505,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 		// 1. Get the common type specific mapping
 		JsonObject mapping = getMapping(type);
 
-		//2. Enhance the type specific mapping
+		// 2. Enhance the type specific mapping
 		JsonObject typeMapping = mapping.getJsonObject(type);
 		typeMapping.put("dynamic", "strict");
 		JsonObject typeProperties = typeMapping.getJsonObject("properties");
@@ -518,17 +519,17 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 		projectMapping.put("properties", projectMappingProps);
 		typeProperties.put("project", projectMapping);
 
-		//tags
+		// tags
 		JsonObject tagsMapping = new JsonObject();
 		tagsMapping.put("type", "nested");
 		tagsMapping.put("dynamic", true);
 		typeProperties.put("tags", tagsMapping);
 
-		//language
+		// language
 		JsonObject languageMapping = fieldType(STRING, NOT_ANALYZED);
 		typeProperties.put("language", languageMapping);
 
-		//schema
+		// schema
 		JsonObject schemaMapping = new JsonObject();
 		schemaMapping.put("type", OBJECT);
 		JsonObject schemaMappingProperties = new JsonObject();
@@ -538,7 +539,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 		schemaMapping.put("properties", schemaMappingProperties);
 		typeProperties.put("schema", schemaMapping);
 
-		//displayField
+		// displayField
 		JsonObject displayFieldMapping = new JsonObject();
 		displayFieldMapping.put("type", OBJECT);
 		JsonObject displayFieldMappingProperties = new JsonObject();
@@ -547,7 +548,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 		displayFieldMapping.put("properties", displayFieldMappingProperties);
 		typeProperties.put("displayField", displayFieldMapping);
 
-		//parentNode
+		// parentNode
 		JsonObject parentNodeMapping = new JsonObject();
 		parentNodeMapping.put("type", OBJECT);
 		JsonObject parentNodeMappingProperties = new JsonObject();

@@ -1428,7 +1428,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * Conflict cases
 	 * <ul>
 	 * <li>Initial creates - No conflict handling needs to be performed</li>
-	 * <li>Migration check - Nodes which have not yet migrated can't be updated</i>
+	 * <li>Migration check - Nodes which have not yet migrated can't be updated</li>
 	 * </ul>
 	 * 
 	 * 
@@ -1717,7 +1717,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * <li>version and language specific etag of the field container</li>
 	 * <li>availableLanguages</li>
 	 * <li>breadcrumb</li>
-	 * <li>webroot path & language paths</li>
+	 * <li>webroot path &amp; language paths</li>
 	 * <li>permissions</li>
 	 * </ul>
 	 */

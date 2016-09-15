@@ -35,7 +35,9 @@ public class NavRootHandler {
 
 	/**
 	 * Handle navigation request.
-	 * @param rc
+	 * 
+	 * @param ac
+	 * @param path
 	 */
 	public void handleGetPath(InternalActionContext ac, String path) {
 		

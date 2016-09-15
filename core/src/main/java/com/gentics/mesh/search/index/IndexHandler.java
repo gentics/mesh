@@ -56,8 +56,6 @@ public interface IndexHandler {
 	/**
 	 * Delete the document with the given UUID and document type from the search index.
 	 * 
-	 * @param uuid
-	 * @param documentType
 	 * @param entry
 	 *            search queue entry
 	 * @return

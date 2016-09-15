@@ -54,7 +54,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 *            User to be used for authentication
 	 * @param classOfResponse
 	 *            Response object class
-	 * @param parameters
+	 * @param requestParameters
 	 *            Query parameters which will form the complete query string
 	 */
 	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse, ParameterProvider... requestParameters) {

@@ -77,7 +77,7 @@ public interface SearchQueueEntry extends MeshVertex {
 	/**
 	 * Get property with given key
 	 * 
-	 * @param name
+	 * @param key
 	 *            property key
 	 * @return property
 	 */
@@ -86,7 +86,7 @@ public interface SearchQueueEntry extends MeshVertex {
 	/**
 	 * Set the property with given key
 	 * 
-	 * @param name
+	 * @param key
 	 *            property key
 	 * @param value
 	 *            property value

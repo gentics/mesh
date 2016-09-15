@@ -31,8 +31,10 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 	/**
 	 * Add basic references (creator, editor, created, edited) to the map for the given vertex.
 	 * 
-	 * @param map
+	 * @param document
+	 *            JSON document to which basic references will be added
 	 * @param vertex
+	 *            Vertex which will be used to load the basic references
 	 */
 	protected void addBasicReferences(JsonObject document, MeshCoreVertex<?, ?> vertex) {
 		document.put("uuid", vertex.getUuid());
@@ -70,7 +72,7 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 	/**
 	 * Add a user field to the document with the given key.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param key
 	 * @param user
 	 */

@@ -11,6 +11,11 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Abstract implementation for various mesh response handler. 
+ * 
+ * @param <T>
+ */
 public abstract class AbstractMeshResponseHandler<T> implements MeshResponseHandler<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshResponseHandler.class);
@@ -54,7 +59,7 @@ public abstract class AbstractMeshResponseHandler<T> implements MeshResponseHand
 	}
 
 	/**
-	 * Success method which will be invoked for responses with codes >=200 && < 300
+	 * Success method which will be invoked for responses with codes &gt;=200 &amp;&amp; &gt; 300.
 	 * 
 	 * @param response
 	 */

@@ -23,8 +23,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 		return getGraphFieldContainer(language.getLanguageTag(), release != null ? release.getUuid() : null, type, classOfU);
 	}
 
-	
-//	static Map<String, BasicFieldContainer> map = new HashMap<>();
+	// static Map<String, BasicFieldContainer> map = new HashMap<>();
 
 	/**
 	 * Locate the field container using the provided information.
@@ -43,13 +42,13 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 		Objects.requireNonNull(languageTag);
 		Objects.requireNonNull(classOfU);
 
-//		String key = "l:" + languageTag + "r:" + releaseUuid + "t:" + type + "i:" + getId();
-//		System.out.println(key);
-//		if(map.containsKey(key)) {
-//			return (U) map.get(key);
-//		}
-		
-//		System.out.println("not found");
+		// String key = "l:" + languageTag + "r:" + releaseUuid + "t:" + type + "i:" + getId();
+		// System.out.println(key);
+		// if(map.containsKey(key)) {
+		// return (U) map.get(key);
+		// }
+
+		// System.out.println("not found");
 		// TODO Add index usage!
 		// (nodeId, languageTag)
 		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
@@ -63,9 +62,9 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 			traversal = traversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		}
 		U container = traversal.inV().nextOrDefault(classOfU, null);
-		
-//		map.put(key, container);
-		
+
+		// map.put(key, container);
+
 		return container;
 	}
 
@@ -74,13 +73,9 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 * 
 	 * @param language
 	 *            Language of the field container
-	 * @param release
-	 *            release to which the field container belongs (may be null)
-	 * @param type
-	 *            type of the field container relation (may be null)
 	 * @param classOfU
 	 *            Container implementation class to be used for element creation
-	 * @return i18n properties vertex entity
+	 * @return Located field container or created field container
 	 */
 	protected <U extends BasicFieldContainer> U getOrCreateGraphFieldContainer(Language language, Class<U> classOfU) {
 

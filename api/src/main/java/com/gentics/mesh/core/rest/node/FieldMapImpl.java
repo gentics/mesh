@@ -55,7 +55,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Implementation of a fieldmap which uses a central JsonNode to access the field specific data. Fields will be mapped during runtime.
  * 
- * @see {@link FieldMap}
+ * @see FieldMap
  *
  */
 public class FieldMapImpl implements FieldMap {

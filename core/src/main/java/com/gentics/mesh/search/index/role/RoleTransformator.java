@@ -18,8 +18,8 @@ public class RoleTransformator extends AbstractTransformator<Role> {
 	/**
 	 * Transform the given object into a source JSON object which can be used to store the document in the search provider specific format.
 	 * 
-	 * @param object
-	 * @return
+	 * @param role
+	 * @return JSON document representing the role
 	 */
 	public JsonObject toDocument(Role role) {
 		JsonObject document = new JsonObject();

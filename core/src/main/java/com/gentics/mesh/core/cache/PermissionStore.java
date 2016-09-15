@@ -52,9 +52,9 @@ public final class PermissionStore {
 	/**
 	 * Store a granting permission in the cache.
 	 * 
-	 * @param id
+	 * @param userId
 	 * @param permission
-	 * @param id2
+	 * @param elementId
 	 */
 	public static void store(Object userId, GraphPermission permission, Object elementId) {
 		PERM_CACHE.put(createCacheKey(userId, permission, elementId), true);

@@ -82,7 +82,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	/**
 	 * Get the index name for the given project.
 	 * 
-	 * @param project
+	 * @param projectUuid
 	 *            Uuid
 	 * @return index name
 	 */

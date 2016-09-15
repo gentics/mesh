@@ -15,8 +15,6 @@ public class MeshBinaryResponseHandler extends AbstractMeshResponseHandler<NodeD
 	/**
 	 * Create a new response handler.
 	 * 
-	 * @param classOfT
-	 *            Expected response POJO class
 	 * @param method
 	 *            Method that was used for the request
 	 * @param uri

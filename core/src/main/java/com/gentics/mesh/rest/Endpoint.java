@@ -291,13 +291,13 @@ public class Endpoint implements Route {
 	/**
 	 * Add the given response to the example responses.
 	 * 
-	 * @param code
+	 * @param status
 	 *            Status code for the example response
 	 * @param model
 	 *            Model which will be turned into JSON
 	 * @param description
 	 *            Description of the example response
-	 * @return
+	 * @return Fluent API
 	 */
 	public Endpoint exampleResponse(HttpResponseStatus status, Object model, String description) {
 		Response response = new Response();
@@ -319,7 +319,7 @@ public class Endpoint implements Route {
 	 * Set the endpoint example request.
 	 * 
 	 * @param model
-	 * @return
+	 * @return Fluent API
 	 */
 	public Endpoint exampleRequest(Object model) {
 		this.exampleRequest = model;
@@ -330,7 +330,7 @@ public class Endpoint implements Route {
 	 * Set the traits information.
 	 * 
 	 * @param traits
-	 * @return
+	 * @return Fluent API
 	 */
 	public Endpoint traits(String... traits) {
 		this.traits = traits;
