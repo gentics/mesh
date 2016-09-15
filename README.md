@@ -7,9 +7,36 @@
 
 # Gentics Mesh
 
-The API-first CMS for developers.
+Gentics Mesh is an Open Source API-first CMS for developers. All contents can be stored/updated and retrieved using the [REST API](http://getmesh.io/docs/beta/raml/).
+
+## Features
+
+* Document level permissions
+* Versioned content
+* Webroot API for easy integration with modern routing frameworks
+* Search API powered by elasticsearch
+* Image API
+* Tagging API
+* Graph database at its core
+* Docker support
 
 ![alt tag](http://getmesh.io/assets/mesh-heroimg.png)
+
+### Download
+
+* [Download from getmesh.io](http://getmesh.io/Download)
+* [Docker Hub](https://hub.docker.com/r/gentics/mesh-demo/)
+* [Maven Central](http://mvnrepository.com/artifact/com.gentics.mesh)
+
+### Changelog
+
+http://getmesh.io/docs/beta/changelog.html
+
+### Documentation
+
+* http://getmesh.io/docs/beta/
+* http://getmesh.io/docs/beta/raml/
+
 
 Typical Request/Response:
 
