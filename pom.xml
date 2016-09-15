@@ -70,6 +70,11 @@
 			<name>Gentics Software License</name>
 			<url>http://www.gentics.com</url>
 		</license>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
 	</licenses>
 
 	<inceptionYear>2014</inceptionYear>
@@ -187,20 +192,8 @@
 					</excludes>
 				</configuration>
 			</plugin>
-<!--
-			<plugin>
-				<groupId>org.owasp</groupId>
-				<artifactId>dependency-check-maven</artifactId>
-				<version>1.4.0</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
--->
+			<!-- <plugin> <groupId>org.owasp</groupId> <artifactId>dependency-check-maven</artifactId> <version>1.4.0</version> <executions> <execution> <goals> <goal>check</goal> </goals> </execution> 
+				</executions> </plugin> -->
 		</plugins>
 	</build>
 
