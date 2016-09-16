@@ -51,7 +51,6 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
 import rx.Single;
 
 /**
@@ -93,7 +92,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public Single<TagResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public TagResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		TagResponse restTag = new TagResponse();
 
 		TagFamily tagFamily = getTagFamily();
@@ -105,10 +104,10 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		}
 		restTag.getFields().setName(getName());
 
-		Completable filledFields = fillCommonRestFields(ac, restTag);
-		Completable setPerms = setRolePermissions(ac, restTag);
+		fillCommonRestFields(ac, restTag);
+		setRolePermissions(ac, restTag);
 
-		return Completable.merge(filledFields, setPerms).andThen(Single.just(restTag));
+		return restTag;
 	}
 
 	@Override

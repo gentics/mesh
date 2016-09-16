@@ -279,7 +279,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param fieldKey
 	 * @return
 	 */
-	//TODO remove field from method name
+	// TODO remove field from method name
 	MicronodeGraphFieldList createMicronodeFieldList(String fieldKey);
 
 	/**
@@ -292,8 +292,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 *            language tags
 	 * @param level
 	 */
-	Single<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags,
-			int level);
+	Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level);
 
 	/**
 	 * Use the given map of rest fields to set the data from the map to this container.
@@ -341,13 +340,16 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 
 	/**
 	 * Get the schema container version used by this container
+	 * 
 	 * @return schema container version
 	 */
 	GraphFieldSchemaContainerVersion<?, ?, ?, ?> getSchemaContainerVersion();
 
 	/**
 	 * Set the schema container version used by this container
-	 * @param version schema container version
+	 * 
+	 * @param version
+	 *            schema container version
 	 */
 	void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> version);
 }

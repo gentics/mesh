@@ -16,8 +16,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
-import rx.Single;
-
 /**
  * @see DateGraphFieldList
  */
@@ -55,12 +53,12 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	}
 
 	@Override
-	public Single<DateFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	public DateFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		DateFieldListImpl restModel = new DateFieldListImpl();
 		for (DateGraphField item : getList()) {
 			restModel.add(toISO8601(item.getDate()));
 		}
-		return Single.just(restModel);
+		return restModel;
 	}
 
 	@Override

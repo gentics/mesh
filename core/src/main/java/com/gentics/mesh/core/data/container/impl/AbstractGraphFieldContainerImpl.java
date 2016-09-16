@@ -56,8 +56,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
-import rx.Single;
-
 /**
  * Abstract implementation for a field container. A {@link GraphFieldContainer} is used to store {@link GraphField} instances.
  */
@@ -325,7 +323,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public Single<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
+	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
 			List<String> languageTags, int level) {
 		GraphFieldTypes type = GraphFieldTypes.valueByFieldSchema(fieldSchema);
 		if (type != null) {

@@ -50,7 +50,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public Single<NodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	public NodeFieldList transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 
 		// Check whether the list should be returned in a collapsed or expanded format
 		NodeParameters parameters = ac.getNodeParameters();
@@ -62,20 +62,12 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 			List<Single<NodeResponse>> obs = new ArrayList<>();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				obs.add(item.getNode().transformToRestSync(ac, level, lTagsArray));
+				restModel.getItems().add(item.getNode().transformToRestSync(ac, level, lTagsArray));
 			}
 
 			// Transform the list - otherwise we can't use Observable#from
 			List<Observable<NodeResponse>> list = obs.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-
-			return Observable.concat(Observable.from(list)).collect(() -> {
-				return restModel.getItems();
-			}, (x, y) -> {
-				x.add(y);
-			}).map(i -> {
-				return restModel;
-			}).toSingle();
-
+			return restModel;
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
 			String releaseUuid = ac.getRelease(null).getUuid();
@@ -91,7 +83,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 				restModel.add(listItem);
 			}
-			return Single.just(restModel);
+			return restModel;
 
 		}
 

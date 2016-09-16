@@ -13,33 +13,31 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.LinkType;
 
-import rx.Single;
-
 /**
  * The StringField Domain Model interface.
  */
 public interface StringGraphField extends ListableGraphField, BasicGraphField<StringField> {
 
-	FieldTransformator STRING_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<StringField> STRING_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		// TODO validate found fields has same type as schema
 		// StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(
 		// fieldKey, this);
 		StringGraphField graphStringField = container.getString(fieldKey);
 		if (graphStringField == null) {
-			return Single.just(null);
+			return null;
 		} else {
-			return graphStringField.transformToRest(ac).map(stringField -> {
-				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-					Project project = ac.getProject();
-					if (project == null) {
-						project = parentNode.getProject();
-					}
-					stringField.setString(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease(null).getUuid(),
-							ContainerType.forVersion(ac.getVersioningParameters().getVersion()), stringField.getString(),
-							ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
+			StringField field = graphStringField.transformToRest(ac);
+			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
+				Project project = ac.getProject();
+				if (project == null) {
+					project = parentNode.getProject();
 				}
-				return stringField;
-			});
+				field.setString(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease(null).getUuid(),
+						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), field.getString(),
+						ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
+			}
+			return field;
+
 		}
 	};
 

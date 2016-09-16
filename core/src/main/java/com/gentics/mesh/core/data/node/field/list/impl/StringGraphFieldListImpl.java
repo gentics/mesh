@@ -54,12 +54,12 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 	}
 
 	@Override
-	public Single<StringFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	public StringFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		StringFieldListImpl restModel = new StringFieldListImpl();
 		for (StringGraphField item : getList()) {
 			restModel.add(item.getString());
 		}
-		return Single.just(restModel);
+		return restModel;
 	}
 
 	@Override

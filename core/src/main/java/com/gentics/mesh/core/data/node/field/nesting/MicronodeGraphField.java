@@ -17,14 +17,12 @@ import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * A {@link MicronodeGraphField} is an {@link MeshEdge} which links a {@link GraphFieldContainer} to a {@link Micronode} vertex.
@@ -33,10 +31,10 @@ public interface MicronodeGraphField extends ListableReferencingGraphField, Mesh
 
 	static final Logger log = LoggerFactory.getLogger(MicronodeGraphField.class);
 
-	FieldTransformator MICRONODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<MicronodeField> MICRONODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
 		if (micronodeGraphField == null) {
-			return Single.just(null);
+			return null;
 		} else {
 			return micronodeGraphField.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -73,7 +71,7 @@ public interface MicronodeGraphField extends ListableReferencingGraphField, Mesh
 		Micronode micronode = null;
 
 		// check whether microschema is allowed
-		//TODO should we allow all microschemas if the list is empty?
+		// TODO should we allow all microschemas if the list is empty?
 		if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
 				|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainerVersion.getName())) {
 			log.error("Node update not allowed since the microschema {" + microschemaContainerVersion.getName()
@@ -109,6 +107,6 @@ public interface MicronodeGraphField extends ListableReferencingGraphField, Mesh
 	 * @param level
 	 *            Level of transformation
 	 */
-	Single<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
+	MicronodeField transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
 
 }

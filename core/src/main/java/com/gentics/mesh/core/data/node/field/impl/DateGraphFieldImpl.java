@@ -13,8 +13,6 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-import rx.Single;
-
 /**
  * @see DateGraphField
  */
@@ -44,10 +42,10 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 	}
 
 	@Override
-	public Single<DateField> transformToRest(ActionContext ac) {
-		DateFieldImpl dateField = new DateFieldImpl();
+	public DateField transformToRest(ActionContext ac) {
+		DateField dateField = new DateFieldImpl();
 		dateField.setDate(toISO8601(getDate()));
-		return Single.just(dateField);
+		return dateField;
 	}
 
 	@Override

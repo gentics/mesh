@@ -78,6 +78,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.VersionReference;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
@@ -573,34 +574,30 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Single<NodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public NodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
-		try {
-			VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 
-			List<Completable> tasks = new ArrayList<>();
-			NodeResponse restNode = new NodeResponse();
-			SchemaContainer container = getSchemaContainer();
-			if (container == null) {
-				throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
-			}
-			Release release = ac.getRelease(getProject());
-			restNode.setAvailableLanguages(getAvailableLanguageNames(release, ContainerType.forVersion(versioiningParameters.getVersion())));
-
-			tasks.add(setParentNodeInfo(ac, release, restNode));
-			tasks.add(setRolePermissions(ac, restNode));
-			tasks.add(setChildrenInfo(ac, release, restNode));
-			tasks.add(setTagsToRest(ac, restNode, release));
-			tasks.add(fillCommonRestFields(ac, restNode));
-			tasks.add(setBreadcrumbToRest(ac, restNode));
-			tasks.add(setPathsToRest(ac, restNode, release));
-
-			return setFields(ac, release, restNode, level, languageTags).andThen(Completable.merge(tasks)).toSingleDefault(restNode);
-		} catch (Exception e) {
-			return Single.error(e);
+		List<Completable> tasks = new ArrayList<>();
+		NodeResponse restNode = new NodeResponse();
+		SchemaContainer container = getSchemaContainer();
+		if (container == null) {
+			throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
+		Release release = ac.getRelease(getProject());
+		restNode.setAvailableLanguages(getAvailableLanguageNames(release, ContainerType.forVersion(versioiningParameters.getVersion())));
+
+		setFields(ac, release, restNode, level, languageTags);
+		setParentNodeInfo(ac, release, restNode);
+		setRolePermissions(ac, restNode);
+		setChildrenInfo(ac, release, restNode);
+		setTagsToRest(ac, restNode, release);
+		fillCommonRestFields(ac, restNode);
+		setBreadcrumbToRest(ac, restNode);
+		setPathsToRest(ac, restNode, release);
+		return restNode;
 	}
 
 	/**
@@ -613,20 +610,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Model to be updated
 	 * @return
 	 */
-	private Completable setParentNodeInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
-		return Completable.defer(() -> {
-			Node parentNode = getParentNode(release.getUuid());
-			if (parentNode != null) {
-				return parentNode.transformToReference(ac).map(transformedParentNode -> {
-					restNode.setParentNode(transformedParentNode);
-					return restNode;
-				}).toCompletable();
-			} else {
-				// Only the base node of the project has no parent. Therefore this node must be a container.
-				restNode.setContainer(true);
-				return Completable.complete();
-			}
-		});
+	private void setParentNodeInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
+		Node parentNode = getParentNode(release.getUuid());
+		if (parentNode != null) {
+			parentNode.transformToReference(ac).map(transformedParentNode -> {
+				restNode.setParentNode(transformedParentNode);
+				return restNode;
+			}).toBlocking().value();
+		} else {
+			// Only the base node of the project has no parent. Therefore this node must be a container.
+			restNode.setContainer(true);
+		}
 	}
 
 	/**
@@ -642,7 +636,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param languageTags
 	 * @return
 	 */
-	private Completable setFields(InternalActionContext ac, Release release, NodeResponse restNode, int level, String... languageTags) {
+	private void setFields(InternalActionContext ac, Release release, NodeResponse restNode, int level, String... languageTags) {
 		Set<Completable> tasks = new HashSet<>();
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		NodeParameters nodeParameters = ac.getNodeParameters();
@@ -713,27 +707,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Fields
 			for (FieldSchema fieldEntry : schema.getFields()) {
 				// boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
-				Single<NodeResponse> obsFields = fieldContainer
-						.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level).map(restField -> {
-							if (fieldEntry.isRequired() && restField == null) {
-								// TODO i18n
-								throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
-										+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
-							}
-							if (restField == null) {
-								if (log.isDebugEnabled()) {
-									log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-								}
-							} else {
-								restNode.getFields().put(fieldEntry.getName(), restField);
-							}
-							return restNode;
+				Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
+				if (fieldEntry.isRequired() && restField == null) {
+					// TODO i18n
+					throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
+							+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+				}
+				if (restField == null) {
+					if (log.isDebugEnabled()) {
+						log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+					}
+				} else {
+					restNode.getFields().put(fieldEntry.getName(), restField);
+				}
 
-						});
-				tasks.add(obsFields.toCompletable());
 			}
 		}
-		return Completable.merge(tasks);
 	}
 
 	/**
@@ -744,29 +733,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Release which will be used to identify the release specific child nodes
 	 * @param restNode
 	 *            Rest model which will be updated
-	 * @return
 	 */
-	private Completable setChildrenInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
-		return Completable.create(sub -> {
-			Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
-			for (Node child : getChildren(release.getUuid())) {
-				if (ac.getUser().hasPermission(child, READ_PERM)) {
-					String schemaName = child.getSchemaContainer().getName();
-					NodeChildrenInfo info = childrenInfo.get(schemaName);
-					if (info == null) {
-						info = new NodeChildrenInfo();
-						String schemaUuid = child.getSchemaContainer().getUuid();
-						info.setSchemaUuid(schemaUuid);
-						info.setCount(1);
-						childrenInfo.put(schemaName, info);
-					} else {
-						info.setCount(info.getCount() + 1);
-					}
+	private void setChildrenInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
+		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
+		for (Node child : getChildren(release.getUuid())) {
+			if (ac.getUser().hasPermission(child, READ_PERM)) {
+				String schemaName = child.getSchemaContainer().getName();
+				NodeChildrenInfo info = childrenInfo.get(schemaName);
+				if (info == null) {
+					info = new NodeChildrenInfo();
+					String schemaUuid = child.getSchemaContainer().getUuid();
+					info.setSchemaUuid(schemaUuid);
+					info.setCount(1);
+					childrenInfo.put(schemaName, info);
+				} else {
+					info.setCount(info.getCount() + 1);
 				}
 			}
-			restNode.setChildrenInfo(childrenInfo);
-			sub.onCompleted();
-		});
+		}
+		restNode.setChildrenInfo(childrenInfo);
 	}
 
 	/**
@@ -779,23 +764,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Release which will be used to identify the release specific tags
 	 * @return
 	 */
-	private Completable setTagsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
-		return Completable.create(sub -> {
-			for (Tag tag : getTags(release)) {
-				TagFamily tagFamily = tag.getTagFamily();
-				String tagFamilyName = tagFamily.getName();
-				String tagFamilyUuid = tagFamily.getUuid();
-				TagReference reference = tag.transformToReference();
-				TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
-				if (group == null) {
-					group = new TagFamilyTagGroup();
-					group.setUuid(tagFamilyUuid);
-					restNode.getTags().put(tagFamilyName, group);
-				}
-				group.getItems().add(reference);
+	private void setTagsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
+		for (Tag tag : getTags(release)) {
+			TagFamily tagFamily = tag.getTagFamily();
+			String tagFamilyName = tagFamily.getName();
+			String tagFamilyUuid = tagFamily.getUuid();
+			TagReference reference = tag.transformToReference();
+			TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
+			if (group == null) {
+				group = new TagFamilyTagGroup();
+				group.setUuid(tagFamilyUuid);
+				restNode.getTags().put(tagFamilyName, group);
 			}
-			sub.onCompleted();
-		});
+			group.getItems().add(reference);
+		}
 	}
 
 	/**
@@ -808,69 +790,68 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Release which will be used to identify the nodes relations and thus the correct path can be determined
 	 * @return
 	 */
-	private Completable setPathsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
-		return Completable.create(sub -> {
-			VersioningParameters versioiningParameters = ac.getVersioningParameters();
-			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-				String releaseUuid = ac.getRelease(getProject()).getUuid();
-				ContainerType type = ContainerType.forVersion(versioiningParameters.getVersion());
+	private void setPathsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
+			String releaseUuid = ac.getRelease(getProject()).getUuid();
+			ContainerType type = ContainerType.forVersion(versioiningParameters.getVersion());
 
-				// Path
-				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-				String path = linkReplacer.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
-						restNode.getLanguage()).toBlocking().value();
-				restNode.setPath(path);
+			// Path
+			WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
+			String path = linkReplacer
+					.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(), restNode.getLanguage())
+					.toBlocking().value();
+			restNode.setPath(path);
 
-				// languagePaths
-				Map<String, String> languagePaths = new HashMap<>();
-				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release,
-						ContainerType.forVersion(versioiningParameters.getVersion()))) {
-					Language currLanguage = currentFieldContainer.getLanguage();
-					languagePaths.put(currLanguage.getLanguageTag(),
-							linkReplacer.resolve(releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(), currLanguage.getLanguageTag())
-									.toBlocking().value());
-				}
-				restNode.setLanguagePaths(languagePaths);
+			// languagePaths
+			Map<String, String> languagePaths = new HashMap<>();
+			for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release,
+					ContainerType.forVersion(versioiningParameters.getVersion()))) {
+				Language currLanguage = currentFieldContainer.getLanguage();
+				languagePaths.put(currLanguage.getLanguageTag(),
+						linkReplacer.resolve(releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(), currLanguage.getLanguageTag())
+								.toBlocking().value());
 			}
-			sub.onCompleted();
-		});
-
+			restNode.setLanguagePaths(languagePaths);
+		}
 	}
 
-	@Override
-	public Completable setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
-		return Completable.create(sub -> {
-			String releaseUuid = ac.getRelease(getProject()).getUuid();
-			Node current = this.getParentNode(releaseUuid);
-			// The project basenode has no breadcrumb
-			if (current == null) {
-				sub.onCompleted();
-			}
+	/**
+	 * Set the breadcrumb information to the given rest node.
+	 * 
+	 * @param ac
+	 * @param restNode
+	 */
+	private void setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
+		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		Node current = this.getParentNode(releaseUuid);
+		// The project basenode has no breadcrumb
+		if (current == null) {
+			return;
+		}
 
-			List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
-			while (current != null) {
-				// Don't add the base node to the breadcrumb
-				// TODO should we add the basenode to the breadcrumb?
-				if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
-					break;
-				}
-				NodeReferenceImpl reference = new NodeReferenceImpl();
-				reference.setUuid(current.getUuid());
-				reference.setDisplayName(current.getDisplayName(ac));
-
-				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-					WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-					ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-					String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-							getProject().getName(), restNode.getLanguage()).toBlocking().value();
-					reference.setPath(url);
-				}
-				breadcrumb.add(reference);
-				current = current.getParentNode(releaseUuid);
+		List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
+		while (current != null) {
+			// Don't add the base node to the breadcrumb
+			// TODO should we add the basenode to the breadcrumb?
+			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
+				break;
 			}
-			restNode.setBreadcrumb(breadcrumb);
-			sub.onCompleted();
-		});
+			NodeReferenceImpl reference = new NodeReferenceImpl();
+			reference.setUuid(current.getUuid());
+			reference.setDisplayName(current.getDisplayName(ac));
+
+			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
+				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
+						getProject().getName(), restNode.getLanguage()).toBlocking().value();
+				reference.setPath(url);
+			}
+			breadcrumb.add(reference);
+			current = current.getParentNode(releaseUuid);
+		}
+		restNode.setBreadcrumb(breadcrumb);
 	}
 
 	@Override

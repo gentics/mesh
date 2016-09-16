@@ -14,22 +14,20 @@ import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.dagger.MeshInternal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public interface NodeGraphField extends ListableReferencingGraphField, MicroschemaListableGraphField {
 
 	static final Logger log = LoggerFactory.getLogger(NodeGraphField.class);
 
-	FieldTransformator NODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<NodeField> NODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		if (graphNodeField == null) {
-			return Single.just(null);
+			return null;
 		} else {
 			return graphNodeField.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -59,7 +57,7 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 			throw error(BAD_REQUEST, "node_error_field_property_missing", "uuid", fieldKey);
 		}
 
-		// Handle Update / Create 
+		// Handle Update / Create
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		Node node = boot.nodeRoot().findByUuid(nodeField.getUuid());
 		if (node == null) {
@@ -105,6 +103,6 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	 * @param level
 	 *            Level of transformation
 	 */
-	Single<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
+	NodeField transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
 
 }

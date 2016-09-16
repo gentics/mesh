@@ -14,8 +14,6 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-import rx.Single;
-
 public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implements NumberGraphField {
 
 	public NumberGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
@@ -47,10 +45,10 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 	}
 
 	@Override
-	public Single<NumberField> transformToRest(ActionContext ac) {
+	public NumberField transformToRest(ActionContext ac) {
 		NumberField restModel = new NumberFieldImpl();
 		restModel.setNumber(getNumber());
-		return Single.just(restModel);
+		return restModel;
 	}
 
 	@Override

@@ -17,7 +17,6 @@ import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import rx.Single;
 
 public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
 
@@ -36,8 +35,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	private static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
 	@Override
-	public Single<BinaryField> transformToRest(ActionContext ac) {
-
+	public BinaryField transformToRest(ActionContext ac) {
 		BinaryField restModel = new BinaryFieldImpl();
 		restModel.setFileName(getFileName());
 		restModel.setMimeType(getMimeType());
@@ -46,14 +44,13 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		restModel.setDominantColor(getImageDominantColor());
 		restModel.setWidth(getImageWidth());
 		restModel.setHeight(getImageHeight());
-		return Single.just(restModel);
-
+		return restModel;
 	}
 
 	@Override
 	public BinaryGraphField copyTo(BinaryGraphField target) {
 		for (String key : getPropertyKeys()) {
-			//Don't copy the uuid
+			// Don't copy the uuid
 			if ("uuid".equals(key)) {
 				continue;
 			}
@@ -203,7 +200,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 		// Remove the field if no more containers are attached to it
 		if (in(HAS_FIELD).count() == 0) {
-			//			delete(null);
+			// delete(null);
 			remove();
 		}
 

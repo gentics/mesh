@@ -11,8 +11,6 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-import rx.Single;
-
 public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements HtmlGraphField {
 
 	public HtmlGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
@@ -30,12 +28,12 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 	}
 
 	@Override
-	public Single<HtmlField> transformToRest(ActionContext ac) {
+	public HtmlField transformToRest(ActionContext ac) {
 		HtmlFieldImpl htmlField = new HtmlFieldImpl();
 		String html = getHTML();
-		//TODO really empty string for unset field value?!
+		// TODO really empty string for unset field value?!
 		htmlField.setHTML(html == null ? "" : html);
-		return Single.just(htmlField);
+		return htmlField;
 	}
 
 	@Override
@@ -66,5 +64,4 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 		return false;
 	}
 
-	
 }

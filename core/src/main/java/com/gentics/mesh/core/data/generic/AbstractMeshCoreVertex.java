@@ -39,26 +39,20 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @param model
 	 * @return
 	 */
-	protected <R extends AbstractGenericRestResponse> Completable setRolePermissions(InternalActionContext ac, R model) {
-		return Completable.create(sub -> {
-			String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
-			if (isEmpty(roleUuid)) {
-				sub.onCompleted();
-			} else {
-				Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
-				if (role != null) {
-					Set<GraphPermission> permSet = role.getPermissions(this);
-					Set<String> humanNames = new HashSet<>();
-					for (GraphPermission permission : permSet) {
-						humanNames.add(permission.getSimpleName());
-					}
-					String[] names = humanNames.toArray(new String[humanNames.size()]);
-					model.setRolePerms(names);
+	protected <R extends AbstractGenericRestResponse> void setRolePermissions(InternalActionContext ac, R model) {
+		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
+		if (!isEmpty(roleUuid)) {
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			if (role != null) {
+				Set<GraphPermission> permSet = role.getPermissions(this);
+				Set<String> humanNames = new HashSet<>();
+				for (GraphPermission permission : permSet) {
+					humanNames.add(permission.getSimpleName());
 				}
-				sub.onCompleted();
+				String[] names = humanNames.toArray(new String[humanNames.size()]);
+				model.setRolePerms(names);
 			}
-		});
-
+		}
 	}
 
 	/**
@@ -67,48 +61,43 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @param model
 	 * @param ac
 	 */
-	protected <R extends AbstractGenericRestResponse> Completable fillCommonRestFields(InternalActionContext ac, R model) {
-		return Completable.defer(() -> {
-			model.setUuid(getUuid());
+	protected <R extends AbstractGenericRestResponse> void fillCommonRestFields(InternalActionContext ac, R model) {
+		model.setUuid(getUuid());
 
-			if (this instanceof EditorTrackingVertex) {
-				EditorTrackingVertex edited = (EditorTrackingVertex) this;
+		if (this instanceof EditorTrackingVertex) {
+			EditorTrackingVertex edited = (EditorTrackingVertex) this;
 
-				User editor = edited.getEditor();
-				if (editor != null) {
-					model.setEditor(editor.transformToReference());
-				} else {
-					// TODO throw error and log something
-				}
-
-				// Convert unixtime to iso-8601
-				String date = DateUtils.toISO8601(edited.getLastEditedTimestamp(), 0);
-				model.setEdited(date);
-			}
-
-			if (this instanceof CreatorTrackingVertex) {
-				CreatorTrackingVertex created = (CreatorTrackingVertex) this;
-				User creator = created.getCreator();
-				if (creator != null) {
-					model.setCreator(creator.transformToReference());
-				} else {
-					log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
-					// TODO throw error and log something
-				}
-
-				String date = DateUtils.toISO8601(created.getCreationTimestamp(), 0);
-				model.setCreated(date);
-			}
-
-			if (ac instanceof NodeMigrationActionContextImpl) {
-				// when this is a node migration, do not set user permissions
-				return Completable.complete();
+			User editor = edited.getEditor();
+			if (editor != null) {
+				model.setEditor(editor.transformToReference());
 			} else {
-				String[] names = ac.getUser().getPermissionNames(this);
-				model.setPermissions(names);
-				return Completable.complete();
+				// TODO throw error and log something
 			}
-		});
+
+			// Convert unixtime to iso-8601
+			String date = DateUtils.toISO8601(edited.getLastEditedTimestamp(), 0);
+			model.setEdited(date);
+		}
+
+		if (this instanceof CreatorTrackingVertex) {
+			CreatorTrackingVertex created = (CreatorTrackingVertex) this;
+			User creator = created.getCreator();
+			if (creator != null) {
+				model.setCreator(creator.transformToReference());
+			} else {
+				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
+				// TODO throw error and log something
+			}
+
+			String date = DateUtils.toISO8601(created.getCreationTimestamp(), 0);
+			model.setCreated(date);
+		}
+
+		// When this is a node migration, do not set user permissions
+		if (!(ac instanceof NodeMigrationActionContextImpl)) {
+			String[] names = ac.getUser().getPermissionNames(this);
+			model.setPermissions(names);
+		}
 	}
 
 	@Override

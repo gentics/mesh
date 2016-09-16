@@ -39,7 +39,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import rx.Completable;
 import rx.Single;
 
 /**
@@ -101,7 +100,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public Single<ReleaseResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public ReleaseResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
 		ReleaseResponse restRelease = new ReleaseResponse();
 		restRelease.setName(getName());
@@ -109,14 +108,13 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		restRelease.setMigrated(isMigrated());
 
 		// Add common fields
-		Completable common = fillCommonRestFields(ac, restRelease);
+		fillCommonRestFields(ac, restRelease);
 
 		// Role permissions
-		Completable rolePerms = setRolePermissions(ac, restRelease);
+		setRolePermissions(ac, restRelease);
 
 		// Merge and complete
-
-		return Completable.merge(common, rolePerms).andThen(Single.just(restRelease));
+		return restRelease;
 	}
 
 	@Override

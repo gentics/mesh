@@ -10,16 +10,14 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 
-import rx.Single;
-
 public interface StringGraphFieldList extends ListGraphField<StringGraphField, StringFieldListImpl, String> {
 
 	String TYPE = "string";
 
-	FieldTransformator STRING_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<StringFieldListImpl> STRING_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		StringGraphFieldList stringFieldList = container.getStringList(fieldKey);
 		if (stringFieldList == null) {
-			return Single.just(null);
+			return null;
 		} else {
 			return stringFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}

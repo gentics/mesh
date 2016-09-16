@@ -66,8 +66,10 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 
 	/**
 	 * Transform the field into the rest response model.
+	 * 
+	 * @param ac
 	 */
-	abstract public Single<T> transformToRest(ActionContext ac);
+	abstract public T transformToRest(ActionContext ac);
 
 	@Override
 	public void validate() {

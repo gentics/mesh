@@ -46,7 +46,6 @@ import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
 import rx.Single;
 
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
@@ -57,7 +56,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Single<MicronodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public MicronodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
 		NodeParameters parameters = new NodeParameters(ac);
 		List<Single<MicronodeResponse>> obs = new ArrayList<>();
@@ -87,20 +86,16 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		// Fields
 		for (FieldSchema fieldEntry : microschema.getFields()) {
-			Single<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level)
-					.map(restField -> {
-						if (restField == null) {
-							log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-						} else {
-							restMicronode.getFields().put(fieldEntry.getName(), restField);
-						}
-						return restMicronode;
-					});
-			obs.add(obsRestField);
+			Field restField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level);
+			if (restField == null) {
+				log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+			} else {
+				restMicronode.getFields().put(fieldEntry.getName(), restField);
+			}
+			return restMicronode;
 		}
 
-		List<Observable<MicronodeResponse>> obsList = obs.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-		return Observable.merge(obsList).last().toSingle();
+		return restMicronode;
 	}
 
 	@Override
@@ -148,7 +143,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Single<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
+	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
 			java.util.List<String> languageTags, int level) {
 
 		// Filter out unsupported field types
@@ -258,7 +253,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		// TODO check whether the uuid remains static for micronode updates 
+		// TODO check whether the uuid remains static for micronode updates
 		return ETag.hash(getUuid());
 	}
 

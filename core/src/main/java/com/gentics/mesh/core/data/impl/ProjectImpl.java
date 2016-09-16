@@ -57,7 +57,6 @@ import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
 import rx.Single;
 
 /**
@@ -171,15 +170,15 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Single<ProjectResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		ProjectResponse restProject = new ProjectResponse();
 		restProject.setName(getName());
 		restProject.setRootNodeUuid(getBaseNode().getUuid());
 
-		Completable commonFields = fillCommonRestFields(ac, restProject);
-		Completable setRoles = setRolePermissions(ac, restProject);
+		fillCommonRestFields(ac, restProject);
+		setRolePermissions(ac, restProject);
 
-		return Completable.merge(commonFields, setRoles).andThen(Single.just(restProject));
+		return restProject;
 	}
 
 	@Override

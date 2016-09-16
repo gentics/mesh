@@ -136,7 +136,7 @@ public final class HandlerUtilities {
 			if (ac.matches(etag, true)) {
 				return Single.error(new NotModifiedException());
 			} else {
-				return element.transformToRestSync(ac, 0);
+				return Single.just(element.transformToRestSync(ac, 0));
 			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}

@@ -142,27 +142,24 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Single<GroupResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public GroupResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GroupResponse restGroup = new GroupResponse();
 		restGroup.setName(getName());
 
-		Completable setRoles = setRoles(ac, restGroup);
-		Completable fillCommonFields = fillCommonRestFields(ac, restGroup);
-		Completable setRolePerms = setRolePermissions(ac, restGroup);
+		setRoles(ac, restGroup);
+		fillCommonRestFields(ac, restGroup);
+		setRolePermissions(ac, restGroup);
 
-		return Completable.merge(setRoles, setRolePerms, fillCommonFields).andThen(Single.just(restGroup));
+		return restGroup;
 	}
 
-	private Completable setRoles(InternalActionContext ac, GroupResponse restGroup) {
-		return Completable.create(sub -> {
-			for (Role role : getRoles()) {
-				String name = role.getName();
-				if (name != null) {
-					restGroup.getRoles().add(role.transformToReference());
-				}
+	private void setRoles(InternalActionContext ac, GroupResponse restGroup) {
+		for (Role role : getRoles()) {
+			String name = role.getName();
+			if (name != null) {
+				restGroup.getRoles().add(role.transformToReference());
 			}
-			sub.onCompleted();
-		});
+		}
 	}
 
 	@Override

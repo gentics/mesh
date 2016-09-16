@@ -260,7 +260,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Single<UserResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		UserResponse restUser = new UserResponse();
 
 		restUser.setUsername(getUsername());
@@ -269,22 +269,25 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		restUser.setLastname(getLastname());
 		restUser.setEnabled(isEnabled());
 
-		Completable nodeReference = setNodeReference(ac, restUser, level);
-		Completable userGroups = setGroups(ac, restUser);
-		Completable rolePermissions = setRolePermissions(ac, restUser);
-		Completable commonFields = fillCommonRestFields(ac, restUser);
+		setNodeReference(ac, restUser, level);
+		setGroups(ac, restUser);
+		setRolePermissions(ac, restUser);
+		fillCommonRestFields(ac, restUser);
 
-		return Completable.merge(rolePermissions, commonFields, nodeReference, userGroups).andThen(Single.just(restUser));
+		return restUser;
 	}
 
-	private Completable setGroups(InternalActionContext ac, UserResponse restUser) {
-		return Completable.create(sub -> {
-			for (Group group : getGroups()) {
-				GroupReference reference = group.transformToReference();
-				restUser.getGroups().add(reference);
-			}
-			sub.onCompleted();
-		});
+	/**
+	 * Set the groups to which the user belongs in the rest model.
+	 * 
+	 * @param ac
+	 * @param restUser
+	 */
+	private void setGroups(InternalActionContext ac, UserResponse restUser) {
+		for (Group group : getGroups()) {
+			GroupReference reference = group.transformToReference();
+			restUser.getGroups().add(reference);
+		}
 	}
 
 	/**
@@ -294,35 +297,32 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 * @param restUser
 	 * @param level
 	 *            Current depth level of transformation
-	 * @return
 	 */
-	private Completable setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
-		return Completable.defer(() -> {
-			NodeParameters parameters = new NodeParameters(ac);
+	private void setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
+		NodeParameters parameters = new NodeParameters(ac);
+		Node node = getReferencedNode();
+		if (node == null) {
+			return;
+		} else {
+			boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
+			if (expandReference) {
+				node.transformToRest(ac, level).doOnSuccess(transformedNode -> {
+					restUser.setNodeReference(transformedNode);
+				}).toBlocking().value();
+				return;
 
-			Node node = getReferencedNode();
-			if (node == null) {
-				return Completable.complete();
 			} else {
-				boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
-				if (expandReference) {
-					return node.transformToRest(ac, level).doOnSuccess(transformedNode -> {
-						restUser.setNodeReference(transformedNode);
-					}).toCompletable();
+				NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
+				userNodeReference.setUuid(node.getUuid());
+				if (node.getProject() != null) {
+					userNodeReference.setProjectName(node.getProject().getName());
 				} else {
-					NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
-					userNodeReference.setUuid(node.getUuid());
-					if (node.getProject() != null) {
-						userNodeReference.setProjectName(node.getProject().getName());
-					} else {
-						log.error("Project of node is null. Can't set project field of user nodeReference.");
-						// TODO handle this case
-					}
-					restUser.setNodeReference(userNodeReference);
-					return Completable.complete();
+					log.error("Project of node is null. Can't set project field of user nodeReference.");
+					// TODO handle this case
 				}
+				restUser.setNodeReference(userNodeReference);
 			}
-		});
+		}
 	}
 
 	@Override

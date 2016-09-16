@@ -300,9 +300,8 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 
 			assertThat(responseList).isNotNull();
-			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
-					initialRelease.transformToRestSync(ac, 0).toBlocking().value(), firstRelease.transformToRestSync(ac, 0).toBlocking().value(),
-					secondRelease.transformToRestSync(ac, 0).toBlocking().value(), thirdRelease.transformToRestSync(ac, 0).toBlocking().value());
+			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialRelease.transformToRestSync(ac, 0),
+					firstRelease.transformToRestSync(ac, 0), secondRelease.transformToRestSync(ac, 0), thirdRelease.transformToRestSync(ac, 0));
 		}
 	}
 
@@ -322,8 +321,8 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 			assertThat(responseList).isNotNull();
-			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
-					initialRelease.transformToRestSync(ac, 0).toBlocking().value(), secondRelease.transformToRestSync(ac, 0).toBlocking().value());
+			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialRelease.transformToRestSync(ac, 0),
+					secondRelease.transformToRestSync(ac, 0));
 		}
 	}
 

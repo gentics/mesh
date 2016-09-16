@@ -138,7 +138,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, ContainerType.PUBLISHED);
 						if (oldPublished != null) {
 							ac.getVersioningParameters().setVersion("published");
-							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().value();
+							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 							restModel.getSchema().setVersion(newSchema.getVersion());
 
 							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(oldPublished.getLanguage(), release,
@@ -153,7 +153,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						}
 					}
 
-					NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().value();
+					NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 
 					// Update the schema version. Otherwise deserialisation of the JSON will fail later on.
 					restModel.getSchema().setVersion(newSchema.getVersion());
@@ -495,7 +495,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			field = container.createMicronode(field.getFieldKey(), fromVersion);
 			Micronode micronode = field.getMicronode();
 			// transform to rest and migrate
-			MicronodeResponse restModel = micronode.transformToRestSync(ac, 0).toBlocking().value();
+			MicronodeResponse restModel = micronode.transformToRestSync(ac, 0);
 			migrate(ac, micronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);
 		}
 
@@ -516,7 +516,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 				// migrate the micronode, if it uses the fromVersion
 				if (newMicronode.getSchemaContainerVersion().getImpl().equals(fromVersion.getImpl())) {
 					// transform to rest and migrate
-					MicronodeResponse restModel = newMicronode.transformToRestSync(ac, 0).toBlocking().value();
+					MicronodeResponse restModel = newMicronode.transformToRestSync(ac, 0);
 					migrate(ac, newMicronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);
 				}
 			}

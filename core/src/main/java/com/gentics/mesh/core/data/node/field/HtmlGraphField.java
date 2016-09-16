@@ -8,8 +8,6 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.LinkType;
 
-import rx.Single;
-
 /**
  * The HtmlField Domain Model interface.
  * 
@@ -17,23 +15,23 @@ import rx.Single;
  */
 public interface HtmlGraphField extends ListableGraphField, BasicGraphField<HtmlField> {
 
-	FieldTransformator HTML_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<HtmlField> HTML_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		HtmlGraphField graphHtmlField = container.getHtml(fieldKey);
 		if (graphHtmlField == null) {
-			return Single.just(new HtmlFieldImpl());
+			return new HtmlFieldImpl();
 		} else {
-			return graphHtmlField.transformToRest(ac).map(model -> {
-				// If needed resolve links within the html
-				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-					Project project = ac.getProject();
-					if (project == null) {
-						project = parentNode.getProject();
-					}
-					model.setHTML(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
-							model.getHTML(), ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
+			HtmlField field = graphHtmlField.transformToRest(ac);
+			// If needed resolve links within the html
+			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
+				Project project = ac.getProject();
+				if (project == null) {
+					project = parentNode.getProject();
 				}
-				return model;
-			});
+				field.setHTML(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease(null).getUuid(),
+						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), field.getHTML(),
+						ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
+			}
+			return field;
 		}
 	};
 

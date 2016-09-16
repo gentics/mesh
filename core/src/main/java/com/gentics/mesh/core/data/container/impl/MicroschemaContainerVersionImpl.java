@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 import java.util.List;
@@ -99,9 +101,9 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public Single<Microschema> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public Microschema transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		// Load the microschema and add/overwrite some properties
 		try {
-			// Load the microschema and add/overwrite some properties 
 			Microschema microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
 			microschema.setUuid(getSchemaContainer().getUuid());
 
@@ -109,9 +111,9 @@ public class MicroschemaContainerVersionImpl
 			RestModelHelper.setRolePermissions(ac, getSchemaContainer(), microschema);
 			microschema.setPermissions(ac.getUser().getPermissionNames(getSchemaContainer()));
 
-			return Single.just(microschema);
+			return microschema;
 		} catch (IOException e) {
-			return Single.error(e);
+			throw error(BAD_REQUEST, "Could not read json {" + getJson() + "}");
 		}
 	}
 

@@ -223,7 +223,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
-			ReleaseResponse releaseResponse = release.transformToRestSync(ac, 0).toBlocking().value();
+			ReleaseResponse releaseResponse = release.transformToRestSync(ac, 0);
 			assertThat(releaseResponse).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive().isMigrated();
 		}
 	}

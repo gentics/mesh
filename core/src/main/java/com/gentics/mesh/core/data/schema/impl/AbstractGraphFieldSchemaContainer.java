@@ -94,7 +94,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public Single<R> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public R transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		// Delegate transform call to latest version
 		return getLatestVersion().transformToRestSync(ac, level, languageTags);
 	}

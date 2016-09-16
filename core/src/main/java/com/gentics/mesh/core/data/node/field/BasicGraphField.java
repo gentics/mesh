@@ -4,8 +4,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphFie
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.ActionContext;
 
-import rx.Single;
-
 public interface BasicGraphField<T extends Field> extends MicroschemaListableGraphField {
 
 	/**
@@ -13,6 +11,6 @@ public interface BasicGraphField<T extends Field> extends MicroschemaListableGra
 	 * 
 	 * @param ac
 	 */
-	Single<T> transformToRest(ActionContext ac);
+	T transformToRest(ActionContext ac);
 
 }

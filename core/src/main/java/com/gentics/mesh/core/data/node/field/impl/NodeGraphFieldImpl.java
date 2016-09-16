@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
@@ -20,8 +19,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
-
-import rx.Single;
 
 public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
@@ -41,7 +38,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
-	public Single<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	public NodeField transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		// TODO handle null across all types
 		//if (getNode() != null) {
 		NodeParameters parameters = ac.getNodeParameters();
@@ -58,7 +55,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 								ac.getNodeParameters().getResolveLinks(), languageTags.toArray(new String[languageTags.size()]))
 						.toBlocking().value());
 			}
-			return Single.just(nodeField);
+			return nodeField;
 		}
 	}
 

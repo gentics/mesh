@@ -36,10 +36,10 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 	}
 
 	@Override
-	public Single<BooleanField> transformToRest(ActionContext ac) {
+	public BooleanField transformToRest(ActionContext ac) {
 		BooleanFieldImpl restModel = new BooleanFieldImpl();
 		restModel.setValue(getBoolean());
-		return Single.just(restModel);
+		return restModel;
 	}
 
 	@Override

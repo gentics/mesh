@@ -199,14 +199,14 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Single<TagFamilyResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public TagFamilyResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		TagFamilyResponse restTagFamily = new TagFamilyResponse();
 		restTagFamily.setName(getName());
 
-		Completable commonFields = fillCommonRestFields(ac, restTagFamily);
-		Completable rolePerms = setRolePermissions(ac, restTagFamily);
+		fillCommonRestFields(ac, restTagFamily);
+		setRolePermissions(ac, restTagFamily);
 
-		return Completable.merge(rolePerms, commonFields).toSingleDefault(restTagFamily);
+		return restTagFamily;
 	}
 
 	@Override

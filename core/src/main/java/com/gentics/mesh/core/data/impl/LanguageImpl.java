@@ -64,13 +64,13 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public Single<LanguageResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public LanguageResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		LanguageResponse model = new LanguageResponse();
 		model.setUuid(getUuid());
 		model.setLanguageTag(getLanguageTag());
 		model.setName(getName());
 		model.setNativeName(getNativeName());
-		return Single.just(model);
+		return model;
 	}
 
 	@Override

@@ -38,7 +38,7 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	default Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		Database db = MeshInternal.get().database();
 		return db.asyncNoTx(() -> {
-			return transformToRestSync(ac, level, languageTags);
+			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
 
@@ -53,7 +53,7 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 *            optional list of language tags to be used for language fallback
 	 * @return
 	 */
-	Single<T> transformToRestSync(InternalActionContext ac, int level, String... languageTags);
+	T transformToRestSync(InternalActionContext ac, int level, String... languageTags);
 
 	/**
 	 * Return the etag for the element.

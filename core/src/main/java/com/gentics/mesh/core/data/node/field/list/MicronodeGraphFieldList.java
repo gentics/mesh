@@ -15,10 +15,10 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 
 	String TYPE = "micronode";
 
-	FieldTransformator MICRONODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<MicronodeFieldList> MICRONODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		MicronodeGraphFieldList graphMicroschemaField = container.getMicronodeList(fieldKey);
 		if (graphMicroschemaField == null) {
-			return Single.just(null);
+			return null;
 		} else {
 			return graphMicroschemaField.transformToRest(ac, fieldKey, languageTags, level);
 		}

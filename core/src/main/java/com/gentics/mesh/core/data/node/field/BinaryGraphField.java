@@ -11,17 +11,16 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import rx.Single;
 
 /**
  * The BinaryField Domain Model interface.
  */
 public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 
-	FieldTransformator BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<BinaryField> BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		if (graphBinaryField == null) {
-			return Single.just(null);
+			return null;
 		} else {
 			return graphBinaryField.transformToRest(ac);
 		}

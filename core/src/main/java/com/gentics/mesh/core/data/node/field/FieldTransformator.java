@@ -8,11 +8,26 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
-import rx.Single;
-
 @FunctionalInterface
-public interface FieldTransformator {
+public interface FieldTransformator<T extends Field> {
 
-	Single<? extends Field> transform(GraphFieldContainer container, InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level, Node parentNode);
+	/**
+	 * Load the field with the given key from the container and transform it to its rest representation.
+	 * 
+	 * @param container
+	 *            Container which holds the field
+	 * @param ac
+	 * @param fieldKey
+	 *            Key of the field to be transformed
+	 * @param fieldSchema
+	 *            Field schema to be used during transformation
+	 * @param languageTags
+	 * @param level
+	 *            Current level of transformation
+	 * @param parentNode
+	 * @return
+	 */
+	T transform(GraphFieldContainer container, InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags,
+			int level, Node parentNode);
 
 }

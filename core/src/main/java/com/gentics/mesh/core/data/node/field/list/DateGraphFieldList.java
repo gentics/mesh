@@ -11,16 +11,14 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 
-import rx.Single;
-
 public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateFieldListImpl, Long> {
 
 	String TYPE = "date";
 
-	FieldTransformator DATE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<DateFieldListImpl> DATE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		DateGraphFieldList dateFieldList = container.getDateList(fieldKey);
 		if (dateFieldList == null) {
-			return Single.just(null);
+			return null;
 		} else {
 			return dateFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -45,9 +43,9 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 			return;
 		}
 
-		// Always create a new list. 
-		// This will effectively unlink the old list and create a new one. 
-		// Otherwise the list which is linked to old versions would be updated. 
+		// Always create a new list.
+		// This will effectively unlink the old list and create a new one.
+		// Otherwise the list which is linked to old versions would be updated.
 		graphDateFieldList = container.createDateList(fieldKey);
 
 		// Handle Update

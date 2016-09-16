@@ -11,8 +11,6 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-import rx.Single;
-
 public class StringGraphFieldImpl extends AbstractBasicField<StringField> implements StringGraphField {
 
 	public StringGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
@@ -30,11 +28,11 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 	}
 
 	@Override
-	public Single<StringField> transformToRest(ActionContext ac) {
+	public StringField transformToRest(ActionContext ac) {
 		StringFieldImpl stringField = new StringFieldImpl();
 		String text = getString();
 		stringField.setString(text == null ? "" : text);
-		return Single.just(stringField);
+		return stringField;
 	}
 
 	@Override

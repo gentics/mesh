@@ -4,8 +4,6 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 
-import rx.Single;
-
 /**
  * The NumberField Domain Model interface.
  * 
@@ -13,10 +11,10 @@ import rx.Single;
  */
 public interface NumberGraphField extends ListableGraphField, BasicGraphField<NumberField> {
 
-	FieldTransformator NUMBER_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<NumberField> NUMBER_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NumberGraphField graphNumberField = container.getNumber(fieldKey);
 		if (graphNumberField == null) {
-			return Single.just(new NumberFieldImpl());
+			return new NumberFieldImpl();
 		} else {
 			return graphNumberField.transformToRest(ac);
 		}

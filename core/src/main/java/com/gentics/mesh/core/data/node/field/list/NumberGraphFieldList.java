@@ -10,16 +10,14 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 
-import rx.Single;
-
 public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, NumberFieldListImpl, Number> {
 
 	String TYPE = "number";
 
-	FieldTransformator NUMBER_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<NumberFieldListImpl> NUMBER_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NumberGraphFieldList numberFieldList = container.getNumberList(fieldKey);
 		if (numberFieldList == null) {
-			return Single.just(null);
+			return null;
 		} else {
 			return numberFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}
@@ -45,9 +43,9 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 			return;
 		}
 
-		// Always create a new list. 
-		// This will effectively unlink the old list and create a new one. 
-		// Otherwise the list which is linked to old versions would be updated. 
+		// Always create a new list.
+		// This will effectively unlink the old list and create a new one.
+		// Otherwise the list which is linked to old versions would be updated.
 		graphNumberFieldList = container.createNumberList(fieldKey);
 
 		// Handle Update

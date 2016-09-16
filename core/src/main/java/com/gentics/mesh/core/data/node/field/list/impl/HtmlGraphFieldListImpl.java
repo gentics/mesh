@@ -14,8 +14,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
-import rx.Single;
-
 /**
  * @see HtmlGraphFieldList
  */
@@ -53,12 +51,12 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	}
 
 	@Override
-	public Single<HtmlFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	public HtmlFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		HtmlFieldListImpl restModel = new HtmlFieldListImpl();
 		for (HtmlGraphField item : getList()) {
 			restModel.add(item.getHTML());
 		}
-		return Single.just(restModel);
+		return restModel;
 	}
 
 	@Override

@@ -30,8 +30,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 
-import rx.Single;
-
 /**
  * List of all graph field types.
  */
@@ -97,7 +95,7 @@ public enum GraphFieldTypes {
 	 * 
 	 * @return
 	 */
-	public FieldTransformator getTransformator() {
+	public FieldTransformator<? extends Field> getTransformator() {
 		return transformator;
 	}
 
@@ -144,7 +142,7 @@ public enum GraphFieldTypes {
 	 * @param parentNode
 	 * @return
 	 */
-	public Single<? extends Field> getRestFieldFromGraph(GraphFieldContainer container, InternalActionContext ac, String fieldKey,
+	public Field getRestFieldFromGraph(GraphFieldContainer container, InternalActionContext ac, String fieldKey,
 			FieldSchema fieldSchema, List<String> languageTags, int level, Node parentNode) {
 		return getTransformator().transform(container, ac, fieldKey, fieldSchema, languageTags, level, parentNode);
 	}

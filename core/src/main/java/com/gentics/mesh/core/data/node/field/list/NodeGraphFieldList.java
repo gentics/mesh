@@ -18,7 +18,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeFieldList, Node> {
 
@@ -26,10 +25,10 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 
 	String TYPE = "node";
 
-	FieldTransformator NODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	FieldTransformator<NodeFieldList> NODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NodeGraphFieldList nodeFieldList = container.getNodeList(fieldKey);
 		if (nodeFieldList == null) {
-			return Single.just(null);
+			return null;
 		} else {
 			return nodeFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}

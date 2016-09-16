@@ -47,21 +47,15 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public Single<MicronodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	public MicronodeFieldList transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 
 		MicronodeFieldList restModel = new MicronodeFieldListImpl();
 
 		List<Single<MicronodeResponse>> obs = new ArrayList<>();
 		for (MicronodeGraphField item : getList()) {
-			obs.add(item.getMicronode().transformToRestSync(ac, level));
+			restModel.getItems().add(item.getMicronode().transformToRestSync(ac, level));
 		}
-
-		List<Observable<MicronodeResponse>> obsList = obs.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-		return Observable.concat(Observable.from(obsList)).collect(() -> {
-			return restModel.getItems();
-		}, (x, y) -> {
-			x.add(y);
-		}).map(i -> restModel).toSingle();
+		return restModel;
 	}
 
 	@Override
@@ -92,7 +86,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				// Resolve the microschema reference from the rest model
 				MicroschemaReference microschemaReference = item.getMicroschema();
 				if (microschemaReference == null) {
-					//TODO i18n
+					// TODO i18n
 					return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
 				}
 
@@ -127,7 +121,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				}
 				return micronode;
 			}).toList().subscribe(micronodeList -> {
-				// Clear the list and add new items 
+				// Clear the list and add new items
 				removeAll();
 				int counter = 1;
 				for (Micronode micronode : micronodeList) {

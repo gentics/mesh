@@ -500,15 +500,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void deleteFromRelease(Release release, SearchQueueBatch batch);
 
 	/**
-	 * Set the breadcrumb information to the given rest node.
-	 * 
-	 * @param ac
-	 * @param restNode
-	 * @return
-	 */
-	Completable setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode);
-
-	/**
 	 * Return the schema container for the node.
 	 * 
 	 * @return
