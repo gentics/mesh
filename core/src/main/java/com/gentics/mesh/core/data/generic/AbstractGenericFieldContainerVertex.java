@@ -39,8 +39,8 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 */
 	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String releaseUuid, ContainerType type,
 			Class<U> classOfU) {
-		Objects.requireNonNull(languageTag);
-		Objects.requireNonNull(classOfU);
+//		Objects.requireNonNull(languageTag);
+//		Objects.requireNonNull(classOfU);
 
 		// String key = "l:" + languageTag + "r:" + releaseUuid + "t:" + type + "i:" + getId();
 		// System.out.println(key);

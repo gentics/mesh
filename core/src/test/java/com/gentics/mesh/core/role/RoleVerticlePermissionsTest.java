@@ -2,6 +2,7 @@ package com.gentics.mesh.core.role;
 
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -168,7 +169,8 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 		try (NoTx noTx = db.noTx()) {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.getPermissions().add("read");
-			call(() -> getClient().updateRolePermissions(role().getUuid(), "projects/bogus1234/nodes", request));
+			String path = "projects/bogus1234/nodes";
+			call(() -> getClient().updateRolePermissions(role().getUuid(), path, request), NOT_FOUND, "error_element_for_path_not_found" , path);
 		}
 	}
 }
