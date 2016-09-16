@@ -10,8 +10,8 @@ properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
 node('dockerRoot') {
 
 	stage 'Checkout'
-	sh "rm -rf *"
-	sh "rm -rf .git"
+	//sh "rm -rf *"
+	//sh "rm -rf .git"
 	checkout scm
 	//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
 	def mvnHome = tool 'M3'
@@ -46,6 +46,7 @@ node('dockerRoot') {
 			branches["split${i}"] = {
 				node('dockerSlave') {
 					echo "Preparing slave environment for ${current}"
+					sh "ls -la"
 					sh "rm -rf *"
 					checkout scm
 					//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]],extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
