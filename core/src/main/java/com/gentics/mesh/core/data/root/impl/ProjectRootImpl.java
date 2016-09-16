@@ -120,6 +120,9 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		} else {
 			String uuidSegment = stack.pop();
 			Project project = findByUuid(uuidSegment);
+			if(project==null) {
+				return Single.just(null);
+			}
 			if (stack.isEmpty()) {
 				return Single.just(project);
 			} else {

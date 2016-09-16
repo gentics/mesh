@@ -68,27 +68,27 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		return out(getRootLabel()).toListExplicit(getPersistanceClass());
 	}
 
-//	@Override
-//	public T findByName(String name) {
-//		return out(getRootLabel()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null);
-//	}
-
 	@Override
 	public T findByName(String name) {
-		FramedGraph graph = Database.getThreadLocalGraph();
-		// 1. Find the element with given uuid within the whole graph
-		Iterator<Vertex> it = MeshInternal.get().database().getVertices(getPersistanceClass(), new String[] { "name" }, new String[] { name });
-		if (it.hasNext()) {
-			Vertex potentialElement = it.next();
-			// 2. Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-					MeshInternal.get().database().createComposedIndexKey(potentialElement.getId(), getId()));
-			if (edges.iterator().hasNext()) {
-				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
-			}
-		}
-		return null;
+		return out(getRootLabel()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
+
+//	@Override
+//	public T findByName(String name) {
+//		FramedGraph graph = Database.getThreadLocalGraph();
+//		// 1. Find the element with given uuid within the whole graph
+//		Iterator<Vertex> it = MeshInternal.get().database().getVertices(getPersistanceClass(), new String[] { "name" }, new String[] { name });
+//		if (it.hasNext()) {
+//			Vertex potentialElement = it.next();
+//			// 2. Use the edge index to determine whether the element is part of this root vertex
+//			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
+//					MeshInternal.get().database().createComposedIndexKey(potentialElement.getId(), getId()));
+//			if (edges.iterator().hasNext()) {
+//				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
+//			}
+//		}
+//		return null;
+//	}
 	
 
 	@Override
