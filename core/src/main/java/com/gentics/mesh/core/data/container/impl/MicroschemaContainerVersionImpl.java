@@ -107,7 +107,7 @@ public class MicroschemaContainerVersionImpl
 
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, getSchemaContainer(), microschema);
-			microschema.setPermissions(ac.getUser().getPermissionNames(ac, getSchemaContainer()));
+			microschema.setPermissions(ac.getUser().getPermissionNames(getSchemaContainer()));
 
 			return Single.just(microschema);
 		} catch (IOException e) {

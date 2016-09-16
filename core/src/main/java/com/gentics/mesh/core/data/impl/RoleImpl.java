@@ -153,7 +153,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 				return createIndexBatch(STORE_ACTION);
 			}).process().andThen(Single.just(this));
 		}
-		// No update required
+		// No update is required if the name did not change
 		return Single.just(this);
 	}
 

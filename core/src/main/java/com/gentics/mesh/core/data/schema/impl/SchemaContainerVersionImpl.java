@@ -113,7 +113,7 @@ public class SchemaContainerVersionImpl extends
 				// Role permissions
 				RestModelHelper.setRolePermissions(ac, getSchemaContainer(), restSchema);
 
-				restSchema.setPermissions(ac.getUser().getPermissionNames(ac, getSchemaContainer()));
+				restSchema.setPermissions(ac.getUser().getPermissionNames(getSchemaContainer()));
 				sub.onSuccess(restSchema);
 
 			} catch (IOException e) {

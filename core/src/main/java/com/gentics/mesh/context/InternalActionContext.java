@@ -128,11 +128,12 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	/**
 	 * Checks whether the provided etag matches the etag within the request header.
 	 * 
-	 * @param etag
+	 * @param entityTag
+	 *            Etag to compare to
 	 * @param isWeak
 	 *            Provided etag is a weak etag
 	 * @return
 	 */
-	boolean matches(String etag, boolean isWeak);
+	boolean matches(String entityTag, boolean isWeak);
 
 }

@@ -104,10 +104,9 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 				// when this is a node migration, do not set user permissions
 				return Completable.complete();
 			} else {
-				return ac.getUser().getPermissionNamesAsync(ac, this).doOnSuccess(list -> {
-					String[] names = list.toArray(new String[list.size()]);
-					model.setPermissions(names);
-				}).toCompletable();
+				String[] names = ac.getUser().getPermissionNames(this);
+				model.setPermissions(names);
+				return Completable.complete();
 			}
 		});
 	}

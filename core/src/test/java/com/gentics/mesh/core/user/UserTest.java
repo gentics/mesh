@@ -160,38 +160,6 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	}
 
 	@Test
-	public void testGetPermissionNamesViaHandler() throws InterruptedException, ExecutionException, TimeoutException {
-		try (NoTx noTx = db.noTx()) {
-			User user = user();
-			RoutingContext rc = getMockedRoutingContext("");
-			InternalActionContext ac = InternalActionContext.create(rc);
-			Node node = content();
-
-			int max = 20000;
-			long now = System.currentTimeMillis();
-			for (int i = 0; i < max; i++) {
-
-				// ac.data().clear();
-				// CompletableFuture<String[]> permissionFuture = new CompletableFuture<>();
-
-				// if (1 != 1) {
-				// user.getPermissionNames(ac, node);
-				// latch.countDown();
-				// } else {
-				user.getPermissionNamesAsync(ac, node).toBlocking().value();
-				// }
-				// assertNotNull(permissionFuture.get(5, TimeUnit.SECONDS));
-			}
-
-			long dur = System.currentTimeMillis() - now;
-			System.out.println("Duration:" + dur);
-			// for (String name : permissionFuture.get()) {
-			// System.out.println(name);
-			// }
-		}
-	}
-
-	@Test
 	public void testSetNameAlias() {
 		try (NoTx noTx = db.noTx()) {
 			User user = user();
@@ -202,40 +170,13 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	}
 
 	@Test
-	public void testGetPermissionsViaHandle() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			String[] perms = { "create", "update", "delete", "read", "publish", "readpublished" };
-			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
-			long start = System.currentTimeMillis();
-			int nChecks = 10000;
-			List<Completable> obsList = new ArrayList<>();
-			for (int i = 0; i < nChecks; i++) {
-				obsList.add(user().getPermissionNamesAsync(ac, content()).map(list -> {
-					String[] loadedPerms = list.toArray(new String[list.size()]);
-					Arrays.sort(perms);
-					Arrays.sort(loadedPerms);
-					assertArrayEquals("Permissions do not match", perms, loadedPerms);
-					assertNotNull(ac.data().get("permissions:" + content().getUuid()));
-					return null;
-				}).toCompletable());
-			}
-			Completable.merge(obsList).await(20, TimeUnit.SECONDS);
-			System.out.println("Duration: " + (System.currentTimeMillis() - start));
-			System.out.println("Duration per Check: " + (System.currentTimeMillis() - start) / (double) nChecks);
-		}
-	}
-
-	@Test
 	public void testGetPermissions() {
 		try (NoTx noTx = db.noTx()) {
 			String[] perms = { "create", "update", "delete", "read", "readpublished", "publish" };
-			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
 			for (int i = 0; i < nChecks; i++) {
-				String[] loadedPerms = user().getPermissionNames(ac, content());
+				String[] loadedPerms = user().getPermissionNames(content());
 				assertThat(loadedPerms).containsOnly(perms);
 				// assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 			}

@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import com.gentics.mesh.core.data.BasicFieldContainer;

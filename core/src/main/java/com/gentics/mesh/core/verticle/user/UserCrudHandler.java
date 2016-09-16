@@ -86,7 +86,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 							throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 						}
 						UserPermissionResponse response = new UserPermissionResponse();
-						for (GraphPermission perm : user.getPermissions(ac, targetElement)) {
+						for (GraphPermission perm : user.getPermissions(targetElement)) {
 							response.getPermissions().add(perm.getSimpleName());
 						}
 						return response;

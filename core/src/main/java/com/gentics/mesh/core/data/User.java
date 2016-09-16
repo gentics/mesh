@@ -3,13 +3,10 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 import java.util.Set;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-
-import rx.Single;
 
 /**
  * The User Domain Model interface.
@@ -131,32 +128,19 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Return an array of human readable permissions for the given vertex.
 	 * 
-	 * @param ac
 	 * @param vertex
 	 * @return
-	 * @deprecated Use {@link #getPermissionNames(InternalActionContext, MeshVertex)} instead.
 	 * 
 	 */
-	@Deprecated
-	String[] getPermissionNames(InternalActionContext ac, MeshVertex vertex);
-
-	/**
-	 * Collect the permissions names for the given vertex.
-	 * 
-	 * @param ac
-	 * @param node
-	 */
-	Single<List<String>> getPermissionNamesAsync(InternalActionContext ac, MeshVertex node);
+	String[] getPermissionNames(MeshVertex vertex);
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.
 	 * 
-	 * @param ac
-	 *            The action context data map will be used to quickly lookup already determined permissions.
 	 * @param vertex
 	 * @return
 	 */
-	Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex vertex);
+	Set<GraphPermission> getPermissions(MeshVertex vertex);
 
 	/**
 	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used

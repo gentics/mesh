@@ -223,10 +223,10 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext();
 			InternalActionContext ac = InternalActionContext.create(rc);
 			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
-			assertEquals(0, requestUser.getPermissions(ac, node).size());
+			assertEquals(0, requestUser.getPermissions(node).size());
 			requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 			ac.data().clear();
-			assertEquals(6, requestUser.getPermissions(ac, node).size());
+			assertEquals(6, requestUser.getPermissions(node).size());
 
 			try (Tx tx = db.tx()) {
 				for (Role role : roles().values()) {

@@ -7,11 +7,11 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
@@ -48,25 +48,15 @@ public class UserVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 	}
 
 	@Test
-	public void testPermissionNamesAsyncPerformance() {
-		loggingStopWatch(logger, "user.getPermissionNamesAsync", 70000, (step) -> {
-			InternalActionContext ac = Mocks.getMockedInternalActionContext();
-			try (NoTx noTx = db.noTx()) {
-				user().getPermissionNamesAsync(ac, content()).doOnSuccess(list -> {
-
-				}).toBlocking().value();
-			}
-		});
-	}
-
-	@Test
 	public void testPermissionNamesPerformance() {
+		User user = db.noTx(() -> user());
+		Node content = db.noTx(() -> content());
 		loggingStopWatch(logger, "user.getPermissionNames", 70000, (step) -> {
-			InternalActionContext ac = Mocks.getMockedInternalActionContext();
 			try (NoTx noTx = db.noTx()) {
-				user().getPermissionNames(ac, content());
+				user.getPermissionNames(content);
 			}
 		});
+
 	}
 
 	@Test

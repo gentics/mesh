@@ -19,12 +19,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.BooleanUtils;
 
@@ -62,9 +60,7 @@ import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
-import rx.Observable;
 import rx.Single;
-import rx.subjects.AsyncSubject;
 
 /**
  * @see User
@@ -193,57 +189,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Single<List<String>> getPermissionNamesAsync(InternalActionContext ac, MeshVertex node) {
-
-		class PermResult {
-
-			GraphPermission perm;
-			Boolean flag;
-
-			public PermResult(GraphPermission perm, Boolean flag) {
-				this.perm = perm;
-				this.flag = flag;
-			}
-		}
-		String mapKey = "permissions:" + node.getUuid();
-		List<String> permissions = (List<String>) ac.data().get(mapKey);
-		if (permissions != null) {
-			return Single.just(permissions);
-		} else {
-			List<Single<PermResult>> permResults = new ArrayList<>();
-
-			for (GraphPermission perm : GraphPermission.values()) {
-				AsyncSubject<PermResult> obs = AsyncSubject.create();
-				permResults.add(obs.toSingle());
-				// TODO Checking permissions asynchronously requires a reload of the user object and therefore the perm check is slower. We need to check
-				// whether we want to still reload the user.
-				// hasPermission(ac, node, perm, rh -> {
-				// if (rh.failed()) {
-				// obs.onError(rh.cause());
-				// } else {
-				// obs.onNext(new PermResult(perm, rh.result()));
-				// obs.onCompleted();
-				// }
-				// });
-
-				obs.onNext(new PermResult(perm, hasPermission(node, perm)));
-				obs.onCompleted();
-
-			}
-
-			List<Observable<PermResult>> permResultsList = permResults.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-			return Observable.merge(permResultsList).filter(res -> res.flag).map(res -> res.perm.getSimpleName()).toList().map(list -> {
-				ac.data().put(mapKey, list);
-				return list;
-			}).toSingle();
-
-		}
-	}
-
-	@Override
-	@Deprecated
-	public String[] getPermissionNames(InternalActionContext ac, MeshVertex node) {
-		Set<GraphPermission> permissions = getPermissions(ac, node);
+	public String[] getPermissionNames(MeshVertex node) {
+		Set<GraphPermission> permissions = getPermissions(node);
 		String[] strings = new String[permissions.size()];
 		Iterator<GraphPermission> it = permissions.iterator();
 		for (int i = 0; i < permissions.size(); i++) {
@@ -253,8 +200,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node) {
+	public Set<GraphPermission> getPermissions(MeshVertex node) {
 		Set<GraphPermission> graphPermissions = new HashSet<>();
+		// Check all permissions one at a time and add granted permissions to the set
 		for (GraphPermission perm : GraphPermission.values()) {
 			if (hasPermission(node, perm)) {
 				graphPermissions.add(perm);
