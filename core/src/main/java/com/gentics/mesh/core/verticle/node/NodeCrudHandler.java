@@ -275,6 +275,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
+
 		db.asyncNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToPublishStatus(ac);
@@ -310,6 +311,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handleTakeOffline(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
+
 		db.asyncNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return node.takeOffline(ac).andThen(Single.defer(() -> {
@@ -346,6 +348,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
+
 		db.asyncNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return node.publish(ac, languageTag).andThen(Single.defer(() -> {
@@ -368,6 +371,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
+
 		db.asyncNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return node.takeOffline(ac, languageTag).toSingle(() -> {
@@ -390,6 +394,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 */
 	protected void readElement(InternalActionContext ac, String uuid, TxHandler<RootVertex<Node>> handler) {
 		validateParameter(uuid, "uuid");
+
 		db.asyncNoTx(() -> {
 			RootVertex<Node> root = handler.call();
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
