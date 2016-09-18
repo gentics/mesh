@@ -1365,33 +1365,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
-		// 1. Generate a key so that we can load the display name from the action context data map.
-		// It may have been loaded previously so we could reuse the loaded displayName by loading it from the context.
-		String langInfo = Arrays.toString(nodeParameters.getLanguageList().toArray());
-		String key = getUuid() + langInfo + versioningParameters.getVersion() + ac.getRelease(getProject()).getUuid();
-
-		String displayFieldName = (String) ac.data().computeIfAbsent(key, (key2) -> {
-
-			try {
-				NodeGraphFieldContainer container = findNextMatchingFieldContainer(nodeParameters.getLanguageList(),
-						ac.getRelease(getProject()).getUuid(), versioningParameters.getVersion());
-				if (container == null) {
-					if (log.isDebugEnabled()) {
-						log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
-					}
-					return null;
-				} else {
-					// Determine the display field name and load the string value
-					// from that field.
-					return container.getDisplayFieldValue();
-				}
-			} catch (Exception e) {
-				log.error("Could not determine displayName for node {" + getUuid() + "} and version {" + versioningParameters.getVersion()
-						+ "} of language {" + langInfo + "}", e);
-				throw e;
+		NodeGraphFieldContainer container = findNextMatchingFieldContainer(nodeParameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
+				versioningParameters.getVersion());
+		if (container == null) {
+			if (log.isDebugEnabled()) {
+				log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
 			}
-		});
-		return displayFieldName;
+			return null;
+		} else {
+			// Determine the display field name and load the string value
+			// from that field.
+			return container.getDisplayFieldValue();
+		}
+
 	}
 
 	/**

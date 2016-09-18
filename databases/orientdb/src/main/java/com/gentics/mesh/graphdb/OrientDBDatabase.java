@@ -158,6 +158,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		pluginDirectory.mkdirs();
 		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.2.zip")));
 
+		server.startup(iConfiguration);
 		server.startup(getOrientServerConfig());
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
