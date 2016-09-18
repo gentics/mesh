@@ -4,6 +4,11 @@ import java.util.Comparator;
 
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 
+/**
+ * Comparator for rest model objects.
+ * 
+ * @param <T>
+ */
 public class UuidRestModelComparator<T extends AbstractResponse> implements Comparator<T> {
 
 	@Override

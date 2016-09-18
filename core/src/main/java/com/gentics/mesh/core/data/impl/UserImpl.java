@@ -189,8 +189,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public String[] getPermissionNames(MeshVertex node) {
-		Set<GraphPermission> permissions = getPermissions(node);
+	public String[] getPermissionNames(MeshVertex vertex) {
+		Set<GraphPermission> permissions = getPermissions(vertex);
 		String[] strings = new String[permissions.size()];
 		Iterator<GraphPermission> it = permissions.iterator();
 		for (int i = 0; i < permissions.size(); i++) {
@@ -200,11 +200,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(MeshVertex node) {
+	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
 		Set<GraphPermission> graphPermissions = new HashSet<>();
 		// Check all permissions one at a time and add granted permissions to the set
 		for (GraphPermission perm : GraphPermission.values()) {
-			if (hasPermission(node, perm)) {
+			if (hasPermission(vertex, perm)) {
 				graphPermissions.add(perm);
 			}
 		}
@@ -223,20 +223,27 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
-		FramedGraph graph = Database.getThreadLocalGraph();
-		// Find all roles that are assigned to the user by checking the shortcut edge from the index
-		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE + "_out", this.getId());
-		for (Edge roleEdge : roleEdges) {
-			Vertex role = roleEdge.getVertex(Direction.IN);
-			// Find all permission edges between the found role and target vertex with the specified label
-			Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
-					MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
-			boolean foundPermEdge = edges.iterator().hasNext();
-			if (foundPermEdge) {
-				return true;
+		if (PermissionStore.hasPermission(getId(), permission, elementId)) {
+			return true;
+		} else {
+			FramedGraph graph = Database.getThreadLocalGraph();
+			// Find all roles that are assigned to the user by checking the shortcut edge from the index
+			Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE + "_out", this.getId());
+			for (Edge roleEdge : roleEdges) {
+				Vertex role = roleEdge.getVertex(Direction.IN);
+				// Find all permission edges between the found role and target vertex with the specified label
+				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
+						MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
+				boolean foundPermEdge = edges.iterator().hasNext();
+				if (foundPermEdge) {
+					// We only store granting permissions in the store in order reduce the invalidation calls.
+					// This way we do not need to invalidate the cache if a role is removed from a group or a role is deleted.
+					PermissionStore.store(getId(), permission, elementId);
+					return true;
+				}
 			}
+			return false;
 		}
-		return false;
 
 	}
 
@@ -245,18 +252,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
 		}
-
-		if (PermissionStore.hasPermission(getId(), permission, vertex.getImpl().getId())) {
-			return true;
-		} else {
-			boolean hasPerm = hasPermissionForId(vertex.getImpl().getId(), permission);
-			// We only store granting permissions in the store in order reduce the invalidation calls.
-			// This way we do not need to invalidate the cache if a role is removed from a group or a role is deleted.
-			if (hasPerm) {
-				PermissionStore.store(getId(), permission, vertex.getImpl().getId());
-			}
-			return hasPerm;
-		}
+		return hasPermissionForId(vertex.getImpl().getId(), permission);
 	}
 
 	@Override
