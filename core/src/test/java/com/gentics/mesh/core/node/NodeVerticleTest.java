@@ -785,6 +785,48 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testReadBreadcrumbWithLangfallback() {
+		Node baseNode = project().getBaseNode();
+
+		// level 0
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("folder"));
+		request.setLanguage("en");
+		request.getFields().put("name", FieldUtil.createStringField("english folder-0"));
+		request.setPublished(true);
+		request.setParentNodeUuid(baseNode.getUuid());
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		assertSuccess(future);
+
+		// level 1
+		request.setParentNodeUuid(future.result().getUuid());
+		request.getFields().put("name", FieldUtil.createStringField("english folder-1"));
+		future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		assertSuccess(future);
+
+		// level 2
+		request.setLanguage("de");
+		request.setParentNodeUuid(future.result().getUuid());
+		request.getFields().put("name", FieldUtil.createStringField("german folder-2"));
+		future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		assertSuccess(future);
+
+		// Load the german folder
+		Future<NodeResponse> readFuture = getClient().findNodeByUuid(PROJECT_NAME, future.result().getUuid(),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL).setLanguages("de", "en"));
+		latchFor(readFuture);
+		assertSuccess(readFuture);
+		NodeResponse response = readFuture.result();
+		assertEquals("/api/v1/dummy/webroot/english+folder-0/english+folder-1/german+folder-2", response.getPath());
+		assertEquals("/api/v1/dummy/webroot/english+folder-0/english+folder-1", response.getBreadcrumb().get(0).getPath());
+		assertEquals("/api/v1/dummy/webroot/english+folder-0", response.getBreadcrumb().get(1).getPath());
+
+	}
+
+	@Test
 	public void testReadByUUIDBreadcrumb() {
 		Node node = content("news_2014");
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),

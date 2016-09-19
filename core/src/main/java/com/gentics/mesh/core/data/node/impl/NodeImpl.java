@@ -484,7 +484,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			if (!ac.getResolveLinksType().equals(Type.OFF)) {
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer.resolve(current.getUuid(), ac.getResolveLinksType(), getProject().getName(), restNode.getLanguage())
+				String url = linkReplacer.resolve(current.getUuid(), ac.getResolveLinksType(), getProject().getName(), ac.getSelectedLanguageTags().toArray(new String[0]))
 						.toBlocking().single();
 				reference.setPath(url);
 			}
