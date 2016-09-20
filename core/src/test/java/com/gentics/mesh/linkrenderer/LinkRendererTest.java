@@ -43,7 +43,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "{{mesh.link('" + uuid + "')}}";
 		String replacedContent = replacer.replace(content, Type.SHORT, null, null);
 
-		assertEquals("Check rendered content", "/News/News+Overview.en.html", replacedContent);
+		assertEquals("Check rendered content", "/News/News%20Overview.en.html", replacedContent);
 	}
 
 	@Test
@@ -53,7 +53,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "{{mesh.link('" + uuid + "')}}";
 		String replacedContent = replacer.replace(content, Type.MEDIUM, null, null);
 
-		assertEquals("Check rendered content", "/dummy/News/News+Overview.en.html", replacedContent);
+		assertEquals("Check rendered content", "/dummy/News/News%20Overview.en.html", replacedContent);
 	}
 
 	@Test
@@ -63,7 +63,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "{{mesh.link('" + uuid + "')}}";
 		String replacedContent = replacer.replace(content, Type.FULL, null, null);
 
-		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
+		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 	}
 
 	@Test
@@ -73,7 +73,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "{{mesh.link('" + uuid + "')}} postfix";
 		String replacedContent = replacer.replace(content, Type.FULL, null, null);
 
-		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html postfix", replacedContent);
+		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
 	}
 
 	@Test
@@ -83,7 +83,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "prefix {{mesh.link('" + uuid + "')}}";
 		String replacedContent = replacer.replace(content, Type.FULL, null, null);
 
-		assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
+		assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 	}
 
 	@Test
@@ -93,7 +93,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "prefix {{mesh.link('" + uuid + "')}} postfix";
 		String replacedContent = replacer.replace(content, Type.FULL, null, null);
 
-		assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix", replacedContent);
+		assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
 	}
 
 	@Test
@@ -103,7 +103,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "{{mesh.link('" + uuid + "')}}{{mesh.link('" + uuid + "')}}";
 		String replacedContent = replacer.replace(content, Type.FULL, null, null);
 
-		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html/api/v1/dummy/webroot/News/News+Overview.en.html",
+		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html/api/v1/dummy/webroot/News/News%20Overview.en.html",
 				replacedContent);
 	}
 
@@ -115,7 +115,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		String replacedContent = replacer.replace(content, Type.FULL, null, null);
 
 		assertEquals("Check rendered content",
-				"/api/v1/dummy/webroot/News/News+Overview.en.html in between /api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
+				"/api/v1/dummy/webroot/News/News%20Overview.en.html in between /api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 	}
 
 	@Test
@@ -135,7 +135,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "'\"{{mesh.link('" + uuid + "')}}\"'";
 		String replacedContent = replacer.replace(content, Type.FULL, null, null);
 
-		assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News+Overview.en.html\"'", replacedContent);
+		assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
 	}
 
 	@Test
@@ -145,7 +145,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "'\"{{mesh.link(\"" + uuid + "\")}}\"'";
 		String replacedContent = replacer.replace(content, Type.FULL, null, null);
 
-		assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News+Overview.en.html\"'", replacedContent);
+		assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
 	}
 
 	@Test
@@ -155,7 +155,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "{{mesh.link(\"" + uuid + "\", \"de\")}}";
 		String replacedContent = replacer.replace(content, Type.FULL, null, null);
 
-		assertEquals("Check rendered content", "/api/v1/dummy/webroot/Neuigkeiten/News+Overview.de.html", replacedContent);
+		assertEquals("Check rendered content", "/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html", replacedContent);
 	}
 
 	@Test
@@ -165,7 +165,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
 		String replacedContent = replacer.replace(content, Type.FULL, null, null);
 
-		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
+		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 	}
 
 	@Test

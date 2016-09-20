@@ -61,7 +61,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		CountDownLatch latch = new CountDownLatch(2);
 		Observable<String> path = newsNode.getPath(english().getLanguageTag());
 		path.subscribe(s -> {
-			assertEquals("/News/News+Overview.en.html", s);
+			assertEquals("/News/News%20Overview.en.html", s);
 			latch.countDown();
 		});
 

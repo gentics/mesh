@@ -821,9 +821,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(readFuture);
 		assertSuccess(readFuture);
 		NodeResponse response = readFuture.result();
-		assertEquals("/api/v1/dummy/webroot/english+folder-0/english+folder-1/german+folder-2", response.getPath());
-		assertEquals("/api/v1/dummy/webroot/english+folder-0/english+folder-1", response.getBreadcrumb().get(0).getPath());
-		assertEquals("/api/v1/dummy/webroot/english+folder-0", response.getBreadcrumb().get(1).getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", response.getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1", response.getBreadcrumb().get(0).getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0", response.getBreadcrumb().get(1).getPath());
 
 	}
 

@@ -52,7 +52,7 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testLinkReplacerTypeShort() {
 		Node newsNode = content("news overview");
-		testSimpleLink(newsNode, LinkType.SHORT, "/News/News+Overview.en.html");
+		testSimpleLink(newsNode, LinkType.SHORT, "/News/News%20Overview.en.html");
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testLinkReplacerTypeMedium() {
 		Node newsNode = content("news overview");
-		testSimpleLink(newsNode, LinkType.MEDIUM, "/dummy/News/News+Overview.en.html");
+		testSimpleLink(newsNode, LinkType.MEDIUM, "/dummy/News/News%20Overview.en.html");
 	}
 
 	/**
@@ -70,7 +70,7 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testLinkReplacerTypeFull() {
 		Node newsNode = content("news overview");
-		testSimpleLink(newsNode, LinkType.FULL, "/api/v1/dummy/webroot/News/News+Overview.en.html");
+		testSimpleLink(newsNode, LinkType.FULL, "/api/v1/dummy/webroot/News/News%20Overview.en.html");
 	}
 
 	/**
@@ -84,9 +84,9 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 				.put("doublequotes", "prefix {{mesh.link(\"" + newsNode.getUuid() + "\")}} postfix")
 				.put("noquotes", "prefix {{mesh.link(" + newsNode.getUuid() + ")}} postfix");
 
-		JsonObject expected = new JsonObject().put("quotes", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix")
-				.put("doublequotes", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix")
-				.put("noquotes", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix");
+		JsonObject expected = new JsonObject().put("quotes", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix")
+				.put("doublequotes", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix")
+				.put("noquotes", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix");
 
 		JsonObject resultObject = new JsonObject(renderContent(jsonObject.encode(), LinkType.FULL));
 
