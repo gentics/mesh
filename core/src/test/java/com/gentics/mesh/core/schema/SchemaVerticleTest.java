@@ -62,11 +62,8 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
 			assertThat(dummySearchProvider).recordedStoreEvents(0);
-			MeshResponse<Schema> future = getClient().createSchema(schema).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			Schema restSchema = call(() -> getClient().createSchema(schema));
 			assertThat(dummySearchProvider).recordedStoreEvents(1);
-			Schema restSchema = future.result();
 			assertThat(schema).matches(restSchema);
 			assertThat(restSchema.getPermissions()).isNotEmpty().contains("create", "read", "update", "delete");
 
@@ -80,28 +77,30 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	@Override
+	public void testCreateWithNoPerm() throws Exception {
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		try (NoTx noTx = db.noTx()) {
+			role().revokePermissions(meshRoot().getSchemaContainerRoot(), CREATE_PERM);
+		}
+		call(() -> getClient().createSchema(schema), FORBIDDEN, "error_missing_perm");
+	}
+
+	@Test
+	@Override
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		try (NoTx noTx = db.noTx()) {
 			assertThat(dummySearchProvider).recordedStoreEvents(0);
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
-			MeshResponse<Schema> createFuture = getClient().createSchema(schema).invoke();
-			latchFor(createFuture);
-			assertSuccess(createFuture);
+			Schema restSchema = call(() -> getClient().createSchema(schema));
 			assertThat(dummySearchProvider).recordedStoreEvents(1);
-			Schema restSchema = createFuture.result();
 			assertThat(schema).matches(restSchema);
 			assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
-			MeshResponse<Schema> readFuture = getClient().findSchemaByUuid(restSchema.getUuid()).invoke();
-			latchFor(readFuture);
-			assertSuccess(readFuture);
-
-			MeshResponse<Void> deleteFuture = getClient().deleteSchema(restSchema.getUuid()).invoke();
-			latchFor(deleteFuture);
-			assertSuccess(deleteFuture);
+			call(() -> getClient().findSchemaByUuid(restSchema.getUuid()));
+			call(() -> getClient().deleteSchema(restSchema.getUuid()));
 			// TODO actually also the used nodes should have been deleted
 			assertThat(dummySearchProvider).recordedDeleteEvents(1);
 			assertThat(dummySearchProvider).recordedStoreEvents(1);
@@ -220,7 +219,8 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testReadByUuidWithRolePerms() {
 		String uuid = db.noTx(() -> schemaContainer("content").getUuid());
 
-		MeshResponse<Schema> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTx(() -> role().getUuid()))).invoke();
+		MeshResponse<Schema> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTx(() -> role().getUuid())))
+				.invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull(future.result().getRolePerms());

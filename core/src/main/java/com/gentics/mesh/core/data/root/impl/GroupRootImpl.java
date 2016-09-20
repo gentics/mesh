@@ -81,27 +81,26 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
-
+		if (!requestUser.hasPermission(this, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+		}
 		return db.noTx(() -> {
 			MeshRoot root = boot.meshRoot();
-			if (requestUser.hasPermission(this, CREATE_PERM)) {
-				Group groupWithSameName = findByName(requestModel.getName());
-				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
-				}
-				Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
-					requestUser.reload();
-					Group group = create(requestModel.getName(), requestUser);
-					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
-					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
-					return Tuple.tuple(batch, group);
-				});
-				SearchQueueBatch batch = tuple.v1();
-				Group group = tuple.v2();
-				return batch.process().andThen(Single.just(group));
-			} else {
-				throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+
+			Group groupWithSameName = findByName(requestModel.getName());
+			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
+				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 			}
+			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
+				requestUser.reload();
+				Group group = create(requestModel.getName(), requestUser);
+				requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
+				SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
+				return Tuple.tuple(batch, group);
+			});
+			SearchQueueBatch batch = tuple.v1();
+			Group group = tuple.v2();
+			return batch.process().andThen(Single.just(group));
 
 		});
 	}

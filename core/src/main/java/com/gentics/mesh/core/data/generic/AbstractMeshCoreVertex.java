@@ -25,7 +25,6 @@ import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
 
 public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertexImpl
 		implements MeshCoreVertex<T, R> {

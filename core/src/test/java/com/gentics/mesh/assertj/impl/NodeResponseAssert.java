@@ -1,6 +1,7 @@
 package com.gentics.mesh.assertj.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -8,6 +9,7 @@ import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -58,8 +60,11 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 
 	/**
 	 * Assert that the node response contains the given string field
-	 * @param name field name
-	 * @param value field value
+	 * 
+	 * @param name
+	 *            field name
+	 * @param value
+	 *            field value
 	 * @return fluent API
 	 */
 	public NodeResponseAssert hasStringField(String name, String value) {
@@ -82,11 +87,36 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	/**
 	 * Assert that the response contains the given node
 	 *
-	 * @param node node
+	 * @param node
+	 *            node
 	 * @return fluent API
 	 */
 	public NodeResponseAssert is(Node node) {
 		assertThat(actual.getUuid()).as("Uuid").isEqualTo(node.getUuid());
 		return this;
+	}
+
+	public NodeResponseAssert matches(NodeCreateRequest request) {
+
+		// for (Map.Entry<String, String> entry : request.getProperties().entrySet()) {
+		// String value = request.getParentNodeUuid();
+		// assertEquals("The property {" + entry.getKey() + "} did not match with the response object property", entry.getValue(),
+		// restNode.getProperty(entry.getKey()));
+		//
+		// }
+		assertNotNull(actual);
+		assertNotNull(request);
+		String schemaName = request.getSchema().getName();
+		assertEquals("The schemaname of the request does not match the response schema name", schemaName, actual.getSchema().getName());
+		// assertEquals(request.getOrder(), restNode.getOrder());
+		String tagUuid = request.getParentNodeUuid();
+		// TODO how to match the parent tag?
+
+		assertNotNull(actual.getUuid());
+		assertNotNull(actual.getCreator());
+		assertNotNull(actual.getPermissions());
+
+		return this;
+
 	}
 }

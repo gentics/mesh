@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.Stack;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;

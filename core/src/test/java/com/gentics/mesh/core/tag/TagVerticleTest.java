@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.tag;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
@@ -368,29 +369,31 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testCreate() {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
+		tagCreateRequest.getFields().setName("SomeName");
+		String parentTagFamilyUuid = db.noTx(() -> tagFamily("colors").getUuid());
+
+		TagResponse response = call(() -> getClient().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));
+		assertEquals("SomeName", response.getFields().getName());
+
+		assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
+		assertNotNull("The tag could not be found within the project.tagRoot node.", project().getTagRoot().findByUuid(response.getUuid()));
+
+		String uuid = response.getUuid();
+		response = call(() -> getClient().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid));
+		assertEquals("SomeName", response.getFields().getName());
+	}
+
+	@Test
+	@Override
+	public void testCreateWithNoPerm() throws Exception {
+		TagCreateRequest tagCreateRequest = new TagCreateRequest();
+		tagCreateRequest.getFields().setName("SomeName");
+		String parentTagFamilyUuid = db.noTx(() -> tagFamily("colors").getUuid());
 
 		try (NoTx noTx = db.noTx()) {
-			TagFamily parentTagFamily = tagFamily("colors");
-
-			tagCreateRequest.getFields().setName("SomeName");
-			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
-
-			MeshResponse<TagResponse> future = getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertEquals("SomeName", future.result().getFields().getName());
-
-			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
-					meshRoot().getTagRoot().findByUuid(future.result().getUuid()));
-			assertNotNull("The tag could not be found within the project.tagRoot node.",
-					project().getTagRoot().findByUuid(future.result().getUuid()));
-
-			future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), future.result().getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertEquals("SomeName", future.result().getFields().getName());
-
+			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
 		}
+		call(() -> getClient().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest), FORBIDDEN, "error_missing_perm");
 	}
 
 	@Test

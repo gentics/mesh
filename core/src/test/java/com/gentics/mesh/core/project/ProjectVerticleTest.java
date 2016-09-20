@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -29,7 +28,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -52,7 +50,6 @@ import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.ext.web.RoutingContext;
 
 public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
@@ -114,12 +111,9 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				() -> getClient().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
+		assertThat(restProject).matches(request);
 		try (NoTx noTx = db.noTx()) {
-			test.assertProject(request, restProject);
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
-
-			RoutingContext rc = getMockedRoutingContext();
-			InternalActionContext ac = InternalActionContext.create(rc);
 			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid());
 			assertNotNull(project);
 			assertTrue(user().hasPermission(project, CREATE_PERM));
@@ -129,6 +123,22 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			assertEquals("folder", project.getBaseNode().getSchemaContainer().getLatestVersion().getName());
 		}
+	}
+
+	@Test
+	@Override
+	public void testCreateWithNoPerm() throws Exception {
+		final String name = "test12345";
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(name);
+		request.setSchemaReference(new SchemaReference().setName("folder"));
+
+		try (NoTx noTx = db.noTx()) {
+			role().revokePermissions(meshRoot().getProjectRoot(), CREATE_PERM);
+		}
+
+		String projectRootUuid = db.noTx(() -> meshRoot().getProjectRoot().getUuid());
+		call(() -> getClient().createProject(request), FORBIDDEN, "error_missing_perm", projectRootUuid);
 	}
 
 	@Test
@@ -148,11 +158,8 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		try (NoTx noTx = db.noTx()) {
 			// Create a new project
-			MeshResponse<ProjectResponse> createFuture = getClient().createProject(request).invoke();
-			latchFor(createFuture);
-			assertSuccess(createFuture);
-			ProjectResponse restProject = createFuture.result();
-			test.assertProject(request, restProject);
+			ProjectResponse restProject = call(() -> getClient().createProject(request));
+			assertThat(restProject).matches(request);
 			assertEquals(6, restProject.getPermissions().length);
 
 			meshRoot().getProjectRoot().reload();
@@ -164,9 +171,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertSuccess(readFuture);
 
 			// Now delete the project
-			MeshResponse<Void> deleteFuture = getClient().deleteProject(restProject.getUuid()).invoke();
-			latchFor(deleteFuture);
-			assertSuccess(deleteFuture);
+			call(() -> getClient().deleteProject(restProject.getUuid()));
 		}
 	}
 
@@ -218,10 +223,8 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			List<ProjectResponse> allProjects = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<ProjectListResponse> pageFuture = getClient().findProjects(new PagingParameters(page, perPage)).invoke();
-				latchFor(pageFuture);
-				assertSuccess(pageFuture);
-				restResponse = pageFuture.result();
+				final int currentPage = page;
+				restResponse = call(() -> getClient().findProjects(new PagingParameters(currentPage, perPage)));
 				allProjects.addAll(restResponse.getData());
 			}
 			assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
@@ -258,8 +261,8 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	public void testReadProjects() {
 
-		for(int i = 0; i< 10; i++) {
-			final String name = "test12345_" +i;
+		for (int i = 0; i < 10; i++) {
+			final String name = "test12345_" + i;
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(name);
 			request.setSchemaReference(new SchemaReference().setName("folder"));
@@ -375,13 +378,12 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("New Name");
 
-			assertEquals(0, dummySearchProvider.getStoreEvents().size());
-			MeshResponse<ProjectResponse> future = getClient().updateProject(uuid, request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			ProjectResponse restProject = future.result();
-			test.assertProject(request, restProject);
-			assertTrue(dummySearchProvider.getStoreEvents().size() != 0);
+			assertThat(dummySearchProvider).hasNoStoreEvents();
+			ProjectResponse restProject = call(() -> getClient().updateProject(uuid, request));
+			project.reload();
+			assertThat(restProject).matches(project);
+			// All nodes need to be reindex since the project name is part of the search document.
+			assertThat(dummySearchProvider).recordedStoreEvents(57);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			reloadedProject.reload();

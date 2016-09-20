@@ -43,7 +43,6 @@ import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.test.performance.TestUtils;
-import com.gentics.mesh.util.RestAssert;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
@@ -58,8 +57,6 @@ public abstract class AbstractDBTest {
 	private TestDataProvider dataProvider;
 
 	protected Database db;
-
-	protected RestAssert test = new RestAssert();
 
 	protected MeshComponent meshDagger;
 

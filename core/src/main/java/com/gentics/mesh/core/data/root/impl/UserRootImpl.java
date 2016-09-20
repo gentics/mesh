@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACT
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
@@ -132,6 +133,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	public Single<User> create(InternalActionContext ac) {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		Database db = MeshInternal.get().database();
+		MeshAuthUser requestUser = ac.getUser();
 
 		try {
 			UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
@@ -144,6 +146,9 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			if (isEmpty(requestModel.getUsername())) {
 				throw error(BAD_REQUEST, "user_missing_username");
 			}
+			if (!requestUser.hasPermission(this, CREATE_PERM)) {
+				throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+			}
 			String groupUuid = requestModel.getGroupUuid();
 			User createdUser = db.noTx(() -> {
 				String userName = requestModel.getUsername();
@@ -153,7 +158,6 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 				}
 
 				Tuple<SearchQueueBatch, User> tuple = db.tx(() -> {
-					MeshAuthUser requestUser = ac.getUser();
 					User user = create(requestModel.getUsername(), requestUser);
 					user.setFirstname(requestModel.getFirstname());
 					user.setUsername(requestModel.getUsername());

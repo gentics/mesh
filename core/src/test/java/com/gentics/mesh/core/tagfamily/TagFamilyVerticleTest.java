@@ -206,21 +206,24 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	public void testCreateWithConflictingName() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("colors");
-		MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
-		latchFor(future);
-		expectException(future, CONFLICT, "tagfamily_conflicting_name", "colors");
+		call(() -> getClient().createTagFamily(PROJECT_NAME, request), CONFLICT, "tagfamily_conflicting_name", "colors");
 	}
 
 	@Test
 	@Override
 	public void testCreate() {
-		String name = "newTagFamily";
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
-		request.setName(name);
-		MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(name, future.result().getName());
+		request.setName("newTagFamily");
+		TagFamilyResponse response = call(() -> getClient().createTagFamily(PROJECT_NAME, request));
+		assertEquals(request.getName(), response.getName());
+	}
+
+	@Test
+	@Override
+	public void testCreateWithNoPerm() {
+		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
+		request.setName("newTagFamily");
+		call(() -> getClient().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm");
 	}
 
 	@Test

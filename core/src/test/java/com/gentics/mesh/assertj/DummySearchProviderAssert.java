@@ -30,4 +30,8 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 		}
 		return this;
 	}
+
+	public DummySearchProviderAssert hasNoStoreEvents() {
+		return recordedStoreEvents(0);
+	}
 }

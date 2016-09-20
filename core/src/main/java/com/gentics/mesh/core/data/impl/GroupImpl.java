@@ -37,7 +37,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import rx.Completable;
 import rx.Single;
 
 /**

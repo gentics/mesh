@@ -63,19 +63,28 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		final String name = "test12345";
-		try (NoTx noTx = db.noTx()) {
-			GroupCreateRequest request = new GroupCreateRequest();
-			request.setName(name);
-			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+		GroupCreateRequest request = new GroupCreateRequest();
+		request.setName("test12345");
 
-			MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			GroupResponse restGroup = future.result();
-			test.assertGroup(request, restGroup);
+		GroupResponse restGroup = call(() -> getClient().createGroup(request));
+		assertThat(restGroup).matches(request);
+		try (NoTx noTx = db.noTx()) {
 			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
 		}
+	}
+
+	@Test
+	@Override
+	public void testCreateWithNoPerm() throws Exception {
+		GroupCreateRequest request = new GroupCreateRequest();
+		request.setName("test12345");
+		String groupRootUuid = db.noTx(() -> meshRoot().getGroupRoot().getUuid());
+
+		try (NoTx noTx = db.noTx()) {
+			role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+		}
+
+		call(() -> getClient().createGroup(request), FORBIDDEN, "error_missing_perm", groupRootUuid);
 	}
 
 	@Test
@@ -90,11 +99,8 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				root.reload();
 				role().grantPermissions(root, CREATE_PERM);
 
-				MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
-				latchFor(future);
-				assertSuccess(future);
-				GroupResponse restGroup = future.result();
-				test.assertGroup(request, restGroup);
+				GroupResponse restGroup = call(() -> getClient().createGroup(request));
+				assertThat(restGroup).matches(request);
 			}
 		}
 	}
@@ -111,7 +117,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
-			test.assertGroup(request, restGroup);
+			assertThat(restGroup).matches(request);
 
 			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
 			future = getClient().createGroup(request).invoke();
@@ -133,7 +139,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
-			test.assertGroup(request, restGroup);
+			assertThat(restGroup).matches(request);
 
 			Group foundGroup = boot.groupRoot().findByUuid(restGroup.getUuid());
 			assertNotNull("Group should have been created.", foundGroup);
@@ -171,8 +177,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String rootUuid = root.getUuid();
 			role().revokePermissions(root, CREATE_PERM);
 			User user = user();
-			assertFalse("The create permission to the groups root node should have been revoked.",
-					user.hasPermission(root, CREATE_PERM));
+			assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
 
 			MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
 			latchFor(future);
@@ -240,9 +245,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 					.collect(Collectors.toList());
 			assertTrue("Extra group should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			future = getClient().findGroups(new PagingParameters(-1, perPage)).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+			call(()->getClient().findGroups(new PagingParameters(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 			future = getClient().findGroups(new PagingParameters(1, -1)).invoke();
 			latchFor(future);
@@ -330,12 +333,8 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		GroupResponse updatedGroup = db.noTx(() -> {
 			Group group = group();
-
-			MeshResponse<GroupResponse> future = getClient().updateGroup(group.getUuid(), request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			GroupResponse restGroup = future.result();
-			test.assertGroup(request, restGroup);
+			GroupResponse restGroup = call(() -> getClient().updateGroup(group.getUuid(), request));
+			assertThat(restGroup).matches(request);
 			return restGroup;
 		});
 		try (Tx tx = db.tx()) {

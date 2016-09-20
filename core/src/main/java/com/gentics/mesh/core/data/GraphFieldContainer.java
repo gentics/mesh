@@ -27,8 +27,6 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
-import rx.Single;
-
 /**
  * A graph field container (eg. a container for fields of a node) is used to hold i18n specific graph fields.
  */

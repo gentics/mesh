@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -93,7 +94,7 @@ public class NodeChildrenVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
-			test.assertMeshNode(node, restNode);
+			assertThat(node).matches(restNode);
 			assertTrue(restNode.isContainer());
 
 			long subFolderCount = restNode.getChildrenInfo().get("folder").getCount();
@@ -115,7 +116,7 @@ public class NodeChildrenVerticleTest extends AbstractIsolatedRestVerticleTest {
 			role().revokePermissions(folder("2015"), READ_PERM);
 
 			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
-			test.assertMeshNode(node, restNode);
+			assertThat(node).matches(restNode);
 			assertTrue(restNode.isContainer());
 
 			long subFolderCount = restNode.getChildrenInfo().get("folder").getCount();
@@ -135,8 +136,7 @@ public class NodeChildrenVerticleTest extends AbstractIsolatedRestVerticleTest {
 			assertNotNull(node.getUuid());
 
 			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
-
-			test.assertMeshNode(node, restNode);
+			assertThat(node).matches(restNode);
 			assertFalse("The node should not be a container", restNode.isContainer());
 			assertNull(restNode.getChildrenInfo().get("folder"));
 		}

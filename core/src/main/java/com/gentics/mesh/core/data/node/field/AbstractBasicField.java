@@ -5,8 +5,6 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-import rx.Single;
-
 /**
  * Abstract class for basic fields. All basic fields should implement this class in order to provide various methods that can be used to access basic field
  * values.

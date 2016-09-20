@@ -9,9 +9,11 @@ public interface CrudVerticleTestCases {
 
 	void testCreateReadDelete() throws Exception;
 
+	void testCreateWithNoPerm() throws Exception;
+
 	// Read
 	void testReadByUUID() throws Exception;
-	
+
 	void testReadByUuidWithRolePerms();
 
 	void testReadByUUIDWithMissingPermission() throws Exception;

@@ -141,11 +141,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(project().getBaseNode().getUuid());
 
 			assertThat(dummySearchProvider).recordedStoreEvents(0);
-			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			NodeResponse restNode = future.result();
-			test.assertMeshNode(request, restNode);
+			NodeResponse restNode = call(() -> getClient().createNode(PROJECT_NAME, request));
+			assertThat(restNode).matches(request);
 			assertThat(dummySearchProvider).recordedStoreEvents(1);
 		}
 	}
@@ -165,11 +162,8 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(uuid);
 
 			assertThat(dummySearchProvider).recordedStoreEvents(0);
-			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			NodeResponse restNode = future.result();
-			test.assertMeshNode(request, restNode);
+			NodeResponse restNode = call(() -> getClient().createNode(PROJECT_NAME, request));
+			assertThat(restNode).matches(request);
 			assertThat(dummySearchProvider).recordedStoreEvents(1);
 		}
 	}
@@ -207,27 +201,22 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			Node parentNode = folder("news");
-			String uuid = parentNode.getUuid();
-			assertNotNull(parentNode);
-			assertNotNull(parentNode.getUuid());
 
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.getFields().put("title", FieldUtil.createStringField("some title"));
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setParentNodeUuid(uuid);
+		String parentNodeUuid = db.noTx(() -> folder("news").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		try (NoTx noTx = db.noTx()) {
 
 			assertThat(dummySearchProvider).recordedStoreEvents(0);
-			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			NodeResponse restNode = future.result();
-			test.assertMeshNode(request, restNode);
+			NodeResponse restNode = call(() -> getClient().createNode(PROJECT_NAME, request));
+			assertThat(restNode).matches(request);
 			assertThat(dummySearchProvider).recordedStoreEvents(1);
 
 			// We created the node. The searchqueue batch should have been processed
@@ -239,6 +228,28 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// assertEquals(Node.TYPE, entry.getElementType());
 			// assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getElementAction());
 		}
+	}
+
+	@Override
+	public void testCreateWithNoPerm() throws Exception {
+
+		String parentNodeUuid = db.noTx(() -> folder("news").getUuid());
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		try (NoTx noTx = db.noTx()) {
+			role().revokePermissions(meshRoot().getNodeRoot(), CREATE_PERM);
+		}
+
+		call(() -> getClient().createNode(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm");
+
 	}
 
 	@Test
@@ -386,11 +397,11 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			NodeResponse restNode = call(
 					() -> getClient().createNode(PROJECT_NAME, request, new NodeParameters().setLanguages("de"), new VersioningParameters().draft()));
 			assertThat(dummySearchProvider).recordedStoreEvents(1);
-			test.assertMeshNode(request, restNode);
+			assertThat(restNode).matches(request);
 
 			Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid());
 			assertNotNull(node);
-			test.assertMeshNode(request, node);
+			assertThat(node).matches(request);
 
 			// Load the node again
 			restNode2 = call(() -> getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), new NodeParameters().setLanguages("de"),
@@ -955,7 +966,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull(node.getUuid());
 
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
-			test.assertMeshNode(folder("2015"), response);
+			assertThat(folder("2015")).matches(response);
 
 			assertNotNull(response.getParentNode());
 			assertEquals(folder("2015").getParentNode(releaseUuid).getUuid(), response.getParentNode().getUuid());
@@ -1240,7 +1251,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			parameters.setLanguages("dv,nl,de,en");
 			VersioningParameters versionParams = new VersioningParameters().draft();
 			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams));
-			test.assertMeshNode(folder("products"), restNode);
+			assertThat(folder("products")).matches(restNode);
 
 			// Ensure "de" version was returned
 			StringField field = restNode.getFields().getStringField("name");
@@ -1260,7 +1271,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			parameters.setLanguages("de");
 			VersioningParameters versionParams = new VersioningParameters().draft();
 			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams));
-			test.assertMeshNode(folder("products"), restNode);
+			assertThat(folder("products")).matches(restNode);
 
 			StringField field = restNode.getFields().getStringField("name");
 			String nameText = field.getString();

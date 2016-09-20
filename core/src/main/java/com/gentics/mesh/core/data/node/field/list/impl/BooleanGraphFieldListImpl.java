@@ -14,8 +14,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
-import rx.Single;
-
 /**
  * @see BooleanGraphFieldList
  */

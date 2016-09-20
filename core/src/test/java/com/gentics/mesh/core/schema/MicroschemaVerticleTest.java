@@ -121,13 +121,24 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 		request.setDescription("microschema description");
 
 		assertThat(dummySearchProvider).recordedStoreEvents(0);
-		MeshResponse<Microschema> future = getClient().createMicroschema(request).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		Microschema microschemaResponse = call(() -> getClient().createMicroschema(request));
 		assertThat(dummySearchProvider).recordedStoreEvents(1);
-		Microschema microschemaResponse = future.result();
 		assertThat(microschemaResponse.getPermissions()).isNotEmpty().contains("read", "create", "delete", "update");
 		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
+	}
+
+	@Test
+	@Override
+	public void testCreateWithNoPerm() throws Exception {
+		Microschema request = new MicroschemaModel();
+		request.setName("new microschema name");
+		request.setDescription("microschema description");
+
+		try (NoTx noTx = db.noTx()) {
+			role().revokePermissions(meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
+		}
+		call(() -> getClient().createMicroschema(request), FORBIDDEN, "error_missing_perm");
+
 	}
 
 	@Ignore("Not yet implemented")

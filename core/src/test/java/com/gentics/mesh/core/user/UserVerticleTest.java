@@ -350,7 +350,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			return future.result();
 		});
 		try (NoTx noTx = db.noTx()) {
-			test.assertUser(updateRequest, restUser);
+			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldName));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
@@ -385,7 +385,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		UserResponse restUser = future.result();
-		test.assertUser(updateRequest, restUser);
+		assertThat(restUser).matches(updateRequest);
 		try (Tx tx = db.tx()) {
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldUsername));
 			User reloadedUser = boot.userRoot().findByUsername(username);
@@ -435,8 +435,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertNotNull(restUser.getNodeReference());
 			assertEquals(PROJECT_NAME, ((NodeReferenceImpl) restUser.getNodeReference()).getProjectName());
 			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
-
-			test.assertUser(updateRequest, restUser);
+			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
@@ -641,12 +640,8 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setPassword("new_password");
 
-		MeshResponse<UserResponse> future = getClient().updateUser(uuid, updateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse restUser = future.result();
-
-		test.assertUser(updateRequest, restUser);
+		UserResponse restUser = call(() -> getClient().updateUser(uuid, updateRequest));
+		assertThat(restUser).matches(updateRequest);
 
 		try (Tx tx = db.tx()) {
 			User reloadedUser = boot.userRoot().findByUsername(username);
@@ -663,9 +658,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			UserUpdateRequest request = new UserUpdateRequest();
 			request.setPassword("new_password");
-			MeshResponse<UserResponse> future = getClient().updateUser(user.getUuid(), request).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
+			call(() -> getClient().updateUser(user.getUuid(), request), FORBIDDEN, "error_missing_perm", user.getUuid());
 
 			User reloadedUser = boot.userRoot().findByUuid(user.getUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
@@ -827,7 +820,7 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			UserResponse restUser = future.result();
-			test.assertUser(request, restUser);
+			assertThat(restUser).matches(request);
 
 			UserUpdateRequest updateRequest = new UserUpdateRequest();
 			final String LASTNAME = "Epic Stark";
@@ -863,17 +856,33 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setPassword("test123456");
 			request.setGroupUuid(group().getUuid());
 
-			MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			UserResponse restUser = future.result();
+			UserResponse restUser = call(() -> getClient().createUser(request));
+
 			try (NoTx noTx2 = db.noTx()) {
-				test.assertUser(request, restUser);
+				assertThat(restUser).matches(request);
 
 				User user = boot.userRoot().findByUuid(restUser.getUuid());
 				assertThat(restUser).matches(user);
 			}
 		}
+	}
+
+	@Test
+	@Override
+	public void testCreateWithNoPerm() throws Exception {
+		UserCreateRequest request = new UserCreateRequest();
+		request.setEmailAddress("n.user@spam.gentics.com");
+		request.setFirstname("Joe");
+		request.setLastname("Doe");
+		request.setUsername("new_user");
+		request.setPassword("test123456");
+
+		try (NoTx noTx = db.noTx()) {
+			role().revokePermissions(meshRoot().getUserRoot(), CREATE_PERM);
+		}
+
+		String userRootUuid = db.noTx(() -> meshRoot().getUserRoot().getUuid());
+		call(() -> getClient().createUser(request), FORBIDDEN, "error_missing_perm", userRootUuid);
 	}
 
 	@Test
@@ -906,28 +915,19 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testCreateReadDelete() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			UserCreateRequest newUser = new UserCreateRequest();
-			newUser.setEmailAddress("n.user@spam.gentics.com");
-			newUser.setFirstname("Joe");
-			newUser.setLastname("Doe");
-			newUser.setUsername("new_user");
-			newUser.setPassword("test123456");
-			newUser.setGroupUuid(group().getUuid());
+			UserCreateRequest request = new UserCreateRequest();
+			request.setEmailAddress("n.user@spam.gentics.com");
+			request.setFirstname("Joe");
+			request.setLastname("Doe");
+			request.setUsername("new_user");
+			request.setPassword("test123456");
+			request.setGroupUuid(group().getUuid());
 
-			MeshResponse<UserResponse> createFuture = getClient().createUser(newUser).invoke();
-			latchFor(createFuture);
-			assertSuccess(createFuture);
-			UserResponse restUser = createFuture.result();
+			UserResponse restUser = call(() -> getClient().createUser(request));
+			assertThat(restUser).matches(request);
 
-			test.assertUser(newUser, restUser);
-
-			MeshResponse<UserResponse> readFuture = getClient().findUserByUuid(restUser.getUuid()).invoke();
-			latchFor(readFuture);
-			assertSuccess(readFuture);
-
-			MeshResponse<Void> deleteFuture = getClient().deleteUser(restUser.getUuid()).invoke();
-			latchFor(deleteFuture);
-			assertSuccess(deleteFuture);
+			call(()-> getClient().findUserByUuid(restUser.getUuid()));
+			call(()->getClient().deleteUser(restUser.getUuid()));
 		}
 	}
 

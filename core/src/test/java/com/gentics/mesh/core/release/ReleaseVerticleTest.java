@@ -158,8 +158,8 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		}
 	}
 
-	@Test
-	public void testCreateWithoutPerm() throws Exception {
+	@Override
+	public void testCreateWithNoPerm() throws Exception {
 		String releaseName = "Release V1";
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();

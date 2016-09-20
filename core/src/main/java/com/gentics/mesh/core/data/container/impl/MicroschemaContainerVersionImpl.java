@@ -30,8 +30,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.RestModelHelper;
 
-import rx.Single;
-
 public class MicroschemaContainerVersionImpl
 		extends AbstractGraphFieldSchemaContainerVersion<Microschema, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
 		implements MicroschemaContainerVersion {
