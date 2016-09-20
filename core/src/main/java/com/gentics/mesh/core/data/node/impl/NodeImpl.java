@@ -18,11 +18,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -99,6 +99,7 @@ import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
@@ -190,7 +191,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Single<String> getPath(String releaseUuid, ContainerType type, String... languageTag) throws UnsupportedEncodingException {
+	public Single<String> getPath(String releaseUuid, ContainerType type, String... languageTag) {
 		List<Single<String>> segments = new ArrayList<>();
 
 		segments.add(getPathSegment(releaseUuid, type, languageTag));
@@ -228,11 +229,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			StringBuilder builder = new StringBuilder();
 			Iterator<String> it = list.iterator();
 			while (it.hasNext()) {
-				try {
-					builder.append("/").append(URLEncoder.encode(it.next(), "UTF-8"));
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
+				builder.append("/").append(URIUtils.encodeFragment(it.next()));
 			}
 			return builder.toString();
 		}).toSingle();
@@ -278,29 +275,29 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 	}
 
-	@Override
-	public Single<String> getPath(InternalActionContext ac) {
-		List<Single<String>> segments = new ArrayList<>();
-		segments.add(getPathSegment(ac));
-		Node current = this;
-		String releaseUuid = ac.getRelease(getProject()).getUuid();
-		while (current != null) {
-			current = current.getParentNode(releaseUuid);
-			if (current == null || current.getParentNode(releaseUuid) == null) {
-				break;
-			}
-			segments.add(current.getPathSegment(ac));
-		}
-
-		Collections.reverse(segments);
-		List<Observable<String>> segmentsObs = new ArrayList<>();
-		for (Single<String> segment : segments) {
-			segmentsObs.add(segment.toObservable());
-		}
-		return Observable.concat(Observable.from(segmentsObs)).reduce((a, b) -> {
-			return "/" + a + "/" + b;
-		}).toSingle();
-	}
+//	@Override
+//	public Single<String> getPath(InternalActionContext ac) {
+//		List<Single<String>> segments = new ArrayList<>();
+//		segments.add(getPathSegment(ac));
+//		Node current = this;
+//		String releaseUuid = ac.getRelease(getProject()).getUuid();
+//		while (current != null) {
+//			current = current.getParentNode(releaseUuid);
+//			if (current == null || current.getParentNode(releaseUuid) == null) {
+//				break;
+//			}
+//			segments.add(current.getPathSegment(ac));
+//		}
+//
+//		Collections.reverse(segments);
+//		List<Observable<String>> segmentsObs = new ArrayList<>();
+//		for (Single<String> segment : segments) {
+//			segmentsObs.add(segment.toObservable());
+//		}
+//		return Observable.concat(Observable.from(segmentsObs)).reduce((a, b) -> {
+//			return "/" + a + "/" + b;
+//		}).toSingle();
+//	}
 
 	@Override
 	public List<? extends Tag> getTags(Release release) {
@@ -580,7 +577,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		level = level + 1;
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 
-		List<Completable> tasks = new ArrayList<>();
 		NodeResponse restNode = new NodeResponse();
 		SchemaContainer container = getSchemaContainer();
 		if (container == null) {
@@ -830,7 +826,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return;
 		}
 
-		List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
+		Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
 		while (current != null) {
 			// Don't add the base node to the breadcrumb
 			// TODO should we add the basenode to the breadcrumb?

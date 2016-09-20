@@ -53,7 +53,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.SHORT, null,
 					null);
 
-			assertEquals("Check rendered content", "/News/News+Overview.en.html", replacedContent);
+			assertEquals("Check rendered content", "/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -66,7 +66,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.MEDIUM, null,
 					null);
 
-			assertEquals("Check rendered content", "/dummy/News/News+Overview.en.html", replacedContent);
+			assertEquals("Check rendered content", "/dummy/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -79,7 +79,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
+			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -92,7 +92,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html postfix", replacedContent);
+			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
 		}
 	}
 
@@ -105,7 +105,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
+			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -118,7 +118,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News+Overview.en.html postfix", replacedContent);
+			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
 		}
 	}
 
@@ -131,7 +131,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html/api/v1/dummy/webroot/News/News+Overview.en.html",
+			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html/api/v1/dummy/webroot/News/News%20Overview.en.html",
 					replacedContent);
 		}
 	}
@@ -146,7 +146,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 					null);
 
 			assertEquals("Check rendered content",
-					"/api/v1/dummy/webroot/News/News+Overview.en.html in between /api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
+					"/api/v1/dummy/webroot/News/News%20Overview.en.html in between /api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -172,7 +172,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News+Overview.en.html\"'", replacedContent);
+			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
 		}
 	}
 
@@ -185,7 +185,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News+Overview.en.html\"'", replacedContent);
+			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
 		}
 	}
 
@@ -198,7 +198,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/Neuigkeiten/News+Overview.de.html", replacedContent);
+			assertEquals("Check rendered content", "/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html", replacedContent);
 		}
 	}
 
@@ -211,7 +211,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
+			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 

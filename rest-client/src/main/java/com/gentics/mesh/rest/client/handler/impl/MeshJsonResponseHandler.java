@@ -48,6 +48,7 @@ public class MeshJsonResponseHandler<T> extends AbstractMeshResponseHandler<T> {
 		} else if (contentType.startsWith(HttpConstants.APPLICATION_JSON)) {
 			response.bodyHandler(bh -> {
 				String json = bh.toString();
+//				System.out.println(json);
 				if (log.isDebugEnabled()) {
 					log.debug(json);
 				}

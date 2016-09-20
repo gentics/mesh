@@ -6,8 +6,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,13 +58,6 @@ public class WebRootHandler {
 	public void handleGetPath(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		String path = ac.getParameter("param0");
-		try {
-			//TODO BUG URL Decoder is not the correct choice. Use URI instead or see https://github.com/vert-x3/vertx-web/issues/441 
-			path = URLDecoder.decode(path, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			ac.fail(e);
-			return;
-		}
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();

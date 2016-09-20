@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.node;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Stack;
 
@@ -419,13 +418,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	Single<String> getPathSegment(InternalActionContext ac);
 
-	/**
-	 * Return the full path to this node.
-	 * 
-	 * @param ac
-	 * @return
-	 */
-	Single<String> getPath(InternalActionContext ac);
+//	/**
+//	 * Return the full path to this node.
+//	 * 
+//	 * @param ac
+//	 * @return
+//	 */
+//	Single<String> getPath(InternalActionContext ac);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -463,9 +462,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTag
 	 * 
 	 * @return
-	 * @throws UnsupportedEncodingException
 	 */
-	Single<String> getPath(String releaseUuid, ContainerType type, String... languageTag) throws UnsupportedEncodingException;
+	Single<String> getPath(String releaseUuid, ContainerType type, String... languageTag);
 
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language

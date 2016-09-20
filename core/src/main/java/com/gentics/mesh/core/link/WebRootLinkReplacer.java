@@ -2,7 +2,6 @@ package com.gentics.mesh.core.link;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -187,24 +186,20 @@ public class WebRootLinkReplacer {
 		if (edgeType == null) {
 			edgeType = ContainerType.DRAFT;
 		}
-		try {
-			if (log.isDebugEnabled()) {
-				log.debug("Resolving link to " + node.getUuid() + " in language " + languageTag + " with type " + type);
-			}
-			switch (type) {
-			case SHORT:
-				return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404");
-			case MEDIUM:
-				return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404")
-						.map(path -> "/" + node.getProject().getName() + path);
-			case FULL:
-				return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404")
-						.map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path);
-			default:
-				return Single.error(new Exception("Cannot render link with type " + type));
-			}
-		} catch (UnsupportedEncodingException e) {
-			return Single.error(e);
+		if (log.isDebugEnabled()) {
+			log.debug("Resolving link to " + node.getUuid() + " in language " + languageTag + " with type " + type);
+		}
+		switch (type) {
+		case SHORT:
+			return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404");
+		case MEDIUM:
+			return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404")
+					.map(path -> "/" + node.getProject().getName() + path);
+		case FULL:
+			return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404")
+					.map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path);
+		default:
+			return Single.error(new Exception("Cannot render link with type " + type));
 		}
 	}
 

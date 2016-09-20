@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private String path;
 
-	private List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
+	private Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
 
 	private VersionReference version;
 
@@ -290,7 +291,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return
 	 */
-	public List<NodeReferenceImpl> getBreadcrumb() {
+	public Deque<NodeReferenceImpl> getBreadcrumb() {
 		return breadcrumb;
 	}
 
@@ -299,7 +300,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @param breadcrumb
 	 */
-	public void setBreadcrumb(List<NodeReferenceImpl> breadcrumb) {
+	public void setBreadcrumb(Deque<NodeReferenceImpl> breadcrumb) {
 		this.breadcrumb = breadcrumb;
 	}
 

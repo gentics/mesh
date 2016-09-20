@@ -43,6 +43,7 @@ import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.util.URIUtils;
 
 import io.vertx.core.AbstractVerticle;
 
@@ -192,6 +193,23 @@ public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 	public void testPathWithSpaces() throws Exception {
 		String[] path = new String[] { "News", "2015", "Special News_2014.en.html" };
 		call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
+	}
+
+	@Test
+	public void testPathWithPlus() throws Exception {
+		//Test RFC3986 subdelims and an additional space and questionmark
+		String newName = "20!$&'()*+,;=%3F? 15";
+		String uuid = db.noTx(() -> folder("2015").getUuid());
+		try (NoTx noTx = db.noTx()) {
+			Node folder = folder("2015");
+			folder.getGraphFieldContainer("en").getString("name").setString(newName);
+		}
+
+		String[] path = new String[] { "News", newName };
+		WebRootResponse response = call(
+				() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
+		assertEquals(uuid, response.getNodeResponse().getUuid());
+		assertEquals("/News/"+ URIUtils.encodeFragment(newName), response.getNodeResponse().getPath());
 	}
 
 	@Test

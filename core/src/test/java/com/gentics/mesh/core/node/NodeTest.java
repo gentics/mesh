@@ -76,7 +76,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			CountDownLatch latch = new CountDownLatch(2);
 			Single<String> path = newsNode.getPath(project().getLatestRelease().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
 			path.subscribe(s -> {
-				assertEquals("/News/News+Overview.en.html", s);
+				assertEquals("/News/News%20Overview.en.html", s);
 				latch.countDown();
 			});
 
@@ -114,15 +114,15 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		}
 	}
 
-	@Test
-	public void testGetFullSegmentPath() {
-		try (NoTx noTx = db.noTx()) {
-			Node newsNode = content("news overview");
-			RoutingContext rc = getMockedRoutingContext("?version=draft");
-			InternalActionContext ac = InternalActionContext.create(rc);
-			System.out.println(newsNode.getPath(ac).toBlocking().value());
-		}
-	}
+//	@Test
+//	public void testGetFullSegmentPath() {
+//		try (NoTx noTx = db.noTx()) {
+//			Node newsNode = content("news overview");
+//			RoutingContext rc = getMockedRoutingContext("?version=draft");
+//			InternalActionContext ac = InternalActionContext.create(rc);
+//			System.out.println(newsNode.getPath(ac).toBlocking().value());
+//		}
+//	}
 
 	@Test
 	public void testTaggingOfMeshNode() {
