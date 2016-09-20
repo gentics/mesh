@@ -15,8 +15,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,6 +77,7 @@ import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -143,7 +142,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<String> getPath(String... languageTag) throws UnsupportedEncodingException {
+	public Observable<String> getPath(String... languageTag) {
 		List<Observable<String>> segments = new ArrayList<>();
 
 		segments.add(getPathSegment(languageTag));
@@ -176,11 +175,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			StringBuilder builder = new StringBuilder();
 			Iterator<String> it = list.iterator();
 			while (it.hasNext()) {
-				try {
-					builder.append("/").append(URLEncoder.encode(it.next(), "UTF-8"));
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
+				builder.append("/").append(URIUtils.encodeFragment(it.next()));
 			}
 			return builder.toString();
 		});
@@ -484,8 +479,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			if (!ac.getResolveLinksType().equals(Type.OFF)) {
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer.resolve(current.getUuid(), ac.getResolveLinksType(), getProject().getName(), ac.getSelectedLanguageTags().toArray(new String[0]))
-						.toBlocking().single();
+				String url = linkReplacer.resolve(current.getUuid(), ac.getResolveLinksType(), getProject().getName(),
+						ac.getSelectedLanguageTags().toArray(new String[0])).toBlocking().single();
 				reference.setPath(url);
 			}
 			breadcrumb.add(reference);

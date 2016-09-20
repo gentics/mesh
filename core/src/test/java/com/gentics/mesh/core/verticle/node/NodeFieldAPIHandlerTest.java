@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.node;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,6 +23,7 @@ import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.FileUpload;
+import rx.exceptions.CompositeException;
 
 public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 
@@ -78,11 +79,15 @@ public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 	}
 
 	@Test(expected = HttpStatusCodeErrorException.class)
-	public void testFileUploadWithNoUploadFile() throws IOException {
+	public void testFileUploadWithNoUploadFile() throws Throwable {
 		FileUpload fileUpload = mockUpload();
 		// Delete the file on purpose in order to invoke an error
 		new File(fileUpload.uploadedFileName()).delete();
-		handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath).toBlocking().last();
+		try {
+			handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath).toBlocking().last();
+		} catch (CompositeException e) {
+			throw e.getExceptions().get(1);
+		}
 	}
 
 	private File getUploadFolder() {

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,6 +38,7 @@ import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.util.FieldUtil;
+import com.gentics.mesh.util.URIUtils;
 
 import io.vertx.core.Future;
 
@@ -201,6 +203,24 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setLanguages("en", "de"));
 		latchFor(future);
 		assertSuccess(future);
+	}
+
+	@Test
+	public void testPathWithPlus() throws Exception {
+		//Test RFC3986 subdelims and an additional space and questionmark
+		String newName = "20!$&'()*+,;=%3F? 15";
+		String uuid = folder("2015").getUuid();
+		Node folder = folder("2015");
+		folder.getGraphFieldContainer("en").getString("name").setString(newName);
+
+		String[] path = new String[] { "News", newName };
+		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path,
+				new NodeRequestParameter().setLanguages("en", "de").setResolveLinks(LinkType.SHORT));
+		latchFor(future);
+		assertSuccess(future);
+		WebRootResponse response = future.result();
+		assertEquals(uuid, response.getNodeResponse().getUuid());
+		assertEquals("/News/" + URIUtils.encodeFragment(newName), response.getNodeResponse().getPath());
 	}
 
 	@Test

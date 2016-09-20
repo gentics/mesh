@@ -5,8 +5,6 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -66,6 +64,7 @@ import com.gentics.mesh.rest.BasicAuthentication;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.MeshResponseHandler;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
+import com.gentics.mesh.util.URIUtils;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -538,11 +537,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			if (path.length() > 0) {
 				path.append("/");
 			}
-			try {
-				path.append(URLEncoder.encode(segment, "UTF-8"));
-			} catch (UnsupportedEncodingException e) {
-				return Future.failedFuture(e);
-			}
+			path.append(URIUtils.encodeFragment(segment));
 		}
 		return webroot(projectName, path.toString(), parameters);
 	}

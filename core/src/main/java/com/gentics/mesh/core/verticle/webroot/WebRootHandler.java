@@ -48,12 +48,6 @@ public class WebRootHandler {
 	public void handleGetPath(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		String path = ac.getParameter("param0");
-		try {
-			path = URLDecoder.decode(path, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			ac.fail(e);
-			return;
-		}
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();

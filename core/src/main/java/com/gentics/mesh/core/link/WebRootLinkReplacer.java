@@ -43,10 +43,15 @@ public class WebRootLinkReplacer {
 
 	/**
 	 * Replace the links in the content.
-	 * @param content content containing links to replace
-	 * @param type replacing type
-	 * @param projectName project name (used for 404 links)
-	 * @param languageTags optional language tags
+	 * 
+	 * @param content
+	 *            content containing links to replace
+	 * @param type
+	 *            replacing type
+	 * @param projectName
+	 *            project name (used for 404 links)
+	 * @param languageTags
+	 *            optional language tags
 	 * @return content with links (probably) replaced
 	 */
 	public String replace(String content, Type type, String projectName, List<String> languageTags) {
@@ -111,10 +116,15 @@ public class WebRootLinkReplacer {
 
 	/**
 	 * Resolve the link to the node with uuid (in the given language) into an observable
-	 * @param uuid target uuid
-	 * @param type link type
-	 * @param projectName project name (which is used for 404 links)
-	 * @param languageTags optional language tags
+	 * 
+	 * @param uuid
+	 *            target uuid
+	 * @param type
+	 *            link type
+	 * @param projectName
+	 *            project name (which is used for 404 links)
+	 * @param languageTags
+	 *            optional language tags
 	 * @return observable of the rendered link
 	 */
 	public Observable<String> resolve(String uuid, Type type, String projectName, String... languageTags) {
@@ -161,23 +171,19 @@ public class WebRootLinkReplacer {
 				log.debug("Fallback to default language " + defaultLanguage);
 			}
 		}
-		try {
-			if (log.isDebugEnabled()) {
-				log.debug("Resolving link to " + node.getUuid() + " in language " + languageTag + " with type " + type);
-			}
-			switch (type) {
-			case SHORT:
-				return node.getPath(languageTag).onErrorReturn(e -> "/error/404");
-			case MEDIUM:
-				return node.getPath(languageTag).onErrorReturn(e -> "/error/404").map(path -> "/" + node.getProject().getName() + path);
-			case FULL:
-				return node.getPath(languageTag).onErrorReturn(e -> "/error/404")
-						.map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path);
-			default:
-				return Observable.error(new Exception("Cannot render link with type " + type));
-			}
-		} catch (UnsupportedEncodingException e) {
-			return Observable.error(e);
+		if (log.isDebugEnabled()) {
+			log.debug("Resolving link to " + node.getUuid() + " in language " + languageTag + " with type " + type);
+		}
+		switch (type) {
+		case SHORT:
+			return node.getPath(languageTag).onErrorReturn(e -> "/error/404");
+		case MEDIUM:
+			return node.getPath(languageTag).onErrorReturn(e -> "/error/404").map(path -> "/" + node.getProject().getName() + path);
+		case FULL:
+			return node.getPath(languageTag).onErrorReturn(e -> "/error/404")
+					.map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path);
+		default:
+			return Observable.error(new Exception("Cannot render link with type " + type));
 		}
 	}
 

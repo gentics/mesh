@@ -271,9 +271,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * 
 	 * @param languageTag
 	 * @return
-	 * @throws UnsupportedEncodingException
 	 */
-	Observable<String> getPath(String... languageTag) throws UnsupportedEncodingException;
+	Observable<String> getPath(String... languageTag);
 
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
