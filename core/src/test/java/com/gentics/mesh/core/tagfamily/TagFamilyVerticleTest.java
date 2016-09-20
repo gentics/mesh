@@ -223,7 +223,11 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	public void testCreateWithNoPerm() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("newTagFamily");
-		call(() -> getClient().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm");
+		String tagFamilyRootUuid = db.noTx(() -> project().getTagFamilyRoot().getUuid());
+		try (NoTx noTx = db.noTx()) {
+			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
+		}
+		call(() -> getClient().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", tagFamilyRootUuid);
 	}
 
 	@Test
@@ -231,17 +235,17 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 	public void testCreateReadDelete() throws Exception {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("newTagFamily");
-		MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
-		latchFor(future);
-		assertSuccess(future);
 
-		MeshResponse<TagFamilyResponse> readFuture = getClient().findTagFamilyByUuid(PROJECT_NAME, future.result().getUuid()).invoke();
-		latchFor(readFuture);
-		assertSuccess(readFuture);
+		// 1. Create
+		TagFamilyResponse tagFamily = call(() -> getClient().createTagFamily(PROJECT_NAME, request));
 
-		MeshResponse<Void> deleteFuture = getClient().deleteTagFamily(PROJECT_NAME, future.result().getUuid()).invoke();
-		latchFor(deleteFuture);
-		assertSuccess(deleteFuture);
+		// 2. Read
+		String tagFamilyUuid = tagFamily.getUuid();
+		tagFamily = call(() -> getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamilyUuid));
+
+		// 3. Delete
+		String tagFamilyUuid2 = tagFamily.getUuid();
+		call(() -> getClient().deleteTagFamily(PROJECT_NAME, tagFamilyUuid2));
 
 	}
 
@@ -275,9 +279,7 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 			String uuid = basicTagFamily.getUuid();
 			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid));
 
-			MeshResponse<Void> future = getClient().deleteTagFamily(PROJECT_NAME, uuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			call(() -> getClient().deleteTagFamily(PROJECT_NAME, uuid));
 			assertElement(project().getTagFamilyRoot(), uuid, false);
 		}
 
@@ -293,9 +295,8 @@ public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest
 
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
-			MeshResponse<Void> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
+			call(() -> getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()), FORBIDDEN, "error_missing_perm",
+					basicTagFamily.getUuid());
 
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 		}

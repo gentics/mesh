@@ -185,7 +185,9 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			// micronode.createSelect("selectfield");
 			micronode.createString("stringfield").setString("String Value");
 
-			JsonObject jsonObject = new JsonObject(getJson(node));
+			String json = getJson(node);
+			System.out.println(json);
+			JsonObject jsonObject = new JsonObject(json);
 			JsonObject fields = jsonObject.getJsonObject("fields");
 			assertNotNull("JSON Object must contain fields", fields);
 			JsonObject micronodeFieldObject = fields.getJsonObject("micronodefield");

@@ -90,21 +90,21 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		try {
 			Microschema microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			microschema.validate();
-			if (requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
-				Tuple<SearchQueueBatch, MicroschemaContainer> tuple = db.tx(() -> {
-					requestUser.reload();
-					MicroschemaContainer container = create(microschema, requestUser);
-					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-					SearchQueueBatch batch = container.createIndexBatch(STORE_ACTION);
-					return Tuple.tuple(batch, container);
-				});
-
-				SearchQueueBatch batch = tuple.v1();
-				MicroschemaContainer microschemaContainer = tuple.v2();
-				return batch.process().andThen(Single.just(microschemaContainer));
-			} else {
-				throw error(FORBIDDEN, "error_missing_perm", microschema.getUuid());
+			if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
+				throw error(FORBIDDEN, "error_missing_perm", getUuid());
 			}
+			Tuple<SearchQueueBatch, MicroschemaContainer> tuple = db.tx(() -> {
+				requestUser.reload();
+				MicroschemaContainer container = create(microschema, requestUser);
+				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+				SearchQueueBatch batch = container.createIndexBatch(STORE_ACTION);
+				return Tuple.tuple(batch, container);
+			});
+
+			SearchQueueBatch batch = tuple.v1();
+			MicroschemaContainer microschemaContainer = tuple.v2();
+			return batch.process().andThen(Single.just(microschemaContainer));
+
 		} catch (IOException e) {
 			return Single.error(e);
 		}

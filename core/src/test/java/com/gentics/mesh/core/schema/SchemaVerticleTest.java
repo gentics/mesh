@@ -79,10 +79,11 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
 		Schema schema = FieldUtil.createMinimalValidSchema();
+		String schemaRootUuid = db.noTx(() -> meshRoot().getSchemaContainerRoot().getUuid());
 		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(meshRoot().getSchemaContainerRoot(), CREATE_PERM);
 		}
-		call(() -> getClient().createSchema(schema), FORBIDDEN, "error_missing_perm");
+		call(() -> getClient().createSchema(schema), FORBIDDEN, "error_missing_perm", schemaRootUuid);
 	}
 
 	@Test

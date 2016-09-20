@@ -204,7 +204,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		String parentNodeUuid = db.noTx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content"));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -236,7 +236,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		String parentNodeUuid = db.noTx(() -> folder("news").getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content"));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));

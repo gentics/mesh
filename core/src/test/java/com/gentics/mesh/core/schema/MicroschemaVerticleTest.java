@@ -134,10 +134,11 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 		request.setName("new microschema name");
 		request.setDescription("microschema description");
 
+		String microschemaRootUuid = db.noTx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
 		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
 		}
-		call(() -> getClient().createMicroschema(request), FORBIDDEN, "error_missing_perm");
+		call(() -> getClient().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid);
 
 	}
 

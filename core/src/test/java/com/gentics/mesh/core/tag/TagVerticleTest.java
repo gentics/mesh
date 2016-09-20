@@ -390,10 +390,11 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		tagCreateRequest.getFields().setName("SomeName");
 		String parentTagFamilyUuid = db.noTx(() -> tagFamily("colors").getUuid());
 
+		String tagRootUuid = db.noTx(() -> tagFamily("colors").getUuid());
 		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
 		}
-		call(() -> getClient().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest), FORBIDDEN, "error_missing_perm");
+		call(() -> getClient().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest), FORBIDDEN, "error_missing_perm", tagRootUuid);
 	}
 
 	@Test
@@ -409,9 +410,8 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			TagFamily tagFamily = tagFamilies().get("colors");
 			tagFamilyName = tagFamily.getName();
 			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
-			MeshResponse<TagResponse> future = getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest).invoke();
-			latchFor(future);
-			expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
+			call(() -> getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest), CONFLICT,
+					"tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
 		}
 	}
 
@@ -528,9 +528,8 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			assertEquals("SomeName", future.result().getFields().getName());
 
 			// Delete
-			MeshResponse<Void> deleteFuture = getClient().deleteTag(PROJECT_NAME, tagFamily.getUuid(), future.result().getUuid()).invoke();
-			latchFor(deleteFuture);
-			assertSuccess(deleteFuture);
+			String uuid = future.result().getUuid();
+			call(() -> getClient().deleteTag(PROJECT_NAME, tagFamily.getUuid(), uuid));
 		}
 
 	}

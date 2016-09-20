@@ -77,10 +77,10 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 			// Assert first micronode
 			StringField firstnameAField = micronodeRestList.getItems().get(0).getFields().getStringField("firstName");
-			assertNotNull("The string field for the first micronode could not be found. It should not be null.", firstnameAField);
+			assertNotNull("The firstname string field for the first micronode could not be found. It should not be null.", firstnameAField);
 			assertEquals("updatedFirstname1", firstnameAField.getString());
 			StringField lastnameAField = micronodeRestList.getItems().get(0).getFields().getStringField("lastName");
-			assertNotNull("The string field for the first micronode could not be found. It should not be null.", lastnameAField);
+			assertNotNull("The lastname string field for the first micronode could not be found. It should not be null.", lastnameAField);
 			assertEquals("updatedLastname1", lastnameAField.getString());
 
 			// Assert second micronode

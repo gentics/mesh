@@ -154,12 +154,12 @@ public class TestDataProvider {
 			addPermissions(boot.roleRoot());
 			addPermissions(boot.microschemaContainerRoot());
 			addPermissions(boot.schemaContainerRoot());
-			log.info("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
+			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
 			tx.getGraph().commit();
 		}
 
 		long duration = System.currentTimeMillis() - start;
-		log.info("Setup took: {" + duration + "}");
+		log.debug("Setup took: {" + duration + "}");
 	}
 
 	private void addPermissions(MeshVertex vertex) {
@@ -270,7 +270,7 @@ public class TestDataProvider {
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
 
 		String password = "test123";
-		log.info("Creating user with username: " + username + " and password: " + password);
+		log.debug("Creating user with username: " + username + " and password: " + password);
 
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 		User user = root.getUserRoot().create(username, null);

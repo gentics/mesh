@@ -92,7 +92,6 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			} else {
 				restMicronode.getFields().put(fieldEntry.getName(), restField);
 			}
-			return restMicronode;
 		}
 
 		return restMicronode;
