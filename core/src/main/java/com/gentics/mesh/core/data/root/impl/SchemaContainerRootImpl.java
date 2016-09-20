@@ -45,7 +45,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		database.addVertexType(SchemaContainerRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_SCHEMA_ROOT);
 		database.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
-		database.addEdgeIndex(HAS_SCHEMA_CONTAINER_ITEM, true, false,false);
+		database.addEdgeIndex(HAS_SCHEMA_CONTAINER_ITEM, true, false, true);
 	}
 
 	@Override

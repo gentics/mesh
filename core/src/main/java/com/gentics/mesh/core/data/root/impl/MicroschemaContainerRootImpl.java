@@ -38,6 +38,8 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 	public static void init(Database database) {
 		database.addVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
+		database.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
+		database.addEdgeIndex(HAS_SCHEMA_CONTAINER_ITEM, true, false, true);
 	}
 
 	@Override
