@@ -3,7 +3,6 @@ package com.gentics.mesh.auth;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthHandler;
@@ -16,7 +15,7 @@ import io.vertx.ext.web.handler.impl.JWTAuthHandlerImpl;
  */
 public class MeshJWTAuthHandler extends JWTAuthHandlerImpl{
 
-	public MeshJWTAuthHandler(AuthProvider authProvider) {
+	public MeshJWTAuthHandler(MeshAuthProvider authProvider) {
 		super(authProvider, null);
 	}
 
