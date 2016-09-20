@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
@@ -165,7 +166,6 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
-		});
-		// }).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 }
