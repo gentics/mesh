@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,7 +12,6 @@ import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldL
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
@@ -24,9 +22,6 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.CompareUtils;
-
-import rx.Observable;
-import rx.Single;
 
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
 
@@ -59,14 +54,9 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();
-
-			List<Single<NodeResponse>> obs = new ArrayList<>();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				restModel.getItems().add(item.getNode().transformToRestSync(ac, level, lTagsArray));
 			}
-
-			// Transform the list - otherwise we can't use Observable#from
-			List<Observable<NodeResponse>> list = obs.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 			return restModel;
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
@@ -78,9 +68,8 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 					listItem.setUrl(MeshInternal.get().webRootLinkReplacer()
-							.resolve(releaseUuid, type, item.getNode(), ac.getNodeParameters().getResolveLinks(), lTagsArray).toBlocking().value());
+							.resolve(releaseUuid, type, item.getNode(), ac.getNodeParameters().getResolveLinks(), lTagsArray));
 				}
-
 				restModel.add(listItem);
 			}
 			return restModel;

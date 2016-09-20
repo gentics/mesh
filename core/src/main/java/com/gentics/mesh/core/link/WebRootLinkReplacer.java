@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.link;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
@@ -17,7 +19,6 @@ import com.gentics.mesh.parameter.impl.LinkType;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * This class will resolve mesh link placeholders.
@@ -56,7 +57,7 @@ public class WebRootLinkReplacer {
 			return content;
 		}
 
-		List<Single<String>> segments = new ArrayList<>();
+		List<String> segments = new ArrayList<>();
 		int pos = 0;
 		int lastPos = 0;
 		int length = content.length();
@@ -67,7 +68,7 @@ public class WebRootLinkReplacer {
 			if (pos == -1) {
 				// add last string segment
 				if (lastPos < length) {
-					segments.add(Single.just(content.substring(lastPos)));
+					segments.add(content.substring(lastPos));
 				}
 				break;
 			}
@@ -75,14 +76,14 @@ public class WebRootLinkReplacer {
 			if (endPos == -1) {
 				// add last string segment
 				if (lastPos < length) {
-					segments.add(Single.just(content.substring(lastPos)));
+					segments.add(content.substring(lastPos));
 				}
 				break;
 			}
 
 			// add intermediate string segment
 			if (lastPos < pos) {
-				segments.add(Single.just(content.substring(lastPos, pos)));
+				segments.add(content.substring(lastPos, pos));
 			}
 
 			// 2. Parse the link and invoke resolving
@@ -107,7 +108,7 @@ public class WebRootLinkReplacer {
 
 		// 3.: Buildup the new content
 		StringBuilder renderedContent = new StringBuilder(length);
-		segments.stream().forEachOrdered(obs -> renderedContent.append(obs.toBlocking().value()));
+		segments.stream().forEachOrdered(obs -> renderedContent.append(obs));
 
 		return renderedContent.toString();
 	}
@@ -129,8 +130,7 @@ public class WebRootLinkReplacer {
 	 *            optional language tags
 	 * @return observable of the rendered link
 	 */
-	public Single<String> resolve(String releaseUuid, ContainerType edgeType, String uuid, LinkType type, String projectName,
-			String... languageTags) {
+	public String resolve(String releaseUuid, ContainerType edgeType, String uuid, LinkType type, String projectName, String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid);
@@ -142,13 +142,13 @@ public class WebRootLinkReplacer {
 			}
 			switch (type) {
 			case SHORT:
-				return Single.just("/error/404");
+				return "/error/404";
 			case MEDIUM:
-				return Single.just("/" + projectName + "/error/404");
+				return "/" + projectName + "/error/404";
 			case FULL:
-				return Single.just(RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + projectName + "/webroot/error/404");
+				return RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + projectName + "/webroot/error/404";
 			default:
-				return Single.error(new Exception("Cannot render link with type " + type));
+				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
 		}
 		return resolve(releaseUuid, edgeType, node, type, languageTags);
@@ -169,7 +169,7 @@ public class WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public Single<String> resolve(String releaseUuid, ContainerType edgeType, Node node, LinkType type, String... languageTag) {
+	public String resolve(String releaseUuid, ContainerType edgeType, Node node, LinkType type, String... languageTag) {
 		if (languageTag == null || languageTag.length == 0) {
 			String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
 			languageTag = new String[] { defaultLanguage };
@@ -189,17 +189,19 @@ public class WebRootLinkReplacer {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving link to " + node.getUuid() + " in language " + languageTag + " with type " + type);
 		}
+		String path = node.getPath(releaseUuid, edgeType, languageTag);
+		if (path == null) {
+			path = "/error/404";
+		}
 		switch (type) {
 		case SHORT:
-			return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404");
+			return path;
 		case MEDIUM:
-			return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404")
-					.map(path -> "/" + node.getProject().getName() + path);
+			return "/" + node.getProject().getName() + path;
 		case FULL:
-			return node.getPath(releaseUuid, edgeType, languageTag).onErrorReturn(e -> "/error/404")
-					.map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path);
+			return RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path;
 		default:
-			return Single.error(new Exception("Cannot render link with type " + type));
+			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}
 	}
 

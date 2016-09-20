@@ -40,7 +40,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	@Override
 	public NodeField transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		// TODO handle null across all types
-		//if (getNode() != null) {
+		// if (getNode() != null) {
 		NodeParameters parameters = ac.getNodeParameters();
 		boolean expandField = ac.getNodeParameters().getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
@@ -50,10 +50,9 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			Node node = getNode();
 			nodeField.setUuid(node.getUuid());
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-				nodeField.setPath(MeshInternal.get().webRootLinkReplacer()
-						.resolve(ac.getRelease(null).getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), node,
-								ac.getNodeParameters().getResolveLinks(), languageTags.toArray(new String[languageTags.size()]))
-						.toBlocking().value());
+				nodeField.setPath(MeshInternal.get().webRootLinkReplacer().resolve(ac.getRelease(null).getUuid(),
+						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), node, ac.getNodeParameters().getResolveLinks(),
+						languageTags.toArray(new String[languageTags.size()])));
 			}
 			return nodeField;
 		}
@@ -61,7 +60,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	@Override
 	public void removeField(GraphFieldContainer container) {
-		//TODO BUG We must only remove one edge to the given container!
+		// TODO BUG We must only remove one edge to the given container!
 		remove();
 	}
 
@@ -84,8 +83,8 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			return CompareUtils.equals(nodeA, nodeB);
 		}
 		if (obj instanceof NodeFieldListItem) {
-			NodeFieldListItem restItem = (NodeFieldListItem)obj;
-			//TODO assert key as well?
+			NodeFieldListItem restItem = (NodeFieldListItem) obj;
+			// TODO assert key as well?
 			// getNode can't be null since this is in fact an graph edge
 			return CompareUtils.equals(restItem.getUuid(), getNode().getUuid());
 		}

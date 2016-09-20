@@ -463,7 +463,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @return
 	 */
-	Single<String> getPath(String releaseUuid, ContainerType type, String... languageTag);
+	String getPath(String releaseUuid, ContainerType type, String... languageTag);
 
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
@@ -477,7 +477,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	Single<String> getPathSegment(String releaseUuid, ContainerType type, String... languageTag);
+	String getPathSegment(String releaseUuid, ContainerType type, String... languageTag);
 
 	/**
 	 * Delete the node and ignore any checks.

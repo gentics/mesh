@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -20,7 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -53,7 +51,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.ext.web.RoutingContext;
-import rx.Single;
 
 public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
@@ -73,20 +70,12 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	public void testGetPath() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			Node newsNode = content("news overview");
-			CountDownLatch latch = new CountDownLatch(2);
-			Single<String> path = newsNode.getPath(project().getLatestRelease().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
-			path.subscribe(s -> {
-				assertEquals("/News/News%20Overview.en.html", s);
-				latch.countDown();
-			});
+			String path = newsNode.getPath(project().getLatestRelease().getUuid(), ContainerType.DRAFT, english().getLanguageTag());
+			assertEquals("/News/News%20Overview.en.html", path);
 
-			Single<String> pathSegementFieldValue = newsNode.getPathSegment(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
+			String pathSegementFieldValue = newsNode.getPathSegment(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
 					english().getLanguageTag());
-			pathSegementFieldValue.subscribe(s -> {
-				assertEquals("News Overview.en.html", s);
-				latch.countDown();
-			});
-			failingLatch(latch);
+			assertEquals("News Overview.en.html", pathSegementFieldValue);
 		}
 	}
 
@@ -114,15 +103,15 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		}
 	}
 
-//	@Test
-//	public void testGetFullSegmentPath() {
-//		try (NoTx noTx = db.noTx()) {
-//			Node newsNode = content("news overview");
-//			RoutingContext rc = getMockedRoutingContext("?version=draft");
-//			InternalActionContext ac = InternalActionContext.create(rc);
-//			System.out.println(newsNode.getPath(ac).toBlocking().value());
-//		}
-//	}
+	// @Test
+	// public void testGetFullSegmentPath() {
+	// try (NoTx noTx = db.noTx()) {
+	// Node newsNode = content("news overview");
+	// RoutingContext rc = getMockedRoutingContext("?version=draft");
+	// InternalActionContext ac = InternalActionContext.create(rc);
+	// System.out.println(newsNode.getPath(ac).toBlocking().value());
+	// }
+	// }
 
 	@Test
 	public void testTaggingOfMeshNode() {

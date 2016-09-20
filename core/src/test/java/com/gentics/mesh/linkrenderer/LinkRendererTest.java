@@ -234,7 +234,7 @@ public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");
 
-			String output = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, "dgasd", null, null, null);
+			replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, "dgasd", null, null, null);
 		}
 	}
 
