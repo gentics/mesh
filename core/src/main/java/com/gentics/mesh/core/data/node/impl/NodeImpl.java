@@ -645,10 +645,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		} else {
 			requestedLanguageTags = nodeParameters.getLanguageList();
 		}
+
+		// First check whether the NGFC for the requested language,release and version could be found.
 		NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(),
 				versioiningParameters.getVersion());
 		if (fieldContainer == null) {
-			// if a published version was requested, we check whether any published language variant exists for the node, if not, response with NOT_FOUND
+			// If a published version was requested, we check whether any published language variant exists for the node, if not, response with NOT_FOUND
 			if (ContainerType.forVersion(versioiningParameters.getVersion()) == ContainerType.PUBLISHED
 					&& getGraphFieldContainers(release, ContainerType.PUBLISHED).isEmpty()) {
 				log.error("Could not find field container for languages {" + requestedLanguageTags + "} and release {" + release.getUuid()
@@ -656,7 +658,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", getUuid(), release.getUuid());
 			}
 
-			// if a specific version was requested, that does not exist, we also return NOT_FOUND
+			// If a specific version was requested, that does not exist, we also return NOT_FOUND
 			if (ContainerType.forVersion(versioiningParameters.getVersion()) == ContainerType.INITIAL) {
 				throw error(NOT_FOUND, "object_not_found_for_version", versioiningParameters.getVersion());
 			}
@@ -790,6 +792,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private void setPathsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		NodeParameters nodeParameters = ac.getNodeParameters();
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 			String releaseUuid = ac.getRelease(getProject()).getUuid();
 			ContainerType type = ContainerType.forVersion(versioiningParameters.getVersion());
@@ -805,8 +808,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release,
 					ContainerType.forVersion(versioiningParameters.getVersion()))) {
 				Language currLanguage = currentFieldContainer.getLanguage();
-				languagePaths.put(currLanguage.getLanguageTag(),
-						linkReplacer.resolve(releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(), currLanguage.getLanguageTag()));
+				String languagePath = linkReplacer.resolve(releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(),
+						currLanguage.getLanguageTag());
+				languagePaths.put(currLanguage.getLanguageTag(), languagePath);
 			}
 			restNode.setLanguagePaths(languagePaths);
 		}
@@ -841,7 +845,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-						getProject().getName(), restNode.getLanguage());
+						getProject().getName(), ac.getNodeParameters().getLanguages());
 				reference.setPath(url);
 			}
 			breadcrumb.add(reference);
@@ -1704,6 +1708,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		 */
 		keyBuilder.append(getUuid());
 		keyBuilder.append("-");
+
+		/**
+		 * release uuid
+		 */
+		keyBuilder.append(release.getUuid());
+		keyBuilder.append("-");
+
+		//TODO version, language list
+
+		// We can omit further etag keys since this would return a 404 anyhow since the requested container could not be found. 
+		if (container == null) {
+			keyBuilder.append("404-no-container");
+			return keyBuilder.toString();
+		}
 
 		/**
 		 * parent node

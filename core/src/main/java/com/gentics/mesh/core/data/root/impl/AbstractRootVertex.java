@@ -29,7 +29,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.ElementIdComparator;
-import com.gentics.mesh.util.ElementUuidComparator;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;

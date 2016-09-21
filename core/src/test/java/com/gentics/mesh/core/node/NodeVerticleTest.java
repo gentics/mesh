@@ -1195,6 +1195,40 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	}
 
 	@Test
+	public void testReadBreadcrumbWithLangfallback() {
+		String baseNodeUuid = db.noTx(() -> project().getBaseNode().getUuid());
+
+		// level 0
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("folder"));
+		request.setLanguage("en");
+		request.getFields().put("name", FieldUtil.createStringField("english folder-0"));
+		request.setParentNodeUuid(baseNodeUuid);
+		NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, request));
+
+		// level 1
+		request.setParentNodeUuid(response.getUuid());
+		request.getFields().put("name", FieldUtil.createStringField("english folder-1"));
+		response = call(() -> getClient().createNode(PROJECT_NAME, request));
+
+		// level 2
+		request.setLanguage("de");
+		request.setParentNodeUuid(response.getUuid());
+		request.getFields().put("name", FieldUtil.createStringField("german folder-2"));
+		response = call(() -> getClient().createNode(PROJECT_NAME, request));
+
+		// Load the german folder
+		String uuid = response.getUuid();
+		response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeParameters().setResolveLinks(LinkType.FULL).setLanguages("de", "en"), new VersioningParameters().setVersion("draft")));
+
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", response.getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1", response.getBreadcrumb().getFirst().getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0", response.getBreadcrumb().getLast().getPath());
+
+	}
+
+	@Test
 	public void testReadByUUIDBreadcrumb() {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content("news_2014");

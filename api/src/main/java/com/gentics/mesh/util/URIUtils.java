@@ -11,7 +11,7 @@ public final class URIUtils {
 	 * @return
 	 */
 	public static String encodeFragment(String value) {
-		String partiallyEncodedFragment =  UrlEscapers.urlFragmentEscaper().escape(value);
+		String partiallyEncodedFragment = UrlEscapers.urlFragmentEscaper().escape(value);
 		partiallyEncodedFragment = partiallyEncodedFragment.replaceAll("\\?", "%3F");
 		return partiallyEncodedFragment;
 	}
