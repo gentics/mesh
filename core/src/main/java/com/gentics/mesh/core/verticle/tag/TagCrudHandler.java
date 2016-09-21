@@ -51,13 +51,13 @@ public class TagCrudHandler extends AbstractHandler {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
-			//			try {
+			// try {
 			PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null), nodeParams.getLanguageList(),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 			return page.transformToRest(ac, 0);
-			//			} catch (Exception e) {
-			//				return Single.error(e);
-			//			}
+			// } catch (Exception e) {
+			// return Single.error(e);
+			// }
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -85,12 +85,15 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		db.asyncTx(() -> {
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-			SearchQueueBatch batch = queue.createBatch();
-			Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
-			return tag.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+		HandlerUtilities.operate(ac, () -> {
+			Database db = MeshInternal.get().database();
+			return db.noTx(() -> {
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
+				return tag.transformToRestSync(ac, 0);
+			});
+		}, model -> ac.send(model, OK));
 
 	}
 

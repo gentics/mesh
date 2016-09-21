@@ -844,23 +844,22 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			UserCreateRequest request = new UserCreateRequest();
-			request.setEmailAddress("n.user@spam.gentics.com");
-			request.setFirstname("Joe");
-			request.setLastname("Doe");
-			request.setUsername("new_user");
-			request.setPassword("test123456");
-			request.setGroupUuid(group().getUuid());
+		String groupUuid = db.noTx(() -> group().getUuid());
+		UserCreateRequest request = new UserCreateRequest();
+		request.setEmailAddress("n.user@spam.gentics.com");
+		request.setFirstname("Joe");
+		request.setLastname("Doe");
+		request.setUsername("new_user");
+		request.setPassword("test123456");
+		request.setGroupUuid(groupUuid);
 
-			UserResponse restUser = call(() -> getClient().createUser(request));
+		UserResponse restUser = call(() -> getClient().createUser(request));
 
-			try (NoTx noTx2 = db.noTx()) {
-				assertThat(restUser).matches(request);
+		try (NoTx noTx2 = db.noTx()) {
+			assertThat(restUser).matches(request);
 
-				User user = boot.userRoot().findByUuid(restUser.getUuid());
-				assertThat(restUser).matches(user);
-			}
+			User user = boot.userRoot().findByUuid(restUser.getUuid());
+			assertThat(restUser).matches(user);
 		}
 	}
 
@@ -923,8 +922,8 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			UserResponse restUser = call(() -> getClient().createUser(request));
 			assertThat(restUser).matches(request);
 
-			call(()-> getClient().findUserByUuid(restUser.getUuid()));
-			call(()->getClient().deleteUser(restUser.getUuid()));
+			call(() -> getClient().findUserByUuid(restUser.getUuid()));
+			call(() -> getClient().deleteUser(restUser.getUuid()));
 		}
 	}
 
