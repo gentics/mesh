@@ -375,8 +375,10 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		TagResponse response = call(() -> getClient().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));
 		assertEquals("SomeName", response.getFields().getName());
 
-		assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
-		assertNotNull("The tag could not be found within the project.tagRoot node.", project().getTagRoot().findByUuid(response.getUuid()));
+		try (NoTx noTx = db.noTx()) {
+			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
+			assertNotNull("The tag could not be found within the project.tagRoot node.", project().getTagRoot().findByUuid(response.getUuid()));
+		}
 
 		String uuid = response.getUuid();
 		response = call(() -> getClient().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid));

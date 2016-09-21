@@ -44,7 +44,7 @@ public interface Page {
 	 * 
 	 * @return
 	 */
-	int getTotalElements();
+	long getTotalElements();
 
 	/**
 	 * Return the page size.

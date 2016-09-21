@@ -21,13 +21,23 @@ import rx.Single;
 public class PageImpl<T extends TransformableElement<? extends RestModel>> implements Iterable<T>, Page {
 
 	private List<? extends T> wrappedList;
-	private int totalElements;
+	private long totalElements;
 	private int numberOfElements;
 	private int pageNumber;
 	private int totalPages;
 	private int perPage;
 
-	public PageImpl(List<? extends T> wrappedList, int totalElements, int pageNumber, int totalPages, int numberOfElements, int perPage) {
+	/**
+	 * Construct a new page
+	 * 
+	 * @param wrappedList
+	 * @param totalElements
+	 * @param pageNumber
+	 * @param totalPages
+	 * @param numberOfElements
+	 * @param perPage
+	 */
+	public PageImpl(List<? extends T> wrappedList, long totalElements, int pageNumber, int totalPages, int numberOfElements, int perPage) {
 		this.wrappedList = wrappedList;
 		this.totalElements = totalElements;
 		this.pageNumber = pageNumber;
@@ -47,7 +57,7 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 	}
 
 	@Override
-	public int getTotalElements() {
+	public long getTotalElements() {
 		return totalElements;
 	}
 

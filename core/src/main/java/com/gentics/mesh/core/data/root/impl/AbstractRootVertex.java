@@ -6,11 +6,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -26,6 +28,8 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.util.ElementIdComparator;
+import com.gentics.mesh.util.ElementUuidComparator;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
@@ -73,23 +77,22 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		return out(getRootLabel()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
-//	@Override
-//	public T findByName(String name) {
-//		FramedGraph graph = Database.getThreadLocalGraph();
-//		// 1. Find the element with given uuid within the whole graph
-//		Iterator<Vertex> it = MeshInternal.get().database().getVertices(getPersistanceClass(), new String[] { "name" }, new String[] { name });
-//		if (it.hasNext()) {
-//			Vertex potentialElement = it.next();
-//			// 2. Use the edge index to determine whether the element is part of this root vertex
-//			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-//					MeshInternal.get().database().createComposedIndexKey(potentialElement.getId(), getId()));
-//			if (edges.iterator().hasNext()) {
-//				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
-//			}
-//		}
-//		return null;
-//	}
-	
+	//	@Override
+	//	public T findByName(String name) {
+	//		FramedGraph graph = Database.getThreadLocalGraph();
+	//		// 1. Find the element with given uuid within the whole graph
+	//		Iterator<Vertex> it = MeshInternal.get().database().getVertices(getPersistanceClass(), new String[] { "name" }, new String[] { name });
+	//		if (it.hasNext()) {
+	//			Vertex potentialElement = it.next();
+	//			// 2. Use the edge index to determine whether the element is part of this root vertex
+	//			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
+	//					MeshInternal.get().database().createComposedIndexKey(potentialElement.getId(), getId()));
+	//			if (edges.iterator().hasNext()) {
+	//				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
+	//			}
+	//		}
+	//		return null;
+	//	}
 
 	@Override
 	public T findByName(InternalActionContext ac, String name, GraphPermission perm) {
@@ -147,42 +150,55 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		// External (for the enduser) all pages start with 1.
 		page = page - 1;
 
-		int low = page * perPage - 1;
-		int upper = low + perPage;
+		int low = page * perPage;
 
 		if (perPage == 0) {
 			low = 0;
-			upper = 0;
 		}
 
 		MeshAuthUser requestUser = ac.getUser();
 
 		// Iterate over all vertices that are managed by this root vertex
-		int count = 0;
 		FramedGraph graph = Database.getThreadLocalGraph();
 		Iterable<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", this.getId());
-		List<T> elementsOfPage = new ArrayList<>();
-		for (Edge itemEdge : itemEdges) {
-			Vertex item = itemEdge.getVertex(Direction.IN);
 
-			// Only handle those vertices which the user can read
-			if (requestUser.hasPermissionForId(item.getId(), READ_PERM)) {
+		AtomicLong counter = new AtomicLong();
+		List<T> elementsOfPage = StreamSupport.stream(itemEdges.spliterator(), false)
 
-				// Only add those vertices to the list which are within the bounds of the requested page
-				if (count > low && count <= upper) {
-					elementsOfPage.add(graph.frameElementExplicit(item, getPersistanceClass()));
-				}
-				count++;
-			}
-		}
+				// Get the vertex from the edge
+				.map(itemEdge -> itemEdge.getVertex(Direction.IN))
+
+				// Only handle elements which are visible to the user
+				.filter(item -> requestUser.hasPermissionForId(item.getId(), READ_PERM))
+
+				// We need to get a total count of all visible elements
+				.map(item -> {
+					counter.incrementAndGet();
+					return item;
+				})
+
+				// Sort the elements by element id
+				.sorted(new ElementIdComparator())
+
+				// Apply paging - skip to lower bounds
+				.skip(low)
+
+				// Apply paging - only include a specific amout of elements
+				.limit(perPage)
+
+				// Frame the remaining elements so that we can access their ferma methods
+				.map(item -> graph.frameElementExplicit(item, getPersistanceClass()))
+
+				// Create a list of all found elements
+				.collect(Collectors.toList());
 
 		// The totalPages of the list response must be zero if the perPage parameter is also zero.
 		int totalPages = 0;
 		if (perPage != 0) {
-			totalPages = (int) Math.ceil(count / (double) (perPage));
+			totalPages = (int) Math.ceil(counter.get() / (double) (perPage));
 		}
 
-		return new PageImpl<T>(elementsOfPage, count, ++page, totalPages, elementsOfPage.size(), perPage);
+		return new PageImpl<T>(elementsOfPage, counter.get(), ++page, totalPages, elementsOfPage.size(), perPage);
 	}
 
 	@Override

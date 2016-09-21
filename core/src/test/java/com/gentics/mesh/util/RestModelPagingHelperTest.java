@@ -22,7 +22,7 @@ public class RestModelPagingHelperTest {
 
 		int nPages = 3;
 		int nCurrentPage = 0;
-		int nTotalElements = 1000;
+		long nTotalElements = 1000;
 		int nElements = 200;
 		long nPageSize = 21;
 
