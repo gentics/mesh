@@ -38,7 +38,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @param model
 	 * @return
 	 */
-	protected <R extends AbstractGenericRestResponse> void setRolePermissions(InternalActionContext ac, R model) {
+	protected <E extends AbstractGenericRestResponse> void setRolePermissions(InternalActionContext ac, E model) {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
 			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -60,7 +60,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @param model
 	 * @param ac
 	 */
-	protected <R extends AbstractGenericRestResponse> void fillCommonRestFields(InternalActionContext ac, R model) {
+	protected <E extends AbstractGenericRestResponse> void fillCommonRestFields(InternalActionContext ac, E model) {
 		model.setUuid(getUuid());
 
 		if (this instanceof EditorTrackingVertex) {

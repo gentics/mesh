@@ -9,8 +9,6 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
@@ -18,8 +16,6 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
 @Singleton
 public class EventbusVerticle extends AbstractWebVerticle {
-
-	private static final Logger log = LoggerFactory.getLogger(EventbusVerticle.class);
 
 	@Inject
 	public EventbusVerticle(RouterStorage routerStorage) {

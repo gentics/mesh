@@ -8,7 +8,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -82,7 +81,6 @@ import com.gentics.mesh.core.verticle.tagfamily.TagFamilyCrudHandler;
 import com.gentics.mesh.core.verticle.user.UserCrudHandler;
 import com.gentics.mesh.core.verticle.utility.UtilityHandler;
 import com.gentics.mesh.core.verticle.webroot.WebRootHandler;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -106,10 +104,6 @@ import rx.Single;
 public class MeshLocalClientImpl implements MeshRestClient {
 
 	private MeshAuthUser user;
-
-	private BootstrapInitializer boot;
-
-	private Database database;
 
 	private UserCrudHandler userCrudHandler;
 
@@ -146,7 +140,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 			WebRootHandler webrootHandler, NodeFieldAPIHandler fieldAPIHandler, NodeCrudHandler nodeCrudHandler,
 			ProjectCrudHandler projectCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler, TagCrudHandler tagCrudHandler,
 			MicroschemaCrudHandler microschemaCrudHandler, SchemaContainerCrudHandler schemaCrudHandler, GroupCrudHandler groupCrudHandler,
-			RoleCrudHandler roleCrudHandler, UserCrudHandler userCrudHandler, Database database, BootstrapInitializer boot, ReleaseCrudHandler releaseCrudHandler) {
+			RoleCrudHandler roleCrudHandler, UserCrudHandler userCrudHandler, ReleaseCrudHandler releaseCrudHandler) {
 
 		this.utilityHandler = utilityHandler;
 		this.authRestHandler = authRestHandler;
@@ -162,8 +156,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		this.groupCrudHandler = groupCrudHandler;
 		this.roleCrudHandler = roleCrudHandler;
 		this.userCrudHandler = userCrudHandler;
-		this.database = database;
-		this.boot = boot;
 		this.releaseCrudHandler = releaseCrudHandler;
 
 	}

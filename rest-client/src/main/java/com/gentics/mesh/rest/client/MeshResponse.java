@@ -7,7 +7,7 @@ public class MeshResponse<T> extends Future<T> {
 
 	private HttpClientResponse response;
 
-	public MeshResponse(io.vertx.core.Future delegate) {
+	public MeshResponse(io.vertx.core.Future<T> delegate) {
 		super(delegate);
 	}
 

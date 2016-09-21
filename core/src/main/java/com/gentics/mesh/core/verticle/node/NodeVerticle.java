@@ -258,7 +258,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("language");
 			String fieldName = rc.request().getParam("field");
-			fieldAPIHandler.handleUpdateFieldItem(ac, uuid);
+			fieldAPIHandler.handleUpdateFieldItem(ac, uuid, languageTag, fieldName);
 		});
 
 		Endpoint moveFieldItem = createEndpoint();
@@ -275,7 +275,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("language");
 			String fieldName = rc.request().getParam("field");
-			fieldAPIHandler.handleMoveFieldItem(ac, uuid);
+			fieldAPIHandler.handleMoveFieldItem(ac, uuid, languageTag, fieldName);
 		});
 	}
 

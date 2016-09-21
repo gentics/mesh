@@ -164,13 +164,13 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * @param key
 	 * @return
 	 */
-	<T> T getRestProperty(String key);
+	<R> R getRestProperty(String key);
 
 	/**
 	 * Return REST field specific properties.
 	 * 
 	 * @return
 	 */
-	<T> Map<String, T> getRestProperties();
+	<R> Map<String, R> getRestProperties();
 
 }

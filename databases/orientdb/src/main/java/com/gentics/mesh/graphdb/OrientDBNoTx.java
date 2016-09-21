@@ -7,12 +7,7 @@ import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 public class OrientDBNoTx extends AbstractNoTx {
-
-	private static final Logger log = LoggerFactory.getLogger(OrientDBNoTx.class);
 
 	OrientGraphNoTx noTx = null;
 

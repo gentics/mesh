@@ -58,7 +58,7 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 	 * @param key
 	 * @return
 	 */
-	public <T> T getFieldProperty(String key) {
+	public <E> E getFieldProperty(String key) {
 		return parentContainer.getProperty(fieldKey + "-" + key);
 	}
 

@@ -258,7 +258,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
-	public void handleUpdateFieldItem(InternalActionContext ac, String uuid) {
+	public void handleUpdateFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -275,7 +275,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
-	public void handleMoveFieldItem(InternalActionContext ac, String uuid) {
+	public void handleMoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);

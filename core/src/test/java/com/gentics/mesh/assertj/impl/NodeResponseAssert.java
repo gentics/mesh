@@ -109,8 +109,8 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 		String schemaName = request.getSchema().getName();
 		assertEquals("The schemaname of the request does not match the response schema name", schemaName, actual.getSchema().getName());
 		// assertEquals(request.getOrder(), restNode.getOrder());
-		String tagUuid = request.getParentNodeUuid();
-		// TODO how to match the parent tag?
+		//String nodeUuid = request.getParentNodeUuid();
+		// TODO how to match the parent node?
 
 		assertNotNull(actual.getUuid());
 		assertNotNull(actual.getCreator());

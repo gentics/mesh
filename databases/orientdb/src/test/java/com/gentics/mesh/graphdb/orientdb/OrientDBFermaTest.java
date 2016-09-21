@@ -12,14 +12,12 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.ferma.DelegatingFramedOrientGraph;
-import com.gentics.mesh.graphdb.ferma.DelegatingFramedTransactionalOrientGraph;
 import com.gentics.mesh.graphdb.orientdb.graph.Group;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
@@ -102,22 +100,22 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 		}
 
 		try (Tx tx = db.tx()) {
-			long start = System.currentTimeMillis();
-			OrientGraph graph = ((OrientGraph) ((DelegatingFramedTransactionalOrientGraph<?>) tx.getGraph()).getBaseGraph());
+//			long start = System.currentTimeMillis();
+//			OrientGraph graph = ((OrientGraph) ((DelegatingFramedTransactionalOrientGraph<?>) tx.getGraph()).getBaseGraph());
 			// assertEquals(nMembers, g.getMembers().size());
-			for (int i = 0; i < nChecks; i++) {
-				int nPerson = (int) (Math.random() * persons.size());
-				String name = "personName_" + nPerson;
+//			for (int i = 0; i < nChecks; i++) {
+//				int nPerson = (int) (Math.random() * persons.size());
+//				String name = "personName_" + nPerson;
 				//				assertEquals(name, tx.getGraph().getFramedVerticesExplicit("Person.name", name, Person.class).iterator().next().getName());
 				//				assertTrue(tx.getGraph().getFramedVerticesExplicit("Person.name", name, Person.class).iterator().hasNext());
 
 				//				Iterable<Vertex> vertices = graph.getVertices(Person.class.getSimpleName(), new String[] { "name" },new Object[] {name});
 				//				 assertTrue(vertices.iterator().hasNext());
-			}
-			long dur = System.currentTimeMillis() - start;
-			double perCheck = ((double) dur / (double) nChecks);
-			System.out.println("[graph.getVertices] Duration per lookup: " + perCheck);
-			System.out.println("[graph.getVertices] Duration: " + dur);
+//			}
+//			long dur = System.currentTimeMillis() - start;
+//			double perCheck = ((double) dur / (double) nChecks);
+//			System.out.println("[graph.getVertices] Duration per lookup: " + perCheck);
+//			System.out.println("[graph.getVertices] Duration: " + dur);
 
 		}
 	}

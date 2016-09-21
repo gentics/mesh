@@ -102,12 +102,12 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public <T> T getRestProperty(String key) {
+	public <R> R getRestProperty(String key) {
 		return getProperty(REST_PROPERTY_PREFIX_KEY + key);
 	}
 
 	@Override
-	public <T> Map<String, T> getRestProperties() {
+	public <R> Map<String, R> getRestProperties() {
 		return getProperties(REST_PROPERTY_PREFIX_KEY);
 	}
 

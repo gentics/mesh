@@ -49,9 +49,6 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.json.JsonUtil;
 import com.google.common.collect.Lists;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * Implementation of a fieldmap which uses a central JsonNode to access the field specific data. Fields will be mapped during runtime.
  * 
@@ -59,8 +56,6 @@ import io.vertx.core.logging.LoggerFactory;
  *
  */
 public class FieldMapImpl implements FieldMap {
-
-	private static final Logger log = LoggerFactory.getLogger(FieldMapImpl.class);
 
 	private JsonNode node;
 

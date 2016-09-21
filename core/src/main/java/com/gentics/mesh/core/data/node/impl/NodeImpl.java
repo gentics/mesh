@@ -792,7 +792,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private void setPathsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
-		NodeParameters nodeParameters = ac.getNodeParameters();
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 			String releaseUuid = ac.getRelease(getProject()).getUuid();
 			ContainerType type = ContainerType.forVersion(versioiningParameters.getVersion());
