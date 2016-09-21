@@ -2,7 +2,6 @@ package com.gentics.mesh.context.impl;
 
 import static com.gentics.mesh.rest.client.AbstractMeshRestHttpClient.getQuery;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -132,12 +131,8 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	public void send(String body, HttpResponseStatus status) {
 		this.responseBody = body;
 		this.responseStatus = status;
-		try {
-			T model = JsonUtil.readValue(responseBody, classOfResponse);
-			future.complete(model);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		T model = JsonUtil.readValue(responseBody, classOfResponse);
+		future.complete(model);
 	}
 
 	@Override

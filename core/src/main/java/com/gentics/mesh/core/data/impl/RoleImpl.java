@@ -29,8 +29,6 @@ import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
 
-import rx.Single;
-
 /**
  * @see Role
  */
@@ -132,10 +130,8 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Single<? extends Role> update(InternalActionContext ac) {
+	public Role update(InternalActionContext ac, SearchQueueBatch batch) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
-		Database db = MeshInternal.get().database();
-
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflict
@@ -144,13 +140,10 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 				throw conflict(roleWithSameName.getUuid(), requestModel.getName(), "role_conflicting_name");
 			}
 
-			return db.tx(() -> {
-				setName(requestModel.getName());
-				return createIndexBatch(STORE_ACTION);
-			}).process().andThen(Single.just(this));
+			setName(requestModel.getName());
+			addIndexBatchEntry(batch, STORE_ACTION);
 		}
-		// No update is required if the name did not change
-		return Single.just(this);
+		return this;
 	}
 
 	@Override

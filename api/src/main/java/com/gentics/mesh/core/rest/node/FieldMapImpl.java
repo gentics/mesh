@@ -67,6 +67,7 @@ public class FieldMapImpl implements FieldMap {
 		this(JsonNodeFactory.instance.objectNode());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends Field> T getField(String key, FieldTypes type, String listType, boolean expand) {
 
@@ -147,11 +148,7 @@ public class FieldMapImpl implements FieldMap {
 			}
 			MicronodeFieldList micronodeFieldList = new MicronodeFieldListImpl();
 			for (JsonNode node : jsonNode) {
-				try {
-					micronodeFieldList.getItems().add(JsonUtil.readValue(node.toString(), MicronodeResponse.class));
-				} catch (IOException e) {
-					throw error(BAD_REQUEST, "Could not read list item", e);
-				}
+				micronodeFieldList.getItems().add(JsonUtil.readValue(node.toString(), MicronodeResponse.class));
 			}
 			return micronodeFieldList;
 		// Basic types

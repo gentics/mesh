@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
-import rx.Single;
 
 /**
  * @see Language
@@ -89,8 +88,8 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public Single<Language> update(InternalActionContext rc) {
-		throw new NotImplementedException();
+	public Language update(InternalActionContext rc, SearchQueueBatch batch) {
+		throw new NotImplementedException("Languages can't be updated");
 	}
 
 	@Override

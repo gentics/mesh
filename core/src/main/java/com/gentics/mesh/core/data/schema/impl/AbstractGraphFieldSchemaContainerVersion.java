@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+
 import rx.Single;
 
 /**
@@ -181,7 +182,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public Single<? extends SCV> update(InternalActionContext ac) {
+	public SCV update(InternalActionContext ac, SearchQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 
@@ -198,6 +199,9 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		}
 		Database db = MeshInternal.get().database();
 		return db.tx(() -> {
+			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueueBatch batch = queue.createBatch();
+
 			SchemaChange<?> current = null;
 			for (SchemaChangeModel restChange : listOfChanges.getChanges()) {
 				SchemaChange<?> graphChange = createChange(restChange);
@@ -238,7 +242,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 			getSchemaContainer().setLatestVersion(nextVersion);
 
 			// Update the search index
-			return createIndexBatch(STORE_ACTION);
+			return addIndexBatchEntry(batch, STORE_ACTION);
 		}).process().toSingle(() -> {
 			return db.noTx(() -> {
 				return message(ac, "migration_invoked", getName());
@@ -250,9 +254,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	 * Overwrite default implementation since we need to add the parent container of all versions to the index and not the current version.
 	 */
 	@Override
-	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		batch.addEntry(this.getSchemaContainer(), action);
 		addRelatedEntries(batch, action);
 		return batch;

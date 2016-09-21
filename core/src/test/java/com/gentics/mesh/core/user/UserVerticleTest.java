@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -35,7 +34,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -451,7 +449,6 @@ public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	public void testCreateUserWithNodeReference() {
 		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
-			InternalActionContext ac = getMockedInternalActionContext(user());
 			assertTrue(user().hasPermission(node, READ_PERM));
 
 			NodeReferenceImpl reference = new NodeReferenceImpl();

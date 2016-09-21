@@ -12,8 +12,11 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -48,13 +51,13 @@ public class TagCrudHandler extends AbstractHandler {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
-//			try {
-				PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null), nodeParams.getLanguageList(),
-						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
-				return page.transformToRest(ac, 0);
-//			} catch (Exception e) {
-//				return Single.error(e);
-//			}
+			//			try {
+			PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null), nodeParams.getLanguageList(),
+					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
+			return page.transformToRest(ac, 0);
+			//			} catch (Exception e) {
+			//				return Single.error(e);
+			//			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -82,14 +85,13 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		db.asyncNoTx(() -> {
-			return getTagFamily(ac, tagFamilyUuid).create(ac).flatMap(tag -> {
-				return db.noTx(() -> {
-					// created.reload();
-					return tag.transformToRest(ac, 0);
-				});
-			});
+		db.asyncTx(() -> {
+			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueueBatch batch = queue.createBatch();
+			Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
+			return tag.transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+
 	}
 
 	/**

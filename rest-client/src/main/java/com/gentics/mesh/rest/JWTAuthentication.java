@@ -15,7 +15,7 @@ import rx.Single;
 public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	private String token;
-	private String authHeader;
+//	private String authHeader;
 	private Single<GenericMessageResponse> loginRequest;
 
 	public JWTAuthentication() {
@@ -23,7 +23,7 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	public JWTAuthentication(RoutingContext context) {
 		super();
-		this.authHeader = context.request().getHeader("Authorization");
+//		this.authHeader = context.request().getHeader("Authorization");
 	}
 
 	@Override

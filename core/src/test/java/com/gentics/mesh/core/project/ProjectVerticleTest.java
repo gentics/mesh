@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -529,10 +530,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		validateCreation(set, null);
 
 		try (Tx tx = db.tx()) {
-			int n = 0;
-			for (Vertex vertex : tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())) {
-				n++;
-			}
+			long n = StreamSupport.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName()).spliterator(),true).count();
 			int nProjectsAfter = meshRoot().getProjectRoot().findAll().size();
 			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
 			assertEquals(nProjectsBefore + nJobs, n);

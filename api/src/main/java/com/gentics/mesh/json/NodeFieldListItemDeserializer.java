@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
@@ -32,13 +33,11 @@ public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldLis
 		try {
 			// Try to deserialize the node response in the expanded form.
 			nodeItem = JsonUtil.readValue(jsonNode.toString(), NodeResponse.class);
-		} catch (MeshJsonException e) {
+		} catch (GenericRestException e) {
 			// Fallback and deseralize the element using the collapsed form.
 			NodeFieldListItemImpl collapsedItem = oc.treeToValue(jsonNode, NodeFieldListItemImpl.class);
 			nodeItem = new NodeResponse();
 			nodeItem.setUuid(collapsedItem.getUuid());
-		} catch (IOException e) {
-			throw new MeshJsonException("Could not read node list item.", e);
 		}
 		return nodeItem;
 	}

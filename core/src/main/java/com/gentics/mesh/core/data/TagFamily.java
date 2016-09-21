@@ -5,12 +5,11 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
-
-import rx.Single;
 
 /**
  * The TagFamily domain model interface.
@@ -102,7 +101,8 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * Create a new tag using the information from the action context.
 	 * 
 	 * @param ac
+	 * @param batch
 	 * @return
 	 */
-	Single<Tag> create(InternalActionContext ac);
+	Tag create(InternalActionContext ac, SearchQueueBatch batch);
 }

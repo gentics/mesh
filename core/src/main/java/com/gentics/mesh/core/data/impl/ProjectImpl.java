@@ -57,7 +57,6 @@ import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * @see Project
@@ -221,23 +220,21 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Single<? extends Project> update(InternalActionContext ac) {
-		Database db = MeshInternal.get().database();
+	public Project update(InternalActionContext ac, SearchQueueBatch batch) {
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
-		return db.tx(() -> {
-			if (shouldUpdate(requestModel.getName(), getName())) {
-				// Check for conflicting project name
-				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName());
-				if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
-					throw conflict(projectWithSameName.getUuid(), requestModel.getName(), "project_conflicting_name");
-				}
-				setName(requestModel.getName());
+		if (shouldUpdate(requestModel.getName(), getName())) {
+			// Check for conflicting project name
+			Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName());
+			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
+				throw conflict(projectWithSameName.getUuid(), requestModel.getName(), "project_conflicting_name");
 			}
-			setEditor(ac.getUser());
-			setLastEditedTimestamp(System.currentTimeMillis());
-			return createIndexBatch(STORE_ACTION);
-		}).process().toSingleDefault(this);
+			setName(requestModel.getName());
+		}
+		setEditor(ac.getUser());
+		setLastEditedTimestamp(System.currentTimeMillis());
+		addIndexBatchEntry(batch, STORE_ACTION);
+		return this;
 	}
 
 	@Override

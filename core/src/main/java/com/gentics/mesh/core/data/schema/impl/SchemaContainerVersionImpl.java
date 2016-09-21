@@ -2,10 +2,7 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.io.IOException;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -72,11 +69,7 @@ public class SchemaContainerVersionImpl extends
 	public Schema getSchema() {
 		Schema schema = MeshInternal.get().serverSchemaStorage().getSchema(getName(), getVersion());
 		if (schema == null) {
-			try {
-				schema = JsonUtil.readValue(getJson(), SchemaModel.class);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+			schema = JsonUtil.readValue(getJson(), SchemaModel.class);
 			MeshInternal.get().serverSchemaStorage().addSchema(schema);
 		}
 		return schema;
@@ -86,36 +79,32 @@ public class SchemaContainerVersionImpl extends
 	@Override
 	public Schema transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		// Load the schema and add/overwrite some properties
-		try {
-			Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);
-			restSchema.setUuid(getSchemaContainer().getUuid());
+		Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);
+		restSchema.setUuid(getSchemaContainer().getUuid());
 
-			// TODO Get list of projects to which the schema was assigned
-			// for (Project project : getProjects()) {
-			// }
-			// ProjectResponse restProject = new ProjectResponse();
-			// restProje ct.setUuid(project.getUuid());
-			// restProject.setName(project.getName());
-			// schemaResponse.getProjects().add(restProject);
-			// }
+		// TODO Get list of projects to which the schema was assigned
+		// for (Project project : getProjects()) {
+		// }
+		// ProjectResponse restProject = new ProjectResponse();
+		// restProje ct.setUuid(project.getUuid());
+		// restProject.setName(project.getName());
+		// schemaResponse.getProjects().add(restProject);
+		// }
 
-			// Sort the list by project name
-			// restSchema.getProjects()
-			// Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
-			// @Override
-			// public int compare(ProjectResponse o1, ProjectResponse o2) {
-			// return o1.getName().compareTo(o2.getName());
-			// };
-			// });
+		// Sort the list by project name
+		// restSchema.getProjects()
+		// Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
+		// @Override
+		// public int compare(ProjectResponse o1, ProjectResponse o2) {
+		// return o1.getName().compareTo(o2.getName());
+		// };
+		// });
 
-			// Role permissions
-			RestModelHelper.setRolePermissions(ac, getSchemaContainer(), restSchema);
+		// Role permissions
+		RestModelHelper.setRolePermissions(ac, getSchemaContainer(), restSchema);
 
-			restSchema.setPermissions(ac.getUser().getPermissionNames(getSchemaContainer()));
-			return restSchema;
-		} catch (IOException e) {
-			throw error(BAD_REQUEST, "Could not read json {" + getJson() + "}");
-		}
+		restSchema.setPermissions(ac.getUser().getPermissionNames(getSchemaContainer()));
+		return restSchema;
 
 	}
 

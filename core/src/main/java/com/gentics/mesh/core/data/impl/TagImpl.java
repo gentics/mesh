@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -39,7 +38,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
@@ -51,7 +49,6 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * @see Tag
@@ -190,36 +187,32 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public Single<Tag> update(InternalActionContext ac) {
-		Database db = MeshInternal.get().database();
+	public Tag update(InternalActionContext ac, SearchQueueBatch batch) {
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
-		return db.tx(() -> {
-			String newTagName = requestModel.getFields().getName();
-			if (isEmpty(newTagName)) {
-				throw error(BAD_REQUEST, "tag_name_not_set");
-			} else {
-				TagFamily tagFamily = getTagFamily();
+		String newTagName = requestModel.getFields().getName();
+		if (isEmpty(newTagName)) {
+			throw error(BAD_REQUEST, "tag_name_not_set");
+		} else {
+			TagFamily tagFamily = getTagFamily();
 
-				// Check for conflicts
-				Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName);
-				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
-					throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
-							tagFamily.getName());
-				}
-
-				setEditor(ac.getUser());
-				setLastEditedTimestamp(System.currentTimeMillis());
-				setName(requestModel.getFields().getName());
+			// Check for conflicts
+			Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName);
+			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
+				throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
+						tagFamily.getName());
 			}
-			return createIndexBatch(STORE_ACTION);
-		}).process().toSingleDefault(this);
+
+			setEditor(ac.getUser());
+			setLastEditedTimestamp(System.currentTimeMillis());
+			setName(requestModel.getFields().getName());
+		}
+		addIndexBatchEntry(batch, STORE_ACTION);
+		return this;
 
 	}
 
 	@Override
-	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		batch.addEntry(this, action).set(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
 		addRelatedEntries(batch, action);
 		return batch;

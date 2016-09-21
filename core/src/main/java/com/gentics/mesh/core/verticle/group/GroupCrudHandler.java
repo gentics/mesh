@@ -18,10 +18,12 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 
@@ -89,7 +91,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
-				SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+				group.addIndexBatchEntry(batch, STORE_ACTION);
 				group.addRole(role);
 				return Tuple.tuple(batch, group);
 			});
@@ -119,7 +123,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			SearchQueueBatch sqBatch = db.tx(() -> {
-				SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+				group.addIndexBatchEntry(batch, STORE_ACTION);
 				group.removeRole(role);
 				return batch;
 			});
@@ -169,7 +175,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 				group.addUser(user);
-				SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+				group.addIndexBatchEntry(batch, STORE_ACTION);
 				return Tuple.tuple(batch, group);
 			});
 			SearchQueueBatch batch = tuple.v1();
@@ -196,7 +204,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
-				SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+				group.addIndexBatchEntry(batch, STORE_ACTION);
 				batch.addEntry(user, STORE_ACTION);
 				group.removeUser(user);
 				return Tuple.tuple(batch, group);

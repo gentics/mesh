@@ -9,6 +9,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import org.elasticsearch.common.collect.Tuple;
+
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -38,19 +41,30 @@ public final class HandlerUtilities {
 	 * @param handler
 	 */
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac,
-			TxHandler<RootVertex<?>> handler) {
+			TxHandler<RootVertex<T>> handler) {
 		Database db = MeshInternal.get().database();
-		db.asyncNoTx(() -> {
-			RootVertex<?> root = handler.call();
-			return root.create(ac).flatMap(created -> {
-				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				return db.noTx(() -> {
-					// created.reload();
+
+		Mesh.vertx().runOnContext((e) -> {
+			try {
+				db.noTx(() -> {
+					Tuple<T, SearchQueueBatch> tuple = db.tx(() -> {
+						SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+						SearchQueueBatch batch = queue.createBatch();
+						RootVertex<T> root = handler.call();
+						return Tuple.tuple(root.create(ac, batch), batch);
+					});
+
+					T created = tuple.v1();
+					SearchQueueBatch batch = tuple.v2();
+
 					ac.setLocation(created.getAPIPath(ac));
-					return created.transformToRest(ac, 0);
-				});
-			});
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+					// Transform the vertex using a fresh transaction in order to start with a clean cache
+					return batch.process().andThen(created.transformToRest(ac, 0));
+				}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+			} catch (RuntimeException e1) {
+				ac.fail(e1);
+			}
+		});
 	}
 
 	/**
@@ -103,15 +117,17 @@ public final class HandlerUtilities {
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 			TxHandler<RootVertex<T>> handler) {
 		Database db = MeshInternal.get().database();
-		db.asyncNoTx(() -> {
+		db.asyncTx(() -> {
 			RootVertex<T> root = handler.call();
 			T element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			return element.update(ac).flatMap(updatedElement -> {
-				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				return db.noTx(() -> {
-					updatedElement.reload();
-					return updatedElement.transformToRest(ac, 0);
-				});
+			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueueBatch batch = queue.createBatch();
+			T updatedElement = element.update(ac, batch);
+
+			// Transform the vertex using a fresh transaction in order to start with a clean cache
+			return db.noTx(() -> {
+				updatedElement.reload();
+				return batch.process().andThen(updatedElement.transformToRest(ac, 0));
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}

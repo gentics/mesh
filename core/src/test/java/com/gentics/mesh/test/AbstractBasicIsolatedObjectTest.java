@@ -4,7 +4,6 @@ import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -17,7 +16,6 @@ public abstract class AbstractBasicIsolatedObjectTest extends AbstractIsolatedBa
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
 		RoutingContext rc = getMockedRoutingContext();
-		InternalActionContext ac = InternalActionContext.create(rc);
 
 		try (Tx tx = db.tx()) {
 			role().grantPermissions(element, perm);

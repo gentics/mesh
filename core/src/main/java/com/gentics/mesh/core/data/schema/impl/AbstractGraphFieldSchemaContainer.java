@@ -78,7 +78,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public Single<? extends SC> update(InternalActionContext ac) {
+	public SC update(InternalActionContext ac, SearchQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 
@@ -112,7 +112,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		// TODO should all references be updated to a new fallback schema?
-		createIndexBatch(DELETE_ACTION);
+		addIndexBatchEntry(batch, DELETE_ACTION);
 		getElement().remove();
 		//TODO delete versions and nodes as well
 	}

@@ -10,8 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.common.collect.Tuple;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -21,12 +19,10 @@ import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * @see RoleRoot
@@ -74,9 +70,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		return role;
 	}
 
-	public Single<Role> create(InternalActionContext ac) {
-		Database db = MeshInternal.get().database();
-
+	public Role create(InternalActionContext ac, SearchQueueBatch batch) {
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		String roleName = requestModel.getName();
 
@@ -95,18 +89,11 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 		}
 
-		Tuple<SearchQueueBatch, Role> tuple = db.tx(() -> {
-			requestUser.reload();
-			Role role = create(requestModel.getName(), requestUser);
-			requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
-			SearchQueueBatch batch = role.createIndexBatch(STORE_ACTION);
-			return Tuple.tuple(batch, role);
-		});
-
-		SearchQueueBatch batch = tuple.v1();
-		Role createdRole = tuple.v2();
-
-		return batch.process().toSingleDefault(createdRole);
+		requestUser.reload();
+		Role role = create(requestModel.getName(), requestUser);
+		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
+		role.addIndexBatchEntry(batch, STORE_ACTION);
+		return role;
 
 	}
 

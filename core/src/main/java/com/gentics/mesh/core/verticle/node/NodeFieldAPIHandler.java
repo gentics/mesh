@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -191,6 +193,9 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
 			return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
 				SearchQueueBatch batch = db.tx(() -> {
+					SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+					SearchQueueBatch sqb = queue.createBatch();
+
 					field.setFileName(fileName);
 					field.setFileSize(ul.size());
 					field.setMimeType(contentType);
@@ -204,7 +209,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 						newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 					}
 
-					return node.createIndexBatch(STORE_ACTION);
+					return node.addIndexBatchEntry(sqb, STORE_ACTION);
 				});
 
 				return batch.process().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
@@ -249,7 +254,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
-	public void handleRemoveFieldItem(InternalActionContext ac, String uuid) {
+	public void handleRemoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -267,7 +272,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
-	public void handleReadFieldItem(InternalActionContext ac, String uuid) {
+	public void handleReadFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
 		db.asyncNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
@@ -342,6 +347,9 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 				return obsHashAndSize.flatMap(hashAndSize -> {
 					Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
+						SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+						SearchQueueBatch batch = queue.createBatch();
+
 						field.setSHA512Sum(hashAndSize.v1());
 						field.setFileSize(hashAndSize.v2());
 						// resized images will always be jpeg
@@ -353,7 +361,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 						// node.setBinaryImageDPI(dpi);
 						// node.setBinaryImageHeight(heigth);
 						// node.setBinaryImageWidth(width);
-						SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
+						node.addIndexBatchEntry(batch, STORE_ACTION);
 						return Tuple.tuple(batch, node.getUuid());
 					});
 

@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -25,8 +24,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-
-import rx.Single;
 
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
@@ -71,11 +68,10 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public Single<Group> create(InternalActionContext ac) {
+	public Group create(InternalActionContext ac, SearchQueueBatch batch) {
 		MeshAuthUser requestUser = ac.getUser();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
-		Database db = MeshInternal.get().database();
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
@@ -84,25 +80,17 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 		}
-		return db.noTx(() -> {
-			MeshRoot root = boot.meshRoot();
+		MeshRoot root = boot.meshRoot();
 
-			Group groupWithSameName = findByName(requestModel.getName());
-			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
-			}
-			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
-				requestUser.reload();
-				Group group = create(requestModel.getName(), requestUser);
-				requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
-				SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
-				return Tuple.tuple(batch, group);
-			});
-			SearchQueueBatch batch = tuple.v1();
-			Group group = tuple.v2();
-			return batch.process().andThen(Single.just(group));
-
-		});
+		Group groupWithSameName = findByName(requestModel.getName());
+		if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
+			throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
+		}
+		requestUser.reload();
+		Group group = create(requestModel.getName(), requestUser);
+		requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
+		group.addIndexBatchEntry(batch, STORE_ACTION);
+		return group;
 	}
 
 }

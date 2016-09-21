@@ -226,8 +226,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 			Tuple<SearchQueueBatch, Node> tuple = db.tx(() -> {
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
 				node.addTag(tag, release);
-				SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
+				node.addIndexBatchEntry(batch, STORE_ACTION);
 				return Tuple.tuple(batch, node);
 			});
 			SearchQueueBatch batch = tuple.v1();
@@ -257,8 +259,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tag tag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			SearchQueueBatch sqBatch = db.tx(() -> {
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
 				// TODO get release specific containers
-				SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
+				node.addIndexBatchEntry(batch, STORE_ACTION);
 				node.removeTag(tag, release);
 				return batch;
 			});

@@ -12,16 +12,11 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * The admin verticle provides core administration rest endpoints.
  */
 @Singleton
 public class AdminVerticle extends AbstractWebVerticle {
-
-	private static final Logger log = LoggerFactory.getLogger(AdminVerticle.class);
 
 	private AdminHandler handler;
 

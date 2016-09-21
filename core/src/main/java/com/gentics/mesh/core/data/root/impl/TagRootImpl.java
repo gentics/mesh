@@ -19,7 +19,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
@@ -100,7 +99,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public Single<Tag> create(InternalActionContext ac) {
+	public Tag create(InternalActionContext ac, SearchQueueBatch batch) {
 		throw new NotImplementedException("The tag family is the root element thus should be used for creation of tags.");
 	}
 

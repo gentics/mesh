@@ -82,29 +82,31 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	@Override
 	public void addFullIndex() {
 		BootstrapInitializer boot = MeshInternal.get().boot();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch();
 		for (Node node : boot.nodeRoot().findAll()) {
-			node.createIndexBatch(STORE_ACTION);
+			node.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (Project project : boot.projectRoot().findAll()) {
-			project.createIndexBatch(STORE_ACTION);
+			project.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (User user : boot.userRoot().findAll()) {
-			user.createIndexBatch(STORE_ACTION);
+			user.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (Role role : boot.roleRoot().findAll()) {
-			role.createIndexBatch(STORE_ACTION);
+			role.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (Group group : boot.groupRoot().findAll()) {
-			group.createIndexBatch(STORE_ACTION);
+			group.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (Tag tag : boot.tagRoot().findAll()) {
-			tag.createIndexBatch(STORE_ACTION);
+			tag.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (TagFamily tagFamily : boot.tagFamilyRoot().findAll()) {
-			tagFamily.createIndexBatch(STORE_ACTION);
+			tagFamily.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
-			schema.createIndexBatch(STORE_ACTION);
+			schema.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		// TODO add support for microschemas
 		// for (Microschema microschema : boot.microschemaContainerRoot().findAll()) {
