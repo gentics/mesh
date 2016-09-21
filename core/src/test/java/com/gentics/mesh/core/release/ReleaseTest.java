@@ -61,12 +61,11 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 			Release releaseOne = releaseRoot.create("One", user());
 			Release releaseTwo = releaseRoot.create("Two", user());
 			Release releaseThree = releaseRoot.create("Three", user());
-			releaseRoot.reload();
 			PageImpl<? extends Release> page = releaseRoot.findAll(getMockedInternalActionContext(user()), new PagingParameters(1, 25));
 			assertThat(page).isNotNull();
 			ArrayList<Release> arrayList = new ArrayList<Release>();
 			page.iterator().forEachRemaining(r -> arrayList.add(r));
-			assertThat(arrayList).usingElementComparatorOnFields("uuid").containsExactly(initialRelease, releaseOne, releaseTwo, releaseThree);
+			assertThat(arrayList).containsExactly(initialRelease, releaseOne, releaseTwo, releaseThree);
 		}
 
 	}
