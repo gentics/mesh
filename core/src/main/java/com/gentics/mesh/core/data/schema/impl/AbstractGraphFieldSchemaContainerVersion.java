@@ -243,7 +243,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 			// Update the search index
 			return addIndexBatchEntry(batch, STORE_ACTION);
-		}).process().toSingle(() -> {
+		}).processAsync().toSingle(() -> {
 			return db.noTx(() -> {
 				return message(ac, "migration_invoked", getName());
 			});

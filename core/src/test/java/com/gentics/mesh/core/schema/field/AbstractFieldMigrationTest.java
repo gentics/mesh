@@ -544,7 +544,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractIsolatedBasicDB
 		assertThat(oldFieldFetcher.fetch(micronodeField.getMicronode(), fieldName)).as(OLDFIELD).isNotNull();
 
 		// migrate the micronode
-		CompletableFuture<Void> future = new CompletableFuture<>();
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
 		// old container must be untouched
@@ -710,7 +709,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractIsolatedBasicDB
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
-		CompletableFuture<Void> future = new CompletableFuture<>();
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged

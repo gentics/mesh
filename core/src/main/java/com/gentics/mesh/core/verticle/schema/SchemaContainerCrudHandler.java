@@ -84,7 +84,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	 * @param ac
 	 *            Context which contains the schema data to compare with
 	 * @param uuid
-	 *            Uuid of the schema which should also be used for comparision
+	 *            Uuid of the schema which should also be used for comparison
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		operateNoTx(() -> {

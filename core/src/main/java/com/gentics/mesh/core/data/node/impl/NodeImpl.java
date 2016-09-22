@@ -60,7 +60,6 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -203,12 +202,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<String> langList = new ArrayList<>();
 		langList.addAll(Arrays.asList(languageTag));
 		// TODO maybe we only want to get the project languages?
-		for (Language l : MeshRoot.getInstance().getLanguageRoot().findAll()) {
-			String tag = l.getLanguageTag();
-			if (!langList.contains(tag)) {
-				langList.add(tag);
-			}
-		}
+		langList.addAll(MeshInternal.get().boot().getAllLanguageTags());
 		String[] projectLanguages = langList.toArray(new String[langList.size()]);
 		Node current = this;
 		while (current != null) {
@@ -278,30 +272,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 	}
-
-	// @Override
-	// public Single<String> getPath(InternalActionContext ac) {
-	// List<Single<String>> segments = new ArrayList<>();
-	// segments.add(getPathSegment(ac));
-	// Node current = this;
-	// String releaseUuid = ac.getRelease(getProject()).getUuid();
-	// while (current != null) {
-	// current = current.getParentNode(releaseUuid);
-	// if (current == null || current.getParentNode(releaseUuid) == null) {
-	// break;
-	// }
-	// segments.add(current.getPathSegment(ac));
-	// }
-	//
-	// Collections.reverse(segments);
-	// List<Observable<String>> segmentsObs = new ArrayList<>();
-	// for (Single<String> segment : segments) {
-	// segmentsObs.add(segment.toObservable());
-	// }
-	// return Observable.concat(Observable.from(segmentsObs)).reduce((a, b) -> {
-	// return "/" + a + "/" + b;
-	// }).toSingle();
-	// }
 
 	@Override
 	public List<? extends Tag> getTags(Release release) {
@@ -1032,7 +1002,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		List<NodeGraphFieldContainer> published = unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser()))
 				.collect(Collectors.toList());
-		obs.add(addIndexBatch(batch, STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED).process());
+		obs.add(addIndexBatch(batch, STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED).processAsync());
 
 		// Handle recursion
 		if (parameters.isRecursive()) {
@@ -1074,7 +1044,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			assertPublishConsistency(ac);
 			return addIndexBatch(batch, STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
-		}).process());
+		}).processAsync());
 
 		return Completable.merge(obs);
 	}
@@ -1107,7 +1077,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Remove the published node from the index
 			return addIndexBatch(batch, DELETE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
-		}).process();
+		}).processAsync();
 	}
 
 	@Override
@@ -1159,7 +1129,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Invoke a store of the document since it must now also be added to the published index
 			return addIndexBatch(batch, STORE_ACTION, Arrays.asList(published), release.getUuid(), ContainerType.PUBLISHED);
-		}).process();
+		}).processAsync();
 	}
 
 	@Override
@@ -1185,7 +1155,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Invoke a delete on the document since it must be removed from the published index
 			return addIndexBatch(batch, DELETE_ACTION, Arrays.asList(published), releaseUuid, ContainerType.PUBLISHED);
-		}).process();
+		}).processAsync();
 	}
 
 	@Override

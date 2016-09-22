@@ -108,7 +108,7 @@ public class FieldMapImpl implements FieldMap {
 		}
 	}
 
-	private FieldList transformListFieldJsonNode(JsonNode jsonNode, String key, String listType) throws JsonProcessingException {
+	private FieldList<?> transformListFieldJsonNode(JsonNode jsonNode, String key, String listType) throws JsonProcessingException {
 
 		ObjectMapper mapper = JsonUtil.getMapper();
 		// ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
@@ -158,35 +158,35 @@ public class FieldMapImpl implements FieldMap {
 				return pojoNodeToValue(jsonNode, StringFieldListImpl.class, key);
 			}
 			String[] itemsStringArray = mapper.treeToValue(jsonNode, String[].class);
-			return (FieldList) getBasicList(key, String[].class, new StringFieldListImpl(), String.class, itemsStringArray);
+			return getBasicList(key, String[].class, new StringFieldListImpl(), String.class, itemsStringArray);
 		case "html":
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, HtmlFieldListImpl.class, key);
 			}
 			String[] itemsHtmlArray = mapper.treeToValue(jsonNode, String[].class);
-			return (FieldList) getBasicList(key, String[].class, new HtmlFieldListImpl(), String.class, itemsHtmlArray);
+			return getBasicList(key, String[].class, new HtmlFieldListImpl(), String.class, itemsHtmlArray);
 		case "date":
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, DateFieldListImpl.class, key);
 			}
 			String[] itemsDateArray = mapper.treeToValue(jsonNode, String[].class);
-			return (FieldList) getBasicList(key, String[].class, new DateFieldListImpl(), String.class, itemsDateArray);
+			return getBasicList(key, String[].class, new DateFieldListImpl(), String.class, itemsDateArray);
 		case "number":
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, NumberFieldListImpl.class, key);
 			}
 			Number[] itemsNumberArray = mapper.treeToValue(jsonNode, Number[].class);
-			return (FieldList) getBasicList(key, Number[].class, new NumberFieldListImpl(), Number.class, itemsNumberArray);
+			return getBasicList(key, Number[].class, new NumberFieldListImpl(), Number.class, itemsNumberArray);
 		case "boolean":
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, BooleanFieldListImpl.class, key);
 			}
 			Boolean[] itemsBooleanArray = mapper.treeToValue(jsonNode, Boolean[].class);
-			return (FieldList) getBasicList(key, Boolean[].class, new BooleanFieldListImpl(), Boolean.class, itemsBooleanArray);
+			return getBasicList(key, Boolean[].class, new BooleanFieldListImpl(), Boolean.class, itemsBooleanArray);
 		default:
 			// TODO i18n
 			throw error(BAD_REQUEST, "Unknown list type {" + listType + "}");
@@ -409,14 +409,14 @@ public class FieldMapImpl implements FieldMap {
 			return null;
 		}
 		if (clazz.isAssignableFrom(pojo.getClass())) {
-			return (T) pojo;
+			return clazz.cast(pojo);
 		} else {
 			throw error(BAD_REQUEST,
 					"The field value for {" + key + "} is not of correct type. Stored POJO was of class {" + pojo.getClass().getName() + "}");
 		}
 	}
 
-	private <I, AT> Field getBasicList(String fieldKey, Class<AT> clazzOfJsonArray, FieldList<I> list, Class<I> classOfItem, I[] itemsArray) {
+	private <I, AT> FieldList<I> getBasicList(String fieldKey, Class<AT> clazzOfJsonArray, FieldList<I> list, Class<I> classOfItem, I[] itemsArray) {
 		if (itemsArray != null) {
 			list.getItems().addAll((List<I>) Arrays.asList(itemsArray));
 		}

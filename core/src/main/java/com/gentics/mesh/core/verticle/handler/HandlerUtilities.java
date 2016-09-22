@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.lang3.tuple.Triple;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.Mesh;
@@ -31,6 +30,7 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.util.ResultInfo;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
@@ -52,7 +52,7 @@ public final class HandlerUtilities {
 			TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
 			Database db = MeshInternal.get().database();
-			Triple<RM, String, SearchQueueBatch> info = db.tx(() -> {
+			ResultInfo info = db.tx(() -> {
 				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 				RootVertex<T> root = handler.call();
 				SearchQueueBatch batch = queue.createBatch();
@@ -60,15 +60,17 @@ public final class HandlerUtilities {
 				T created = root.create(ac, batch);
 				RM model = created.transformToRestSync(ac, 0);
 				String path = created.getAPIPath(ac);
-				return Triple.of(model, path, batch);
+				ResultInfo resultInfo = new ResultInfo(model, batch);
+				resultInfo.setProperty("path", path);
+				return resultInfo;
 			});
 
-			RM model = info.getLeft();
-			String path = info.getMiddle();
-			SearchQueueBatch batch = info.getRight();
+			RestModel model = info.getModel();
+			String path = info.getProperty("path");
+			SearchQueueBatch batch = info.getBatch();
 			ac.setLocation(path);
 			// TODO don't wait forever in order to prevent locking the thread
-			batch.process().await();
+			batch.processSync();
 			return model;
 		}, model -> ac.send(model, CREATED));
 
@@ -103,7 +105,7 @@ public final class HandlerUtilities {
 				}
 			});
 			log.info("Deleted element {" + elementUuid + "}");
-			return sqb.process().andThen(Single.just((RM) null)).toBlocking().value();
+			return sqb.processAsync().andThen(Single.just((RM) null)).toBlocking().value();
 		}, model -> ac.send(NO_CONTENT));
 	}
 
@@ -134,7 +136,7 @@ public final class HandlerUtilities {
 			// The updating transaction has succeeded. Now lets store it in the index
 			return db.noTx(() -> {
 				SearchQueueBatch batch = tuple.v1();
-				batch.process().await();
+				batch.processSync();
 				RM model = tuple.v2();
 				return model;
 			});

@@ -216,7 +216,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		getSchemaContainerRoot().delete(batch);
 		reload();
 		getVertex().remove();
-
 	}
 
 	@Override

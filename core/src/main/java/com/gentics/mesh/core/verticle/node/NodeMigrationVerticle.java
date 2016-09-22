@@ -80,6 +80,9 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 		registerReleaseMigration();
 	}
 
+	/**
+	 * Register an event bus consumer handler which will react on schema node migration events.
+	 */
 	private void registerSchemaMigration() {
 		vertx.eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
 
@@ -124,6 +127,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.schema);
 						setRunning(statusBean, statusMBeanName);
+						// Invoke the migration using the located elements
 						nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
 						return null;
 					});
@@ -268,6 +272,19 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 		vertx.sharedData().getLocalMap("migrationStatus").put("status", "migration_status_running");
 	}
 
+	/**
+	 * Set the status of the migration in various places.
+	 * <hr>
+	 * This method will:
+	 * <ul>
+	 * <li>Publish an event which contains the status completed for migrations</li>
+	 * <li>Set the migration status within the shared data map</li>
+	 * <li>Unregister the migration status bean</li>
+	 * </ul>
+	 * 
+	 * @param schemaUuid
+	 * @param statusMBeanName
+	 */
 	private void setDone(String schemaUuid, ObjectName statusMBeanName) {
 		if (log.isDebugEnabled()) {
 			log.debug("Migration for container " + schemaUuid + " completed");

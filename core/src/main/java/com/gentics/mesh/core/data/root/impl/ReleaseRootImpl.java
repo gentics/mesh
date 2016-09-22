@@ -14,7 +14,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -31,12 +30,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
-
-import io.vertx.core.eventbus.DeliveryOptions;
 
 public class ReleaseRootImpl extends AbstractRootVertex<Release> implements ReleaseRoot {
 
@@ -138,12 +134,6 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"), Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
 		batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "published"), Node.TYPE,
 				SearchQueueEntryAction.CREATE_INDEX);
-
-		// start the node migration
-		DeliveryOptions options = new DeliveryOptions();
-		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
-		options.addHeader(NodeMigrationVerticle.UUID_HEADER, release.getUuid());
-		Mesh.vertx().eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options);
 		return release;
 	}
 

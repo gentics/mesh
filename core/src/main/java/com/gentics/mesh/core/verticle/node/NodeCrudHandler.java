@@ -74,7 +74,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				SearchQueueBatch batch = queue.createBatch();
 				node.deleteFromRelease(ac.getRelease(null), batch);
 				return batch;
-			}).process().await();
+			}).processSync();
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 	}
@@ -103,7 +103,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
 				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
 				return batch;
-			}).process().await();
+			}).processSync();
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 	}
@@ -131,7 +131,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
 				sourceNode.moveTo(ac, targetNode, batch);
 				return batch;
-			}).process().await();
+			}).processSync();
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 
@@ -168,7 +168,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			VersioningParameters versionParams = ac.getVersioningParameters();
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			try {
+//			try {
 				PageImpl<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(),
 						ac.getRelease(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 				// Handle etag
@@ -179,9 +179,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				} else {
 					return page.transformToRest(ac, 0).toBlocking().value();
 				}
-			} catch (Exception e) {
-				throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
-			}
+//			} catch (Exception e) {
+//				throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}", e);
+//			}
 		}, model -> ac.send(model, OK));
 
 	}
@@ -244,7 +244,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			});
 			SearchQueueBatch batch = tuple.v1();
 			Node updatedNode = tuple.v2();
-			return batch.process().andThen(updatedNode.transformToRest(ac, 0));
+			return batch.processAsync().andThen(updatedNode.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -276,7 +276,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.removeTag(tag, release);
 				return batch;
 			});
-			return sqBatch.process(ac).andThen(Single.just(null));
+			return sqBatch.processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 

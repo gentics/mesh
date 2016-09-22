@@ -31,13 +31,9 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.test.performance.TestUtils;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
 public class TrxTest extends AbstractIsolatedBasicDBTest {
-
-	private static final Logger log = LoggerFactory.getLogger(TrxTest.class);
 
 	//	@Test
 	//	public void testAsyncTestErrorHandling() throws Exception {

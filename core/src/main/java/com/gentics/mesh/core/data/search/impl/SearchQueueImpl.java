@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPER
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
@@ -124,7 +122,7 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		long count = 0;
 		while ((batch = take()) != null) {
 			if (batch.getEntries().size() > 0) {
-				batch.process().await(10, TimeUnit.SECONDS);
+				batch.processSync();
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("Proccessed batch.");

@@ -44,6 +44,7 @@ public abstract class NameUuidReference<T> {
 	 *            Name of the referenced element
 	 * @return Fluent API
 	 */
+	@SuppressWarnings("unchecked")
 	public T setName(String name) {
 		this.name = name;
 		return (T) this;
@@ -65,6 +66,7 @@ public abstract class NameUuidReference<T> {
 	 *            Uuid of the referenced element
 	 * @return Fluent API
 	 */
+	@SuppressWarnings("unchecked")
 	public T setUuid(String uuid) {
 		this.uuid = uuid;
 		return (T) this;

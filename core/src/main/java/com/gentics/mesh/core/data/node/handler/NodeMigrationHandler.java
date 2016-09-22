@@ -188,7 +188,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		}
 
 		// Process the search queue batch in order to update the search index
-		return batch.process();
+		return batch.processAsync();
 	}
 
 	/**
@@ -384,7 +384,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		});
 
 		// Process the search queue batch in order to update the search index
-		return batch.process();
+		return batch.processAsync();
 	}
 
 	/**

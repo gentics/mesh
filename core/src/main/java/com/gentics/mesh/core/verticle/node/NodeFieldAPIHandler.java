@@ -213,7 +213,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					return node.addIndexBatchEntry(sqb, STORE_ACTION);
 				});
 
-				return batch.process().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
+				return batch.processAsync().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
 
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
@@ -368,7 +368,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 					SearchQueueBatch batch = tuple.v1();
 					String updatedNodeUuid = tuple.v2();
-					return batch.process().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
+					return batch.processAsync().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
 				});
 			} catch (GenericRestException e) {
 				throw e;

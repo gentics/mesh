@@ -220,9 +220,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 		}
 		this.setName(newName);
-		//return createIndexBatch(STORE_ACTION);
-
-		batch.process().await();
+		addIndexBatchEntry(batch, STORE_ACTION);
 		return this;
 	}
 

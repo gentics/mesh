@@ -61,7 +61,7 @@ public class SimpleReflectionCache extends Reflections {
 		return annotation;
 	}
 
-	public Class forName(final String className) {
+	public Class<?> forName(final String className) {
 		return this.classStringCache.get(className);
 	}
 

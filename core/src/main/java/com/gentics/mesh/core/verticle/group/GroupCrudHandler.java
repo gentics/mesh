@@ -100,7 +100,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			});
 			SearchQueueBatch batch = tuple.v1();
 			Group updatedGroup = tuple.v2();
-			return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
+			return batch.processAsync().andThen(updatedGroup.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -131,7 +131,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				return batch;
 			});
 
-			return sqBatch.process().andThen(Single.just(null));
+			return sqBatch.processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -183,7 +183,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			});
 			SearchQueueBatch batch = tuple.v1();
 			Group updatedGroup = tuple.v2();
-			return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
+			return batch.processAsync().andThen(updatedGroup.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -213,7 +213,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				return Tuple.tuple(batch, group);
 			});
 			SearchQueueBatch batch = tuple.v1();
-			return batch.process().andThen(Single.just(null));
+			return batch.processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
