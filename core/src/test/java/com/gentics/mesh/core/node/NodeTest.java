@@ -463,12 +463,13 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			assertThat(subFolder).as("subFolder").hasOnlyChildren(newRelease, subSubFolder);
 			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(newRelease);
 
+			SearchQueueBatch batch = createBatch();
 			// 5. reverse folders in new release
-			subSubFolder.moveTo(getMockedInternalActionContext(user()), folder, null);
+			subSubFolder.moveTo(getMockedInternalActionContext(user()), folder, batch);
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
-			subFolder.moveTo(getMockedInternalActionContext(user()), subSubFolder, null);
+			subFolder.moveTo(getMockedInternalActionContext(user()), subSubFolder, batch);
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
@@ -484,7 +485,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(initialRelease);
 
 			// 8. delete folder for initial release
-			SearchQueueBatch batch = createBatch();
+			batch = createBatch();
 			subFolder.deleteFromRelease(initialRelease, batch);
 			folder.reload();
 			subFolder.reload();

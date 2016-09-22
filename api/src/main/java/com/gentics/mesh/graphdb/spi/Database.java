@@ -16,7 +16,6 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
-import rx.Single;
 
 /**
  * Main description of a graph database.
