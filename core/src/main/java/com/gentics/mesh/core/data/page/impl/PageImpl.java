@@ -94,18 +94,11 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 			return Single.just(listResponse);
 		}
 
-		Observable<RestModel> merged = Observable.empty();
-		for (Single<? extends RestModel> element : obs) {
-			merged = merged.concatWith(element.toObservable());
-		}
-
-		return merged.concatMap(item -> {
-			listResponse.getData().add(item);
-			return Observable.just(listResponse);
-		}).last().map(item -> {
+		return Observable.from(obs).concatMapEager(s -> s.toObservable()).toList().toSingle().map(list -> {
 			setPaging(listResponse);
+			listResponse.getData().addAll(list);
 			return listResponse;
-		}).toSingle();
+		});
 	}
 
 	@Override

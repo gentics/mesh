@@ -6,14 +6,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.RxUtil;
-import com.gentics.mesh.util.Tuple;
 
 import io.vertx.rx.java.RxHelper;
 import io.vertx.rxjava.core.Vertx;
@@ -35,36 +32,11 @@ public class RxTest {
 			list.add(createSingle(i));
 		}
 
-		Observable.from(list).flatMap(s -> s.toObservable().subscribeOn(Schedulers.computation())).toList().subscribe(System.out::println,
-				Throwable::printStackTrace);
-		
-		Thread.sleep(10000);
-	}
-
-	@Test
-	public void testMultipleSingles() {
-		List<Single<Tuple<Integer, String>>> list = new ArrayList<>();
-		List<String> finalList = new ArrayList<>();
-		for (int i = 0; i < 10; i++) {
-			final int current = i;
-			finalList.add(null);
-			list.add(createSingle(i).map(e -> {
-				return Tuple.tuple(current, e);
-			}));
-		}
-
-		List<Observable<Tuple<Integer, String>>> obsList = list.stream().map(Single::toObservable).collect(Collectors.toList());
-
 		long start = System.currentTimeMillis();
-		for (Tuple<Integer, String> tuple : Observable.merge(obsList).toBlocking().toIterable()) {
-			finalList.set(tuple.v1(), tuple.v2());
-			System.out.println(tuple.v2() + " - " + tuple.v1());
-		}
-
+		List<String> finalList = Observable.from(list).concatMapEager(s -> s.toObservable()).toList().toSingle().toBlocking().value();
 		for (String value : finalList) {
 			System.out.println(value);
 		}
-
 		long duration = System.currentTimeMillis() - start;
 		System.out.println("Duration: " + duration);
 	}
