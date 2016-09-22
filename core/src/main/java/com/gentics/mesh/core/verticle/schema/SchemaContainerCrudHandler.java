@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -56,7 +57,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			SchemaContainer element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			try {
@@ -86,7 +87,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	 *            Uuid of the schema which should also be used for comparision
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			return schema.getLatestVersion().diff(ac, comparator, requestModel);
@@ -113,7 +114,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleAddSchemaToProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (ac.getUser().hasPermission(project.getImpl(), GraphPermission.UPDATE_PERM)) {
@@ -141,7 +142,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleRemoveSchemaFromProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (ac.getUser().hasPermission(project.getImpl(), GraphPermission.UPDATE_PERM)) {
@@ -175,7 +176,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			return schema.getLatestVersion().applyChanges(ac);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);

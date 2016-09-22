@@ -1,5 +1,7 @@
 package com.gentics.mesh.auth;
 
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -42,7 +44,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
 			MeshAuthUser user = MeshInternal.get().boot().userRoot().findMeshAuthUserByUsername(username);

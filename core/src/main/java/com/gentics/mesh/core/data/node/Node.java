@@ -322,9 +322,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param ac
 	 * @param targetNode
-	 * @return
+	 * @param batch
 	 */
-	Completable moveTo(InternalActionContext ac, Node targetNode);
+	void moveTo(InternalActionContext ac, Node targetNode, SearchQueueBatch batch);
 
 	/**
 	 * Transform the node into a node reference rest model.
@@ -347,7 +347,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return
 	 */
-	Single<PublishStatusResponse> transformToPublishStatus(InternalActionContext ac);
+	PublishStatusResponse transformToPublishStatus(InternalActionContext ac);
 
 	/**
 	 * Publish the node (all languages)
@@ -372,7 +372,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTag
 	 * @return
 	 */
-	Single<PublishStatusModel> transformToPublishStatus(InternalActionContext ac, String languageTag);
+	PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag);
 
 	/**
 	 * Publish a language of the node
@@ -417,14 +417,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	Single<String> getPathSegment(InternalActionContext ac);
-
-//	/**
-//	 * Return the full path to this node.
-//	 * 
-//	 * @param ac
-//	 * @return
-//	 */
-//	Single<String> getPath(InternalActionContext ac);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.

@@ -83,7 +83,6 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 
 	@Override
 	public Single<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level) {
-
 		List<Single<? extends RestModel>> obs = new ArrayList<>();
 		for (T element : wrappedList) {
 			obs.add(element.transformToRest(ac, level));
@@ -106,7 +105,6 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 			setPaging(listResponse);
 			return listResponse;
 		}).toSingle();
-
 	}
 
 	@Override

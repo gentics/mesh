@@ -188,7 +188,6 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		}
 
 		reload();
-		batch.process().await();
 		return user;
 
 	}

@@ -442,7 +442,6 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 1. create folder with subfolder and subsubfolder
 			Node folder = project.getBaseNode().create(user(), folderSchema, project);
 			folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
-			String folderUuid = folder.getUuid();
 			Node subFolder = folder.create(user(), folderSchema, project);
 			subFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubFolder");
 			String subFolderUuid = subFolder.getUuid();
@@ -465,11 +464,11 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(newRelease);
 
 			// 5. reverse folders in new release
-			subSubFolder.moveTo(getMockedInternalActionContext(user()), folder);
+			subSubFolder.moveTo(getMockedInternalActionContext(user()), folder, null);
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
-			subFolder.moveTo(getMockedInternalActionContext(user()), subSubFolder);
+			subFolder.moveTo(getMockedInternalActionContext(user()), subSubFolder, null);
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();

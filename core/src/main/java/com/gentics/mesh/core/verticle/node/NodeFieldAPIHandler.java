@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -82,7 +83,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
@@ -124,7 +125,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		validateParameter(uuid, "uuid");
 		validateParameter(languageTag, "languageTag");
 		validateParameter(fieldName, "fieldName");
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -246,7 +247,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		validateParameter(uuid, "uuid");
 		validateParameter(languageTag, "languageTag");
 		validateParameter(fieldName, "fieldName");
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			// TODO Update SQB
@@ -255,7 +256,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleRemoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			// TODO Update SQB
@@ -264,7 +265,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleUpdateFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			// TODO Update SQB
@@ -273,7 +274,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleReadFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			return Single.just(new GenericMessageResponse("Not yet implemented"));
@@ -281,7 +282,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleMoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			// TODO Update SQB
@@ -297,7 +298,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 */
 	public void handleTransformImage(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			// TODO Update SQB

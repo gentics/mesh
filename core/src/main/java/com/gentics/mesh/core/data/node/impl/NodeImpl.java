@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
@@ -859,8 +860,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
-		Database db = MeshInternal.get().database();
-		return db.asyncNoTx(() -> {
+		return operateNoTx(() -> {
 			// TODO assure that the schema version is correct
 			if (!getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");
@@ -990,7 +990,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Single<PublishStatusResponse> transformToPublishStatus(InternalActionContext ac) {
+	public PublishStatusResponse transformToPublishStatus(InternalActionContext ac) {
 		Release release = ac.getRelease(getProject());
 		PublishStatusResponse publishStatus = new PublishStatusResponse();
 		Map<String, PublishStatusModel> languages = new HashMap<>();
@@ -1013,7 +1013,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					languages.put(c.getLanguage().getLanguageTag(), status);
 				});
 
-		return Single.just(publishStatus);
+		return publishStatus;
 	}
 
 	@Override
@@ -1111,20 +1111,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Single<PublishStatusModel> transformToPublishStatus(InternalActionContext ac, String languageTag) {
+	public PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag) {
 		Release release = ac.getRelease(getProject());
 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, release.getUuid(), ContainerType.PUBLISHED);
 		if (container != null) {
 			String date = DateUtils.toISO8601(container.getLastEditedTimestamp(), 0);
-			return Single.just(new PublishStatusModel().setPublished(true)
+			return new PublishStatusModel().setPublished(true)
 					.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()))
-					.setPublisher(container.getEditor().transformToReference()).setPublishTime(date));
+					.setPublisher(container.getEditor().transformToReference()).setPublishTime(date);
 		} else {
 			container = getGraphFieldContainer(languageTag, release.getUuid(), ContainerType.DRAFT);
 			if (container != null) {
-				return Single.just(new PublishStatusModel().setPublished(false)
-						.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString())));
+				return new PublishStatusModel().setPublished(false)
+						.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()));
 			} else {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
@@ -1525,9 +1525,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Completable moveTo(InternalActionContext ac, Node targetNode) {
-		Database db = MeshInternal.get().database();
-
+	public void moveTo(InternalActionContext ac, Node targetNode, SearchQueueBatch batch) {
 		// TODO should we add a guard that terminates this loop when it runs to
 		// long?
 		// Check whether the target node is part of the subtree of the source
@@ -1549,24 +1547,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			throw error(BAD_REQUEST, "node_move_error_same_nodes");
 		}
 
-		return db.tx(() -> {
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-			SearchQueueBatch batch = queue.createBatch();
+		setParentNode(releaseUuid, targetNode);
+		// update the webroot path info for every field container to ensure
 
-			setParentNode(releaseUuid, targetNode);
-			// update the webroot path info for every field container to ensure
+		// Update published graph field containers
+		getGraphFieldContainers(releaseUuid, ContainerType.PUBLISHED).stream()
+				.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
 
-			// Update published graph field containers
-			getGraphFieldContainers(releaseUuid, ContainerType.PUBLISHED).stream()
-					.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
+		// Update draft graph field containers
+		getGraphFieldContainers(releaseUuid, ContainerType.DRAFT).stream()
+				.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
 
-			// Update draft graph field containers
-			getGraphFieldContainers(releaseUuid, ContainerType.DRAFT).stream()
-					.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
-
-			assertPublishConsistency(ac);
-			return addIndexBatchEntry(batch, STORE_ACTION);
-		}).process();
+		assertPublishConsistency(ac);
+		addIndexBatchEntry(batch, STORE_ACTION);
 	}
 
 	@Override

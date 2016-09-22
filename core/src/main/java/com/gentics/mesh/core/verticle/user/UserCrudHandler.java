@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.user;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -72,25 +73,22 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		if (log.isDebugEnabled()) {
 			log.debug("Handling permission request for element on path {" + pathToElement + "}");
 		}
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
+			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
+			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
-			return db.noTx(() -> {
-				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-
-				// 2. Resolve the path to element that is targeted
-				Single<? extends MeshVertex> resolvedElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
-				return resolvedElement.map(targetElement -> {
-					return db.noTx(() -> {
-						if (targetElement == null) {
-							throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-						}
-						UserPermissionResponse response = new UserPermissionResponse();
-						for (GraphPermission perm : user.getPermissions(targetElement)) {
-							response.getPermissions().add(perm.getSimpleName());
-						}
-						return response;
-					});
+			// 2. Resolve the path to element that is targeted
+			Single<? extends MeshVertex> resolvedElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
+			return resolvedElement.map(targetElement -> {
+				return db.noTx(() -> {
+					if (targetElement == null) {
+						throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+					}
+					UserPermissionResponse response = new UserPermissionResponse();
+					for (GraphPermission perm : user.getPermissions(targetElement)) {
+						response.getPermissions().add(perm.getSimpleName());
+					}
+					return response;
 				});
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
