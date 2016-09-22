@@ -6,25 +6,90 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.Tuple;
 
 import io.vertx.rx.java.RxHelper;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.file.FileSystem;
 import rx.Observable;
 import rx.Scheduler;
+import rx.Single;
 import rx.schedulers.Schedulers;
 
-
-@Ignore
 public class RxTest {
 
 	private Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+
+	@Test
+	public void testMultipleSingles2() {
+		List<Single<String>> list = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			list.add(createSingle(i));
+		}
+
+		List<Observable<String>> obsList = list.stream().map(Single::toObservable).collect(Collectors.toList());
+
+		List<String> finalList = new ArrayList<>(obsList.size());
+		long start = System.currentTimeMillis();
+		for (String value : Observable.merge(obsList).toBlocking().toIterable()) {
+			finalList.add(value);
+			System.out.println(value);
+		}
+
+		for (String value : finalList) {
+			System.out.println(value);
+		}
+
+		long duration = System.currentTimeMillis() - start;
+		System.out.println("Duration: " + duration);
+	}
+
+	@Test
+	public void testMultipleSingles() {
+		List<Single<Tuple<Integer, String>>> list = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			final int current = i;
+			list.add(createSingle(i).map(e -> {
+				return Tuple.tuple(current, e);
+			}));
+		}
+
+		List<Observable<Tuple<Integer, String>>> obsList = list.stream().map(Single::toObservable).collect(Collectors.toList());
+
+		List<String> finalList = new ArrayList<>(obsList.size());
+		long start = System.currentTimeMillis();
+		for (Tuple<Integer, String> tuple : Observable.merge(obsList).toBlocking().toIterable()) {
+			finalList.add(tuple.v1(), tuple.v2());
+			System.out.println(tuple.v2() + " - " + tuple.v1());
+		}
+
+		for (String value : finalList) {
+			System.out.println(value);
+		}
+
+		long duration = System.currentTimeMillis() - start;
+		System.out.println("Duration: " + duration);
+	}
+
+	private Single<String> createSingle(int i) {
+		return Single.create(sub -> {
+
+			new Thread(() -> {
+				try {
+					Thread.sleep(800);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				sub.onSuccess("test_" + i);
+			}).start();
+		});
+	}
 
 	@Test
 	public void testScheduler() throws IOException {
@@ -65,10 +130,10 @@ public class RxTest {
 			return null;
 		});
 		Observable<Void> obs2 = Observable.empty();
-		//		Iterator<Void> it = obs.toBlocking().getIterator();
-		//		while (it.hasNext()) {
-		//			it.next();
-		//		}
+		// Iterator<Void> it = obs.toBlocking().getIterator();
+		// while (it.hasNext()) {
+		// it.next();
+		// }
 
 		Observable<String> obs3 = obs2.flatMap(e -> Observable.just("blub"));
 
