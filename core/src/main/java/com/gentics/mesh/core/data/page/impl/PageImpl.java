@@ -83,9 +83,9 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 
 	@Override
 	public Single<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level) {
-		List<Observable<? extends RestModel>> obs = new ArrayList<>();
+		List<Single<? extends RestModel>> obs = new ArrayList<>();
 		for (T element : wrappedList) {
-			obs.add(element.transformToRest(ac, level).toObservable());
+			obs.add(element.transformToRest(ac, level));
 		}
 		ListResponse<RestModel> listResponse = new ListResponse<>();
 		if (obs.size() == 0) {
@@ -94,11 +94,11 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 		}
 
 		Observable<RestModel> merged = Observable.empty();
-		for (Observable<? extends RestModel> element : obs) {
-			merged = merged.concatWith(element);
+		for (Single<? extends RestModel> element : obs) {
+			merged = merged.concatWith(element.toObservable());
 		}
 
-		return Observable.merge(obs).concatMap(item -> {
+		return merged.concatMap(item -> {
 			listResponse.getData().add(item);
 			return Observable.just(listResponse);
 		}).last().map(item -> {
