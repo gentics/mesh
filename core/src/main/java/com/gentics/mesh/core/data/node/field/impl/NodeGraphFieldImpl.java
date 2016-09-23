@@ -34,7 +34,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	@Override
 	public Node getNode() {
-		return inV().has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
+		return inV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	@Override

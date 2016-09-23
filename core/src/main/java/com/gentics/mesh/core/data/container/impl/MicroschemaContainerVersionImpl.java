@@ -63,7 +63,7 @@ public class MicroschemaContainerVersionImpl
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
-		return in(HAS_MICROSCHEMA_CONTAINER).has(MicronodeImpl.class).copySplit(
+		return in(HAS_MICROSCHEMA_CONTAINER).copySplit(
 				(a) -> a.in(HAS_FIELD).mark().inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
 						.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back(),
 				(a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(HAS_FIELD_CONTAINER)

@@ -90,12 +90,12 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 	@Override
 	public Release getInitialRelease() {
-		return out(HAS_INITIAL_RELEASE).has(ReleaseImpl.class).nextOrDefaultExplicit(ReleaseImpl.class, null);
+		return out(HAS_INITIAL_RELEASE).nextOrDefaultExplicit(ReleaseImpl.class, null);
 	}
 
 	@Override
 	public Release getLatestRelease() {
-		return out(HAS_LATEST_RELEASE).has(ReleaseImpl.class).nextOrDefaultExplicit(ReleaseImpl.class, null);
+		return out(HAS_LATEST_RELEASE).nextOrDefaultExplicit(ReleaseImpl.class, null);
 	}
 
 	@Override

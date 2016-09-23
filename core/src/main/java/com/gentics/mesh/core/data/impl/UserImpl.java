@@ -162,22 +162,22 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public List<? extends Group> getGroups() {
-		return out(HAS_USER).has(GroupImpl.class).toListExplicit(GroupImpl.class);
+		return out(HAS_USER).toListExplicit(GroupImpl.class);
 	}
 
 	@Override
 	public List<? extends Role> getRoles() {
-		return out(HAS_USER).in(HAS_ROLE).has(RoleImpl.class).toListExplicit(RoleImpl.class);
+		return out(HAS_USER).in(HAS_ROLE).toListExplicit(RoleImpl.class);
 	}
 
 	@Override
 	public List<? extends Role> getRolesViaShortcut() {
-		return out(ASSIGNED_TO_ROLE).has(RoleImpl.class).toListExplicit(RoleImpl.class);
+		return out(ASSIGNED_TO_ROLE).toListExplicit(RoleImpl.class);
 	}
 
 	@Override
 	public Node getReferencedNode() {
-		return out(HAS_NODE_REFERENCE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
+		return out(HAS_NODE_REFERENCE).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	@Override
@@ -338,8 +338,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
 		// 1. Determine all roles that grant given permission on the source node.
-		List<? extends Role> rolesThatGrantPermission = sourceNode.getImpl().in(permission.label()).has(RoleImpl.class)
-				.toListExplicit(RoleImpl.class);
+		List<? extends Role> rolesThatGrantPermission = sourceNode.getImpl().in(permission.label()).toListExplicit(RoleImpl.class);
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : rolesThatGrantPermission) {

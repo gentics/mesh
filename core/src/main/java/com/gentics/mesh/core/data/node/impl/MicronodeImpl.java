@@ -116,7 +116,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		// TODO this only returns ONE container, but with versioning, the micronode may have multiple containers
 
 		// first try to get the container in case for normal fields
-		NodeGraphFieldContainerImpl container = in(HAS_FIELD).has(NodeGraphFieldContainerImpl.class)
+		NodeGraphFieldContainerImpl container = in(HAS_FIELD)
 				.nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 
 		if (container == null) {

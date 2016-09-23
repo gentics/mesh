@@ -93,7 +93,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public NodeGraphField getNode(String key) {
-		return outE(HAS_FIELD).has(NodeGraphFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
+		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
 				.nextOrDefaultExplicit(NodeGraphFieldImpl.class, null);
 	}
 
@@ -189,7 +189,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public MicronodeGraphField getMicronode(String key) {
-		return outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
+		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
 				.nextOrDefaultExplicit(MicronodeGraphFieldImpl.class, null);
 	}
 
@@ -217,7 +217,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public BinaryGraphField getBinary(String key) {
-		return out(HAS_FIELD).has(BinaryGraphFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
+		return out(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
 				.nextOrDefaultExplicit(BinaryGraphFieldImpl.class, null);
 	}
 

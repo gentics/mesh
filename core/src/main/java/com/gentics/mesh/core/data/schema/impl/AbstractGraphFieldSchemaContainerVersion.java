@@ -247,7 +247,6 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void applyChanges(InternalActionContext ac, SearchQueueBatch batch) {
-		Database db = MeshInternal.get().database();
 		SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
 
 		if (getNextChange() != null) {

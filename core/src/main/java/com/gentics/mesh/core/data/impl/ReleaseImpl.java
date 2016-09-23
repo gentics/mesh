@@ -181,15 +181,15 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public boolean contains(SchemaContainer schemaContainer) {
-		SchemaContainer foundSchemaContainer = out(HAS_VERSION).has(SchemaContainerVersionImpl.class).in(HAS_PARENT_CONTAINER)
-				.has("name", schemaContainer.getName()).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+		SchemaContainer foundSchemaContainer = out(HAS_VERSION).in(HAS_PARENT_CONTAINER).has("name", schemaContainer.getName())
+				.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 		return foundSchemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
-		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_VERSION).has(SchemaContainerVersionImpl.class)
-				.has("uuid", schemaContainerVersion.getUuid()).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_VERSION).has("uuid", schemaContainerVersion.getUuid())
+				.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 		return foundSchemaContainerVersion != null;
 	}
 
@@ -218,15 +218,15 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public boolean contains(MicroschemaContainer microschema) {
-		MicroschemaContainer foundMicroschemaContainer = out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class).in(HAS_PARENT_CONTAINER)
-				.has("name", microschema.getName()).nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
+		MicroschemaContainer foundMicroschemaContainer = out(HAS_VERSION).in(HAS_PARENT_CONTAINER).has("name", microschema.getName())
+				.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
 		return foundMicroschemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
-		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class)
-				.has("uuid", microschemaContainerVersion.getUuid()).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_VERSION).has("uuid", microschemaContainerVersion.getUuid())
+				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 		return foundMicroschemaContainerVersion != null;
 	}
 
@@ -238,7 +238,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public List<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() throws InvalidArgumentException {
-		return out(HAS_VERSION).has(MicroschemaContainerVersionImpl.class).toListExplicit(MicroschemaContainerVersionImpl.class);
+		return out(HAS_VERSION).toListExplicit(MicroschemaContainerVersionImpl.class);
 	}
 
 	/**

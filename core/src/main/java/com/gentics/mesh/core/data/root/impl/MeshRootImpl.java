@@ -232,7 +232,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public NodeRoot getNodeRoot() {
 		if (nodeRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				NodeRoot foundNodeRoot = out(HAS_NODE_ROOT).has(NodeRootImpl.class).nextOrDefaultExplicit(NodeRootImpl.class, null);
+				NodeRoot foundNodeRoot = out(HAS_NODE_ROOT).nextOrDefaultExplicit(NodeRootImpl.class, null);
 				if (foundNodeRoot == null) {
 					nodeRoot = getGraph().addFramedVertex(NodeRootImpl.class);
 					linkOut(nodeRoot.getImpl(), HAS_NODE_ROOT);

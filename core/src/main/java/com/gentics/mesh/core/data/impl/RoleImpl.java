@@ -61,7 +61,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public List<? extends Group> getGroups() {
-		return out(HAS_ROLE).has(GroupImpl.class).toListExplicit(GroupImpl.class);
+		return out(HAS_ROLE).toListExplicit(GroupImpl.class);
 	}
 
 	@Override

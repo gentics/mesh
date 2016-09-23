@@ -56,7 +56,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 	@Override
 	public List<? extends SearchQueueEntry> getEntries() {
-		List<? extends SearchQueueEntryImpl> list = out(HAS_ITEM).has(SearchQueueEntryImpl.class).order((o1, o2) -> {
+		List<? extends SearchQueueEntryImpl> list = out(HAS_ITEM).order((o1, o2) -> {
 			String actionA = o1.getProperty(SearchQueueEntryImpl.ACTION_KEY);
 			String actionB = o1.getProperty(SearchQueueEntryImpl.ACTION_KEY);
 			return SearchQueueEntryAction.valueOfName(actionA).compareTo(SearchQueueEntryAction.valueOfName(actionB));

@@ -16,7 +16,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 * @return Editor
 	 */
 	default User getEditor() {
-		return getImpl().out(HAS_EDITOR).has(UserImpl.class).nextOrDefaultExplicit(UserImpl.class, null);
+		return getImpl().out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 	/**

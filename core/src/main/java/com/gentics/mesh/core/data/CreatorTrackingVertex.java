@@ -16,7 +16,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * @return Creator
 	 */
 	default User getCreator() {
-		return getImpl().out(HAS_CREATOR).has(UserImpl.class).nextOrDefault(UserImpl.class, null);
+		return getImpl().out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
 	}
 
 	/**

@@ -56,7 +56,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 
 	@Override
 	public List<? extends NodeImpl> getNodes() {
-		return in(HAS_SCHEMA_CONTAINER).has(NodeImpl.class).toListExplicit(NodeImpl.class);
+		return in(HAS_SCHEMA_CONTAINER).toListExplicit(NodeImpl.class);
 	}
 
 	@Override

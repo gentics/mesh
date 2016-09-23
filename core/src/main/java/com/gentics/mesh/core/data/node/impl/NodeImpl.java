@@ -307,8 +307,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// }
 
 		List<? extends NodeGraphFieldContainerImpl> list = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().has(NodeGraphFieldContainerImpl.class)
-				.toListExplicit(NodeGraphFieldContainerImpl.class);
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().toListExplicit(NodeGraphFieldContainerImpl.class);
 		// map2.put(key, list);
 		return list;
 	}
@@ -316,10 +315,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@SuppressWarnings("unchecked")
 	@Override
 	public long getGraphFieldContainerCount() {
-		return outE(HAS_FIELD_CONTAINER)
-				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
-						e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
-				.inV().has(NodeGraphFieldContainerImpl.class).count();
+		return outE(HAS_FIELD_CONTAINER).or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
+				e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode())).inV().count();
 	}
 
 	@Override
@@ -357,7 +354,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// check whether there is a current draft version
 		draftEdge = getGraphFieldContainerEdge(languageTag, releaseUuid, ContainerType.DRAFT);
 		if (draftEdge != null) {
-			previous = draftEdge.inV().has(NodeGraphFieldContainerImpl.class).nextOrDefault(NodeGraphFieldContainerImpl.class, null);
+			previous = draftEdge.inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
 		}
 
 		// Create the new container
@@ -493,7 +490,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Node getParentNode(String releaseUuid) {
-		return outE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).inV().has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
+		return outE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).inV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	@Override
@@ -1299,7 +1296,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			traversal = in(HAS_PARENT_NODE);
 		}
 
-		traversal = traversal.has(NodeImpl.class).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back();
+		traversal = traversal.mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back();
 		if (releaseUuid != null && type != null) {
 			traversal = traversal.mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 					.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();

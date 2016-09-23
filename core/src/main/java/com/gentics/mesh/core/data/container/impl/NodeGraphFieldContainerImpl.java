@@ -224,7 +224,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @return parent node
 	 */
 	public Node getParentNode() {
-		Node parentNode = in(HAS_FIELD_CONTAINER).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
+		Node parentNode = in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
 		if (parentNode == null) {
 			// the field container is not directly linked to its Node, get the initial field container
 			NodeGraphFieldContainer initial = null;
@@ -432,7 +432,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version) {
-		return outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER)
+		return outE(HAS_FIELD).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER)
 				.has(MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
 	}
 
