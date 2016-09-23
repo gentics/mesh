@@ -2,12 +2,10 @@ package com.gentics.mesh.core.verticle.navroot;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 import javax.inject.Inject;
 
@@ -40,18 +38,10 @@ public class NavRootHandler {
 	 * @param path
 	 */
 	public void handleGetPath(InternalActionContext ac, String path) {
-		
-		try {
-			// TODO BUG Decoding url segments using urldecoder is plainly wrong. Use uri instead or see #441 of vertx-web
-			path = URLDecoder.decode(path, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			ac.fail(e);
-			return;
-		}
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Single<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
 			PathSegment lastSegment = nodePath.toBlocking().value().getLast();
 

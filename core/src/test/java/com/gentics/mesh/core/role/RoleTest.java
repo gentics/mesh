@@ -16,6 +16,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -118,7 +119,9 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	private long countEdges(MeshVertex vertex, String label, Direction direction) {
 		long count = 0;
-		for (Edge edge : vertex.getImpl().getElement().getEdges(direction, label)) {
+		Iterator<Edge> it = vertex.getImpl().getElement().getEdges(direction, label).iterator();
+		while (it.hasNext()) {
+			it.next();
 			count++;
 		}
 		return count;

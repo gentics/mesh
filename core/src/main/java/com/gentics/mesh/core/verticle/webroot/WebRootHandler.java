@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.webroot;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -61,7 +62,7 @@ public class WebRootHandler {
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 
 			// Load all nodes for the given path
 			Single<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);

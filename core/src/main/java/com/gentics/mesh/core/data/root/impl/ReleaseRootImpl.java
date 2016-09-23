@@ -14,7 +14,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -28,19 +27,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
-import com.gentics.mesh.util.Tuple;
-
-import io.vertx.core.eventbus.DeliveryOptions;
-import rx.Single;
 
 public class ReleaseRootImpl extends AbstractRootVertex<Release> implements ReleaseRoot {
 
@@ -107,7 +99,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 	}
 
 	@Override
-	public Single<Release> create(InternalActionContext ac) {
+	public Release create(InternalActionContext ac, SearchQueueBatch batch) {
 		Database db = MeshInternal.get().database();
 
 		ReleaseCreateRequest createRequest = ac.fromJson(ReleaseCreateRequest.class);
@@ -118,54 +110,31 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 			throw error(BAD_REQUEST, "release_missing_name");
 		}
 
-		return db.noTx(() -> {
-			Project project = getProject();
-			String projectName = project.getName();
-			String projectUuid = project.getUuid();
+		Project project = getProject();
+		String projectName = project.getName();
+		String projectUuid = project.getUuid();
 
-			if (requestUser.hasPermission(project, GraphPermission.UPDATE_PERM)) {
-				Tuple<SearchQueueBatch, Release> tuple = db.tx(() -> {
-					requestUser.reload();
+		if (!requestUser.hasPermission(project, GraphPermission.UPDATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName);
+		}
 
-					// Check for uniqueness of release name (per project)
-					Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class,
-							getUniqueNameKey(createRequest.getName()));
-					if (conflictingRelease != null) {
-						throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name",
-								createRequest.getName());
-					}
+		requestUser.reload();
 
-					Release release = create(createRequest.getName(), requestUser);
-					NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft");
+		// Check for uniqueness of release name (per project)
+		Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class,
+				getUniqueNameKey(createRequest.getName()));
+		if (conflictingRelease != null) {
+			throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", createRequest.getName());
+		}
 
-					// Create index queue entries for creating indices
-					SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-					SearchQueueBatch batch = queue.createBatch();
-					batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"), Node.TYPE,
-							SearchQueueEntryAction.CREATE_INDEX);
-					batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "published"), Node.TYPE,
-							SearchQueueEntryAction.CREATE_INDEX);
+		Release release = create(createRequest.getName(), requestUser);
+		NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft");
 
-					return Tuple.tuple(batch, release);
-				});
-
-				SearchQueueBatch batch = tuple.v1();
-				Release release = tuple.v2();
-				Single<Release> result = batch.process().andThen(Single.create(sub -> {
-					try (NoTx noTrx = db.noTx()) {
-						// start the node migration
-						DeliveryOptions options = new DeliveryOptions();
-						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
-						options.addHeader(NodeMigrationVerticle.UUID_HEADER, tuple.v2().getUuid());
-						Mesh.vertx().eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options);
-					}
-					sub.onSuccess(release);
-				}));
-				return result;
-			} else {
-				throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName);
-			}
-		});
+		// Create index queue entries for creating indices
+		batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"), Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+		batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "published"), Node.TYPE,
+				SearchQueueEntryAction.CREATE_INDEX);
+		return release;
 	}
 
 	@Override

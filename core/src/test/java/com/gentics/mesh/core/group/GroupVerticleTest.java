@@ -452,6 +452,7 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			String name = group.getName();
 			String uuid = group.getUuid();
 			assertNotNull(uuid);
+			assertNotNull(name);
 			MeshResponse<Void> future = getClient().deleteGroup(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);

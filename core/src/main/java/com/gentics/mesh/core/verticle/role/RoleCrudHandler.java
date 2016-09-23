@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -53,12 +53,6 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 		return boot.roleRoot();
 	}
 
-	@Override
-	public void handleDelete(InternalActionContext ac, String uuid) {
-		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
-	}
-
 	/**
 	 * Handle a permission read request.
 	 * 
@@ -76,26 +70,25 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
 			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
 			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
-			return db.noTx(() -> {
-				// 2. Resolve the path to element that is targeted
-				return MeshRoot.getInstance().resolvePathToElement(pathToElement).flatMap(targetElement -> {
-					if (targetElement == null) {
-						throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-					}
-					RolePermissionResponse response = new RolePermissionResponse();
-					for (GraphPermission perm : role.getPermissions(targetElement)) {
-						response.getPermissions().add(perm.getSimpleName());
-					}
-					return Single.just(response);
 
-				});
+			// 2. Resolve the path to element that is targeted
+			return MeshRoot.getInstance().resolvePathToElement(pathToElement).flatMap(targetElement -> {
+				if (targetElement == null) {
+					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+				}
+				RolePermissionResponse response = new RolePermissionResponse();
+				for (GraphPermission perm : role.getPermissions(targetElement)) {
+					response.getPermissions().add(perm.getSimpleName());
+				}
+				return Single.just(response);
+
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -111,7 +104,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	 *            Path to the element for which the permissions should be updated
 	 */
 	public void handlePermissionUpdate(InternalActionContext ac, String roleUuid, String pathToElement) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}

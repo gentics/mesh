@@ -20,7 +20,7 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 	public static final String RELEASE_UUID_KEY = "releaseUuid";
 
 	public static void init(Database db) {
-		db.addEdgeType(TagEdgeImpl.class.getSimpleName(), (Class) null, TagEdgeImpl.RELEASE_UUID_KEY);
+		db.addEdgeType(TagEdgeImpl.class.getSimpleName(), (Class<?>) null, TagEdgeImpl.RELEASE_UUID_KEY);
 		db.addEdgeType(HAS_TAG, TagEdgeImpl.class);
 	}
 

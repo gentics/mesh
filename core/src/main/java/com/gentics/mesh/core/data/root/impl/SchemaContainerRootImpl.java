@@ -12,7 +12,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -28,8 +27,6 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -69,7 +66,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(Schema schema, User creator) throws MeshSchemaException {
+	public SchemaContainer create(Schema schema, User creator) {
 		validate(schema);
 		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaContainerVersion version = getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
@@ -113,36 +110,24 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public Single<SchemaContainer> create(InternalActionContext ac) {
+	public SchemaContainer create(InternalActionContext ac, SearchQueueBatch batch) {
 		MeshAuthUser requestUser = ac.getUser();
-		Database db = MeshInternal.get().database();
-		return Single.defer(() -> {
-			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
-			requestModel.validate();
-			if (requestUser.hasPermission(this, CREATE_PERM)) {
+		Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+		requestModel.validate();
+		if (!requestUser.hasPermission(this, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", getUuid());
+		}
 
-				Tuple<SearchQueueBatch, SchemaContainer> tuple = db.tx(() -> {
+		String schemaName = requestModel.getName();
+		SchemaContainer conflictingSchema = findByName(schemaName);
+		if (conflictingSchema != null) {
+			throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
+		}
 
-					String schemaName = requestModel.getName();
-					SchemaContainer conflictingSchema = findByName(schemaName);
-					if (conflictingSchema != null) {
-						throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
-					}
-
-					requestUser.reload();
-					SchemaContainer container = create(requestModel, requestUser);
-					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-					SearchQueueBatch batch = container.createIndexBatch(STORE_ACTION);
-					return Tuple.tuple(batch, container);
-				});
-
-				SearchQueueBatch batch = tuple.v1();
-				SchemaContainer createdContainer = tuple.v2();
-				return batch.process().toSingleDefault(createdContainer);
-			} else {
-				return Single.error(error(FORBIDDEN, "error_missing_perm", getUuid()));
-			}
-		});
+		SchemaContainer container = create(requestModel, requestUser);
+		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+		container.addIndexBatchEntry(batch, STORE_ACTION);
+		return container;
 
 	}
 

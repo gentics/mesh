@@ -2,8 +2,8 @@ package com.gentics.mesh.core.data.search;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 
@@ -98,7 +98,20 @@ public interface SearchQueueBatch extends MeshVertex {
 	/**
 	 * Process this batch by invoking process on all batch entries.
 	 */
-	Completable process();
+	Completable processAsync();
+
+	/**
+	 * Process this batch blocking and fail if the given timeout was exceeded.
+	 * 
+	 * @param timeout
+	 * @param unit
+	 */
+	void processSync(long timeout, TimeUnit unit);
+
+	/**
+	 * Process this batch and block until it finishes. Apply a default timeout on this operation.
+	 */
+	void processSync();
 
 	/**
 	 * Print debug output.
@@ -118,12 +131,5 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @return
 	 */
 	long getTimestamp();
-
-	/**
-	 * Process the given batch and call the handler when the batch was processed.
-	 * 
-	 * @param ac
-	 */
-	Completable process(InternalActionContext ac);
 
 }

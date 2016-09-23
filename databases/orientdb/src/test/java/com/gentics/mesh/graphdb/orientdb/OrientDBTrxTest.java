@@ -133,7 +133,6 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 		run(() -> {
 			for (int retry = 0; retry < 10; retry++) {
 				System.out.println("Try: " + retry);
-				boolean doRetry = false;
 				//				try {
 				try (Tx tx = db.tx()) {
 					addFriend(tx.getGraph(), p);

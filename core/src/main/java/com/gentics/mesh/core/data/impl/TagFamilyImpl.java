@@ -33,7 +33,6 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -48,12 +47,10 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
-import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * @see TagFamily
@@ -135,66 +132,52 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Single<Tag> create(InternalActionContext ac) {
-		Database db = MeshInternal.get().database();
+	public Tag create(InternalActionContext ac, SearchQueueBatch batch) {
+		Project project = ac.getProject();
+		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
+		String tagName = requestModel.getFields().getName();
+		if (isEmpty(tagName)) {
+			throw error(BAD_REQUEST, "tag_name_not_set");
+		}
 
-		return db.noTx(() -> {
-			Project project = ac.getProject();
-			TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
-			String tagName = requestModel.getFields().getName();
-			if (isEmpty(tagName)) {
-				throw error(BAD_REQUEST, "tag_name_not_set");
-			}
+		// TagFamilyReference reference = requestModel.getTagFamily();
+		// if (reference == null) {
+		// throw error(BAD_REQUEST, "tag_tagfamily_reference_not_set");
+		// }
+		// boolean hasName = !isEmpty(reference.getName());
+		// boolean hasUuid = !isEmpty(reference.getUuid());
+		// if (!hasUuid && !hasName) {
+		// throw error(BAD_REQUEST, "tag_tagfamily_reference_uuid_or_name_missing");
+		// }
 
-			// TagFamilyReference reference = requestModel.getTagFamily();
-			// if (reference == null) {
-			// throw error(BAD_REQUEST, "tag_tagfamily_reference_not_set");
-			// }
-			// boolean hasName = !isEmpty(reference.getName());
-			// boolean hasUuid = !isEmpty(reference.getUuid());
-			// if (!hasUuid && !hasName) {
-			// throw error(BAD_REQUEST, "tag_tagfamily_reference_uuid_or_name_missing");
-			// }
+		// First try the tag family reference by uuid if specified
+		// TagFamily tagFamily = null;
+		// String nameOrUuid = null;
+		// if (hasUuid) {
+		// nameOrUuid = reference.getUuid();
+		// tagFamily = project.getTagFamilyRoot().findByUuid(reference.getUuid()).toBlocking().first();
+		// } else if (hasName) {
+		// nameOrUuid = reference.getName();
+		// tagFamily = project.getTagFamilyRoot().findByName(reference.getName()).toBlocking().first();
+		// }
 
-			// First try the tag family reference by uuid if specified
-			// TagFamily tagFamily = null;
-			// String nameOrUuid = null;
-			// if (hasUuid) {
-			// nameOrUuid = reference.getUuid();
-			// tagFamily = project.getTagFamilyRoot().findByUuid(reference.getUuid()).toBlocking().first();
-			// } else if (hasName) {
-			// nameOrUuid = reference.getName();
-			// tagFamily = project.getTagFamilyRoot().findByName(reference.getName()).toBlocking().first();
-			// }
+		MeshAuthUser requestUser = ac.getUser();
+		if (!requestUser.hasPermission(this, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", getUuid());
+		}
 
-			MeshAuthUser requestUser = ac.getUser();
-			if (!requestUser.hasPermission(this, CREATE_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", getUuid());
-			}
+		Tag conflictingTag = getTagRoot().findByName(tagName);
+		if (conflictingTag != null) {
+			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
+		}
 
-			Tag conflictingTag = getTagRoot().findByName(tagName);
-			if (conflictingTag != null) {
-				throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
-			}
+		Tag newTag = create(requestModel.getFields().getName(), project, requestUser);
+		ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
+		MeshInternal.get().boot().meshRoot().getTagRoot().addTag(newTag);
+		getTagRoot().addTag(newTag);
 
-			Tuple<SearchQueueBatch, Tag> tuple = db.tx(() -> {
-				this.reload();
-				requestUser.reload();
-				project.reload();
-				Tag newTag = create(requestModel.getFields().getName(), project, requestUser);
-				ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
-				MeshInternal.get().boot().meshRoot().getTagRoot().addTag(newTag);
-				getTagRoot().addTag(newTag);
-
-				SearchQueueBatch batch = newTag.createIndexBatch(STORE_ACTION);
-				return Tuple.tuple(batch, newTag);
-			});
-
-			SearchQueueBatch batch = tuple.v1();
-			Tag tag = tuple.v2();
-
-			return batch.process().toSingleDefault(tag);
-		});
+		newTag.addIndexBatchEntry(batch, STORE_ACTION);
+		return newTag;
 	}
 
 	@Override
@@ -223,30 +206,22 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Single<TagFamily> update(InternalActionContext ac) {
+	public TagFamily update(InternalActionContext ac, SearchQueueBatch batch) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
-		Database db = MeshInternal.get().database();
-		return db.tx(() -> {
-			Project project = ac.getProject();
-			String newName = requestModel.getName();
+		Project project = ac.getProject();
+		String newName = requestModel.getName();
 
-			if (isEmpty(newName)) {
-				throw error(BAD_REQUEST, "tagfamily_name_not_set");
-			}
+		if (isEmpty(newName)) {
+			throw error(BAD_REQUEST, "tagfamily_name_not_set");
+		}
 
-			TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
-			if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
-				throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
-			}
-			SearchQueueBatch batch = db.tx(() -> {
-				this.setName(newName);
-				return createIndexBatch(STORE_ACTION);
-			});
-
-			batch.process().await();
-			return Single.just(this);
-
-		});
+		TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
+		if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
+			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
+		}
+		this.setName(newName);
+		addIndexBatchEntry(batch, STORE_ACTION);
+		return this;
 	}
 
 	@Override
@@ -283,9 +258,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		batch.addEntry(this, action).set(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
 		addRelatedEntries(batch, action);
 		return batch;

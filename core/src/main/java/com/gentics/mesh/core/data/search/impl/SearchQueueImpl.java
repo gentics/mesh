@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPER
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
@@ -82,29 +80,31 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	@Override
 	public void addFullIndex() {
 		BootstrapInitializer boot = MeshInternal.get().boot();
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch();
 		for (Node node : boot.nodeRoot().findAll()) {
-			node.createIndexBatch(STORE_ACTION);
+			node.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (Project project : boot.projectRoot().findAll()) {
-			project.createIndexBatch(STORE_ACTION);
+			project.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (User user : boot.userRoot().findAll()) {
-			user.createIndexBatch(STORE_ACTION);
+			user.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (Role role : boot.roleRoot().findAll()) {
-			role.createIndexBatch(STORE_ACTION);
+			role.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (Group group : boot.groupRoot().findAll()) {
-			group.createIndexBatch(STORE_ACTION);
+			group.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (Tag tag : boot.tagRoot().findAll()) {
-			tag.createIndexBatch(STORE_ACTION);
+			tag.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (TagFamily tagFamily : boot.tagFamilyRoot().findAll()) {
-			tagFamily.createIndexBatch(STORE_ACTION);
+			tagFamily.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
-			schema.createIndexBatch(STORE_ACTION);
+			schema.addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		// TODO add support for microschemas
 		// for (Microschema microschema : boot.microschemaContainerRoot().findAll()) {
@@ -122,7 +122,7 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		long count = 0;
 		while ((batch = take()) != null) {
 			if (batch.getEntries().size() > 0) {
-				batch.process().await(10, TimeUnit.SECONDS);
+				batch.processSync();
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("Proccessed batch.");

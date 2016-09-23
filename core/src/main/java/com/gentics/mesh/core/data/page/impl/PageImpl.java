@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.page.impl;
 
 import java.util.ArrayList;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -83,7 +84,6 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 
 	@Override
 	public Single<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level) {
-
 		List<Single<? extends RestModel>> obs = new ArrayList<>();
 		for (T element : wrappedList) {
 			obs.add(element.transformToRest(ac, level));
@@ -94,19 +94,11 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 			return Single.just(listResponse);
 		}
 
-		Observable<RestModel> merged = Observable.empty();
-		for (Single<? extends RestModel> element : obs) {
-			merged = merged.concatWith(element.toObservable());
-		}
-
-		return merged.concatMap(item -> {
-			listResponse.getData().add(item);
-			return Observable.just(listResponse);
-		}).last().map(item -> {
+		return Observable.from(obs).concatMapEager(s -> s.toObservable()).toList().toSingle().map(list -> {
 			setPaging(listResponse);
+			listResponse.getData().addAll(list);
 			return listResponse;
-		}).toSingle();
-
+		});
 	}
 
 	@Override

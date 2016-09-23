@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.group;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -18,10 +19,11 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 
@@ -46,12 +48,6 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		return boot.get().groupRoot();
 	}
 
-	@Override
-	public void handleDelete(InternalActionContext ac, String uuid) {
-		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
-	}
-
 	/**
 	 * Handle a read roles of group request.
 	 * 
@@ -60,16 +56,16 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 *            Group Uuid from which the roles should be loaded
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			MeshAuthUser requestUser = ac.getUser();
-//			try {
-				PageImpl<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
-				return rolePage.transformToRest(ac, 0);
-//			} catch (Exception e) {
-//				return Single.error(e);
-//			}
+			//			try {
+			PageImpl<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
+			return rolePage.transformToRest(ac, 0);
+			//			} catch (Exception e) {
+			//				return Single.error(e);
+			//			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -84,18 +80,20 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(roleUuid, "roleUuid");
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
-				SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+				group.addIndexBatchEntry(batch, STORE_ACTION);
 				group.addRole(role);
 				return Tuple.tuple(batch, group);
 			});
 			SearchQueueBatch batch = tuple.v1();
 			Group updatedGroup = tuple.v2();
-			return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
+			return batch.processAsync().andThen(updatedGroup.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -113,18 +111,20 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 		validateParameter(groupUuid, "groupUuid");
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			// TODO check whether the role is actually part of the group
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			SearchQueueBatch sqBatch = db.tx(() -> {
-				SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+				group.addIndexBatchEntry(batch, STORE_ACTION);
 				group.removeRole(role);
 				return batch;
 			});
 
-			return sqBatch.process().andThen(Single.just(null));
+			return sqBatch.processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -138,7 +138,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupUserList(InternalActionContext ac, String groupUuid) {
 		validateParameter(groupUuid, "groupUuid");
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
@@ -164,17 +164,19 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 				group.addUser(user);
-				SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+				group.addIndexBatchEntry(batch, STORE_ACTION);
 				return Tuple.tuple(batch, group);
 			});
 			SearchQueueBatch batch = tuple.v1();
 			Group updatedGroup = tuple.v2();
-			return batch.process().andThen(updatedGroup.transformToRest(ac, 0));
+			return batch.processAsync().andThen(updatedGroup.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -192,17 +194,19 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
-				SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+				group.addIndexBatchEntry(batch, STORE_ACTION);
 				batch.addEntry(user, STORE_ACTION);
 				group.removeUser(user);
 				return Tuple.tuple(batch, group);
 			});
 			SearchQueueBatch batch = tuple.v1();
-			return batch.process().andThen(Single.just(null));
+			return batch.processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 

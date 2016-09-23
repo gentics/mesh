@@ -21,7 +21,7 @@ public interface MicronodeFieldHelper {
 	
 	public static final DataProvider CREATE_EMPTY = (container, name) ->  {
 		MicronodeGraphField field = container.createMicronode(name, TestDataProvider.getInstance().getMicroschemaContainers().get("vcard").getLatestVersion());
-		Micronode micronode = field.getMicronode();
+		field.getMicronode();
 		// Create no fields
 	};
 

@@ -88,18 +88,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 	}
 
-	// Code is broken and cause NPE and stuck tests:
-	// https://github.com/orientechnologies/orientdb/issues/6336
-	// @Override
-	// public void clear() {
-	// OrientGraphNoTx noTx = factory.getNoTx();
-	// try {
-	// noTx.drop();
-	// } finally {
-	// noTx.shutdown();
-	// }
-	// }
-
 	@Override
 	public TransactionalGraph rawTx() {
 		return factory.getTx();
@@ -398,7 +386,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public <T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
 		FramedGraph graph = Database.getThreadLocalGraph();
-		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
+		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph<?>) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
 
 		OrientVertexType vertexType = orientBaseGraph.getVertexType(classOfT.getSimpleName());
@@ -449,7 +437,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 				try {
 					// Delay the retry by 50ms to give the other transaction a chance to finish
-					Thread.sleep(50);
+					Thread.sleep(50 + (retry * 5));
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}

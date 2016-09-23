@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
@@ -59,7 +60,6 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -202,12 +202,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<String> langList = new ArrayList<>();
 		langList.addAll(Arrays.asList(languageTag));
 		// TODO maybe we only want to get the project languages?
-		for (Language l : MeshRoot.getInstance().getLanguageRoot().findAll()) {
-			String tag = l.getLanguageTag();
-			if (!langList.contains(tag)) {
-				langList.add(tag);
-			}
-		}
+		langList.addAll(MeshInternal.get().boot().getAllLanguageTags());
 		String[] projectLanguages = langList.toArray(new String[langList.size()]);
 		Node current = this;
 		while (current != null) {
@@ -277,30 +272,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 	}
-
-	// @Override
-	// public Single<String> getPath(InternalActionContext ac) {
-	// List<Single<String>> segments = new ArrayList<>();
-	// segments.add(getPathSegment(ac));
-	// Node current = this;
-	// String releaseUuid = ac.getRelease(getProject()).getUuid();
-	// while (current != null) {
-	// current = current.getParentNode(releaseUuid);
-	// if (current == null || current.getParentNode(releaseUuid) == null) {
-	// break;
-	// }
-	// segments.add(current.getPathSegment(ac));
-	// }
-	//
-	// Collections.reverse(segments);
-	// List<Observable<String>> segmentsObs = new ArrayList<>();
-	// for (Single<String> segment : segments) {
-	// segmentsObs.add(segment.toObservable());
-	// }
-	// return Observable.concat(Observable.from(segmentsObs)).reduce((a, b) -> {
-	// return "/" + a + "/" + b;
-	// }).toSingle();
-	// }
 
 	@Override
 	public List<? extends Tag> getTags(Release release) {
@@ -859,8 +830,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
-		Database db = MeshInternal.get().database();
-		return db.asyncNoTx(() -> {
+		return operateNoTx(() -> {
 			// TODO assure that the schema version is correct
 			if (!getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");
@@ -990,7 +960,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Single<PublishStatusResponse> transformToPublishStatus(InternalActionContext ac) {
+	public PublishStatusResponse transformToPublishStatus(InternalActionContext ac) {
 		Release release = ac.getRelease(getProject());
 		PublishStatusResponse publishStatus = new PublishStatusResponse();
 		Map<String, PublishStatusModel> languages = new HashMap<>();
@@ -1013,13 +983,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					languages.put(c.getLanguage().getLanguageTag(), status);
 				});
 
-		return Single.just(publishStatus);
+		return publishStatus;
 	}
 
 	@Override
 	public List<Completable> publish(InternalActionContext ac, Release release) {
 		String releaseUuid = release.getUuid();
 
+		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch();
 		List<Completable> obs = new ArrayList<>();
 		// publish all unpublished containers
 
@@ -1030,7 +1002,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		List<NodeGraphFieldContainer> published = unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser()))
 				.collect(Collectors.toList());
-		obs.add(createIndexBatch(STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED).process());
+		obs.add(addIndexBatch(batch, STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED).processAsync());
 
 		// Handle recursion
 		if (parameters.isRecursive()) {
@@ -1056,6 +1028,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<Completable> obs = new ArrayList<>();
 
 		obs.add(db.tx(() -> {
+			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueueBatch batch = queue.createBatch();
 			// publish all unpublished containers
 			List<NodeGraphFieldContainer> published = unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser()))
 					.collect(Collectors.toList());
@@ -1069,8 +1043,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			assertPublishConsistency(ac);
-			return createIndexBatch(STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
-		}).process());
+			return addIndexBatch(batch, STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
+		}).processAsync());
 
 		return Completable.merge(obs);
 	}
@@ -1082,6 +1056,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String releaseUuid = release.getUuid();
 
 		return db.tx(() -> {
+			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueueBatch batch = queue.createBatch();
 			List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, ContainerType.PUBLISHED);
 
 			// Remove the published edge for each found container
@@ -1100,25 +1076,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			assertPublishConsistency(ac);
 
 			// Remove the published node from the index
-			return createIndexBatch(DELETE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
-		}).process();
+			return addIndexBatch(batch, DELETE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
+		}).processAsync();
 	}
 
 	@Override
-	public Single<PublishStatusModel> transformToPublishStatus(InternalActionContext ac, String languageTag) {
+	public PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag) {
 		Release release = ac.getRelease(getProject());
 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, release.getUuid(), ContainerType.PUBLISHED);
 		if (container != null) {
 			String date = DateUtils.toISO8601(container.getLastEditedTimestamp(), 0);
-			return Single.just(new PublishStatusModel().setPublished(true)
+			return new PublishStatusModel().setPublished(true)
 					.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()))
-					.setPublisher(container.getEditor().transformToReference()).setPublishTime(date));
+					.setPublisher(container.getEditor().transformToReference()).setPublishTime(date);
 		} else {
 			container = getGraphFieldContainer(languageTag, release.getUuid(), ContainerType.DRAFT);
 			if (container != null) {
-				return Single.just(new PublishStatusModel().setPublished(false)
-						.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString())));
+				return new PublishStatusModel().setPublished(false)
+						.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()));
 			} else {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
@@ -1147,11 +1123,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// TODO check whether all required fields are filled, if not -> unable to publish
 
 		return db.tx(() -> {
+			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueueBatch batch = queue.createBatch();
 			NodeGraphFieldContainer published = publish(draftVersion.getLanguage(), release, ac.getUser());
 
 			// Invoke a store of the document since it must now also be added to the published index
-			return createIndexBatch(STORE_ACTION, Arrays.asList(published), release.getUuid(), ContainerType.PUBLISHED);
-		}).process();
+			return addIndexBatch(batch, STORE_ACTION, Arrays.asList(published), release.getUuid(), ContainerType.PUBLISHED);
+		}).processAsync();
 	}
 
 	@Override
@@ -1161,6 +1139,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String releaseUuid = release.getUuid();
 
 		return db.tx(() -> {
+			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueueBatch batch = queue.createBatch();
+
 			NodeGraphFieldContainer published = getGraphFieldContainer(languageTag, releaseUuid, ContainerType.PUBLISHED);
 
 			if (published == null) {
@@ -1173,8 +1154,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			assertPublishConsistency(ac);
 
 			// Invoke a delete on the document since it must be removed from the published index
-			return createIndexBatch(DELETE_ACTION, Arrays.asList(published), releaseUuid, ContainerType.PUBLISHED);
-		}).process();
+			return addIndexBatch(batch, DELETE_ACTION, Arrays.asList(published), releaseUuid, ContainerType.PUBLISHED);
+		}).processAsync();
 	}
 
 	@Override
@@ -1402,121 +1383,119 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * Deduplication: Field values that have not been changed in between the request data and the last version will not cause new fields to be created in new
 	 * version graph field containers. The new version graph field container will instead reference those fields from the previous graph field container
 	 * version. Please note that this deduplication only applies to complex fields (e.g.: Lists, Micronode)
-	 *
+	 * 
+	 * @param ac
+	 * @param batch
+	 *            Batch which will be used to update the search index
+	 * @return
 	 */
 	@Override
-	public Single<? extends Node> update(InternalActionContext ac) {
-		Database db = MeshInternal.get().database();
+	public Node update(InternalActionContext ac, SearchQueueBatch batch) {
+		NodeUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), NodeUpdateRequest.class);
+		if (isEmpty(requestModel.getLanguage())) {
+			throw error(BAD_REQUEST, "error_language_not_set");
+		}
+		Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(requestModel.getLanguage());
+		if (language == null) {
+			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+		}
+		Release release = ac.getRelease(getProject());
+		NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(language, release, ContainerType.DRAFT);
 
-		return db.tx(() -> {
-			NodeUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), NodeUpdateRequest.class);
-			if (isEmpty(requestModel.getLanguage())) {
-				throw error(BAD_REQUEST, "error_language_not_set");
-			}
-			Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(requestModel.getLanguage());
-			if (language == null) {
-				throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
-			}
-			Release release = ac.getRelease(getProject());
-			NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(language, release, ContainerType.DRAFT);
+		// No existing container was found. This means that no conflict check can be performed. Conflict checks only occur for updates.
+		if (latestDraftVersion == null) {
+			// Create a new field container
+			latestDraftVersion = createGraphFieldContainer(language, release, ac.getUser());
+			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
-			// No existing container was found. This means that no conflict check can be performed. Conflict checks only occur for updates.
-			if (latestDraftVersion == null) {
-				// Create a new field container
-				latestDraftVersion = createGraphFieldContainer(language, release, ac.getUser());
-				latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
-
-				// check whether the node has a parent node in this
-				// release, if not, we set the parent node from the previous
-				// release (if any)
-				if (getParentNode(release.getUuid()) == null) {
-					Node previousParent = null;
-					Release previousRelease = release.getPreviousRelease();
-					while (previousParent == null && previousRelease != null) {
-						previousParent = getParentNode(previousRelease.getUuid());
-						previousRelease = previousRelease.getPreviousRelease();
-					}
-
-					if (previousParent != null) {
-						setParentNode(release.getUuid(), previousParent);
-					}
-				}
-			} else {
-				if (requestModel.getVersion() == null || isEmpty(requestModel.getVersion().getNumber())) {
-					throw error(BAD_REQUEST, "node_error_version_missing");
+			// check whether the node has a parent node in this
+			// release, if not, we set the parent node from the previous
+			// release (if any)
+			if (getParentNode(release.getUuid()) == null) {
+				Node previousParent = null;
+				Release previousRelease = release.getPreviousRelease();
+				while (previousParent == null && previousRelease != null) {
+					previousParent = getParentNode(previousRelease.getUuid());
+					previousRelease = previousRelease.getPreviousRelease();
 				}
 
-				// Make sure the container was already migrated. Otherwise the update can't proceed.
-				SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
-				if (!latestDraftVersion.getSchemaContainerVersion().equals(release.getVersion(schemaContainerVersion.getSchemaContainer()))) {
-					throw error(BAD_REQUEST, "node_error_migration_incomplete");
-				}
-
-				// Load the base version field container in order to create the diff
-				NodeGraphFieldContainer baseVersionContainer = findNextMatchingFieldContainer(Arrays.asList(requestModel.getLanguage()),
-						release.getUuid(), requestModel.getVersion().getNumber());
-				if (baseVersionContainer == null) {
-					throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion().getNumber(), requestModel.getLanguage());
-				}
-
-				latestDraftVersion.getSchemaContainerVersion().getSchema().assertForUnhandledFields(requestModel.getFields());
-
-				// TODO handle simplified case in which baseContainerVersion and latestDraftVersion are equal
-				List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
-				List<FieldContainerChange> requestVersionDiff = latestDraftVersion.compareTo(requestModel.getFields());
-
-				// Compare both sets of change sets
-				List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
-
-				// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
-				if (!latestDraftVersion.getVersion().equals(requestModel.getVersion().getNumber())) {
-
-					// Check whether a conflict has been detected
-					if (intersect.size() > 0) {
-						NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
-						conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
-						conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
-						for (FieldContainerChange fcc : intersect) {
-							conflictException.addConflict(fcc.getFieldCoordinates());
-						}
-						throw conflictException;
-					}
-				}
-
-				// Make sure to only update those fields which have been altered in between the latest version and the current request. Remove unaffected fields
-				// from the rest request in order to prevent duplicate references.
-				// We don't want to touch field that have not been changed. Otherwise the graph field references would no longer point to older revisions of the
-				// same field.
-				Set<String> fieldsToKeepForUpdate = requestVersionDiff.stream().map(e -> e.getFieldKey()).collect(Collectors.toSet());
-				for (String fieldKey : requestModel.getFields().keySet()) {
-					if (fieldsToKeepForUpdate.contains(fieldKey)) {
-						continue;
-					}
-					if (log.isDebugEnabled()) {
-						log.debug("Removing field from request {" + fieldKey + "} in order to handle deduplication.");
-					}
-					requestModel.getFields().remove(fieldKey);
-				}
-
-				// Check whether the request still contains data which needs to be updated.
-				if (!requestModel.getFields().isEmpty()) {
-
-					// Create new field container as clone of the existing
-					NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
-					// Update the existing fields
-					newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
-					latestDraftVersion = newDraftVersion;
+				if (previousParent != null) {
+					setParentNode(release.getUuid(), previousParent);
 				}
 			}
-			return createIndexBatch(STORE_ACTION, Arrays.asList(latestDraftVersion), release.getUuid(), ContainerType.DRAFT);
-		}).process().toSingleDefault(this);
+		} else {
+			if (requestModel.getVersion() == null || isEmpty(requestModel.getVersion().getNumber())) {
+				throw error(BAD_REQUEST, "node_error_version_missing");
+			}
 
+			// Make sure the container was already migrated. Otherwise the update can't proceed.
+			SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
+			if (!latestDraftVersion.getSchemaContainerVersion().equals(release.getVersion(schemaContainerVersion.getSchemaContainer()))) {
+				throw error(BAD_REQUEST, "node_error_migration_incomplete");
+			}
+
+			// Load the base version field container in order to create the diff
+			NodeGraphFieldContainer baseVersionContainer = findNextMatchingFieldContainer(Arrays.asList(requestModel.getLanguage()),
+					release.getUuid(), requestModel.getVersion().getNumber());
+			if (baseVersionContainer == null) {
+				throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion().getNumber(), requestModel.getLanguage());
+			}
+
+			latestDraftVersion.getSchemaContainerVersion().getSchema().assertForUnhandledFields(requestModel.getFields());
+
+			// TODO handle simplified case in which baseContainerVersion and latestDraftVersion are equal
+			List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
+			List<FieldContainerChange> requestVersionDiff = latestDraftVersion.compareTo(requestModel.getFields());
+
+			// Compare both sets of change sets
+			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
+
+			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
+			if (!latestDraftVersion.getVersion().equals(requestModel.getVersion().getNumber())) {
+
+				// Check whether a conflict has been detected
+				if (intersect.size() > 0) {
+					NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
+					conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
+					conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
+					for (FieldContainerChange fcc : intersect) {
+						conflictException.addConflict(fcc.getFieldCoordinates());
+					}
+					throw conflictException;
+				}
+			}
+
+			// Make sure to only update those fields which have been altered in between the latest version and the current request. Remove unaffected fields
+			// from the rest request in order to prevent duplicate references.
+			// We don't want to touch field that have not been changed. Otherwise the graph field references would no longer point to older revisions of the
+			// same field.
+			Set<String> fieldsToKeepForUpdate = requestVersionDiff.stream().map(e -> e.getFieldKey()).collect(Collectors.toSet());
+			for (String fieldKey : requestModel.getFields().keySet()) {
+				if (fieldsToKeepForUpdate.contains(fieldKey)) {
+					continue;
+				}
+				if (log.isDebugEnabled()) {
+					log.debug("Removing field from request {" + fieldKey + "} in order to handle deduplication.");
+				}
+				requestModel.getFields().remove(fieldKey);
+			}
+
+			// Check whether the request still contains data which needs to be updated.
+			if (!requestModel.getFields().isEmpty()) {
+
+				// Create new field container as clone of the existing
+				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+				// Update the existing fields
+				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
+				latestDraftVersion = newDraftVersion;
+			}
+		}
+		addIndexBatch(batch, STORE_ACTION, Arrays.asList(latestDraftVersion), release.getUuid(), ContainerType.DRAFT);
+		return this;
 	}
 
 	@Override
-	public Completable moveTo(InternalActionContext ac, Node targetNode) {
-		Database db = MeshInternal.get().database();
-
+	public void moveTo(InternalActionContext ac, Node targetNode, SearchQueueBatch batch) {
 		// TODO should we add a guard that terminates this loop when it runs to
 		// long?
 		// Check whether the target node is part of the subtree of the source
@@ -1538,21 +1517,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			throw error(BAD_REQUEST, "node_move_error_same_nodes");
 		}
 
-		return db.tx(() -> {
-			setParentNode(releaseUuid, targetNode);
-			// update the webroot path info for every field container to ensure
+		setParentNode(releaseUuid, targetNode);
+		// update the webroot path info for every field container to ensure
 
-			// Update published graph field containers
-			getGraphFieldContainers(releaseUuid, ContainerType.PUBLISHED).stream()
-					.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
+		// Update published graph field containers
+		getGraphFieldContainers(releaseUuid, ContainerType.PUBLISHED).stream()
+				.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
 
-			// Update draft graph field containers
-			getGraphFieldContainers(releaseUuid, ContainerType.DRAFT).stream()
-					.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
+		// Update draft graph field containers
+		getGraphFieldContainers(releaseUuid, ContainerType.DRAFT).stream()
+				.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
 
-			assertPublishConsistency(ac);
-			return createIndexBatch(STORE_ACTION);
-		}).process();
+		assertPublishConsistency(ac);
+		addIndexBatchEntry(batch, STORE_ACTION);
 	}
 
 	@Override
@@ -1577,12 +1554,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-
-		// Create a new batch
-		SearchQueueBatch batch = queue.createBatch();
-
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		// Add all graph field containers for all releases to the batch
 		getProject().getReleaseRoot().findAll().forEach((release) -> {
 			String releaseUuid = release.getUuid();
@@ -1599,6 +1571,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	/**
 	 * Create an index batch for the given list of containers
 	 * 
+	 * @param batch
 	 * @param action
 	 *            action
 	 * @param containers
@@ -1609,10 +1582,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            type
 	 * @return batch
 	 */
-	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action, List<? extends NodeGraphFieldContainer> containers, String releaseUuid,
-			ContainerType type) {
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+	public SearchQueueBatch addIndexBatch(SearchQueueBatch batch, SearchQueueEntryAction action, List<? extends NodeGraphFieldContainer> containers,
+			String releaseUuid, ContainerType type) {
 		for (NodeGraphFieldContainer container : containers) {
 			container.addIndexBatchEntry(batch, action, releaseUuid, type);
 		}

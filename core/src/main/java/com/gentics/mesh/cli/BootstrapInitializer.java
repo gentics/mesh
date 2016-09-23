@@ -9,6 +9,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -95,6 +98,8 @@ public class BootstrapInitializer {
 	private static MeshRoot meshRoot;
 
 	public static boolean isInitialSetup = true;
+
+	private List<String> allLanguageTags = new ArrayList<>();
 
 	@Inject
 	public BootstrapInitializer(Database db, Lazy<IndexHandlerRegistry> searchHandlerRegistry, BCryptPasswordEncoder encoder,
@@ -522,6 +527,16 @@ public class BootstrapInitializer {
 		}
 		long diff = System.currentTimeMillis() - start;
 		log.info("Handling languages took: " + diff + "[ms]");
+	}
+
+	public Collection<? extends String> getAllLanguageTags() {
+		if (allLanguageTags.isEmpty()) {
+			for (Language l : languageRoot().findAll()) {
+				String tag = l.getLanguageTag();
+				allLanguageTags.add(tag);
+			}
+		}
+		return allLanguageTags;
 	}
 
 }

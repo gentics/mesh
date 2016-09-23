@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
@@ -11,8 +12,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
@@ -33,12 +32,6 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 		return boot.projectRoot();
 	}
 
-	@Override
-	public void handleDelete(InternalActionContext ac, String uuid) {
-		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
-	}
-
 	/**
 	 * Handle a read project by name request.
 	 * 
@@ -47,12 +40,11 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	 *            Name of the project which should be read.
 	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
-		Database db = MeshInternal.get().database();
-		db.asyncNoTx(() -> {
+		operateNoTx(ac, () -> {
 			RootVertex<Project> root = getRootVertex(ac);
 			Project project = root.findByName(ac, projectName, READ_PERM);
-			return project.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return project.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 }

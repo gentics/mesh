@@ -12,7 +12,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -104,44 +103,32 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public Single<TagFamily> create(InternalActionContext ac) {
-		Database db = MeshInternal.get().database();
+	public TagFamily create(InternalActionContext ac, SearchQueueBatch batch) {
+		MeshAuthUser requestUser = ac.getUser();
+		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
-		return db.noTx(() -> {
-			MeshAuthUser requestUser = ac.getUser();
-			TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
+		String name = requestModel.getName();
+		if (StringUtils.isEmpty(name)) {
+			throw error(BAD_REQUEST, "tagfamily_name_not_set");
+		}
 
-			String name = requestModel.getName();
-			if (StringUtils.isEmpty(name)) {
-				throw error(BAD_REQUEST, "tagfamily_name_not_set");
-			}
+		// Check whether the name is already in-use.
+		TagFamily conflictingTagFamily = findByName(name);
+		if (conflictingTagFamily != null) {
+			throw conflict(conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name", name);
+		}
 
-			// Check whether the name is already in-use.
-			TagFamily conflictingTagFamily = findByName(name);
-			if (conflictingTagFamily != null) {
-				throw conflict(conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name", name);
-			}
+		if (!requestUser.hasPermission(this, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+		}
+		requestUser.reload();
 
-			if (requestUser.hasPermission(this, CREATE_PERM)) {
-				Tuple<SearchQueueBatch, TagFamily> tuple = db.tx(() -> {
-					requestUser.reload();
-					this.reload();
-					this.setElement(null);
-					TagFamily tagFamily = create(name, requestUser);
-					addTagFamily(tagFamily);
-					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
-					SearchQueueBatch batch = tagFamily.createIndexBatch(STORE_ACTION);
-					return Tuple.tuple(batch, tagFamily);
-				});
-				SearchQueueBatch batch = tuple.v1();
-				TagFamily createdTagFamily = tuple.v2();
+		TagFamily tagFamily = create(name, requestUser);
+		addTagFamily(tagFamily);
+		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
+		tagFamily.addIndexBatchEntry(batch, STORE_ACTION);
 
-				return batch.process().toSingleDefault(createdTagFamily);
-			} else {
-				throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
-			}
-
-		});
+		return tagFamily;
 
 	}
 

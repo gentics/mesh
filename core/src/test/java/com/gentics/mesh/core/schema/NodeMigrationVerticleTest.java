@@ -90,7 +90,6 @@ public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest 
 			options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
-			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 
 			// Trigger migration by sending a event
 			vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {

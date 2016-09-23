@@ -8,11 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.io.IOException;
-
 import org.apache.commons.lang.NotImplementedException;
-import org.elasticsearch.common.collect.Tuple;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Release;
@@ -28,7 +24,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -86,30 +81,18 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public Single<MicroschemaContainer> create(InternalActionContext ac) {
+	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch) {
 		MeshAuthUser requestUser = ac.getUser();
-		Database db = MeshInternal.get().database();
-		try {
-			Microschema microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
-			microschema.validate();
-			if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", getUuid());
-			}
-			Tuple<SearchQueueBatch, MicroschemaContainer> tuple = db.tx(() -> {
-				requestUser.reload();
-				MicroschemaContainer container = create(microschema, requestUser);
-				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-				SearchQueueBatch batch = container.createIndexBatch(STORE_ACTION);
-				return Tuple.tuple(batch, container);
-			});
-
-			SearchQueueBatch batch = tuple.v1();
-			MicroschemaContainer microschemaContainer = tuple.v2();
-			return batch.process().andThen(Single.just(microschemaContainer));
-
-		} catch (IOException e) {
-			return Single.error(e);
+		Microschema microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
+		microschema.validate();
+		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", getUuid());
 		}
+		MicroschemaContainer container = create(microschema, requestUser);
+		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+		container.addIndexBatchEntry(batch, STORE_ACTION);
+		return container;
+
 	}
 
 	@Override

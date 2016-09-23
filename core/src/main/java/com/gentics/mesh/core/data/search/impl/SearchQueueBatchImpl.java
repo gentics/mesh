@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.data.search.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -15,6 +17,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
@@ -104,52 +107,12 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public Completable process() {
-
-		Database db = MeshInternal.get().database();
-
-		Completable obs = Completable.complete();
-		try (NoTx noTrx = db.noTx()) {
-			for (SearchQueueEntry entry : getEntries()) {
-				obs = obs.andThen(entry.process());
-			}
-		}
-
-		return obs.doOnCompleted(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Handled all search queue items.");
-			}
-
-			// We successfully finished this batch. Delete it.
-			db.tx(() -> {
-				reload();
-				delete(null);
-				return null;
-			});
-			// Refresh index
-			SearchProvider provider = MeshInternal.get().searchProvider();
-			if (provider != null) {
-				provider.refreshIndex();
-			} else {
-				log.error("Could not refresh index since the elasticsearch provider has not been initalized");
-			}
-
-			// TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
-			// mergedObs.doOnError(error -> {
-			// return null;
-			// });
-
-		});
-
-	}
-
-	@Override
-	public Completable process(InternalActionContext ac) {
+	public Completable processAsync() {
 		Database db = MeshInternal.get().database();
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
 		// 1. Remove the batch from the queue
-		SearchQueueBatch removedBatch = db.tx(() -> {
+		db.tx(() -> {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			searchQueue.reload();
 			searchQueue.remove(this);
@@ -158,25 +121,62 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 		// 2. Process the batch
 		return db.noTx(() -> {
-			return removedBatch.process().doOnError(error -> {
+
+			Completable obs = Completable.complete();
+			try (NoTx noTrx = db.noTx()) {
+				for (SearchQueueEntry entry : getEntries()) {
+					obs = obs.andThen(entry.process());
+				}
+			}
+
+			return obs.doOnCompleted(() -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Handled all search queue items.");
+				}
+
+				// 3. We successfully finished this batch. Delete it.
+				db.tx(() -> {
+					reload();
+					delete(null);
+					return null;
+				});
+
+				// 4. Refresh index
+				SearchProvider provider = MeshInternal.get().searchProvider();
+				if (provider != null) {
+					provider.refreshIndex();
+				} else {
+					log.error("Could not refresh index since the elasticsearch provider has not been initalized");
+				}
+
+			}).doOnError(error -> {
 				// Add the batch back to the queue when an error occurs
 				db.tx(() -> {
+					//TODO mark the batch as failed
 					SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+
 					this.reload();
 					log.error("Error while processing batch {" + this.getBatchId() + "}. Adding batch {" + this.getBatchId() + "} back to queue.",
 							error);
 					searchQueue.add(this);
 					return this;
 				});
-				// .doOnError(() -> {
-				// log.error("Failed to add batch {" + this.getBatchId() + "} back to search queue.", txAddedBack.cause());
-				// // Inform the caller that processing failed
-				// throw error(BAD_REQUEST, "search_index_batch_process_failed", error);
-				// });
 			});
-
 		});
 
+	}
+
+	@Override
+	public void processSync(long timeout, TimeUnit unit) {
+		if (!processAsync().await(timeout, unit)) {
+			throw error(INTERNAL_SERVER_ERROR,
+					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name() + "} exceeded.");
+		}
+	}
+
+	@Override
+	public void processSync() {
+		processSync(120, TimeUnit.SECONDS);
 	}
 
 	/**

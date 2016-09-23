@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -51,7 +50,6 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
@@ -153,109 +151,89 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * Create a new node using the specified schema container.
 	 * 
 	 * @param ac
-	 * @param obsSchemaContainer
+	 * @param schemaContainer
+	 * @param batch
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private Single<Node> createNode(InternalActionContext ac, Single<SchemaContainer> obsSchemaContainer) {
-
-		Database db = MeshInternal.get().database();
+	private Node createNode(InternalActionContext ac, SchemaContainer schemaContainer, SearchQueueBatch batch) {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
-		return obsSchemaContainer.flatMap(schemaContainer -> {
+		String body = ac.getBodyAsString();
 
-			Single<Tuple<SearchQueueBatch, Node>> obsTuple = db.noTx(() -> {
-				String body = ac.getBodyAsString();
-
-				NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
-				if (isEmpty(requestModel.getParentNodeUuid())) {
-					throw error(BAD_REQUEST, "node_missing_parentnode_field");
-				}
-				if (isEmpty(requestModel.getLanguage())) {
-					throw error(BAD_REQUEST, "node_no_languagecode_specified");
-				}
-				requestUser.reload();
-				project.reload();
-				// Load the parent node in order to create the node
-				Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM);
-				return db.tx(() -> {
-					Release release = ac.getRelease(project);
-					Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release);
-					requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-					requestUser.addPermissionsOnRole(parentNode, READ_PUBLISHED_PERM, node, READ_PUBLISHED_PERM);
-					requestUser.addPermissionsOnRole(parentNode, PUBLISH_PERM, node, PUBLISH_PERM);
-					Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-					if (language == null) {
-						throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
-					}
-					NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release, requestUser);
-					container.updateFieldsFromRest(ac, requestModel.getFields());
-					// TODO add container specific batch
-					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
-					return Single.just(Tuple.tuple(batch, node));
-				});
-			});
-			return obsTuple.flatMap(tuple -> {
-				return tuple.v1().process().toSingleDefault(tuple.v2());
-			});
-
-		});
+		NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
+		if (isEmpty(requestModel.getParentNodeUuid())) {
+			throw error(BAD_REQUEST, "node_missing_parentnode_field");
+		}
+		if (isEmpty(requestModel.getLanguage())) {
+			throw error(BAD_REQUEST, "node_no_languagecode_specified");
+		}
+		// Load the parent node in order to create the node
+		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM);
+		Release release = ac.getRelease(project);
+		Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release);
+		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+		requestUser.addPermissionsOnRole(parentNode, READ_PUBLISHED_PERM, node, READ_PUBLISHED_PERM);
+		requestUser.addPermissionsOnRole(parentNode, PUBLISH_PERM, node, PUBLISH_PERM);
+		Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+		if (language == null) {
+			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
+		}
+		NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release, requestUser);
+		container.updateFieldsFromRest(ac, requestModel.getFields());
+		// TODO add container specific batch
+		node.addIndexBatchEntry(batch, STORE_ACTION);
+		return node;
 	}
 
 	@Override
-	public Single<Node> create(InternalActionContext ac) {
+	public Node create(InternalActionContext ac, SearchQueueBatch batch) {
 
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
 
-		Database db = MeshInternal.get().database();
+		Project project = ac.getProject();
+		MeshAuthUser requestUser = ac.getUser();
 
-		return db.noTx(() -> {
+		String body = ac.getBodyAsString();
 
-			Project project = ac.getProject();
-			MeshAuthUser requestUser = ac.getUser();
+		// 1. Extract the schema information from the given JSON
+		SchemaReferenceInfo schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
+		boolean missingSchemaInfo = schemaInfo.getSchema() == null
+				|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));
+		if (missingSchemaInfo) {
+			throw error(BAD_REQUEST, "error_schema_parameter_missing");
+		}
 
-			String body = ac.getBodyAsString();
+		// TODO use fromReference call to load the schema container
 
-			// 1. Extract the schema information from the given JSON
-			SchemaReferenceInfo schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
-			boolean missingSchemaInfo = schemaInfo.getSchema() == null
-					|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));
-			if (missingSchemaInfo) {
-				throw error(BAD_REQUEST, "error_schema_parameter_missing");
-			}
+		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
+			// 2. Use schema reference by uuid first
+			SchemaContainer schemaContainer = project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM);
+			return createNode(ac, schemaContainer, batch);
+		}
 
-			// TODO use fromReference call to load the schema container
-
-			if (!isEmpty(schemaInfo.getSchema().getUuid())) {
-				// 2. Use schema reference by uuid first
-				SchemaContainer schemaContainer = project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM);
-				return createNode(ac, Single.just(schemaContainer));
-			}
-
-			// TODO handle schema version as well? Decide whether it should be possible to create a node and specify the schema version.
-			// 3. Or just schema reference by name
-			if (!isEmpty(schemaInfo.getSchema().getName())) {
-				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
-				if (containerByName != null) {
-					String schemaName = containerByName.getName();
-					String schemaUuid = containerByName.getUuid();
-					if (requestUser.hasPermission(containerByName, GraphPermission.READ_PERM)) {
-						return createNode(ac, Single.just(containerByName));
-					} else {
-						throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);
-					}
-
+		// TODO handle schema version as well? Decide whether it should be possible to create a node and specify the schema version.
+		// 3. Or just schema reference by name
+		if (!isEmpty(schemaInfo.getSchema().getName())) {
+			SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
+			if (containerByName != null) {
+				String schemaName = containerByName.getName();
+				String schemaUuid = containerByName.getUuid();
+				if (requestUser.hasPermission(containerByName, GraphPermission.READ_PERM)) {
+					return createNode(ac, containerByName, batch);
 				} else {
-					throw error(NOT_FOUND, "schema_not_found", schemaInfo.getSchema().getName());
+					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);
 				}
-			} else {
-				throw error(BAD_REQUEST, "error_schema_parameter_missing");
-			}
 
-		});
+			} else {
+				throw error(NOT_FOUND, "schema_not_found", schemaInfo.getSchema().getName());
+			}
+		} else {
+			throw error(BAD_REQUEST, "error_schema_parameter_missing");
+		}
 	}
 
 	@Override

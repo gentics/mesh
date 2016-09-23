@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -12,11 +13,17 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.util.ResultInfo;
 
 public class TagCrudHandler extends AbstractHandler {
 
@@ -44,17 +51,17 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
-//			try {
-				PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null), nodeParams.getLanguageList(),
-						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
-				return page.transformToRest(ac, 0);
-//			} catch (Exception e) {
-//				return Single.error(e);
-//			}
+			// try {
+			PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null), nodeParams.getLanguageList(),
+					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
+			return page.transformToRest(ac, 0);
+			// } catch (Exception e) {
+			// return Single.error(e);
+			// }
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -82,14 +89,29 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		db.asyncNoTx(() -> {
-			return getTagFamily(ac, tagFamilyUuid).create(ac).flatMap(tag -> {
-				return db.noTx(() -> {
-					// created.reload();
-					return tag.transformToRest(ac, 0);
-				});
+		operateNoTx(ac, () -> {
+			Database db = MeshInternal.get().database();
+			ResultInfo info = db.tx(() -> {
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+
+				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
+				TagResponse model = tag.transformToRestSync(ac, 0);
+				String path = tag.getAPIPath(ac);
+				ResultInfo resultInfo = new ResultInfo(model, batch);
+				resultInfo.setProperty("path", path);
+				return resultInfo;
 			});
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+
+			RestModel model = info.getModel();
+			String path = info.getProperty("path");
+			SearchQueueBatch batch = info.getBatch();
+			ac.setLocation(path);
+			// TODO don't wait forever in order to prevent locking the thread
+			batch.processSync();
+			return model;
+		}, model -> ac.send(model, CREATED));
+
 	}
 
 	/**

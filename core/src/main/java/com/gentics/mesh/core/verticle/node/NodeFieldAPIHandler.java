@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
@@ -40,6 +42,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -80,7 +83,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
@@ -122,7 +125,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		validateParameter(uuid, "uuid");
 		validateParameter(languageTag, "languageTag");
 		validateParameter(fieldName, "fieldName");
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -191,6 +194,9 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
 			return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
 				SearchQueueBatch batch = db.tx(() -> {
+					SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+					SearchQueueBatch sqb = queue.createBatch();
+
 					field.setFileName(fileName);
 					field.setFileSize(ul.size());
 					field.setMimeType(contentType);
@@ -204,10 +210,10 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 						newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 					}
 
-					return node.createIndexBatch(STORE_ACTION);
+					return node.addIndexBatchEntry(sqb, STORE_ACTION);
 				});
 
-				return batch.process().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
+				return batch.processAsync().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
 
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
@@ -241,7 +247,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		validateParameter(uuid, "uuid");
 		validateParameter(languageTag, "languageTag");
 		validateParameter(fieldName, "fieldName");
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			// TODO Update SQB
@@ -249,8 +255,8 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
-	public void handleRemoveFieldItem(InternalActionContext ac, String uuid) {
-		db.asyncNoTx(() -> {
+	public void handleRemoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			// TODO Update SQB
@@ -259,7 +265,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleUpdateFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			// TODO Update SQB
@@ -267,8 +273,8 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
-	public void handleReadFieldItem(InternalActionContext ac, String uuid) {
-		db.asyncNoTx(() -> {
+	public void handleReadFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			return Single.just(new GenericMessageResponse("Not yet implemented"));
@@ -276,7 +282,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleMoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			// TODO Update SQB
@@ -292,7 +298,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 */
 	public void handleTransformImage(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			// TODO Update SQB
@@ -342,6 +348,9 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 				return obsHashAndSize.flatMap(hashAndSize -> {
 					Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
+						SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+						SearchQueueBatch batch = queue.createBatch();
+
 						field.setSHA512Sum(hashAndSize.v1());
 						field.setFileSize(hashAndSize.v2());
 						// resized images will always be jpeg
@@ -353,13 +362,13 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 						// node.setBinaryImageDPI(dpi);
 						// node.setBinaryImageHeight(heigth);
 						// node.setBinaryImageWidth(width);
-						SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
+						node.addIndexBatchEntry(batch, STORE_ACTION);
 						return Tuple.tuple(batch, node.getUuid());
 					});
 
 					SearchQueueBatch batch = tuple.v1();
 					String updatedNodeUuid = tuple.v2();
-					return batch.process().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
+					return batch.processAsync().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
 				});
 			} catch (GenericRestException e) {
 				throw e;

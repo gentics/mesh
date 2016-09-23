@@ -25,7 +25,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 
 	public static void init(Database database) {
 		database.addVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_LANGUAGE, true, false,false);
+		database.addEdgeIndex(HAS_LANGUAGE, true, false, false);
 		// TODO add unique index
 	}
 
@@ -54,7 +54,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
-	public Single<Language> create(InternalActionContext rc) {
+	public Language create(InternalActionContext rc, SearchQueueBatch batch) {
 		throw new NotImplementedException("Languages can be created using REST");
 	}
 

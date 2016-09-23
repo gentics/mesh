@@ -15,14 +15,10 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
 @Singleton
 public class WebRootService {
-
-	private static Logger log = LoggerFactory.getLogger(WebRootService.class);
 
 	@Inject
 	public WebRootService() {

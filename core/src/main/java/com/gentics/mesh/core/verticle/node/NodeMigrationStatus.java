@@ -43,7 +43,7 @@ public class NodeMigrationStatus implements NodeMigrationStatusMBean {
 	}
 
 	/**
-	 * Set the total nubmer of nodes to migrate
+	 * Set the total number of nodes to migrate
 	 * @param totalNodes total number
 	 */
 	public void setTotalNodes(int totalNodes) {

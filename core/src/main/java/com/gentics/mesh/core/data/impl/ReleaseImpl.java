@@ -39,8 +39,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import rx.Single;
-
 /**
  * @see Release
  */
@@ -65,27 +63,25 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public Single<? extends Release> update(InternalActionContext ac) {
+	public Release update(InternalActionContext ac, SearchQueueBatch batch) {
 		Database db = MeshInternal.get().database();
 		ReleaseUpdateRequest requestModel = ac.fromJson(ReleaseUpdateRequest.class);
 
-		return db.tx(() -> {
-			if (shouldUpdate(requestModel.getName(), getName())) {
-				// Check for conflicting project name
-				Release conflictingRelease = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
-				if (conflictingRelease != null) {
-					throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", requestModel.getName());
-				}
-				setName(requestModel.getName());
+		if (shouldUpdate(requestModel.getName(), getName())) {
+			// Check for conflicting project name
+			Release conflictingRelease = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
+			if (conflictingRelease != null) {
+				throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", requestModel.getName());
 			}
-			// TODO: Not yet fully implemented 
-			//			if (requestModel.getActive() != null) {
-			//				setActive(requestModel.getActive());
-			//			}
-			setEditor(ac.getUser());
-			setLastEditedTimestamp(System.currentTimeMillis());
-			return Single.just(this);
-		});
+			setName(requestModel.getName());
+		}
+		// TODO: Not yet fully implemented 
+		//			if (requestModel.getActive() != null) {
+		//				setActive(requestModel.getActive());
+		//			}
+		setEditor(ac.getUser());
+		setLastEditedTimestamp(System.currentTimeMillis());
+		return this;
 	}
 
 	@Override

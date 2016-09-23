@@ -16,7 +16,6 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
-import rx.Single;
 
 /**
  * Main description of a graph database.
@@ -119,22 +118,6 @@ public interface Database {
 	 * @return
 	 */
 	<T> T noTx(TxHandler<T> txHandler);
-
-	/**
-	 * Asynchronously execute the trxHandler within the scope of a non transaction.
-	 * 
-	 * @param trxHandler
-	 * @return
-	 */
-	<T> Single<T> asyncNoTx(TxHandler<Single<T>> trxHandler);
-
-	/**
-	 * Asynchronously execute the trxHandler within the scope of a transaction.
-	 * 
-	 * @param trxHandler
-	 * @return
-	 */
-	<T> Single<T> asyncTx(TxHandler<Single<T>> trxHandler);
 
 	/**
 	 * Initialise the database and store the settings.

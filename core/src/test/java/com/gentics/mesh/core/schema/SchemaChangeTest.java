@@ -68,7 +68,7 @@ public class SchemaChangeTest extends AbstractIsolatedBasicDBTest {
 			MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionB);
-			SchemaChange oldChange = chainChanges(versionA, versionB);
+			SchemaChange<?> oldChange = chainChanges(versionA, versionB);
 			validate(container, versionA, versionB, oldChange);
 		}
 	}
@@ -80,7 +80,7 @@ public class SchemaChangeTest extends AbstractIsolatedBasicDBTest {
 			SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
-			SchemaChange oldChange = chainChanges(versionA, versionB);
+			SchemaChange<?> oldChange = chainChanges(versionA, versionB);
 			validate(container, versionA, versionB, oldChange);
 		}
 	}
@@ -92,10 +92,10 @@ public class SchemaChangeTest extends AbstractIsolatedBasicDBTest {
 	 * @param versionB
 	 * @return
 	 */
-	private SchemaChange chainChanges(GraphFieldSchemaContainerVersion versionA, GraphFieldSchemaContainerVersion versionB) {
-		SchemaChange oldChange = null;
+	private SchemaChange<?> chainChanges(GraphFieldSchemaContainerVersion versionA, GraphFieldSchemaContainerVersion versionB) {
+		SchemaChange<?> oldChange = null;
 		for (int i = 0; i < 3; i++) {
-			SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			SchemaChange<?> change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			if (oldChange == null) {
 				oldChange = change;
 				assertNull("The change has not yet been connected to any schema", oldChange.getPreviousContainerVersion());
@@ -119,15 +119,15 @@ public class SchemaChangeTest extends AbstractIsolatedBasicDBTest {
 	 * @param oldChange
 	 */
 	private void validate(GraphFieldSchemaContainer container, GraphFieldSchemaContainerVersion versionA, GraphFieldSchemaContainerVersion versionB,
-			SchemaChange oldChange) {
+			SchemaChange<?> oldChange) {
 		versionA.setNextVersion(versionB);
 		assertNull(oldChange.getNextContainerVersion());
 		oldChange.setNextSchemaContainerVersion(versionB);
 		assertNotNull(oldChange.getNextContainerVersion());
 		assertNotNull("The containerA should have a next change", versionA.getNextChange());
 		assertNull("The container should not have any previous change", versionA.getPreviousChange());
-		SchemaChange secondLastChange = versionA.getNextChange().getNextChange();
-		SchemaChange lastChange = secondLastChange.getNextChange();
+		SchemaChange<?> secondLastChange = versionA.getNextChange().getNextChange();
+		SchemaChange<?> lastChange = secondLastChange.getNextChange();
 		assertNull("This is the last change in the chain and thus no next change should be set", lastChange.getNextChange());
 		assertEquals("The previous change from the last change should be the second last change.", secondLastChange.getUuid(),
 				lastChange.getPreviousChange().getUuid());
@@ -141,7 +141,7 @@ public class SchemaChangeTest extends AbstractIsolatedBasicDBTest {
 
 		// Link the chain root to another schema container instead.
 		SchemaContainerVersion versionC = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-		SchemaChange firstChange = versionA.getNextChange();
+		SchemaChange<?> firstChange = versionA.getNextChange();
 		firstChange.setPreviousContainerVersion(versionC);
 		assertNotEquals("The first change should no longer be connected to containerA", versionA.getUuid(),
 				firstChange.getPreviousContainerVersion().getUuid());

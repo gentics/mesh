@@ -442,7 +442,6 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 1. create folder with subfolder and subsubfolder
 			Node folder = project.getBaseNode().create(user(), folderSchema, project);
 			folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
-			String folderUuid = folder.getUuid();
 			Node subFolder = folder.create(user(), folderSchema, project);
 			subFolder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("SubFolder");
 			String subFolderUuid = subFolder.getUuid();
@@ -464,12 +463,13 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			assertThat(subFolder).as("subFolder").hasOnlyChildren(newRelease, subSubFolder);
 			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(newRelease);
 
+			SearchQueueBatch batch = createBatch();
 			// 5. reverse folders in new release
-			subSubFolder.moveTo(getMockedInternalActionContext(user()), folder);
+			subSubFolder.moveTo(getMockedInternalActionContext(user()), folder, batch);
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
-			subFolder.moveTo(getMockedInternalActionContext(user()), subSubFolder);
+			subFolder.moveTo(getMockedInternalActionContext(user()), subSubFolder, batch);
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
@@ -485,7 +485,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			assertThat(subSubFolder).as("subSubFolder").hasNoChildren(initialRelease);
 
 			// 8. delete folder for initial release
-			SearchQueueBatch batch = createBatch();
+			batch = createBatch();
 			subFolder.deleteFromRelease(initialRelease, batch);
 			folder.reload();
 			subFolder.reload();

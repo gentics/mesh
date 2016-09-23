@@ -37,8 +37,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import rx.Single;
-
 /**
  * @see Group
  */
@@ -171,32 +169,24 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Single<? extends Group> update(InternalActionContext ac) {
-		Database db = MeshInternal.get().database();
+	public Group update(InternalActionContext ac, SearchQueueBatch batch) {
 		BootstrapInitializer boot = MeshInternal.get().boot();
-		return db.noTx(() -> {
-			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
+		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
-			if (isEmpty(requestModel.getName())) {
-				throw error(BAD_REQUEST, "error_name_must_be_set");
+		if (isEmpty(requestModel.getName())) {
+			throw error(BAD_REQUEST, "error_name_must_be_set");
+		}
+
+		if (shouldUpdate(requestModel.getName(), getName())) {
+			Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
+			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
+				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 			}
 
-			if (shouldUpdate(requestModel.getName(), getName())) {
-				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
-				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
-				}
-
-				return db.tx(() -> {
-					setName(requestModel.getName());
-					return createIndexBatch(STORE_ACTION);
-				}).process().toSingleDefault(this);
-
-			} else {
-				return Single.just(this);
-			}
-		});
-
+			setName(requestModel.getName());
+			addIndexBatchEntry(batch, STORE_ACTION);
+		}
+		return this;
 	}
 
 	@Override

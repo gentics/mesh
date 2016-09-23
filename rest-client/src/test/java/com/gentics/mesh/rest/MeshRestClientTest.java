@@ -21,7 +21,6 @@ public class MeshRestClientTest {
 
 	@Test
 	public void testParameterHandling() {
-		MeshRestClient client = MeshRestClient.create("localhost", 8080, Vertx.vertx(), AuthenticationMethod.BASIC_AUTH);
 		NodeParameters parameters1 = new NodeParameters();
 		parameters1.setLanguages("en");
 

@@ -17,7 +17,6 @@ import javax.naming.InvalidNameException;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -120,7 +119,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		} else {
 			String uuidSegment = stack.pop();
 			Project project = findByUuid(uuidSegment);
-			if(project==null) {
+			if (project == null) {
 				return Single.just(null);
 			}
 			if (stack.isEmpty()) {
@@ -160,8 +159,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public Single<Project> create(InternalActionContext ac) {
-		Database db = MeshInternal.get().database();
+	public Project create(InternalActionContext ac, SearchQueueBatch batch) {
 		RouterStorage routerStorage = RouterStorage.getIntance();
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
@@ -174,85 +172,74 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_missing_name");
 		}
-		return db.noTx(() -> {
-			if (!creator.hasPermission(boot.projectRoot(), CREATE_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid());
+		if (!creator.hasPermission(boot.projectRoot(), CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid());
+		}
+		// TODO instead of this check, a constraint in the db should be added
+		Project conflictingProject = boot.projectRoot().findByName(requestModel.getName());
+		if (conflictingProject != null) {
+			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
+		}
+		if (requestModel.getSchemaReference() == null || !requestModel.getSchemaReference().isSet()) {
+			throw error(BAD_REQUEST, "project_error_no_schema_reference");
+		}
+		SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot()
+				.fromReference(requestModel.getSchemaReference()).toBlocking().value();
+
+		creator.reload();
+		Project project = create(requestModel.getName(), creator, schemaContainerVersion);
+		Release initialRelease = project.getInitialRelease();
+
+		// Add project permissions
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project);
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
+		creator.addPermissionsOnRole(this, CREATE_PERM, project.getBaseNode(), READ_PUBLISHED_PERM, PUBLISH_PERM);
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
+		// TODO add microschema root crud perms
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
+		creator.addPermissionsOnRole(this, CREATE_PERM, initialRelease);
+
+		project.addIndexBatchEntry(batch, STORE_ACTION);
+
+		String releaseUuid = initialRelease.getUuid();
+		String projectUuid = project.getUuid();
+
+		// 1. Create needed indices
+		batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "draft"), Node.TYPE, CREATE_INDEX);
+		batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "published"), Node.TYPE, CREATE_INDEX);
+		batch.addEntry(TagIndexHandler.getIndexName(projectUuid), Tag.TYPE, CREATE_INDEX);
+		batch.addEntry(TagFamilyIndexHandler.getIndexName(project.getUuid()), TagFamily.TYPE, CREATE_INDEX);
+
+		// 2. Update the node index mapping for the schema that was used during project creation
+		SearchQueueEntry draftMappingUpdateEntry = batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "draft"), Node.TYPE,
+				UPDATE_MAPPING);
+		draftMappingUpdateEntry.set("schemaContainerVersionUuuid", schemaContainerVersion.getUuid());
+		draftMappingUpdateEntry.set("schemaContainerUuid", schemaContainerVersion.getSchemaContainer().getUuid());
+		SearchQueueEntry publishMappingUpdateEntry = batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "published"), Node.TYPE,
+				UPDATE_MAPPING);
+		publishMappingUpdateEntry.set("schemaContainerVersionUuuid", schemaContainerVersion.getUuid());
+		publishMappingUpdateEntry.set("schemaContainerUuid", schemaContainerVersion.getSchemaContainer().getUuid());
+
+		// 3. Add created basenode to SQB
+		NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
+		baseNodeFieldContainer.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
+
+		String name = project.getName();
+
+		try {
+			// TODO BUG project should only be added to router when trx and ES finished successfully
+			routerStorage.addProjectRouter(name);
+			if (log.isInfoEnabled()) {
+				log.info("Registered project {" + name + "}");
 			}
-			// TODO instead of this check, a constraint in the db should be added
-			Project conflictingProject = boot.projectRoot().findByName(requestModel.getName());
-			if (conflictingProject != null) {
-				throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
-			}
-			if (requestModel.getSchemaReference() == null || !requestModel.getSchemaReference().isSet()) {
-				throw error(BAD_REQUEST, "project_error_no_schema_reference");
-			}
-			SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot()
-					.fromReference(requestModel.getSchemaReference()).toBlocking().value();
+		} catch (InvalidNameException e) {
+			// TODO should we really fail here?
+			throw error(BAD_REQUEST, "Error while adding project to router storage", e);
+		}
 
-			Tuple<SearchQueueBatch, Project> tuple = db.tx(() -> {
-				creator.reload();
-				Project project = create(requestModel.getName(), creator, schemaContainerVersion);
-				Release initialRelease = project.getInitialRelease();
+		return project;
 
-				// Add project permissions
-				creator.addCRUDPermissionOnRole(this, CREATE_PERM, project);
-				creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
-				creator.addPermissionsOnRole(this, CREATE_PERM, project.getBaseNode(), READ_PUBLISHED_PERM, PUBLISH_PERM);
-				creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
-				creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
-				// TODO add microschema root crud perms
-				creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
-				creator.addPermissionsOnRole(this, CREATE_PERM, initialRelease);
-
-				SearchQueueBatch batch = project.createIndexBatch(STORE_ACTION);
-
-				String releaseUuid = initialRelease.getUuid();
-				String projectUuid = project.getUuid();
-
-				// 1. Create needed indices
-				batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "draft"), Node.TYPE, CREATE_INDEX);
-				batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "published"), Node.TYPE, CREATE_INDEX);
-				batch.addEntry(TagIndexHandler.getIndexName(projectUuid), Tag.TYPE, CREATE_INDEX);
-				batch.addEntry(TagFamilyIndexHandler.getIndexName(project.getUuid()), TagFamily.TYPE, CREATE_INDEX);
-
-				// 2. Update the node index mapping for the schema that was used during project creation
-				SearchQueueEntry draftMappingUpdateEntry = batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "draft"), Node.TYPE,
-						UPDATE_MAPPING);
-				draftMappingUpdateEntry.set("schemaContainerVersionUuuid", schemaContainerVersion.getUuid());
-				draftMappingUpdateEntry.set("schemaContainerUuid", schemaContainerVersion.getSchemaContainer().getUuid());
-				SearchQueueEntry publishMappingUpdateEntry = batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "published"),
-						Node.TYPE, UPDATE_MAPPING);
-				publishMappingUpdateEntry.set("schemaContainerVersionUuuid", schemaContainerVersion.getUuid());
-				publishMappingUpdateEntry.set("schemaContainerUuid", schemaContainerVersion.getSchemaContainer().getUuid());
-
-				// 3. Add created basenode to SQB
-				NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
-				baseNodeFieldContainer.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
-				return Tuple.tuple(batch, project);
-			});
-
-			SearchQueueBatch batch = tuple.v1();
-			Project project = tuple.v2();
-			String name = project.getName();
-
-			Single<Project> single = Single.create(sub -> {
-
-				try {
-					// TODO BUG project should only be added to router when trx and ES finished successfully
-					routerStorage.addProjectRouter(name);
-					if (log.isInfoEnabled()) {
-						log.info("Registered project {" + name + "}");
-					}
-					sub.onSuccess(project);
-				} catch (InvalidNameException e) {
-					// TODO should we really fail here?
-					sub.onError(error(BAD_REQUEST, "Error while adding project to router storage", e));
-				}
-			});
-
-			return batch.process().andThen(single);
-
-		});
 	}
 
 }

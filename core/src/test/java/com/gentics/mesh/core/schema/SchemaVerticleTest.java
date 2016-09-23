@@ -304,7 +304,6 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			SchemaContainer schema = schemaContainer("content");
 			assertThat(schema.getNodes()).isNotEmpty();
 
-			String name = schema.getUuid() + "/" + schema.getName();
 			String uuid = schema.getUuid();
 			MeshResponse<Void> future = getClient().deleteSchema(schema.getUuid()).invoke();
 			latchFor(future);

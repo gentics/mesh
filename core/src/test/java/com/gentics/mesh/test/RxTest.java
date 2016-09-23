@@ -7,24 +7,48 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.util.RxUtil;
 
-import io.vertx.rx.java.RxHelper;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.file.FileSystem;
 import rx.Observable;
-import rx.Scheduler;
+import rx.Single;
 import rx.schedulers.Schedulers;
 
-
-@Ignore
 public class RxTest {
 
-	private Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+	@Test
+	public void testMultipleSingles1() throws InterruptedException {
+
+		List<Single<String>> list = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			list.add(createSingle(i));
+		}
+
+		long start = System.currentTimeMillis();
+		List<String> finalList = Observable.from(list).concatMapEager(s -> s.toObservable()).toList().toSingle().toBlocking().value();
+		for (String value : finalList) {
+			System.out.println(value);
+		}
+		long duration = System.currentTimeMillis() - start;
+		System.out.println("Duration: " + duration);
+	}
+
+	private Single<String> createSingle(int i) {
+		return Single.create(sub -> {
+			new Thread(() -> {
+				try {
+					Thread.sleep(800);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				sub.onSuccess("test_" + i);
+			}).start();
+		});
+	}
 
 	@Test
 	public void testScheduler() throws IOException {
@@ -55,30 +79,6 @@ public class RxTest {
 			System.out.println("blar");
 			return Observable.empty();
 		}).subscribe();
-	}
-
-	@Test
-	public void testRxEmpty() {
-		Observable<Void> obs = Observable.empty();
-		obs = obs.map(e -> {
-			System.out.println("obs");
-			return null;
-		});
-		Observable<Void> obs2 = Observable.empty();
-		//		Iterator<Void> it = obs.toBlocking().getIterator();
-		//		while (it.hasNext()) {
-		//			it.next();
-		//		}
-
-		Observable<String> obs3 = obs2.flatMap(e -> Observable.just("blub"));
-
-		Observable<Object> merged = Observable.merge(obs, obs3).map(e -> {
-			System.out.println("Merged");
-			return null;
-		});
-
-		merged.toBlocking().last();
-		System.out.println("Done");
 	}
 
 	private Observable<String> constructWaitFor() {

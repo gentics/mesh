@@ -46,7 +46,6 @@ import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
@@ -59,7 +58,6 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	public MicronodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
 		NodeParameters parameters = new NodeParameters(ac);
-		List<Single<MicronodeResponse>> obs = new ArrayList<>();
 		MicronodeResponse restMicronode = new MicronodeResponse();
 		MicroschemaContainerVersion microschemaContainer = getSchemaContainerVersion();
 		if (microschemaContainer == null) {

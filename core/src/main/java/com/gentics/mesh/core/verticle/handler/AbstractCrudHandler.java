@@ -50,8 +50,11 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	abstract public void handleDelete(InternalActionContext ac, String uuid);
-
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
+	}
+	
 	/**
 	 * Handle read requests that target a single object.
 	 * 

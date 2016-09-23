@@ -13,9 +13,11 @@ import java.util.Set;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -137,7 +139,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable handleAction(SearchQueueEntry entry) {
-		String uuid = entry.getElementUuid();
 		String actionName = entry.getElementActionName();
 
 		if (!isSearchClientAvailable()) {
@@ -208,18 +209,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable reindexAll() {
-		return Completable.create(sub -> {
+		return Completable.defer(() -> {
 			log.info("Handling full reindex entry");
-
+			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueueBatch batch = queue.createBatch();
+			// Add all elements from the root vertex of the handler to the created batch
 			for (T element : getRootVertex().findAll()) {
 				log.info("Invoking reindex for {" + element.getType() + "/" + element.getUuid() + "}");
-				SearchQueueBatch batch = element.createIndexBatch(STORE_ACTION);
-				for (SearchQueueEntry entry : batch.getEntries()) {
-					entry.process().await();
-				}
-				batch.delete(null);
+				element.addIndexBatchEntry(batch, STORE_ACTION);
 			}
-			sub.onCompleted();
+			return batch.processAsync();
 		});
 	}
 

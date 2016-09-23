@@ -18,7 +18,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -59,7 +58,6 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * @see User
@@ -395,65 +393,57 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Single<User> update(InternalActionContext ac) {
-		Database db = MeshInternal.get().database();
-
-		try {
-			UserUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserUpdateRequest.class);
-			return db.tx(() -> {
-				if (shouldUpdate(requestModel.getUsername(), getUsername())) {
-					User conflictingUser = MeshInternal.get().boot().userRoot().findByUsername(requestModel.getUsername());
-					if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
-						throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
-					}
-					setUsername(requestModel.getUsername());
-				}
-
-				if (shouldUpdate(requestModel.getFirstname(), getFirstname())) {
-					setFirstname(requestModel.getFirstname());
-				}
-
-				if (shouldUpdate(requestModel.getLastname(), getLastname())) {
-					setLastname(requestModel.getLastname());
-				}
-
-				if (shouldUpdate(requestModel.getEmailAddress(), getEmailAddress())) {
-					setEmailAddress(requestModel.getEmailAddress());
-				}
-
-				if (!isEmpty(requestModel.getPassword())) {
-					setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
-				}
-
-				// TODO use fillRest method instead
-				setEditor(ac.getUser());
-				setLastEditedTimestamp(System.currentTimeMillis());
-				if (requestModel.getNodeReference() != null) {
-					NodeReference reference = requestModel.getNodeReference();
-					// TODO also handle full node response inside node reference field
-					if (reference instanceof NodeReferenceImpl) {
-						NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
-						if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
-							throw error(BAD_REQUEST, "user_incomplete_node_reference");
-						}
-						String referencedNodeUuid = basicReference.getUuid();
-						String projectName = basicReference.getProjectName();
-						/* TODO decide whether we need to check perms on the project as well */
-						Project project = MeshInternal.get().boot().projectRoot().findByName(projectName);
-						if (project == null) {
-							throw error(BAD_REQUEST, "project_not_found", projectName);
-						}
-						NodeRoot nodeRoot = project.getNodeRoot();
-						Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
-						setReferencedNode(node);
-					}
-				}
-				return createIndexBatch(STORE_ACTION);
-			}).process().andThen(Single.just(this));
-
-		} catch (IOException e) {
-			return Single.error(e);
+	public User update(InternalActionContext ac, SearchQueueBatch batch) {
+		UserUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserUpdateRequest.class);
+		if (shouldUpdate(requestModel.getUsername(), getUsername())) {
+			User conflictingUser = MeshInternal.get().boot().userRoot().findByUsername(requestModel.getUsername());
+			if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
+				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
+			}
+			setUsername(requestModel.getUsername());
 		}
+
+		if (shouldUpdate(requestModel.getFirstname(), getFirstname())) {
+			setFirstname(requestModel.getFirstname());
+		}
+
+		if (shouldUpdate(requestModel.getLastname(), getLastname())) {
+			setLastname(requestModel.getLastname());
+		}
+
+		if (shouldUpdate(requestModel.getEmailAddress(), getEmailAddress())) {
+			setEmailAddress(requestModel.getEmailAddress());
+		}
+
+		if (!isEmpty(requestModel.getPassword())) {
+			setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
+		}
+
+		// TODO use fillRest method instead
+		setEditor(ac.getUser());
+		setLastEditedTimestamp(System.currentTimeMillis());
+		if (requestModel.getNodeReference() != null) {
+			NodeReference reference = requestModel.getNodeReference();
+			// TODO also handle full node response inside node reference field
+			if (reference instanceof NodeReferenceImpl) {
+				NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
+				if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
+					throw error(BAD_REQUEST, "user_incomplete_node_reference");
+				}
+				String referencedNodeUuid = basicReference.getUuid();
+				String projectName = basicReference.getProjectName();
+				/* TODO decide whether we need to check perms on the project as well */
+				Project project = MeshInternal.get().boot().projectRoot().findByName(projectName);
+				if (project == null) {
+					throw error(BAD_REQUEST, "project_not_found", projectName);
+				}
+				NodeRoot nodeRoot = project.getNodeRoot();
+				Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
+				setReferencedNode(node);
+			}
+		}
+		addIndexBatchEntry(batch, STORE_ACTION);
+		return this;
 
 	}
 

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.auth;
 
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -24,7 +25,7 @@ public abstract class AbstractAuthRestHandler extends AbstractHandler implements
 	 */
 	@Override
 	public void handleMe(InternalActionContext ac) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			//TODO add permission check
 			MeshAuthUser requestUser = ac.getUser();
 			return requestUser.transformToRest(ac, 0);

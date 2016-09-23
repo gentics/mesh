@@ -112,7 +112,7 @@ public final class JsonUtil {
 		}
 	}
 
-	public static <T> T readValue(String content, Class<T> valueType) throws IOException {
+	public static <T> T readValue(String content, Class<T> valueType) throws GenericRestException {
 		try {
 			return defaultMapper.readValue(content, valueType);
 		} catch (JsonMappingException e) {

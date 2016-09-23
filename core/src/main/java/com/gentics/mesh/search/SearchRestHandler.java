@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -242,7 +243,7 @@ public class SearchRestHandler {
 	}
 
 	public void handleReindex(InternalActionContext ac) {
-		db.asyncNoTx(() -> {
+		operateNoTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler handler : registry.getHandlers()) {
 					handler.clearIndex().onErrorComplete(error -> {
@@ -262,7 +263,6 @@ public class SearchRestHandler {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 		}).subscribe(message -> ac.send(message, OK), ac::fail);
-
 	}
 
 }
