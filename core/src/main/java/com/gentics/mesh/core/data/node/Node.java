@@ -331,7 +331,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param ac
 	 */
-	Single<NodeReferenceImpl> transformToReference(InternalActionContext ac);
+	NodeReferenceImpl transformToReference(InternalActionContext ac);
 
 	/**
 	 * Transform the node into a navigation response rest model.

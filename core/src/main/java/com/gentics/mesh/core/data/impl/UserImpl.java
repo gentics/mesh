@@ -299,11 +299,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		} else {
 			boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
 			if (expandReference) {
-				node.transformToRest(ac, level).doOnSuccess(transformedNode -> {
-					restUser.setNodeReference(transformedNode);
-				}).toBlocking().value();
-				return;
-
+				restUser.setNodeReference(node.transformToRestSync(ac, level));
 			} else {
 				NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
 				userNodeReference.setUuid(node.getUuid());

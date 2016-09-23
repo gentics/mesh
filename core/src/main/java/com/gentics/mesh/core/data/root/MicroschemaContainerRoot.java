@@ -7,8 +7,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
-import rx.Single;
-
 public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContainer> {
 
 	public static final String TYPE = "microschemas";
@@ -46,16 +44,17 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	boolean contains(MicroschemaContainer microschema);
 
 	/**
-	 * Get the microschema container version from the given reference
-	 * @param reference reference
+	 * Get the microschema container version from the given reference.
+	 * 
+	 * @param reference
+	 *            reference
 	 * @return
 	 */
-	Single<MicroschemaContainerVersion> fromReference(MicroschemaReference reference);
+	MicroschemaContainerVersion fromReference(MicroschemaReference reference);
 
 	/**
-	 * Get the microschema container version from the given reference. Ignore
-	 * the version number from the reference, but take the version from the
-	 * release instead
+	 * Get the microschema container version from the given reference. Ignore the version number from the reference, but take the version from the release
+	 * instead.
 	 * 
 	 * @param reference
 	 *            reference
@@ -63,5 +62,5 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 *            release
 	 * @return
 	 */
-	Single<MicroschemaContainerVersion> fromReference(MicroschemaReference reference, Release release);
+	MicroschemaContainerVersion fromReference(MicroschemaReference reference, Release release);
 }

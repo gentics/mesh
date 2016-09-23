@@ -66,7 +66,7 @@ public interface MicronodeGraphField extends ListableReferencingGraphField, Mesh
 		}
 
 		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot()
-				.fromReference(microschemaReference, ac.getRelease(null)).toBlocking().value();
+				.fromReference(microschemaReference, ac.getRelease(null));
 
 		Micronode micronode = null;
 

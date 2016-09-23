@@ -7,8 +7,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.error.MeshSchemaException;
 
-import rx.Single;
-
 public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 
 	public static final String TYPE = "schemas";
@@ -48,10 +46,11 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	boolean contains(SchemaContainer schema);
 
 	/**
-	 * Find the referenced schema container version.
-	 * Throws an error, if the referenced schema container version can not be found
-	 * @param reference reference
-	 * @return observable emitting the referenced version
+	 * Find the referenced schema container version. Throws an error, if the referenced schema container version can not be found
+	 * 
+	 * @param reference
+	 *            reference
+	 * @return Resolved container version
 	 */
-	Single<SchemaContainerVersion> fromReference(SchemaReference reference);
+	SchemaContainerVersion fromReference(SchemaReference reference);
 }

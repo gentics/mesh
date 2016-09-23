@@ -32,7 +32,6 @@ import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer> implements SchemaContainerRoot {
 
@@ -132,9 +131,9 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public Single<SchemaContainerVersion> fromReference(SchemaReference reference) {
+	public SchemaContainerVersion fromReference(SchemaReference reference) {
 		if (reference == null) {
-			return Single.error(error(INTERNAL_SERVER_ERROR, "Missing schema reference"));
+			throw error(INTERNAL_SERVER_ERROR, "Missing schema reference");
 		}
 		String schemaName = reference.getName();
 		String schemaUuid = reference.getUuid();
@@ -152,14 +151,14 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 					isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
 		}
 		if (schemaVersion == null) {
-			return Single.just(schemaContainer.getLatestVersion());
+			return schemaContainer.getLatestVersion();
 		} else {
 			SchemaContainerVersion foundVersion = schemaContainer.findVersionByRev(schemaVersion);
 			if (foundVersion == null) {
 				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
 						isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
 			} else {
-				return Single.just(foundVersion);
+				return foundVersion;
 			}
 		}
 	}

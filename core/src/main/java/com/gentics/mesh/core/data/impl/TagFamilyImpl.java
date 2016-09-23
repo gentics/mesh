@@ -140,27 +140,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			throw error(BAD_REQUEST, "tag_name_not_set");
 		}
 
-		// TagFamilyReference reference = requestModel.getTagFamily();
-		// if (reference == null) {
-		// throw error(BAD_REQUEST, "tag_tagfamily_reference_not_set");
-		// }
-		// boolean hasName = !isEmpty(reference.getName());
-		// boolean hasUuid = !isEmpty(reference.getUuid());
-		// if (!hasUuid && !hasName) {
-		// throw error(BAD_REQUEST, "tag_tagfamily_reference_uuid_or_name_missing");
-		// }
-
-		// First try the tag family reference by uuid if specified
-		// TagFamily tagFamily = null;
-		// String nameOrUuid = null;
-		// if (hasUuid) {
-		// nameOrUuid = reference.getUuid();
-		// tagFamily = project.getTagFamilyRoot().findByUuid(reference.getUuid()).toBlocking().first();
-		// } else if (hasName) {
-		// nameOrUuid = reference.getName();
-		// tagFamily = project.getTagFamilyRoot().findByName(reference.getName()).toBlocking().first();
-		// }
-
 		MeshAuthUser requestUser = ac.getUser();
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid());

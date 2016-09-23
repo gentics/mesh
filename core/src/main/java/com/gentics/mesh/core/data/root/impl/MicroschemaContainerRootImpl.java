@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Release;
@@ -26,8 +27,6 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-
-import rx.Single;
 
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
@@ -96,12 +95,12 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public Single<MicroschemaContainerVersion> fromReference(MicroschemaReference reference) {
+	public MicroschemaContainerVersion fromReference(MicroschemaReference reference) {
 		return fromReference(reference, null);
 	}
 
 	@Override
-	public Single<MicroschemaContainerVersion> fromReference(MicroschemaReference reference, Release release) {
+	public MicroschemaContainerVersion fromReference(MicroschemaReference reference, Release release) {
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
 		Integer version = release == null ? reference.getVersion() : null;
@@ -131,7 +130,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 			throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
 					isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
 		}
-		return Single.just(foundVersion);
+		return foundVersion;
 	}
 
 	@Override

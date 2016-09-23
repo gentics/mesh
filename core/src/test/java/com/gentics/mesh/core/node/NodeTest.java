@@ -60,7 +60,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			InternalActionContext ac = getMockedInternalActionContext("?version=draft");
-			NodeReference reference = node.transformToReference(ac).toBlocking().value();
+			NodeReference reference = node.transformToReference(ac);
 			assertNotNull(reference);
 			assertEquals(node.getUuid(), reference.getUuid());
 		}
@@ -102,16 +102,6 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(newsNode.getPathSegment(ac).toBlocking().value());
 		}
 	}
-
-	// @Test
-	// public void testGetFullSegmentPath() {
-	// try (NoTx noTx = db.noTx()) {
-	// Node newsNode = content("news overview");
-	// RoutingContext rc = getMockedRoutingContext("?version=draft");
-	// InternalActionContext ac = InternalActionContext.create(rc);
-	// System.out.println(newsNode.getPath(ac).toBlocking().value());
-	// }
-	// }
 
 	@Test
 	public void testTaggingOfMeshNode() {

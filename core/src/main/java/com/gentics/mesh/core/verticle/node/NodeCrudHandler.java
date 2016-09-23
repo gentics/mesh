@@ -168,20 +168,16 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			VersioningParameters versionParams = ac.getVersioningParameters();
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-//			try {
-				PageImpl<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(),
-						ac.getRelease(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
-				// Handle etag
-				String etag = page.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					throw new NotModifiedException();
-				} else {
-					return page.transformToRest(ac, 0).toBlocking().value();
-				}
-//			} catch (Exception e) {
-//				throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}", e);
-//			}
+			PageImpl<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(), ac.getRelease(node.getProject()).getUuid(),
+					ContainerType.forVersion(versionParams.getVersion()), pagingParams);
+			// Handle etag
+			String etag = page.getETag(ac);
+			ac.setEtag(etag, true);
+			if (ac.matches(etag, true)) {
+				throw new NotModifiedException();
+			} else {
+				return page.transformToRest(ac, 0).toBlocking().value();
+			}
 		}, model -> ac.send(model, OK));
 
 	}

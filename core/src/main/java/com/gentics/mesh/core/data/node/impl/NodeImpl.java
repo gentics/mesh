@@ -583,10 +583,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private void setParentNodeInfo(InternalActionContext ac, Release release, NodeResponse restNode) {
 		Node parentNode = getParentNode(release.getUuid());
 		if (parentNode != null) {
-			parentNode.transformToReference(ac).map(transformedParentNode -> {
-				restNode.setParentNode(transformedParentNode);
-				return restNode;
-			}).toBlocking().value();
+			restNode.setParentNode(parentNode.transformToReference(ac));
 		} else {
 			// Only the base node of the project has no parent. Therefore this node must be a container.
 			restNode.setContainer(true);
@@ -951,12 +948,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Single<NodeReferenceImpl> transformToReference(InternalActionContext ac) {
+	public NodeReferenceImpl transformToReference(InternalActionContext ac) {
 		NodeReferenceImpl nodeReference = new NodeReferenceImpl();
 		nodeReference.setUuid(getUuid());
 		nodeReference.setDisplayName(getDisplayName(ac));
 		nodeReference.setSchema(getSchemaContainer().transformToReference());
-		return Single.just(nodeReference);
+		return nodeReference;
 	}
 
 	@Override

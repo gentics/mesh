@@ -184,9 +184,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
 		}
 		SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot()
-				.fromReference(requestModel.getSchemaReference()).toBlocking().value();
+				.fromReference(requestModel.getSchemaReference());
 
-		creator.reload();
 		Project project = create(requestModel.getName(), creator, schemaContainerVersion);
 		Release initialRelease = project.getInitialRelease();
 

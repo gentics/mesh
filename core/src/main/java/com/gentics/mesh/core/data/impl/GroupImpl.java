@@ -199,10 +199,10 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
-	@Override
-	public GroupImpl getImpl() {
-		return this;
-	}
+//	@Override
+//	public GroupImpl getImpl() {
+//		return this;
+//	}
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {

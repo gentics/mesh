@@ -7,9 +7,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -23,7 +25,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
@@ -126,11 +130,10 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 			return db.tx(() -> {
 				// Resolve the list of references to graph schema container versions
-				Observable<SchemaContainerVersion> obs = Observable.from(schemaReferenceList)
-						.flatMap(reference -> schemaContainerRoot.fromReference(reference).toObservable());
+				for (SchemaReference reference : schemaReferenceList) {
+					SchemaContainerVersion version = schemaContainerRoot.fromReference(reference);
+					// Invoke schema migration for each found schema version
 
-				// Invoke schema migration for each found schema version
-				obs.toBlocking().forEach(version -> {
 					SchemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
 					if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
 						throw error(BAD_REQUEST, "error_release_downgrade_schema_version", version.getName(),
@@ -151,7 +154,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
 					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
 					Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options);
-				});
+				}
 				return getSchemaVersions(release);
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -190,10 +193,9 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 			return db.tx(() -> {
 				// Transform the list of references into microschema container version vertices
-				Observable<MicroschemaContainerVersion> obs = Observable.from(microschemaReferenceList)
-						.flatMap(reference -> microschemaContainerRoot.fromReference(reference).toObservable());
+				for (MicroschemaReference reference : microschemaReferenceList) {
+					MicroschemaContainerVersion version = microschemaContainerRoot.fromReference(reference);
 
-				obs.toBlocking().forEach(version -> {
 					MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
 					if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
 						throw error(BAD_REQUEST, "error_release_downgrade_microschema_version", version.getName(),
@@ -209,7 +211,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
 					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
 					Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options);
-				});
+				}
 				return getMicroschemaVersions(release);
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
