@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -17,7 +16,7 @@ public class MicroschemaComparator extends AbstractFieldSchemaContainerComparato
 	}
 
 	@Override
-	public List<SchemaChangeModel> diff(Microschema containerA, Microschema containerB) throws IOException {
+	public List<SchemaChangeModel> diff(Microschema containerA, Microschema containerB) {
 		return super.diff(containerA, containerB, Microschema.class);
 	}
 

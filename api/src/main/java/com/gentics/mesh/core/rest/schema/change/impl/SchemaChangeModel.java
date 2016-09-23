@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEMICROSCHEMA;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -152,10 +151,8 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Load the default (auto) migration script for the operation of the change.
-	 * 
-	 * @throws IOException
 	 */
-	public void loadMigrationScript() throws IOException {
+	public void loadMigrationScript() {
 		setMigrationScript(getOperation().getAutoMigrationScript(getProperties()));
 	}
 

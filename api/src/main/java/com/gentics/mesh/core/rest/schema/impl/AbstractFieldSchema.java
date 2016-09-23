@@ -10,7 +10,6 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -86,7 +85,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	}
 
 	@Override
-	public SchemaChangeModel compareTo(FieldSchema fieldSchema) throws IOException {
+	public SchemaChangeModel compareTo(FieldSchema fieldSchema) {
 		//Create the initial empty change
 		SchemaChangeModel change = new SchemaChangeModel(EMPTY, getName());
 

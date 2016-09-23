@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data.schema.handler;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.EMPTY;
 
-import java.io.IOException;
-
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
@@ -18,9 +16,8 @@ public class FieldSchemaComparator {
 	 * @param fieldSchemaA
 	 * @param fieldSchemaB
 	 * @return
-	 * @throws IOException
 	 */
-	public SchemaChangeModel compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) throws IOException {
+	public SchemaChangeModel compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) {
 		if (fieldSchemaA != null && fieldSchemaB != null) {
 			SchemaChangeModel change = fieldSchemaA.compareTo(fieldSchemaB);
 			// Only load the migration script if a change has been detected

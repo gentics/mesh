@@ -13,7 +13,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
@@ -23,11 +22,9 @@ public class NavRootHandler {
 
 	private WebRootService webrootService;
 
-	private Database db;
 
 	@Inject
-	public NavRootHandler(Database database, WebRootService webRootService) {
-		this.db = database;
+	public NavRootHandler(WebRootService webRootService) {
 		this.webrootService = webRootService;
 	}
 

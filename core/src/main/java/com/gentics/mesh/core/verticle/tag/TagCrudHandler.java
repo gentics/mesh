@@ -27,11 +27,8 @@ import com.gentics.mesh.util.ResultInfo;
 
 public class TagCrudHandler extends AbstractHandler {
 
-	private Database db;
-
 	@Inject
-	public TagCrudHandler(Database db) {
-		this.db = db;
+	public TagCrudHandler() {
 	}
 
 	public TagFamily getTagFamily(InternalActionContext ac, String uuid) {

@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.EMPTY;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,11 +34,10 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 * @param containerA
 	 * @param containerB
 	 * @return
-	 * @throws IOException
 	 */
-	public abstract List<SchemaChangeModel> diff(FC containerA, FC containerB) throws IOException;
+	public abstract List<SchemaChangeModel> diff(FC containerA, FC containerB);
 
-	protected List<SchemaChangeModel> diff(FC containerA, FC containerB, Class<? extends FC> classOfFC) throws IOException {
+	protected List<SchemaChangeModel> diff(FC containerA, FC containerB, Class<? extends FC> classOfFC) {
 		Objects.requireNonNull(containerA, "containerA must not be null");
 		Objects.requireNonNull(containerB, "containerB must not be null");
 

@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerCom
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -28,8 +27,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-
-import rx.Single;
 
 /**
  * Abstract implementation for a graph field container version.
@@ -260,17 +257,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public Single<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator comparator,
+	public SchemaChangesListModel diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator comparator,
 			FieldSchemaContainer fieldContainerModel) {
-		try {
-			SchemaChangesListModel list = new SchemaChangesListModel();
-			fieldContainerModel.validate();
-			list.getChanges().addAll(comparator.diff(transformToRest(ac, 0, null).toBlocking().value(), fieldContainerModel));
-			return Single.just(list);
-		} catch (Exception e) {
-			return Single.error(e);
-		}
-
+		SchemaChangesListModel list = new SchemaChangesListModel();
+		fieldContainerModel.validate();
+		list.getChanges().addAll(comparator.diff(transformToRestSync(ac, 0, null), fieldContainerModel));
+		return list;
 	}
 
 	@Override

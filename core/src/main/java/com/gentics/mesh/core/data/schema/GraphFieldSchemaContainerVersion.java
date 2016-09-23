@@ -9,8 +9,6 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 
-import rx.Single;
-
 /**
  * A {@link GraphFieldSchemaContainerVersion} stores the versioned data for a {@link GraphFieldSchemaContainer} element.
  * 
@@ -112,10 +110,9 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 *            Comparator to be used to compare the schemas
 	 * @param restModel
 	 *            Rest model of the container that should be compared
-	 * @return
+	 * @return Rest model which contains the changes list
 	 */
-	Single<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator<?> comparator,
-			FieldSchemaContainer restModel);
+	SchemaChangesListModel diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator<?> comparator, FieldSchemaContainer restModel);
 
 	/**
 	 * Apply changes which will be extracted from the action context.

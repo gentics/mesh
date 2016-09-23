@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.rest.schema;
 
-import java.io.IOException;
 import java.util.Map;
 
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -70,9 +69,8 @@ public interface FieldSchema {
 	 * 
 	 * @param fieldSchema
 	 * @return Detected change
-	 * @throws IOException
 	 */
-	SchemaChangeModel compareTo(FieldSchema fieldSchema) throws IOException;
+	SchemaChangeModel compareTo(FieldSchema fieldSchema);
 
 	/**
 	 * Apply the given field properties to the field schema.

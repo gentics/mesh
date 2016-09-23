@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.rest.schema.change.impl;
 
-import java.io.FileNotFoundException;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -22,12 +24,13 @@ public enum SchemaChangeOperation {
 
 	/**
 	 * Get the auto migration script for this change
-	 * @param properties change properties
+	 * 
+	 * @param properties
+	 *            change properties
 	 * @return auto migration script, may be null
-	 * @throws IOException
 	 */
-	public String getAutoMigrationScript(Map<String, Object> properties) throws IOException {
-		switch(this) {
+	public String getAutoMigrationScript(Map<String, Object> properties) {
+		switch (this) {
 		case ADDFIELD:
 			return null;
 		case CHANGEFIELDTYPE:
@@ -83,15 +86,16 @@ public enum SchemaChangeOperation {
 
 	/**
 	 * Load the automatic migration script with given name
-	 * @param scriptName script name
+	 * 
+	 * @param scriptName
+	 *            script name
 	 * @return script file contents
-	 * @throws IOException
 	 */
-	private String loadAutoMigrationScript(String scriptName) throws IOException {
+	private String loadAutoMigrationScript(String scriptName) {
 		try (InputStream ins = getClass().getResourceAsStream("/script/" + scriptName)) {
 			if (ins == null) {
 				log.error("Json could not be loaded from classpath file {" + scriptName + "}");
-				throw new FileNotFoundException("Could not find script file {" + scriptName + "}");
+				throw error(INTERNAL_SERVER_ERROR, "Could not find script file {" + scriptName + "}");
 			} else {
 				StringWriter writer = new StringWriter();
 				try {
@@ -99,9 +103,12 @@ public enum SchemaChangeOperation {
 					return writer.toString();
 				} catch (IOException e) {
 					log.error("Error while reading script file {" + scriptName + "}", e);
-					throw e;
+					//TODO i18n
+					throw error(INTERNAL_SERVER_ERROR, "Could not load migration script for file {" + scriptName + "}", e);
 				}
 			}
+		} catch (IOException e1) {
+			throw error(INTERNAL_SERVER_ERROR, "Could not load migration script for file {" + scriptName + "}", e1);
 		}
 	}
 }

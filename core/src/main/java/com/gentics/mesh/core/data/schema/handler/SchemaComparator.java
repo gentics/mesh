@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CO
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -27,7 +26,7 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 	}
 
 	@Override
-	public List<SchemaChangeModel> diff(Schema schemaA, Schema schemaB) throws IOException {
+	public List<SchemaChangeModel> diff(Schema schemaA, Schema schemaB) {
 		List<SchemaChangeModel> changes = super.diff(schemaA, schemaB, Schema.class);
 
 		// segmentField

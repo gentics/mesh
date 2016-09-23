@@ -56,12 +56,15 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			SchemaContainer element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+			// Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
 			model.getChanges().addAll(MeshInternal.get().schemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
 			String schemaName = element.getName();
+			// No changes -> done
 			if (model.getChanges().isEmpty()) {
 				return message(ac, "schema_update_no_difference_detected", schemaName);
 			} else {
+				// Apply the found changes to the schema
 				db.tx(() -> {
 					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
 					element.getLatestVersion().applyChanges(ac, model, batch);
@@ -81,11 +84,11 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	 *            Uuid of the schema which should also be used for comparison
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
-		operateNoTx(() -> {
+		operateNoTx(ac, () -> {
 			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			return schema.getLatestVersion().diff(ac, comparator, requestModel);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**

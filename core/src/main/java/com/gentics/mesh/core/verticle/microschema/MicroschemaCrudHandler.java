@@ -82,11 +82,11 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema uuid
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
-		operateNoTx(() -> {
+		operateNoTx(ac, () -> {
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			return microschema.getLatestVersion().diff(ac, comparator, requestModel);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 
 	public void handleGetSchemaChanges(InternalActionContext ac, String schemaUuid) {
