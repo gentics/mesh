@@ -4,8 +4,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 
 public interface ParameterProviderContext extends ActionContext {
@@ -32,6 +33,10 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default PublishParameters getPublishParameters() {
 		return new PublishParameters(this);
+	}
+
+	default SchemaUpdateParameters getSchemaUpdateParameters() {
+		return new SchemaUpdateParameters(this);
 	}
 
 }

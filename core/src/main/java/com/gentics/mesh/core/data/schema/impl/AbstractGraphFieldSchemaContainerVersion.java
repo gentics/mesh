@@ -24,8 +24,6 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
 /**
@@ -188,7 +186,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public void applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch) {
+	public SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch) {
 		if (listOfChanges.getChanges().isEmpty()) {
 			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
 		}
@@ -233,6 +231,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 		// Update the search index
 		addIndexBatchEntry(batch, STORE_ACTION);
+		return nextVersion;
 	}
 
 	/**
@@ -246,13 +245,13 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public void applyChanges(InternalActionContext ac, SearchQueueBatch batch) {
+	public SCV applyChanges(InternalActionContext ac, SearchQueueBatch batch) {
 		SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
 
 		if (getNextChange() != null) {
 			throw error(INTERNAL_SERVER_ERROR, "migration_error_version_already_contains_changes", String.valueOf(getVersion()), getName());
 		}
-		applyChanges(ac, listOfChanges, batch);
+		return applyChanges(ac, listOfChanges, batch);
 	}
 
 	@Override

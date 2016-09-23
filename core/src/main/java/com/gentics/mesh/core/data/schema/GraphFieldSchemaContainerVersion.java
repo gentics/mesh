@@ -120,8 +120,9 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @param ac
 	 *            Action context that provides the migration request data
 	 * @param batch
+	 * @return The created schema container version
 	 */
-	void applyChanges(InternalActionContext ac, SearchQueueBatch batch);
+	SCV applyChanges(InternalActionContext ac, SearchQueueBatch batch);
 
 	/**
 	 * Apply the given list of changes to the schema container. This method will invoke the schema migration process.
@@ -129,8 +130,9 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @param ac
 	 * @param listOfChanges
 	 * @param batch
+	 * @return The created schema container version
 	 */
-	void applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch);
+	SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch);
 
 	/**
 	 * Return the parent schema container of the version.

@@ -41,7 +41,11 @@ import rx.Single;
  */
 public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex {
 
+	/**
+	 * Type Value: {@value #TYPE}
+	 */
 	public static final String TYPE = "node";
+
 	public static final int MAX_TRANSFORMATION_LEVEL = 2;
 
 	/**

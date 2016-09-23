@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -64,10 +65,16 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 			if (model.getChanges().isEmpty()) {
 				return message(ac, "schema_update_no_difference_detected", schemaName);
 			} else {
-				// Apply the found changes to the schema
+
 				db.tx(() -> {
 					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
-					element.getLatestVersion().applyChanges(ac, model, batch);
+					// Apply the found changes to the schema
+					SchemaContainerVersion version = element.getLatestVersion().applyChanges(ac, model, batch);
+
+					//TODO determine whether the newly created schema version should also be directly applied to 
+					// ** Parameter: updateAssignedReleases - default true
+					// ** Parameter: updateReleaseNames=release1,release2,release3 + Fehler, wenn man eine Release angibt, die noch nicht zugeordnet ist					
+
 					return batch;
 				}).processSync();
 				return message(ac, "migration_invoked", schemaName);

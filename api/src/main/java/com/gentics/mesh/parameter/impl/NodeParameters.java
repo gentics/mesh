@@ -18,12 +18,24 @@ import com.gentics.mesh.handler.ActionContext;
 
 public class NodeParameters extends AbstractParameters {
 
+	/**
+	 * Query parameter key: {@value #LANGUAGES_QUERY_PARAM_KEY}
+	 */
 	public static final String LANGUAGES_QUERY_PARAM_KEY = "lang";
 
+	/**
+	 * Query parameter key: {@value #EXPANDFIELDS_QUERY_PARAM_KEY}
+	 */
 	public static final String EXPANDFIELDS_QUERY_PARAM_KEY = "expand";
 
+	/**
+	 * Query parameter key: {@value #EXPANDALL_QUERY_PARAM_KEY}
+	 */
 	public static final String EXPANDALL_QUERY_PARAM_KEY = "expandAll";
 
+	/**
+	 * Query parameter key: {@value #RESOLVE_LINKS_QUERY_PARAM_KEY}
+	 */
 	public static final String RESOLVE_LINKS_QUERY_PARAM_KEY = "resolveLinks";
 
 	public NodeParameters(ActionContext ac) {
@@ -35,7 +47,7 @@ public class NodeParameters extends AbstractParameters {
 	}
 
 	/**
-	 * Set the <code>lang</code> request parameter values.
+	 * Set the <code>{@value #LANGUAGES_QUERY_PARAM_KEY}</code> request parameter values.
 	 * 
 	 * @param languages
 	 * @return Fluent API
@@ -45,6 +57,11 @@ public class NodeParameters extends AbstractParameters {
 		return this;
 	}
 
+	/**
+	 * Return the <code>{@value #LANGUAGES_QUERY_PARAM_KEY}</code> request parameter values.
+	 * 
+	 * @return
+	 */
 	public String[] getLanguages() {
 		String value = getParameter(LANGUAGES_QUERY_PARAM_KEY);
 		String[] languages = null;
@@ -57,6 +74,10 @@ public class NodeParameters extends AbstractParameters {
 		return languages;
 	}
 
+	/**
+	 * @see #getLanguages()
+	 * @return
+	 */
 	public List<String> getLanguageList() {
 		return Arrays.asList(getLanguages());
 	}
@@ -81,12 +102,16 @@ public class NodeParameters extends AbstractParameters {
 		}
 	}
 
+	/**
+	 * @see #getExpandedFieldNames()
+	 * @return
+	 */
 	public List<String> getExpandedFieldnameList() {
 		return Arrays.asList(getExpandedFieldNames());
 	}
 
 	/**
-	 * Set the <code>expandAll</code> request parameter flag.
+	 * Set the <code>{@value #EXPANDALL_QUERY_PARAM_KEY}</code> request parameter flag.
 	 * 
 	 * @param flag
 	 * @return
@@ -97,7 +122,7 @@ public class NodeParameters extends AbstractParameters {
 	}
 
 	/**
-	 * Return the <code>expandAll</code> query parameter flag value.
+	 * Return the <code>{@value #EXPANDALL_QUERY_PARAM_KEY}</code> query parameter flag value.
 	 * 
 	 * @return
 	 */
@@ -109,6 +134,11 @@ public class NodeParameters extends AbstractParameters {
 		return false;
 	}
 
+	/**
+	 * Return the <code>{@value #RESOLVE_LINKS_QUERY_PARAM_KEY}</code> query parameter flag value.
+	 * 
+	 * @return
+	 */
 	public LinkType getResolveLinks() {
 		String value = getParameter(RESOLVE_LINKS_QUERY_PARAM_KEY);
 		if (value != null) {
@@ -118,7 +148,7 @@ public class NodeParameters extends AbstractParameters {
 	}
 
 	/**
-	 * Set the <code>resolveLinks</code> request parameter.
+	 * Set the <code>{@value #RESOLVE_LINKS_QUERY_PARAM_KEY}</code> request parameter.
 	 * 
 	 * @param type
 	 */
@@ -129,7 +159,7 @@ public class NodeParameters extends AbstractParameters {
 
 	@Override
 	public void validate() {
-		//		 Check whether all given language tags exists
+		// Check whether all given language tags exists
 		for (String languageTag : getLanguages()) {
 			Iterator<?> it = Database.getThreadLocalGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
 			if (!it.hasNext()) {
