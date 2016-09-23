@@ -15,7 +15,6 @@ import rx.Single;
 public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	private String token;
-//	private String authHeader;
 	private Single<GenericMessageResponse> loginRequest;
 
 	public JWTAuthentication() {
@@ -23,24 +22,13 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	public JWTAuthentication(RoutingContext context) {
 		super();
-//		this.authHeader = context.request().getHeader("Authorization");
 	}
 
 	@Override
 	public Completable addAuthenticationInformation(HttpClientRequest request) {
 		//TODO: request new Token when old one expires
-
-//		if (authHeader != null) {
-			request.headers().add("Authorization", "Bearer " + token);
-			return Completable.complete();
-//		} else if (loginRequest == null) {
-//			return Completable.complete();
-//		} else {
-//			return loginRequest.map(x -> {
-//				request.headers().add("Authorization", "Bearer " + token);
-//				return null;
-//			}).toCompletable();
-//		}
+		request.headers().add("Authorization", "Bearer " + token);
+		return Completable.complete();
 	}
 
 	@Override
@@ -50,14 +38,15 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 			loginRequest.setUsername(getUsername());
 			loginRequest.setPassword(getPassword());
 
-			MeshRestRequestUtil.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, client, null).invoke().setHandler(rh -> {
-				if (rh.failed()) {
-					sub.onError(rh.cause());
-				} else {
-					token = rh.result().getToken();
-					sub.onSuccess(new GenericMessageResponse("OK"));
-				}
-			});
+			MeshRestRequestUtil.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, client, null).invoke()
+					.setHandler(rh -> {
+						if (rh.failed()) {
+							sub.onError(rh.cause());
+						} else {
+							token = rh.result().getToken();
+							sub.onSuccess(new GenericMessageResponse("OK"));
+						}
+					});
 		});
 		return this.loginRequest;
 	}
