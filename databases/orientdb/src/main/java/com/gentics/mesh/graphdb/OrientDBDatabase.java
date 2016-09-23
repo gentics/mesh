@@ -88,18 +88,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 	}
 
-	// Code is broken and cause NPE and stuck tests:
-	// https://github.com/orientechnologies/orientdb/issues/6336
-	// @Override
-	// public void clear() {
-	// OrientGraphNoTx noTx = factory.getNoTx();
-	// try {
-	// noTx.drop();
-	// } finally {
-	// noTx.shutdown();
-	// }
-	// }
-
 	@Override
 	public TransactionalGraph rawTx() {
 		return factory.getTx();
@@ -424,60 +412,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return new OrientDBTx(factory, resolver);
 	}
 
-//	@Override
-//	public <T> Single<T> asyncTx(TxHandler<Single<T>> trxHandler) {
-//
-//		return Single.create(sub -> {
-//
-//			Mesh.vertx().executeBlocking(bc -> {
-//
-//				T handlerResult = null;
-//				boolean handlerFinished = false;
-//
-//				for (int retry = 0; retry < maxRetry; retry++) {
-//
-//					try (Tx tx = tx()) {
-//						Single<T> result = trxHandler.call();
-//						if (result == null) {
-//							handlerResult  = null;
-//							tx.success();
-//						} else {
-//							handlerResult = result.toBlocking().value();
-//							handlerFinished = true;
-//							tx.success();
-//						}
-//					} catch (OConcurrentModificationException e) {
-//						if (log.isTraceEnabled()) {
-//							log.trace("Error while handling transaction. Retrying " + retry, e);
-//						}
-//						try {
-//							// Delay the retry by 50ms to give the other transaction a chance to finish
-//							Thread.sleep(50);
-//						} catch (InterruptedException e1) {
-//							e1.printStackTrace();
-//						}
-//						// Reset previous result
-//						handlerFinished = false;
-//						handlerResult = null;
-//					} catch (Exception e) {
-//						log.error("Error while handling transaction.", e);
-//						bc.fail(e);
-//					}
-//					
-//					if (handlerFinished) {
-//						bc.complete(handlerResult);;
-//					}
-//				}
-//			}, false, (AsyncResult<T> done) -> {
-//				if (done.failed()) {
-//					sub.onError(done.cause());
-//				} else {
-//					sub.onSuccess(done.result());
-//				}
-//			});
-//		});
-//	}
-
 	@Override
 	public <T> T tx(TxHandler<T> txHandler) {
 		/**
@@ -503,7 +437,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 				try {
 					// Delay the retry by 50ms to give the other transaction a chance to finish
-					Thread.sleep(50 + (retry *5));
+					Thread.sleep(50 + (retry * 5));
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
