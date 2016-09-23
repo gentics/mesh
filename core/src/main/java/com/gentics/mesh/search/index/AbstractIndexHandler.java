@@ -139,7 +139,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable handleAction(SearchQueueEntry entry) {
-		String uuid = entry.getElementUuid();
 		String actionName = entry.getElementActionName();
 
 		if (!isSearchClientAvailable()) {
