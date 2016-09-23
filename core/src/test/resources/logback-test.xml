@@ -33,7 +33,7 @@
 	<logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/>
 	 -->
 	<!-- <logger name="com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl" level="DEBUG" /> -->
-	<root level="DEBUG">
+	<root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>

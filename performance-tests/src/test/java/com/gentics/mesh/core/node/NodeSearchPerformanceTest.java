@@ -3,7 +3,7 @@ package com.gentics.mesh.core.node;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +23,12 @@ import com.gentics.mesh.test.performance.StopWatchLogger;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeSearchPerformanceTest.class);
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
@@ -45,7 +49,8 @@ public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
 
 		String lastNodeUuid = null;
 		String uuid = db.noTx(() -> folder("news").getUuid());
-		for (int i = 0; i < 300; i++) {
+		int total = 600;
+		for (int i = 0; i < total; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
@@ -55,6 +60,9 @@ public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
 			NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, request));
 			lastNodeUuid = response.getUuid();
 			call(() -> getClient().publishNode(PROJECT_NAME, response.getUuid()));
+			if (i % 100 == 0) {
+				log.info("Created " + i + " of " + total + " nodes.");
+			}
 		}
 
 		// Revoke all but one permission
@@ -67,17 +75,17 @@ public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
 		}
 
 		String json = "{";
-		json += "				\"sort\" : {";
-		json += "			      \"created\" : {\"order\" : \"asc\"}";
-		json += "			    },";
-		json += "			    \"query\":{";
-		json += "			        \"bool\" : {";
-		json += "			            \"must\" : {";
-		json += "			                \"term\" : { \"schema.name\" : \"content\" }";
-		json += "			            }";
-		json += "			        }";
-		json += "			    }";
-		json += "			}";
+		json += "	\"sort\" : {";
+		json += "	      \"created\" : {\"order\" : \"asc\"}";
+		json += "	    },";
+		json += "	    \"query\":{";
+		json += "	        \"bool\" : {";
+		json += "	            \"must\" : {";
+		json += "	                \"term\" : { \"schema.name\" : \"content\" }";
+		json += "	            }";
+		json += "	        }";
+		json += "	    }";
+		json += "	}";
 
 		String search = json;
 		loggingStopWatch(logger, "node.search-filter-one-perm", 400, (step) -> {
@@ -94,7 +102,8 @@ public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
 		}
 
 		String uuid = db.noTx(() -> folder("news").getUuid());
-		for (int i = 0; i < 2000; i++) {
+		int total = 2000;
+		for (int i = 0; i < total; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
@@ -103,6 +112,9 @@ public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
 			NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, request));
 			call(() -> getClient().publishNode(PROJECT_NAME, response.getUuid()));
+			if (i % 100 == 0) {
+				log.info("Created " + i + " of " + total + " nodes.");
+			}
 		}
 
 		String json = "{";

@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
