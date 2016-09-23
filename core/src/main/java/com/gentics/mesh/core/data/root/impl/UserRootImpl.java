@@ -186,9 +186,6 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			// TODO handle user create using full node rest model.
 			throw error(BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 		}
-
-		reload();
 		return user;
-
 	}
 }

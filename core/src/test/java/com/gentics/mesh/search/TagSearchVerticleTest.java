@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jettison.json.JSONException;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tag;
@@ -17,16 +16,10 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.util.RxDebugger;
 
 import io.vertx.core.AbstractVerticle;
 
 public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
-
-	@BeforeClass
-	public static void testSetupDB() {
-		new RxDebugger().start();
-	}
 
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {

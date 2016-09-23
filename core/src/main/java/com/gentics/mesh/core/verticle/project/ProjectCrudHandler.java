@@ -33,12 +33,6 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 		return boot.projectRoot();
 	}
 
-	@Override
-	public void handleDelete(InternalActionContext ac, String uuid) {
-		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
-	}
-
 	/**
 	 * Handle a read project by name request.
 	 * 

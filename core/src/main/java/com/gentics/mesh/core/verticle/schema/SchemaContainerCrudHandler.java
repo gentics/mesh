@@ -49,12 +49,6 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac, String uuid) {
-		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> boot.get().schemaContainerRoot(), uuid);
-	}
-
-	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		operateNoTx(() -> {

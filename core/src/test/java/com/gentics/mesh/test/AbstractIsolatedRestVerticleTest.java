@@ -129,7 +129,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() throws Exception {
-//		searchProvider.reset();
+		//		searchProvider.reset();
 		for (AbstractVerticle verticle : getVertices()) {
 			verticle.stop();
 		}
@@ -166,32 +166,21 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		request.setPassword("test1234");
 		request.setGroupUuid(group().getUuid());
 
-		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().createUser(request));
 	}
 
 	protected UserResponse readUser(String uuid) {
-		MeshResponse<UserResponse> future = getClient().findUserByUuid(uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().findUserByUuid(uuid));
 	}
 
 	protected UserResponse updateUser(String uuid, String newUserName) {
 		UserUpdateRequest userUpdateRequest = new UserUpdateRequest();
 		userUpdateRequest.setUsername(newUserName);
-		MeshResponse<UserResponse> future = getClient().updateUser(uuid, userUpdateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().updateUser(uuid, userUpdateRequest));
 	}
 
 	protected void deleteUser(String uuid) {
-		MeshResponse<Void> future = getClient().deleteUser(uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().deleteUser(uuid));
 	}
 
 	// Group
@@ -199,32 +188,21 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 	protected GroupResponse createGroup(String groupName) {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(groupName);
-		MeshResponse<GroupResponse> future = getClient().createGroup(request).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().createGroup(request));
 	}
 
 	protected GroupResponse readGroup(String uuid) {
-		MeshResponse<GroupResponse> future = getClient().findGroupByUuid(uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().findGroupByUuid(uuid));
 	}
 
 	protected GroupResponse updateGroup(String uuid, String newGroupName) {
 		GroupUpdateRequest groupUpdateRequest = new GroupUpdateRequest();
 		groupUpdateRequest.setName(newGroupName);
-		MeshResponse<GroupResponse> future = getClient().updateGroup(uuid, groupUpdateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().updateGroup(uuid, groupUpdateRequest));
 	}
 
 	protected void deleteGroup(String uuid) {
-		MeshResponse<Void> future = getClient().deleteGroup(uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().deleteGroup(uuid));
 	}
 
 	// Role
@@ -232,74 +210,49 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 	protected RoleResponse createRole(String roleName, String groupUuid) {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
-		MeshResponse<RoleResponse> future = getClient().createRole(roleCreateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().createRole(roleCreateRequest));
 	}
 
 	protected RoleResponse readRole(String uuid) {
-		MeshResponse<RoleResponse> future = getClient().findRoleByUuid(uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().findRoleByUuid(uuid));
 	}
 
 	protected void deleteRole(String uuid) {
-		MeshResponse<Void> future = getClient().deleteRole(uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().deleteRole(uuid));
 	}
 
 	protected RoleResponse updateRole(String uuid, String newRoleName) {
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName(newRoleName);
-		MeshResponse<RoleResponse> future = getClient().updateRole(uuid, request).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().updateRole(uuid, request));
 	}
 
 	// Tag
 	protected TagResponse createTag(String projectName, String tagFamilyUuid, String tagName) {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName(tagName);
-		MeshResponse<TagResponse> future = getClient().createTag(projectName, tagFamilyUuid, tagCreateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().createTag(projectName, tagFamilyUuid, tagCreateRequest));
 	}
 
 	protected TagResponse readTag(String projectName, String tagFamilyUuid, String uuid) {
-		MeshResponse<TagResponse> future = getClient().findTagByUuid(projectName, tagFamilyUuid, uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().findTagByUuid(projectName, tagFamilyUuid, uuid));
 	}
 
 	protected TagResponse updateTag(String projectName, String tagFamilyUuid, String uuid, String newTagName) {
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		tagUpdateRequest.setFields(new TagFieldContainer().setName(newTagName));
-		MeshResponse<TagResponse> future = getClient().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest));
 	}
 
 	protected void deleteTag(String projectName, String tagFamilyUuid, String uuid) {
-		MeshResponse<Void> future = getClient().deleteTag(projectName, tagFamilyUuid, uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().deleteTag(projectName, tagFamilyUuid, uuid));
 	}
 
 	// Node
 
 	protected NodeResponse createNode(String projectName, String nameField) {
 		NodeCreateRequest request = new NodeCreateRequest();
-		MeshResponse<NodeResponse> future = getClient().createNode(projectName, request).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().createNode(projectName, request));
 	}
 
 	protected MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
@@ -328,48 +281,32 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected void deleteNode(String projectName, String uuid) {
-		MeshResponse<Void> future = getClient().deleteNode(projectName, uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().deleteNode(projectName, uuid));
 	}
 
 	protected NodeResponse updateNode(String projectName, String uuid, String nameFieldValue) {
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-		MeshResponse<NodeResponse> future = getClient().updateNode(projectName, uuid, nodeUpdateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().updateNode(projectName, uuid, nodeUpdateRequest));
 	}
 
 	protected TagFamilyResponse createTagFamily(String projectName, String tagFamilyName) {
 		TagFamilyCreateRequest tagFamilyCreateRequest = new TagFamilyCreateRequest();
 		tagFamilyCreateRequest.setName(tagFamilyName);
-		MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(projectName, tagFamilyCreateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().createTagFamily(projectName, tagFamilyCreateRequest));
 	}
 
 	protected TagFamilyResponse readTagFamily(String projectName, String uuid) {
-		MeshResponse<TagFamilyResponse> future = getClient().findTagFamilyByUuid(projectName, uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().findTagFamilyByUuid(projectName, uuid));
 	}
 
 	protected TagFamilyResponse updateTagFamily(String projectName, String uuid, String newTagFamilyName) {
 		TagFamilyUpdateRequest tagFamilyUpdateRequest = new TagFamilyUpdateRequest();
 		tagFamilyUpdateRequest.setName(newTagFamilyName);
-		MeshResponse<TagFamilyResponse> future = getClient().updateTagFamily(projectName, uuid, tagFamilyUpdateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().updateTagFamily(projectName, uuid, tagFamilyUpdateRequest));
 	}
 
 	protected void deleteTagFamily(String projectName, String uuid) {
-		MeshResponse<Void> future = getClient().deleteTagFamily(projectName, uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().deleteTagFamily(projectName, uuid));
 	}
 
 	/**
@@ -405,64 +342,42 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(projectName);
 		projectCreateRequest.setSchemaReference(new SchemaReference().setName("folder"));
-		MeshResponse<ProjectResponse> future = getClient().createProject(projectCreateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().createProject(projectCreateRequest));
 	}
 
 	protected ProjectResponse readProject(String uuid) {
-		MeshResponse<ProjectResponse> future = getClient().findProjectByUuid(uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().findProjectByUuid(uuid));
 	}
 
 	protected ProjectResponse updateProject(String uuid, String projectName) {
 		ProjectUpdateRequest projectUpdateRequest = new ProjectUpdateRequest();
 		projectUpdateRequest.setName(projectName);
-		MeshResponse<ProjectResponse> future = getClient().updateProject(uuid, projectUpdateRequest).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().updateProject(uuid, projectUpdateRequest));
 	}
 
 	protected void deleteProject(String uuid) {
-		MeshResponse<Void> future = getClient().deleteProject(uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().deleteProject(uuid));
 	}
 
 	// Schema
 	protected Schema createSchema(String schemaName) {
 		Schema schema = FieldUtil.createMinimalValidSchema();
 		schema.setName(schemaName);
-		MeshResponse<Schema> future = getClient().createSchema(schema).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().createSchema(schema));
 	}
 
 	protected Schema readSchema(String uuid) {
-		MeshResponse<Schema> future = getClient().findSchemaByUuid(uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().findSchemaByUuid(uuid));
 	}
 
 	protected GenericMessageResponse updateSchema(String uuid, String schemaName) {
 		Schema schema = FieldUtil.createMinimalValidSchema();
 		schema.setName(schemaName);
-		MeshResponse<GenericMessageResponse> future = getClient().updateSchema(uuid, schema).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().updateSchema(uuid, schema));
 	}
 
 	protected void deleteSchema(String uuid) {
-		MeshResponse<Void> future = getClient().deleteSchema(uuid).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().deleteSchema(uuid));
 	}
 
 	// Microschema
@@ -599,10 +514,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
 
-		MeshResponse<GenericMessageResponse> future = getClient()
-				.updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer, fileName, contentType).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer, fileName, contentType));
 	}
 
 }

@@ -210,19 +210,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable reindexAll() {
-		return Completable.create(sub -> {
+		return Completable.defer(() -> {
 			log.info("Handling full reindex entry");
 			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 			SearchQueueBatch batch = queue.createBatch();
+			// Add all elements from the root vertex of the handler to the created batch
 			for (T element : getRootVertex().findAll()) {
 				log.info("Invoking reindex for {" + element.getType() + "/" + element.getUuid() + "}");
 				element.addIndexBatchEntry(batch, STORE_ACTION);
-				for (SearchQueueEntry entry : batch.getEntries()) {
-					entry.process().await();
-				}
-				batch.delete(null);
 			}
-			sub.onCompleted();
+			return batch.processAsync();
 		});
 	}
 

@@ -86,22 +86,15 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	@Override
 	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch) {
 		MeshAuthUser requestUser = ac.getUser();
-		Database db = MeshInternal.get().database();
 		Microschema microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 		microschema.validate();
 		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid());
 		}
-		Tuple<SearchQueueBatch, MicroschemaContainer> tuple = db.tx(() -> {
-			requestUser.reload();
-			MicroschemaContainer container = create(microschema, requestUser);
-			requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-			container.addIndexBatchEntry(batch, STORE_ACTION);
-			return Tuple.tuple(batch, container);
-		});
-
-		MicroschemaContainer microschemaContainer = tuple.v2();
-		return microschemaContainer;
+		MicroschemaContainer container = create(microschema, requestUser);
+		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+		container.addIndexBatchEntry(batch, STORE_ACTION);
+		return container;
 
 	}
 

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
@@ -12,14 +13,18 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.util.ResultInfo;
 
 public class TagCrudHandler extends AbstractHandler {
 
@@ -86,11 +91,27 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
 		operateNoTx(ac, () -> {
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-			SearchQueueBatch batch = queue.createBatch();
-			Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
-			return tag.transformToRestSync(ac, 0);
-		}, model -> ac.send(model, OK));
+			Database db = MeshInternal.get().database();
+			ResultInfo info = db.tx(() -> {
+				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+				SearchQueueBatch batch = queue.createBatch();
+
+				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
+				TagResponse model = tag.transformToRestSync(ac, 0);
+				String path = tag.getAPIPath(ac);
+				ResultInfo resultInfo = new ResultInfo(model, batch);
+				resultInfo.setProperty("path", path);
+				return resultInfo;
+			});
+
+			RestModel model = info.getModel();
+			String path = info.getProperty("path");
+			SearchQueueBatch batch = info.getBatch();
+			ac.setLocation(path);
+			// TODO don't wait forever in order to prevent locking the thread
+			batch.processSync();
+			return model;
+		}, model -> ac.send(model, CREATED));
 
 	}
 

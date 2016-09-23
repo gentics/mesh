@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -49,12 +48,6 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		return boot.get().groupRoot();
 	}
 
-	@Override
-	public void handleDelete(InternalActionContext ac, String uuid) {
-		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
-	}
-
 	/**
 	 * Handle a read roles of group request.
 	 * 
@@ -67,12 +60,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			MeshAuthUser requestUser = ac.getUser();
-//			try {
-				PageImpl<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
-				return rolePage.transformToRest(ac, 0);
-//			} catch (Exception e) {
-//				return Single.error(e);
-//			}
+			//			try {
+			PageImpl<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
+			return rolePage.transformToRest(ac, 0);
+			//			} catch (Exception e) {
+			//				return Single.error(e);
+			//			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 

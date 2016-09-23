@@ -30,7 +30,6 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -52,12 +51,6 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	@Override
 	public RootVertex<Role> getRootVertex(InternalActionContext ac) {
 		return boot.roleRoot();
-	}
-
-	@Override
-	public void handleDelete(InternalActionContext ac, String uuid) {
-		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
 
 	/**

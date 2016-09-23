@@ -75,11 +75,6 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	}
 
-	@Override
-	public void handleDelete(InternalActionContext ac, String uuid) {
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
-	}
-
 	/**
 	 * Compare the latest schema version with the given schema model.
 	 * 

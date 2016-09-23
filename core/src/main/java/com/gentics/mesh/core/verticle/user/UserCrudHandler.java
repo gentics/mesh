@@ -22,7 +22,6 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -48,11 +47,6 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	@Override
 	public RootVertex<User> getRootVertex(InternalActionContext ac) {
 		return boot.userRoot();
-	}
-
-	@Override
-	public void handleDelete(InternalActionContext ac, String uuid) {
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
 
 	/**
