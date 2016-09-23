@@ -124,8 +124,8 @@ public class BootstrapInitializer {
 	private void initProjects() throws InvalidNameException {
 		for (Project project : meshRoot().getProjectRoot().findAll()) {
 			routerStorage.addProjectRouter(project.getName());
-			if (log.isInfoEnabled()) {
-				log.info("Initalized project {" + project.getName() + "}");
+			if (log.isDebugEnabled()) {
+				log.debug("Initalized project {" + project.getName() + "}");
 			}
 		}
 	}
@@ -268,8 +268,8 @@ public class BootstrapInitializer {
 				if (foundMeshRoot == null) {
 
 					meshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
-					if (log.isInfoEnabled()) {
-						log.info("Created mesh root {" + meshRoot.getUuid() + "}");
+					if (log.isDebugEnabled()) {
+						log.debug("Created mesh root {" + meshRoot.getUuid() + "}");
 					}
 				} else {
 					isInitialSetup = false;
@@ -367,14 +367,14 @@ public class BootstrapInitializer {
 				adminUser.setEditor(adminUser);
 				adminUser.setLastEditedTimestamp(System.currentTimeMillis());
 
-				log.info("Enter admin password:");
+				log.debug("Enter admin password:");
 				// Scanner scanIn = new Scanner(System.in);
 				// String pw = scanIn.nextLine();
 				// TODO remove later on
 				String pw = "admin";
 				// scanIn.close();
 				adminUser.setPasswordHash(encoder.encode(pw));
-				log.info("Created admin user {" + adminUser.getUuid() + "}");
+				log.debug("Created admin user {" + adminUser.getUuid() + "}");
 			}
 
 			// Content
@@ -408,7 +408,7 @@ public class BootstrapInitializer {
 
 				schema.setContainer(false);
 				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser);
-				log.info("Created schema container {" + schema.getName() + "} uuid: {" + contentSchemaContainer.getUuid() + "}");
+				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + contentSchemaContainer.getUuid() + "}");
 			}
 
 			// Folder
@@ -426,7 +426,7 @@ public class BootstrapInitializer {
 
 				schema.setContainer(true);
 				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser);
-				log.info("Created schema container {" + schema.getName() + "} uuid: {" + folderSchemaContainer.getUuid() + "}");
+				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + folderSchemaContainer.getUuid() + "}");
 			}
 
 			// Binary content for images and other downloads
@@ -450,21 +450,21 @@ public class BootstrapInitializer {
 
 				schema.setContainer(false);
 				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser);
-				log.info("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
+				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 
 			Group adminGroup = groupRoot.findByName("admin");
 			if (adminGroup == null) {
 				adminGroup = groupRoot.create("admin", adminUser);
 				adminGroup.addUser(adminUser);
-				log.info("Created admin group {" + adminGroup.getUuid() + "}");
+				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
 			adminRole = roleRoot.findByName("admin");
 			if (adminRole == null) {
 				adminRole = roleRoot.create("admin", adminUser);
 				adminGroup.addRole(adminRole);
-				log.info("Created admin role {" + adminRole.getUuid() + "}");
+				log.debug("Created admin role {" + adminRole.getUuid() + "}");
 			}
 
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
@@ -526,7 +526,7 @@ public class BootstrapInitializer {
 			}
 		}
 		long diff = System.currentTimeMillis() - start;
-		log.info("Handling languages took: " + diff + "[ms]");
+		log.debug("Handling languages took: " + diff + "[ms]");
 	}
 
 	public Collection<? extends String> getAllLanguageTags() {

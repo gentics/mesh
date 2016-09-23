@@ -34,7 +34,6 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * 
 	 * @param ac
 	 * @param model
-	 * @return
 	 */
 	protected <E extends AbstractGenericRestResponse> void setRolePermissions(InternalActionContext ac, E model) {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
