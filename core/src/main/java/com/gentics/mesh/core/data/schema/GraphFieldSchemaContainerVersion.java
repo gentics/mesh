@@ -4,7 +4,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -122,17 +122,18 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * 
 	 * @param ac
 	 *            Action context that provides the migration request data
-	 * @return
+	 * @param batch
 	 */
-	Single<GenericMessageResponse> applyChanges(InternalActionContext ac);
+	void applyChanges(InternalActionContext ac, SearchQueueBatch batch);
 
 	/**
 	 * Apply the given list of changes to the schema container. This method will invoke the schema migration process.
 	 * 
 	 * @param ac
 	 * @param listOfChanges
+	 * @param batch
 	 */
-	Single<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges);
+	void applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch);
 
 	/**
 	 * Return the parent schema container of the version.

@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -19,7 +18,6 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -193,61 +191,51 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public Single<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges) {
+	public void applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch) {
 		if (listOfChanges.getChanges().isEmpty()) {
 			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
 		}
-		Database db = MeshInternal.get().database();
-		return db.tx(() -> {
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-			SearchQueueBatch batch = queue.createBatch();
-
-			SchemaChange<?> current = null;
-			for (SchemaChangeModel restChange : listOfChanges.getChanges()) {
-				SchemaChange<?> graphChange = createChange(restChange);
-				// Set the first change to the schema container and chain all other changes to that change.
-				if (current == null) {
-					current = graphChange;
-					setNextChange(current);
-				} else {
-					current.setNextChange(graphChange);
-					current = graphChange;
-				}
+		SchemaChange<?> current = null;
+		for (SchemaChangeModel restChange : listOfChanges.getChanges()) {
+			SchemaChange<?> graphChange = createChange(restChange);
+			// Set the first change to the schema container and chain all other changes to that change.
+			if (current == null) {
+				current = graphChange;
+				setNextChange(current);
+			} else {
+				current.setNextChange(graphChange);
+				current = graphChange;
 			}
+		}
 
-			R resultingSchema = new FieldSchemaContainerMutator().apply(this);
-			resultingSchema.validate();
+		R resultingSchema = new FieldSchemaContainerMutator().apply(this);
+		resultingSchema.validate();
 
-			// Increment version of the schema
-			resultingSchema.setVersion(resultingSchema.getVersion() + 1);
+		// Increment version of the schema
+		resultingSchema.setVersion(resultingSchema.getVersion() + 1);
 
-			// Create and set the next version of the schema
-			SCV nextVersion = getGraph().addFramedVertex(getContainerVersionClass());
-			nextVersion.setSchema(resultingSchema);
+		// Create and set the next version of the schema
+		SCV nextVersion = getGraph().addFramedVertex(getContainerVersionClass());
+		nextVersion.setSchema(resultingSchema);
 
-			// Check for conflicting container names
-			String newName = resultingSchema.getName();
-			SC foundContainer = getSchemaContainer().getRoot().findByName(resultingSchema.getName());
-			if (foundContainer != null && !foundContainer.getUuid().equals(getSchemaContainer().getUuid())) {
-				throw conflict(foundContainer.getUuid(), newName, "schema_conflicting_name", newName);
-			}
+		// Check for conflicting container names
+		String newName = resultingSchema.getName();
+		SC foundContainer = getSchemaContainer().getRoot().findByName(resultingSchema.getName());
+		if (foundContainer != null && !foundContainer.getUuid().equals(getSchemaContainer().getUuid())) {
+			throw conflict(foundContainer.getUuid(), newName, "schema_conflicting_name", newName);
+		}
 
-			nextVersion.setSchemaContainer(getSchemaContainer());
-			nextVersion.setName(resultingSchema.getName());
-			// TODO avoid updates of schema names - See https://jira.gentics.com/browse/CL-348
-			getSchemaContainer().setName(resultingSchema.getName());
-			setNextVersion(nextVersion);
+		nextVersion.setSchemaContainer(getSchemaContainer());
+		nextVersion.setName(resultingSchema.getName());
+		// TODO avoid updates of schema names - See https://jira.gentics.com/browse/CL-348
+		getSchemaContainer().setName(resultingSchema.getName());
+		setNextVersion(nextVersion);
 
-			// Update the latest version of the schema container
-			getSchemaContainer().setLatestVersion(nextVersion);
+		// Update the latest version of the schema container
+		getSchemaContainer().setLatestVersion(nextVersion);
 
-			// Update the search index
-			return addIndexBatchEntry(batch, STORE_ACTION);
-		}).processAsync().toSingle(() -> {
-			return db.noTx(() -> {
-				return message(ac, "migration_invoked", getName());
-			});
-		});
+		// Update the search index
+		addIndexBatchEntry(batch, STORE_ACTION);
 	}
 
 	/**
@@ -261,22 +249,14 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public Single<GenericMessageResponse> applyChanges(InternalActionContext ac) {
+	public void applyChanges(InternalActionContext ac, SearchQueueBatch batch) {
 		Database db = MeshInternal.get().database();
-		try {
-			SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
+		SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
 
-			return db.tx(() -> {
-				if (getNextChange() != null) {
-					throw error(INTERNAL_SERVER_ERROR, "migration_error_version_already_contains_changes", String.valueOf(getVersion()), getName());
-				}
-
-				return applyChanges(ac, listOfChanges);
-
-			});
-		} catch (Exception e) {
-			return Single.error(e);
+		if (getNextChange() != null) {
+			throw error(INTERNAL_SERVER_ERROR, "migration_error_version_already_contains_changes", String.valueOf(getVersion()), getName());
 		}
+		applyChanges(ac, listOfChanges, batch);
 	}
 
 	@Override

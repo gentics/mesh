@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -51,27 +52,25 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		operateNoTx(() -> {
+		operateNoTx(ac, () -> {
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
 			MicroschemaContainer element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			return db.tx(() -> {
-				try {
-					Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
-					SchemaChangesListModel model = new SchemaChangesListModel();
-					model.getChanges().addAll(MeshInternal.get().microschemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
-					String name = element.getName();
-					if (model.getChanges().isEmpty()) {
-						return Single.just(message(ac, "schema_update_no_difference_detected", name));
-					} else {
-						return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
-							return Single.just(message(ac, "migration_invoked", name));
-						});
-					}
-				} catch (Exception e) {
-					return Single.error(e);
-				}
-			});
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
+			SchemaChangesListModel model = new SchemaChangesListModel();
+			model.getChanges().addAll(MeshInternal.get().microschemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
+			String name = element.getName();
+
+			if (model.getChanges().isEmpty()) {
+				return message(ac, "schema_update_no_difference_detected", name);
+			} else {
+				db.tx(() -> {
+					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+					element.getLatestVersion().applyChanges(ac, model, batch);
+					return batch;
+				}).processSync();
+				return message(ac, "migration_invoked", name);
+			}
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -104,10 +103,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema which should be modified
 	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
-		operateNoTx(() -> {
+		operateNoTx(ac, () -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			return schema.getLatestVersion().applyChanges(ac);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			db.tx(() -> {
+				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				schema.getLatestVersion().applyChanges(ac, batch);
+				return batch;
+			}).processSync();
+			return message(ac, "migration_invoked", schema.getName());
+		}, model -> ac.send(model, OK));
 
 	}
 

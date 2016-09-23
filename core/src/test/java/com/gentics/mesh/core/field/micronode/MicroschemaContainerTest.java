@@ -100,8 +100,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 				assertEquals("Check microschema name", name, microschema.getName());
 			}
 
-			assertNull("Must not find microschema with name " + invalidName,
-					boot.microschemaContainerRoot().findByName(invalidName));
+			assertNull("Must not find microschema with name " + invalidName, boot.microschemaContainerRoot().findByName(invalidName));
 		}
 	}
 
@@ -286,7 +285,8 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			model.getChanges().addAll(meshDagger.microschemaComparator().diff(microschema, updatedMicroschema));
 
 			InternalActionContext ac = getMockedInternalActionContext();
-			vcard.applyChanges(ac, model).toBlocking().value();
+			SearchQueueBatch batch = createBatch();
+			vcard.applyChanges(ac, model, batch);
 			MicroschemaContainerVersion newVCard = microschemaContainer("vcard").getLatestVersion();
 
 			NodeGraphFieldContainer containerWithBoth = folder("2015").getGraphFieldContainer("en");

@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
@@ -51,25 +52,24 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		operateNoTx(() -> {
+		operateNoTx(ac, () -> {
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			SchemaContainer element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			try {
-				Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
-				SchemaChangesListModel model = new SchemaChangesListModel();
-				model.getChanges().addAll(MeshInternal.get().schemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
-				String schemaName = element.getName();
-				if (model.getChanges().isEmpty()) {
-					return Single.just(message(ac, "schema_update_no_difference_detected", schemaName));
-				} else {
-					return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
-						return Single.just(message(ac, "migration_invoked", schemaName));
-					});
-				}
-			} catch (Exception e) {
-				return Single.error(e);
+			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+			SchemaChangesListModel model = new SchemaChangesListModel();
+			model.getChanges().addAll(MeshInternal.get().schemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
+			String schemaName = element.getName();
+			if (model.getChanges().isEmpty()) {
+				return message(ac, "schema_update_no_difference_detected", schemaName);
+			} else {
+				db.tx(() -> {
+					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+					element.getLatestVersion().applyChanges(ac, model, batch);
+					return batch;
+				}).processSync();
+				return message(ac, "migration_invoked", schemaName);
 			}
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -170,10 +170,15 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		operateNoTx(() -> {
+		operateNoTx(ac, () -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			return schema.getLatestVersion().applyChanges(ac);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			db.tx(() -> {
+				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				schema.getLatestVersion().applyChanges(ac, batch);
+				return batch;
+			}).processSync();
+			return message(ac, "migration_invoked", schema.getName());
+		}, model -> ac.send(model, OK));
 
 	}
 
