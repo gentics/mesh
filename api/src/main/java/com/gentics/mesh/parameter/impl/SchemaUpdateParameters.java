@@ -103,7 +103,7 @@ public class SchemaUpdateParameters extends AbstractParameters {
 		releaseNames.setExample("summerRelease,winterRelease");
 		parameters.put(UPDATE_RELEASE_NAMES_QUERY_PARAM_KEY, releaseNames);
 
-		return null;
+		return parameters;
 	}
 
 }
