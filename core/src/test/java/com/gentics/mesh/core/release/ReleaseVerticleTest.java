@@ -674,6 +674,39 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	}
 
 	@Test
+	public void testAssignMicroschemaVersionViaMicroschemaUpdate() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			// create version 1 of a microschema
+			Microschema microschema = createMicroschema("microschemaname");
+			Project project = project();
+
+			// assign microschema to project
+			call(() -> getClient().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
+
+			// generate version 2
+			updateMicroschema(microschema.getUuid(), "newmicroschemaname");
+
+			// generate version 3
+			updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname");
+
+			// check that version 1 is assigned to release
+			MicroschemaReferenceList list = call(
+					() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new MicroschemaReference().setName("microschemaname").setUuid(microschema.getUuid()).setVersion(1));
+
+			// assign version 2 to the release
+			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+					new MicroschemaReferenceList(Arrays.asList(new MicroschemaReference().setUuid(microschema.getUuid()).setVersion(2)))));
+
+			// assert
+			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
+		}
+	}
+
+	@Test
 	public void testAssignBogusMicroschemaVersion() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
@@ -757,29 +790,51 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Microschema microschema = createMicroschema("microschemaname");
 			Project project = project();
 
-			// assign microschema to project
+			// Assign microschema to project
 			call(() -> getClient().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
 
-			// generate version 2
+			// Generate version 2
 			updateMicroschema(microschema.getUuid(), "newmicroschemaname");
 
-			// generate version 3
-			updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname");
-
-			// check that version 1 is assigned to release
+			// Assert that version 2 is assigned to release
 			MicroschemaReferenceList list = call(
 					() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new MicroschemaReference().setName("microschemaname").setUuid(microschema.getUuid()).setVersion(1));
+					.contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
 
-			// assign latest version to the release
-			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
-					new MicroschemaReferenceList(Arrays.asList(new MicroschemaReference().setUuid(microschema.getUuid())))));
+			// Generate version 3 which should not be auto assigned to the project release
+			updateMicroschema(microschema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
 
-			// assert
+			// Assert that version 2 is still assigned to release
 			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
-			assertThat(list).as("Updated microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new MicroschemaReference().setName("anothernewmicroschemaname").setUuid(microschema.getUuid()).setVersion(3));
+			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
+
+			// Generate version 4
+			updateMicroschema(microschema.getUuid(), "anothernewschemaname1",
+					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames(project.getInitialRelease().getName()));
+
+			// Assert that version 4 is assigned to the release
+			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new MicroschemaReference().setName("anothernewschemaname1").setUuid(microschema.getUuid()).setVersion(4));
+
+			// Generate version 5
+			updateMicroschema(microschema.getUuid(), "anothernewschemaname2", new SchemaUpdateParameters().setUpdateAssignedReleases(true));
+
+			// Assert that version 5
+			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new MicroschemaReference().setName("anothernewschemaname2").setUuid(microschema.getUuid()).setVersion(5));
+
+			// Generate version 6
+			updateMicroschema(microschema.getUuid(), "anothernewschemaname3",
+					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames("bla", "bogus", "moped"));
+
+			// Assert that version 4 is still assigned to the release since non of the names matches the project release
+			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new MicroschemaReference().setName("anothernewschemaname2").setUuid(microschema.getUuid()).setVersion(5));
 		}
 	}
 }

@@ -41,7 +41,7 @@ import dagger.Lazy;
 import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Single;
 
-public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContainer, Schema> {
+public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Schema> {
 
 	private SchemaComparator comparator;
 
@@ -50,7 +50,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	private NodeIndexHandler nodeIndexHandler;
 
 	@Inject
-	public SchemaContainerCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot, NodeIndexHandler nodeIndexHandler) {
+	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot, NodeIndexHandler nodeIndexHandler) {
 		super(db);
 		this.comparator = comparator;
 		this.boot = boot;

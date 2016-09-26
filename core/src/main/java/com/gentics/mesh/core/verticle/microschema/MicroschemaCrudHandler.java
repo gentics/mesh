@@ -9,13 +9,19 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.inject.Inject;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -23,11 +29,14 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 
 import dagger.Lazy;
+import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Single;
 
 public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, Microschema> {
@@ -54,18 +63,52 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 		operateNoTx(ac, () -> {
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
-			MicroschemaContainer element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			MicroschemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(MeshInternal.get().microschemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
-			String name = element.getName();
+			model.getChanges().addAll(MeshInternal.get().microschemaComparator().diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
+			String name = schemaContainer.getName();
 
 			if (model.getChanges().isEmpty()) {
 				return message(ac, "schema_update_no_difference_detected", name);
 			} else {
 				db.tx(() -> {
 					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
-					element.getLatestVersion().applyChanges(ac, model, batch);
+					MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
+
+					SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
+					if (updateParams.getUpdateAssignedReleases()) {
+						Map<Release, MicroschemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
+
+						// Assign the created version to the found releases
+						for (Map.Entry<Release, MicroschemaContainerVersion> releaseEntry : referencedReleases.entrySet()) {
+							Release release = releaseEntry.getKey();
+							Project projectOfRelease = release.getProject();
+
+							// Check whether a list of release names was specified and skip releases which were not included in the list.
+							List<String> releaseNames = updateParams.getReleaseNames();
+							if (releaseNames != null && !releaseNames.isEmpty() && !releaseNames.contains(release.getName())) {
+								continue;
+							}
+
+							MicroschemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
+
+							// Assign the new version to the release
+							release.assignMicroschemaVersion(createdVersion);
+
+							// start microschema migration
+							DeliveryOptions options = new DeliveryOptions();
+							options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectOfRelease.getUuid());
+							options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
+							options.addHeader(NodeMigrationVerticle.UUID_HEADER, createdVersion.getSchemaContainer().getUuid());
+							options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, previouslyReferencedVersion.getUuid());
+							options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, createdVersion.getUuid());
+							Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options);
+
+						}
+
+					}
+
 					return batch;
 				}).processSync();
 				return message(ac, "migration_invoked", name);

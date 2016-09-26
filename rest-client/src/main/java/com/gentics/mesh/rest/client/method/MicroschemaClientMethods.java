@@ -5,6 +5,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.google.common.reflect.Parameter;
 
 public interface MicroschemaClientMethods {
 
@@ -33,9 +34,10 @@ public interface MicroschemaClientMethods {
 	 *            Microschema UUID
 	 * @param request
 	 *            Update request
+	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, Microschema request);
+	MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, Microschema request, ParameterProvider... parameters);
 
 	/**
 	 * Delete the given microschema.

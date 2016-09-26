@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -70,7 +71,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 		if (list.isEmpty()) {
 			batch.addEntry(this, DELETE_ACTION);
 			getElement().remove();
-			//TODO handel related elements?
+			// TODO handel related elements?
 		} else {
 			throw error(BAD_REQUEST, "schema_delete_still_in_use", getUuid());
 		}
@@ -81,21 +82,6 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 		return "/api/v1/schemas/" + getUuid();
 	}
 
-	@Override
-	public Map<Release, SchemaContainerVersion> findReferencedReleases() {
-		Map<Release, SchemaContainerVersion> references = new HashMap<>();
-		// Find all releases which reference the schema via an assigned schema version
-		for (Project project : MeshInternal.get().boot().projectRoot().findAll()) {
-			for (Release release : project.getReleaseRoot().findAll()) {
-				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-					if (this.equals(version.getSchemaContainer())) {
-						references.put(release, version);
-						//TODO can we break early here?
-					}
-				}
-			}
-		}
-		return references;
-	}
+
 
 }

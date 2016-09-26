@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
@@ -145,4 +146,12 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * Set the parent schema container of this version.
 	 */
 	void setSchemaContainer(SC container);
+
+	/**
+	 * Get the release to which the container was assigned.
+	 * 
+	 * @return Found release or null of this version was not assigned to any release
+	 */
+	Release getRelease();
+
 }

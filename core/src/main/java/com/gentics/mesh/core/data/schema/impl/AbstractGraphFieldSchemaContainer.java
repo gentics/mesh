@@ -4,11 +4,14 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LAT
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -89,7 +92,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 
 	@Override
 	public Single<R> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		// Delegate transform call to latest version 
+		// Delegate transform call to latest version
 		return getLatestVersion().transformToRest(ac, level, languageTags);
 	}
 
@@ -114,12 +117,24 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 		// TODO should all references be updated to a new fallback schema?
 		addIndexBatchEntry(batch, DELETE_ACTION);
 		getElement().remove();
-		//TODO delete versions and nodes as well
+		// TODO delete versions and nodes as well
 	}
 
 	@Override
 	public String getETag(InternalActionContext ac) {
 		return ETag.hash(getLatestVersion().getETag(ac));
+	}
+
+	@Override
+	public Map<Release, SCV> findReferencedReleases() {
+		Map<Release, SCV> references = new HashMap<>();
+		for (SCV version : findAll()) {
+			Release release = version.getRelease();
+			if (release != null) {
+				references.put(release, version);
+			}
+		}
+		return references;
 	}
 
 }

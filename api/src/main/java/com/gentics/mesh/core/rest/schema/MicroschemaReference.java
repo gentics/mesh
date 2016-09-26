@@ -30,4 +30,8 @@ public class MicroschemaReference extends NameUuidReference<MicroschemaReference
 		return this;
 	}
 
+	@Override
+	public String toString() {
+		return super.toString() + "-version:" + version;
+	}
 }

@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.data.schema;
 
 import java.util.List;
+import java.util.Map;
 
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.UserTrackingVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
@@ -69,5 +71,13 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE ex
 	 * @return
 	 */
 	RootVertex<V> getRoot();
+
+	/**
+	 * Return a map of all releases which reference the container via an assigned container version. The found container version will be added as key to the
+	 * map.
+	 * 
+	 * @return
+	 */
+	Map<Release, VV> findReferencedReleases();
 
 }

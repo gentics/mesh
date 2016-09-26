@@ -389,10 +389,10 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		return call(() -> getClient().createMicroschema(microschema));
 	}
 
-	protected GenericMessageResponse updateMicroschema(String uuid, String microschemaName) {
+	protected GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
 		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
 		microschema.setName(microschemaName);
-		return call(() -> getClient().updateMicroschema(uuid, microschema));
+		return call(() -> getClient().updateMicroschema(uuid, microschema, parameters));
 	}
 
 	public void assertEqualsSanitizedJson(String msg, String expectedJson, String unsanitizedResponseJson) {

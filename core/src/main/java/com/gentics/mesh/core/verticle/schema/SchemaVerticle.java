@@ -27,14 +27,14 @@ import com.gentics.mesh.util.UUIDUtil;
 @Singleton
 public class SchemaVerticle extends AbstractWebVerticle {
 
-	private SchemaContainerCrudHandler crudHandler;
+	private SchemaCrudHandler crudHandler;
 
 	public SchemaVerticle() {
 		super("schemas", null);
 	}
 
 	@Inject
-	public SchemaVerticle(RouterStorage routerStorage, SchemaContainerCrudHandler crudHandler) {
+	public SchemaVerticle(RouterStorage routerStorage, SchemaCrudHandler crudHandler) {
 		super("schemas", routerStorage);
 		this.crudHandler = crudHandler;
 	}

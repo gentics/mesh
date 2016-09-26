@@ -75,7 +75,7 @@ import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.project.ProjectCrudHandler;
 import com.gentics.mesh.core.verticle.release.ReleaseCrudHandler;
 import com.gentics.mesh.core.verticle.role.RoleCrudHandler;
-import com.gentics.mesh.core.verticle.schema.SchemaContainerCrudHandler;
+import com.gentics.mesh.core.verticle.schema.SchemaCrudHandler;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyCrudHandler;
 import com.gentics.mesh.core.verticle.user.UserCrudHandler;
@@ -111,7 +111,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	private GroupCrudHandler groupCrudHandler;
 
-	private SchemaContainerCrudHandler schemaCrudHandler;
+	private SchemaCrudHandler schemaCrudHandler;
 
 	private MicroschemaCrudHandler microschemaCrudHandler;
 
@@ -132,14 +132,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	private AuthenticationRestHandler authRestHandler;
 
 	private UtilityHandler utilityHandler;
-	
+
 	private ReleaseCrudHandler releaseCrudHandler;
 
 	@Inject
 	public MeshLocalClientImpl(UtilityHandler utilityHandler, AuthenticationRestHandler authRestHandler, AdminHandler adminHandler,
 			WebRootHandler webrootHandler, NodeFieldAPIHandler fieldAPIHandler, NodeCrudHandler nodeCrudHandler,
 			ProjectCrudHandler projectCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler, TagCrudHandler tagCrudHandler,
-			MicroschemaCrudHandler microschemaCrudHandler, SchemaContainerCrudHandler schemaCrudHandler, GroupCrudHandler groupCrudHandler,
+			MicroschemaCrudHandler microschemaCrudHandler, SchemaCrudHandler schemaCrudHandler, GroupCrudHandler groupCrudHandler,
 			RoleCrudHandler roleCrudHandler, UserCrudHandler userCrudHandler, ReleaseCrudHandler releaseCrudHandler) {
 
 		this.utilityHandler = utilityHandler;
@@ -840,8 +840,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, Microschema request) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, Microschema request, ParameterProvider... parameters) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
 		ac.setPayloadObject(request);
 		microschemaCrudHandler.handleUpdate(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -1095,6 +1095,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		releaseCrudHandler.handleAssignSchemaVersion(ac, releaseUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
+
 	@Override
 	public MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
 			SchemaReference... schemaVersionReferences) {

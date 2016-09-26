@@ -25,14 +25,14 @@ import com.gentics.mesh.util.UUIDUtil;
 @Singleton
 public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
 
-	private SchemaContainerCrudHandler crudHandler;
+	private SchemaCrudHandler crudHandler;
 
 	public ProjectSchemaVerticle() {
 		super("schemas", null, null);
 	}
 
 	@Inject
-	public ProjectSchemaVerticle(BootstrapInitializer boot, RouterStorage routerStorage, SchemaContainerCrudHandler crudHandler) {
+	public ProjectSchemaVerticle(BootstrapInitializer boot, RouterStorage routerStorage, SchemaCrudHandler crudHandler) {
 		super("schemas", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}
