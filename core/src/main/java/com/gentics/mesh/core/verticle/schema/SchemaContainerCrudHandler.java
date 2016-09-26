@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -86,12 +87,17 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 					if (updateParams.getUpdateAssignedReleases()) {
 						Map<Release, SchemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
 
-						//TODO only include filtered releases using provides updateParameters
-						// ** Parameter: updateReleaseNames=release1,release2,release3 + Fehler, wenn man eine Release angibt, die noch nicht zugeordnet ist
 						// Assign the created version to the found releases
 						for (Map.Entry<Release, SchemaContainerVersion> releaseEntry : referencedReleases.entrySet()) {
 							Release release = releaseEntry.getKey();
 							Project projectOfRelease = release.getProject();
+
+							// Check whether a list of release names was specified and skip releases which were not included in the list.
+							List<String> releaseNames = updateParams.getReleaseNames();
+							if (releaseNames != null && !releaseNames.isEmpty() && !releaseNames.contains(release.getName())) {
+								continue;
+							}
+
 							SchemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
 
 							// Assign the new version to the release

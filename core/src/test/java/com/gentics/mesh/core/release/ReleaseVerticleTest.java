@@ -435,29 +435,54 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			Schema schema = createSchema("schemaname");
 			Project project = project();
 
-			// assign schema to project
+			// Assign schema to project
 			call(() -> getClient().assignSchemaToProject(project.getName(), schema.getUuid()));
 
-			// generate version 2
+			// Generate version 2
 			updateSchema(schema.getUuid(), "newschemaname");
 
-			// check that version 1 is assigned to release
+			// Assert that version 2 is assigned to release
 			SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid()).setVersion(2));
-			
-			// generate version 3
-			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(true));
 
-			// check that version 1 is assigned to release
+			// Generate version 3
+			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
+
+			// Assert that version 2 is still assigned to release
 			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new SchemaReference().setName("anothernewschemaname").setUuid(schema.getUuid()).setVersion(3));
+					.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid()).setVersion(2));
+
+			// Generate version 3 which should not be auto assigned to the project release
+			updateSchema(schema.getUuid(), "anothernewschemaname",
+					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames(project.getInitialRelease().getName()));
+
+			// Assert that version 2 is still assigned to the release
+			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid()).setVersion(2));
+
+			// Generate version 4
+			updateSchema(schema.getUuid(), "anothernewschemaname2", new SchemaUpdateParameters().setUpdateAssignedReleases(true));
+
+			// Assert that version 4 is assigned to the release
+			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new SchemaReference().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion(4));
+
+			// Generate version 5
+			updateSchema(schema.getUuid(), "anothernewschemaname3",
+					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames("bla", "bogus", "moped"));
+
+			// Assert that version 4 is still assigned to the release since non of the names matches the project release
+			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new SchemaReference().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion(4));
+
 		}
 	}
 
-	
-	
 	@Test
 	public void testAssignSchemaVersion() throws Exception {
 		try (NoTx noTx = db.noTx()) {
