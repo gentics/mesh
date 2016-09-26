@@ -43,7 +43,7 @@ public class SchemaUpdateParameters extends AbstractParameters {
 	 */
 	public boolean getUpdateAssignedReleases() {
 		String value = getParameter(UPDATE_ASSIGNED_RELEASES_QUERY_PARAM_KEY);
-		return BooleanUtils.toBooleanDefaultIfNull(Boolean.valueOf(value), true);
+		return BooleanUtils.toBooleanDefaultIfNull(BooleanUtils.toBooleanObject(value), true);
 	}
 
 	/**

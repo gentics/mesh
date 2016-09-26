@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
@@ -428,7 +429,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	}
 
 	@Test
-	public void testAssignSchemaVersion() throws Exception {
+	public void testAssignSchemaVersionViaSchemaUpdate() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a schema
 			Schema schema = createSchema("schemaname");
@@ -440,8 +441,38 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// generate version 2
 			updateSchema(schema.getUuid(), "newschemaname");
 
+			// check that version 1 is assigned to release
+			SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid()).setVersion(2));
+			
 			// generate version 3
-			updateSchema(schema.getUuid(), "anothernewschemaname");
+			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(true));
+
+			// check that version 1 is assigned to release
+			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+					.contains(new SchemaReference().setName("anothernewschemaname").setUuid(schema.getUuid()).setVersion(3));
+		}
+	}
+
+	
+	
+	@Test
+	public void testAssignSchemaVersion() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			// create version 1 of a schema
+			Schema schema = createSchema("schemaname");
+			Project project = project();
+
+			// assign schema to project
+			call(() -> getClient().assignSchemaToProject(project.getName(), schema.getUuid()));
+
+			// generate version 2
+			updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
+
+			// generate version 3
+			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
 
 			// check that version 1 is assigned to release
 			SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -546,10 +577,10 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			call(() -> getClient().assignSchemaToProject(project.getName(), schema.getUuid()));
 
 			// generate version 2
-			updateSchema(schema.getUuid(), "newschemaname");
+			updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
 
 			// generate version 3
-			updateSchema(schema.getUuid(), "anothernewschemaname");
+			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
 
 			// check that version 1 is assigned to release
 			SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));

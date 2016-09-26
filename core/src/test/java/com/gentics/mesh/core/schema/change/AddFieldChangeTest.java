@@ -46,6 +46,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			change.setRestProperty("key2", "value2");
 
 			assertEquals("value1", change.getRestProperty("key1"));
+
 		}
 	}
 

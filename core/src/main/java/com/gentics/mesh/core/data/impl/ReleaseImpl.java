@@ -242,7 +242,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	/**
-	 * Assign the given schema container version to this release and unassign all other versions
+	 * Assign the given schema container version to this release and unassign all other versions.
 	 * 
 	 * @param version
 	 *            version to assign

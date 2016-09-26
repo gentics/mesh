@@ -599,9 +599,9 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, Schema request) {
+	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, Schema request, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return prepareRequest(POST, "/schemas/" + uuid, GenericMessageResponse.class, request);
+		return prepareRequest(POST, "/schemas/" + uuid + getQuery(parameters), GenericMessageResponse.class, request);
 	}
 
 	@Override

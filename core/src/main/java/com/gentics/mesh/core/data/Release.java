@@ -87,7 +87,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	ReleaseRoot getRoot();
 
 	/**
-	 * Assign the given schema version to the release. Unassign all other schema versions of the schema
+	 * Assign the given schema version to the release. This will effectively unassign all other schema versions of the schema
 	 * 
 	 * @param schemaContainerVersion
 	 * @return Fluent API

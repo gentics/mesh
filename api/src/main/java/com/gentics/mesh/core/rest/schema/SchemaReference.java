@@ -29,4 +29,9 @@ public class SchemaReference extends NameUuidReference<SchemaReference> {
 		this.version = version;
 		return this;
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "-version:" + version;
+	}
 }

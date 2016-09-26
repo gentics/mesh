@@ -23,6 +23,7 @@ public interface SchemaClientMethods {
 	 * Load the schema with the given uuid.
 	 * 
 	 * @param uuid
+	 *            Schema uuid
 	 * @param parameters
 	 * @return
 	 */
@@ -35,14 +36,17 @@ public interface SchemaClientMethods {
 	 *            Schema uuid
 	 * @param request
 	 *            Update request
+	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> updateSchema(String uuid, Schema request);
+	MeshRequest<GenericMessageResponse> updateSchema(String uuid, Schema request, ParameterProvider... parameters);
 
 	/**
 	 * Compare the given schema with the currently stored one and return a list of schema changes.
 	 * 
 	 * @param uuid
+	 *            Schema uuid
+	 * @param request
 	 * @return
 	 */
 	MeshRequest<SchemaChangesListModel> diffSchema(String uuid, Schema request);
@@ -83,12 +87,13 @@ public interface SchemaClientMethods {
 	 */
 	MeshRequest<GenericMessageResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes);
 
-
 	/**
 	 * Assign a schema to the project
 	 *
-	 * @param projectName project name
-	 * @param schemaUuid schema uuid
+	 * @param projectName
+	 *            project name
+	 * @param schemaUuid
+	 *            schema uuid
 	 * @return
 	 */
 	MeshRequest<Schema> assignSchemaToProject(String projectName, String schemaUuid);
@@ -96,8 +101,10 @@ public interface SchemaClientMethods {
 	/**
 	 * Unassign a schema from the project
 	 *
-	 * @param projectName project name
-	 * @param schemaUuid schema uuid
+	 * @param projectName
+	 *            project name
+	 * @param schemaUuid
+	 *            schema uuid
 	 * @return
 	 */
 	MeshRequest<Void> unassignSchemaFromProject(String projectName, String schemaUuid);
@@ -105,7 +112,8 @@ public interface SchemaClientMethods {
 	/**
 	 * Find all schemas assigned to the project
 	 *
-	 * @param projectName project name
+	 * @param projectName
+	 *            project name
 	 * @param parameters
 	 * @return
 	 */
@@ -114,16 +122,21 @@ public interface SchemaClientMethods {
 	/**
 	 * Assign a microschema to the project
 	 *
-	 * @param projectName project name
-	 * @param microschemaUuid microschema uuid
+	 * @param projectName
+	 *            project name
+	 * @param microschemaUuid
+	 *            microschema uuid
 	 * @return
 	 */
 	MeshRequest<Microschema> assignMicroschemaToProject(String projectName, String microschemaUuid);
 
 	/**
 	 * Unassign a microschema from the project
-	 * @param projectName project name
-	 * @param microschemaUuid microschema uuid
+	 * 
+	 * @param projectName
+	 *            project name
+	 * @param microschemaUuid
+	 *            microschema uuid
 	 * @return
 	 */
 	MeshRequest<Void> unassignMicroschemaFromProject(String projectName, String microschemaUuid);
@@ -131,7 +144,8 @@ public interface SchemaClientMethods {
 	/**
 	 * Find all microschemas assigned to the project
 	 *
-	 * @param projectName project name
+	 * @param projectName
+	 *            project name
 	 * @param parameters
 	 * @return
 	 */

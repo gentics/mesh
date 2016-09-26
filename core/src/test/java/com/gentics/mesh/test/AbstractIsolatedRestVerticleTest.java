@@ -56,6 +56,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -370,10 +371,10 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		return call(() -> getClient().findSchemaByUuid(uuid));
 	}
 
-	protected GenericMessageResponse updateSchema(String uuid, String schemaName) {
+	protected GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
 		Schema schema = FieldUtil.createMinimalValidSchema();
 		schema.setName(schemaName);
-		return call(() -> getClient().updateSchema(uuid, schema));
+		return call(() -> getClient().updateSchema(uuid, schema, updateParameters));
 	}
 
 	protected void deleteSchema(String uuid) {

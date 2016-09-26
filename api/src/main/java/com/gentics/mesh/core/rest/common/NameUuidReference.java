@@ -81,4 +81,9 @@ public abstract class NameUuidReference<T> {
 	public boolean isSet() {
 		return !StringUtils.isEmpty(getName()) || !StringUtils.isEmpty(getUuid());
 	}
+
+	@Override
+	public String toString() {
+		return "Reference: " + uuid + "/" + name + "/" + getClass().getSimpleName();
+	}
 }

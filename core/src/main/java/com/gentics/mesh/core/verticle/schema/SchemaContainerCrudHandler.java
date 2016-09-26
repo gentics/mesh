@@ -9,11 +9,15 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -25,11 +29,15 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import dagger.Lazy;
+import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Single;
 
 public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContainer, Schema> {
@@ -38,11 +46,14 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private NodeIndexHandler nodeIndexHandler;
+
 	@Inject
-	public SchemaContainerCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot) {
+	public SchemaContainerCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot, NodeIndexHandler nodeIndexHandler) {
 		super(db);
 		this.comparator = comparator;
 		this.boot = boot;
+		this.nodeIndexHandler = nodeIndexHandler;
 	}
 
 	@Override
@@ -55,12 +66,12 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		validateParameter(uuid, "uuid");
 		operateNoTx(ac, () -> {
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
-			SchemaContainer element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			// Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(MeshInternal.get().schemaComparator().diff(element.getLatestVersion().getSchema(), requestModel));
-			String schemaName = element.getName();
+			model.getChanges().addAll(MeshInternal.get().schemaComparator().diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
+			String schemaName = schemaContainer.getName();
 			// No changes -> done
 			if (model.getChanges().isEmpty()) {
 				return message(ac, "schema_update_no_difference_detected", schemaName);
@@ -69,11 +80,41 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 				db.tx(() -> {
 					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
 					// Apply the found changes to the schema
-					SchemaContainerVersion version = element.getLatestVersion().applyChanges(ac, model, batch);
+					SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
-					//TODO determine whether the newly created schema version should also be directly applied to 
-					// ** Parameter: updateAssignedReleases - default true
-					// ** Parameter: updateReleaseNames=release1,release2,release3 + Fehler, wenn man eine Release angibt, die noch nicht zugeordnet ist					
+					SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
+					if (updateParams.getUpdateAssignedReleases()) {
+						Map<Release, SchemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
+
+						//TODO only include filtered releases using provides updateParameters
+						// ** Parameter: updateReleaseNames=release1,release2,release3 + Fehler, wenn man eine Release angibt, die noch nicht zugeordnet ist
+						// Assign the created version to the found releases
+						for (Map.Entry<Release, SchemaContainerVersion> releaseEntry : referencedReleases.entrySet()) {
+							Release release = releaseEntry.getKey();
+							Project projectOfRelease = release.getProject();
+							SchemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
+
+							// Assign the new version to the release
+							release.assignSchemaVersion(createdVersion);
+
+							// Update the index type specific ES mapping
+							nodeIndexHandler.updateNodeIndexMapping("node-" + projectOfRelease.getUuid() + "-" + release.getUuid() + "-draft",
+									createdVersion.getName() + "-" + createdVersion.getVersion(), createdVersion.getSchema()).await();
+							nodeIndexHandler.updateNodeIndexMapping("node-" + projectOfRelease.getUuid() + "-" + release.getUuid() + "-published",
+									createdVersion.getName() + "-" + createdVersion.getVersion(), createdVersion.getSchema()).await();
+
+							// Invoke the node release migration
+							DeliveryOptions options = new DeliveryOptions();
+							options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
+							options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
+							options.addHeader(NodeMigrationVerticle.UUID_HEADER, createdVersion.getSchemaContainer().getUuid());
+							options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, previouslyReferencedVersion.getUuid());
+							options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, createdVersion.getUuid());
+							Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options);
+
+						}
+
+					}
 
 					return batch;
 				}).processSync();
