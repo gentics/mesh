@@ -5,9 +5,11 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,11 +27,18 @@ import java.util.concurrent.CyclicBarrier;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -43,6 +52,9 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(meshDagger.microschemaVerticle());
+		list.add(meshDagger.schemaVerticle());
+		list.add(meshDagger.nodeVerticle());
+		list.add(meshDagger.projectSchemaVerticle());
 		return list;
 	}
 
@@ -142,10 +154,9 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 
 	}
 
-	@Ignore("Not yet implemented")
-
 	@Test
 	@Override
+	@Ignore("Not yet implemented")
 	public void testCreateReadDelete() throws Exception {
 		fail("Not yet implemented");
 	}
@@ -200,9 +211,9 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 		}
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
+	@Ignore("Not yet implemented")
 	public void testReadMultiple() throws Exception {
 		fail("Not yet implemented");
 	}
@@ -258,8 +269,46 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			assertNotNull(microschema);
 			call(() -> getClient().deleteMicroschema(microschema.getUuid()));
 
+			//schema_delete_still_in_use
+
 			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid());
 			assertNull("The microschema should have been deleted.", reloaded);
+		}
+	}
+
+	@Test
+	public void testDeleteByUUIDWhileInUse() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			MicroschemaContainer microschemaContainer = microschemaContainers().get("vcard");
+
+			// 1. Create a new schema which uses the vcard microschema
+			Schema schema = FieldUtil.createMinimalValidSchema();
+			schema.addField(FieldUtil.createMicronodeFieldSchema("vcardtest").setAllowedMicroSchemas("vcard"));
+			Schema response = call(() -> getClient().createSchema(schema));
+
+			// 2. Assign the new schema to the project
+			call(() -> getClient().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
+
+			// 3. Create a new node which uses the schema
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setLanguage("en");
+			nodeCreateRequest.getFields().put("displayFieldName", FieldUtil.createStringField("test1234"));
+
+			MicronodeResponse micronodeField = new MicronodeResponse();
+			micronodeField.getFields().put("firstName", FieldUtil.createStringField("firstnameValue"));
+			micronodeField.getFields().put("lastName", FieldUtil.createStringField("lastnameValue"));
+			micronodeField.setMicroschema(new MicroschemaReference().setName("vcard"));
+			nodeCreateRequest.getFields().put("vcardtest", micronodeField);
+			nodeCreateRequest.setSchema(new SchemaReference().setName("test"));
+			nodeCreateRequest.setParentNodeUuid(project().getBaseNode().getUuid());
+			call(() -> getClient().createNode(PROJECT_NAME, nodeCreateRequest));
+
+			// 4. Try to delete the microschema
+			call(() -> getClient().deleteMicroschema(microschemaContainer.getUuid()), BAD_REQUEST, "microschema_delete_still_in_use",
+					microschemaContainer.getUuid());
+
+			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschemaContainer.getUuid());
+			assertNotNull("The microschema should not have been deleted.", reloaded);
 		}
 	}
 

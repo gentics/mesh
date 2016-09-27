@@ -54,7 +54,7 @@ import com.gentics.mesh.util.UUIDUtil;
 public final class FieldUtil {
 
 	/**
-	 * Create a minimal valid test schema.
+	 * Create a minimal valid test schema which only contains a single string field.
 	 * 
 	 * @return
 	 */

@@ -5,7 +5,6 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
-import com.google.common.reflect.Parameter;
 
 public interface MicroschemaClientMethods {
 
