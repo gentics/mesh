@@ -11,6 +11,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
 import java.util.Set;
@@ -225,6 +227,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName());
 			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
 				throw conflict(projectWithSameName.getUuid(), requestModel.getName(), "project_conflicting_name");
+			}
+			if (MeshInternal.get().routerStorage().getAPISubRouter(requestModel.getName()) != null) {
+				throw error(BAD_REQUEST, "project_error_name_already_reserved", requestModel.getName());
 			}
 			setName(requestModel.getName());
 		}

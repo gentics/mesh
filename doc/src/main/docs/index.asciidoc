@@ -691,10 +691,11 @@ Gentics Mesh does not manage any cache structure but it is possible to tweak the
 
 === Permissions
 
-Permissions exist between roles and other elements (including other roles). 
+Permissions exist between roles and other elements (including other roles).
 Most responses within Gentics Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way.
 
-The ```/api/v1/roles/:roleUuid/permissions``` endpoint can be used to assign or revoke permissions to/from a role. 
+The ```/api/v1/roles/:roleUuid/permissions``` endpoint can be used to assign or revoke permissions to/from a role.
+
 This endpoint can also be used to apply recursive permissions.
 It is important to note that permissions can be applied to individual elements and onto the set of elements which is identified by the endpoint name (e.g: /groups).
 
@@ -1215,8 +1216,10 @@ include::json/request/api/v1/schemas/:schemaUuid/changes/SchemaChangesListModel.
 
 === Versioning
 
-In order to grasp the concept of versioning in Gentics Mesh it is important to remember that Nodes are containers for language variants. The language variant of a node contains the fields and thus stores all the content. 
-Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as Users, groups, roles and even Nodes are not versioned. 
+In order to grasp the concept of versioning in Gentics Mesh it is important to remember that Nodes are containers for language variants. The language variant of a node contains the fields and thus stores all the content.
+ 
+Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as Users, groups, roles and even Nodes are not versioned.
+ 
 Various interactions have different effects for versioning in Mesh. Below is a list of actions which involve versioning.
 
 ==== Node Creation

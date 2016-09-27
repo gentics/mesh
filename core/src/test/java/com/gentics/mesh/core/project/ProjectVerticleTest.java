@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -94,6 +95,17 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				() -> getClient().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
+	}
+
+	@Test
+	public void testCreateWithEndpointNames() {
+		List<String> names = Arrays.asList("users", "schemas", "groups", "roles", "search");
+		for (String name : names) {
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName(name);
+			request.setSchemaReference(new SchemaReference().setName("folder"));
+			call(() -> getClient().createProject(request), BAD_REQUEST, "project_error_name_already_reserved", name);
+		}
 	}
 
 	@Test
@@ -356,14 +368,24 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			Project project = project();
 			String uuid = project.getUuid();
-			role().grantPermissions(project, UPDATE_PERM);
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("Test234");
-			MeshResponse<ProjectResponse> future = getClient().updateProject(uuid, request).invoke();
-			latchFor(future);
-			expectException(future, CONFLICT, "project_conflicting_name");
+			call(() -> getClient().updateProject(uuid, request), CONFLICT, "project_conflicting_name");
 		}
+	}
 
+	@Test
+	public void testUpdateWithEndpointName() {
+		List<String> names = Arrays.asList("users", "schemas", "groups", "roles", "search");
+		try (NoTx noTx = db.noTx()) {
+			for (String name : names) {
+				Project project = project();
+				String uuid = project.getUuid();
+				ProjectUpdateRequest request = new ProjectUpdateRequest();
+				request.setName(name);
+				call(() -> getClient().updateProject(uuid, request), BAD_REQUEST, "project_error_name_already_reserved", name);
+			}
+		}
 	}
 
 	@Test
@@ -528,7 +550,9 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		validateCreation(set, null);
 
 		try (Tx tx = db.tx()) {
-			long n = StreamSupport.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName()).spliterator(),true).count();
+			long n = StreamSupport
+					.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName()).spliterator(), true)
+					.count();
 			int nProjectsAfter = meshRoot().getProjectRoot().findAll().size();
 			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
 			assertEquals(nProjectsBefore + nJobs, n);
