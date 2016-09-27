@@ -64,6 +64,7 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.performance.TestUtils;
@@ -635,10 +636,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		}
 
 		// 4. Invoke the schema migration
-		MeshResponse<GenericMessageResponse> migrationFuture = getClient().updateSchema(schemaUuid, schema).invoke();
-		latchFor(migrationFuture);
-		assertSuccess(migrationFuture);
-		expectResponseMessage(migrationFuture, "migration_invoked", "content");
+		GenericMessageResponse message = call(
+				() -> getClient().updateSchema(schemaUuid, schema, new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
+		expectResponseMessage(message, "migration_invoked", "content");
 
 		// 5. Assign the new schema version to the release
 		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(schemaUuid));
