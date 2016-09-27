@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -49,6 +48,7 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+
 import io.vertx.core.AbstractVerticle;
 
 public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
@@ -58,6 +58,9 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		List<AbstractVerticle> list = new ArrayList<>();
 		list.add(meshDagger.projectVerticle());
 		list.add(meshDagger.nodeVerticle());
+		list.add(meshDagger.userVerticle());
+		list.add(meshDagger.roleVerticle());
+		list.add(meshDagger.groupVerticle());
 		return list;
 	}
 
@@ -99,7 +102,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testCreateWithEndpointNames() {
-		List<String> names = Arrays.asList("users", "schemas", "groups", "roles", "search");
+		List<String> names = Arrays.asList("users", "groups", "projects");
 		for (String name : names) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(name);
@@ -376,7 +379,7 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test
 	public void testUpdateWithEndpointName() {
-		List<String> names = Arrays.asList("users", "schemas", "groups", "roles", "search");
+		List<String> names = Arrays.asList("users", "groups", "projects");
 		try (NoTx noTx = db.noTx()) {
 			for (String name : names) {
 				Project project = project();
