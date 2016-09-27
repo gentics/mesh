@@ -26,10 +26,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
-//	private NodeIndexHandler nodeIndexHandler;
-//
-//	private IndexHandlerRegistry registry;
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();
@@ -62,15 +58,10 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 			searchProvider.refreshIndex();
 		}
 
-		MeshResponse<GenericMessageResponse> future = getClient().invokeReindex().invoke();
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "search_admin_reindex_invoked");
+		GenericMessageResponse message = call(() -> getClient().invokeReindex());
+		expectResponseMessage(message, "search_admin_reindex_invoked");
 
-		MeshResponse<SearchStatusResponse> statusFuture = getClient().loadSearchStatus().invoke();
-		latchFor(statusFuture);
-		assertSuccess(statusFuture);
-		SearchStatusResponse status = statusFuture.result();
+		SearchStatusResponse status = call(() -> getClient().loadSearchStatus());
 		assertNotNull(status);
 		assertEquals(0, status.getBatchCount());
 	}

@@ -13,9 +13,12 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACT
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.List;
 import java.util.Set;
+
+import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
@@ -222,20 +225,41 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public Project update(InternalActionContext ac, SearchQueueBatch batch) {
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
-		if (shouldUpdate(requestModel.getName(), getName())) {
+		String oldName = getName();
+		String newName = requestModel.getName();
+		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
-			Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName());
+			Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(newName);
 			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(projectWithSameName.getUuid(), requestModel.getName(), "project_conflicting_name");
+				throw conflict(projectWithSameName.getUuid(), newName, "project_conflicting_name");
 			}
-			if (MeshInternal.get().routerStorage().getCoreRouters().containsKey(requestModel.getName())) {
-				throw error(BAD_REQUEST, "project_error_name_already_reserved", requestModel.getName());
+
+			RouterStorage routerStorage = MeshInternal.get().routerStorage();
+			if (routerStorage.getCoreRouters().containsKey(newName)) {
+				throw error(BAD_REQUEST, "project_error_name_already_reserved", newName);
 			}
-			setName(requestModel.getName());
+
+			setName(newName);
+			routerStorage.removeProjectRouter(oldName);
+
+			// Old router was removed. Now lets add the new one and revert the change if an error occures.
+			try {
+				routerStorage.addProjectRouter(newName);
+			} catch (InvalidNameException e) {
+				// Try to restore the old state. Transaction will be rolled back later.
+				try {
+					routerStorage.addProjectRouter(oldName);
+				} catch (InvalidNameException e1) {
+					//TODO i18n
+					throw error(INTERNAL_SERVER_ERROR, "Error while restoring project router for name {" + oldName + "} during rollback", e);
+				}
+				// TODO i18n
+				throw error(BAD_REQUEST, "Error while adding new router for project name {" + newName + "}", e);
+			}
+			setEditor(ac.getUser());
+			setLastEditedTimestamp(System.currentTimeMillis());
+			addIndexBatchEntry(batch, STORE_ACTION);
 		}
-		setEditor(ac.getUser());
-		setLastEditedTimestamp(System.currentTimeMillis());
-		addIndexBatchEntry(batch, STORE_ACTION);
 		return this;
 	}
 

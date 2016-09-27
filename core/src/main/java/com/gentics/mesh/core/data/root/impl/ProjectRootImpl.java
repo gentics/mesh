@@ -190,7 +190,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot()
 				.fromReference(requestModel.getSchemaReference());
 
-		Project project = create(requestModel.getName(), creator, schemaContainerVersion);
+		Project project = create(projectName, creator, schemaContainerVersion);
 		Release initialRelease = project.getInitialRelease();
 
 		// Add project permissions
@@ -228,13 +228,11 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
 		baseNodeFieldContainer.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
 
-		String name = project.getName();
-
 		try {
 			// TODO BUG project should only be added to router when trx and ES finished successfully
-			routerStorage.addProjectRouter(name);
+			routerStorage.addProjectRouter(projectName);
 			if (log.isInfoEnabled()) {
-				log.info("Registered project {" + name + "}");
+				log.info("Registered project {" + projectName + "}");
 			}
 		} catch (InvalidNameException e) {
 			// TODO should we really fail here?

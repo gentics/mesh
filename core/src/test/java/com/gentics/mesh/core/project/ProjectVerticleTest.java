@@ -98,6 +98,11 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 				() -> getClient().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
+		// Test slashes
+		request.setName("Bla/blub");
+		call(() -> getClient().createProject(request));
+		call(() -> getClient().findNodes(request.getName()));
+
 	}
 
 	@Test
@@ -365,15 +370,22 @@ public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	// Update Tests
 
 	@Test
-	public void testUpdateWithConflicitingName() {
+	public void testUpdateWithBogusNames() {
 		try (NoTx noTx = db.noTx()) {
 			MeshRoot.getInstance().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
 
-			Project project = project();
-			String uuid = project.getUuid();
+			String uuid = project().getUuid();
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("Test234");
 			call(() -> getClient().updateProject(uuid, request), CONFLICT, "project_conflicting_name");
+
+			// Test slashes
+			request.setName("Bla/blub");
+			call(() -> getClient().updateProject(uuid, request));
+			call(() -> getClient().findNodes(request.getName()));
+			project().reload();
+			assertEquals(request.getName(), project().getName());
+
 		}
 	}
 
