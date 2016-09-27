@@ -57,7 +57,8 @@ public class RouterStorage {
 	private static RouterStorage instance;
 
 	@Inject
-	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler, UserSessionHandler userSessionHandler) {
+	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler,
+			UserSessionHandler userSessionHandler) {
 		this.vertx = Mesh.vertx();
 		RouterStorage.instance = this;
 		initAPIRouter(corsHandler, bodyHandler, sessionHandler, userSessionHandler);
@@ -112,7 +113,8 @@ public class RouterStorage {
 	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like
 	 * /api/v1/[groups|users|roles]
 	 */
-	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler, UserSessionHandler userSessionHandler) {
+	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler,
+			UserSessionHandler userSessionHandler) {
 		Router router = getAPIRouter();
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(corsHandler);
@@ -158,6 +160,15 @@ public class RouterStorage {
 		}
 		return apiRouter;
 
+	}
+
+	/**
+	 * Return the map with core routers.
+	 * 
+	 * @return
+	 */
+	public Map<String, Router> getCoreRouters() {
+		return coreRouters;
 	}
 
 	/**

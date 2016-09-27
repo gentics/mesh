@@ -228,7 +228,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
 				throw conflict(projectWithSameName.getUuid(), requestModel.getName(), "project_conflicting_name");
 			}
-			if (MeshInternal.get().routerStorage().getAPISubRouter(requestModel.getName()) != null) {
+			if (MeshInternal.get().routerStorage().getCoreRouters().containsKey(requestModel.getName())) {
 				throw error(BAD_REQUEST, "project_error_name_already_reserved", requestModel.getName());
 			}
 			setName(requestModel.getName());

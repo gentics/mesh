@@ -180,7 +180,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}
-		if (routerStorage.getAPISubRouter(requestModel.getName()) != null) {
+		if (routerStorage.getCoreRouters().containsKey(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", requestModel.getName());
 		}
 
