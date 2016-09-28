@@ -24,9 +24,8 @@ public class AdminVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testMigrationStatusWithNoMigrationRunning() {
-		MeshResponse<GenericMessageResponse> statusFuture = getClient().schemaMigrationStatus().invoke();
-		latchFor(statusFuture);
-		expectResponseMessage(statusFuture, "migration_status_idle");
+		GenericMessageResponse message = call(() -> getClient().schemaMigrationStatus());
+		expectResponseMessage(message, "migration_status_idle");
 	}
 
 }

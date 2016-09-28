@@ -138,7 +138,7 @@ public final class MavenUtilities {
 					} else {
 						int buildNumber = Integer.parseInt(snapshotNode.getChildText("buildNumber"));
 						String timestamp = versioningNode.getChild("snapshot").getChildText("timestamp");
-						String lastUpdated = versioningNode.getChildText("lastUpdated");
+						//		String lastUpdated = versioningNode.getChildText("lastUpdated");
 						//metadata.setLastUpdated(lastUpdated);
 						metadata.setSnapshot(true);
 						metadata.setTimestamp(timestamp);
@@ -146,7 +146,7 @@ public final class MavenUtilities {
 					}
 
 					List<String> versions = new ArrayList<>();
-					Iterator it = versioningNode.getChild("versions").getChildren().iterator();
+					Iterator<Element> it = versioningNode.getChild("versions").getChildren().iterator();
 					while (it.hasNext()) {
 						Element versionElement = (Element) it.next();
 						versions.add(versionElement.getText());

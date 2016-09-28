@@ -13,8 +13,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import rx.Single;
-
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
  */

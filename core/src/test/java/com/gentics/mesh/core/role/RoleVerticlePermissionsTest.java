@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
@@ -43,10 +44,9 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
-			MeshResponse<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "role_updated_permission", role().getName());
+			GenericMessageResponse message = call(
+					() -> getClient().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request));
+			expectResponseMessage(message, "role_updated_permission", role().getName());
 
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
 		}
@@ -90,7 +90,8 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			request.getPermissions().add("read");
 			request.getPermissions().add("update");
 			request.getPermissions().add("create");
-			MeshResponse<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request).invoke();
+			MeshResponse<GenericMessageResponse> future = getClient()
+					.updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "role_updated_permission", role().getName());
@@ -154,11 +155,9 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			request.getPermissions().add("update");
 			request.getPermissions().add("create");
 
-			MeshResponse<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(),
-					"projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "role_updated_permission", role().getName());
+			GenericMessageResponse message = call(() -> getClient().updateRolePermissions(role().getUuid(),
+					"projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request));
+			expectResponseMessage(message, "role_updated_permission", role().getName());
 
 			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, node));
 		}
@@ -170,7 +169,7 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.getPermissions().add("read");
 			String path = "projects/bogus1234/nodes";
-			call(() -> getClient().updateRolePermissions(role().getUuid(), path, request), NOT_FOUND, "error_element_for_path_not_found" , path);
+			call(() -> getClient().updateRolePermissions(role().getUuid(), path, request), NOT_FOUND, "error_element_for_path_not_found", path);
 		}
 	}
 }

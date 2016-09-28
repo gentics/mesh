@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphdb;
 
-public abstract class AbstractNoTx extends AbstractTrxBase implements NoTx {
+import com.syncleus.ferma.FramedGraph;
+
+public abstract class AbstractNoTx<T extends FramedGraph> extends AbstractTrxBase<T> implements NoTx {
 
 }

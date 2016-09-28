@@ -42,10 +42,8 @@ public class NodeVerticleFieldAPIeTagTest extends AbstractETagTest {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "node_binary_field_updated", "binary");
+			GenericMessageResponse message = call(() -> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName));
+			expectResponseMessage(message, "node_binary_field_updated", "binary");
 
 			node.reload();
 

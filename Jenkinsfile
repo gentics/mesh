@@ -44,7 +44,7 @@ node('dockerRoot') {
 		for (int i = 0; i < splits; i++) {
 			def current = i
 			branches["split${i}"] = {
-				node('dockerSlave') {
+				node('dockerSlave || satan3') {
 					echo "Preparing slave environment for ${current}"
 					//sh "ls -la"
 					sh "rm -rf *"

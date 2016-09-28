@@ -7,7 +7,7 @@ import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
-public class OrientDBNoTx extends AbstractNoTx {
+public class OrientDBNoTx extends AbstractNoTx<FramedGraph> {
 
 	OrientGraphNoTx noTx = null;
 

@@ -188,10 +188,8 @@ public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleT
 			// 2. Upload a non-image 
 			fileName = "somefile.dat";
 			mimeType = "application/octet-stream";
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", fieldKey, size, mimeType, fileName).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "node_binary_field_updated", fieldKey);
+			GenericMessageResponse message = call(() -> uploadRandomData(node.getUuid(), "en", fieldKey, size, "application/octet-stream", "somefile.dat"));
+			expectResponseMessage(message, "node_binary_field_updated", fieldKey);
 
 			node.reload();
 			response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
@@ -263,10 +261,8 @@ public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleT
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "node_binary_field_updated", "binary");
+			GenericMessageResponse message = call(() -> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName));
+			expectResponseMessage(message, "node_binary_field_updated", "binary");
 
 			node.reload();
 
@@ -366,12 +362,10 @@ public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleT
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
-		MeshResponse<GenericMessageResponse> future = getClient()
-				.updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldname, buffer, filename, contentType).invoke();
+		GenericMessageResponse message = call(
+				() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldname, buffer, filename, contentType));
 
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "node_binary_field_updated", fieldname);
+		expectResponseMessage(message, "node_binary_field_updated", fieldname);
 		return bytes.length;
 
 	}
