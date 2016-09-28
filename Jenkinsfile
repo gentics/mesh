@@ -1,10 +1,10 @@
 properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
-[$class: 'BooleanParameterDefinition', name: 'skipTests', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'skipPerformanceTests', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'skipDocker', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'skipIntegrationTests', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'skipReleaseBuild', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'skipDeploy', defaultValue: false]
+[$class: 'BooleanParameterDefinition', name: 'runTests', defaultValue: true],
+[$class: 'BooleanParameterDefinition', name: 'runPerformanceTests', defaultValue: true],
+[$class: 'BooleanParameterDefinition', name: 'runDocker', defaultValue: false],
+[$class: 'BooleanParameterDefinition', name: 'runIntegrationTests', defaultValue: false],
+[$class: 'BooleanParameterDefinition', name: 'runReleaseBuild', defaultValue: false],
+[$class: 'BooleanParameterDefinition', name: 'runDeploy', defaultValue: false]
 ]]])
 
 node('dockerRoot') {
@@ -35,7 +35,7 @@ node('dockerRoot') {
 
 
 	stage 'Test'
-	if (!Boolean.valueOf(skipTests)) {
+	if (Boolean.valueOf(runTests)) {
 		def splits = 25;
 		sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
 		sh "split -a 2 -d -n l/${splits} alltests  includes-"
@@ -81,7 +81,7 @@ node('dockerRoot') {
 
 
 	stage 'Release Build'
-	if (!Boolean.valueOf(skipReleaseBuild)) {
+	if (Boolean.valueOf(runReleaseBuild)) {
 		sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 			sh "${mvnHome}/bin/mvn -B -DskipTests clean package"
 		}
@@ -91,7 +91,7 @@ node('dockerRoot') {
 
 
 	stage 'Docker Build'
-	if (!Boolean.valueOf(skipDocker)) {
+	if (Boolean.valueOf(runDocker)) {
 		withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
 			sh "captain build"
 		}
@@ -101,7 +101,7 @@ node('dockerRoot') {
 
 
 	stage 'Performance Tests'
-	if (!Boolean.valueOf(skipPerformanceTests)) {
+	if (Boolean.valueOf(runPerformanceTests)) {
 		node('cetus') {
 			sh "rm -rf *"
 			sh "rm -rf .git"
@@ -120,7 +120,7 @@ node('dockerRoot') {
 
 
 	stage 'Integration Tests'
-	if (!Boolean.valueOf(skipIntegrationTests)) {
+	if (Boolean.valueOf(runIntegrationTests)) {
 		withEnv(['DOCKER_HOST=tcp://gemini.office:2375', "MESH_VERSION=${v}"]) {
 			sh "integration-tests/test.sh"
 		}
@@ -130,7 +130,7 @@ node('dockerRoot') {
 
 
 	stage 'Deploy/Push'
-	if (!Boolean.valueOf(skipDeploy)) {
+	if (Boolean.valueOf(runDeploy)) {
 		withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
 			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
 				sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD -e entwicklung@genitcs.com'
