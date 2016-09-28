@@ -7,6 +7,8 @@ public class MeshResponse<T> extends Future<T> {
 
 	private HttpClientResponse response;
 
+	private String bodyJson;
+
 	public MeshResponse(io.vertx.core.Future<T> delegate) {
 		super(delegate);
 	}
@@ -31,6 +33,27 @@ public class MeshResponse<T> extends Future<T> {
 	 */
 	public void setResponse(HttpClientResponse response) {
 		this.response = response;
+	}
+
+	/**
+	 * Set the body JSON string.
+	 * 
+	 * @param json
+	 *            JSON String
+	 * @return
+	 */
+	public MeshResponse<T> setBodyJson(String json) {
+		this.bodyJson = json;
+		return this;
+	}
+
+	/**
+	 * Return the body JSON string.
+	 * 
+	 * @return JSON String or null if no body has been set
+	 */
+	public String getBodyJson() {
+		return bodyJson;
 	}
 
 }

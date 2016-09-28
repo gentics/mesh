@@ -2,6 +2,7 @@ package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -143,8 +144,8 @@ public class ReleaseMigrationVerticleTest extends AbstractIsolatedRestVerticleTe
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
-			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-			assertThat(result.succeeded()).isTrue();
+			AsyncResult<Message<Object>> result = future.get(20, TimeUnit.SECONDS);
+			assertTrue("The migration did run into a timeout after 20 seconds", result.succeeded());
 
 			future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
 			result = future.get(10, TimeUnit.SECONDS);

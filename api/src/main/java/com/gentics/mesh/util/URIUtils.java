@@ -5,7 +5,7 @@ import com.google.common.net.UrlEscapers;
 public final class URIUtils {
 
 	/**
-	 * Encode the url fragment. This method will also encode '?' and '/' characters in the provided fragment.
+	 * Encode the URL fragment. This method will also encode '?' and '/' characters in the provided fragment.
 	 * 
 	 * @param fragment
 	 * @return
