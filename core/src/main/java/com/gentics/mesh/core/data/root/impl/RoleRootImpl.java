@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -99,7 +100,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	@Override
 	public void delete(SearchQueueBatch batch) {
-		throw new NotImplementedException("The role root node can't be deleted");
+		throw error(INTERNAL_SERVER_ERROR, "The global role root can't be deleted.");
 	}
 
 }

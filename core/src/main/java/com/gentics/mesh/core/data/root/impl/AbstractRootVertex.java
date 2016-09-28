@@ -37,7 +37,6 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * Abstract implementation for root vertices which are aggregation vertices for mesh core vertices. The abstract implementation contains various helper methods
@@ -201,7 +200,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public Single<? extends MeshVertex> resolveToElement(Stack<String> stack) {
+	public MeshVertex resolveToElement(Stack<String> stack) {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving for {" + getPersistanceClass().getSimpleName() + "}.");
 			if (stack.isEmpty()) {
@@ -211,13 +210,13 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			}
 		}
 		if (stack.isEmpty()) {
-			return Single.just(this);
+			return this;
 		} else {
 			String uuid = stack.pop();
 			if (stack.isEmpty()) {
-				return Single.just(findByUuid(uuid));
+				return findByUuid(uuid);
 			} else {
-				return Single.error(new Exception("Can't resolve remaining segments. Next segment would be: " + stack.peek()));
+				throw error(BAD_REQUEST, "Can't resolve remaining segments. Next segment would be: " + stack.peek());
 			}
 		}
 	}

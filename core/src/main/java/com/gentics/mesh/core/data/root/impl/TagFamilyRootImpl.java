@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Stack;
 
@@ -31,7 +32,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements TagFamilyRoot {
 
@@ -121,32 +121,29 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 		}
-		requestUser.reload();
-
 		TagFamily tagFamily = create(name, requestUser);
 		addTagFamily(tagFamily);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
 		tagFamily.addIndexBatchEntry(batch, STORE_ACTION);
-
 		return tagFamily;
-
 	}
 
 	@Override
-	public Single<? extends MeshVertex> resolveToElement(Stack<String> stack) {
+	public MeshVertex resolveToElement(Stack<String> stack) {
 		if (stack.isEmpty()) {
-			return Single.just(this);
+			return this;
 		} else {
 			String uuidSegment = stack.pop();
 			TagFamily tagFamily = findByUuid(uuidSegment);
 			if (stack.isEmpty()) {
-				return Single.just(tagFamily);
+				return tagFamily;
 			} else {
 				String nestedRootNode = stack.pop();
 				if ("tags".contentEquals(nestedRootNode)) {
 					return tagFamily.getTagRoot().resolveToElement(stack);
 				} else {
-					return Single.error(new Exception("Unknown tagFamily element {" + nestedRootNode + "}"));
+					//TODO i18n
+					throw error(NOT_FOUND, "Unknown tagFamily element {" + nestedRootNode + "}");
 				}
 			}
 		}

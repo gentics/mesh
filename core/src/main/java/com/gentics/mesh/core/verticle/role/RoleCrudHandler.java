@@ -79,17 +79,15 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			return MeshRoot.getInstance().resolvePathToElement(pathToElement).flatMap(targetElement -> {
-				if (targetElement == null) {
-					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-				}
-				RolePermissionResponse response = new RolePermissionResponse();
-				for (GraphPermission perm : role.getPermissions(targetElement)) {
-					response.getPermissions().add(perm.getSimpleName());
-				}
-				return Single.just(response);
-
-			});
+			MeshVertex targetElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
+			if (targetElement == null) {
+				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+			}
+			RolePermissionResponse response = new RolePermissionResponse();
+			for (GraphPermission perm : role.getPermissions(targetElement)) {
+				response.getPermissions().add(perm.getSimpleName());
+			}
+			return Single.just(response);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -120,53 +118,51 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			Single<? extends MeshVertex> obsElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
-			return obsElement.map(element -> {
+			MeshVertex element = MeshRoot.getInstance().resolvePathToElement(pathToElement);
 
-				if (element == null) {
-					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-				}
+			if (element == null) {
+				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+			}
 
-				return db.noTx(() -> {
-					RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
+			return db.noTx(() -> {
+				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 
-					// Prepare the sets for revoke and grant actions
-					Role updatedRole = db.tx(() -> {
-						Set<GraphPermission> permissionsToGrant = new HashSet<>();
-						Set<GraphPermission> permissionsToRevoke = new HashSet<>();
-						permissionsToRevoke.add(CREATE_PERM);
-						permissionsToRevoke.add(READ_PERM);
-						permissionsToRevoke.add(UPDATE_PERM);
-						permissionsToRevoke.add(DELETE_PERM);
-						for (String permName : requestModel.getPermissions()) {
-							GraphPermission permission = GraphPermission.valueOfSimpleName(permName);
-							if (permission == null) {
-								throw error(BAD_REQUEST, "role_error_permission_name_unknown", permName);
-							}
-							if (log.isDebugEnabled()) {
-								log.debug("Adding permission {" + permission.getSimpleName() + "} to list of permissions to add.");
-							}
-							permissionsToRevoke.remove(permission);
-							permissionsToGrant.add(permission);
+				// Prepare the sets for revoke and grant actions
+				Role updatedRole = db.tx(() -> {
+					Set<GraphPermission> permissionsToGrant = new HashSet<>();
+					Set<GraphPermission> permissionsToRevoke = new HashSet<>();
+					permissionsToRevoke.add(CREATE_PERM);
+					permissionsToRevoke.add(READ_PERM);
+					permissionsToRevoke.add(UPDATE_PERM);
+					permissionsToRevoke.add(DELETE_PERM);
+					for (String permName : requestModel.getPermissions()) {
+						GraphPermission permission = GraphPermission.valueOfSimpleName(permName);
+						if (permission == null) {
+							throw error(BAD_REQUEST, "role_error_permission_name_unknown", permName);
 						}
 						if (log.isDebugEnabled()) {
-							for (GraphPermission p : permissionsToGrant) {
-								log.debug("Granting permission: " + p);
-							}
-							for (GraphPermission p : permissionsToRevoke) {
-								log.debug("Revoking permission: " + p);
-							}
+							log.debug("Adding permission {" + permission.getSimpleName() + "} to list of permissions to add.");
 						}
+						permissionsToRevoke.remove(permission);
+						permissionsToGrant.add(permission);
+					}
+					if (log.isDebugEnabled()) {
+						for (GraphPermission p : permissionsToGrant) {
+							log.debug("Granting permission: " + p);
+						}
+						for (GraphPermission p : permissionsToRevoke) {
+							log.debug("Revoking permission: " + p);
+						}
+					}
 
-						// 3. Apply the permission actions
-						element.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
-						return role;
-					});
-
-					return Single.just(message(ac, "role_updated_permission", updatedRole.getName()));
-
+					// 3. Apply the permission actions
+					element.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
+					return role;
 				});
-			}).flatMap(x -> x);
+
+				return Single.just(message(ac, "role_updated_permission", updatedRole.getName()));
+
+			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 }

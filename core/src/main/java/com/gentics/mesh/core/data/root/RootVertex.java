@@ -76,9 +76,10 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * Resolve the given stack to the vertex.
 	 * 
 	 * @param stack
+	 *            Stack which contains the remaining path elements which should be resolved starting with the current graph element
 	 * @return
 	 */
-	Single<? extends MeshVertex> resolveToElement(Stack<String> stack);
+	MeshVertex resolveToElement(Stack<String> stack);
 
 	/**
 	 * Create a new object within this aggregation vertex.

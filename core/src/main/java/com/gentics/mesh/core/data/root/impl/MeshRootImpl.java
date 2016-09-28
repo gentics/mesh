@@ -11,6 +11,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SEA
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER_ROOT;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,7 +42,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
@@ -307,13 +309,13 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
-	public Single<? extends MeshVertex> resolvePathToElement(String pathToElement) {
+	public MeshVertex resolvePathToElement(String pathToElement) {
 		MeshRoot root = MeshInternal.get().boot().meshRoot();
 		if (StringUtils.isEmpty(pathToElement)) {
-			return Single.error(new Exception("Could not resolve path. The path must must not be empty or null."));
+			throw error(BAD_REQUEST, "Could not resolve path. The path must must not be empty or null.");
 		}
 		if (pathToElement.endsWith("/")) {
-			return Single.error(new Exception("Could not resolve path. The path must not end with a slash."));
+			throw error(BAD_REQUEST, "Could not resolve path. The path must not end with a slash.");
 		}
 
 		// Prepare the stack which we use for resolving
@@ -351,7 +353,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			return root.getSchemaContainerRoot().resolveToElement(stack);
 		default:
 			// TOOO i18n
-			return Single.error(new Exception("Could not resolve given path. Unknown element {" + rootNodeSegment + "}"));
+			throw error(NOT_FOUND, "Could not resolve given path. Unknown element {" + rootNodeSegment + "}");
 		}
 	}
 

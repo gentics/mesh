@@ -26,7 +26,6 @@ import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
-import com.orientechnologies.orient.core.db.ODatabase;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
@@ -35,10 +34,9 @@ import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
+import com.orientechnologies.orient.core.intent.OIntentNoCache;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import com.orientechnologies.orient.core.metadata.security.OSecurity;
-import com.orientechnologies.orient.core.metadata.security.OSecurityNull;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
@@ -81,6 +79,26 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public void clear() {
+		if (log.isDebugEnabled()) {
+			log.debug("Clearing graph");
+		}
+		factory.declareIntent(new OIntentNoCache());
+		OrientGraphNoTx tx = factory.getNoTx();
+		try {
+			for (Vertex vertex : tx.getVertices()) {
+				vertex.remove();
+			}
+		} finally {
+			tx.shutdown();
+			factory.declareIntent(null);
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Cleared graph");
+		}
+	}
+
+	@Override
 	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
 		super.init(options, vertx);
 		// resolver = new OrientDBTypeResolver(basePaths);
@@ -89,6 +107,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
 		}
+	}
+
+	@Override
+	public void setMassInsertIntent() {
+		factory.declareIntent(new OIntentMassiveInsert());
+	}
+
+	@Override
+	public void resetIntent() {
+		factory.declareIntent(null);
 	}
 
 	@Override

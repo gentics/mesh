@@ -324,4 +324,14 @@ public interface Database {
 	 */
 	void enableMassInsert();
 
+	/**
+	 * Reset a previously set intent.
+	 */
+	void resetIntent();
+
+	/**
+	 * Tell the graph database that a mass insert will follow.
+	 */
+	void setMassInsertIntent();
+
 }

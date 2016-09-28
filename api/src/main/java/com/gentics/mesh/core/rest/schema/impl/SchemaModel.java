@@ -3,6 +3,8 @@ package com.gentics.mesh.core.rest.schema.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -66,7 +68,7 @@ public class SchemaModel extends AbstractFieldSchemaContainer implements Schema 
 			throw error(BAD_REQUEST, "schema_error_no_fields");
 		}
 
-		if (getDisplayField() == null) {
+		if (StringUtils.isEmpty(getDisplayField())) {
 			throw error(BAD_REQUEST, "schema_error_displayfield_not_set");
 		}
 

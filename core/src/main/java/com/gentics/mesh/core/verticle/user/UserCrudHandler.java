@@ -60,7 +60,6 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		if (StringUtils.isEmpty(userUuid)) {
 			throw error(BAD_REQUEST, "error_uuid_must_be_specified");
 		}
-
 		if (StringUtils.isEmpty(pathToElement)) {
 			throw error(BAD_REQUEST, "user_permission_path_missing");
 		}
@@ -72,18 +71,16 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			Single<? extends MeshVertex> resolvedElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
-			return resolvedElement.map(targetElement -> {
-				return db.noTx(() -> {
-					if (targetElement == null) {
-						throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-					}
-					UserPermissionResponse response = new UserPermissionResponse();
-					for (GraphPermission perm : user.getPermissions(targetElement)) {
-						response.getPermissions().add(perm.getSimpleName());
-					}
-					return response;
-				});
+			MeshVertex targetElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
+			return db.noTx(() -> {
+				if (targetElement == null) {
+					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+				}
+				UserPermissionResponse response = new UserPermissionResponse();
+				for (GraphPermission perm : user.getPermissions(targetElement)) {
+					response.getPermissions().add(perm.getSimpleName());
+				}
+				return Single.just(response);
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 

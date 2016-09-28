@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Iterator;
 import java.util.Stack;
@@ -18,8 +20,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
-
-import rx.Single;
 
 public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
 
@@ -80,8 +80,8 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
-	public Single<? extends MeshVertex> resolveToElement(Stack<String> stack) {
-		throw new NotImplementedException();
+	public MeshVertex resolveToElement(Stack<String> stack) {
+		throw error(BAD_REQUEST, "Languages are not accessible");
 	}
 
 	@Override

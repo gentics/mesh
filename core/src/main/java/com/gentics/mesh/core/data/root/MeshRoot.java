@@ -96,7 +96,8 @@ public interface MeshRoot extends MeshVertex {
 	 * This method will try to resolve the given path and return the element that is matching the path.
 	 * 
 	 * @param pathToElement
+	 * @return Resolved element or null if no element could be found
 	 */
-	Single<? extends MeshVertex> resolvePathToElement(String pathToElement);
+	MeshVertex resolvePathToElement(String pathToElement);
 
 }

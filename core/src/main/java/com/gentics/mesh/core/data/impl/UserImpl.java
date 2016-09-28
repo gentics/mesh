@@ -444,12 +444,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		// for (GenericVertex<?> element : getCreatedElements()) {
-		// batch.addEntry(element, UPDATE_ACTION);
-		// }
-		// for (GenericVertex<?> element : getEditedElements()) {
-		// batch.addEntry(element, UPDATE_ACTION);
-		// }
+		// Users have no foreign relationships.
 	}
 
 	@Override

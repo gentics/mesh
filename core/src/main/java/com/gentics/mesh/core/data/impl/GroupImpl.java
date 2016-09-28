@@ -135,7 +135,6 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
 		PageImpl<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
 		return page;
-
 	}
 
 	@Override
@@ -199,14 +198,10 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
-//	@Override
-//	public GroupImpl getImpl() {
-//		return this;
-//	}
-
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		for (User user : getUsers()) {
+			//We need to store users as well since users list their groups - See {@link UserTransformator#toDocument(User)}
 			batch.addEntry(user, STORE_ACTION);
 		}
 	}

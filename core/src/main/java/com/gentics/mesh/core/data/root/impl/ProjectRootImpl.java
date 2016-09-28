@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_MA
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Stack;
 
@@ -52,7 +53,6 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * @see ProjectRoot
@@ -113,17 +113,17 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public Single<? extends MeshVertex> resolveToElement(Stack<String> stack) {
+	public MeshVertex resolveToElement(Stack<String> stack) {
 		if (stack.isEmpty()) {
-			return Single.just(this);
+			return this;
 		} else {
 			String uuidSegment = stack.pop();
 			Project project = findByUuid(uuidSegment);
 			if (project == null) {
-				return Single.just(null);
+				return null;
 			}
 			if (stack.isEmpty()) {
-				return Single.just(project);
+				return project;
 			} else {
 				String nestedRootNode = stack.pop();
 				switch (nestedRootNode) {
@@ -146,7 +146,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 					NodeRoot nodeRoot = project.getNodeRoot();
 					return nodeRoot.resolveToElement(stack);
 				default:
-					return Single.error(new Exception("Unknown project element {" + nestedRootNode + "}"));
+					throw error(NOT_FOUND, "Unknown project element {" + nestedRootNode + "}");
 				}
 			}
 		}

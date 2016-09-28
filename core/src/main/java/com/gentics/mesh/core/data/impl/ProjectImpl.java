@@ -276,34 +276,19 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		String baseNodeUuid = getBaseNode().getUuid();
-		if (action == SearchQueueEntryAction.DELETE_ACTION) {
-			for (TagFamily tagFamily : getTagFamilyRoot().findAll()) {
-				batch.addEntry(tagFamily, DELETE_ACTION);
+		List<? extends Release> releases = getReleaseRoot().findAll();
+		for (Node node : getNodeRoot().findAll()) {
+			if (baseNodeUuid.equals(node.getUuid())) {
+				continue;
 			}
-			for (Node node : getNodeRoot().findAll()) {
-				if (baseNodeUuid.equals(node.getUuid())) {
-					continue;
-				}
-				batch.addEntry(node, DELETE_ACTION);
-			}
-			for (Tag tag : getTagRoot().findAll()) {
-				batch.addEntry(tag, DELETE_ACTION);
-			}
-		} else {
-			List<? extends Release> releases = getReleaseRoot().findAll();
-			for (Node node : getNodeRoot().findAll()) {
-				if (baseNodeUuid.equals(node.getUuid())) {
-					continue;
-				}
-				releases.forEach(release -> {
-					node.getGraphFieldContainers(release, ContainerType.DRAFT).forEach(container -> {
-						container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), ContainerType.DRAFT);
-					});
-					node.getGraphFieldContainers(release, ContainerType.PUBLISHED).forEach(container -> {
-						container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), ContainerType.PUBLISHED);
-					});
+			releases.forEach(release -> {
+				node.getGraphFieldContainers(release, ContainerType.DRAFT).forEach(container -> {
+					container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), ContainerType.DRAFT);
 				});
-			}
+				node.getGraphFieldContainers(release, ContainerType.PUBLISHED).forEach(container -> {
+					container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), ContainerType.PUBLISHED);
+				});
+			});
 		}
 	}
 

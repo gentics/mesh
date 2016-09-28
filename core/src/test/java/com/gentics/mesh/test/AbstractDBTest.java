@@ -149,16 +149,20 @@ public abstract class AbstractDBTest {
 		BootstrapInitializer.clearReferences();
 		db.clear();
 		DatabaseHelper helper = new DatabaseHelper(db);
+		db.setMassInsertIntent();
 		helper.init();
+		db.resetIntent();
 		if (dummySearchProvider != null) {
 			dummySearchProvider.reset();
 		}
 	}
 
 	public void setupData() throws Exception {
+		db.setMassInsertIntent();
 		boot.initSearchIndexHandlers();
 		boot.createSearchIndicesAndMappings();
 		dataProvider.setup();
+		db.resetIntent();
 	}
 
 	public MicroschemaContainer microschemaContainer(String key) {
