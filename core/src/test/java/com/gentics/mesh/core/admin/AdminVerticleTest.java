@@ -1,14 +1,11 @@
 package com.gentics.mesh.core.admin;
 
-import static com.gentics.mesh.util.MeshAssert.latchFor;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.AbstractVerticle;

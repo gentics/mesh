@@ -88,7 +88,8 @@ public class ElasticSearchProvider implements SearchProvider {
 		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();
 		classpathPlugins.add(DeleteByQueryPlugin.class);
 		// TODO configure ES cluster options
-		node = new MeshNode(settings, classpathPlugins).start();
+		node = new MeshNode(settings, classpathPlugins);
+		node.start();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}

@@ -72,10 +72,8 @@ public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 			String fileName = "somefile.dat";
 
 			// 2. Update the binary data
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "node_binary_field_updated", "binary");
+			GenericMessageResponse message = call(() -> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName));
+			expectResponseMessage(message, "node_binary_field_updated", "binary");
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
@@ -206,10 +204,10 @@ public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 		}
 
 		String[] path = new String[] { "News", newName };
-		WebRootResponse response = call(
-				() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
+		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+				new NodeParameters().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
 		assertEquals(uuid, response.getNodeResponse().getUuid());
-		assertEquals("/News/"+ URIUtils.encodeFragment(newName), response.getNodeResponse().getPath());
+		assertEquals("/News/" + URIUtils.encodeFragment(newName), response.getNodeResponse().getPath());
 	}
 
 	@Test

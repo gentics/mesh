@@ -1,9 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -66,7 +64,6 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.AbstractVerticle;
@@ -826,10 +823,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		searchProvider.clear();
 
-		MeshResponse<GenericMessageResponse> future = getClient().invokeReindex().invoke();
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "search_admin_reindex_invoked");
+		GenericMessageResponse message = call(()->  getClient().invokeReindex());
+		expectResponseMessage(message, "search_admin_reindex_invoked");
 
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);

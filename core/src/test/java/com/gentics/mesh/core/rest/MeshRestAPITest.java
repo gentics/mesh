@@ -23,8 +23,6 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class MeshRestAPITest extends AbstractIsolatedRestVerticleTest {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
-
 	@Override
 	public List<AbstractVerticle> getAdditionalVertices() {
 		List<AbstractVerticle> list = new ArrayList<>();

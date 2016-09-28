@@ -89,10 +89,8 @@ public class WebRootVerticleETagTest extends AbstractETagTest {
 			String fileName = "somefile.dat";
 
 			// 2. Update the binary data
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "node_binary_field_updated", "binary");
+			GenericMessageResponse message = call(()-> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName));
+			expectResponseMessage(message, "node_binary_field_updated", "binary");
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";

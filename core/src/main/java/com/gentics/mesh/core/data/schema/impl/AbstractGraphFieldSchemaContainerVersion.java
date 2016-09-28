@@ -261,7 +261,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 			FieldSchemaContainer fieldContainerModel) {
 		SchemaChangesListModel list = new SchemaChangesListModel();
 		fieldContainerModel.validate();
-		list.getChanges().addAll(comparator.diff(transformToRestSync(ac, 0, null), fieldContainerModel));
+		list.getChanges().addAll(comparator.diff(transformToRestSync(ac, 0), fieldContainerModel));
 		return list;
 	}
 

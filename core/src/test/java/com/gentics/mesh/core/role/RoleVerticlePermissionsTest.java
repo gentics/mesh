@@ -20,7 +20,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
@@ -64,11 +63,9 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			request.getPermissions().add("read");
 			request.getPermissions().add("update");
 			request.getPermissions().add("create");
-			MeshResponse<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(),
-					"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "role_updated_permission", role().getName());
+			GenericMessageResponse message = call(() -> getClient().updateRolePermissions(role().getUuid(),
+					"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request));
+			expectResponseMessage(message, "role_updated_permission", role().getName());
 
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 		}
@@ -90,11 +87,9 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			request.getPermissions().add("read");
 			request.getPermissions().add("update");
 			request.getPermissions().add("create");
-			MeshResponse<GenericMessageResponse> future = getClient()
-					.updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "role_updated_permission", role().getName());
+			GenericMessageResponse message = call(
+					() -> getClient().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request));
+			expectResponseMessage(message, "role_updated_permission", role().getName());
 
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
 			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, vcard));
@@ -115,10 +110,8 @@ public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTes
 			request.getPermissions().add("create");
 			assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 
-			MeshResponse<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), pathToElement, request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			expectResponseMessage(future, "role_updated_permission", role().getName());
+			GenericMessageResponse message = call(() -> getClient().updateRolePermissions(role().getUuid(), pathToElement, request));
+			expectResponseMessage(message, "role_updated_permission", role().getName());
 			assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 		}
 

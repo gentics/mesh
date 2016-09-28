@@ -400,19 +400,6 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		assertEquals(msg, expectedJson, sanitizedJson);
 	}
 
-	/**
-	 * 
-	 * @param responseFuture
-	 * @param i18nKey
-	 * @param i18nParams
-	 * @deprecated Use call to get the {@link GenericMessageResponse} and use {@link #expectResponseMessage(GenericMessageResponse, String, String...)} instead.
-	 */
-	@Deprecated
-	protected void expectResponseMessage(MeshResponse<GenericMessageResponse> responseFuture, String i18nKey, String... i18nParams) {
-		assertTrue("The given future has not yet completed.", responseFuture.isComplete());
-		expectResponseMessage(responseFuture.result(), i18nKey, i18nParams);
-	}
-
 	protected void expectResponseMessage(GenericMessageResponse response, String i18nKey, String... i18nParams) {
 		Locale en = Locale.ENGLISH;
 		String message = I18NUtil.get(en, i18nKey, i18nParams);
