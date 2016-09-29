@@ -62,6 +62,10 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_PARENT_CONTAINER);
 			db.addEdgeType(HAS_SCHEMA_CONTAINER_VERSION);
 
+			// Releases
+			db.addEdgeType(HAS_SCHEMA_VERSION);
+			db.addEdgeType(HAS_MICROSCHEMA_VERSION);
+
 			// Changelog
 			db.addEdgeType(HAS_CHANGELOG_ROOT);
 			return null;
