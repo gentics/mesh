@@ -118,17 +118,15 @@ public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			int totalSchemas;
 			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 			final int nSchemas = 22;
-			Schema schema = new SchemaModel();
+			Schema schema = FieldUtil.createMinimalValidSchema();
 			schema.setName("No Perm Schema");
-			schema.setDisplayField("name");
 			SchemaContainer noPermSchema = schemaRoot.create(schema, user());
 			Schema dummySchema = new SchemaModel();
 			dummySchema.setName("dummy");
 			noPermSchema.getLatestVersion().setSchema(dummySchema);
 			for (int i = 0; i < nSchemas; i++) {
-				schema = new SchemaModel();
+				schema = FieldUtil.createMinimalValidSchema();
 				schema.setName("extra_schema_" + i);
-				schema.setDisplayField("name");
 				SchemaContainer extraSchema = schemaRoot.create(schema, user());
 				extraSchema.getLatestVersion().setSchema(dummySchema);
 				role().grantPermissions(extraSchema, READ_PERM);

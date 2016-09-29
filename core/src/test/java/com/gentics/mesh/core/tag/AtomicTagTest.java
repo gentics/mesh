@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -15,7 +16,6 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -31,9 +31,7 @@ public class AtomicTagTest extends AbstractDBTest {
 			languageRoot.create("Deutsch", "de");
 			languageRoot.create("English", "en");
 
-			Schema schema = new SchemaModel();
-			schema.setName("folder");
-			schema.setDisplayField("name");
+			Schema schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer schemaContainer = meshRoot.getSchemaContainerRoot().create(schema, user);
 
 			meshRoot.getTagFamilyRoot();
