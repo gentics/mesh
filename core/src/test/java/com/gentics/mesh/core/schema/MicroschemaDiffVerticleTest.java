@@ -31,13 +31,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.microschemaVerticle());
-		return list;
-	}
-
 	private Microschema getMicroschema() {
 		Microschema vcardMicroschema = new MicroschemaModel();
 		vcardMicroschema.setName("vcard");

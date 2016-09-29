@@ -20,13 +20,6 @@ import io.vertx.core.http.HttpMethod;
 
 public class MeshRestAPITest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.userVerticle());
-		return list;
-	}
-
 	@Test
 	public void test404Response() throws Exception {
 		//		Future<UserResponse> future = getClient().findUserByUuid("blub");

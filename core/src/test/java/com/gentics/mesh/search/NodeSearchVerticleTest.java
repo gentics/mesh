@@ -12,11 +12,9 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
@@ -66,7 +64,6 @@ import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.performance.TestUtils;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -86,21 +83,6 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);
-	}
-
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.searchVerticle());
-		list.add(meshDagger.projectSearchVerticle());
-		list.add(meshDagger.schemaVerticle());
-		list.add(meshDagger.adminVerticle());
-		list.add(meshDagger.nodeVerticle());
-		list.add(meshDagger.eventbusVerticle());
-		list.add(meshDagger.tagFamilyVerticle());
-		list.add(meshDagger.projectVerticle());
-		list.add(meshDagger.releaseVerticle());
-		return list;
 	}
 
 	@Test

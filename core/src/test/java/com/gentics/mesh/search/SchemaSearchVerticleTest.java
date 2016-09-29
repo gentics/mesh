@@ -28,15 +28,6 @@ import io.vertx.core.DeploymentOptions;
 
 public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.searchVerticle());
-		list.add(meshDagger.schemaVerticle());
-		list.add(meshDagger.eventbusVerticle());
-		return list;
-	}
-
 	@Before
 	public void setupWorkerVerticle() throws Exception {
 		DeploymentOptions options = new DeploymentOptions();

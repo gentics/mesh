@@ -38,13 +38,6 @@ import io.vertx.core.buffer.Buffer;
 
 public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	@Test
 	public void testImageResize() throws Exception {
 		try (NoTx noTrx = db.noTx()) {

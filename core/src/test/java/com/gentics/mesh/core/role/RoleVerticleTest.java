@@ -50,12 +50,6 @@ import rx.Single;
 
 public class RoleVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.roleVerticle());
-		return list;
-	}
 	// Create tests
 
 	@Test

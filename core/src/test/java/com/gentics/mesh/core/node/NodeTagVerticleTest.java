@@ -38,17 +38,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		list.add(meshDagger.releaseVerticle());
-		list.add(meshDagger.nodeMigrationVerticle());
-		list.add(meshDagger.eventbusVerticle());
-		list.add(meshDagger.tagFamilyVerticle());
-		return list;
-	}
-
 	@Test
 	public void testReadNodeTags() throws Exception {
 		try (NoTx noTx = db.noTx()) {

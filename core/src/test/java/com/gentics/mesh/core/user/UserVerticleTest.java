@@ -58,17 +58,9 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpHeaders;
 
 public class UserVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
-
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.userVerticle());
-		return list;
-	}
 
 	// Read Tests
 

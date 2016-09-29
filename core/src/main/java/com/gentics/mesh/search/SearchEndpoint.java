@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Project;
@@ -41,7 +41,7 @@ import dagger.Lazy;
 import rx.functions.Func0;
 
 @Singleton
-public class SearchVerticle extends AbstractWebVerticle {
+public class SearchEndpoint extends AbstractEndpoint {
 
 	private SearchRestHandler searchHandler;
 
@@ -50,7 +50,7 @@ public class SearchVerticle extends AbstractWebVerticle {
 	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public SearchVerticle(RouterStorage routerStorage, SearchRestHandler searchHandler, IndexHandlerRegistry registry,
+	public SearchEndpoint(RouterStorage routerStorage, SearchRestHandler searchHandler, IndexHandlerRegistry registry,
 			Lazy<BootstrapInitializer> boot) {
 		super("search", routerStorage);
 		this.searchHandler = searchHandler;
@@ -58,7 +58,7 @@ public class SearchVerticle extends AbstractWebVerticle {
 		this.boot = boot;
 	}
 
-	public SearchVerticle() {
+	public SearchEndpoint() {
 		super("search", null);
 	}
 

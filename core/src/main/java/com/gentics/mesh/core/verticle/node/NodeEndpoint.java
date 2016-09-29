@@ -17,7 +17,7 @@ import org.raml.model.Resource;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -35,7 +35,7 @@ import com.gentics.mesh.util.UUIDUtil;
  * The content verticle adds rest endpoints for manipulating nodes.
  */
 @Singleton
-public class NodeVerticle extends AbstractProjectRestVerticle {
+public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	private NodeCrudHandler crudHandler;
 
@@ -43,12 +43,12 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	private NodeFieldAPIHandler fieldAPIHandler;
 
-	public NodeVerticle() {
+	public NodeEndpoint() {
 		super("nodes", null, null);
 	}
 
 	@Inject
-	public NodeVerticle(BootstrapInitializer boot, RouterStorage routerStorage, NodeCrudHandler crudHandler, NodeFieldAPIHandler fieldAPIHandler) {
+	public NodeEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, NodeCrudHandler crudHandler, NodeFieldAPIHandler fieldAPIHandler) {
 		super("nodes", boot, routerStorage);
 		this.crudHandler = crudHandler;
 		this.fieldAPIHandler = fieldAPIHandler;

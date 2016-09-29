@@ -30,15 +30,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class SchemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.schemaVerticle());
-		list.add(meshDagger.projectSchemaVerticle());
-		list.add(meshDagger.projectVerticle());
-		return list;
-	}
-
 	@Test
 	public void testReadProjectSchemas() {
 		try (NoTx noTx = db.noTx()) {

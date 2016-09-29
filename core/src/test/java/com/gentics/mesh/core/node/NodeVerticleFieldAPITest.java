@@ -22,13 +22,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeVerticleFieldAPITest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	@Test
 	public void testDownloadBinaryField() throws IOException {
 

@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
@@ -23,16 +23,16 @@ import com.gentics.mesh.util.UUIDUtil;
  * Verticle for REST endpoints to manage Releases
  */
 @Singleton
-public class ReleaseVerticle extends AbstractProjectRestVerticle {
+public class ReleaseEndpoint extends AbstractProjectEndpoint {
 
 	private ReleaseCrudHandler crudHandler;
 
-	public ReleaseVerticle() {
+	public ReleaseEndpoint() {
 		super("releases", null, null);
 	}
 
 	@Inject
-	public ReleaseVerticle(RouterStorage routerStorage, BootstrapInitializer boot, ReleaseCrudHandler crudHandler) {
+	public ReleaseEndpoint(RouterStorage routerStorage, BootstrapInitializer boot, ReleaseCrudHandler crudHandler) {
 		super("releases", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}

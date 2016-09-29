@@ -42,13 +42,6 @@ import io.vertx.core.buffer.Buffer;
 
 public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	@Test
 	public void testUploadWithNoPerm() throws IOException {
 		String contentType = "application/octet-stream";

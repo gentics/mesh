@@ -5,7 +5,8 @@ import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRA
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -15,14 +16,14 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
 @Singleton
-public class EventbusVerticle extends AbstractWebVerticle {
+public class EventbusEndpoint extends AbstractEndpoint {
 
 	@Inject
-	public EventbusVerticle(RouterStorage routerStorage) {
+	public EventbusEndpoint(RouterStorage routerStorage) {
 		super("eventbus", routerStorage);
 	}
 
-	public EventbusVerticle() {
+	public EventbusEndpoint() {
 		super("eventbus", null);
 	}
 
@@ -39,7 +40,7 @@ public class EventbusVerticle extends AbstractWebVerticle {
 		SockJSHandler handler = null;
 		if (localRouter != null) {
 			SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
-			handler = SockJSHandler.create(vertx, sockJSoptions);
+			handler = SockJSHandler.create(Mesh.vertx(), sockJSoptions);
 			BridgeOptions bridgeOptions = new BridgeOptions();
 			bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
 			bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));

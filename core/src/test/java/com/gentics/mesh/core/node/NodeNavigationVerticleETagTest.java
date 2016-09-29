@@ -19,13 +19,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeNavigationVerticleETagTest extends AbstractETagTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	@Test
 	public void testReadOne() {
 		try (NoTx noTx = db.noTx()) {

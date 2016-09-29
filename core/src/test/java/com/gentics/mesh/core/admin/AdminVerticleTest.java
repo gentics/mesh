@@ -12,13 +12,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class AdminVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.adminVerticle());
-		return list;
-	}
-
 	@Test
 	public void testMigrationStatusWithNoMigrationRunning() {
 		GenericMessageResponse message = call(() -> getClient().schemaMigrationStatus());

@@ -49,13 +49,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.tagFamilyVerticle());
-		return list;
-	}
-
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {

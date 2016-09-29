@@ -49,14 +49,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.webrootVerticle());
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	@Test
 	public void testReadBinaryNode() throws IOException {
 		try (NoTx noTrx = db.noTx()) {

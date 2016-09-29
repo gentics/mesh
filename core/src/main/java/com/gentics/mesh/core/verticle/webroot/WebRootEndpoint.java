@@ -6,21 +6,21 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.Endpoint;
 @Singleton
-public class WebRootVerticle extends AbstractProjectRestVerticle {
+public class WebRootEndpoint extends AbstractProjectEndpoint {
 
 	private WebRootHandler handler;
 
-	public WebRootVerticle() {
+	public WebRootEndpoint() {
 		super("webroot", null, null);
 	}
 
 	@Inject
-	public WebRootVerticle(BootstrapInitializer boot, RouterStorage routerStorage, WebRootHandler handler) {
+	public WebRootEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, WebRootHandler handler) {
 		super("webroot", boot, routerStorage);
 		this.handler = handler;
 	}

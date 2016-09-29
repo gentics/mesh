@@ -24,13 +24,6 @@ import io.vertx.core.AbstractVerticle;
 
 public abstract class AbstractFieldVerticleTest extends AbstractIsolatedRestVerticleTest implements FieldVerticleTestcases {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
 		NodeParameters parameters = new NodeParameters();
 		parameters.setLanguages("en");

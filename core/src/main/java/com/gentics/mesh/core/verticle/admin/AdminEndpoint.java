@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -16,17 +16,17 @@ import com.gentics.mesh.rest.Endpoint;
  * The admin verticle provides core administration rest endpoints.
  */
 @Singleton
-public class AdminVerticle extends AbstractWebVerticle {
+public class AdminEndpoint extends AbstractEndpoint {
 
 	private AdminHandler handler;
 
 	@Inject
-	public AdminVerticle(RouterStorage routerStorage, AdminHandler adminHandler) {
+	public AdminEndpoint(RouterStorage routerStorage, AdminHandler adminHandler) {
 		super("admin", routerStorage);
 		this.handler = adminHandler;
 	}
 
-	public AdminVerticle() {
+	public AdminEndpoint() {
 		super("admin", null);
 	}
 

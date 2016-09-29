@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
@@ -23,16 +23,16 @@ import com.gentics.mesh.util.UUIDUtil;
  * Verticle for /api/v1/PROJECTNAME/schemas
  */
 @Singleton
-public class ProjectSchemaVerticle extends AbstractProjectRestVerticle {
+public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 
 	private SchemaCrudHandler crudHandler;
 
-	public ProjectSchemaVerticle() {
+	public ProjectSchemaEndpoint() {
 		super("schemas", null, null);
 	}
 
 	@Inject
-	public ProjectSchemaVerticle(BootstrapInitializer boot, RouterStorage routerStorage, SchemaCrudHandler crudHandler) {
+	public ProjectSchemaEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, SchemaCrudHandler crudHandler) {
 		super("schemas", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}

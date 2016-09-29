@@ -9,7 +9,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -30,18 +30,18 @@ import rx.functions.Func0;
  * Verticle that adds REST endpoints for project specific search (for nodes, tags and tagFamilies)
  */
 @Singleton
-public class ProjectSearchVerticle extends AbstractProjectRestVerticle {
+public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 
 	private SearchRestHandler searchHandler;
 
 	private IndexHandlerRegistry registry;
 
-	public ProjectSearchVerticle() {
+	public ProjectSearchEndpoint() {
 		super("search", null, null);
 	}
 
 	@Inject
-	public ProjectSearchVerticle(BootstrapInitializer boot, RouterStorage routerStorage, SearchRestHandler searchHandler,
+	public ProjectSearchEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, SearchRestHandler searchHandler,
 			IndexHandlerRegistry registry) {
 		super("search", boot, routerStorage);
 		this.searchHandler = searchHandler;

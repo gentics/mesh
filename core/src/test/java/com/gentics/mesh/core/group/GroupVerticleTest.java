@@ -52,13 +52,6 @@ public class GroupVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(GroupVerticleTest.class);
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.groupVerticle());
-		return list;
-	}
-
 	// Create Tests
 	@Test
 	@Override

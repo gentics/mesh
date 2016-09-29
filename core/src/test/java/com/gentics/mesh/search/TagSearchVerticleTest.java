@@ -21,14 +21,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.searchVerticle());
-		list.add(meshDagger.tagFamilyVerticle());
-		return list;
-	}
-
 	@Test
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {

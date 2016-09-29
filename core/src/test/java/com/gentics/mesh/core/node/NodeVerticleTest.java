@@ -74,13 +74,6 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	// Create tests
 
 	@Test

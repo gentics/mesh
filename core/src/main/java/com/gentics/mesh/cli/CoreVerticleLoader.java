@@ -9,27 +9,27 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.verticle.admin.AdminVerticle;
-import com.gentics.mesh.core.verticle.admin.RestInfoVerticle;
-import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
-import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
-import com.gentics.mesh.core.verticle.group.GroupVerticle;
-import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
-import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
+import com.gentics.mesh.core.verticle.admin.AdminEndpoint;
+import com.gentics.mesh.core.verticle.admin.RestInfoEndpoint;
+import com.gentics.mesh.core.verticle.auth.AuthenticationEndpoint;
+import com.gentics.mesh.core.verticle.eventbus.EventbusEndpoint;
+import com.gentics.mesh.core.verticle.group.GroupEndpoint;
+import com.gentics.mesh.core.verticle.microschema.MicroschemaEndpoint;
+import com.gentics.mesh.core.verticle.navroot.NavRootEndpoint;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
-import com.gentics.mesh.core.verticle.role.RoleVerticle;
-import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
-import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.core.verticle.user.UserVerticle;
-import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
-import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
+import com.gentics.mesh.core.verticle.node.NodeEndpoint;
+import com.gentics.mesh.core.verticle.project.ProjectEndpoint;
+import com.gentics.mesh.core.verticle.release.ReleaseEndpoint;
+import com.gentics.mesh.core.verticle.role.RoleEndpoint;
+import com.gentics.mesh.core.verticle.schema.ProjectSchemaEndpoint;
+import com.gentics.mesh.core.verticle.schema.SchemaEndpoint;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyEndpoint;
+import com.gentics.mesh.core.verticle.user.UserEndpoint;
+import com.gentics.mesh.core.verticle.utility.UtilityEndpoint;
+import com.gentics.mesh.core.verticle.webroot.WebRootEndpoint;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.search.ProjectSearchVerticle;
-import com.gentics.mesh.search.SearchVerticle;
+import com.gentics.mesh.search.ProjectSearchEndpoint;
+import com.gentics.mesh.search.SearchEndpoint;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
@@ -42,64 +42,64 @@ public class CoreVerticleLoader {
 	private static Logger log = LoggerFactory.getLogger(CoreVerticleLoader.class);
 
 	@Inject
-	public RestInfoVerticle restInfoVerticle;
+	public RestInfoEndpoint restInfoEndpoint;
 
 	@Inject
-	public UserVerticle userVerticle;
+	public UserEndpoint userEndpoint;
 
 	@Inject
-	public GroupVerticle groupVerticle;
+	public GroupEndpoint groupVerticle;
 
 	@Inject
-	public RoleVerticle roleVerticle;
+	public RoleEndpoint roleVerticle;
 
 	@Inject
-	public SchemaVerticle schemaVerticle;
+	public SchemaEndpoint schemaVerticle;
 
 	@Inject
-	public ProjectVerticle projectVerticle;
+	public ProjectEndpoint projectVerticle;
 
 	@Inject
-	public UtilityVerticle utilityVerticle;
+	public UtilityEndpoint utilityVerticle;
 
 	@Inject
-	public EventbusVerticle eventbusVerticle;
+	public EventbusEndpoint eventbusVerticle;
 
 	@Inject
-	public NodeVerticle nodeVerticle;
+	public NodeEndpoint nodeVerticle;
 
 	@Inject
-	public TagFamilyVerticle tagFamilyVerticle;
+	public TagFamilyEndpoint tagFamilyVerticle;
 
 	@Inject
-	public WebRootVerticle webrootVerticle;
+	public WebRootEndpoint webrootVerticle;
 
 	@Inject
-	public NavRootVerticle navrootVerticle;
+	public NavRootEndpoint navrootVerticle;
 
 	@Inject
-	public MicroschemaVerticle microschemaVerticle;
+	public MicroschemaEndpoint microschemaVerticle;
 
 	@Inject
 	public NodeMigrationVerticle nodeMigrationVerticle;
 
 	@Inject
-	public ProjectSchemaVerticle projectSchemaVerticle;
+	public ProjectSchemaEndpoint projectSchemaVerticle;
 
 	@Inject
-	public ReleaseVerticle releaseVerticle;
+	public ReleaseEndpoint releaseVerticle;
 
 	@Inject
-	public SearchVerticle searchVerticle;
+	public SearchEndpoint searchVerticle;
 
 	@Inject
-	public ProjectSearchVerticle projectSearchVerticle;
+	public ProjectSearchEndpoint projectSearchVerticle;
 
 	@Inject
-	public AuthenticationVerticle authenticationVerticle;
+	public AuthenticationEndpoint authenticationVerticle;
 
 	@Inject
-	public AdminVerticle adminVerticle;
+	public AdminEndpoint adminVerticle;
 
 	@Inject
 	public CoreVerticleLoader() {
@@ -170,32 +170,7 @@ public class CoreVerticleLoader {
 	 */
 	private List<AbstractVerticle> getMandatoryVerticleClasses() {
 		List<AbstractVerticle> verticles = new ArrayList<>();
-		verticles.add(restInfoVerticle);
-		//		verticles.add(projectInfoVerticle());
 
-		// User Group Role verticles
-		verticles.add(userVerticle);
-		verticles.add(groupVerticle);
-		verticles.add(roleVerticle);
-
-		// Project specific verticles
-		verticles.add(nodeVerticle);
-		verticles.add(tagFamilyVerticle);
-		verticles.add(projectSchemaVerticle);
-		verticles.add(releaseVerticle);
-
-		// Global verticles
-		verticles.add(webrootVerticle);
-		verticles.add(navrootVerticle);
-		verticles.add(projectVerticle);
-		verticles.add(schemaVerticle);
-		verticles.add(microschemaVerticle);
-		verticles.add(searchVerticle);
-		verticles.add(projectSearchVerticle);
-		verticles.add(authenticationVerticle);
-		verticles.add(adminVerticle);
-		verticles.add(eventbusVerticle);
-		verticles.add(utilityVerticle);
 		return verticles;
 	}
 

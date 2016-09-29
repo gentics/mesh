@@ -30,15 +30,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.schemaVerticle());
-		list.add(meshDagger.projectMicroschemaVerticle());
-		list.add(meshDagger.projectVerticle());
-		return list;
-	}
-
 	@Test
 	public void testReadProjectMicroschemas() {
 		try (NoTx noTx = db.noTx()) {

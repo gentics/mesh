@@ -23,11 +23,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		return new ArrayList<>(Arrays.asList(meshDagger.tagFamilyVerticle(), meshDagger.nodeVerticle()));
-	}
-
 	@Test
 	public void testReadNodesForTag() {
 		try (NoTx noTx = db.noTx()) {

@@ -21,19 +21,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.searchVerticle());
-		list.add(meshDagger.projectVerticle());
-		return list;
-	}
-	
-//	@BeforeClass
-//	public static void setupOnce() {
-//		new RxDebugger().start();
-//	}
-
 	@Test
 	public void testSearchProject() throws Exception {
 		try (NoTx noTx = db.noTx()) {

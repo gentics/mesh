@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
@@ -25,16 +25,16 @@ import com.gentics.mesh.util.UUIDUtil;
  * Verticle for /api/v1/schemas endpoint
  */
 @Singleton
-public class SchemaVerticle extends AbstractWebVerticle {
+public class SchemaEndpoint extends AbstractEndpoint {
 
 	private SchemaCrudHandler crudHandler;
 
-	public SchemaVerticle() {
+	public SchemaEndpoint() {
 		super("schemas", null);
 	}
 
 	@Inject
-	public SchemaVerticle(RouterStorage routerStorage, SchemaCrudHandler crudHandler) {
+	public SchemaEndpoint(RouterStorage routerStorage, SchemaCrudHandler crudHandler) {
 		super("schemas", routerStorage);
 		this.crudHandler = crudHandler;
 	}

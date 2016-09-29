@@ -25,13 +25,6 @@ import rx.Single;
 
 public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.authenticationVerticle());
-		return list;
-	}
-
 	// Read Tests
 
 	@Test

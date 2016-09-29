@@ -9,22 +9,22 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
 @Singleton
-public class AuthenticationVerticle extends AbstractWebVerticle {
+public class AuthenticationEndpoint extends AbstractEndpoint {
 
 	private AuthenticationRestHandler authRestHandler;
 
 	@Inject
-	public AuthenticationVerticle(RouterStorage routerStorage, JWTAuthRestHandler authRestHandler) {
+	public AuthenticationEndpoint(RouterStorage routerStorage, JWTAuthRestHandler authRestHandler) {
 		super("auth", routerStorage);
 		this.authRestHandler = authRestHandler;
 	}
 
-	public AuthenticationVerticle() {
+	public AuthenticationEndpoint() {
 		super("auth", null);
 	}
 

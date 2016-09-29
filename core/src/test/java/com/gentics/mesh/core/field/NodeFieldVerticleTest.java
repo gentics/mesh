@@ -30,13 +30,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeFieldVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	@Test
 	public void testUpdateNodeAndOmitRequiredField() throws IOException {
 		try (NoTx noTx = db.noTx()) {

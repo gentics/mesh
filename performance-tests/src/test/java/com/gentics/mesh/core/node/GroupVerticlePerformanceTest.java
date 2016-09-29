@@ -18,13 +18,6 @@ public class GroupVerticlePerformanceTest extends AbstractIsolatedRestVerticleTe
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.groupVerticle());
-		return list;
-	}
-
 	private void addGroups() {
 		for (int i = 0; i < 200; i++) {
 			GroupCreateRequest request = new GroupCreateRequest();

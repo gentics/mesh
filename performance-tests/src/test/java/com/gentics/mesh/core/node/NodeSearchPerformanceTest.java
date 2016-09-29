@@ -32,15 +32,6 @@ public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.searchVerticle());
-		list.add(meshDagger.projectSearchVerticle());
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	@Test
 	public void testES() throws InterruptedException, InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {

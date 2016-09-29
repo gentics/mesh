@@ -33,17 +33,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		list.add(meshDagger.releaseVerticle());
-		list.add(meshDagger.projectVerticle());
-		list.add(meshDagger.schemaVerticle());
-		list.add(meshDagger.projectSchemaVerticle());
-		return list;
-	}
-
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
 		try (NoTx noTx = db.noTx()) {

@@ -8,10 +8,10 @@ import java.io.File;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
@@ -20,7 +20,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 /**
  * Demo verticle that is used to setup basic demo data.
  */
-public class DemoVerticle extends AbstractWebVerticle {
+public class DemoVerticle extends AbstractVerticle {
 
 	private static Logger log = LoggerFactory.getLogger(DemoVerticle.class);
 

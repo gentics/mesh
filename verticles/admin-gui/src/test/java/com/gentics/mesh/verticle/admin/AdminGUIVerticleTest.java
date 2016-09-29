@@ -25,16 +25,6 @@ public class AdminGUIVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	private AdminGUIVerticle adminGuiVerticle;
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		if (adminGuiVerticle == null) {
-			adminGuiVerticle = new AdminGUIVerticle(meshDagger.routerStorage());
-		}
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(adminGuiVerticle);
-		return list;
-	}
-
 	@BeforeClass
 	public static void cleanupConfig() {
 		new File(AdminGUIVerticle.CONF_FILE).delete();

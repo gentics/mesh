@@ -23,13 +23,6 @@ import io.vertx.core.json.JsonObject;
  */
 public class LinkRendererVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.utilityVerticle());
-		return list;
-	}
-
 	/**
 	 * Test rendering valid link with link type "OFF" (expects no link rendering)
 	 */

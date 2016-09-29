@@ -11,10 +11,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -41,15 +39,7 @@ import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
-import io.vertx.core.AbstractVerticle;
-
 public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
-
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		return new ArrayList<AbstractVerticle>(Arrays.asList(meshDagger.releaseVerticle(), meshDagger.projectVerticle(), meshDagger.schemaVerticle(),
-				meshDagger.microschemaVerticle(), meshDagger.projectSchemaVerticle(), meshDagger.projectMicroschemaVerticle()));
-	}
 
 	@Override
 	public void testUpdateMultithreaded() throws Exception {

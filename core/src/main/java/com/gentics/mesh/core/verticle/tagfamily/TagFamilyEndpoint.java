@@ -13,7 +13,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
@@ -24,9 +24,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class TagFamilyVerticle extends AbstractProjectRestVerticle {
+public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 
-	private static final Logger log = LoggerFactory.getLogger(TagFamilyVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(TagFamilyEndpoint.class);
 
 	@Override
 	public String getDescription() {
@@ -37,12 +37,12 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 
 	private TagCrudHandler tagCrudHandler;
 
-	public TagFamilyVerticle() {
+	public TagFamilyEndpoint() {
 		super("tagFamilies", null, null);
 	}
 
 	@Inject
-	public TagFamilyVerticle(BootstrapInitializer boot, RouterStorage routerStorage, TagCrudHandler tagCrudHandler,
+	public TagFamilyEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, TagCrudHandler tagCrudHandler,
 			TagFamilyCrudHandler tagFamilyCrudHandler) {
 		super("tagFamilies", boot, routerStorage);
 		this.tagCrudHandler = tagCrudHandler;

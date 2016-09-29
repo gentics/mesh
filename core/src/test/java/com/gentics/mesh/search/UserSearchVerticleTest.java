@@ -26,15 +26,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class UserSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.searchVerticle());
-		list.add(meshDagger.userVerticle());
-		list.add(meshDagger.groupVerticle());
-		return list;
-	}
-
 	@Test
 	public void testSimpleQuerySearch() {
 

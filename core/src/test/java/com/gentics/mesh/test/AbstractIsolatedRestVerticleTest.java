@@ -12,7 +12,6 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
@@ -58,13 +57,13 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -82,6 +81,8 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 	protected int port;
 
 	private MeshRestClient client;
+	
+	private RestAPIVerticle restVerticle;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -98,18 +99,16 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", null, config,
 				Thread.currentThread().getContextClassLoader());
 
-		CountDownLatch latch = new CountDownLatch(getVertices().size());
 
-		// Start each verticle
-		for (AbstractVerticle verticle : getVertices()) {
-			verticle.init(vertx, context);
-			Future<Void> future = Future.future();
-			verticle.start(future);
-			future.setHandler(rh -> {
-				latch.countDown();
-			});
-		}
-
+		// Start rest verticle
+		CountDownLatch latch = new CountDownLatch(1);
+		restVerticle = MeshInternal.get().restApiVerticle();
+		restVerticle.init(vertx, context);
+		Future<Void> future = Future.future();
+		restVerticle.start(future);
+		future.setHandler(rh -> {
+			latch.countDown();
+		});
 		failingLatch(latch);
 
 		try (NoTx trx = db.noTx()) {
@@ -130,19 +129,8 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() throws Exception {
-		//		searchProvider.reset();
-		for (AbstractVerticle verticle : getVertices()) {
-			verticle.stop();
-		}
+		restVerticle.stop();
 		resetDatabase();
-	}
-
-	public abstract List<AbstractVerticle> getAdditionalVertices();
-
-	private List<AbstractVerticle> getVertices() {
-		List<AbstractVerticle> list = getAdditionalVertices();
-		list.add(meshDagger.authenticationVerticle());
-		return list;
 	}
 
 	@After

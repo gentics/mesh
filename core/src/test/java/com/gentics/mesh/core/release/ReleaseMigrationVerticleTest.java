@@ -41,15 +41,6 @@ import io.vertx.core.eventbus.Message;
 public class ReleaseMigrationVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.eventbusVerticle());
-		list.add(meshDagger.releaseVerticle());
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
-	@Override
 	@Before
 	public void setupVerticleTest() throws Exception {
 		super.setupVerticleTest();

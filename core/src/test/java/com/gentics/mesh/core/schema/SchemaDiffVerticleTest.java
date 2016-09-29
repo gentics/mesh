@@ -34,13 +34,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.schemaVerticle());
-		return list;
-	}
-
 	private Schema getSchema() {
 		Schema request = new SchemaModel();
 		request.setName("content");

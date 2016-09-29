@@ -39,12 +39,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class GroupUserVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.groupVerticle());
-		return list;
-	}
 	// Group User Testcases - PUT / Add
 
 	@Test

@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -16,7 +16,7 @@ import io.vertx.ext.web.Router;
 
 
 @Singleton
-public class ProjectInfoVerticle extends AbstractWebVerticle {
+public class ProjectInfoVerticle extends AbstractEndpoint {
 
 	private ProjectCrudHandler crudHandler;
 

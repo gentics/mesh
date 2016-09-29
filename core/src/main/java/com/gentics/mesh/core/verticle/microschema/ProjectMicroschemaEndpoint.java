@@ -12,25 +12,25 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
- * Verticle for /api/v1/PROJECTNAME/microschemas
+ * Endpoint for /api/v1/PROJECTNAME/microschemas
  */
 @Singleton
-public class ProjectMicroschemaVerticle extends AbstractProjectRestVerticle {
+public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 
 	private MicroschemaCrudHandler crudHandler;
 
-	public ProjectMicroschemaVerticle() {
+	public ProjectMicroschemaEndpoint() {
 		super("microschemas", null, null);
 	}
 
 	@Inject
-	public ProjectMicroschemaVerticle(BootstrapInitializer boot, RouterStorage routerStorage, MicroschemaCrudHandler crudHandler) {
+	public ProjectMicroschemaEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, MicroschemaCrudHandler crudHandler) {
 		super("microschemas", boot, routerStorage);
 		this.crudHandler = crudHandler;
 	}

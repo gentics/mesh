@@ -46,13 +46,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class SchemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.schemaVerticle());
-		return list;
-	}
-
 	// Create Tests
 
 	@Test

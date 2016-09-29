@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -20,16 +20,16 @@ import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 @Singleton
-public class GroupVerticle extends AbstractWebVerticle {
+public class GroupEndpoint extends AbstractEndpoint {
 
 	private GroupCrudHandler crudHandler;
 
-	public GroupVerticle() {
+	public GroupEndpoint() {
 		super("groups", null);
 	}
 
 	@Inject
-	public GroupVerticle(RouterStorage routerStorage, GroupCrudHandler crudHandler) {
+	public GroupEndpoint(RouterStorage routerStorage, GroupCrudHandler crudHandler) {
 		super("groups", routerStorage);
 		this.crudHandler = crudHandler;
 	}

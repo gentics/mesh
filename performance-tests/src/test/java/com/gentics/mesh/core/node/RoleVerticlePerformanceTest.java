@@ -18,13 +18,6 @@ public class RoleVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.roleVerticle());
-		return list;
-	}
-
 	private void addRoles() {
 		for (int i = 0; i < 200; i++) {
 			RoleCreateRequest request = new RoleCreateRequest();

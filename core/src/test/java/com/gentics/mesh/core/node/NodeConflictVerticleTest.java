@@ -45,13 +45,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	private Node getTestNode() {
 		Node node = content("concorde");
 		return node;

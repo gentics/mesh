@@ -47,16 +47,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.microschemaVerticle());
-		list.add(meshDagger.schemaVerticle());
-		list.add(meshDagger.nodeVerticle());
-		list.add(meshDagger.projectSchemaVerticle());
-		return list;
-	}
-
 	@Ignore("Not yet implemented")
 	@Test
 	@Override
@@ -268,7 +258,7 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			assertNotNull(microschema);
 			call(() -> getClient().deleteMicroschema(microschema.getUuid()));
 
-			//schema_delete_still_in_use
+			// schema_delete_still_in_use
 
 			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid());
 			assertNull("The microschema should have been deleted.", reloaded);

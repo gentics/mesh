@@ -38,18 +38,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
-	// @BeforeClass
-	// public static void setupOnce() {
-	// new RxDebugger().start();
-	// }
-
 	/**
 	 * Folder /news/2015 is not published. A new node will be created in folder 2015. Publishing the created folder should fail since the parent folder
 	 * (/news/2015) is not yet published. This test will also assert that publishing works fine as soon as the parent node is published.

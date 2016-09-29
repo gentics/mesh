@@ -27,13 +27,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaVerticleETagTest extends AbstractETagTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.microschemaVerticle());
-		return list;
-	}
-
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {

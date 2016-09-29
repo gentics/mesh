@@ -25,13 +25,6 @@ public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTes
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	public void addNodes() {
 		String uuid = db.noTx(() -> folder("news").getUuid());
 		for (int i = 0; i < 500; i++) {

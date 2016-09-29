@@ -15,13 +15,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class ProjectInfoVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.projectInfoVerticle());
-		return list;
-	}
-
 	@Test
 	public void testReadProjectByName() {
 		ProjectResponse project = call(() -> getClient().findProjectByName(PROJECT_NAME));

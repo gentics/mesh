@@ -9,22 +9,22 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.rest.Endpoint;
 
 @Singleton
-public class NavRootVerticle extends AbstractProjectRestVerticle {
+public class NavRootEndpoint extends AbstractProjectEndpoint {
 
 	private NavRootHandler handler;
 
-	public NavRootVerticle() {
+	public NavRootEndpoint() {
 		super("navroot", null, null);
 	}
 
 	@Inject
-	public NavRootVerticle(BootstrapInitializer boot, RouterStorage routerStorage, NavRootHandler handler) {
+	public NavRootEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, NavRootHandler handler) {
 		super("navroot", boot, routerStorage);
 		this.handler = handler;
 	}

@@ -53,17 +53,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.projectVerticle());
-		list.add(meshDagger.nodeVerticle());
-		list.add(meshDagger.userVerticle());
-		list.add(meshDagger.roleVerticle());
-		list.add(meshDagger.groupVerticle());
-		return list;
-	}
-
 	// Create Tests
 
 	@Test

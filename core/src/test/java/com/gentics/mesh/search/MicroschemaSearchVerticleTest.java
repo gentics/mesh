@@ -11,14 +11,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.searchVerticle());
-		list.add(meshDagger.microschemaVerticle());
-		return list;
-	}
-
 	@Test
 	@Override
 	@Ignore("Not yet implemented")

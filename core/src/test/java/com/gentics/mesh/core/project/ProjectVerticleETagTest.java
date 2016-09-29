@@ -26,13 +26,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class ProjectVerticleETagTest extends AbstractETagTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.projectVerticle());
-		return list;
-	}
-
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {

@@ -9,7 +9,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -18,14 +18,14 @@ import com.gentics.mesh.search.SearchProvider;
 import io.vertx.ext.web.Router;
 
 @Singleton
-public class RestInfoVerticle extends AbstractWebVerticle {
+public class RestInfoEndpoint extends AbstractEndpoint {
 
 	private SearchProvider searchProvider;
 
 	private Database db;
 
 	@Inject
-	public RestInfoVerticle(Database db, RouterStorage routerStorage, SearchProvider searchProvider) {
+	public RestInfoEndpoint(Database db, RouterStorage routerStorage, SearchProvider searchProvider) {
 		super(null, routerStorage);
 		this.searchProvider = searchProvider;
 		this.db = db;
@@ -55,7 +55,7 @@ public class RestInfoVerticle extends AbstractWebVerticle {
 
 	@Override
 	public Router setupLocalRouter() {
-		return Router.router(vertx);
+		return Router.router(Mesh.vertx());
 	}
 
 }

@@ -46,13 +46,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class TagFamilyVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.tagFamilyVerticle());
-		return list;
-	}
-
 	@Test
 	@Override
 	public void testReadByUUID() throws UnknownHostException, InterruptedException {

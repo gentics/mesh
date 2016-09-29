@@ -34,14 +34,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class WebRootVerticleETagTest extends AbstractETagTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.webrootVerticle());
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	@Test
 	public void testResizeImage() throws IOException {
 		try (NoTx noTrx = db.noTx()) {

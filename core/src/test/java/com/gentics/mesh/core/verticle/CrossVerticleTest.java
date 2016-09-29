@@ -13,15 +13,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class CrossVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.projectVerticle());
-		list.add(meshDagger.tagFamilyVerticle());
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	@Test
 	public void testAccessNewProjectRoute() {
 		final String name = "test12345";

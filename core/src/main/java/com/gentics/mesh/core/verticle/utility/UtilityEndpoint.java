@@ -5,7 +5,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -13,17 +13,17 @@ import com.gentics.mesh.rest.Endpoint;
  * Verticle providing endpoints for various utilities.
  */
 @Singleton
-public class UtilityVerticle extends AbstractWebVerticle {
+public class UtilityEndpoint extends AbstractEndpoint {
 
 	private UtilityHandler utilityHandler;
 
 	@Inject
-	public UtilityVerticle(RouterStorage routerStorage, UtilityHandler utilityHandler) {
+	public UtilityEndpoint(RouterStorage routerStorage, UtilityHandler utilityHandler) {
 		super("utilities", routerStorage);
 		this.utilityHandler = utilityHandler;
 	}
 
-	public UtilityVerticle() {
+	public UtilityEndpoint() {
 		super("utilities", null);
 	}
 

@@ -28,13 +28,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
-
 	/**
 	 * Create two published nodes and move the second node into the folder of the first node. A conflict should occur since the node published segment path
 	 * conflict with each other.

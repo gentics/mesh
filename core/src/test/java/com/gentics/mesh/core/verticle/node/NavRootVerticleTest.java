@@ -20,17 +20,7 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
-import io.vertx.core.AbstractVerticle;
-
 public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
-
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.navRootVerticle());
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
 
 	/**
 	 * Test reading a navigation concurrently.
@@ -89,9 +79,9 @@ public class NavRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 	public void testReadNavForBasenode() {
 		try (NoTx noTx = db.noTx()) {
 
-//			for (NodeGraphFieldContainer container : project().getBaseNode().getGraphFieldContainers()) {
-//				System.out.println(container.isPublished(project().getLatestRelease().getUuid()));
-//			}
+			// for (NodeGraphFieldContainer container : project().getBaseNode().getGraphFieldContainers()) {
+			// System.out.println(container.isPublished(project().getLatestRelease().getUuid()));
+			// }
 			String path = "/";
 			MeshResponse<NavigationResponse> future = getClient().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10)).invoke();
 			latchFor(future);

@@ -12,23 +12,23 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 @Singleton
-public class RoleVerticle extends AbstractWebVerticle {
+public class RoleEndpoint extends AbstractEndpoint {
 
 	private RoleCrudHandler crudHandler;
 
-	public RoleVerticle() {
+	public RoleEndpoint() {
 		super("roles", null);
 	}
 
 	@Inject
-	public RoleVerticle(RouterStorage routerStorage, RoleCrudHandler crudHandler) {
+	public RoleEndpoint(RouterStorage routerStorage, RoleCrudHandler crudHandler) {
 		super("roles", routerStorage);
 		this.crudHandler = crudHandler;
 	}

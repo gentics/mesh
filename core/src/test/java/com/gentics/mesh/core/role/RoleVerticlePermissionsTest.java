@@ -27,13 +27,6 @@ import io.vertx.core.AbstractVerticle;
 
 public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.roleVerticle());
-		return list;
-	}
-
 	@Test
 	public void testRevokeAllPermissionFromProject() {
 		try (NoTx noTx = db.noTx()) {

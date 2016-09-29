@@ -18,13 +18,6 @@ import io.vertx.core.json.JsonObject;
 
 public class EventbusVerticleTest extends AbstractIsolatedRestVerticleTest {
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.eventbusVerticle());
-		return list;
-	}
-
 	@Test
 	public void testExternalEventbusMessage() throws Exception {
 
