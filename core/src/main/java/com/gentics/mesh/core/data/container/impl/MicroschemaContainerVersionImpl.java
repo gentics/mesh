@@ -5,14 +5,17 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -130,5 +133,10 @@ public class MicroschemaContainerVersionImpl
 	public String getAPIPath(InternalActionContext ac) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public Release getRelease() {
+		return in(HAS_MICROSCHEMA_VERSION).nextOrDefaultExplicit(ReleaseImpl.class, null);
 	}
 }

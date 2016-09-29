@@ -203,7 +203,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			}
 
 			setEditor(ac.getUser());
-			setLastEditedTimestamp(System.currentTimeMillis());
+			setLastEditedTimestamp();
 			setName(requestModel.getFields().getName());
 		}
 		addIndexBatchEntry(batch, STORE_ACTION);

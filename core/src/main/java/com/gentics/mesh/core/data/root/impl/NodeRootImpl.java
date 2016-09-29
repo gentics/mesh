@@ -129,7 +129,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		project.getNodeRoot().addNode(node);
 		node.setProject(project);
 		node.setCreator(creator);
-		node.setCreationTimestamp(System.currentTimeMillis());
+		node.setCreationTimestamp();
 
 		addNode(node);
 		return node;

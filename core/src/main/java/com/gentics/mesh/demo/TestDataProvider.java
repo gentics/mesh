@@ -281,18 +281,18 @@ public class TestDataProvider {
 		user.setEmailAddress(email);
 
 		user.setCreator(user);
-		user.setCreationTimestamp(System.currentTimeMillis());
+		user.setCreationTimestamp();
 		user.setEditor(user);
-		user.setLastEditedTimestamp(System.currentTimeMillis());
+		user.setLastEditedTimestamp();
 		users.put(username, user);
 
 		String groupName = username + "_group";
 		Group group = root.getGroupRoot().create(groupName, user);
 		group.addUser(user);
 		group.setCreator(user);
-		group.setCreationTimestamp(System.currentTimeMillis());
+		group.setCreationTimestamp();
 		group.setEditor(user);
-		group.setLastEditedTimestamp(System.currentTimeMillis());
+		group.setLastEditedTimestamp();
 		groups.put(groupName, group);
 
 		String roleName = username + "_role";

@@ -12,9 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
-import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
@@ -277,11 +275,6 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	public String toString() {
 		return "type:" + getType() + "_name:" + getName() + "_uuid:" + getUuid() + "_version:" + getVersion();
-	}
-
-	@Override
-	public Release getRelease() {
-		return in(HAS_VERSION).has(ReleaseImpl.class).nextOrDefaultExplicit(ReleaseImpl.class, null);
 	}
 
 }

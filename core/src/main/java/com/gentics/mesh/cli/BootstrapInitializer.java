@@ -363,9 +363,9 @@ public class BootstrapInitializer {
 				adminUser = userRoot.create("admin", adminUser);
 
 				adminUser.setCreator(adminUser);
-				adminUser.setCreationTimestamp(System.currentTimeMillis());
+				adminUser.setCreationTimestamp();
 				adminUser.setEditor(adminUser);
-				adminUser.setLastEditedTimestamp(System.currentTimeMillis());
+				adminUser.setLastEditedTimestamp();
 
 				log.debug("Enter admin password:");
 				// Scanner scanIn = new Scanner(System.in);

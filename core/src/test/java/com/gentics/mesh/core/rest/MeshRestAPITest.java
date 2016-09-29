@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.node.NodeVerticleTest;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.vertx.core.AbstractVerticle;
@@ -18,8 +17,6 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class MeshRestAPITest extends AbstractIsolatedRestVerticleTest {
 

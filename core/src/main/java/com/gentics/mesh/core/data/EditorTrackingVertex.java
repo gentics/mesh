@@ -48,4 +48,11 @@ public interface EditorTrackingVertex extends MeshVertex {
 		getImpl().setProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY, timestamp);
 	}
 
+	/**
+	 * Update the last edit timestamp using the current time.
+	 */
+	default void setLastEditedTimestamp() {
+		setLastEditedTimestamp(System.currentTimeMillis());
+	}
+
 }

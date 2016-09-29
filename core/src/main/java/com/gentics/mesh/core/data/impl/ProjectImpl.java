@@ -255,7 +255,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 				throw error(BAD_REQUEST, "Error while adding new router for project name {" + newName + "}", e);
 			}
 			setEditor(ac.getUser());
-			setLastEditedTimestamp(System.currentTimeMillis());
+			setLastEditedTimestamp();
 			addIndexBatchEntry(batch, STORE_ACTION);
 		}
 		return this;

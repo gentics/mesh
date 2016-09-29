@@ -75,9 +75,9 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 		if (creator != null) {
 			user.setCreator(creator);
-			user.setCreationTimestamp(System.currentTimeMillis());
+			user.setCreationTimestamp();
 			user.setEditor(creator);
-			user.setLastEditedTimestamp(System.currentTimeMillis());
+			user.setLastEditedTimestamp();
 		}
 		addItem(user);
 		return user;

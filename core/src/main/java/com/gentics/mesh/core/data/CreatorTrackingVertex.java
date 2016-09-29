@@ -49,6 +49,13 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	}
 
 	/**
+	 * Set the creation timestamp using the current time.
+	 */
+	default void setCreationTimestamp() {
+		setCreationTimestamp(System.currentTimeMillis());
+	}
+
+	/**
 	 * Set the editor and creator references and update the timestamps for created and edited fields.
 	 * 
 	 * @param creator

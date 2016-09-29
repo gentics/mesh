@@ -141,6 +141,10 @@ public class GraphRelationships {
 	public static final String HAS_CHANGE = "HAS_CHANGE";
 	public static final String HAS_LATEST_VERSION = "HAS_LATEST_VERSION";
 
+	// Releases
+	public static final String HAS_SCHEMA_VERSION = "HAS_SCHEMA_VERSION";
+	public static final String HAS_MICROSCHEMA_VERSION = "HAS_MICROSCHEMA_VERSION";
+
 	// Changelog system
 	private static final String HAS_CHANGELOG_ROOT = "HAS_CHANGELOG_ROOT";
 

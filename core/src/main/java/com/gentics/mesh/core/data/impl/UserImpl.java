@@ -414,9 +414,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
 		}
 
-		// TODO use fillRest method instead
 		setEditor(ac.getUser());
-		setLastEditedTimestamp(System.currentTimeMillis());
+		setLastEditedTimestamp();
+
 		if (requestModel.getNodeReference() != null) {
 			NodeReference reference = requestModel.getNodeReference();
 			// TODO also handle full node response inside node reference field
