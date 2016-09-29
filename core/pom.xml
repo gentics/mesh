@@ -315,6 +315,7 @@
 					<!-- <argLine>${surefireArgLine}</argLine> -->
 					<skip>${skip.unit.tests}</skip>
 					<forkCount>${surefire.forkcount}</forkCount>
+					<argLine>-Xmx512m</argLine>
 					<reuseForks>false</reuseForks>
 					<!-- Don't execute more than one test per jvm fork! -->
 					<threadCount>1</threadCount>
