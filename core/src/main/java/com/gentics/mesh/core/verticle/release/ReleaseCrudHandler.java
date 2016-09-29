@@ -136,7 +136,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 					SchemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
 					if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
-						throw error(BAD_REQUEST, "error_release_downgrade_schema_version", version.getName(),
+						throw error(BAD_REQUEST, "release_error_downgrade_schema_version", version.getName(),
 								Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
 					}
 					release.assignSchemaVersion(version);
@@ -198,7 +198,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 					MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
 					if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
-						throw error(BAD_REQUEST, "error_release_downgrade_microschema_version", version.getName(),
+						throw error(BAD_REQUEST, "release_error_downgrade_microschema_version", version.getName(),
 								Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
 					}
 					release.assignMicroschemaVersion(version);

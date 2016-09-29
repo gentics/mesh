@@ -131,7 +131,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(5, 100);
 		} else {
-			factory = new OrientGraphFactory("plocal:" + options.getDirectory(), "admin", "").setupPool(5, 100);
+			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
 		if (options != null && options.getStartServer()) {
 			startOrientServer();

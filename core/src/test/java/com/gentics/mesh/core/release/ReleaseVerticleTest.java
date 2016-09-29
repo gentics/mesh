@@ -575,7 +575,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			// try to downgrade schema version
 			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
-					new SchemaReference().setUuid(schema.getUuid()).setVersion(1)), BAD_REQUEST, "error_release_downgrade_schema_version",
+					new SchemaReference().setUuid(schema.getUuid()).setVersion(1)), BAD_REQUEST, "release_error_downgrade_schema_version",
 					"schemaname", "2", "1");
 		}
 	}
@@ -767,7 +767,7 @@ public class ReleaseVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			// try to downgrade microschema version
 			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new MicroschemaReference().setUuid(microschema.getUuid()).setVersion(1)), BAD_REQUEST,
-					"error_release_downgrade_microschema_version", "microschemaname", "2", "1");
+					"release_error_downgrade_microschema_version", "microschemaname", "2", "1");
 		}
 	}
 

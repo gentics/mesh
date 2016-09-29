@@ -59,6 +59,8 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			migrateNode(baseNode, releaseUuid);
 		}
 
+		// Migrate tags
+		migrateTags(meshRoot);
 		// Strip all package paths from all ferma type properties
 		for (Vertex vertex : getGraph().getVertices()) {
 			migrateType(vertex);
@@ -72,6 +74,26 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			edge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
 		}
 
+	}
+
+	/**
+	 * Tags no longer have a TagGraphFieldContainerImpl. The value is now stored directly in the tag vertex.
+	 * 
+	 * @param meshRoot
+	 */
+	private void migrateTags(Vertex meshRoot) {
+		Vertex tagRoot = meshRoot.getVertices(Direction.OUT, "HAS_TAG_ROOT").iterator().next();
+		for (Vertex tag : tagRoot.getVertices(Direction.OUT, "HAS_TAG")) {
+			Iterator<Vertex> tagFieldIterator = tag.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER").iterator();
+			Vertex tagFieldContainer = tagFieldIterator.next();
+			if (tagFieldIterator.hasNext()) {
+				fail("The tag with uuid {" + tag.getProperty("uuid") + "} got more then one field container.");
+			}
+			// Load the tag value from the field container and store it directly into the tag. Remove the now no longer needed field container from the graph.
+			String tagValue = tagFieldContainer.getProperty("name");
+			tag.setProperty("tagValue", tagValue);
+			tagFieldContainer.remove();
+		}
 	}
 
 	/**
@@ -166,10 +188,10 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 			// Migrate editor
 			Iterator<Edge> editorIterator = node.getEdges(Direction.OUT, "HAS_EDITOR").iterator();
-			if(!editorIterator.hasNext()) {
+			if (!editorIterator.hasNext()) {
 				fail("The node {" + node.getProperty("uuid") + "} has no editor edge.");
 			}
-			Edge editorEdge = 		editorIterator.next();
+			Edge editorEdge = editorIterator.next();
 			fieldContainer.addEdge("HAS_EDITOR", editorEdge.getVertex(Direction.IN));
 			editorEdge.remove();
 

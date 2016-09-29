@@ -364,7 +364,7 @@ public class NodeVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			request.setParentNodeUuid(uuid);
 
 			call(() -> getClient().createNode(project.getName(), request, new VersioningParameters().setRelease("bogusrelease")), BAD_REQUEST,
-					"error_release_not_found", "bogusrelease");
+					"release_error_not_found", "bogusrelease");
 		}
 	}
 

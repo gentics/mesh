@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -71,9 +72,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
 			int nSchemasBefore = root.findAll().size();
-			Schema schema = new SchemaModel();
-			schema.setName("test123");
-			schema.setDisplayField("name");
+			Schema schema = FieldUtil.createMinimalValidSchema();
 			assertNotNull(root.create(schema, user()));
 			int nSchemasAfter = root.findAll().size();
 			assertEquals(nSchemasBefore + 1, nSchemasAfter);
@@ -160,8 +159,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			Schema schema = new SchemaModel();
-			schema.setDisplayField("name");
+			Schema schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
@@ -175,8 +173,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testCRUDPermissions() throws MeshSchemaException {
 		try (NoTx noTx = db.noTx()) {
-			Schema schema = new SchemaModel();
-			schema.setDisplayField("name");
+			Schema schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
 			getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), GraphPermission.CREATE_PERM, newContainer);
@@ -240,8 +237,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	public void testReadPermission() throws MeshSchemaException {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer newContainer;
-			Schema schema = new SchemaModel();
-			schema.setDisplayField("name");
+			Schema schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			testPermission(GraphPermission.READ_PERM, newContainer);
 		}
@@ -252,8 +248,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	public void testDeletePermission() throws MeshSchemaException {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer newContainer;
-			Schema schema = new SchemaModel();
-			schema.setDisplayField("name");
+			Schema schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			testPermission(GraphPermission.DELETE_PERM, newContainer);
 		}
@@ -264,8 +259,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	public void testUpdatePermission() throws MeshSchemaException {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer newContainer;
-			Schema schema = new SchemaModel();
-			schema.setDisplayField("name");
+			Schema schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			testPermission(GraphPermission.UPDATE_PERM, newContainer);
 		}
@@ -276,8 +270,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	public void testCreatePermission() throws MeshSchemaException {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer newContainer;
-			Schema schema = new SchemaModel();
-			schema.setDisplayField("name");
+			Schema schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			testPermission(GraphPermission.CREATE_PERM, newContainer);
 		}
