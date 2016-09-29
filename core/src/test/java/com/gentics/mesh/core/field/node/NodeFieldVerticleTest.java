@@ -21,6 +21,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.field.AbstractFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -225,22 +226,47 @@ public class NodeFieldVerticleTest extends AbstractFieldVerticleTest {
 	@Test
 	public void testReadNodeExpandAll() throws IOException {
 		try (NoTx noTx = db.noTx()) {
-			Node newsNode = folder("news");
+			Node referencedNode = folder("news");
 			Node node = folder("2015");
 
 			// Create test field
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-			container.createNode(FIELD_NAME, newsNode);
+			container.createNode(FIELD_NAME, referencedNode);
 
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
 					new VersioningParameters().draft()));
 
 			// Check expanded node field
 			NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertNotNull("The ", deserializedExpandedNodeField);
+			assertNotNull("The referenced field should not be null", deserializedExpandedNodeField);
 			NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
-			assertEquals(newsNode.getUuid(), expandedField.getUuid());
+			assertEquals(referencedNode.getUuid(), expandedField.getUuid());
 			assertNotNull(expandedField.getCreator());
+
+		}
+	}
+
+	@Test
+	public void testReadNodeExpandAllNoPerm() throws IOException {
+		try (NoTx noTx = db.noTx()) {
+			Node referencedNode = folder("news");
+			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
+
+			Node node = folder("2015");
+
+			// Create test field
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			container.createNode(FIELD_NAME, referencedNode);
+
+			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
+					new VersioningParameters().draft()));
+
+			// Assert that the field has not been expanded
+			NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+			assertNotNull("The referenced field should not be null", deserializedExpandedNodeField);
+			NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
+			assertEquals(referencedNode.getUuid(), expandedField.getUuid());
+			assertNull("The creator should be null since the field should not have been expanded.",expandedField.getCreator());
 
 		}
 	}

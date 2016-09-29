@@ -3,10 +3,12 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 import java.util.Set;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.tinkerpop.blueprints.Graph;
 
 /**
  * The User Domain Model interface.
@@ -257,5 +259,15 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	boolean hasAdminRole();
+
+	/**
+	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
+	 * {@link GraphPermission#READ_PERM} or {@link GraphPermission#READ_PUBLISHED_PERM}.
+	 * 
+	 * @param ac
+	 * @param node
+	 * @return
+	 */
+	boolean canReadNode(InternalActionContext ac, Node node);
 
 }

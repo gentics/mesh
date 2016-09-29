@@ -55,22 +55,20 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				restModel.getItems().add(item.getNode().transformToRestSync(ac, level, lTagsArray));
+				// Check whether the user is allowed to read the element
+				if (ac.getUser().canReadNode(ac, item.getNode())) {
+					restModel.getItems().add(item.getNode().transformToRestSync(ac, level, lTagsArray));
+				} else {
+					restModel.add(item.getNode().toListItem(ac, lTagsArray));
+				}
 			}
+
 			return restModel;
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
-			String releaseUuid = ac.getRelease(null).getUuid();
-			ContainerType type = ContainerType.forVersion(new VersioningParameters(ac).getVersion());
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				// Create the rest field and populate the fields
-				NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(item.getNode().getUuid());
-
-				if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-					listItem.setUrl(MeshInternal.get().webRootLinkReplacer()
-							.resolve(releaseUuid, type, item.getNode(), ac.getNodeParameters().getResolveLinks(), lTagsArray));
-				}
-				restModel.add(listItem);
+				Node node = item.getNode();
+				restModel.add(node.toListItem(ac, lTagsArray));
 			}
 			return restModel;
 

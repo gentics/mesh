@@ -79,6 +79,8 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
@@ -662,14 +664,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (editor != null) {
 				restNode.setEditor(editor.transformToReference());
 			} else {
-				// TODO throw error and log something
+				log.error("Node {" + getUuid() + "} - container {" + fieldContainer.getLanguage().getLanguageTag() + "} has no editor");
 			}
 
 			// Convert unixtime to iso-8601
 			String date = DateUtils.toISO8601(fieldContainer.getLastEditedTimestamp(), 0);
 			restNode.setEdited(date);
 
-			// Fields
+			// Iterate over all fields and transform them to rest
 			for (FieldSchema fieldEntry : schema.getFields()) {
 				// boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
 				Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
@@ -951,6 +953,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		nodeReference.setDisplayName(getDisplayName(ac));
 		nodeReference.setSchema(getSchemaContainer().transformToReference());
 		return nodeReference;
+	}
+
+	@Override
+	public NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags) {
+		// Create the rest field and populate the fields
+		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(getUuid());
+		String releaseUuid = ac.getRelease(null).getUuid();
+		ContainerType type = ContainerType.forVersion(new VersioningParameters(ac).getVersion());
+		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
+			listItem.setUrl(MeshInternal.get().webRootLinkReplacer().resolve(releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(),
+					languageTags));
+		}
+		return listItem;
 	}
 
 	@Override

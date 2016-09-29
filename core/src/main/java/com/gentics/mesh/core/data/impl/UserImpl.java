@@ -27,6 +27,7 @@ import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
@@ -477,6 +478,16 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/users/" + getUuid();
+	}
+
+	@Override
+	public boolean canReadNode(InternalActionContext ac, Node node) {
+		String version = ac.getVersioningParameters().getVersion();
+		if (ContainerType.forVersion(version) == ContainerType.PUBLISHED) {
+			return ac.getUser().hasPermission(node, GraphPermission.READ_PUBLISHED_PERM);
+		} else {
+			return ac.getUser().hasPermission(node, GraphPermission.READ_PERM);
+		}
 	}
 
 }

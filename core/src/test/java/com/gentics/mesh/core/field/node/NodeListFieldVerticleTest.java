@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.field.AbstractListFieldVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -233,6 +234,51 @@ public class NodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
 			NodeFieldList deserializedListField = response.getFields().getNodeFieldList(FIELD_NAME);
 			assertNotNull(deserializedListField);
 			assertEquals(1, deserializedListField.getItems().size());
+		}
+	}
+
+	@Test
+	public void testReadExpandedListWithNoPermOnItem() {
+		try (NoTx noTx = db.noTx()) {
+			Node referencedNode = folder("news");
+			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
+			Node node = folder("2015");
+
+			// Create node list
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
+			nodeList.createNode("1", referencedNode);
+
+			// 1. Read node with collapsed fields and check that the collapsed node list item can be read
+			NodeResponse responseCollapsed = readNode(node);
+			NodeFieldList deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
+			assertNotNull(deserializedNodeListField);
+			assertEquals("The newsNode should be the first item in the list.", referencedNode.getUuid(),
+					deserializedNodeListField.getItems().get(0).getUuid());
+
+			// Check whether it is possible to read the field in an expanded form.
+			NodeResponse nodeListItem = (NodeResponse) deserializedNodeListField.getItems().get(0);
+			assertNotNull(nodeListItem);
+
+			// 2. Read node with expanded fields
+			NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
+
+			// Check collapsed node field
+			deserializedNodeListField = responseExpanded.getFields().getNodeFieldList(FIELD_NAME);
+			assertNotNull(deserializedNodeListField);
+			assertEquals(referencedNode.getUuid(), deserializedNodeListField.getItems().get(0).getUuid());
+
+			// Assert that the node was not expanded
+			NodeFieldListItem deserializedExpandedItem = deserializedNodeListField.getItems().get(0);
+			if (deserializedExpandedItem instanceof NodeResponse) {
+				NodeResponse expandedField = (NodeResponse) deserializedExpandedItem;
+				assertNotNull(expandedField);
+				assertEquals(referencedNode.getUuid(), expandedField.getUuid());
+				assertNull("The creator should be null since the node should not have been expanded due to missing permissions.",
+						expandedField.getCreator());
+			} else {
+				fail("The returned item should be a NodeResponse object");
+			}
 		}
 	}
 

@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.path.Path;
@@ -542,5 +543,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	List<Completable> publish(InternalActionContext ac, Release release);
+
+	/**
+	 * Transform the node into a node list item.
+	 * 
+	 * @param ac
+	 * @param languageTags
+	 * @return
+	 */
+	NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags);
 
 }

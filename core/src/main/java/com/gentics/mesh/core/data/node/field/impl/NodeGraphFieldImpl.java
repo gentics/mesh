@@ -43,11 +43,12 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		// if (getNode() != null) {
 		NodeParameters parameters = ac.getNodeParameters();
 		boolean expandField = ac.getNodeParameters().getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
-		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
-			return getNode().transformToRestSync(ac, level, languageTags.toArray(new String[languageTags.size()]));
+		Node node = getNode();
+		boolean canReadNode = ac.getUser().canReadNode(ac, node);
+		if (canReadNode && expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
+			return node.transformToRestSync(ac, level, languageTags.toArray(new String[languageTags.size()]));
 		} else {
 			NodeFieldImpl nodeField = new NodeFieldImpl();
-			Node node = getNode();
 			nodeField.setUuid(node.getUuid());
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 				nodeField.setPath(MeshInternal.get().webRootLinkReplacer().resolve(ac.getRelease(null).getUuid(),
