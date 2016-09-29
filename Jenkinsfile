@@ -5,7 +5,9 @@ properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
 [$class: 'BooleanParameterDefinition', name: 'runIntegrationTests', defaultValue: false],
 [$class: 'BooleanParameterDefinition', name: 'runReleaseBuild', defaultValue: false],
 [$class: 'BooleanParameterDefinition', name: 'runDeploy', defaultValue: false]
-]]])
+]],
+ pipelineTriggers([[$class: 'GitHubPushTrigger'], pollSCM('H/5 * * * *')])
+])
 
 node('dockerRoot') {
 
