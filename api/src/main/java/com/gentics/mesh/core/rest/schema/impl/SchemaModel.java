@@ -64,21 +64,15 @@ public class SchemaModel extends AbstractFieldSchemaContainer implements Schema 
 		super.validate();
 		// TODO make sure that the display name field only maps to string fields since NodeImpl can currently only deal with string field values for
 		// displayNames
-		if (getFields().isEmpty()) {
-			throw error(BAD_REQUEST, "schema_error_no_fields");
-		}
+		if (!StringUtils.isEmpty(getDisplayField())) {
+			if (!getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getDisplayField()))) {
+				throw error(BAD_REQUEST, "schema_error_displayfield_invalid", getDisplayField());
+			}
 
-		if (StringUtils.isEmpty(getDisplayField())) {
-			throw error(BAD_REQUEST, "schema_error_displayfield_not_set");
-		}
-
-		if (!getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getDisplayField()))) {
-			throw error(BAD_REQUEST, "schema_error_displayfield_invalid", getDisplayField());
-		}
-
-		// TODO maybe we should also allow other field types
-		if (!(getField(getDisplayField()) instanceof StringFieldSchema)) {
-			throw error(BAD_REQUEST, "schema_error_displayfield_type_invalid", getDisplayField());
+			// TODO maybe we should also allow other field types
+			if (!(getField(getDisplayField()) instanceof StringFieldSchema)) {
+				throw error(BAD_REQUEST, "schema_error_displayfield_type_invalid", getDisplayField());
+			}
 		}
 
 		FieldSchema segmentFieldSchema = getField(getSegmentField());

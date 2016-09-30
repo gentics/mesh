@@ -61,8 +61,6 @@ public final class FieldUtil {
 	public static Schema createMinimalValidSchema() {
 		Schema schema = new SchemaModel();
 		schema.setName("test");
-		schema.setDisplayField("displayFieldName");
-		schema.addField(createStringFieldSchema("displayFieldName"));
 		schema.validate();
 		return schema;
 	}
