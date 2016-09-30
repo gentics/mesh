@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
@@ -15,12 +14,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.util.CompareUtils;
 
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
@@ -55,12 +50,11 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				// Check whether the user is allowed to read the element
-				if (ac.getUser().canReadNode(ac, item.getNode())) {
-					restModel.getItems().add(item.getNode().transformToRestSync(ac, level, lTagsArray));
-				} else {
-					restModel.add(item.getNode().toListItem(ac, lTagsArray));
+				Node node = item.getNode();
+				if (!ac.getUser().canReadNode(ac, node)) {
+					continue;
 				}
+				restModel.getItems().add(node.transformToRestSync(ac, level, lTagsArray));
 			}
 
 			return restModel;
@@ -68,6 +62,9 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				Node node = item.getNode();
+				if (ac.getUser().canReadNode(ac, node)) {
+					continue;
+				}
 				restModel.add(node.toListItem(ac, lTagsArray));
 			}
 			return restModel;
