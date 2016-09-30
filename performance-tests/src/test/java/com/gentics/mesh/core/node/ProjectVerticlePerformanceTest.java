@@ -2,9 +2,6 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -12,8 +9,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
-
-import io.vertx.core.AbstractVerticle;
 
 public class ProjectVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
 

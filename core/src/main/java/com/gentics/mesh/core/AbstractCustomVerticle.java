@@ -7,7 +7,7 @@ import io.vertx.ext.web.Router;
 /**
  * Abstract implementation for custom verticles (e.g.: Demo Verticle, AdminUI Verticle)
  */
-public abstract class AbstractCustomVerticle extends AbstractEndpoint {
+public abstract class AbstractCustomVerticle extends AbstractWebVerticle {
 
 	protected AbstractCustomVerticle(String basePath, RouterStorage routerStorage) {
 		super(basePath, routerStorage);

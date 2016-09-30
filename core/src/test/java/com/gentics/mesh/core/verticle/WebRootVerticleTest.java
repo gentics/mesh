@@ -45,8 +45,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.URIUtils;
 
-import io.vertx.core.AbstractVerticle;
-
 public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test

@@ -4,8 +4,6 @@ import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRA
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -13,7 +11,6 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 
 public class EventbusVerticleTest extends AbstractIsolatedRestVerticleTest {

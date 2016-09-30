@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -20,7 +19,6 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.AbstractVerticle;
 
 public abstract class AbstractFieldVerticleTest extends AbstractIsolatedRestVerticleTest implements FieldVerticleTestcases {
 

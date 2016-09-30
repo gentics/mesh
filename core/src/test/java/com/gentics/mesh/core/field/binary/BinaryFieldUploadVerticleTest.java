@@ -14,9 +14,6 @@ import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -37,7 +34,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
 
 public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleTest {

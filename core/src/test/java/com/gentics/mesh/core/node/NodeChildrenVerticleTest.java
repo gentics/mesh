@@ -12,9 +12,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -32,8 +29,6 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-
-import io.vertx.core.AbstractVerticle;
 
 public class NodeChildrenVerticleTest extends AbstractIsolatedRestVerticleTest {
 

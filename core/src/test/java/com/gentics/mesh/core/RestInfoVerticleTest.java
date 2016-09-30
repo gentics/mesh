@@ -2,9 +2,6 @@ package com.gentics.mesh.core;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -12,8 +9,6 @@ import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.orientechnologies.orient.core.OConstants;
-
-import io.vertx.core.AbstractVerticle;
 
 public class RestInfoVerticleTest extends AbstractIsolatedRestVerticleTest {
 

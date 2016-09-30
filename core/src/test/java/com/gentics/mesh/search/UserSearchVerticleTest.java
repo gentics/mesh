@@ -7,9 +7,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
@@ -21,8 +18,6 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-
-import io.vertx.core.AbstractVerticle;
 
 public class UserSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 

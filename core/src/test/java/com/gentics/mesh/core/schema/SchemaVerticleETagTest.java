@@ -7,9 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -22,8 +19,6 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.util.ETag;
-
-import io.vertx.core.AbstractVerticle;
 
 public class SchemaVerticleETagTest extends AbstractETagTest {
 

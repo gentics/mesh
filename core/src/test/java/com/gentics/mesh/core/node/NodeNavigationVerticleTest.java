@@ -10,7 +10,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,8 +24,6 @@ import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-
-import io.vertx.core.AbstractVerticle;
 
 public class NodeNavigationVerticleTest extends AbstractIsolatedRestVerticleTest {
 

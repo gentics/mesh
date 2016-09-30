@@ -18,19 +18,19 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.context.MapValueResolver;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
 
 @Singleton
-public class AdminGUIVerticle extends AbstractVerticle {
+public class AdminGUIVerticle extends AbstractWebVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminGUIVerticle.class);
 
@@ -42,11 +42,6 @@ public class AdminGUIVerticle extends AbstractVerticle {
 	@Inject
 	public AdminGUIVerticle(RouterStorage routerStorage) {
 		super("mesh-ui", routerStorage);
-	}
-
-	@Override
-	public String getDescription() {
-		return "Provides endpoints which provides the mesh admin ui";
 	}
 
 	private static Properties readBuildProperties() {

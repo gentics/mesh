@@ -11,8 +11,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map.Entry;
 
 import org.junit.Test;
@@ -33,8 +31,6 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-
-import io.vertx.core.AbstractVerticle;
 
 public class NodePublishVerticleTest extends AbstractIsolatedRestVerticleTest {
 

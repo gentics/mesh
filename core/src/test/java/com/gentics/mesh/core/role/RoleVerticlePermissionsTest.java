@@ -8,9 +8,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
@@ -22,8 +19,6 @@ import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-
-import io.vertx.core.AbstractVerticle;
 
 public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTest {
 

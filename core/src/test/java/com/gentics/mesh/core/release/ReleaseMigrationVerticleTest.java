@@ -32,7 +32,6 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;

@@ -8,7 +8,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.tinkerpop.blueprints.Graph;
 
 /**
  * The User Domain Model interface.

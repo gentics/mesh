@@ -65,7 +65,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public List<? extends User> getUsers() {
-		return in(HAS_USER).has(UserImpl.class).toListExplicit(UserImpl.class);
+		return in(HAS_USER).toListExplicit(UserImpl.class);
 	}
 
 	public void addUser(User user) {
@@ -88,7 +88,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public List<? extends Role> getRoles() {
-		return in(HAS_ROLE).has(RoleImpl.class).toListExplicit(RoleImpl.class);
+		return in(HAS_ROLE).toListExplicit(RoleImpl.class);
 	}
 
 	public void addRole(Role role) {

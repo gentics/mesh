@@ -13,8 +13,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -33,7 +31,6 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
 
 public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTest {

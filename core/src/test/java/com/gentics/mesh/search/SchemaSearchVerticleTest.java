@@ -5,8 +5,6 @@ import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
@@ -23,7 +21,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 
 public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {

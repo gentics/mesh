@@ -8,8 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -21,8 +19,6 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
-
-import io.vertx.core.AbstractVerticle;
 
 public class SearchVerticleTest extends AbstractSearchVerticleTest {
 

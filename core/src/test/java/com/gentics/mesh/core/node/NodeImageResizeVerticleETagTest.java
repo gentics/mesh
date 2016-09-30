@@ -5,9 +5,6 @@ import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
@@ -17,8 +14,6 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.util.ETag;
-
-import io.vertx.core.AbstractVerticle;
 
 public class NodeImageResizeVerticleETagTest extends AbstractETagTest {
 

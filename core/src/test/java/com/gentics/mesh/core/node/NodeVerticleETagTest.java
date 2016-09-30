@@ -9,9 +9,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -29,8 +26,6 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.util.ETag;
-
-import io.vertx.core.AbstractVerticle;
 
 public class NodeVerticleETagTest extends AbstractETagTest {
 

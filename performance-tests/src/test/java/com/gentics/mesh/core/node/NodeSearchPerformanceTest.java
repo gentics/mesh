@@ -5,9 +5,6 @@ import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -22,7 +19,6 @@ import com.gentics.mesh.search.AbstractSearchVerticleTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 

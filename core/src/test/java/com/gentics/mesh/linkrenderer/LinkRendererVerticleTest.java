@@ -2,10 +2,7 @@ package com.gentics.mesh.linkrenderer;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
@@ -15,7 +12,6 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 
 /**

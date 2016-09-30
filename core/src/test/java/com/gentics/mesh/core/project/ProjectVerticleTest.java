@@ -49,8 +49,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
-import io.vertx.core.AbstractVerticle;
-
 public class ProjectVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	// Create Tests

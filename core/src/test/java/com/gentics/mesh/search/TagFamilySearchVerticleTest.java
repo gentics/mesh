@@ -5,17 +5,12 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
-
-import io.vertx.core.AbstractVerticle;
 
 public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 

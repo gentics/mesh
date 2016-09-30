@@ -4,9 +4,6 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
@@ -16,8 +13,6 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.util.MeshAssert;
-
-import io.vertx.core.AbstractVerticle;
 
 public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 

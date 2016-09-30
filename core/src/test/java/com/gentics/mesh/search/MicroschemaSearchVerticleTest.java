@@ -1,13 +1,8 @@
 package com.gentics.mesh.search;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 

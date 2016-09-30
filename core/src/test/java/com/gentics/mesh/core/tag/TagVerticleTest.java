@@ -45,8 +45,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
 
-import io.vertx.core.AbstractVerticle;
-
 public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 	@Test

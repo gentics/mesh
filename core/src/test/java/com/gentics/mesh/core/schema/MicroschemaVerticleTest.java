@@ -18,9 +18,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 
@@ -42,8 +40,6 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicIsolatedCrudVerticleTest;
-
-import io.vertx.core.AbstractVerticle;
 
 public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 

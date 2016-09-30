@@ -14,8 +14,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -33,8 +31,6 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.performance.TestUtils;
-
-import io.vertx.core.AbstractVerticle;
 
 public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 

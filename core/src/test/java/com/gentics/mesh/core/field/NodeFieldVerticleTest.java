@@ -6,9 +6,6 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
@@ -25,8 +22,6 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
-
-import io.vertx.core.AbstractVerticle;
 
 public class NodeFieldVerticleTest extends AbstractIsolatedRestVerticleTest {
 
