@@ -1,6 +1,9 @@
 package com.gentics.mesh.context.impl;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -118,6 +121,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	@Override
 	public MeshAuthUser getUser() {
+		// Create mocked user which has any permission
 		MeshAuthUser user = new MeshAuthUser() {
 
 			@Override
@@ -131,206 +135,171 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public UserReference transformToReference() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public String getETag(InternalActionContext ac) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public String getAPIPath(InternalActionContext ac) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public String getType() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void setUuid(String uuid) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void reload() {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public String getUuid() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public Element getElement() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public Vertex getVertex() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void delete(SearchQueueBatch batch) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 					Set<GraphPermission> permissionsToRevoke) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public User update(InternalActionContext ac, SearchQueueBatch batch) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void setUsername(String string) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void setReferencedNode(Node node) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void setPasswordHash(String hash) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void setPassword(String password) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void setLastname(String lastname) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void setFirstname(String firstname) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void setEmailAddress(String email) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public boolean isEnabled() {
-				// TODO Auto-generated method stub
-				return false;
+				return true;
 			}
 
 			@Override
 			public void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
-				// TODO Auto-generated method stub
-				return false;
+				return true;
 			}
 
 			@Override
 			public boolean hasPermission(MeshVertex element, GraphPermission permission) {
-				// TODO Auto-generated method stub
-				return false;
+				return true;
 			}
 
 			@Override
 			public boolean hasAdminRole() {
-				// TODO Auto-generated method stub
 				return false;
 			}
 
 			@Override
 			public String getUsername() {
-				// TODO Auto-generated method stub
-				return null;
+				return "node_migration";
 			}
 
 			@Override
 			public List<? extends Role> getRolesViaShortcut() {
-				// TODO Auto-generated method stub
-				return null;
+				return Collections.emptyList();
 			}
 
 			@Override
 			public List<? extends Role> getRoles() {
-				// TODO Auto-generated method stub
-				return null;
+				return Collections.emptyList();
 			}
 
 			@Override
 			public Node getReferencedNode() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public Set<GraphPermission> getPermissions(MeshVertex vertex) {
-				// TODO Auto-generated method stub
-				return null;
+				return new HashSet<GraphPermission>(Arrays.asList(GraphPermission.values()));
 			}
 
 			@Override
 			public String[] getPermissionNames(MeshVertex vertex) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public String getPasswordHash() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
@@ -342,38 +311,29 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public List<? extends Group> getGroups() {
-				// TODO Auto-generated method stub
-				return null;
+				return Collections.emptyList();
 			}
 
 			@Override
 			public String getFirstname() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public String getEmailAddress() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void enable() {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public void disable() {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public void deactivate() {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
@@ -383,20 +343,14 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public void addGroup(Group group) {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
@@ -407,37 +361,29 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public io.vertx.ext.auth.User clearCache() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public JsonObject principal() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void setAuthProvider(AuthProvider authProvider) {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public void writeToBuffer(Buffer buffer) {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public int readFromBuffer(int pos, Buffer buffer) {
-				// TODO Auto-generated method stub
 				return 0;
 			}
 
 			@Override
 			public MeshAuthUserImpl getImpl() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 		};
