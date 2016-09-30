@@ -46,7 +46,6 @@ import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
-import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -231,7 +230,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 	// Tag
 	protected TagResponse createTag(String projectName, String tagFamilyUuid, String tagName) {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
-		tagCreateRequest.getFields().setName(tagName);
+		tagCreateRequest.setName(tagName);
 		return call(() -> getClient().createTag(projectName, tagFamilyUuid, tagCreateRequest));
 	}
 
@@ -241,7 +240,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	protected TagResponse updateTag(String projectName, String tagFamilyUuid, String uuid, String newTagName) {
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
-		tagUpdateRequest.setFields(new TagFieldContainer().setName(newTagName));
+		tagUpdateRequest.setName(newTagName);
 		return call(() -> getClient().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest));
 	}
 

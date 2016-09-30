@@ -34,7 +34,6 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
-import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
@@ -211,17 +210,17 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			// 1. Read the current tag
 			assertNotNull("The name of the tag should be loaded.", tagName);
-			String restName = readTagFut.result().getFields().getName();
+			String restName = readTagFut.result().getName();
 			assertNotNull("The tag name must be set.", restName);
 			assertEquals(tagName, restName);
 
 			// 2. Update the tag
 			TagUpdateRequest request = new TagUpdateRequest();
-			request.getFields().setName("new Name");
+			request.setName("new Name");
 			TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 			final String newName = "new Name";
-			tagUpdateRequest.getFields().setName(newName);
-			assertEquals(newName, tagUpdateRequest.getFields().getName());
+			tagUpdateRequest.setName(newName);
+			assertEquals(newName, tagUpdateRequest.getName());
 
 			// 3. Send the request to the server
 			MeshResponse<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest)
@@ -236,7 +235,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(reloadedTagFut);
 			assertSuccess(reloadedTagFut);
 			TagResponse reloadedTag = reloadedTagFut.result();
-			assertEquals(request.getFields().getName(), reloadedTag.getFields().getName());
+			assertEquals(request.getName(), reloadedTag.getName());
 
 			assertThat(reloadedTag).matches(tag);
 		}
@@ -253,10 +252,10 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			final String newName = "green";
 			TagUpdateRequest request = new TagUpdateRequest();
-			request.getFields().setName(newName);
+			request.setName(newName);
 			TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
-			tagUpdateRequest.getFields().setName(newName);
-			assertEquals(newName, tagUpdateRequest.getFields().getName());
+			tagUpdateRequest.setName(newName);
+			assertEquals(newName, tagUpdateRequest.getName());
 
 			MeshResponse<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest).invoke();
 			latchFor(updatedTagFut);
@@ -292,7 +291,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			// Create an tag update request
 			TagUpdateRequest request = new TagUpdateRequest();
-			request.getFields().setName("new Name");
+			request.setName("new Name");
 
 			MeshResponse<TagResponse> tagUpdateFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request).invoke();
 			latchFor(tagUpdateFut);
@@ -303,7 +302,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			latchFor(tagReloadFut);
 			assertTrue(tagReloadFut.succeeded());
 			TagResponse loadedTag = tagReloadFut.result();
-			assertEquals(tagName, loadedTag.getFields().getName());
+			assertEquals(tagName, loadedTag.getName());
 		}
 	}
 
@@ -353,7 +352,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			TagFamily tagFamily = tagFamily("colors");
 
 			TagCreateRequest tagCreateRequest = new TagCreateRequest();
-			tagCreateRequest.getFields().setName("red");
+			tagCreateRequest.setName("red");
 			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 			MeshResponse<TagResponse> future = getClient().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest).invoke();
@@ -369,11 +368,11 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testCreate() {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
-		tagCreateRequest.getFields().setName("SomeName");
+		tagCreateRequest.setName("SomeName");
 		String parentTagFamilyUuid = db.noTx(() -> tagFamily("colors").getUuid());
 
 		TagResponse response = call(() -> getClient().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));
-		assertEquals("SomeName", response.getFields().getName());
+		assertEquals("SomeName", response.getName());
 
 		try (NoTx noTx = db.noTx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
@@ -382,14 +381,14 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 		String uuid = response.getUuid();
 		response = call(() -> getClient().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid));
-		assertEquals("SomeName", response.getFields().getName());
+		assertEquals("SomeName", response.getName());
 	}
 
 	@Test
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
-		tagCreateRequest.getFields().setName("SomeName");
+		tagCreateRequest.setName("SomeName");
 		String parentTagFamilyUuid = db.noTx(() -> tagFamily("colors").getUuid());
 
 		String tagRootUuid = db.noTx(() -> tagFamily("colors").getUuid());
@@ -406,7 +405,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 
 			TagCreateRequest tagCreateRequest = new TagCreateRequest();
 			assertNotNull("We expect that a tag with the name already exists.", tag("red"));
-			tagCreateRequest.getFields().setName("red");
+			tagCreateRequest.setName("red");
 			String tagFamilyName;
 
 			TagFamily tagFamily = tagFamilies().get("colors");
@@ -426,7 +425,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			TagUpdateRequest request = new TagUpdateRequest();
-			request.setFields(new TagFieldContainer().setName("newName"));
+			request.setName("newName");
 			String uuid = tag("red").getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
@@ -483,7 +482,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			TagCreateRequest request = new TagCreateRequest();
-			request.getFields().setName("newcolor_" + i);
+			request.setName("newcolor_" + i);
 			// request.setTagFamily(new TagFamilyReference().setName("colors"));
 			set.add(getClient().createTag(PROJECT_NAME, parentTagFamily.getUuid(), request).invoke());
 		}
@@ -512,7 +511,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testCreateReadDelete() throws Exception {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
-		tagCreateRequest.getFields().setName("SomeName");
+		tagCreateRequest.setName("SomeName");
 		TagFamily tagFamily = tagFamilies().get("colors");
 		// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
@@ -521,13 +520,13 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 			MeshResponse<TagResponse> future = getClient().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			assertEquals("SomeName", future.result().getFields().getName());
+			assertEquals("SomeName", future.result().getName());
 
 			// Read
 			future = getClient().findTagByUuid(PROJECT_NAME, tagFamily.getUuid(), future.result().getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			assertEquals("SomeName", future.result().getFields().getName());
+			assertEquals("SomeName", future.result().getName());
 
 			// Delete
 			String uuid = future.result().getUuid();
@@ -558,7 +557,7 @@ public class TagVerticleTest extends AbstractBasicIsolatedCrudVerticleTest {
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		TagUpdateRequest request = new TagUpdateRequest();
-		request.setFields(new TagFieldContainer().setName("newName"));
+		request.setName("newName");
 		try (NoTx noTx = db.noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 

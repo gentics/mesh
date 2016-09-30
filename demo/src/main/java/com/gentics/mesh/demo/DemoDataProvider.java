@@ -378,7 +378,7 @@ public class DemoDataProvider {
 			TagFamilyResponse tagFamily = getTagFamily(tagFamilyName);
 			// TODO determine project of tag family automatically or use json field to assign it
 			TagCreateRequest createRequest = new TagCreateRequest();
-			createRequest.getFields().setName(name);
+			createRequest.setName(name);
 			TagResponse result = call(() -> client.createTag(PROJECT_NAME, tagFamily.getUuid(), createRequest));
 			tags.put(name, result);
 		}

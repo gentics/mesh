@@ -99,7 +99,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			tagFamilyReference.setUuid(tagFamily.getUuid());
 			restTag.setTagFamily(tagFamilyReference);
 		}
-		restTag.getFields().setName(getName());
+		restTag.setName(getName());
 
 		fillCommonRestFields(ac, restTag);
 		setRolePermissions(ac, restTag);
@@ -189,7 +189,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	@Override
 	public Tag update(InternalActionContext ac, SearchQueueBatch batch) {
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
-		String newTagName = requestModel.getFields().getName();
+		String newTagName = requestModel.getName();
 		if (isEmpty(newTagName)) {
 			throw error(BAD_REQUEST, "tag_name_not_set");
 		} else {
@@ -204,7 +204,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
-			setName(requestModel.getFields().getName());
+			setName(requestModel.getName());
 		}
 		addIndexBatchEntry(batch, STORE_ACTION);
 		return this;
