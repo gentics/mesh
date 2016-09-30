@@ -40,8 +40,8 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public RoleReference createEmptyReferenceModel() {
-		return new RoleReference();
+	public RoleReference transformToReference() {
+		return new RoleReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override

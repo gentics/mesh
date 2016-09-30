@@ -75,8 +75,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public ProjectReference createEmptyReferenceModel() {
-		return new ProjectReference();
+	public ProjectReference transformToReference() {
+		return new ProjectReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override

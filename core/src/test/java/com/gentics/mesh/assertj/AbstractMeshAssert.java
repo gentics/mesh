@@ -28,12 +28,14 @@ public class AbstractMeshAssert<S extends AbstractMeshAssert<S, A>, A> extends A
 		if (node instanceof EditorTrackingVertex) {
 			EditorTrackingVertex editedNode = (EditorTrackingVertex)node;
 			assertNotNull("The editor of the graph node was not set.", editedNode.getEditor());
-			assertEquals(editedNode.getEditor().getUsername(), model.getEditor().getName());
+			assertEquals(editedNode.getEditor().getFirstname(), model.getEditor().getFirstName());
+			assertEquals(editedNode.getEditor().getLastname(), model.getEditor().getLastName());
 			assertEquals(editedNode.getEditor().getUuid(), model.getEditor().getUuid());
 		}
 		if (node instanceof CreatorTrackingVertex) {
 			CreatorTrackingVertex createdNode = (CreatorTrackingVertex)node;
-			assertEquals(createdNode.getCreator().getUsername(), model.getCreator().getName());
+			assertEquals(createdNode.getCreator().getFirstname(), model.getCreator().getFirstName());
+			assertEquals(createdNode.getCreator().getLastname(), model.getCreator().getLastName());
 			assertEquals(createdNode.getCreator().getUuid(), model.getCreator().getUuid());
 		}
 	}

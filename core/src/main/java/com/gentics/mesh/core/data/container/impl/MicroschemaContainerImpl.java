@@ -42,8 +42,8 @@ public class MicroschemaContainerImpl
 	}
 
 	@Override
-	public MicroschemaReference createEmptyReferenceModel() {
-		return new MicroschemaReference();
+	public MicroschemaReference transformToReference() {
+		return new MicroschemaReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override

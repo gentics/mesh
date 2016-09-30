@@ -89,6 +89,11 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
+	public TagReference transformToReference() {
+		return new TagReference().setName(getName()).setUuid(getUuid());
+	}
+
+	@Override
 	public TagResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		TagResponse restTag = new TagResponse();
 
@@ -232,11 +237,6 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		}
 		SearchQueueEntry entry = batch.addEntry(getTagFamily(), STORE_ACTION);
 		entry.set(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
-	}
-
-	@Override
-	public TagReference createEmptyReferenceModel() {
-		return new TagReference();
 	}
 
 	@Override

@@ -47,8 +47,9 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		database.addVertexIndex(GroupImpl.class, true, "name");
 	}
 
-	public GroupReference createEmptyReferenceModel() {
-		return new GroupReference();
+	@Override
+	public GroupReference transformToReference() {
+		return new GroupReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override
@@ -65,7 +66,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public List<? extends User> getUsers() {
-		return in(HAS_USER).has(UserImpl.class).toListExplicit(UserImpl.class);
+		return in(HAS_USER).toListExplicit(UserImpl.class);
 	}
 
 	public void addUser(User user) {

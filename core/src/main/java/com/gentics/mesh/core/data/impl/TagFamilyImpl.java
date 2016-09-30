@@ -64,8 +64,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public TagFamilyReference createEmptyReferenceModel() {
-		return new TagFamilyReference();
+	public TagFamilyReference transformToReference() {
+		return new TagFamilyReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override

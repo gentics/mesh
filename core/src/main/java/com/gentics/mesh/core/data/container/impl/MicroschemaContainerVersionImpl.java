@@ -45,11 +45,6 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public MicroschemaReference createEmptyReferenceModel() {
-		return new MicroschemaReference();
-	}
-
-	@Override
 	protected Class<? extends MicroschemaContainerVersion> getContainerVersionClass() {
 		return MicroschemaContainerVersionImpl.class;
 	}
@@ -117,7 +112,7 @@ public class MicroschemaContainerVersionImpl
 
 	@Override
 	public MicroschemaReference transformToReference() {
-		MicroschemaReference reference = createEmptyReferenceModel();
+		MicroschemaReference reference = new MicroschemaReference();
 		reference.setName(getName());
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());

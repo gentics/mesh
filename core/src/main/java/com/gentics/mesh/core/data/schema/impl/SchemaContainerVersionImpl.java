@@ -37,11 +37,6 @@ public class SchemaContainerVersionImpl extends
 		return SchemaContainer.TYPE;
 	}
 
-	@Override
-	public SchemaReference createEmptyReferenceModel() {
-		return new SchemaReference();
-	}
-
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
@@ -122,7 +117,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public SchemaReference transformToReference() {
-		SchemaReference reference = createEmptyReferenceModel();
+		SchemaReference reference = new SchemaReference();
 		reference.setName(getName());
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());
