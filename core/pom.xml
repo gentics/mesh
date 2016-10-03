@@ -44,8 +44,6 @@
 
 	<dependencies>
 		<!-- Internal dependencies -->
-		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>mesh-git</artifactId> 
-			<version>${project.version}</version> </dependency> -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-api</artifactId>
@@ -55,6 +53,13 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-rest-client</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+
+		<!-- GraphQL -->
+		<dependency>
+			<groupId>com.graphql-java</groupId>
+			<artifactId>graphql-java</artifactId>
+			<version>2.1.0</version>
 		</dependency>
 
 		<!-- Logging -->

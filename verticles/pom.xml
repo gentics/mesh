@@ -18,6 +18,7 @@
 
 	<modules>
 		<module>admin-gui</module>
+		<module>graphql</module>
 	</modules>
 
 	<dependencies>

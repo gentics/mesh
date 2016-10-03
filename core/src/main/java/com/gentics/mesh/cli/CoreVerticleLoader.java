@@ -28,6 +28,7 @@ import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphql.GraphQLVerticle;
 import com.gentics.mesh.search.ProjectSearchVerticle;
 import com.gentics.mesh.search.SearchVerticle;
 
@@ -100,6 +101,9 @@ public class CoreVerticleLoader {
 
 	@Inject
 	public AdminVerticle adminVerticle;
+
+	@Inject
+	public GraphQLVerticle graphQLVerticle;
 
 	@Inject
 	public CoreVerticleLoader() {
@@ -196,6 +200,7 @@ public class CoreVerticleLoader {
 		verticles.add(adminVerticle);
 		verticles.add(eventbusVerticle);
 		verticles.add(utilityVerticle);
+		verticles.add(graphQLVerticle);
 		return verticles;
 	}
 
