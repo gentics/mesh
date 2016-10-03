@@ -27,6 +27,7 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 	public void apply() {
 		Vertex meshRoot = MeshGraphHelper.getMeshRootVertex(getGraph());
 		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
+		Vertex admin = findAdmin();
 
 		// Iterate over all projects
 		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {
@@ -55,7 +56,8 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 			// Migrate all nodes of the project
 			Vertex baseNode = project.getVertices(Direction.OUT, "HAS_ROOT_NODE").iterator().next();
-			migrateBaseNode(baseNode);
+
+			migrateBaseNode(baseNode, admin);
 			migrateNode(baseNode, releaseUuid);
 		}
 
@@ -100,15 +102,16 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 	 * Migrate the basenode and create a new NodeGraphFieldContainer for it.
 	 * 
 	 * @param baseNode
+	 * @param admin
 	 */
-	private void migrateBaseNode(Vertex baseNode) {
+	private void migrateBaseNode(Vertex baseNode, Vertex admin) {
 
 		log.info("Migrating basenode {" + baseNode.getProperty("uuid") + "}");
 		Vertex schemaContainer = baseNode.getVertices(Direction.OUT, "HAS_SCHEMA_CONTAINER").iterator().next();
 		Vertex schemaVersion = schemaContainer.getVertices(Direction.OUT, "HAS_LATEST_VERSION").iterator().next();
-		Iterator<Edge> it = baseNode.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER").iterator();
 
-		Vertex english = getGraph().getVertices("languageTag", "en").iterator().next();
+		Vertex english = findEnglish();
+		Iterator<Edge> it = baseNode.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER").iterator();
 
 		// The base node has no field containers. Lets create the default one
 		if (!it.hasNext()) {
@@ -128,6 +131,32 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			container.addEdge("HAS_LANGUAGE", english);
 		}
 
+	}
+
+	private Vertex findAdmin() {
+		Vertex admin = null;
+		Iterator<Vertex> langIt = getMeshRootVertex().getVertices(Direction.OUT, "HAS_USER_ROOT").iterator().next()
+				.getVertices(Direction.OUT, "HAS_USER").iterator();
+		while (langIt.hasNext()) {
+			Vertex user = langIt.next();
+			if (user.getProperty("username").equals("admin")) {
+				admin = user;
+			}
+		}
+		return admin;
+	}
+
+	private Vertex findEnglish() {
+		Vertex english = null;
+		Iterator<Vertex> langIt = getMeshRootVertex().getVertices(Direction.OUT, "HAS_LANGUAGE_ROOT").iterator().next()
+				.getVertices(Direction.OUT, "HAS_LANGUAGE").iterator();
+		while (langIt.hasNext()) {
+			Vertex language = langIt.next();
+			if (language.getProperty("languageTag").equals("en")) {
+				english = language;
+			}
+		}
+		return english;
 	}
 
 	/**
@@ -187,13 +216,25 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			}
 
 			// Migrate editor
+			Vertex creator = null;
+			Iterator<Vertex> creatorIterator = node.getVertices(Direction.OUT, "HAS_CREATOR").iterator();
+			if (!creatorIterator.hasNext()) {
+				log.error("The node {" + node.getProperty("uuid") + "} has no creator. Using admin instead.");
+				creator = findAdmin();
+				node.addEdge("HAS_CREATOR", creator);
+			} else {
+				creator = creatorIterator.next();
+			}
 			Iterator<Edge> editorIterator = node.getEdges(Direction.OUT, "HAS_EDITOR").iterator();
 			if (!editorIterator.hasNext()) {
-				fail("The node {" + node.getProperty("uuid") + "} has no editor edge.");
+				log.error("Could not find editor for node {" + node.getProperty("uuid") + "}. Using creator to set editor.");
+				fieldContainer.addEdge("HAS_EDITOR", creator);
+			} else {
+				Edge editorEdge = editorIterator.next();
+				// Set the editor
+				fieldContainer.addEdge("HAS_EDITOR", editorEdge.getVertex(Direction.IN));
+				editorEdge.remove();
 			}
-			Edge editorEdge = editorIterator.next();
-			fieldContainer.addEdge("HAS_EDITOR", editorEdge.getVertex(Direction.IN));
-			editorEdge.remove();
 
 			// Migrate last edited
 			fieldContainer.setProperty("last_edited_timestamp", node.getProperty("last_edited_timestamp"));

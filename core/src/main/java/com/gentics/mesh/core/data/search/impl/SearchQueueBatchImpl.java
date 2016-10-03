@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -124,8 +125,9 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 			Completable obs = Completable.complete();
 			try (NoTx noTrx = db.noTx()) {
-				for (SearchQueueEntry entry : getEntries()) {
-					obs = obs.andThen(entry.process());
+				List<Completable> entryList = getEntries().stream().map(entry -> entry.process()).collect(Collectors.toList());
+				if (!entryList.isEmpty()) {
+					obs = Completable.concat(entryList);
 				}
 			}
 

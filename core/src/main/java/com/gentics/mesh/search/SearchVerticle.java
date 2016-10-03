@@ -78,7 +78,8 @@ public class SearchVerticle extends AbstractWebVerticle {
 	 */
 	private void addSearchEndpoints() {
 		registerHandler("users", () -> boot.get().meshRoot().getUserRoot(), UserListResponse.class, User.TYPE, userExamples.getUserListResponse());
-		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, Group.TYPE, groupExamples.getGroupListResponse());
+		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, Group.TYPE,
+				groupExamples.getGroupListResponse());
 		registerHandler("roles", () -> boot.get().meshRoot().getRoleRoot(), RoleListResponse.class, Role.TYPE, roleExamples.getRoleListResponse());
 		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, Node.TYPE, nodeExamples.getNodeListResponse());
 		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, Tag.TYPE, tagExamples.getTagListResponse());
@@ -88,8 +89,8 @@ public class SearchVerticle extends AbstractWebVerticle {
 				projectExamples.getProjectListResponse());
 		registerHandler("schemas", () -> boot.get().meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, SchemaContainer.TYPE,
 				schemaExamples.getSchemaListResponse());
-		registerHandler("microschemas", () -> boot.get().meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class, MicroschemaContainer.TYPE,
-				microschemaExamples.getMicroschemaListResponse());
+		registerHandler("microschemas", () -> boot.get().meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class,
+				MicroschemaContainer.TYPE, microschemaExamples.getMicroschemaListResponse());
 		addAdminHandlers();
 	}
 
@@ -104,6 +105,16 @@ public class SearchVerticle extends AbstractWebVerticle {
 			searchHandler.handleStatus(InternalActionContext.create(rc));
 		});
 
+		Endpoint clearBatches = createEndpoint();
+		clearBatches.path("/clearBatches");
+		clearBatches.method(GET);
+		clearBatches.produces(APPLICATION_JSON);
+		clearBatches.description("Removes the existing search queue batches from the queue.");
+		clearBatches.exampleResponse(OK, miscExamples.getMessageResponse(), "Invoked clearing of all batches.");
+		clearBatches.handler(rc -> {
+			searchHandler.handleClearBatches(InternalActionContext.create(rc));
+		});
+
 		Endpoint reindexEndpoint = createEndpoint();
 		reindexEndpoint.path("/reindex");
 		reindexEndpoint.method(GET);
@@ -113,7 +124,6 @@ public class SearchVerticle extends AbstractWebVerticle {
 		reindexEndpoint.handler(rc -> {
 			searchHandler.handleReindex(InternalActionContext.create(rc));
 		});
-
 	}
 
 	/**

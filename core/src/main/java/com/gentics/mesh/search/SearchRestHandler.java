@@ -265,4 +265,15 @@ public class SearchRestHandler {
 		}).subscribe(message -> ac.send(message, OK), ac::fail);
 	}
 
+	public void handleClearBatches(InternalActionContext ac) {
+		operateNoTx(ac, () -> {
+			if (ac.getUser().hasAdminRole()) {
+				boot.get().meshRoot().getSearchQueue().clear();
+				return message(ac, "search_admin_clear_invoked");
+			} else {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+		}, message -> ac.send(message, OK));
+	}
+
 }

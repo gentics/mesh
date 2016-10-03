@@ -30,7 +30,8 @@ public class MeshGraphHelper {
 			} else {
 				// Legacy index less handling
 				for (Vertex vertex : graph.getVertices()) {
-					if (MESH_ROOT_LEGACY_TYPE.equals(vertex.getProperty("ferma_type"))) {
+					String fermaType = vertex.getProperty("ferma_type");
+					if (fermaType != null && fermaType.endsWith(MESH_ROOT_TYPE)) {
 						return vertex;
 					}
 				}

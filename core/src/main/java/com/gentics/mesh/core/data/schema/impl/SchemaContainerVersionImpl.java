@@ -71,12 +71,12 @@ public class SchemaContainerVersionImpl extends
 			MeshInternal.get().serverSchemaStorage().addSchema(schema);
 		}
 		return schema;
-
 	}
 
 	@Override
 	public Schema transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		// Load the schema and add/overwrite some properties
+		// Use getSchema to utilise the schema storage
 		Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);
 		restSchema.setUuid(getSchemaContainer().getUuid());
 

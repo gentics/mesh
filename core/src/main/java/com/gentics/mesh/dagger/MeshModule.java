@@ -12,7 +12,6 @@ import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.auth.MeshBasicAuthHandler;
 import com.gentics.mesh.auth.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.MeshJWTAuthProvider;
-import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
@@ -90,8 +89,6 @@ public class MeshModule {
 		try {
 			GraphStorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
 			database.init(options, Mesh.vertx(), "com.gentics.mesh.core.data");
-			DatabaseHelper helper = new DatabaseHelper(database);
-			helper.init();
 			return database;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
