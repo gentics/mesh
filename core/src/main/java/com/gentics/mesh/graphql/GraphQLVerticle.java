@@ -5,16 +5,15 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLUnionType.newUnionType;
+import static graphql.schema.GraphQLInterfaceType.newInterface;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import java.util.Map;
-import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.changelog.UUIDGenerator;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.json.JsonUtil;
@@ -22,9 +21,9 @@ import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 import graphql.GraphQL;
+import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLUnionType;
 import graphql.schema.TypeResolver;
@@ -110,6 +109,18 @@ public class GraphQLVerticle extends AbstractWebVerticle {
 		// userBuilder.field(newFieldDefinition().type(GraphQLString).name("name").staticValue("someName").build());
 		// GraphQLObjectType userType = userBuilder.build();
 
+		GraphQLInterfaceType comicCharacter = newInterface()
+			    .name("ComicCharacter")
+			    .description("A abstract comic character.")
+			    .field(newFieldDefinition()
+			            .name("name")
+			            .description("The name of the character.")
+			            .type(GraphQLString).build())
+			    .typeResolver(r -> {
+			    	return null;
+			    })
+			    .build();
+		
 		GraphQLUnionType fieldType = newUnionType().name("Fields").possibleType(dateFieldType).possibleType(stringFieldType)
 				.typeResolver(new TypeResolver() {
 					@Override
