@@ -16,7 +16,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.JWTAuthHandlerImpl;
 
 /**
- * This class extends the vertx JWTAuthHandler, so that it also works when the token is set as a cookie. Central authentication handler for mesh.
+ * This class extends the Vert.x JWTAuthHandler, so that it also works when the token is set as a cookie. Central authentication handler for mesh.
  */
 @Singleton
 public class MeshAuthHandler extends JWTAuthHandlerImpl {

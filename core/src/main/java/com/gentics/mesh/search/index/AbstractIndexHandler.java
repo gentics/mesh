@@ -3,8 +3,6 @@ package com.gentics.mesh.search.index;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.apache.commons.lang3.StringUtils.indexOf;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;

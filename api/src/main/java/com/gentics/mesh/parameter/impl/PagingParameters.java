@@ -10,7 +10,6 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.api.common.SortOrder;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NumberUtils;
 

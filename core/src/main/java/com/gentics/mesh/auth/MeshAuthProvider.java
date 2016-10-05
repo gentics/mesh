@@ -1,7 +1,5 @@
 package com.gentics.mesh.auth;
 
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -51,6 +49,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
 
+		// Use the mesh jwt options in order to setup the JWTAuth provider
 		JWTAuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions().getJwtAuthenticationOptions();
 		String secret = options.getSignatureSecret();
 		if (secret == null) {
@@ -103,6 +102,14 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		});
 	}
 
+	/**
+	 * Load the user with the given username and use the bcrypt encoder to compare the user password with the provided password.
+	 * 
+	 * @param username
+	 * @param password
+	 * @param resultHandler
+	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
+	 */
 	private void authenticate(String username, String password, Handler<AsyncResult<User>> resultHandler) {
 		try (NoTx noTx = db.noTx()) {
 			MeshAuthUser user = MeshInternal.get().boot().userRoot().findMeshAuthUserByUsername(username);
