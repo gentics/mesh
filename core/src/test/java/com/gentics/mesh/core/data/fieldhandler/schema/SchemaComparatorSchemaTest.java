@@ -60,13 +60,18 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 		schemaB.addField(FieldUtil.createHtmlFieldSchema("first"));
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(FIELD_ORDER_KEY, new String[] { "displayFieldName", "second", "first" });
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(FIELD_ORDER_KEY, new String[] { "second", "first" });
 	}
 
 	@Test
 	public void testSegmentFieldAdded() throws IOException {
 		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		schemaA.setDisplayField("displayFieldName");
+		schemaA.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
+
 		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaB.setDisplayField("displayFieldName");
+		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaB.setSegmentField(schemaB.getFields().get(0).getName());
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertEquals(SchemaChangeOperation.UPDATESCHEMA, changes.get(0).getOperation());
@@ -75,8 +80,13 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	@Test
 	public void testSegmentFieldRemoved() throws IOException {
 		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaA.setDisplayField("displayFieldName");
+		schemaA.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaA.setSegmentField(schemaA.getFields().get(0).getName());
+
+		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaB.setDisplayField("displayFieldName");
+		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertEquals(SchemaChangeOperation.UPDATESCHEMA, changes.get(0).getOperation());
 	}
@@ -97,8 +107,13 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	@Test
 	public void testSegmentFieldSame() throws IOException {
 		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		schemaA.setDisplayField("displayFieldName");
+		schemaA.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
+
 		schemaA.setSegmentField(schemaA.getFields().get(0).getName());
 		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaB.setDisplayField("displayFieldName");
+		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaB.setSegmentField(schemaA.getSegmentField());
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).isEmpty();
@@ -108,12 +123,16 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	public void testSegmentFieldUpdated() throws IOException {
 		Schema schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.addField(FieldUtil.createStringFieldSchema("someExtraField"));
+		schemaA.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaA.setSegmentField("someExtraField");
+		schemaA.validate();
 
 		// Change segment field from the extrafield to the displayfield
 		Schema schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.addField(FieldUtil.createStringFieldSchema("someExtraField"));
+		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaB.setSegmentField("displayFieldName");
+		schemaB.validate();
 
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(SEGMENT_FIELD_KEY, "displayFieldName");
@@ -123,10 +142,12 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	public void testDisplayFieldUpdated() throws IOException {
 		Schema schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.addField(FieldUtil.createStringFieldSchema("someExtraField"));
+		schemaA.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaA.setDisplayField("displayFieldName");
 
 		Schema schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.addField(FieldUtil.createStringFieldSchema("someExtraField"));
+		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaB.setDisplayField("someExtraField");
 
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);

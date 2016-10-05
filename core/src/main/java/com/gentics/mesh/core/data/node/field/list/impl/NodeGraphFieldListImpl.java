@@ -62,7 +62,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				Node node = item.getNode();
-				if (ac.getUser().canReadNode(ac, node)) {
+				if (!ac.getUser().canReadNode(ac, node)) {
 					continue;
 				}
 				restModel.add(node.toListItem(ac, lTagsArray));
