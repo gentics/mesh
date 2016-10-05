@@ -1,4 +1,5 @@
 //package com.gentics.mesh.auth;
+//package com.gentics.mesh.auth;
 //
 //import java.util.Base64;
 //

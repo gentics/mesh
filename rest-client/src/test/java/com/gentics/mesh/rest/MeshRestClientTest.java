@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.etc.config.AuthenticationMethod;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -15,7 +14,7 @@ public class MeshRestClientTest {
 
 	@Test
 	public void testRestClient() {
-		MeshRestClient client = MeshRestClient.create("localhost", 8080, Vertx.vertx(), AuthenticationMethod.BASIC_AUTH);
+		MeshRestClient client = MeshRestClient.create("localhost", 8080, Vertx.vertx());
 		client.close();
 	}
 

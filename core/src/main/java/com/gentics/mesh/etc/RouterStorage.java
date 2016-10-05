@@ -97,7 +97,7 @@ public class RouterStorage {
 			rootRouter = Router.router(vertx);
 
 			// Root handlers
-			//rootRouter.route().handler(LoggerHandler.create());
+			// rootRouter.route().handler(LoggerHandler.create());
 			// TODO add a dedicated error for api router that informs about APPLICATION_JSON requirements. This may not be true for other routes (eg. custom
 			// routes)
 			rootRouter.route().last().handler(DefaultNotFoundHandler.create());
@@ -116,12 +116,8 @@ public class RouterStorage {
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(corsHandler);
 		}
-		// TODO It would be good to have two body handler. One for fileuploads and one for post data handling
 		router.route().handler(bodyHandler);
-
-//		router.route().handler(CookieHandler.create());
-//		router.route().handler(sessionHandler);
-//		router.route().handler(userSessionHandler);
+		router.route().handler(CookieHandler.create());
 	}
 
 	/**

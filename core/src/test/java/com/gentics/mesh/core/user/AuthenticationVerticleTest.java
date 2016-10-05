@@ -15,7 +15,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.etc.config.AuthenticationMethod;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -42,7 +41,7 @@ public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest
 			String username = user.getUsername();
 			String uuid = user.getUuid();
 
-			MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx(), AuthenticationMethod.JWT);
+			MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
 			client.setLogin(username, password());
 			Single<GenericMessageResponse> future = client.login();
 
@@ -61,7 +60,6 @@ public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest
 			Single<GenericMessageResponse> logoutFuture = client.logout();
 			logoutFuture.toBlocking().value();
 
-			// assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
 			meResponse = client.me().invoke();
 			latchFor(meResponse);
 			expectException(meResponse, UNAUTHORIZED, "error_not_authorized");

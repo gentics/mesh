@@ -3,7 +3,6 @@ package com.gentics.mesh.rest;
 import org.apache.commons.codec.binary.Base64;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 import com.gentics.mesh.rest.client.MeshRestRequestUtil;
@@ -31,7 +30,7 @@ public class BasicAuthentication extends AbstractAuthenticationProvider {
 	public BasicAuthentication(RoutingContext context) {
 		super();
 		this.authHeader = context.request().getHeader("Authorization");
-		this.cookies = context.getCookie(MeshOptions.MESH_SESSION_KEY).encode();
+//		this.cookies = context.getCookie(MeshAuthProvider.TOKEN_COOKIE_KEY).encode();
 	}
 
 	@Override

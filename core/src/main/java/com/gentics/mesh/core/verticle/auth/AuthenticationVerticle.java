@@ -58,8 +58,7 @@ public class AuthenticationVerticle extends AbstractWebVerticle {
 		loginEndpoint.exampleRequest(miscExamples.getLoginRequest());
 		loginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
 		loginEndpoint.handler(rc -> {
-			rc.response().end();
-//			authRestHandler.handleLogin(InternalActionContext.create(rc));
+			authRestHandler.handleLoginJWT(InternalActionContext.create(rc));
 		});
 
 		// Only secure logout
