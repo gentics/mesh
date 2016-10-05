@@ -149,9 +149,9 @@ public abstract class AbstractDBTest {
 	protected void resetDatabase() {
 		BootstrapInitializer.clearReferences();
 		db.clear();
-		db.setMassInsertIntent();
-		new DatabaseHelper(db).init();
-		db.resetIntent();
+//		db.setMassInsertIntent();
+//		new DatabaseHelper(db).init();
+//		db.resetIntent();
 		if (dummySearchProvider != null) {
 			dummySearchProvider.reset();
 		}
