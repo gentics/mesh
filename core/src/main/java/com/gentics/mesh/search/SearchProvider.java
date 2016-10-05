@@ -108,14 +108,14 @@ public interface SearchProvider {
 	Node getNode();
 
 	/**
-	 * Clear the given index.
+	 * Clear the given index. This will effectively remove all documents from the index without removing the index itself.
 	 * 
 	 * @param indexName
 	 */
 	Completable clearIndex(String indexName);
 
 	/**
-	 * Clear all data from search provider. This will also clear indices.
+	 * Delete all indices.
 	 */
 	void clear();
 

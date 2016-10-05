@@ -42,7 +42,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	public Set<String> getAffectedIndices(InternalActionContext ac) {
+	public Set<String> getSelectedIndices(InternalActionContext ac) {
 		return indices;
 	}
 

@@ -133,6 +133,7 @@ public abstract class AbstractDBTest {
 		schemaStorage = meshDagger.serverSchemaStorage();
 		boot = meshDagger.boot();
 		db = meshDagger.database();
+		new DatabaseHelper(db).init();
 	}
 
 	@After
@@ -148,9 +149,8 @@ public abstract class AbstractDBTest {
 	protected void resetDatabase() {
 		BootstrapInitializer.clearReferences();
 		db.clear();
-		DatabaseHelper helper = new DatabaseHelper(db);
 		db.setMassInsertIntent();
-		helper.init();
+		new DatabaseHelper(db).init();
 		db.resetIntent();
 		if (dummySearchProvider != null) {
 			dummySearchProvider.reset();

@@ -1,5 +1,6 @@
 package com.gentics.mesh.demo;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -74,8 +75,8 @@ public class DemoDumpGeneratorTest {
 		for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
 			String languageTag = container.getLanguage().getLanguageTag();
-			String indexName = NodeIndexHandler.getIndexName(node.getProject().getUuid(), node.getProject().getLatestRelease().getUuid(), "draft");
-			String documentType = NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion());
+			String indexName = NodeIndexHandler.getIndexName(node.getProject().getUuid(), node.getProject().getLatestRelease().getUuid(), container.getSchemaContainerVersion().getUuid(), DRAFT);
+			String documentType = NodeIndexHandler.getDocumentType();
 			String documentId = NodeIndexHandler.composeDocumentId(node, languageTag);
 			if (searchProvider.getDocument(indexName, documentType, documentId).toBlocking().single() == null) {
 				String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag + "} could not be found within index {"

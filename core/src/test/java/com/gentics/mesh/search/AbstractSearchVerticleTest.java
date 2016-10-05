@@ -1,5 +1,8 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -15,10 +18,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.search.index.IndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -59,8 +64,6 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 	public static void clean() throws IOException {
 		FileUtils.deleteDirectory(new File("data"));
 	}
-	
-	
 
 	protected String getSimpleQuery(String text) throws JSONException {
 		QueryBuilder qb = QueryBuilders.queryStringQuery(text);
@@ -110,14 +113,14 @@ public abstract class AbstractSearchVerticleTest extends AbstractIsolatedRestVer
 		Project project = project();
 		for (Release release : project.getReleaseRoot().findAll()) {
 			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-				String type = version.getName() + "-" + version.getVersion();
-				String drafIndex = "node-" + project.getUuid() + "-" + release.getUuid() + "-draft";
+				String type = NodeIndexHandler.getDocumentType();
+				String drafIndex = NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), DRAFT);
 				if (log.isDebugEnabled()) {
 					log.debug("Creating schema mapping for index {" + drafIndex + "}");
 				}
 				meshDagger.nodeIndexHandler().updateNodeIndexMapping(drafIndex, type, version.getSchema()).await();
 
-				String publishIndex = "node-" + project.getUuid() + "-" + release.getUuid() + "-published";
+				String publishIndex = NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), PUBLISHED);
 				if (log.isDebugEnabled()) {
 					log.debug("Creating schema mapping for index {" + publishIndex + "}");
 				}

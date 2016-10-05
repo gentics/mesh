@@ -47,13 +47,17 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
 
 		migrateSchemaContainers();
-		migrateSchemaContainerRootEdges();
+
+		Vertex schemaRoot = meshRoot.getVertices(Direction.OUT, "HAS_ROOT_SCHEMA").iterator().next();
+		migrateSchemaContainerRootEdges(schemaRoot);
 
 		// Iterate over all projects
 		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {
 			Vertex baseNode = project.getVertices(Direction.OUT, "HAS_ROOT_NODE").iterator().next();
 			migrateNode(baseNode, project);
 			migrateTagFamilies(project);
+			Vertex projectSchemaRoot = project.getVertices(Direction.OUT, "HAS_ROOT_SCHEMA").iterator().next();
+			migrateSchemaContainerRootEdges(projectSchemaRoot);
 		}
 
 		migrateFermaTypes();
@@ -64,13 +68,11 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 	/**
 	 * The edge label has change. Migrate existing edges.
 	 */
-	private void migrateSchemaContainerRootEdges() {
-		Vertex meshRoot = getMeshRootVertex();
-		Vertex schemaRoot = meshRoot.getVertices(Direction.OUT, "HAS_ROOT_SCHEMA").iterator().next();
+	private void migrateSchemaContainerRootEdges(Vertex schemaRoot) {
 		for (Edge edge : schemaRoot.getEdges(Direction.OUT, "HAS_SCHEMA_CONTAINER")) {
-			edge.remove();
 			Vertex container = edge.getVertex(Direction.IN);
 			schemaRoot.addEdge("HAS_SCHEMA_CONTAINER_ITEM", container);
+			edge.remove();
 		}
 	}
 
@@ -110,6 +112,32 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 
 	}
 
+	private Vertex getOrFixUserReference(Vertex element, String edge) {
+		Vertex creator = null;
+		Iterator<Vertex> creatorIterator = element.getVertices(Direction.OUT, edge).iterator();
+		if (!creatorIterator.hasNext()) {
+			log.error("The element {" + element.getProperty("uuid") + "} has no {" + edge + "}. Using admin instead.");
+			creator = findAdmin();
+			element.addEdge(edge, creator);
+		} else {
+			creator = creatorIterator.next();
+		}
+		return creator;
+	}
+
+	private Vertex findAdmin() {
+		Vertex admin = null;
+		Iterator<Vertex> langIt = getMeshRootVertex().getVertices(Direction.OUT, "HAS_USER_ROOT").iterator().next()
+				.getVertices(Direction.OUT, "HAS_USER").iterator();
+		while (langIt.hasNext()) {
+			Vertex user = langIt.next();
+			if (user.getProperty("username").equals("admin")) {
+				admin = user;
+			}
+		}
+		return admin;
+	}
+
 	private void migrateTagFamilies(Vertex project) {
 		Vertex tagFamilyRoot = project.getVertices(Direction.OUT, "HAS_TAGFAMILY_ROOT").iterator().next();
 		for (Vertex tagFamily : tagFamilyRoot.getVertices(Direction.OUT, "HAS_TAG_FAMILY")) {
@@ -123,9 +151,19 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 				tagRoot.addEdge("HAS_TAG", tag);
 				tag.getEdges(Direction.OUT, "HAS_TAGFAMILY_ROOT").forEach(edge -> edge.remove());
 				tag.addEdge("HAS_TAGFAMILY_ROOT", tagFamily);
+				if (!tag.getEdges(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
+					log.error("Tag {" + tag.getProperty("uuid") + " has no project assigned to it. Fixing it...");
+					tag.addEdge("ASSIGNED_TO_PROJECT", project);
+				}
+			}
+			tagFamily.addEdge("HAS_TAG_ROOT", tagRoot);
+			if (!tagFamily.getEdges(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
+				log.error("TagFamily {" + tagFamily.getProperty("uuid") + " has no project assigned to it. Fixing it...");
+				tagFamily.addEdge("ASSIGNED_TO_PROJECT", project);
 			}
 
-			tagFamily.addEdge("HAS_TAG_ROOT", tagRoot);
+			getOrFixUserReference(tagFamily, "HAS_EDITOR");
+			getOrFixUserReference(tagFamily, "HAS_CREATOR");
 		}
 
 	}
@@ -156,7 +194,8 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 				schemaContainer.removeProperty("json");
 				try {
 					JSONObject schema = new JSONObject(json);
-					if (!schema.has("segmentField")) {
+					// TVC does not use segment fields. Remove the segment field properties from the schema
+					if (schema.has("segmentField")) {
 						schema.remove("segmentField");
 					}
 					if (schema.has("meshVersion")) {
@@ -188,7 +227,7 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 					}
 					schema.remove("fields");
 					schema.put("fields", fields);
-
+					schema.put("version", "1");
 					if (schema.has("binary")) {
 						schema.remove("binary");
 					}

@@ -22,7 +22,7 @@
 		<ferma.extensions.version>0.0.3-SNAPSHOT</ferma.extensions.version>
 		<dagger.version>2.6</dagger.version>
 
-		<surefire.forkcount>3</surefire.forkcount>
+		<surefire.forkcount>2</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 	</properties>

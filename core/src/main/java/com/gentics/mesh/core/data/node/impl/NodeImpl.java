@@ -1052,7 +1052,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			assertPublishConsistency(ac);
-			return addIndexBatch(batch, STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
+			addIndexBatch(batch, STORE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
+			return batch;
 		}).processAsync());
 
 		return Completable.merge(obs);

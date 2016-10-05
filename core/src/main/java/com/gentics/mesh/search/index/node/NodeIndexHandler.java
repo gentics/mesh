@@ -1,14 +1,14 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -53,12 +53,11 @@ import rx.Completable;
  * </ul>
  * 
  * <ul>
- * <li>Document Type: [:schemaName-:schemaVersion]</li>
- * <li>Example: content-1</li>
+ * <li>Document Type: -</li>
  * </ul>
  * 
  * <ul>
- * <li>Document Index: [node-:projectUuid-:releaseUuid-:versionType]</li>
+ * <li>Document Index: [node-:projectUuid-:releaseUuid-:schemaVersionUuid-:versionType]</li>
  * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
  * </ul>
  * <p>
@@ -92,6 +91,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
 	/**
+	 * Key of the custom property of SearchQueueEntry containing the schema version uuid. Value: {@value #CUSTOM_SCHEMAVERSION_UUID}
+	 */
+	public final static String CUSTOM_SCHEMAVERSION_UUID = "schemaVersionUuid";
+
+	/**
 	 * Custom index type property key. Value: {@value #CUSTOM_INDEX_TYPE}
 	 */
 	public static final String CUSTOM_INDEX_TYPE = "indexType";
@@ -115,14 +119,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Get the document type for documents stored for the given schema
+	 * Get the document type for node documents.
 	 * 
-	 * @param schemaVersion
-	 *            Schema container version
 	 * @return document type
 	 */
-	public static String getDocumentType(SchemaContainerVersion schemaVersion) {
-		return new StringBuilder(schemaVersion.getName()).append("-").append(schemaVersion.getVersion()).toString();
+	public static String getDocumentType() {
+		return Node.TYPE;
 	}
 
 	@Override
@@ -143,36 +145,49 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			//Iterate over all projects and construct the index names
 			boot.meshRoot().getProjectRoot().reload();
 			List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
-			projects.forEach((project) -> {
+			for (Project project : projects) {
 				List<? extends Release> releases = project.getReleaseRoot().findAll();
-				releases.forEach((release) -> {
-					String draftIndexName = getIndexName(project.getUuid(), release.getUuid(), "draft");
-					String publishIndexName = getIndexName(project.getUuid(), release.getUuid(), "published");
-					Set<String> documentTypes = new HashSet<>();
-					indexInfo.put(draftIndexName, documentTypes);
-					indexInfo.put(publishIndexName, documentTypes);
+				// Add the draft and published index names per release to the map 
+				for (Release release : releases) {
+					// Each release specific index has also document type specific mappings
 					for (SchemaContainerVersion containerVersion : release.findAllSchemaVersions()) {
-						documentTypes.add(getDocumentType(containerVersion));
+						String draftIndexName = getIndexName(project.getUuid(), release.getUuid(), containerVersion.getUuid(), DRAFT);
+						String publishIndexName = getIndexName(project.getUuid(), release.getUuid(), containerVersion.getUuid(), PUBLISHED);
+						Set<String> documentTypes = new HashSet<>();
+						documentTypes.add(getDocumentType());
+						indexInfo.put(draftIndexName, documentTypes);
+						indexInfo.put(publishIndexName, documentTypes);
 					}
-				});
-			});
+				}
+			}
 			return indexInfo;
 		});
 	}
 
 	@Override
-	public Set<String> getAffectedIndices(InternalActionContext ac) {
+	public Set<String> getSelectedIndices(InternalActionContext ac) {
 		return db.noTx(() -> {
+			Set<String> indices = new HashSet<>();
 			Project project = ac.getProject();
 			if (project != null) {
-				return Collections
-						.singleton(getIndexName(project.getUuid(), ac.getRelease(null).getUuid(), ac.getVersioningParameters().getVersion()));
+				Release release = ac.getRelease(null);
+				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+					indices.add(getIndexName(project.getUuid(), release.getUuid(), version.getUuid(),
+							ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
+				}
 			} else {
+				// The project was not specified. Maybe a global search wants to know which indices must be searched. In that case we just iterate over all projects and collect index names per release.
 				List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
-				return projects.stream()
-						.map(p -> getIndexName(p.getUuid(), p.getLatestRelease().getUuid(), ac.getVersioningParameters().getVersion()))
-						.collect(Collectors.toSet());
+				for (Project currentProject : projects) {
+					for (Release release : currentProject.getReleaseRoot().findAll()) {
+						for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+							indices.add(getIndexName(currentProject.getUuid(), release.getUuid(), version.getUuid(),
+									ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
+						}
+					}
+				}
 			}
+			return indices;
 		});
 	}
 
@@ -181,13 +196,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * 
 	 * @param projectUuid
 	 * @param releaseUuid
-	 * @param version
+	 * @param schemaVersionUuid
+	 * @param versionType
+	 *            Version type of the document (e.g: published, draft)
 	 * @return index name
 	 */
-	public static String getIndexName(String projectUuid, String releaseUuid, String version) {
+	public static String getIndexName(String projectUuid, String releaseUuid, String schemaVersionUuid, ContainerType versionType) {
 		// TODO check that only "draft" and "publisheD" are used for version
 		StringBuilder indexName = new StringBuilder("node");
-		indexName.append("-").append(projectUuid).append("-").append(releaseUuid).append("-").append(version);
+		indexName.append("-").append(projectUuid).append("-").append(releaseUuid).append("-").append(schemaVersionUuid).append("-")
+				.append(versionType.toString().toLowerCase());
 		return indexName.toString();
 	}
 
@@ -208,11 +226,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String languageTag = entry.get(CUSTOM_LANGUAGE_TAG);
 				String releaseUuid = entry.get(CUSTOM_RELEASE_UUID);
 				ContainerType type = ContainerType.forVersion(entry.get(CUSTOM_VERSION));
-				String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, type.toString().toLowerCase());
 
-				if (log.isDebugEnabled()) {
-					log.debug("Storing node {" + node.getUuid() + "} of type {" + type.name() + "} into index {" + indexName + "}");
-				}
 				// TODO check consistency
 
 				Set<Completable> obs = new HashSet<>();
@@ -221,6 +235,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// Store all containers if no language was specified
 				if (languageTag == null) {
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+						String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, container.getSchemaContainerVersion().getUuid(),
+								type);
+						if (log.isDebugEnabled()) {
+							log.debug("Storing node {" + node.getUuid() + "} of type {" + type.name() + "} into index {" + indexName + "}");
+						}
 						obs.add(storeContainer(container, indexName, releaseUuid));
 					}
 				} else {
@@ -231,6 +250,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 								+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
 						return Completable.complete();
 					}
+					String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, container.getSchemaContainerVersion().getUuid(), type);
+
 					// 1. Sanitize the search index for nodes.
 					// We'll need to delete all documents which match the given query:
 					// * match node documents with same UUID
@@ -263,8 +284,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						// Only limit the deletion if a container could be found. Otherwise delete all the documents in oder to sanitize the index
 						if (container != null) {
 							// Don't delete the document which is specific to the language container (via the document type)
-							JSONObject mustNotTerm = new JSONObject().put("term",
-									new JSONObject().put("_type", getDocumentType(container.getSchemaContainerVersion())));
+							JSONObject mustNotTerm = new JSONObject().put("term", new JSONObject().put("_type", getDocumentType()));
 							boolFilter.put("must_not", mustNotTerm);
 						}
 						queryObject.put("bool", boolFilter);
@@ -278,11 +298,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						obs.add(storeContainer(container, indexName, releaseUuid));
 					}
 					deleteObs = searchProvider.deleteDocumentsViaQuery(indexName, query).toCompletable();
+					if (log.isDebugEnabled()) {
+						log.debug("Stored node in index {" + indexName + "}");
+					}
 				}
 
-				if (log.isDebugEnabled()) {
-					log.debug("Stored node in index {" + indexName + "}");
-				}
 				return Completable.merge(obs).andThen(deleteObs).doOnCompleted(() -> {
 					MeshInternal.get().searchProvider().refreshIndex();
 				});
@@ -297,8 +317,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String languageTag = entry.get(CUSTOM_LANGUAGE_TAG);
 		String releaseUuid = entry.get(CUSTOM_RELEASE_UUID);
 		String projectUuid = entry.get(CUSTOM_PROJECT_UUID);
+		String schemaVersionUuid = entry.get(CUSTOM_SCHEMAVERSION_UUID);
 		ContainerType type = ContainerType.forVersion(entry.get(CUSTOM_VERSION));
-		String indexName = getIndexName(projectUuid, releaseUuid, type.toString().toLowerCase());
+		String indexName = getIndexName(projectUuid, releaseUuid, schemaVersionUuid, type);
 		String documentType = getDocumentType(entry);
 		String uuid = entry.getElementUuid();
 		return searchProvider.deleteDocument(indexName, documentType, composeDocumentId(uuid, languageTag));
@@ -316,8 +337,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	public Completable storeContainer(NodeGraphFieldContainer container, String indexName, String releaseUuid) {
 		JsonObject doc = transformator.toDocument(container, releaseUuid);
-		return searchProvider.storeDocument(indexName, getDocumentType(container.getSchemaContainerVersion()),
-				composeDocumentId(container.getParentNode(), doc.getString("language")), doc);
+		return searchProvider.storeDocument(indexName, getDocumentType(), composeDocumentId(container.getParentNode(), doc.getString("language")),
+				doc);
 	}
 
 	/**
@@ -349,17 +370,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Update the mapping for the given type in all indices for the schema.
+	 * Update the mapping for the schema. The schema information will be used to determine the correct index type.
 	 * 
-	 * @param type
-	 *            type name
 	 * @param schema
 	 *            schema
 	 * @return observable
 	 */
-	public Completable updateNodeIndexMapping(String type, Schema schema) {
+	public Completable updateNodeIndexMapping(Schema schema) {
+		String type = schema.getName() + "-" + schema.getVersion();
 		Set<Completable> obs = new HashSet<>();
-		for(String indexName : getIndices().keySet()) {
+		for (String indexName : getIndices().keySet()) {
 			obs.add(updateNodeIndexMapping(indexName, type, schema));
 		}
 		return Completable.merge(obs);
@@ -385,9 +405,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            type name
 	 * @param schema
 	 *            schema
-	 * @return observable
+	 * @return
 	 */
 	public Completable updateNodeIndexMapping(String indexName, String type, Schema schema) {
+
 		// Check whether the search provider is a dummy provider or not
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
@@ -430,5 +451,26 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		default:
 			return GraphPermission.READ_PERM;
 		}
+	}
+
+	/**
+	 * Update all node specific index mappings.
+	 */
+	public void updateNodeIndexMappings() {
+		List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
+		projects.forEach((project) -> {
+			List<? extends Release> releases = project.getReleaseRoot().findAll();
+			// Add the draft and published index names per release to the map
+			for (Release release : releases) {
+				// Each release specific index has also document type specific mappings
+				for (SchemaContainerVersion containerVersion : release.findAllSchemaVersions()) {
+					updateNodeIndexMapping(getIndexName(project.getUuid(), release.getUuid(), containerVersion.getUuid(), DRAFT), getDocumentType(),
+							containerVersion.getSchema()).await();
+					updateNodeIndexMapping(getIndexName(project.getUuid(), release.getUuid(), containerVersion.getUuid(), PUBLISHED),
+							getDocumentType(), containerVersion.getSchema()).await();
+				}
+			}
+		});
+
 	}
 }
