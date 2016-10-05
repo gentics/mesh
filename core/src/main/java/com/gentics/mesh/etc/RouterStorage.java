@@ -11,7 +11,6 @@ import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -57,11 +56,10 @@ public class RouterStorage {
 	private static RouterStorage instance;
 
 	@Inject
-	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler,
-			UserSessionHandler userSessionHandler) {
+	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler) {
 		this.vertx = Mesh.vertx();
 		RouterStorage.instance = this;
-		initAPIRouter(corsHandler, bodyHandler, sessionHandler, userSessionHandler);
+		initAPIRouter(corsHandler, bodyHandler);
 	}
 
 	public static RouterStorage getIntance() {
@@ -113,8 +111,7 @@ public class RouterStorage {
 	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like
 	 * /api/v1/[groups|users|roles]
 	 */
-	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler,
-			UserSessionHandler userSessionHandler) {
+	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler) {
 		Router router = getAPIRouter();
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(corsHandler);
@@ -122,11 +119,9 @@ public class RouterStorage {
 		// TODO It would be good to have two body handler. One for fileuploads and one for post data handling
 		router.route().handler(bodyHandler);
 
-		router.route().handler(CookieHandler.create());
-		if (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod() == AuthenticationMethod.BASIC_AUTH) {
-			router.route().handler(sessionHandler);
-			router.route().handler(userSessionHandler);
-		}
+//		router.route().handler(CookieHandler.create());
+//		router.route().handler(sessionHandler);
+//		router.route().handler(userSessionHandler);
 	}
 
 	/**

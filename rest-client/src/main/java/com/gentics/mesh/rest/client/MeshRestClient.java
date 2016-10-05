@@ -1,6 +1,6 @@
 package com.gentics.mesh.rest.client;
 
-import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
+import com.gentics.mesh.etc.config.AuthenticationMethod;
 import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
 import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;

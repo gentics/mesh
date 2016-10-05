@@ -34,7 +34,6 @@ import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
@@ -100,7 +99,6 @@ public abstract class AbstractDBTest {
 		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
-		options.getAuthenticationOptions().setAuthenticationMethod(AuthenticationMethod.JWT);
 		options.getAuthenticationOptions().getJwtAuthenticationOptions().setSignatureSecret("secret");
 		options.getAuthenticationOptions().getJwtAuthenticationOptions().setKeystorePath("keystore.jceks");
 
@@ -148,10 +146,13 @@ public abstract class AbstractDBTest {
 
 	protected void resetDatabase() {
 		BootstrapInitializer.clearReferences();
+		long start = System.currentTimeMillis();
 		db.clear();
-//		db.setMassInsertIntent();
-//		new DatabaseHelper(db).init();
-//		db.resetIntent();
+		long duration = System.currentTimeMillis() - start;
+		log.info("Clearing DB took {" + duration + "} ms.");
+		//		db.setMassInsertIntent();
+		//		new DatabaseHelper(db).init();
+		//		db.resetIntent();
 		if (dummySearchProvider != null) {
 			dummySearchProvider.reset();
 		}

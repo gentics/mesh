@@ -1,14 +1,10 @@
 package com.gentics.mesh.etc.config;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.GraphStorageOptions;
-
-import io.vertx.ext.mail.MailConfig;
 
 /**
  * Main mesh configuration POJO.
@@ -18,7 +14,6 @@ public class MeshOptions {
 	public static final boolean ENABLED = true;
 	public static final boolean DISABLED = false;
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
-	public static final int DEFAULT_PAGE_SIZE = 25;
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final String MESH_SESSION_KEY = "mesh.session";
@@ -27,17 +22,11 @@ public class MeshOptions {
 
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
-	private int defaultPageSize = DEFAULT_PAGE_SIZE;
-
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
 
 	private String defaultLanguage = DEFAULT_LANGUAGE;
 
 	private boolean updateCheck = ENABLED;
-
-	private Map<String, MeshVerticleConfiguration> verticles = new HashMap<>();
-
-	private MailConfig mailServerOptions = new MailConfig();
 
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
 
@@ -54,10 +43,6 @@ public class MeshOptions {
 	private String tempDirectory = "data" + File.separator + "tmp";
 
 	public MeshOptions() {
-	}
-
-	public Map<String, MeshVerticleConfiguration> getVerticles() {
-		return verticles;
 	}
 
 	/**
@@ -104,24 +89,6 @@ public class MeshOptions {
 	 */
 	public void setDefaultMaxDepth(int defaultMaxDepth) {
 		this.defaultMaxDepth = defaultMaxDepth;
-	}
-
-	/**
-	 * Return the default page size.
-	 * 
-	 * @return Default page size
-	 */
-	public int getDefaultPageSize() {
-		return defaultPageSize;
-	}
-
-	/**
-	 * Return the mesh mail server options.
-	 * 
-	 * @return Mail server options
-	 */
-	public MailConfig getMailServerOptions() {
-		return this.mailServerOptions;
 	}
 
 	/**

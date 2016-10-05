@@ -13,14 +13,13 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
-
-import io.vertx.ext.web.handler.AuthHandler;
 
 @Singleton
 public class MicroschemaVerticle extends AbstractWebVerticle {
@@ -32,7 +31,7 @@ public class MicroschemaVerticle extends AbstractWebVerticle {
 	}
 
 	@Inject
-	public MicroschemaVerticle(RouterStorage routerStorage, MicroschemaCrudHandler crudHandler, AuthHandler authHandler) {
+	public MicroschemaVerticle(RouterStorage routerStorage, MicroschemaCrudHandler crudHandler, MeshAuthHandler authHandler) {
 		super("microschemas", routerStorage);
 		this.crudHandler = crudHandler;
 	}

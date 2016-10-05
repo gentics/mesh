@@ -19,7 +19,7 @@ public class AuthenticationVerticle extends AbstractWebVerticle {
 	private AuthenticationRestHandler authRestHandler;
 
 	@Inject
-	public AuthenticationVerticle(RouterStorage routerStorage, JWTAuthRestHandler authRestHandler) {
+	public AuthenticationVerticle(RouterStorage routerStorage, AuthenticationRestHandler authRestHandler) {
 		super("auth", routerStorage);
 		this.authRestHandler = authRestHandler;
 	}
@@ -58,7 +58,8 @@ public class AuthenticationVerticle extends AbstractWebVerticle {
 		loginEndpoint.exampleRequest(miscExamples.getLoginRequest());
 		loginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
 		loginEndpoint.handler(rc -> {
-			authRestHandler.handleLogin(InternalActionContext.create(rc));
+			rc.response().end();
+//			authRestHandler.handleLogin(InternalActionContext.create(rc));
 		});
 
 		// Only secure logout

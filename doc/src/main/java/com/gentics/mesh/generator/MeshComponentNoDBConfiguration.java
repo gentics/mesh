@@ -13,7 +13,7 @@ import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class SpringNoDBConfiguration {
+public class MeshComponentNoDBConfiguration {
 
 	public static void init() {
 		MeshOptions options = new MeshOptions();

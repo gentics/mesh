@@ -85,15 +85,24 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		factory.declareIntent(new OIntentNoCache());
+		//		OrientGraphNoTx tx1 = factory.getNoTx();
+		//		tx1.declareIntent(new OIntentNoCache());
+		//		try {
+		//			tx1.command(new OCommandSQL("delete vertex V")).execute();
+		//			//		tx1.commit();
+		//		} finally {
+		//			tx1.declareIntent(null);
+		//			tx1.shutdown();
+		//		}
 		OrientGraphNoTx tx = factory.getNoTx();
+		tx.declareIntent(new OIntentNoCache());
 		try {
 			for (Vertex vertex : tx.getVertices()) {
 				vertex.remove();
 			}
 		} finally {
+			tx.declareIntent(null);
 			tx.shutdown();
-			factory.declareIntent(null);
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Cleared graph");
@@ -106,7 +115,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		// resolver = new OrientDBTypeResolver(basePaths);
 		resolver = new MeshTypeResolver(basePaths);
 		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
-			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
+			this.maxRetry = Integer.valueOf(options.getParameters().get("maxTransactionRetry"));
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
 		}
 	}
