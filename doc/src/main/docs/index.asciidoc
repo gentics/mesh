@@ -206,7 +206,7 @@ Endpoint: ```/api/v1/users```
 | username      | Username of the user (mandatory)
 | emailAddress  | Email Address of the user
 | nodeReference | Node reference which can be used to store additional user data. It is also possible to expand this field using the ```expand``` query parameter.
-| enabled       | Enabled flag. Disabled users can no longer log into mash. A deleted user will not be completely removed. Instead the user will just be disabled.
+| enabled       | Enabled flag. Disabled users can no longer log into Gentics Mesh. A deleted user will not be completely removed. Instead the user will just be disabled.
 | groups        | List of group references of the user
 | creator       | User reference of the creator
 | created       | Epoch creation date
@@ -450,7 +450,7 @@ Endpoint: ```/api/v1/schemas```
 
 [source,json]
 ----
-include::{raml-json}/SchemaResponse.example.json[]
+include::{raml-json}/SchemaModel.example.json[]
 ----
 
 ==== Configuration properties

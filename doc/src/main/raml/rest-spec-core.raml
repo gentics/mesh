@@ -411,7 +411,7 @@ traits:
     description: Create the schema.
     body:
       application/json:
-        example: !include json/SchemaModel.example.json
+        example: !include json/SchemaModel.create.example.json
     responses:
       200:
         body:
@@ -432,7 +432,7 @@ traits:
       description: Invoke a schema migration.
       body:
         application/json:
-          example: !include json/SchemaModel.example.json
+          example: !include json/SchemaModel.update.example.json
       responses:
         200:
           body:
@@ -494,7 +494,7 @@ traits:
     description: Create the microschema.
     body:
       application/json:
-        example: !include json/MicroschemaModel.example.json
+        example: !include json/MicroschemaModel.create.example.json
     responses:
       200:
         body:
@@ -514,7 +514,7 @@ traits:
       description: Invoke a microschema migration.
       body:
         application/json:
-          example: !include json/MicroschemaModel.example.json
+          example: !include json/MicroschemaModel.update.example.json
       responses:
         200:
           body:
