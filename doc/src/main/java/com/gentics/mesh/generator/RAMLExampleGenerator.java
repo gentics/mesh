@@ -376,16 +376,16 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	}
 
 	private void microschemaJson() throws JsonGenerationException, JsonMappingException, IOException {
-		write(getMicroschema());
-		write(getMicroschemaCreateRequest());
-		write(getMicroschema());
+		write(getMicroschema(), "MicroschemaModel.example.json");
+		write(getMicroschemaCreateRequest(), "MicroschemaModel.create.example.json");
+		write(getMicroschema(), "MicroschemaModel.update.example.json");
 		write(getMicroschemaListResponse());
 	}
 
 	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {
-		write(getSchema());
-		write(getSchemaCreateRequest());
-		write(getSchemaUpdateRequest());
+		write(getSchema(), "SchemaModel.example.json");
+		write(getSchemaCreateRequest(), "SchemaModel.create.example.json");
+		write(getSchemaUpdateRequest(), "SchemaModel.update.example.json");
 		write(getSchemaListResponse());
 		write(getSchemaChangesListModel());
 	}

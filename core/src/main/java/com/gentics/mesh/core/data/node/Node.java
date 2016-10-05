@@ -37,7 +37,7 @@ import rx.Observable;
 public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 
 	public static final String TYPE = "node";
-	public static final int MAX_TRANSFORMATION_LEVEL = 2;
+	public static final int MAX_TRANSFORMATION_LEVEL = 3;
 
 	/**
 	 * Add the given tag to the list of tags for this node.
