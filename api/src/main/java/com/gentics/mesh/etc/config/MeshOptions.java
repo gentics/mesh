@@ -1,14 +1,10 @@
 package com.gentics.mesh.etc.config;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.GraphStorageOptions;
-
-import io.vertx.ext.mail.MailConfig;
 
 /**
  * Main mesh configuration POJO.
@@ -18,26 +14,17 @@ public class MeshOptions {
 	public static final boolean ENABLED = true;
 	public static final boolean DISABLED = false;
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
-	public static final int DEFAULT_PAGE_SIZE = 25;
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
-	public static final String MESH_SESSION_KEY = "mesh.session";
-	public static final String JWT_TOKEN_KEY = "mesh.token";
 	public static final int DEFAULT_MAX_DEPTH = 10;
 
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
-
-	private int defaultPageSize = DEFAULT_PAGE_SIZE;
 
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
 
 	private String defaultLanguage = DEFAULT_LANGUAGE;
 
 	private boolean updateCheck = ENABLED;
-
-	private Map<String, MeshVerticleConfiguration> verticles = new HashMap<>();
-
-	private MailConfig mailServerOptions = new MailConfig();
 
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
 
@@ -54,10 +41,6 @@ public class MeshOptions {
 	private String tempDirectory = "data" + File.separator + "tmp";
 
 	public MeshOptions() {
-	}
-
-	public Map<String, MeshVerticleConfiguration> getVerticles() {
-		return verticles;
 	}
 
 	/**
@@ -107,28 +90,11 @@ public class MeshOptions {
 	}
 
 	/**
-	 * Return the default page size.
-	 * 
-	 * @return Default page size
-	 */
-	public int getDefaultPageSize() {
-		return defaultPageSize;
-	}
-
-	/**
-	 * Return the mesh mail server options.
-	 * 
-	 * @return Mail server options
-	 */
-	public MailConfig getMailServerOptions() {
-		return this.mailServerOptions;
-	}
-
-	/**
 	 * Return the mesh graph database storage options.
 	 * 
 	 * @return Storage options
 	 */
+	@JsonProperty("storage")
 	public GraphStorageOptions getStorageOptions() {
 		return this.storageOptions;
 	}
@@ -138,6 +104,7 @@ public class MeshOptions {
 	 * 
 	 * @return Upload options
 	 */
+	@JsonProperty("upload")
 	public MeshUploadOptions getUploadOptions() {
 		return uploadOptions;
 	}
@@ -157,6 +124,7 @@ public class MeshOptions {
 	 * 
 	 * @return Http server options
 	 */
+	@JsonProperty("httpServer")
 	public HttpServerConfig getHttpServerOptions() {
 		return httpServerOptions;
 	}
@@ -176,6 +144,7 @@ public class MeshOptions {
 	 * 
 	 * @return Search options
 	 */
+	@JsonProperty("search")
 	public ElasticSearchOptions getSearchOptions() {
 		return searchOptions;
 	}
@@ -195,6 +164,7 @@ public class MeshOptions {
 	 * 
 	 * @return Authentication options
 	 */
+	@JsonProperty("security")
 	public AuthenticationOptions getAuthenticationOptions() {
 		return authenticationOptions;
 	}
@@ -233,6 +203,7 @@ public class MeshOptions {
 	 * 
 	 * @return
 	 */
+	@JsonProperty("image")
 	public ImageManipulatorOptions getImageOptions() {
 		return imageOptions;
 	}

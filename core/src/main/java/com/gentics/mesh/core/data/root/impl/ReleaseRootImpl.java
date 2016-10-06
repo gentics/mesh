@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INITIAL_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_RELEASE;
@@ -27,6 +29,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
@@ -128,12 +131,15 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		}
 
 		Release release = create(createRequest.getName(), requestUser);
-		NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft");
 
-		// Create index queue entries for creating indices
-		batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"), Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
-		batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "published"), Node.TYPE,
-				SearchQueueEntryAction.CREATE_INDEX);
+		// A new release was created - We also need to create new indices for the nodes within the release
+		for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+			batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), DRAFT), Node.TYPE,
+					SearchQueueEntryAction.CREATE_INDEX);
+			batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), PUBLISHED), Node.TYPE,
+					SearchQueueEntryAction.CREATE_INDEX);
+		}
+
 		return release;
 	}
 

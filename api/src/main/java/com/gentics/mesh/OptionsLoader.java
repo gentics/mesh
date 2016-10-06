@@ -8,7 +8,9 @@ import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.logging.Logger;
@@ -21,7 +23,7 @@ public final class OptionsLoader {
 
 	private static final Logger log = LoggerFactory.getLogger(OptionsLoader.class);
 
-	public static final String MESH_CONF_FILENAME = "mesh.json";
+	public static final String MESH_CONF_FILENAME = "mesh.yml";
 
 	private OptionsLoader() {
 
@@ -32,13 +34,16 @@ public final class OptionsLoader {
 	 */
 	public static MeshOptions createOrloadOptions() {
 		File confFile = new File(MESH_CONF_FILENAME);
+		MeshOptions options = null;
 		InputStream ins = Mesh.class.getResourceAsStream("/" + MESH_CONF_FILENAME);
 		// 1. Try to load from classpath
 		if (ins != null) {
 			log.info("Loading configuration file from classpath.");
-			MeshOptions configuration = loadConfiguration(ins);
-			if (configuration != null) {
-				return configuration;
+			options = loadConfiguration(ins);
+			if (options != null) {
+				return options;
+			} else {
+				throw new RuntimeException("Could not read configuration file");
 			}
 		} else {
 			log.info("Configuration file {" + MESH_CONF_FILENAME + "} was not found within classpath.");
@@ -56,38 +61,44 @@ public final class OptionsLoader {
 			}
 		} else {
 			log.info("Configuration file {" + MESH_CONF_FILENAME + "} was not found within filesystem.");
-			ObjectMapper mapper = new ObjectMapper();
+
+			ObjectMapper mapper = getYAMLMapper();
 			try {
-				MeshOptions conf = new MeshOptions();
-				FileUtils.writeStringToFile(confFile, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf));
+				options = new MeshOptions();
+				FileUtils.writeStringToFile(confFile, mapper.writeValueAsString(options));
 				log.info("Saved default configuration to file {" + confFile.getAbsolutePath() + "}.");
-				return conf;
 			} catch (IOException e) {
 				log.error("Error while saving default configuration to file {" + confFile.getAbsolutePath() + "}.", e);
 			}
 		}
 		// 2. No luck - use default config
 		log.info("Loading default configuration.");
-		return new MeshOptions();
+		return options;
+	}
+
+	private static ObjectMapper getYAMLMapper() {
+		YAMLFactory factory = new YAMLFactory();
+		ObjectMapper mapper = new ObjectMapper(factory);
+		mapper.setSerializationInclusion(Include.NON_NULL);
+		return mapper;
 	}
 
 	/**
-	 * Load the configuration from the inputstream
+	 * Load the configuration from the stream.
 	 * 
 	 * @param ins
 	 * @return
 	 */
 	private static MeshOptions loadConfiguration(InputStream ins) {
-		// TODO use java 8 optionals
 		if (ins == null) {
 			log.info("Config file {" + MESH_CONF_FILENAME + "} not found. Using default configuration.");
 			return new MeshOptions();
 		}
 
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = getYAMLMapper();
 		try {
 			return mapper.readValue(ins, MeshOptions.class);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("Could not parse configuration.", e);
 			throw new RuntimeException("Could not parse options file", e);
 		}

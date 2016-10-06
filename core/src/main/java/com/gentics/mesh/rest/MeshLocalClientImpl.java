@@ -103,60 +103,55 @@ import rx.Single;
 @Singleton
 public class MeshLocalClientImpl implements MeshRestClient {
 
-	private MeshAuthUser user;
-
-	private UserCrudHandler userCrudHandler;
-
-	private RoleCrudHandler roleCrudHandler;
-
-	private GroupCrudHandler groupCrudHandler;
-
-	private SchemaCrudHandler schemaCrudHandler;
-
-	private MicroschemaCrudHandler microschemaCrudHandler;
-
-	private TagCrudHandler tagCrudHandler;
-
-	private TagFamilyCrudHandler tagFamilyCrudHandler;
-
-	private ProjectCrudHandler projectCrudHandler;
-
-	private NodeCrudHandler nodeCrudHandler;
-
-	private NodeFieldAPIHandler fieldAPIHandler;
-
-	private WebRootHandler webrootHandler;
-
-	private AdminHandler adminHandler;
-
-	private AuthenticationRestHandler authRestHandler;
-
-	private UtilityHandler utilityHandler;
-
-	private ReleaseCrudHandler releaseCrudHandler;
+	public MeshAuthUser user;
 
 	@Inject
-	public MeshLocalClientImpl(UtilityHandler utilityHandler, AuthenticationRestHandler authRestHandler, AdminHandler adminHandler,
-			WebRootHandler webrootHandler, NodeFieldAPIHandler fieldAPIHandler, NodeCrudHandler nodeCrudHandler,
-			ProjectCrudHandler projectCrudHandler, TagFamilyCrudHandler tagFamilyCrudHandler, TagCrudHandler tagCrudHandler,
-			MicroschemaCrudHandler microschemaCrudHandler, SchemaCrudHandler schemaCrudHandler, GroupCrudHandler groupCrudHandler,
-			RoleCrudHandler roleCrudHandler, UserCrudHandler userCrudHandler, ReleaseCrudHandler releaseCrudHandler) {
+	public UserCrudHandler userCrudHandler;
 
-		this.utilityHandler = utilityHandler;
-		this.authRestHandler = authRestHandler;
-		this.adminHandler = adminHandler;
-		this.webrootHandler = webrootHandler;
-		this.fieldAPIHandler = fieldAPIHandler;
-		this.nodeCrudHandler = nodeCrudHandler;
-		this.projectCrudHandler = projectCrudHandler;
-		this.tagFamilyCrudHandler = tagFamilyCrudHandler;
-		this.tagCrudHandler = tagCrudHandler;
-		this.microschemaCrudHandler = microschemaCrudHandler;
-		this.schemaCrudHandler = schemaCrudHandler;
-		this.groupCrudHandler = groupCrudHandler;
-		this.roleCrudHandler = roleCrudHandler;
-		this.userCrudHandler = userCrudHandler;
-		this.releaseCrudHandler = releaseCrudHandler;
+	@Inject
+	public RoleCrudHandler roleCrudHandler;
+
+	@Inject
+	public GroupCrudHandler groupCrudHandler;
+
+	@Inject
+	public SchemaCrudHandler schemaCrudHandler;
+
+	@Inject
+	public MicroschemaCrudHandler microschemaCrudHandler;
+
+	@Inject
+	public TagCrudHandler tagCrudHandler;
+
+	@Inject
+	public TagFamilyCrudHandler tagFamilyCrudHandler;
+
+	@Inject
+	public ProjectCrudHandler projectCrudHandler;
+
+	@Inject
+	public NodeCrudHandler nodeCrudHandler;
+
+	@Inject
+	public NodeFieldAPIHandler fieldAPIHandler;
+
+	@Inject
+	public WebRootHandler webrootHandler;
+
+	@Inject
+	public AdminHandler adminHandler;
+
+	@Inject
+	public AuthenticationRestHandler authRestHandler;
+
+	@Inject
+	public UtilityHandler utilityHandler;
+
+	@Inject
+	public ReleaseCrudHandler releaseCrudHandler;
+
+	@Inject
+	public MeshLocalClientImpl() {
 
 	}
 

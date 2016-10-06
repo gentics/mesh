@@ -51,8 +51,15 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			Vertex schemaRoot = project.getVertices(Direction.OUT, "HAS_ROOT_SCHEMA").iterator().next();
 			for (Vertex schemaContainer : schemaRoot.getVertices(Direction.OUT, "HAS_SCHEMA_CONTAINER_ITEM")) {
 				Vertex latestSchemaVersion = schemaContainer.getVertices(Direction.OUT, "HAS_LATEST_VERSION").iterator().next();
-				release.addEdge("HAS_VERSION", latestSchemaVersion);
+				log.info("Assigning schema version {" + latestSchemaVersion.getId() + " / " + latestSchemaVersion.getProperty("uuid")
+						+ "} to release");
+				release.addEdge("HAS_SCHEMA_VERSION", latestSchemaVersion);
 			}
+
+			//TODO assign also microschemas?
+
+			getOrFixUserReference(project, "HAS_EDITOR");
+			getOrFixUserReference(project, "HAS_CREATOR");
 
 			// Migrate all nodes of the project
 			Vertex baseNode = project.getVertices(Direction.OUT, "HAS_ROOT_NODE").iterator().next();
@@ -63,6 +70,10 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 		// Migrate tags
 		migrateTags(meshRoot);
+
+		// Migrate users
+		migrateUsers(meshRoot);
+
 		// Strip all package paths from all ferma type properties
 		for (Vertex vertex : getGraph().getVertices()) {
 			migrateType(vertex);
@@ -76,6 +87,16 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			edge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
 		}
 
+	}
+
+	private void migrateUsers(Vertex meshRoot) {
+		Vertex userRoot = meshRoot.getVertices(Direction.OUT, "HAS_USER_ROOT").iterator().next();
+
+		for (Vertex user : userRoot.getVertices(Direction.OUT, "HAS_USER")) {
+			// Check editor/creator
+			getOrFixUserReference(user, "HAS_EDITOR");
+			getOrFixUserReference(user, "HAS_CREATOR");
+		}
 	}
 
 	/**
@@ -95,6 +116,10 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			String tagValue = tagFieldContainer.getProperty("name");
 			tag.setProperty("tagValue", tagValue);
 			tagFieldContainer.remove();
+
+			// Check editor /creator
+			getOrFixUserReference(tag, "HAS_EDITOR");
+			getOrFixUserReference(tag, "HAS_CREATOR");
 		}
 	}
 
@@ -188,6 +213,7 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 		node.removeProperty("published");
 		log.info("Migrating node: " + node.getProperty("uuid") + " published: " + String.valueOf(isPublished));
 
+		Edge editorEdge = null;
 		Iterable<Edge> containerEdges = node.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER");
 		for (Edge containerEdge : containerEdges) {
 			containerEdge.setProperty("releaseUuid", releaseUuid);
@@ -216,24 +242,17 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			}
 
 			// Migrate editor
-			Vertex creator = null;
-			Iterator<Vertex> creatorIterator = node.getVertices(Direction.OUT, "HAS_CREATOR").iterator();
-			if (!creatorIterator.hasNext()) {
-				log.error("The node {" + node.getProperty("uuid") + "} has no creator. Using admin instead.");
-				creator = findAdmin();
-				node.addEdge("HAS_CREATOR", creator);
-			} else {
-				creator = creatorIterator.next();
-			}
+			Vertex creator = getOrFixUserReference(node, "HAS_CREATOR");
+
+			// Migrate editor edge from node to field container
 			Iterator<Edge> editorIterator = node.getEdges(Direction.OUT, "HAS_EDITOR").iterator();
 			if (!editorIterator.hasNext()) {
 				log.error("Could not find editor for node {" + node.getProperty("uuid") + "}. Using creator to set editor.");
 				fieldContainer.addEdge("HAS_EDITOR", creator);
 			} else {
-				Edge editorEdge = editorIterator.next();
+				editorEdge = editorIterator.next();
 				// Set the editor
 				fieldContainer.addEdge("HAS_EDITOR", editorEdge.getVertex(Direction.IN));
-				editorEdge.remove();
 			}
 
 			// Migrate last edited
@@ -291,6 +310,10 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 		}
 
+		if (editorEdge != null) {
+			editorEdge.remove();
+		}
+
 		// Migrate tagging
 		Iterable<Edge> tagEdges = node.getEdges(Direction.OUT, "HAS_TAG");
 		for (Edge tagEdge : tagEdges) {
@@ -316,6 +339,19 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			Vertex role = edge.getVertex(Direction.OUT);
 			role.addEdge("HAS_READ_PUBLISHED_PERMISSION", node);
 		}
+	}
+
+	private Vertex getOrFixUserReference(Vertex element, String edge) {
+		Vertex creator = null;
+		Iterator<Vertex> creatorIterator = element.getVertices(Direction.OUT, edge).iterator();
+		if (!creatorIterator.hasNext()) {
+			log.error("The element {" + element.getProperty("uuid") + "} has no {" + edge + "}. Using admin instead.");
+			creator = findAdmin();
+			element.addEdge(edge, creator);
+		} else {
+			creator = creatorIterator.next();
+		}
+		return creator;
 	}
 
 }

@@ -253,12 +253,8 @@ public class NodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
 			NodeResponse responseCollapsed = readNode(node);
 			NodeFieldList deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
 			assertNotNull(deserializedNodeListField);
-			assertEquals("The newsNode should be the first item in the list.", referencedNode.getUuid(),
-					deserializedNodeListField.getItems().get(0).getUuid());
-
-			// Check whether it is possible to read the field in an expanded form.
-			NodeResponse nodeListItem = (NodeResponse) deserializedNodeListField.getItems().get(0);
-			assertNotNull(nodeListItem);
+			assertEquals("The newsNode should not be within in the list thus the list should be empty.", 0,
+					deserializedNodeListField.getItems().size());
 
 			// 2. Read node with expanded fields
 			NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
@@ -266,19 +262,8 @@ public class NodeListFieldVerticleTest extends AbstractListFieldVerticleTest {
 			// Check collapsed node field
 			deserializedNodeListField = responseExpanded.getFields().getNodeFieldList(FIELD_NAME);
 			assertNotNull(deserializedNodeListField);
-			assertEquals(referencedNode.getUuid(), deserializedNodeListField.getItems().get(0).getUuid());
-
-			// Assert that the node was not expanded
-			NodeFieldListItem deserializedExpandedItem = deserializedNodeListField.getItems().get(0);
-			if (deserializedExpandedItem instanceof NodeResponse) {
-				NodeResponse expandedField = (NodeResponse) deserializedExpandedItem;
-				assertNotNull(expandedField);
-				assertEquals(referencedNode.getUuid(), expandedField.getUuid());
-				assertNull("The creator should be null since the node should not have been expanded due to missing permissions.",
-						expandedField.getCreator());
-			} else {
-				fail("The returned item should be a NodeResponse object");
-			}
+			assertEquals("The item should also not be included in the list even if we request an expanded node.", 0,
+					deserializedNodeListField.getItems().size());
 		}
 	}
 

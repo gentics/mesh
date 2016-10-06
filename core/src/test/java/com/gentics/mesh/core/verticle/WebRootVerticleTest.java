@@ -24,6 +24,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -144,6 +145,9 @@ public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
 			// Create content which is only german
 			SchemaContainer contentSchema = schemaContainer("content");
 			Node node = parentNode.create(user(), contentSchema.getLatestVersion(), project());
+
+			// Grant permissions to the node otherwise it will not be able to be loaded
+			role().grantPermissions(node, GraphPermission.values());
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), project().getLatestRelease(), user());
 			englishContainer.createString("name").setString("german_name");
 			englishContainer.createString("title").setString("german title");

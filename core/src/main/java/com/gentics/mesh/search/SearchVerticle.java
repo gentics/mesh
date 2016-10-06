@@ -115,6 +115,27 @@ public class SearchVerticle extends AbstractWebVerticle {
 			searchHandler.handleClearBatches(InternalActionContext.create(rc));
 		});
 
+		Endpoint processBatches = createEndpoint();
+		processBatches.path("/processBatches");
+		processBatches.method(GET);
+		processBatches.produces(APPLICATION_JSON);
+		processBatches.description("Invoke batch processing of remaining batches in the queue.");
+		processBatches.exampleResponse(OK, miscExamples.getMessageResponse(), "Invoked all remaining batches.");
+		processBatches.handler(rc -> {
+			searchHandler.handleProcessBatches(InternalActionContext.create(rc));
+		});
+		
+		
+		Endpoint createMappings = createEndpoint();
+		createMappings.path("/createMappings");
+		createMappings.method(GET);
+		createMappings.produces(APPLICATION_JSON);
+		createMappings.description("Create search index mappings.");
+		createMappings.exampleResponse(OK, miscExamples.getMessageResponse(), "Create all mappings.");
+		createMappings.handler(rc -> {
+			searchHandler.createMappings(InternalActionContext.create(rc));
+		});
+
 		Endpoint reindexEndpoint = createEndpoint();
 		reindexEndpoint.path("/reindex");
 		reindexEndpoint.method(GET);
@@ -152,7 +173,7 @@ public class SearchVerticle extends AbstractWebVerticle {
 			try {
 				IndexHandler indexHandler = registry.get(indexHandlerKey);
 				InternalActionContext ac = InternalActionContext.create(rc);
-				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getAffectedIndices(ac), indexHandler.getReadPermission(ac));
+				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac), indexHandler.getReadPermission(ac));
 			} catch (Exception e) {
 				// fail(rc, "search_error_query");
 				rc.fail(e);

@@ -813,17 +813,15 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
-		// Now clar all data
-		searchProvider.clear();
-
 		// // Add the user to the admin group - this way the user is in fact an admin.
 		try (NoTx noTrx = db.noTx()) {
 			user().addGroup(groups().get("admin"));
 		}
 
+		// Now clear all data
 		searchProvider.clear();
 
-		GenericMessageResponse message = call(()->  getClient().invokeReindex());
+		GenericMessageResponse message = call(() -> getClient().invokeReindex());
 		expectResponseMessage(message, "search_admin_reindex_invoked");
 
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
@@ -998,7 +996,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		meshDagger.nodeIndexHandler().updateNodeIndexMapping(schema.getName() + "-" + schema.getVersion(), schema).await();
+		meshDagger.nodeIndexHandler().updateNodeIndexMapping(schema).await();
 
 		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {

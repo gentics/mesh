@@ -1,8 +1,8 @@
 package com.gentics.mesh.etc;
 
 import java.io.File;
-
-import com.google.gson.JsonObject;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Underlying graph database storage configuration.
@@ -19,7 +19,7 @@ public class GraphStorageOptions {
 
 	private Boolean startServer = false;
 
-	private JsonObject parameters;
+	private Map<String, String> parameters = new HashMap<>();
 
 	/**
 	 * Return the graph storage directory.
@@ -45,18 +45,18 @@ public class GraphStorageOptions {
 	 * 
 	 * @return Additional JSON parameters
 	 */
-	public JsonObject getParameters() {
+	public Map<String, String> getParameters() {
 		return parameters;
 	}
 
 	/**
-	 * Set the custom JSON parameters for the selected graph provider.
+	 * Set the an additional custom parameters for the selected graph provider.
 	 * 
-	 * @param parameters
-	 *            Additional JSON parameters
+	 * @param key
+	 * @param value
 	 */
-	public void setParameters(JsonObject parameters) {
-		this.parameters = parameters;
+	public void setParameter(String key, String value) {
+		this.parameters.put(key, value);
 	}
 
 	/**

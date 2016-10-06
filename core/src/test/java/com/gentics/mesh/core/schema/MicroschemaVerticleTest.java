@@ -291,7 +291,6 @@ public class MicroschemaVerticleTest extends AbstractBasicIsolatedCrudVerticleTe
 			// 3. Create a new node which uses the schema
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 			nodeCreateRequest.setLanguage("en");
-			nodeCreateRequest.getFields().put("displayFieldName", FieldUtil.createStringField("test1234"));
 
 			MicronodeResponse micronodeField = new MicronodeResponse();
 			micronodeField.getFields().put("firstName", FieldUtil.createStringField("firstnameValue"));

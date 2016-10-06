@@ -11,7 +11,6 @@ import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -21,8 +20,6 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.CorsHandler;
-import io.vertx.ext.web.handler.SessionHandler;
-import io.vertx.ext.web.handler.UserSessionHandler;
 
 /**
  * Central storage for all vertx web request routers.
@@ -57,11 +54,10 @@ public class RouterStorage {
 	private static RouterStorage instance;
 
 	@Inject
-	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler,
-			UserSessionHandler userSessionHandler) {
+	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler) {
 		this.vertx = Mesh.vertx();
 		RouterStorage.instance = this;
-		initAPIRouter(corsHandler, bodyHandler, sessionHandler, userSessionHandler);
+		initAPIRouter(corsHandler, bodyHandler);
 	}
 
 	public static RouterStorage getIntance() {
@@ -99,7 +95,7 @@ public class RouterStorage {
 			rootRouter = Router.router(vertx);
 
 			// Root handlers
-			//rootRouter.route().handler(LoggerHandler.create());
+			// rootRouter.route().handler(LoggerHandler.create());
 			// TODO add a dedicated error for api router that informs about APPLICATION_JSON requirements. This may not be true for other routes (eg. custom
 			// routes)
 			rootRouter.route().last().handler(DefaultNotFoundHandler.create());
@@ -113,20 +109,13 @@ public class RouterStorage {
 	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like
 	 * /api/v1/[groups|users|roles]
 	 */
-	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, SessionHandler sessionHandler,
-			UserSessionHandler userSessionHandler) {
+	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler) {
 		Router router = getAPIRouter();
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(corsHandler);
 		}
-		// TODO It would be good to have two body handler. One for fileuploads and one for post data handling
 		router.route().handler(bodyHandler);
-
 		router.route().handler(CookieHandler.create());
-		if (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod() == AuthenticationMethod.BASIC_AUTH) {
-			router.route().handler(sessionHandler);
-			router.route().handler(userSessionHandler);
-		}
 	}
 
 	/**
