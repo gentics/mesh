@@ -1,16 +1,28 @@
 package com.gentics.mesh.auth;
 
+import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.etc.config.JWTAuthenticationOptions;
+import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -25,6 +37,7 @@ import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTOptions;
+import io.vertx.ext.web.Cookie;
 
 /**
  * Mesh authentication provider.
@@ -50,27 +63,55 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		this.db = database;
 
 		// Use the mesh jwt options in order to setup the JWTAuth provider
-		JWTAuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions().getJwtAuthenticationOptions();
+		AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
 		String secret = options.getSignatureSecret();
 		if (secret == null) {
 			throw new RuntimeException(
-					"Options file is missing the keystore secret password. This should be set in mesh.json: authenticationOptions.signatureSecret");
+					"Options file is missing the keystore secret password. This should be set in mesh configuration file: authenticationOptions.signatureSecret");
 		}
-		JsonObject config = new JsonObject().put("keyStore",
-				new JsonObject().put("path", options.getKeystorePath()).put("type", "jceks").put("password", secret));
+
+		String keyStorePath = options.getKeystorePath();
+		String type = "jceks";
+		// Copy the demo keystore file to the destination
+		if (!new File(keyStorePath).exists()) {
+			try {
+				InputStream ins = getClass().getResourceAsStream("/keystore.jceks");
+				if (ins != null) {
+					FileOutputStream fos = new FileOutputStream(keyStorePath);
+					IOUtils.copy(ins, fos);
+					fos.close();
+				}
+			} catch (IOException e) {
+				log.error("Could not copy keystore for path {" + keyStorePath + "}", e);
+			}
+		}
+
+		JsonObject config = new JsonObject().put("keyStore", new JsonObject().put("path", keyStorePath).put("type", type).put("password", secret));
 		jwtProvider = JWTAuth.create(Mesh.vertx(), config);
 
 	}
 
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-		jwtProvider.authenticate(authInfo, rh -> {
-			if (rh.failed()) {
-				resultHandler.handle(Future.failedFuture(new VertxException("Invalid Token")));
-			} else {
-				resultHandler.handle(Future.succeededFuture(getUserByJWT(rh.result())));
-			}
-		});
+		if (authInfo.getString("jwt") != null) {
+			jwtProvider.authenticate(authInfo, rh -> {
+				if (rh.failed()) {
+					resultHandler.handle(Future.failedFuture(new VertxException("Invalid Token")));
+				} else {
+					//TODO Update token and bump exp
+					try {
+						User user = getUserByJWT(rh.result());
+						resultHandler.handle(Future.succeededFuture(user));
+					} catch (Exception e) {
+						resultHandler.handle(Future.failedFuture(e));
+					}
+				}
+			});
+		} else {
+			String username = authInfo.getString("username");
+			String password = authInfo.getString("password");
+			authenticate(username, password, resultHandler);
+		}
 	}
 
 	/**
@@ -96,8 +137,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			} else {
 				User user = rh.result();
 				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.principal().getString("uuid"));
-				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData, new JWTOptions().setExpiresInSeconds(
-						Mesh.mesh().getOptions().getAuthenticationOptions().getJwtAuthenticationOptions().getTokenExpirationTime()))));
+				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData,
+						new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
 			}
 		});
 	}
@@ -159,8 +200,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 */
 	public String generateToken(User user) {
 		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.principal().getString("uuid"));
-		return jwtProvider.generateToken(tokenData, new JWTOptions()
-				.setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getJwtAuthenticationOptions().getTokenExpirationTime()));
+		return jwtProvider.generateToken(tokenData,
+				new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()));
 	}
 
 	/**
@@ -168,23 +209,42 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 *
 	 * @param user
 	 * @return
+	 * @throws Exception
 	 */
-	private User getUserByJWT(User vertxUser) {
+	private User getUserByJWT(User vertxUser) throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			JsonObject authInfo = vertxUser.principal();
 			String userUuid = authInfo.getString(USERID_FIELD_NAME);
-			return MeshInternal.get().boot().userRoot().findMeshAuthUserByUuid(userUuid);
-			// if (user != null) {
-			// return user;
-			// } else {
-			// if (log.isDebugEnabled()) {
-			// log.debug("Could not load user with UUID {" + userUuid + "}.");
-			// }
-			// // TODO Don't let the user know that we know that he
-			// // did not exist?
-			// throw new Exception("Invalid credentials!");
-			// }
+			MeshAuthUser user = MeshInternal.get().boot().userRoot().findMeshAuthUserByUuid(userUuid);
+			if (user == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Could not load user with UUID {" + userUuid + "}.");
+				}
+				throw new Exception("Invalid credentials!");
+			}
+			if (!user.isEnabled()) {
+				throw new Exception("User is disabled");
+			}
+			return user;
 		}
+	}
+
+	/**
+	 * Handle the login action and set a token cookie if the credentials are valid.
+	 * 
+	 * @param ac
+	 * @param username
+	 * @param password
+	 */
+	public void login(InternalActionContext ac, String username, String password) {
+		generateToken(username, password, rh -> {
+			if (rh.failed()) {
+				throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
+			} else {
+				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result()).setPath("/"));
+				ac.send(message(ac, "auth_login_succeeded"), OK);
+			}
+		});
 	}
 
 }

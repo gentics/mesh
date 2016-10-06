@@ -99,8 +99,8 @@ public abstract class AbstractDBTest {
 		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
-		options.getAuthenticationOptions().getJwtAuthenticationOptions().setSignatureSecret("secret");
-		options.getAuthenticationOptions().getJwtAuthenticationOptions().setKeystorePath("keystore.jceks");
+		options.getAuthenticationOptions().setSignatureSecret("secret");
+		options.getAuthenticationOptions().setKeystorePath("keystore.jceks");
 
 		ElasticSearchOptions searchOptions = new ElasticSearchOptions();
 		if (enableES) {

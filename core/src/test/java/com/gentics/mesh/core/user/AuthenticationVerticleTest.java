@@ -66,4 +66,27 @@ public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest
 		}
 	}
 
+	@Test
+	public void testLoginAndDisableUser() {
+		try (NoTx noTrx = db.noTx()) {
+			User user = user();
+			String username = user.getUsername();
+
+			MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
+			client.setLogin(username, password());
+			Single<GenericMessageResponse> future = client.login();
+
+			GenericMessageResponse loginResponse = future.toBlocking().value();
+			assertNotNull(loginResponse);
+			assertEquals("OK", loginResponse.getMessage());
+
+			user.disable();
+
+			MeshResponse<UserResponse> meResponse = client.me().invoke();
+			latchFor(meResponse);
+			expectException(meResponse, UNAUTHORIZED, "error_not_authorized");
+		}
+
+	}
+
 }

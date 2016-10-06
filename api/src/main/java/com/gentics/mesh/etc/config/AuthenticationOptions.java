@@ -1,28 +1,72 @@
 package com.gentics.mesh.etc.config;
 
 /**
- * Authentication options POJO
+ * Authentication options POJO.
  */
 public class AuthenticationOptions {
 
-	private JWTAuthenticationOptions jwtAuthenticationOptions = new JWTAuthenticationOptions();
+	public static final long DEFAULT_TOKEN_EXPIRATION_TIME = 60 * 60; //1 hour
+
+	public static final String DEFAULT_KEYSTORE_PATH = "keystore.jceks";
+
+	private long tokenExpirationTime = DEFAULT_TOKEN_EXPIRATION_TIME;
+
+	private String signatureSecret = "secret";
+
+	private String keystorePath = DEFAULT_KEYSTORE_PATH;
 
 	/**
-	 * Gets the JWT authentication options
+	 * Gets the time after which an authentication token should expire.
+	 * 
+	 * @return The expiration time in seconds
+	 */
+	public long getTokenExpirationTime() {
+		return tokenExpirationTime;
+	}
+
+	/**
+	 * Sets the time after which an authentication token should expire.
+	 * 
+	 * @param tokenExpirationTime
+	 *            The expiration time in seconds
+	 */
+	public void setTokenExpirationTime(long tokenExpirationTime) {
+		this.tokenExpirationTime = tokenExpirationTime;
+	}
+
+	/**
+	 * Gets the secret passphrase which is used when singing the authentication token.
 	 * 
 	 * @return
 	 */
-	public JWTAuthenticationOptions getJwtAuthenticationOptions() {
-		return jwtAuthenticationOptions;
+	public String getSignatureSecret() {
+		return signatureSecret;
 	}
 
 	/**
-	 * Sets the JWT authentication options
+	 * Sets the secret passphrase which is used when singing the authentication token.
 	 * 
-	 * @param jwtAuthenticationOptions
+	 * @param signatureSecret
 	 */
-	public void setJwtAuthenticationOptions(JWTAuthenticationOptions jwtAuthenticationOptions) {
-		this.jwtAuthenticationOptions = jwtAuthenticationOptions;
+	public void setSignatureSecret(String signatureSecret) {
+		this.signatureSecret = signatureSecret;
 	}
 
+	/**
+	 * Gets the path to the keystore file.
+	 * 
+	 * @return
+	 */
+	public String getKeystorePath() {
+		return keystorePath;
+	}
+
+	/**
+	 * Sets the path to the keystore file.
+	 * 
+	 * @param keystorePath
+	 */
+	public void setKeystorePath(String keystorePath) {
+		this.keystorePath = keystorePath;
+	}
 }

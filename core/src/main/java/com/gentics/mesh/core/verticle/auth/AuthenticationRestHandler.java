@@ -9,7 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
@@ -20,11 +20,11 @@ import com.gentics.mesh.json.JsonUtil;
 @Singleton
 public class AuthenticationRestHandler extends AbstractHandler {
 
-	private MeshAuthHandler authHandler;
+	private MeshAuthProvider authProvider;
 
 	@Inject
-	public AuthenticationRestHandler(MeshAuthHandler authHandler) {
-		this.authHandler = authHandler;
+	public AuthenticationRestHandler(MeshAuthProvider authProvider) {
+		this.authProvider = authProvider;
 	}
 
 	/**
@@ -51,44 +51,12 @@ public class AuthenticationRestHandler extends AbstractHandler {
 		ac.send(JsonUtil.toJson(message), OK);
 	}
 
-	// /**
-	// * Handle a login request.
-	// *
-	// * @param ac
-	// */
-	// /**
-	// * Handle a login request.
-	// *
-	// * @param ac
-	// */
-	// public void handleLogin(InternalActionContext ac) {
-	// try {
-	// LoginRequest request = JsonUtil.readValue(ac.getBodyAsString(), LoginRequest.class);
-	// // TODO fail on missing field
-	// JsonObject authInfo = new JsonObject().put("username", request.getUsername()).put("password", request.getPassword());
-	// authProvider.authenticate(authInfo, rh -> {
-	// if (rh.failed()) {
-	// throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
-	// } else {
-	// User user = rh.result();
-	// if (user instanceof MeshAuthUser) {
-	// ac.setUser((MeshAuthUser) user);
-	// ac.send(JsonUtil.toJson(new GenericMessageResponse("OK")), OK);
-	// } else {
-	// log.error("Auth Provider did not return a {" + MeshAuthUser.class.getName() + "} user got {" + user.getClass().getName()
-	// + "} instead.");
-	// throw error(BAD_REQUEST, "auth_login_failed");
-	// }
-	// }
-	// });
-	// } catch (Exception e) {
-	// throw error(UNAUTHORIZED, "auth_login_failed", e);
-	// }
-	//
-	// }
-
+	/**
+	 * Handle a login request.
+	 * 
+	 * @param ac
+	 */
 	public void handleLoginJWT(InternalActionContext ac) {
-
 		try {
 			LoginRequest request = JsonUtil.readValue(ac.getBodyAsString(), LoginRequest.class);
 			if (request.getUsername() == null) {
@@ -97,8 +65,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 			if (request.getPassword() == null) {
 				throw error(BAD_REQUEST, "error_json_field_missing", "password");
 			}
-
-			authHandler.login(ac, request.getUsername(), request.getPassword());
+			authProvider.login(ac, request.getUsername(), request.getPassword());
 		} catch (Exception e) {
 			throw error(UNAUTHORIZED, "auth_login_failed", e);
 		}

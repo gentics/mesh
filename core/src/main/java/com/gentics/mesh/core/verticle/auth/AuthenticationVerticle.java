@@ -8,6 +8,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.etc.RouterStorage;
@@ -18,10 +19,13 @@ public class AuthenticationVerticle extends AbstractWebVerticle {
 
 	private AuthenticationRestHandler authRestHandler;
 
+	private MeshBasicAuthLoginHandler basicAuthLoginHandler;
+
 	@Inject
-	public AuthenticationVerticle(RouterStorage routerStorage, AuthenticationRestHandler authRestHandler) {
+	public AuthenticationVerticle(RouterStorage routerStorage, AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler) {
 		super("auth", routerStorage);
 		this.authRestHandler = authRestHandler;
+		this.basicAuthLoginHandler = basicAuthHandler;
 	}
 
 	public AuthenticationVerticle() {
@@ -49,12 +53,20 @@ public class AuthenticationVerticle extends AbstractWebVerticle {
 			authRestHandler.handleMe(InternalActionContext.create(rc));
 		});
 
+		Endpoint basicAuthLoginEndpoint = createEndpoint();
+		basicAuthLoginEndpoint.path("/login");
+		basicAuthLoginEndpoint.method(GET);
+		//basicAuthLoginEndpoint.produces(APPLICATION_JSON);
+		basicAuthLoginEndpoint.description("Login via basic authentication.");
+		basicAuthLoginEndpoint.exampleResponse(OK, "Login was sucessful");
+		basicAuthLoginEndpoint.handler(basicAuthLoginHandler);
+
 		Endpoint loginEndpoint = createEndpoint();
 		loginEndpoint.path("/login");
 		loginEndpoint.method(POST);
 		loginEndpoint.consumes(APPLICATION_JSON);
 		loginEndpoint.produces(APPLICATION_JSON);
-		loginEndpoint.description("Login via this dedicated login endpoint");
+		loginEndpoint.description("Login via this dedicated login endpoint.");
 		loginEndpoint.exampleRequest(miscExamples.getLoginRequest());
 		loginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
 		loginEndpoint.handler(rc -> {
@@ -63,7 +75,6 @@ public class AuthenticationVerticle extends AbstractWebVerticle {
 
 		// Only secure logout
 		getRouter().route("/logout").handler(authHandler);
-
 		Endpoint logoutEndpoint = createEndpoint();
 		logoutEndpoint.path("/logout");
 		logoutEndpoint.method(GET);
