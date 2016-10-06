@@ -3,14 +3,20 @@ package com.gentics.mesh.graphql.type;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLInterfaceType.newInterface;
+import static graphql.schema.GraphQLObjectType.newObject;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.graphql.DateTestField;
 import com.gentics.mesh.graphql.StringTestField;
 
 import graphql.schema.GraphQLInterfaceType;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLObjectType.Builder;
 
 @Singleton
 public class NodeFieldTypeProvider {
@@ -38,4 +44,14 @@ public class NodeFieldTypeProvider {
 				}).build();
 		return fieldType;
 	}
+
+	public GraphQLObjectType generateFieldType(SchemaContainerVersion version) {
+		Schema schema  = version.getSchema();
+		Builder root = newObject();
+		for(FieldSchema fieldSchema : schema.getFields()) {
+			root.field(newFieldDefinition().name(fieldSchema.getName()).description(fieldSchema.getLabel()).type(GraphQLString).build());
+		}
+		return root.build();
+	}
+
 }

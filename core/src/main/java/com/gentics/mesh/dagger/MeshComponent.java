@@ -35,7 +35,6 @@ import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphql.GraphQLVerticle;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.ProjectSearchVerticle;

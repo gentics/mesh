@@ -22,6 +22,7 @@ public class ProjectTypeProvider {
 
 	public GraphQLObjectType getProjectType() {
 		Builder root = newObject();
+		root.name("Project");
 		root.field(newFieldDefinition().name("name").description("The name of the project").type(GraphQLString).build());
 		root.field(newFieldDefinition().name("uuid").description("The uuid of the project").type(GraphQLString).build());
 		root.field(newFieldDefinition().name("baseNode").description("The base node of the project").type(nodeTypeProvider.getNodeType()).build());
