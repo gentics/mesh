@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.example.GroupExamples;
 import com.gentics.mesh.example.MicroschemaExamples;
@@ -21,7 +22,6 @@ import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.AuthHandler;
 
 /**
  * An abstract class that should be used when creating verticles which expose a http server. The verticle will automatically start a http server and add the
@@ -49,7 +49,7 @@ public abstract class AbstractEndpoint {
 	protected RouterStorage routerStorage;
 
 	@Inject
-	public AuthHandler authHandler;
+	public MeshAuthHandler authHandler;
 
 	protected AbstractEndpoint(String basePath, RouterStorage routerStorage) {
 		this.basePath = basePath;

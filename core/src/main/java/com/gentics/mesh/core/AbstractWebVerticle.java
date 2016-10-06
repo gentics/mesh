@@ -1,14 +1,10 @@
 package com.gentics.mesh.core;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 import javax.inject.Inject;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
-import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -16,10 +12,8 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.AuthHandler;
 
 public abstract class AbstractWebVerticle extends AbstractVerticle {
 

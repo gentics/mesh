@@ -50,6 +50,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.graphdb.NoTx;
@@ -80,8 +81,10 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 	protected int port;
 
 	private MeshRestClient client;
-	
+
 	private RestAPIVerticle restVerticle;
+
+	private NodeMigrationVerticle nodeMigrationVerticle;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -98,12 +101,22 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", null, config,
 				Thread.currentThread().getContextClassLoader());
 
+		// Start migration verticle
+		CountDownLatch latch1 = new CountDownLatch(1);
+		nodeMigrationVerticle = meshDagger.nodeMigrationVerticle();
+		nodeMigrationVerticle.init(vertx, context);
+		Future<Void> future = Future.future();
+		nodeMigrationVerticle.start(future);
+		future.setHandler(rh -> {
+			latch1.countDown();
+		});
+		failingLatch(latch1);
 
 		// Start rest verticle
 		CountDownLatch latch = new CountDownLatch(1);
 		restVerticle = MeshInternal.get().restApiVerticle();
 		restVerticle.init(vertx, context);
-		Future<Void> future = Future.future();
+		future = Future.future();
 		restVerticle.start(future);
 		future.setHandler(rh -> {
 			latch.countDown();
@@ -128,6 +141,7 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 	@After
 	public void cleanup() throws Exception {
 		restVerticle.stop();
+		nodeMigrationVerticle.stop();
 		resetDatabase();
 	}
 
