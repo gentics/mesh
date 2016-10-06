@@ -7,3 +7,5 @@ orient-plugins/studio*.zip
 mesh-ui-config.js
 data_*
 restore*.sh
+migrated.sh
+keystore.jceks

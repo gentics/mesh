@@ -32,7 +32,7 @@ public class UserRestTest {
 		clientSchemaStorage.addSchema(schema);
 
 		UserResponse response = new UserResponse();
-		response.setCreator(new UserReference().setName("Joe").setUuid(UUIDUtil.randomUUID()));
+		response.setCreator(new UserReference().setFirstName("Joe").setLastName("Doe").setUuid(UUIDUtil.randomUUID()));
 
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(UUIDUtil.randomUUID());

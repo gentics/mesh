@@ -16,14 +16,14 @@ import rx.Completable;
 public interface IndexHandler {
 
 	/**
-	 * Index handler key for the registry
+	 * Index handler key for the registry.
 	 * 
 	 * @return handler key
 	 */
 	String getKey();
 
 	/**
-	 * Clear the index.
+	 * Clear the index. This will effectively remove all documents from the index without removing the index itself.
 	 * 
 	 * @return
 	 */
@@ -86,13 +86,14 @@ public interface IndexHandler {
 	Map<String, Set<String>> getIndices();
 
 	/**
-	 * Get the name of all affected indices.
+	 * Get the names of all selected indices. The action context will be examined to determine the project scope and the release scope. If possible even the
+	 * version type will be extracted from the action context in order to generate the set of indices which are selected.
 	 * 
 	 * @param ac
 	 *            action context
-	 * @return name of affected indices
+	 * @return name of selected indices
 	 */
-	Set<String> getAffectedIndices(InternalActionContext ac);
+	Set<String> getSelectedIndices(InternalActionContext ac);
 
 	/**
 	 * Get the permission required to read the elements found in the index.

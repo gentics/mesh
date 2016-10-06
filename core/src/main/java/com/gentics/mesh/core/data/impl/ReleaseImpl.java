@@ -59,8 +59,8 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public ReleaseReference createEmptyReferenceModel() {
-		return new ReleaseReference();
+	public ReleaseReference transformToReference() {
+		return new ReleaseReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override

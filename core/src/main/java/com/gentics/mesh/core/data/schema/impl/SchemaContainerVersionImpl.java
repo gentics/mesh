@@ -37,11 +37,6 @@ public class SchemaContainerVersionImpl extends
 		return SchemaContainer.TYPE;
 	}
 
-	@Override
-	public SchemaReference createEmptyReferenceModel() {
-		return new SchemaReference();
-	}
-
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
@@ -76,12 +71,12 @@ public class SchemaContainerVersionImpl extends
 			MeshInternal.get().serverSchemaStorage().addSchema(schema);
 		}
 		return schema;
-
 	}
 
 	@Override
 	public Schema transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		// Load the schema and add/overwrite some properties
+		// Use getSchema to utilise the schema storage
 		Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);
 		restSchema.setUuid(getSchemaContainer().getUuid());
 
@@ -122,7 +117,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public SchemaReference transformToReference() {
-		SchemaReference reference = createEmptyReferenceModel();
+		SchemaReference reference = new SchemaReference();
 		reference.setName(getName());
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());

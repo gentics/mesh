@@ -1,12 +1,13 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_INDEX;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_MAPPING;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -41,7 +42,6 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -209,27 +209,17 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		String projectUuid = project.getUuid();
 
 		// 1. Create needed indices
-		batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "draft"), Node.TYPE, CREATE_INDEX);
-		batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "published"), Node.TYPE, CREATE_INDEX);
+		batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT), Node.TYPE, CREATE_INDEX);
+		batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED), Node.TYPE, CREATE_INDEX);
 		batch.addEntry(TagIndexHandler.getIndexName(projectUuid), Tag.TYPE, CREATE_INDEX);
 		batch.addEntry(TagFamilyIndexHandler.getIndexName(project.getUuid()), TagFamily.TYPE, CREATE_INDEX);
-
-		// 2. Update the node index mapping for the schema that was used during project creation
-		SearchQueueEntry draftMappingUpdateEntry = batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "draft"), Node.TYPE,
-				UPDATE_MAPPING);
-		draftMappingUpdateEntry.set("schemaContainerVersionUuuid", schemaContainerVersion.getUuid());
-		draftMappingUpdateEntry.set("schemaContainerUuid", schemaContainerVersion.getSchemaContainer().getUuid());
-		SearchQueueEntry publishMappingUpdateEntry = batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, "published"), Node.TYPE,
-				UPDATE_MAPPING);
-		publishMappingUpdateEntry.set("schemaContainerVersionUuuid", schemaContainerVersion.getUuid());
-		publishMappingUpdateEntry.set("schemaContainerUuid", schemaContainerVersion.getSchemaContainer().getUuid());
 
 		// 3. Add created basenode to SQB
 		NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
 		baseNodeFieldContainer.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
 
 		try {
-			// TODO BUG project should only be added to router when trx and ES finished successfully
+			// TODO BUG project should only be added to router when tx and ES finished successfully
 			routerStorage.addProjectRouter(projectName);
 			if (log.isInfoEnabled()) {
 				log.info("Registered project {" + projectName + "}");

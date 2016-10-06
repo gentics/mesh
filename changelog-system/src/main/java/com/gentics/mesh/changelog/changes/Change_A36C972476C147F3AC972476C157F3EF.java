@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -46,13 +47,17 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
 
 		migrateSchemaContainers();
-		migrateSchemaContainerRootEdges();
+
+		Vertex schemaRoot = meshRoot.getVertices(Direction.OUT, "HAS_ROOT_SCHEMA").iterator().next();
+		migrateSchemaContainerRootEdges(schemaRoot);
 
 		// Iterate over all projects
 		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {
 			Vertex baseNode = project.getVertices(Direction.OUT, "HAS_ROOT_NODE").iterator().next();
-			migrateNode(baseNode);
+			migrateNode(baseNode, project);
 			migrateTagFamilies(project);
+			Vertex projectSchemaRoot = project.getVertices(Direction.OUT, "HAS_ROOT_SCHEMA").iterator().next();
+			migrateSchemaContainerRootEdges(projectSchemaRoot);
 		}
 
 		migrateFermaTypes();
@@ -63,13 +68,11 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 	/**
 	 * The edge label has change. Migrate existing edges.
 	 */
-	private void migrateSchemaContainerRootEdges() {
-		Vertex meshRoot = getMeshRootVertex();
-		Vertex schemaRoot = meshRoot.getVertices(Direction.OUT, "HAS_ROOT_SCHEMA").iterator().next();
+	private void migrateSchemaContainerRootEdges(Vertex schemaRoot) {
 		for (Edge edge : schemaRoot.getEdges(Direction.OUT, "HAS_SCHEMA_CONTAINER")) {
-			edge.remove();
 			Vertex container = edge.getVertex(Direction.IN);
 			schemaRoot.addEdge("HAS_SCHEMA_CONTAINER_ITEM", container);
+			edge.remove();
 		}
 	}
 
@@ -109,6 +112,32 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 
 	}
 
+	private Vertex getOrFixUserReference(Vertex element, String edge) {
+		Vertex creator = null;
+		Iterator<Vertex> creatorIterator = element.getVertices(Direction.OUT, edge).iterator();
+		if (!creatorIterator.hasNext()) {
+			log.error("The element {" + element.getProperty("uuid") + "} has no {" + edge + "}. Using admin instead.");
+			creator = findAdmin();
+			element.addEdge(edge, creator);
+		} else {
+			creator = creatorIterator.next();
+		}
+		return creator;
+	}
+
+	private Vertex findAdmin() {
+		Vertex admin = null;
+		Iterator<Vertex> langIt = getMeshRootVertex().getVertices(Direction.OUT, "HAS_USER_ROOT").iterator().next()
+				.getVertices(Direction.OUT, "HAS_USER").iterator();
+		while (langIt.hasNext()) {
+			Vertex user = langIt.next();
+			if (user.getProperty("username").equals("admin")) {
+				admin = user;
+			}
+		}
+		return admin;
+	}
+
 	private void migrateTagFamilies(Vertex project) {
 		Vertex tagFamilyRoot = project.getVertices(Direction.OUT, "HAS_TAGFAMILY_ROOT").iterator().next();
 		for (Vertex tagFamily : tagFamilyRoot.getVertices(Direction.OUT, "HAS_TAG_FAMILY")) {
@@ -122,9 +151,19 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 				tagRoot.addEdge("HAS_TAG", tag);
 				tag.getEdges(Direction.OUT, "HAS_TAGFAMILY_ROOT").forEach(edge -> edge.remove());
 				tag.addEdge("HAS_TAGFAMILY_ROOT", tagFamily);
+				if (!tag.getEdges(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
+					log.error("Tag {" + tag.getProperty("uuid") + " has no project assigned to it. Fixing it...");
+					tag.addEdge("ASSIGNED_TO_PROJECT", project);
+				}
+			}
+			tagFamily.addEdge("HAS_TAG_ROOT", tagRoot);
+			if (!tagFamily.getEdges(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
+				log.error("TagFamily {" + tagFamily.getProperty("uuid") + " has no project assigned to it. Fixing it...");
+				tagFamily.addEdge("ASSIGNED_TO_PROJECT", project);
 			}
 
-			tagFamily.addEdge("HAS_TAG_ROOT", tagRoot);
+			getOrFixUserReference(tagFamily, "HAS_EDITOR");
+			getOrFixUserReference(tagFamily, "HAS_CREATOR");
 		}
 
 	}
@@ -155,8 +194,9 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 				schemaContainer.removeProperty("json");
 				try {
 					JSONObject schema = new JSONObject(json);
-					if (!schema.has("segmentField")) {
-						schema.put("segmentField", schema.getString("displayField"));
+					// TVC does not use segment fields. Remove the segment field properties from the schema
+					if (schema.has("segmentField")) {
+						schema.remove("segmentField");
 					}
 					if (schema.has("meshVersion")) {
 						schema.remove("meshVersion");
@@ -175,6 +215,19 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 						binaryFieldSchema.put("type", "binary");
 						schema.getJSONArray("fields").put(binaryFieldSchema);
 					}
+
+					// Check whether all fields have a name
+					JSONArray fields = schema.getJSONArray("fields");
+					for (int i = 0; i < fields.length(); i++) {
+						// Remove fields which have no name to it.
+						JSONObject field = fields.getJSONObject(i);
+						if (!field.has("name")) {
+							fields.remove(field);
+						}
+					}
+					schema.remove("fields");
+					schema.put("fields", fields);
+					schema.put("version", "1");
 					if (schema.has("binary")) {
 						schema.remove("binary");
 					}
@@ -200,14 +253,20 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 	 * Migrate the node. Create a binary field for each NGFC if the node contains binary information.
 	 * 
 	 * @param node
+	 * @param project
 	 */
-	private void migrateNode(Vertex node) {
+	private void migrateNode(Vertex node, Vertex project) {
 		String uuid = node.getProperty("uuid");
 		log.info("Migrating node {" + uuid + "}");
 		Iterator<Vertex> it = node.getVertices(Direction.OUT, "HAS_PARENT_NODE").iterator();
 		Vertex parentNode = null;
 		if (it.hasNext()) {
 			parentNode = it.next();
+		}
+
+		if (!node.getVertices(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
+			log.error("Node {" + node.getProperty("uuid") + "} has no project assigned to it. Fixing inconsistency...");
+			node.addEdge("ASSIGNED_TO_PROJECT", project);
 		}
 
 		// Check whether the node has binary property information. We need to migrate those to a new binary graph field.
@@ -281,7 +340,9 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 		String segmentField = null;
 		try {
 			JSONObject schema = new JSONObject(json);
-			segmentField = schema.getString("segmentField");
+			if (schema.has("segmentField")) {
+				segmentField = schema.getString("segmentField");
+			}
 		} catch (JSONException e) {
 			throw new RuntimeException("Could not parse schema json {" + json + "}", e);
 		}
@@ -289,33 +350,35 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 		for (Vertex container : containers) {
 			container.addEdge("HAS_SCHEMA_CONTAINER_VERSION", schemaVersion);
 			//Add webrootPathInfo property (SegmentValue-ParentFolderUuid)
-			String segmentFieldValue = container.getProperty(segmentField + "-string");
-			if (!StringUtils.isEmpty(segmentFieldValue)) {
-				String webRootPath = segmentFieldValue;
-				if (parentNode != null) {
-					webRootPath += "-" + parentNode.getProperty("uuid");
-				}
-				String id = uuid + "-" + container.getProperty("uuid");
-				if (webrootIndexMap.containsKey(webRootPath)) {
-					log.error("Found conflicting node:" + id + " with webroot path info " + webRootPath);
-					// Randomize the value 
-					segmentFieldValue = segmentFieldValue + "_" + randomUUID();
-					container.setProperty(segmentField + "-string", segmentFieldValue);
-					// Set the new webroot path
-					webRootPath = segmentFieldValue;
+			if (segmentField != null) {
+				String segmentFieldValue = container.getProperty(segmentField + "-string");
+				if (!StringUtils.isEmpty(segmentFieldValue)) {
+					String webRootPath = segmentFieldValue;
 					if (parentNode != null) {
 						webRootPath += "-" + parentNode.getProperty("uuid");
 					}
+					String id = uuid + "-" + container.getProperty("uuid");
+					if (webrootIndexMap.containsKey(webRootPath)) {
+						log.error("Found conflicting node:" + id + " with webroot path info " + webRootPath);
+						// Randomize the value 
+						segmentFieldValue = segmentFieldValue + "_" + randomUUID();
+						container.setProperty(segmentField + "-string", segmentFieldValue);
+						// Set the new webroot path
+						webRootPath = segmentFieldValue;
+						if (parentNode != null) {
+							webRootPath += "-" + parentNode.getProperty("uuid");
+						}
+					}
+					webrootIndexMap.put(webRootPath, id);
+					container.setProperty("webrootPathInfo", webRootPath);
 				}
-				webrootIndexMap.put(webRootPath, id);
-				container.setProperty("webrootPathInfo", webRootPath);
 			}
 		}
 
 		// Now check the children and migrate structure
 		Iterable<Edge> childrenEdges = node.getEdges(Direction.IN, "HAS_PARENT_NODE");
 		for (Edge childEdge : childrenEdges) {
-			migrateNode(childEdge.getVertex(Direction.OUT));
+			migrateNode(childEdge.getVertex(Direction.OUT), project);
 		}
 
 	}

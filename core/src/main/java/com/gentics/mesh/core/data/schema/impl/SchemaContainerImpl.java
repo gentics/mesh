@@ -39,8 +39,8 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	}
 
 	@Override
-	public SchemaReference createEmptyReferenceModel() {
-		return new SchemaReference();
+	public SchemaReference transformToReference() {
+		return new SchemaReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override

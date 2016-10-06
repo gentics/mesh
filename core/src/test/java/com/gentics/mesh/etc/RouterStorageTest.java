@@ -12,7 +12,7 @@ import io.vertx.ext.web.impl.RouteImpl;
 
 public class RouterStorageTest {
 
-	private RouterStorage storage = new RouterStorage(null, null, null, null);
+	private RouterStorage storage = new RouterStorage(null, null);
 
 	@Test
 	public void testFailureHandler() throws Exception {

@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -124,6 +125,7 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 	}
 
 	@Override
+	@JsonIgnore
 	public Map<String, FieldSchema> getFieldsAsMap() {
 		Map<String, FieldSchema> map = new HashMap<>();
 		for (FieldSchema field : getFields()) {

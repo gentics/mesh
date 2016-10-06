@@ -50,12 +50,11 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				// Check whether the user is allowed to read the element
-				if (ac.getUser().canReadNode(ac, item.getNode())) {
-					restModel.getItems().add(item.getNode().transformToRestSync(ac, level, lTagsArray));
-				} else {
-					restModel.add(item.getNode().toListItem(ac, lTagsArray));
+				Node node = item.getNode();
+				if (!ac.getUser().canReadNode(ac, node)) {
+					continue;
 				}
+				restModel.getItems().add(node.transformToRestSync(ac, level, lTagsArray));
 			}
 
 			return restModel;
@@ -63,6 +62,9 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				Node node = item.getNode();
+				if (!ac.getUser().canReadNode(ac, node)) {
+					continue;
+				}
 				restModel.add(node.toListItem(ac, lTagsArray));
 			}
 			return restModel;

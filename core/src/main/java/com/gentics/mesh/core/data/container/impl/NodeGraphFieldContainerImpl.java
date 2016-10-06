@@ -325,7 +325,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, ContainerType type) {
-		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainerVersion());
+		String indexType = NodeIndexHandler.getDocumentType();
 		Node node = getParentNode();
 		SearchQueueEntry entry = batch.addEntry(node.getUuid(), node.getType(), action);
 		entry.set(NodeIndexHandler.CUSTOM_LANGUAGE_TAG, getLanguage().getLanguageTag());
@@ -333,6 +333,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		entry.set(NodeIndexHandler.CUSTOM_VERSION, type.toString().toLowerCase());
 		entry.set(NodeIndexHandler.CUSTOM_PROJECT_UUID, node.getProject().getUuid());
 		entry.set(NodeIndexHandler.CUSTOM_INDEX_TYPE, indexType);
+		entry.set(NodeIndexHandler.CUSTOM_SCHEMAVERSION_UUID, getSchemaContainerVersion().getUuid());
 	}
 
 	@Override
@@ -432,8 +433,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version) {
-		return outE(HAS_FIELD).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER)
-				.has(MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
+		return outE(HAS_FIELD).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class)
+				.has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
 	}
 
 	@Override

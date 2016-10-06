@@ -1,8 +1,7 @@
 package com.gentics.mesh.core.rest.auth;
 
 /**
- * This response is returned when a new JWToken is requested
- * @author philippguertler
+ * This response is returned when a new JWToken is requested.
  */
 public class TokenResponse {
 	private String token;

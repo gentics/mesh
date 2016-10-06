@@ -3,7 +3,6 @@ package com.gentics.mesh.search.index;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -168,14 +167,21 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		}
 	}
 
+	/**
+	 * Update the index and type specific mapping. This method will use the implementation specific transformer in order to generate the needed mappings.
+	 * 
+	 * @param indexName
+	 * @param documentType
+	 * @return
+	 */
 	public Completable updateMapping(String indexName, String documentType) {
 
 		if (searchProvider.getNode() != null) {
 			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
 			mappingRequestBuilder.setType(documentType);
 
+			// Generate the mapping for the specific type
 			JsonObject mapping = getTransformator().getMapping(documentType);
-
 			mappingRequestBuilder.setSource(mapping.toString());
 
 			return Completable.create(sub -> {
@@ -234,7 +240,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		String indexName = entry.getElementUuid();
 		Map<String, Set<String>> indexInfo = getIndices();
 		if (indexInfo.containsKey(indexName)) {
-
 			// Iterate over all document types of the found index and add completables which will create/update the mapping
 			Set<String> documentTypes = indexInfo.get(indexName);
 			Set<Completable> mappingObs = new HashSet<>();
@@ -249,19 +254,26 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable init() {
+		// 1. Create the indices
 		Map<String, Set<String>> indexInfo = getIndices();
 		Set<Completable> indexCreationObs = new HashSet<>();
-		indexInfo.keySet().forEach(index -> indexCreationObs.add(searchProvider.createIndex(index)));
+
+		indexInfo.keySet().forEach(index -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Creating index  " + index);
+			}
+			indexCreationObs.add(searchProvider.createIndex(index));
+		});
 		if (indexCreationObs.isEmpty()) {
 			return Completable.complete();
 		} else {
+			// 2. Create the mappings
 			Set<Completable> mappingUpdateObs = new HashSet<>();
 			for (String indexName : indexInfo.keySet()) {
 				for (String documentType : indexInfo.get(indexName)) {
 					mappingUpdateObs.add(updateMapping(indexName, documentType));
 				}
 			}
-
 			return Completable.merge(indexCreationObs).andThen(Completable.merge(mappingUpdateObs));
 		}
 	}
@@ -269,6 +281,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable clearIndex() {
 		Set<Completable> obs = new HashSet<>();
+		// Iterate over all indices which the handler is responsible for and clear all of them.
 		getIndices().keySet().forEach(index -> obs.add(searchProvider.clearIndex(index)));
 		if (obs.isEmpty()) {
 			return Completable.complete();

@@ -4,29 +4,27 @@ import com.gentics.mesh.core.rest.common.RestModel;
 
 public class TagCreateRequest implements RestModel {
 
-	private TagFieldContainer fields = new TagFieldContainer();
+	private String name;
 
 	public TagCreateRequest() {
 	}
 
 	/**
-	 * Return the tag field container which holds tag values (e.g.: Tag name)
+	 * Get the name of the tag.
 	 * 
-	 * @return Tag field container
+	 * @return
 	 */
-	public TagFieldContainer getFields() {
-		return fields;
+	public String getName() {
+		return name;
 	}
 
 	/**
-	 * Set the field container which hold the tag values (e.g.: Tag name)
+	 * Set the name of the tag.
 	 * 
-	 * @param fields
-	 * @return Fluent API
+	 * @param name
 	 */
-	public TagCreateRequest setFields(TagFieldContainer fields) {
-		this.fields = fields;
-		return this;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

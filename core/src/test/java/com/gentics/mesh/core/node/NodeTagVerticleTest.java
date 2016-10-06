@@ -183,7 +183,7 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			TagListResponse tagsForNode = call(
 					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
-					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("red")).count());
+					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
@@ -224,9 +224,9 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			TagListResponse tagsForNode = call(
 					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
-					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("red")).count());
+					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
-					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("blue")).count());
+					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
@@ -265,9 +265,9 @@ public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
 			TagListResponse tagsForNode = call(
 					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
-					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("red")).count());
+					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
-					tagsForNode.getData().stream().filter(tag -> tag.getFields().getName().equals("blue")).count());
+					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(

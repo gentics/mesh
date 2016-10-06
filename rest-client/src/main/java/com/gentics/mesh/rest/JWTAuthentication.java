@@ -26,8 +26,8 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	@Override
 	public Completable addAuthenticationInformation(HttpClientRequest request) {
-		//TODO: request new Token when old one expires
-		request.headers().add("Authorization", "Bearer " + token);
+		// TODO: request new Token when old one expires
+		request.headers().add("Cookie", "mesh.token=" + token);
 		return Completable.complete();
 	}
 
@@ -55,7 +55,7 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 	public Single<GenericMessageResponse> logout(HttpClient client) {
 		token = null;
 		loginRequest = null;
-		//No need call any endpoint in JWT
+		// No need call any endpoint in JWT
 		return Single.just(new GenericMessageResponse("OK"));
 	}
 

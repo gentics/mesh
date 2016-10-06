@@ -25,7 +25,8 @@ public interface ProjectRoot extends RootVertex<Project> {
 	public static final String TYPE = "projects";
 
 	/**
-	 * Create a new project with the given name and add it to the aggregation vertex.
+	 * Create a new project with the given name and add it to the aggregation vertex. Assign the provided schema container version to the created initial
+	 * release of the project.
 	 * 
 	 * @param projectName
 	 *            Name of the new project.

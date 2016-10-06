@@ -56,7 +56,8 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			UserReference reference = user.transformToReference();
 			assertNotNull(reference);
 			assertEquals(user.getUuid(), reference.getUuid());
-			assertEquals(user.getName(), reference.getName());
+			assertEquals(user.getFirstname(), reference.getFirstName());
+			assertEquals(user.getLastname(), reference.getLastName());
 		}
 	}
 

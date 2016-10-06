@@ -56,6 +56,7 @@ public class SchemaTest {
 		schema.setContainer(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
 		validateSchema(schema);
+		schema.validate();
 	}
 
 	@Test
@@ -110,10 +111,10 @@ public class SchemaTest {
 	}
 
 	@Test
-	public void testNoFieldsInvalid() throws MeshJsonException {
+	public void testNoFields() throws MeshJsonException {
 		Schema schema = new SchemaModel();
 		schema.setName("test");
-		expectErrorOnValidate(schema, "schema_error_no_fields");
+		schema.validate();
 	}
 
 	@Test
@@ -145,7 +146,7 @@ public class SchemaTest {
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
-		expectErrorOnValidate(schema, "schema_error_displayfield_not_set");
+		schema.validate();
 	}
 
 	@Test

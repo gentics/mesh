@@ -172,7 +172,7 @@ public interface NodeClientMethods {
 			ParameterProvider... parameters);
 
 	/**
-	 * Publish a node
+	 * Publish a node.
 	 *
 	 * @param projectName
 	 * @param nodeUuid

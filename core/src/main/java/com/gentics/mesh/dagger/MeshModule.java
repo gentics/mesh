@@ -1,26 +1,14 @@
 package com.gentics.mesh.dagger;
 
-import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_HTTP_ONLY_FLAG;
-import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_SECURE_FLAG;
-
 import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.auth.MeshAuthProvider;
-import com.gentics.mesh.auth.MeshBasicAuthHandler;
-import com.gentics.mesh.auth.MeshJWTAuthHandler;
-import com.gentics.mesh.auth.MeshJWTAuthProvider;
-import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
-import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
-import com.gentics.mesh.core.verticle.auth.BasicAuthRestHandler;
-import com.gentics.mesh.core.verticle.auth.JWTAuthRestHandler;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.GraphStorageOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
@@ -35,17 +23,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.mail.MailClient;
-import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
-import io.vertx.ext.web.handler.SessionHandler;
-import io.vertx.ext.web.handler.UserSessionHandler;
-import io.vertx.ext.web.handler.impl.SessionHandlerImpl;
-import io.vertx.ext.web.sstore.LocalSessionStore;
-import io.vertx.ext.web.sstore.SessionStore;
 
 /**
  * Main dagger module class.
@@ -90,8 +70,6 @@ public class MeshModule {
 		try {
 			GraphStorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
 			database.init(options, Mesh.vertx(), "com.gentics.mesh.core.data");
-			DatabaseHelper helper = new DatabaseHelper(database);
-			helper.init();
 			return database;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -104,84 +82,56 @@ public class MeshModule {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
 	}
 
-	@Provides
-	@Singleton
-	public SessionHandler sessionHandler() {
-		SessionStore store = LocalSessionStore.create(Mesh.vertx());
-		// TODO make session age configurable
-		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
-				store);
-	}
+//	@Provides
+//	@Singleton
+//	public SessionHandler sessionHandler() {
+//		SessionStore store = LocalSessionStore.create(Mesh.vertx());
+//		// TODO make session age configurable
+//		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
+//				store);
+//	}
 
-	/**
-	 * Handler which will authenticate the user credentials.
-	 * 
-	 * @return
-	 */
-	@Provides
-	@Singleton
-	public AuthHandler authHandler(MeshAuthProvider provider) {
-		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
-		case JWT:
-			return MeshJWTAuthHandler.create(provider);
-		case BASIC_AUTH:
-		default:
-			return MeshBasicAuthHandler.create(provider);
-		}
-	}
+//	/**
+//	 * Handler which will authenticate the user credentials.
+//	 * 
+//	 * @return
+//	 */
+//	@Provides
+//	@Singleton
+//	public AuthHandler authHandler(MeshAuthProvider provider) {
+////		return MeshJWTAuthHandler.create(provider);
+////		return MeshBasicAuthHandler.create(provider);
+//	}
+//
+//	@Provides
+//	@Singleton
+//	public AuthenticationRestHandler authRestHandler(Database db, JWTAuthRestHandler jwtAuthHandler, BasicAuthRestHandler basicAuthHandler) {
+//		return jwtAuthHandler;
+//		return basicAuthHandler;
+//	}
 
-	@Provides
-	@Singleton
-	public AuthenticationRestHandler authRestHandler(Database db, JWTAuthRestHandler jwtAuthHandler, BasicAuthRestHandler basicAuthHandler) {
-		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
-		case JWT:
-			return jwtAuthHandler;
-		case BASIC_AUTH:
-		default:
-			return basicAuthHandler;
-		}
-	}
-
-	/**
-	 * User session handler which will provider the user from within the session.
-	 * 
-	 * @return
-	 */
-	@Provides
-	@Singleton
-	public UserSessionHandler userSessionHandler(BCryptPasswordEncoder passwordEncoder, Database db) {
-		return UserSessionHandler.create(authProvider(passwordEncoder, db));
-	}
-
-	/**
-	 * Return the mesh auth provider that can be used to authenticate a user.
-	 * 
-	 * @return
-	 */
-	@Provides
-	@Singleton
-	public MeshAuthProvider authProvider(BCryptPasswordEncoder passwordEncoder, Database db) {
-		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
-		case JWT:
-			return new MeshJWTAuthProvider(passwordEncoder, db);
-		case BASIC_AUTH:
-		default:
-			return new MeshAuthProvider(passwordEncoder, db);
-		}
-	}
-
-	/**
-	 * Return the configured mail client.
-	 * 
-	 * @return
-	 */
-	@Provides
-	@Singleton
-	public MailClient mailClient() {
-		MailConfig config = Mesh.mesh().getOptions().getMailServerOptions();
-		MailClient mailClient = MailClient.createShared(Mesh.vertx(), config, "meshClient");
-		return mailClient;
-	}
+//	/**
+//	 * User session handler which will provider the user from within the session.
+//	 * 
+//	 * @return
+//	 */
+//	@Provides
+//	@Singleton
+//	public UserSessionHandler userSessionHandler(BCryptPasswordEncoder passwordEncoder, Database db) {
+//		return UserSessionHandler.create(authProvider(passwordEncoder, db));
+//	}
+//
+//	/**
+//	 * Return the mesh auth provider that can be used to authenticate a user.
+//	 * 
+//	 * @return
+//	 */
+//	@Provides
+//	@Singleton
+//	public MeshAuthProvider authProvider(BCryptPasswordEncoder passwordEncoder, Database db) {
+//		return new MeshJWTAuthProvider(passwordEncoder, db);
+//		return new MeshAuthProvider(passwordEncoder, db);
+//	}
 
 	/**
 	 * Return the configured CORS handler.

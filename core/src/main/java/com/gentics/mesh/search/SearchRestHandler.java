@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
@@ -85,7 +86,7 @@ public class SearchRestHandler {
 	 * @param classOfRL
 	 *            Class of the rest model list that should be used when creating the response
 	 * @param indices
-	 *            index names to search
+	 *            Names of indices which should be searched
 	 * @param permission
 	 *            required permission
 	 * @throws InstantiationException
@@ -246,6 +247,11 @@ public class SearchRestHandler {
 		operateNoTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler handler : registry.getHandlers()) {
+					// Create all indices.
+					handler.init().await();
+
+					searchProvider.refreshIndex();
+					// Clear all indices.
 					handler.clearIndex().onErrorComplete(error -> {
 						// if (error instanceof IndexMissingException) {
 						// return true;
@@ -263,6 +269,42 @@ public class SearchRestHandler {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 		}).subscribe(message -> ac.send(message, OK), ac::fail);
+	}
+
+	public void handleClearBatches(InternalActionContext ac) {
+		operateNoTx(ac, () -> {
+			if (ac.getUser().hasAdminRole()) {
+				boot.get().meshRoot().getSearchQueue().clear();
+				return message(ac, "search_admin_clear_invoked");
+			} else {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+		}, message -> ac.send(message, OK));
+	}
+
+	public void handleProcessBatches(InternalActionContext ac) {
+		operateNoTx(() -> {
+			if (ac.getUser().hasAdminRole()) {
+				boot.get().meshRoot().getSearchQueue().processAll();
+				return Single.just(message(ac, "search_admin_reindex_invoked"));
+			} else {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+		}).subscribe(message -> ac.send(message, OK), ac::fail);
+	}
+
+	public void createMappings(InternalActionContext ac) {
+		operateNoTx(ac, () -> {
+			if (ac.getUser().hasAdminRole()) {
+				for(IndexHandler handler : registry.getHandlers()) {
+					handler.init().await();
+				}
+				MeshInternal.get().nodeIndexHandler().updateNodeIndexMappings();
+					return message(ac, "search_admin_createmappings_created");
+			} else {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+		}, message -> ac.send(message, OK));
 	}
 
 }

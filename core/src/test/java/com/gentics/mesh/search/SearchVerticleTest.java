@@ -82,7 +82,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 
 			Node node = folder("2015");
 			String uuid = node.getUuid();
-			String indexType = NodeIndexHandler.getDocumentType(node.getSchemaContainer().getLatestVersion());
+			String indexType = NodeIndexHandler.getDocumentType();
 			for (int i = 0; i < 10; i++) {
 				meshRoot().getSearchQueue().createBatch().addEntry(uuid, Node.TYPE, STORE_ACTION);
 			}

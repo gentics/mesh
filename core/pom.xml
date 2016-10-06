@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>mesh-core</artifactId>
@@ -21,8 +20,7 @@
 
 	<profiles>
 		<profile>
-			<!-- if ./inclusions.txt is present, use that as the inclusion list. Useful 
-				when skipping tests. -->
+			<!-- if ./inclusions.txt is present, use that as the inclusion list. Useful when skipping tests. -->
 			<id>inclusions</id>
 			<activation>
 				<file>
@@ -44,8 +42,6 @@
 
 	<dependencies>
 		<!-- Internal dependencies -->
-		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>mesh-git</artifactId> 
-			<version>${project.version}</version> </dependency> -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-api</artifactId>
@@ -324,8 +320,7 @@
 					<trimStackTrace>false</trimStackTrace>
 					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
 					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
-					<!-- <includes> <include>**/*Test.java</include> <include>**/*TestSuite.java</include> 
-						</includes> -->
+					<!-- <includes> <include>**/*Test.java</include> <include>**/*TestSuite.java</include> </includes> -->
 					<excludes>
 						<exclude>**/*AbstractTest.java</exclude>
 						<exclude>**/*Abstract*.java</exclude>
@@ -364,8 +359,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -387,7 +381,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

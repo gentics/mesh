@@ -71,7 +71,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	public Set<String> getAffectedIndices(InternalActionContext ac) {
+	public Set<String> getSelectedIndices(InternalActionContext ac) {
 		return db.noTx(() -> {
 			Project project = ac.getProject();
 			if (project != null) {

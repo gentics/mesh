@@ -1,6 +1,5 @@
 package com.gentics.mesh.rest.client;
 
-import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
 import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
@@ -28,8 +27,8 @@ import io.vertx.core.http.HttpClient;
 
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
-		MicroschemaClientMethods, NodeFieldAPIClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods, EventbusClientMethods,
-		ReleaseClientMethods, ApiInfoClientMethods {
+		MicroschemaClientMethods, NodeFieldAPIClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods,
+		EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods {
 
 	/**
 	 * Create a new mesh rest client.
@@ -39,13 +38,11 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @param port
 	 *            Server port
 	 * @param vertx
-	 *            Vertx instance to be used in combination with the vertx http client
-	 * @param authenticationMethod
-	 *            Authentication method to be used
+	 *            Vert.x instance to be used in combination with the vertx http client
 	 * @return
 	 */
-	static MeshRestClient create(String host, int port, Vertx vertx, AuthenticationMethod authenticationMethod) {
-		return new MeshRestHttpClientImpl(host, port, vertx, authenticationMethod);
+	static MeshRestClient create(String host, int port, Vertx vertx) {
+		return new MeshRestHttpClientImpl(host, port, vertx);
 	}
 
 	/**

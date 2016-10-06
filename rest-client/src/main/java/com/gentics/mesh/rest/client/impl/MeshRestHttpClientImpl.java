@@ -66,17 +66,16 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.rest.BasicAuthentication;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshBinaryResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshWebrootResponseHandler;
+
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -91,25 +90,16 @@ import io.vertx.core.http.WebSocket;
 public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	public MeshRestHttpClientImpl(String host, Vertx vertx) {
-		this(host, DEFAULT_PORT, vertx, AuthenticationMethod.BASIC_AUTH);
+		this(host, DEFAULT_PORT, vertx);
 	}
 
-	public MeshRestHttpClientImpl(String host, int port, Vertx vertx, AuthenticationMethod authenticationMethod) {
+	public MeshRestHttpClientImpl(String host, int port, Vertx vertx) {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);
 		options.setTryUseCompression(true);
 		options.setDefaultPort(port);
 		this.client = vertx.createHttpClient(options);
-		switch (authenticationMethod) {
-		case JWT:
-			setAuthentication(new JWTAuthentication());
-			break;
-		case BASIC_AUTH:
-		default:
-			setAuthentication(new BasicAuthentication());
-			break;
-		}
-
+		setAuthentication(new JWTAuthentication());
 	}
 
 	@Override
@@ -234,13 +224,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class);
 	}
 
-	//	// TODO can we actually do this?
-	//	@Override
-	//	public MeshRequest<TagResponse> findTagByName(String projectName, String name) {
-	//		Objects.requireNonNull(projectName, "projectName must not be null");
-	//		Objects.requireNonNull(name, "name must not be null");
-	//		return invokeRequest(GET, "/" + encodeFragment(projectName) + "/tags/" + name, TagResponse.class);
-	//	}
+	// // TODO can we actually do this?
+	// @Override
+	// public MeshRequest<TagResponse> findTagByName(String projectName, String name) {
+	// Objects.requireNonNull(projectName, "projectName must not be null");
+	// Objects.requireNonNull(name, "name must not be null");
+	// return invokeRequest(GET, "/" + encodeFragment(projectName) + "/tags/" + name, TagResponse.class);
+	// }
 
 	@Override
 	public MeshRequest<NodeListResponse> findNodesForTag(String projectName, String tagFamilyUuid, String tagUuid, ParameterProvider... parameters) {
@@ -625,7 +615,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		if (!path.startsWith("/")) {
 			throw new RuntimeException("The path {" + path + "} must start with a slash");
 		}
-		//TODO encode path?
+		// TODO encode path?
 		String requestUri = BASEURI + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
 		MeshResponseHandler<WebRootResponse> handler = new MeshWebrootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
@@ -868,7 +858,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, Microschema request, ParameterProvider...parameters) {
+	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, Microschema request, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(POST, "/microschemas/" + uuid + getQuery(parameters), GenericMessageResponse.class, request);
 	}

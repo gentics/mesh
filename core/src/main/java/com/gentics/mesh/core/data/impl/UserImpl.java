@@ -254,6 +254,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
+	public UserReference transformToReference() {
+		return new UserReference().setFirstName(getFirstname()).setLastName(getLastname()).setUuid(getUuid());
+	}
+
+	@Override
 	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		UserResponse restUser = new UserResponse();
 
@@ -446,11 +451,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		// Users have no foreign relationships.
-	}
-
-	@Override
-	public UserReference createEmptyReferenceModel() {
-		return new UserReference();
 	}
 
 	@Override

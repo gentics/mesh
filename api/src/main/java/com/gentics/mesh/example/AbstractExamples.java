@@ -36,7 +36,8 @@ public abstract class AbstractExamples {
 	public UserReference getUserReference() {
 		UserReference reference = new UserReference();
 		reference.setUuid(randomUUID());
-		reference.setName("jdoe42");
+		reference.setFirstName("Joe");
+		reference.setLastName("Doe");
 		return reference;
 	}
 

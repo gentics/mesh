@@ -26,6 +26,7 @@ import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
+import com.orientechnologies.orient.core.db.ODatabase;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
@@ -37,6 +38,7 @@ import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.intent.OIntentNoCache;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.metadata.security.OSecurityNull;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
@@ -83,15 +85,24 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		factory.declareIntent(new OIntentNoCache());
+		//		OrientGraphNoTx tx1 = factory.getNoTx();
+		//		tx1.declareIntent(new OIntentNoCache());
+		//		try {
+		//			tx1.command(new OCommandSQL("delete vertex V")).execute();
+		//			//		tx1.commit();
+		//		} finally {
+		//			tx1.declareIntent(null);
+		//			tx1.shutdown();
+		//		}
 		OrientGraphNoTx tx = factory.getNoTx();
+		tx.declareIntent(new OIntentNoCache());
 		try {
 			for (Vertex vertex : tx.getVertices()) {
 				vertex.remove();
 			}
 		} finally {
+			tx.declareIntent(null);
 			tx.shutdown();
-			factory.declareIntent(null);
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Cleared graph");
@@ -104,7 +115,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		// resolver = new OrientDBTypeResolver(basePaths);
 		resolver = new MeshTypeResolver(basePaths);
 		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
-			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
+			this.maxRetry = Integer.valueOf(options.getParameters().get("maxTransactionRetry"));
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
 		}
 	}
@@ -133,6 +144,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} else {
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
+		factory.setProperty(ODatabase.OPTIONS.SECURITY.toString(), OSecurityNull.class);
 		if (options != null && options.getStartServer()) {
 			startOrientServer();
 		}

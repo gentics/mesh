@@ -1,16 +1,40 @@
 package com.gentics.mesh.context.impl;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.AbstractInternalActionContext;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 
@@ -97,8 +121,273 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	@Override
 	public MeshAuthUser getUser() {
-		// TODO Auto-generated method stub
-		return null;
+		// Create mocked user which has any permission
+		MeshAuthUser user = new MeshAuthUser() {
+
+			@Override
+			public void setName(String name) {
+			}
+
+			@Override
+			public String getName() {
+				return "node_migration";
+			}
+
+			@Override
+			public UserReference transformToReference() {
+				return null;
+			}
+
+			@Override
+			public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+				return null;
+			}
+
+			@Override
+			public String getETag(InternalActionContext ac) {
+				return null;
+			}
+
+			@Override
+			public String getAPIPath(InternalActionContext ac) {
+				return null;
+			}
+
+			@Override
+			public String getType() {
+				return null;
+			}
+
+			@Override
+			public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
+
+			}
+
+			@Override
+			public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
+				return null;
+			}
+
+			@Override
+			public void setUuid(String uuid) {
+
+			}
+
+			@Override
+			public void reload() {
+
+			}
+
+			@Override
+			public String getUuid() {
+				return null;
+			}
+
+			@Override
+			public Element getElement() {
+				return null;
+			}
+
+			@Override
+			public Vertex getVertex() {
+				return null;
+			}
+
+			@Override
+			public void delete(SearchQueueBatch batch) {
+
+			}
+
+			@Override
+			public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+					Set<GraphPermission> permissionsToRevoke) {
+
+			}
+
+			@Override
+			public User update(InternalActionContext ac, SearchQueueBatch batch) {
+				return null;
+			}
+
+			@Override
+			public void setUsername(String string) {
+
+			}
+
+			@Override
+			public void setReferencedNode(Node node) {
+
+			}
+
+			@Override
+			public void setPasswordHash(String hash) {
+
+			}
+
+			@Override
+			public void setPassword(String password) {
+
+			}
+
+			@Override
+			public void setLastname(String lastname) {
+
+			}
+
+			@Override
+			public void setFirstname(String firstname) {
+
+			}
+
+			@Override
+			public void setEmailAddress(String email) {
+
+			}
+
+			@Override
+			public boolean isEnabled() {
+				return true;
+			}
+
+			@Override
+			public void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
+			}
+
+			@Override
+			public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
+				return true;
+			}
+
+			@Override
+			public boolean hasPermission(MeshVertex element, GraphPermission permission) {
+				return true;
+			}
+
+			@Override
+			public boolean hasAdminRole() {
+				return false;
+			}
+
+			@Override
+			public String getUsername() {
+				return "node_migration";
+			}
+
+			@Override
+			public List<? extends Role> getRolesViaShortcut() {
+				return Collections.emptyList();
+			}
+
+			@Override
+			public List<? extends Role> getRoles() {
+				return Collections.emptyList();
+			}
+
+			@Override
+			public Node getReferencedNode() {
+				return null;
+			}
+
+			@Override
+			public Set<GraphPermission> getPermissions(MeshVertex vertex) {
+				return new HashSet<GraphPermission>(Arrays.asList(GraphPermission.values()));
+			}
+
+			@Override
+			public String[] getPermissionNames(MeshVertex vertex) {
+				return null;
+			}
+
+			@Override
+			public String getPasswordHash() {
+				return null;
+			}
+
+			@Override
+			public String getLastname() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public List<? extends Group> getGroups() {
+				return Collections.emptyList();
+			}
+
+			@Override
+			public String getFirstname() {
+				return null;
+			}
+
+			@Override
+			public String getEmailAddress() {
+				return null;
+			}
+
+			@Override
+			public void enable() {
+			}
+
+			@Override
+			public void disable() {
+			}
+
+			@Override
+			public void deactivate() {
+			}
+
+			@Override
+			public boolean canReadNode(InternalActionContext ac, Node node) {
+				return true;
+			}
+
+			@Override
+			public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+			}
+
+			@Override
+			public void addGroup(Group group) {
+			}
+
+			@Override
+			public void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
+			}
+
+			@Override
+			public io.vertx.ext.auth.User isAuthorised(String authority, Handler<AsyncResult<Boolean>> resultHandler) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public io.vertx.ext.auth.User clearCache() {
+				return null;
+			}
+
+			@Override
+			public JsonObject principal() {
+				return null;
+			}
+
+			@Override
+			public void setAuthProvider(AuthProvider authProvider) {
+			}
+
+			@Override
+			public void writeToBuffer(Buffer buffer) {
+			}
+
+			@Override
+			public int readFromBuffer(int pos, Buffer buffer) {
+				return 0;
+			}
+
+			@Override
+			public MeshAuthUserImpl getImpl() {
+				return null;
+			}
+		};
+		return user;
 	}
 
 	@Override

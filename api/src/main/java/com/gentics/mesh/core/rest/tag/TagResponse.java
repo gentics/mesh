@@ -9,7 +9,7 @@ public class TagResponse extends AbstractGenericRestResponse {
 
 	private TagFamilyReference tagFamily;
 
-	private TagFieldContainer fields = new TagFieldContainer();
+	private String name;
 
 	public TagResponse() {
 	}
@@ -33,12 +33,21 @@ public class TagResponse extends AbstractGenericRestResponse {
 	}
 
 	/**
-	 * Return the tag field container which holds the tag name.
+	 * Get the name of the tag.
 	 * 
-	 * @return Tag field container
+	 * @return
 	 */
-	public TagFieldContainer getFields() {
-		return fields;
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Set the name of the tag.
+	 * 
+	 * @param name
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

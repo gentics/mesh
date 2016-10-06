@@ -8,14 +8,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -152,14 +151,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 		if (session != null) {
 			session.destroy();
 		}
-		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
-		case JWT:
-			rc.addCookie(Cookie.cookie(MeshOptions.JWT_TOKEN_KEY, "deleted").setMaxAge(0));
-		case BASIC_AUTH:
-		default:
-			rc.addCookie(Cookie.cookie(MeshOptions.MESH_SESSION_KEY, "deleted").setMaxAge(0));
-			break;
-		}
+		rc.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, "deleted").setMaxAge(0));
 		rc.clearUser();
 	}
 

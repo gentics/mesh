@@ -97,7 +97,7 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 			try {
 				IndexHandler indexHandler = registry.get(indexHandlerKey);
 				InternalActionContext ac = InternalActionContext.create(rc);
-				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getAffectedIndices(ac), indexHandler.getReadPermission(ac));
+				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac), indexHandler.getReadPermission(ac));
 			} catch (Exception e) {
 				rc.fail(e);
 			}

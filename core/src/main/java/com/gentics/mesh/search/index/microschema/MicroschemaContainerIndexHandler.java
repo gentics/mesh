@@ -38,7 +38,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	public Set<String> getAffectedIndices(InternalActionContext ac) {
+	public Set<String> getSelectedIndices(InternalActionContext ac) {
 		return Collections.singleton(MicroschemaContainer.TYPE);
 	}
 

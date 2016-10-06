@@ -4,7 +4,6 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
-import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
@@ -25,7 +24,7 @@ public class TagExamples extends AbstractExamples {
 		tag.setCreator(getUserReference());
 		tag.setEdited(getTimestamp());
 		tag.setEditor(getUserReference());
-		tag.getFields().setName(name);
+		tag.setName(name);
 		tag.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		tag.setTagFamily(getTagFamilyReference());
 		return tag;
@@ -38,7 +37,7 @@ public class TagExamples extends AbstractExamples {
 		tag.setCreator(getUserReference());
 		tag.setEdited(getTimestamp());
 		tag.setEditor(getUserReference());
-		tag.getFields().setName("Name for language tag en");
+		tag.setName("Name for language tag en");
 		tag.setTagFamily(getTagFamilyReference());
 		tag.setPermissions("READ", "CREATE");
 		return tag;
@@ -54,14 +53,14 @@ public class TagExamples extends AbstractExamples {
 
 	public TagUpdateRequest getTagUpdateRequest(String name) {
 		TagUpdateRequest request = new TagUpdateRequest();
-		request.setFields(new TagFieldContainer().setName(name));
+		request.setName(name);
 		return request;
 	}
 
 	public TagCreateRequest getTagCreateRequest(String name) {
 		TagCreateRequest request = new TagCreateRequest();
 		//tagCreate.setTagFamily(tagFamilyReference);
-		request.setFields(new TagFieldContainer().setName(name));
+		request.setName(name);
 		return request;
 	}
 }

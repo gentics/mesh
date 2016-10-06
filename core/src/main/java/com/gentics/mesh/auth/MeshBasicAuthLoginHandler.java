@@ -2,30 +2,29 @@ package com.gentics.mesh.auth;
 
 import java.util.Base64;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.gentics.mesh.context.InternalActionContext;
+
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
 
-/**
- * This class is a modification of Vertx'
- * {@link io.vertx.ext.web.handler.impl.BasicAuthHandlerImpl} The only
- * difference is that if the user is not authenticated (401), no response header
- * is set. This prevents the ugly popup in browsers asking for credentials.
- * 
- * @author philippguertler
- */
-public class MeshBasicAuthHandler extends AuthHandlerImpl {
+@Singleton
+public class MeshBasicAuthLoginHandler extends AuthHandlerImpl {
 
-	public MeshBasicAuthHandler(AuthProvider authProvider) {
+	final String realm;
+
+	private MeshAuthProvider authProvider;
+
+	@Inject
+	public MeshBasicAuthLoginHandler(MeshAuthProvider authProvider) {
 		super(authProvider);
-	}
-
-	public static MeshBasicAuthHandler create(AuthProvider authProvider) {
-		return new MeshBasicAuthHandler(authProvider);
+		this.authProvider = authProvider;
+		this.realm = "Gentics Mesh";
 	}
 
 	@Override
@@ -48,10 +47,15 @@ public class MeshBasicAuthHandler extends AuthHandlerImpl {
 				try {
 					String[] parts = authorization.split(" ");
 					sscheme = parts[0];
-					String[] credentials = new String(Base64.getDecoder().decode(parts[1])).split(":");
-					suser = credentials[0];
-					// when the header is: "user:"
-					spass = credentials.length > 1 ? credentials[1] : null;
+					String decoded = new String(Base64.getDecoder().decode(parts[1]));
+					int colonIdx = decoded.indexOf(":");
+					if (colonIdx != -1) {
+						suser = decoded.substring(0, colonIdx);
+						spass = decoded.substring(colonIdx + 1);
+					} else {
+						suser = decoded;
+						spass = null;
+					}
 				} catch (ArrayIndexOutOfBoundsException e) {
 					handle401(context);
 					return;
@@ -64,22 +68,16 @@ public class MeshBasicAuthHandler extends AuthHandlerImpl {
 				if (!"Basic".equals(sscheme)) {
 					context.fail(400);
 				} else {
-					JsonObject authInfo = new JsonObject().put("username", suser).put("password", spass);
-					authProvider.authenticate(authInfo, res -> {
-						if (res.succeeded()) {
-							User authenticated = res.result();
-							context.setUser(authenticated);
-							authorise(authenticated, context);
-						} else {
-							handle401(context);
-						}
-					});
+					// We decoded the basic auth information and can now invoke the login call. The MeshAuthProvider will also set the JWT token in the cookie and return the response to the requestor. 
+					authProvider.login(InternalActionContext.create(context), suser, spass);
 				}
 			}
 		}
 	}
 
 	private void handle401(RoutingContext context) {
+		context.response().putHeader("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
 		context.fail(401);
 	}
+
 }

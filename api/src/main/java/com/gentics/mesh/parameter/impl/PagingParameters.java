@@ -10,7 +10,6 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.api.common.SortOrder;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NumberUtils;
 
@@ -25,6 +24,7 @@ public class PagingParameters extends AbstractParameters {
 	public static final String SORT_ORDER_PARAMETER_KEY = "order";
 
 	public static final int DEFAULT_PAGE = 1;
+	public static final int DEFAULT_PAGE_SIZE = 25;
 
 	public PagingParameters(ActionContext ac) {
 		super(ac);
@@ -93,7 +93,7 @@ public class PagingParameters extends AbstractParameters {
 	 * @return Per page count
 	 */
 	public int getPerPage() {
-		return NumberUtils.toInt(getParameter(PER_PAGE_PARAMETER_KEY), MeshOptions.DEFAULT_PAGE_SIZE);
+		return NumberUtils.toInt(getParameter(PER_PAGE_PARAMETER_KEY), DEFAULT_PAGE_SIZE);
 	}
 
 	/**
@@ -188,7 +188,7 @@ public class PagingParameters extends AbstractParameters {
 
 		// perPage
 		QueryParameter perPageParameter = new QueryParameter();
-		perPageParameter.setDefaultValue(String.valueOf(MeshOptions.DEFAULT_PAGE_SIZE));
+		perPageParameter.setDefaultValue(String.valueOf(DEFAULT_PAGE_SIZE));
 		perPageParameter.setDescription("Number of elements per page.");
 		perPageParameter.setExample("42");
 		perPageParameter.setRequired(false);
