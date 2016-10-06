@@ -4,6 +4,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
@@ -86,7 +87,35 @@ public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest
 			latchFor(meResponse);
 			expectException(meResponse, UNAUTHORIZED, "error_not_authorized");
 		}
+	}
 
+	@Test
+	public void testAutomaticTokenRefresh() throws InterruptedException {
+		try (NoTx noTrx = db.noTx()) {
+			User user = user();
+			String username = user.getUsername();
+
+			MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
+			client.setLogin(username, password());
+			Single<GenericMessageResponse> future = client.login();
+
+			GenericMessageResponse loginResponse = future.toBlocking().value();
+			assertNotNull(loginResponse);
+			assertEquals("OK", loginResponse.getMessage());
+
+			MeshResponse<UserResponse> response = client.me().invoke();
+			latchFor(response);
+			String meshTokenCookie1 = response.getResponse().getHeader("Set-Cookie");
+
+			Thread.sleep(2000);
+
+			response = client.me().invoke();
+			latchFor(response);
+			String meshTokenCookie2 = response.getResponse().getHeader("Set-Cookie");
+
+			assertNotEquals("Both cookies should be different. Otherwise the token was not regenerated and the exp. date was not bumped.",
+					meshTokenCookie1, meshTokenCookie2);
+		}
 	}
 
 }

@@ -99,7 +99,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 					log.error("Could not authenticate token", rh.cause());
 					resultHandler.handle(Future.failedFuture(new VertxException("Invalid Token")));
 				} else {
-					//TODO Update token and bump exp
+
 					try {
 						User user = getUserByJWT(rh.result());
 						resultHandler.handle(Future.succeededFuture(user));
