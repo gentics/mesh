@@ -1,8 +1,6 @@
 package com.gentics.mesh.auth;
 
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
 import java.io.File;
@@ -21,10 +19,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -96,6 +96,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		if (authInfo.getString("jwt") != null) {
 			jwtProvider.authenticate(authInfo, rh -> {
 				if (rh.failed()) {
+					log.error("Could not authenticate token", rh.cause());
 					resultHandler.handle(Future.failedFuture(new VertxException("Invalid Token")));
 				} else {
 					//TODO Update token and bump exp
@@ -242,7 +243,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
 			} else {
 				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result()).setPath("/"));
-				ac.send(message(ac, "auth_login_succeeded"), OK);
+				ac.send(JsonUtil.toJson(new TokenResponse(rh.result())));
 			}
 		});
 	}
