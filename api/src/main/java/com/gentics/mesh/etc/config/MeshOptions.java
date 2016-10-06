@@ -94,6 +94,7 @@ public class MeshOptions {
 	 * 
 	 * @return Storage options
 	 */
+	@JsonProperty("storage")
 	public GraphStorageOptions getStorageOptions() {
 		return this.storageOptions;
 	}
@@ -103,6 +104,7 @@ public class MeshOptions {
 	 * 
 	 * @return Upload options
 	 */
+	@JsonProperty("upload")
 	public MeshUploadOptions getUploadOptions() {
 		return uploadOptions;
 	}
@@ -122,6 +124,7 @@ public class MeshOptions {
 	 * 
 	 * @return Http server options
 	 */
+	@JsonProperty("httpServer")
 	public HttpServerConfig getHttpServerOptions() {
 		return httpServerOptions;
 	}
@@ -141,6 +144,7 @@ public class MeshOptions {
 	 * 
 	 * @return Search options
 	 */
+	@JsonProperty("search")
 	public ElasticSearchOptions getSearchOptions() {
 		return searchOptions;
 	}
@@ -160,6 +164,7 @@ public class MeshOptions {
 	 * 
 	 * @return Authentication options
 	 */
+	@JsonProperty("security")
 	public AuthenticationOptions getAuthenticationOptions() {
 		return authenticationOptions;
 	}
@@ -198,6 +203,7 @@ public class MeshOptions {
 	 * 
 	 * @return
 	 */
+	@JsonProperty("image")
 	public ImageManipulatorOptions getImageOptions() {
 		return imageOptions;
 	}

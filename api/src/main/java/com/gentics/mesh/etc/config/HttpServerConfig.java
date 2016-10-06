@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class HttpServerConfig {
 
-	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "NOT_SET";
+	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "";
 
 	public static final String HTTP_PORT_KEY = "httpPort";
 	public static final int DEFAULT_HTTP_PORT = 8080;

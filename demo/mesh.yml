@@ -3,29 +3,29 @@ clusterMode: false
 defaultMaxDepth: 10
 defaultLanguage: "en"
 updateCheck: true
-httpServerOptions:
+tempDirectory: "data/tmp"
+httpServer:
   port: 8080
-  corsAllowedOriginPattern: "NOT_SET"
+  corsAllowedOriginPattern: ""
   enableCors: false
-storageOptions:
+storage:
   directory: "data/graphdb"
   backupDirectory: "data/backup"
   exportDirectory: "data/export"
   startServer: false
   parameters: {}
-searchOptions:
+search:
   directory: "data/searchindex"
   httpEnabled: false
-uploadOptions:
+upload:
   byteLimit: 262144000
   directory: "data/binaryFiles"
   tempDirectory: "data/tmp/file-uploads"
-authenticationOptions:
+security:
   tokenExpirationTime: 3600
   signatureSecret: "secret"
   keystorePath: "keystore.jceks"
-imageOptions:
+image:
   imageCacheDirectory: "data/binaryImageCache"
   maxWidth: 2048
   maxHeight: 2048
-tempDirectory: "data/tmp"
