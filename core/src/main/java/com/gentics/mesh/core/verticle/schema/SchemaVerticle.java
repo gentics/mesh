@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.schema;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -12,9 +13,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.ext.web.Route;
 
 /**
@@ -44,6 +52,18 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		addNodeMigrationHandler();
+	}
+
+	private void addNodeMigrationHandler() {
+
+		Route route = route("/:schemaUuid/migrate").method(GET).produces(APPLICATION_JSON);
+		route.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			crudHandler.handleMigrateRemaining(ac);
+		});
+
 	}
 
 	private void addChangesHandler() {

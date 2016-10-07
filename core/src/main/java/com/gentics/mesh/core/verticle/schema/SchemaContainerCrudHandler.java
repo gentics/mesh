@@ -5,21 +5,28 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.json.JsonUtil;
 
+import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Observable;
 
 @Component
@@ -131,6 +138,48 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
+	}
+
+	public void handleMigrateRemaining(InternalActionContext ac) {
+		db.asyncNoTrxExperimental(() -> {
+
+			for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAll()) {
+				SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
+				SchemaContainerVersion currentVersion = latestVersion;
+				while (true) {
+					currentVersion = currentVersion.getPreviousVersion();
+					if (currentVersion == null) {
+						break;
+					}
+
+					System.out.println("Before migration " + schemaContainer.getName() + " - " + currentVersion.getUuid() + "="
+							+ currentVersion.getFieldContainers().size());
+					//					if (!getLatestVersion().getUuid().equals(version.getUuid())) {
+					//						for (GraphFieldContainer container : version.getFieldContainers()) {
+					//							NodeImpl node = container.getImpl().in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
+					//							System.out.println(
+					//									"Node: " + node.getUuid() + "ne: " + node.getLastEditedTimestamp() + "nc: " + node.getCreationTimestamp());
+					//						}
+					//					}
+					CountDownLatch latch = new CountDownLatch(1);
+					DeliveryOptions options = new DeliveryOptions();
+					options.addHeader(NodeMigrationVerticle.UUID_HEADER, schemaContainer.getUuid());
+					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, currentVersion.getUuid());
+					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, latestVersion.getUuid());
+					SchemaContainerVersion version = currentVersion;
+					Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
+						try (NoTrx noTrx = db.noTrx()) {
+							System.out.println("After migration " + schemaContainer.getName() + " - " + version.getUuid() + "="
+									+ version.getFieldContainers().size());
+						}
+						latch.countDown();
+					});
+					latch.await();
+				}
+
+			}
+			return Observable.just(message(ac, "schema_migration_invoked"));
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 }
