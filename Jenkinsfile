@@ -14,7 +14,7 @@ if (!Boolean.valueOf(skipTests)) {
 	for (int i = 0; i < splits.size(); i++) {
 		def split = splits[i]
 		branches["split${i}"] = {
-			node('dockerSlave') {
+			node('mesh') {
 				sh 'rm -rf *'
 				checkout scm
 				writeFile file: (split.includes ? 'inclusions.txt' : 'exclusions.txt'), text: split.list.join("\n")
@@ -40,7 +40,7 @@ if (!Boolean.valueOf(skipTests)) {
 	echo "Tests skipped.."
 }
 
-node('dockerSlave') {
+node('dockerRoot') {
 
 	stage 'Checkout'
 	sh "rm -rf *"
