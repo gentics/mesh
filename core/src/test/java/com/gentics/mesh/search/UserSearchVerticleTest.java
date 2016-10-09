@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -93,8 +94,9 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		String impossibleName = "Jöhä@sRe2";
 		try (NoTx noTx = db.noTx()) {
-			user().setLastname(impossibleName);
-			fullIndex();
+			UserUpdateRequest updateRequest = new UserUpdateRequest();
+			updateRequest.setLastname(impossibleName);
+			call(() -> getClient().updateUser(user().getUuid(), updateRequest));
 		}
 		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleTermQuery("lastname", impossibleName)).invoke();
 		latchFor(future);
@@ -110,8 +112,9 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testTokenzierIssueQuery2() throws Exception {
 		String impossibleName = "Jöhä@sRe";
 		try (NoTx noTx = db.noTx()) {
-			user().setLastname(impossibleName);
-			fullIndex();
+			UserUpdateRequest updateRequest = new UserUpdateRequest();
+			updateRequest.setLastname(impossibleName);
+			call(() -> getClient().updateUser(user().getUuid(), updateRequest));
 		}
 		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName + "*")).invoke();
 		latchFor(future);
@@ -127,8 +130,9 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testTokenzierIssueLowercasedQuery() throws Exception {
 		String impossibleName = "Jöhä@sRe";
 		try (NoTx noTx = db.noTx()) {
-			user().setLastname(impossibleName);
-			fullIndex();
+			UserUpdateRequest updateRequest = new UserUpdateRequest();
+			updateRequest.setLastname(impossibleName);
+			call(() -> getClient().updateUser(user().getUuid(), updateRequest));
 		}
 		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*"))
 				.invoke();
