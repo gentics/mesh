@@ -7,7 +7,6 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 
 @Singleton
@@ -23,7 +22,7 @@ public class NodeTypeProvider {
 	public GraphQLObjectType getNodeType() {
 		GraphQLObjectType nodeType = newObject().name("Node").description("A Node")
 				.field(newFieldDefinition().name("uuid").description("The uuid of node.").type(GraphQLString).build())
-				.field(newFieldDefinition().name("fields").type(new GraphQLList(nodeFieldTypeProvider.getFieldType())).build()).build();
+				.field(newFieldDefinition().name("fields").type(nodeFieldTypeProvider.getFieldsType()).build()).build();
 		return nodeType;
 	}
 }

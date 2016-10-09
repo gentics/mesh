@@ -21,7 +21,7 @@ public class DateFieldTypeProvider {
 	}
 
 	public GraphQLObjectType getDateFieldType() {
-		GraphQLObjectType dateFieldType = newObject().name("date").withInterface(nodeFieldTypeProvider.get().getFieldType())
+		GraphQLObjectType dateFieldType = newObject().name("date").withInterface(nodeFieldTypeProvider.get().getFieldsType())
 				.field(newFieldDefinition().name("name").type(GraphQLString).build())
 				.field(newFieldDefinition().name("value").type(GraphQLString).build()).build();
 		return dateFieldType;

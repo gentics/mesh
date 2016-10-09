@@ -31,15 +31,18 @@ public class NodeFieldTypeProvider {
 		this.dateFieldProvider = dateFieldProvider;
 	}
 
-	public GraphQLInterfaceType getFieldType() {
-		GraphQLInterfaceType fieldType = newInterface().name("Field").description("Field of the node.")
-				.field(newFieldDefinition().name("name").description("The name of the field.").type(GraphQLString).build()).typeResolver(object -> {
-					if (object instanceof StringTestField) {
-						return stringFieldProvider.getStringFieldType();
-					}
-					if (object instanceof DateTestField) {
-						return dateFieldProvider.getDateFieldType();
-					}
+	public GraphQLInterfaceType getFieldsType() {
+		GraphQLInterfaceType fieldType = newInterface().name("Fields").description("Fields of the node.")
+				//.field(newFieldDefinition().name("name").description("The name of the field.").type(GraphQLString).build())
+				.typeResolver(object -> {
+					//TODO determine which node type it is and return the corresponding generated field type.
+					// Inspect the node's schema.
+//					if (object instanceof StringTestField) {
+//						return stringFieldProvider.getStringFieldType();
+//					}
+//					if (object instanceof DateTestField) {
+//						return dateFieldProvider.getDateFieldType();
+//					}
 					return null;
 				}).build();
 		return fieldType;

@@ -22,7 +22,7 @@ public class StringFieldTypeProvider {
 	}
 
 	public GraphQLObjectType getStringFieldType() {
-		GraphQLObjectType stringFieldType = newObject().name("string").withInterface(nodeFieldTypeProvider.get().getFieldType())
+		GraphQLObjectType stringFieldType = newObject().name("string").withInterface(nodeFieldTypeProvider.get().getFieldsType())
 				.field(newFieldDefinition().name("name").type(GraphQLString).build())
 				.field(newFieldDefinition().name("encoded").type(GraphQLBoolean).build()).build();
 		return stringFieldType;

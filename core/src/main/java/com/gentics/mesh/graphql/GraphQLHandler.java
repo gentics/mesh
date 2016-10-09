@@ -38,8 +38,8 @@ public class GraphQLHandler {
 		try (NoTx noTx = db.noTx()) {
 			JsonObject queryJson = new JsonObject(body);
 			String query = queryJson.getString("query");
-			// System.out.println(query);
-			Map<String, Object> result = (Map<String, Object>) new GraphQL(typeProvider.getRootSchema()).execute(query, ac).getData();
+			Map<String, Object> result = (Map<String, Object>) new GraphQL(GarfieldSchema.GarfieldSchema).execute(query, GarfieldSchema.john).getData();
+//			Map<String, Object> result = (Map<String, Object>) new GraphQL(typeProvider.getRootSchema()).execute(query, ac).getData();
 			if (result == null) {
 				ac.send("Query could not be executed", BAD_REQUEST);
 			} else {

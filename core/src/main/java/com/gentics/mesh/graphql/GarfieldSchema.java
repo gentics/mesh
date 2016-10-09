@@ -100,52 +100,58 @@ public class GarfieldSchema {
 	public static Person liz = new Person("Liz");
 	public static Person john = new Person("John", Arrays.asList(garfield), Arrays.asList(odie), Arrays.asList(liz, odie));
 
-	public static GraphQLInterfaceType NamedType = newInterface().name("Named").field(newFieldDefinition().name("name").type(GraphQLString).build())
+	public static GraphQLInterfaceType FieldType = newInterface().name("Named").field(newFieldDefinition().name("name").type(GraphQLString).build())
 			.typeResolver(new TypeResolver() {
 				@Override
 				public GraphQLObjectType getType(Object object) {
 					if (object instanceof Dog) {
-						return DogType;
+						return StringType;
 					}
 					if (object instanceof Person) {
 						return PersonType;
 					}
 					if (object instanceof Cat) {
-						return CatType;
+						return NodeType;
 					}
 					return null;
 				}
 			}).build();
 
-	public static GraphQLObjectType DogType = newObject().name("Dog").field(newFieldDefinition().name("name").type(GraphQLString).build())
-			.field(newFieldDefinition().name("barks").type(GraphQLBoolean).build()).withInterface(NamedType).build();
+	public static GraphQLObjectType StringType = newObject().name("String").field(newFieldDefinition().name("name").type(GraphQLString).build())
+			.field(newFieldDefinition().name("barks").type(GraphQLBoolean).build()).withInterface(FieldType).build();
 
-	public static GraphQLObjectType CatType = newObject().name("Cat").field(newFieldDefinition().name("name").type(GraphQLString).build())
-			.field(newFieldDefinition().name("meows").type(GraphQLBoolean).build()).withInterface(NamedType).build();
+	public static GraphQLObjectType NodeType = newObject().name("Node").field(newFieldDefinition().name("name").type(GraphQLString).build())
+			.field(newFieldDefinition().name("meows").type(GraphQLBoolean).build()).withInterface(FieldType).build();
 
-	public static GraphQLUnionType PetType = newUnionType().name("Pet").possibleType(CatType).possibleType(DogType).typeResolver(new TypeResolver() {
+	public static GraphQLUnionType PetType = newUnionType().name("Pet").possibleType(NodeType).possibleType(StringType).typeResolver(new TypeResolver() {
 		@Override
 		public GraphQLObjectType getType(Object object) {
 			if (object instanceof Cat) {
-				return CatType;
+				return NodeType;
 			}
 			if (object instanceof Dog) {
-				return DogType;
+				return StringType;
 			}
 			return null;
 		}
 	}).build();
 
-	public static GraphQLFieldDefinition friendsField = newFieldDefinition().name("friends").type(new GraphQLList(NamedType))
-			.argument(newArgument().name("uuid").description("UUid of the friend").type(GraphQLString).build()).dataFetcher(fetcher -> {
+	public static GraphQLFieldDefinition fieldsField = newFieldDefinition().name("friends").type(new GraphQLList(FieldType))
+			.argument(newArgument().name("uuid").description("UUid of the field").type(GraphQLString).build()).dataFetcher(fetcher -> {
 				System.out.println(fetcher.getSource().getClass().getName());
 				String uuid = fetcher.getArgument("uuid");
 				System.out.println(uuid);
 				return john.getFriends();
 			}).build();
 
-	public static GraphQLObjectType PersonType = newObject().name("Person").field(newFieldDefinition().name("name").type(GraphQLString).build())
-			.field(newFieldDefinition().name("pets").type(new GraphQLList(PetType)).build()).field(friendsField).withInterface(NamedType).build();
+	public static GraphQLObjectType PersonType = newObject().name("Person")
+			.field(newFieldDefinition().name("name").type(GraphQLString).build())
+//			.field(newFieldDefinition().name("fieldName").type(GraphQLString).staticValue("blar").build())
+//			.field(newFieldDefinition().name("pets").type(new GraphQLList(PetType)).build())
+			.field(newFieldDefinition().name("firstFriend").type(FieldType).dataFetcher(fetcher -> {
+				return john.getFriends().get(0);
+			}).build())
+			.field(fieldsField).withInterface(FieldType).build();
 
 	public static GraphQLSchema GarfieldSchema = GraphQLSchema.newSchema().query(PersonType).build();
 
