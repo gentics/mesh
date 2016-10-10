@@ -19,15 +19,11 @@ public class MeshRestAPITest extends AbstractRestVerticleTest {
 
 	@Test
 	public void test404Response() throws Exception {
-		//		Future<UserResponse> future = getClient().findUserByUuid("blub");
-		//		latchFor(future);
-
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost("localhost");
 		options.setDefaultPort(port);
 
 		HttpClient client = Mesh.vertx().createHttpClient(options);
-
 		CompletableFuture<String> future = new CompletableFuture<>();
 		HttpClientRequest request = client.request(HttpMethod.POST, "/api/v1/test", rh -> {
 			rh.bodyHandler(bh -> {
@@ -37,7 +33,6 @@ public class MeshRestAPITest extends AbstractRestVerticleTest {
 		request.end();
 
 		String response = future.get(1, TimeUnit.SECONDS);
-		System.out.println(response);
 		assertTrue("The response string should not contain any html specific characters but it was {" + response + "} ", response.indexOf("<") != 0);
 	}
 

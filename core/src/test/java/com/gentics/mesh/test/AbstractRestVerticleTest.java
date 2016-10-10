@@ -101,6 +101,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		JsonObject config = new JsonObject();
 		config.put("port", port);
 
+		// Start node migration verticle
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		CountDownLatch latch = new CountDownLatch(1);
@@ -139,15 +140,15 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() throws Exception {
-		//		for (String id : deploymentIds) {
-		//			vertx.undeploy(id);
+		for (String id : deploymentIds) {
+			vertx.undeploy(id);
+		}
+		//		if (restVerticle != null) {
+		//			restVerticle.stop();
 		//		}
-		if (restVerticle != null) {
-			restVerticle.stop();
-		}
-		if (nodeMigrationVerticle != null) {
-			nodeMigrationVerticle.stop();
-		}
+		//		if (nodeMigrationVerticle != null) {
+		//			nodeMigrationVerticle.stop();
+		//		}
 		resetDatabase();
 	}
 

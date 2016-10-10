@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -78,6 +79,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return message(ac, "schema_update_no_difference_detected", schemaName);
 			} else {
 
+				List<DeliveryOptions> events = new ArrayList<>();
 				db.tx(() -> {
 					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
 					// Apply the found changes to the schema
@@ -116,7 +118,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 							options.addHeader(NodeMigrationVerticle.UUID_HEADER, createdVersion.getSchemaContainer().getUuid());
 							options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, previouslyReferencedVersion.getUuid());
 							options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, createdVersion.getUuid());
-							Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options);
+							events.add(options);
 
 						}
 
@@ -124,6 +126,11 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 					return batch;
 				}).processSync();
+
+				for (DeliveryOptions option : events) {
+					Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, option);
+				}
+
 				return message(ac, "migration_invoked", schemaName);
 			}
 		}, model -> ac.send(model, OK));

@@ -76,7 +76,6 @@ public abstract class AbstractDBTest {
 
 	@Before
 	public void initMesh() throws Exception {
-		PermissionStore.invalidate();
 		init(false);
 		initDagger();
 	}
@@ -128,14 +127,14 @@ public abstract class AbstractDBTest {
 		searchProvider = meshDagger.searchProvider();
 		schemaStorage = meshDagger.serverSchemaStorage();
 		boot = meshDagger.boot();
-//		boolean first = false;
-//		if (db == null) {
-//			first = true;
-//		}
+		boolean first = false;
+		if (db == null) {
+			first = true;
+		}
 		db = meshDagger.database();
-//		if (first) {
-//		}
-		new DatabaseHelper(db).init();
+		if (first) {
+			new DatabaseHelper(db).init();
+		}
 	}
 
 	@After
@@ -146,6 +145,9 @@ public abstract class AbstractDBTest {
 		// if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
 		// FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
 		// }
+		PermissionStore.invalidate();
+		MeshInternal.clear();
+
 	}
 
 	protected void resetDatabase() {

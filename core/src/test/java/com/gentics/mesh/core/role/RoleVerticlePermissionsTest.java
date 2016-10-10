@@ -62,11 +62,14 @@ public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddPermissionToMicroschema() {
 		try (NoTx noTx = db.noTx()) {
+
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
+
 			// Revoke all permissions to vcard microschema
 			role().revokePermissions(vcard, GraphPermission.values());
+
 			// Validate revocation
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
 

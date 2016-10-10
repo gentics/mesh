@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -102,7 +103,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 	 * Register an event bus consumer handler which will react on schema node migration events.
 	 */
 	private void registerSchemaMigration() {
-		schemaMigrationConsumer = vertx.eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
+		schemaMigrationConsumer = Mesh.vertx().eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
 
 			String schemaUuid = message.headers().get(UUID_HEADER);
 			String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
@@ -313,7 +314,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 		}
 		JsonObject msg = new JsonObject();
 		msg.put("type", "completed");
-		vertx.sharedData().getLocalMap("migrationStatus").put("status", "migration_status_idle");
-		vertx.eventBus().publish(MESH_MIGRATION.toString(), msg);
+		Mesh.vertx().sharedData().getLocalMap("migrationStatus").put("status", "migration_status_idle");
+		Mesh.vertx().eventBus().publish(MESH_MIGRATION.toString(), msg);
 	}
 }

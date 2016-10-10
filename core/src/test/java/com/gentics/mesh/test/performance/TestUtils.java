@@ -1,6 +1,7 @@
 package com.gentics.mesh.test.performance;
 
 import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -27,10 +28,12 @@ public final class TestUtils {
 	 * Construct a latch which will release when the migration has finished.
 	 * 
 	 * @return
+	 * @throws Exception 
 	 */
-	public static CountDownLatch latchForMigrationCompleted(MeshRestClient client) {
+	public static CountDownLatch latchForMigrationCompleted(MeshRestClient client) throws Exception {
 		// Construct latch in order to wait until the migration completed event was received 
 		CountDownLatch latch = new CountDownLatch(1);
+		CountDownLatch registerLatch = new CountDownLatch(1);
 		client.eventbus(ws -> {
 			// Register to migration events
 			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION.toString());
@@ -46,8 +49,11 @@ public final class TestUtils {
 					latch.countDown();
 				}
 			});
+			registerLatch.countDown();
 
 		});
+
+		failingLatch(registerLatch);
 		return latch;
 	}
 
