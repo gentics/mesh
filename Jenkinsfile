@@ -38,7 +38,7 @@ node('dockerRoot') {
 
 	stage 'Test'
 	if (Boolean.valueOf(runTests)) {
-		def splits = 25;
+		def splits = 45;
 		sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
 		sh "split -a 2 -d -n l/${splits} alltests  includes-"
 		stash includes: '*', name: 'project'
@@ -46,7 +46,7 @@ node('dockerRoot') {
 		for (int i = 0; i < splits; i++) {
 			def current = i
 			branches["split${i}"] = {
-				node('dockerSlave || satan3 || lyra') {
+				node('mesh') {
 					echo "Preparing slave environment for ${current}"
 					//sh "ls -la"
 					sh "rm -rf *"
