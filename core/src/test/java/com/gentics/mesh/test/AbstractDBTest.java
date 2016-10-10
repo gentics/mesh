@@ -74,6 +74,13 @@ public abstract class AbstractDBTest {
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
 
+	@Before
+	public void initMesh() throws Exception {
+		PermissionStore.invalidate();
+		init(false);
+		initDagger();
+	}
+
 	public static void init(boolean enableES) throws IOException {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
@@ -110,13 +117,6 @@ public abstract class AbstractDBTest {
 		Mesh.mesh(options);
 	}
 
-	@Before
-	public void initMesh() throws Exception {
-		PermissionStore.invalidate();
-		init(false);
-		initDagger();
-	}
-
 	public void initDagger() {
 		log.info("Initializing dagger context");
 		meshDagger = MeshInternal.create();
@@ -128,8 +128,14 @@ public abstract class AbstractDBTest {
 		searchProvider = meshDagger.searchProvider();
 		schemaStorage = meshDagger.serverSchemaStorage();
 		boot = meshDagger.boot();
+		boolean first = false;
+		if (db == null) {
+			first = true;
+		}
 		db = meshDagger.database();
-		new DatabaseHelper(db).init();
+		if (first) {
+			new DatabaseHelper(db).init();
+		}
 	}
 
 	@After

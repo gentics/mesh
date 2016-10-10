@@ -52,12 +52,9 @@ import rx.Single;
  */
 public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResponse> {
 
-	private NodeIndexHandler nodeIndexHandler;
-
 	@Inject
-	public ReleaseCrudHandler(Database db, NodeIndexHandler nodeIndexHandler) {
+	public ReleaseCrudHandler(Database db) {
 		super(db);
-		this.nodeIndexHandler = nodeIndexHandler;
 	}
 
 	@Override

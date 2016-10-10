@@ -47,11 +47,12 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.json.JsonObject;
 
-public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
+public class SchemaChangesVerticleTest extends AbstractIsolatedRestVerticleTest {
 
 	@Test
 	public void testUpdateName() throws GenericRestException, Exception {

@@ -25,6 +25,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import dagger.Lazy;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -70,6 +71,10 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 	private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
+	private MessageConsumer<Object> schemaMigrationConsumer;
+	private MessageConsumer<Object> releaseMigrationConsumer;
+	private MessageConsumer<Object> microschemaMigrationConsumer;
+
 	@Override
 	public void start() throws Exception {
 		if (log.isDebugEnabled()) {
@@ -80,11 +85,24 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 		registerReleaseMigration();
 	}
 
+	@Override
+	public void stop() throws Exception {
+		if (schemaMigrationConsumer != null) {
+			schemaMigrationConsumer.unregister();
+		}
+		if (releaseMigrationConsumer != null) {
+			releaseMigrationConsumer.unregister();
+		}
+		if (microschemaMigrationConsumer != null) {
+			microschemaMigrationConsumer.unregister();
+		}
+	}
+
 	/**
 	 * Register an event bus consumer handler which will react on schema node migration events.
 	 */
 	private void registerSchemaMigration() {
-		vertx.eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
+		schemaMigrationConsumer = vertx.eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
 
 			String schemaUuid = message.headers().get(UUID_HEADER);
 			String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
@@ -156,7 +174,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 	 * Register handler for microschema migration events.
 	 */
 	private void registerMicroschemaMigration() {
-		vertx.eventBus().consumer(MICROSCHEMA_MIGRATION_ADDRESS, (message) -> {
+		microschemaMigrationConsumer = vertx.eventBus().consumer(MICROSCHEMA_MIGRATION_ADDRESS, (message) -> {
 
 			String microschemaUuid = message.headers().get(UUID_HEADER);
 			String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
@@ -219,7 +237,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 	 * Register handler for release migration events.
 	 */
 	private void registerReleaseMigration() {
-		vertx.eventBus().consumer(RELEASE_MIGRATION_ADDRESS, (message) -> {
+		releaseMigrationConsumer = vertx.eventBus().consumer(RELEASE_MIGRATION_ADDRESS, (message) -> {
 			String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
 			String releaseUuid = message.headers().get(UUID_HEADER);
 			if (log.isDebugEnabled()) {

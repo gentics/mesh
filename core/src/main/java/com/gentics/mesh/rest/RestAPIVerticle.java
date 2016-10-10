@@ -15,6 +15,7 @@ import com.gentics.mesh.core.verticle.auth.AuthenticationEndpoint;
 import com.gentics.mesh.core.verticle.eventbus.EventbusEndpoint;
 import com.gentics.mesh.core.verticle.group.GroupEndpoint;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaEndpoint;
+import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaEndpoint;
 import com.gentics.mesh.core.verticle.navroot.NavRootEndpoint;
 import com.gentics.mesh.core.verticle.node.NodeEndpoint;
 import com.gentics.mesh.core.verticle.project.ProjectEndpoint;
@@ -78,6 +79,9 @@ public class RestAPIVerticle extends AbstractVerticle {
 	public ProjectSchemaEndpoint projectSchemaEndpoint;
 
 	@Inject
+	public ProjectMicroschemaEndpoint projectMicroschemaEndpoint;
+
+	@Inject
 	public WebRootEndpoint webrootEndpoint;
 
 	@Inject
@@ -121,21 +125,21 @@ public class RestAPIVerticle extends AbstractVerticle {
 		HttpServerOptions options = new HttpServerOptions();
 		options.setPort(port);
 		options.setCompressionSupported(true);
-//		MeshOptions meshOptions = Mesh.mesh().getOptions();
-//		HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
-//		if (httpServerOptions.isSsl()) {
-//			if (log.isErrorEnabled()) {
-//				log.debug("Setting ssl server options");
-//			}
-//			options.setSsl(true);
-//			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
-//			if (isEmpty(httpServerOptions.getCertPath()) || isEmpty(httpServerOptions.getKeyPath())) {
-//				throw new MeshConfigurationException("SSL is enabled but either the server key or the cert path was not specified.");
-//			}
-//			keyOptions.setKeyPath(httpServerOptions.getKeyPath());
-//			keyOptions.setCertPath(httpServerOptions.getCertPath());
-//			options.setPemKeyCertOptions(keyOptions);
-//		}
+		//		MeshOptions meshOptions = Mesh.mesh().getOptions();
+		//		HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
+		//		if (httpServerOptions.isSsl()) {
+		//			if (log.isErrorEnabled()) {
+		//				log.debug("Setting ssl server options");
+		//			}
+		//			options.setSsl(true);
+		//			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
+		//			if (isEmpty(httpServerOptions.getCertPath()) || isEmpty(httpServerOptions.getKeyPath())) {
+		//				throw new MeshConfigurationException("SSL is enabled but either the server key or the cert path was not specified.");
+		//			}
+		//			keyOptions.setKeyPath(httpServerOptions.getKeyPath());
+		//			keyOptions.setCertPath(httpServerOptions.getCertPath());
+		//			options.setPemKeyCertOptions(keyOptions);
+		//		}
 
 		log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}");
 		server = vertx.createHttpServer(options);
@@ -150,10 +154,20 @@ public class RestAPIVerticle extends AbstractVerticle {
 			} catch (Exception e) {
 				e.printStackTrace();
 				startFuture.fail(e);
-				return;
 			}
 		});
 
+	}
+
+	@Override
+	public void stop(Future<Void> stopFuture) throws Exception {
+		server.close(rh -> {
+			if (rh.failed()) {
+				stopFuture.fail(rh.cause());
+			} else {
+				stopFuture.complete();
+			}
+		});
 	}
 
 	private void registerEndPoints() throws Exception {
@@ -171,6 +185,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(nodeEndpoint);
 		endpoints.add(tagFamilyEndpoint);
 		endpoints.add(projectSchemaEndpoint);
+		endpoints.add(projectMicroschemaEndpoint);
 		endpoints.add(releaseEndpoint);
 
 		// Global verticles
@@ -189,16 +204,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 		for (AbstractEndpoint endpoint : endpoints) {
 			endpoint.registerEndPoints();
 		}
-	}
-
-	@Override
-	public void start() throws Exception {
-		start(Future.future());
-	}
-
-	@Override
-	public void stop() throws Exception {
-//		localRouter.clear();
 	}
 
 	public HttpServer getServer() {

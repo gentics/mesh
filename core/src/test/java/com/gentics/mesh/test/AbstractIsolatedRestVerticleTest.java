@@ -12,6 +12,8 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
@@ -64,13 +66,12 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.impl.EventLoopContext;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
 
@@ -86,6 +87,8 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	private NodeMigrationVerticle nodeMigrationVerticle;
 
+	private List<String> deploymentIds = new ArrayList<>();
+
 	@Before
 	public void setupVerticleTest() throws Exception {
 		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
@@ -95,33 +98,29 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 		vertx = Mesh.vertx();
 
 		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
-
 		JsonObject config = new JsonObject();
 		config.put("port", port);
-		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", null, config,
-				Thread.currentThread().getContextClassLoader());
 
-		// Start migration verticle
-		CountDownLatch latch1 = new CountDownLatch(1);
-		nodeMigrationVerticle = meshDagger.nodeMigrationVerticle();
-		nodeMigrationVerticle.init(vertx, context);
-		Future<Void> future = Future.future();
-		nodeMigrationVerticle.start(future);
-		future.setHandler(rh -> {
-			latch1.countDown();
-		});
-		failingLatch(latch1);
-
-		// Start rest verticle
+		DeploymentOptions options = new DeploymentOptions();
+		options.setWorker(true);
 		CountDownLatch latch = new CountDownLatch(1);
-		restVerticle = MeshInternal.get().restApiVerticle();
-		restVerticle.init(vertx, context);
-		future = Future.future();
-		restVerticle.start(future);
-		future.setHandler(rh -> {
+		nodeMigrationVerticle = meshDagger.nodeMigrationVerticle();
+		vertx.deployVerticle(nodeMigrationVerticle, options, rh -> {
+			String deploymentId = rh.result();
+			deploymentIds.add(deploymentId);
 			latch.countDown();
 		});
 		failingLatch(latch);
+
+		// Start rest verticle
+		CountDownLatch latch2 = new CountDownLatch(1);
+		restVerticle = MeshInternal.get().restApiVerticle();
+		vertx.deployVerticle(restVerticle, new DeploymentOptions().setConfig(config), rh -> {
+			String deploymentId = rh.result();
+			deploymentIds.add(deploymentId);
+			latch2.countDown();
+		});
+		failingLatch(latch2);
 
 		try (NoTx trx = db.noTx()) {
 			client = MeshRestClient.create("localhost", getPort(), vertx);
@@ -140,6 +139,9 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() throws Exception {
+//		for (String id : deploymentIds) {
+//			vertx.undeploy(id);
+//		}
 		restVerticle.stop();
 		nodeMigrationVerticle.stop();
 		resetDatabase();
