@@ -146,8 +146,11 @@ public abstract class AbstractDBTest {
 		// FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
 		// }
 		PermissionStore.invalidate();
-		MeshInternal.clear();
+	}
 
+	@After
+	public void resetDagger() {
+		MeshInternal.clear();
 	}
 
 	protected void resetDatabase() {

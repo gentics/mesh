@@ -35,14 +35,8 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 
 	@Override
 	public void initMesh() throws Exception {
-		// NOP
-	}
-
-	@Override
-	public void setupVerticleTest() throws Exception {
 		init(true);
 		initDagger();
-		super.setupVerticleTest();
 	}
 
 	@Before
@@ -56,6 +50,11 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	public void resetElasticSearch() {
 		// searchProvider.reset();
 		searchProvider.clear();
+	}
+
+	@Override
+	public void resetDagger() {
+		// NOOP - don't reset dagger. We want to reuse the previously initalized ES
 	}
 
 	@BeforeClass
