@@ -75,27 +75,37 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 			Schema restSchema = call(() -> getClient().assignSchemaToProject(extraProject.getName(), schema.getUuid()));
 			assertThat(restSchema).matches(schema);
 			extraProject.getSchemaContainerRoot().reload();
-			assertNotNull("The schema should be added to the extra project",
-					extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()));
+			assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()));
 		}
 	}
 
 	@Test
 	public void testAddSchemaToProjectWithoutPerm() throws Exception {
+		String projectUuid;
+		String schemaUuid;
+		Project extraProject;
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Project project = project();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			Project extraProject = projectRoot.create("extraProject", user(), schemaContainer("folder").getLatestVersion());
-			// Add only read perms
-			role().grantPermissions(schema, READ_PERM);
-			role().grantPermissions(project, READ_PERM);
-			call(() -> getClient().assignSchemaToProject(extraProject.getName(), schema.getUuid()), FORBIDDEN, "error_missing_perm",
-					extraProject.getUuid());
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName("extraProject");
+			request.setSchemaReference(new SchemaReference().setName("folder"));
+			ProjectResponse response = call(() -> getClient().createProject(request));
+			projectUuid = response.getUuid();
+			extraProject = projectRoot.findByUuid(projectUuid);
+			schemaUuid = schema.getUuid();
+			// Revoke Update perm on project
+			role().revokePermissions(project, UPDATE_PERM);
+		}
+		call(() -> getClient().assignSchemaToProject("extraProject", schemaUuid), FORBIDDEN, "error_missing_perm", projectUuid);
+		try (NoTx noTx = db.noTx()) {
 			// Reload the schema and check for expected changes
+			SchemaContainer schema = schemaContainer("content");
 			assertFalse("The schema should not have been added to the extra project but it was",
 					extraProject.getSchemaContainerRoot().contains(schema));
 		}
+
 	}
 
 	// Schema Project Testcases - DELETE / Remove
