@@ -31,9 +31,9 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class GroupUserVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 
 	// Group User Testcases - PUT / Add
 

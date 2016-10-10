@@ -30,14 +30,14 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 
-public class ReleaseMigrationVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 
 	@Override
 	@Before

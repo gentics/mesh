@@ -7,10 +7,10 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.orientechnologies.orient.core.OConstants;
 
-public class RestInfoVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class RestInfoVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testGetInfo() {

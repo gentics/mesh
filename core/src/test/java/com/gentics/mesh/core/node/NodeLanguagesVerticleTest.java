@@ -18,9 +18,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class NodeLanguagesVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeLanguagesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDeleteLanguage() {

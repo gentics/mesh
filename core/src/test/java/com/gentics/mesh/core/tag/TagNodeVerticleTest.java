@@ -13,9 +13,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class TagNodeVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class TagNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodesForTag() {

@@ -43,10 +43,10 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.URIUtils;
 
-public class WebRootVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {

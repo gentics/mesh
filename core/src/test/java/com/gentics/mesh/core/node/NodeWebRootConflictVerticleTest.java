@@ -19,9 +19,9 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class NodeWebRootConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeWebRootConflictVerticleTest extends AbstractRestVerticleTest {
 
 	/**
 	 * Create two published nodes and move the second node into the folder of the first node. A conflict should occur since the node published segment path

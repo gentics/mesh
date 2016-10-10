@@ -8,14 +8,14 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 
-public class MeshRestAPITest extends AbstractIsolatedRestVerticleTest {
+public class MeshRestAPITest extends AbstractRestVerticleTest {
 
 	@Test
 	public void test404Response() throws Exception {

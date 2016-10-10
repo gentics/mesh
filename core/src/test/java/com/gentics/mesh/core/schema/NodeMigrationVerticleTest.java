@@ -45,7 +45,7 @@ import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.AsyncResult;
@@ -53,7 +53,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 
-public class NodeMigrationVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 
 	@Before
 	public void deployWorkerVerticle() throws Exception {

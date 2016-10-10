@@ -18,9 +18,9 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class RoleVerticlePermissionsTest extends AbstractIsolatedRestVerticleTest {
+public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRevokeAllPermissionFromProject() {

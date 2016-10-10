@@ -16,11 +16,11 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-public abstract class AbstractFieldVerticleTest extends AbstractIsolatedRestVerticleTest implements FieldVerticleTestcases {
+public abstract class AbstractFieldVerticleTest extends AbstractRestVerticleTest implements FieldVerticleTestcases {
 
 	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
 		NodeParameters parameters = new NodeParameters();

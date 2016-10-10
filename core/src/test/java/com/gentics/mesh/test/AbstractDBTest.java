@@ -128,14 +128,14 @@ public abstract class AbstractDBTest {
 		searchProvider = meshDagger.searchProvider();
 		schemaStorage = meshDagger.serverSchemaStorage();
 		boot = meshDagger.boot();
-		boolean first = false;
-		if (db == null) {
-			first = true;
-		}
+//		boolean first = false;
+//		if (db == null) {
+//			first = true;
+//		}
 		db = meshDagger.database();
-		if (first) {
-			new DatabaseHelper(db).init();
-		}
+//		if (first) {
+//		}
+		new DatabaseHelper(db).init();
 	}
 
 	@After
@@ -154,9 +154,6 @@ public abstract class AbstractDBTest {
 		db.clear();
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");
-		//		db.setMassInsertIntent();
-		//		new DatabaseHelper(db).init();
-		//		db.resetIntent();
 		if (dummySearchProvider != null) {
 			dummySearchProvider.reset();
 		}

@@ -28,10 +28,10 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.performance.TestUtils;
 
-public class MicroschemaChangesVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class MicroschemaChangesVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testRemoveField() throws Exception {

@@ -6,9 +6,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class ProjectInfoVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class ProjectInfoVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadProjectByName() {

@@ -4,9 +4,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class CrossVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class CrossVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAccessNewProjectRoute() {

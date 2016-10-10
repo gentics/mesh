@@ -25,9 +25,9 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class SchemaDiffVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 
 	private Schema getSchema() {
 		Schema request = new SchemaModel();

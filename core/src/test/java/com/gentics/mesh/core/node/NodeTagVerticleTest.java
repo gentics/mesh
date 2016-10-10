@@ -29,10 +29,10 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.performance.TestUtils;
 
-public class NodeTagVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeTags() throws Exception {

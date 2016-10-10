@@ -9,9 +9,9 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class MeshLocalClientTest extends AbstractIsolatedRestVerticleTest {
+public class MeshLocalClientTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testClientParameterHandling() {

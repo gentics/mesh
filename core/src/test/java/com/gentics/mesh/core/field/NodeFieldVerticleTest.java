@@ -21,9 +21,9 @@ import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class NodeFieldVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUpdateNodeAndOmitRequiredField() throws IOException {

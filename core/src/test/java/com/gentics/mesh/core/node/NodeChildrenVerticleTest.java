@@ -28,9 +28,9 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class NodeChildrenVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadChildrenOfBaseNode() {

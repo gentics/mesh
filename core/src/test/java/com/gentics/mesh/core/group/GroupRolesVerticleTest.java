@@ -25,9 +25,9 @@ import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class GroupRolesVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 
 	// Group Role Testcases - PUT / Add
 

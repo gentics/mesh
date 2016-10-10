@@ -3,9 +3,9 @@ package com.gentics.mesh.core.admin;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class AdminVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class AdminVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMigrationStatusWithNoMigrationRunning() {

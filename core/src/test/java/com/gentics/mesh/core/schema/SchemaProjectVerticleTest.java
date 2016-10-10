@@ -21,9 +21,9 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class SchemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadProjectSchemas() {

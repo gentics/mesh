@@ -13,10 +13,10 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-public class NodeVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
+public class NodeVerticlePerformanceTest extends AbstractRestVerticleTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 

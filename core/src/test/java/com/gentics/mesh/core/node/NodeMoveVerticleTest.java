@@ -24,9 +24,9 @@ import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class NodeMoveVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {

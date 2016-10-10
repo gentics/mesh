@@ -21,9 +21,9 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class MicroschemaProjectVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class MicroschemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadProjectMicroschemas() {

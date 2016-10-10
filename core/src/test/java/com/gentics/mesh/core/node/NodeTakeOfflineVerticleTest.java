@@ -20,9 +20,9 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class NodeTakeOfflineVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeTakeOfflineVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testTakeNodeOffline() {

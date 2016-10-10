@@ -29,11 +29,11 @@ import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.buffer.Buffer;
 
-public class NodeImageResizeVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeImageResizeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testImageResize() throws Exception {

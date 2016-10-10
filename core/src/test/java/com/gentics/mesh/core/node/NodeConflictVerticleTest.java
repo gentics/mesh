@@ -37,10 +37,10 @@ import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.Tuple;
 
-public class NodeConflictVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeConflictVerticleTest extends AbstractRestVerticleTest {
 
 	private Node getTestNode() {
 		Node node = content("concorde");

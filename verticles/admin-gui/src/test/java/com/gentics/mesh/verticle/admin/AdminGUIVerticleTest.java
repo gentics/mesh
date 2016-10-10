@@ -13,12 +13,12 @@ import java.util.concurrent.TimeoutException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 
-public class AdminGUIVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class AdminGUIVerticleTest extends AbstractRestVerticleTest {
 
 	private AdminGUIVerticle adminGuiVerticle;
 

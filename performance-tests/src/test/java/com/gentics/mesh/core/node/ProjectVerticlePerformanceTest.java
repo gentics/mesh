@@ -7,10 +7,10 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-public class ProjectVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
+public class ProjectVerticlePerformanceTest extends AbstractRestVerticleTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 

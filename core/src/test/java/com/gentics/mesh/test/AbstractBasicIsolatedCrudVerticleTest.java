@@ -15,7 +15,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.definition.CrudVerticleTestCases;
 import com.gentics.mesh.test.definition.MultithreadingTestCases;
 
-public abstract class AbstractBasicIsolatedCrudVerticleTest extends AbstractIsolatedRestVerticleTest implements MultithreadingTestCases, CrudVerticleTestCases {
+public abstract class AbstractBasicIsolatedCrudVerticleTest extends AbstractRestVerticleTest implements MultithreadingTestCases, CrudVerticleTestCases {
 
 	protected void validateDeletion(Set<MeshResponse<Void>> set, CyclicBarrier barrier) {
 		boolean foundDelete = false;

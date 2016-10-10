@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
@@ -17,7 +17,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Test cases for link rendering using the Utility Verticle
  */
-public class LinkRendererVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 
 	/**
 	 * Test rendering valid link with link type "OFF" (expects no link rendering)

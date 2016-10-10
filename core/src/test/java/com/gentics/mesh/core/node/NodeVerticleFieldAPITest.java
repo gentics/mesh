@@ -13,9 +13,9 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class NodeVerticleFieldAPITest extends AbstractIsolatedRestVerticleTest {
+public class NodeVerticleFieldAPITest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDownloadBinaryField() throws IOException {

@@ -31,12 +31,12 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.buffer.Buffer;
 
-public class BinaryFieldUploadVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class BinaryFieldUploadVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testUploadWithNoPerm() throws IOException {

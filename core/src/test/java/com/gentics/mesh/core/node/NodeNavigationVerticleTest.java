@@ -23,9 +23,9 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
-public class NodeNavigationVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 
 	/**
 	 * Test reading a node with a maxDepth value of zero

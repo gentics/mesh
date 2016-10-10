@@ -75,7 +75,7 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
 
-public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
+public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected Vertx vertx;
 
@@ -139,11 +139,15 @@ public abstract class AbstractIsolatedRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() throws Exception {
-//		for (String id : deploymentIds) {
-//			vertx.undeploy(id);
-//		}
-		restVerticle.stop();
-		nodeMigrationVerticle.stop();
+		//		for (String id : deploymentIds) {
+		//			vertx.undeploy(id);
+		//		}
+		if (restVerticle != null) {
+			restVerticle.stop();
+		}
+		if (nodeMigrationVerticle != null) {
+			nodeMigrationVerticle.stop();
+		}
 		resetDatabase();
 	}
 

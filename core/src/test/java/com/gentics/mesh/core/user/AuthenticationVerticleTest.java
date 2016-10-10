@@ -16,11 +16,11 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import rx.Single;
 
-public class AuthenticationVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 
 	// Read Tests
 

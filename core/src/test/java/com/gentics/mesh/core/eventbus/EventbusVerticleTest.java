@@ -9,11 +9,11 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.json.JsonObject;
 
-public class EventbusVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class EventbusVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testExternalEventbusMessage() throws Exception {

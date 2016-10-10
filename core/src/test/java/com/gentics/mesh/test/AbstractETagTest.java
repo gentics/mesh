@@ -11,7 +11,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.util.ETag;
 
-public abstract class AbstractETagTest extends AbstractIsolatedRestVerticleTest {
+public abstract class AbstractETagTest extends AbstractRestVerticleTest {
 
 	/**
 	 * Set the if-none-match header with the given etag and assert that the response contains the full response instead of an 304 response with no body.
