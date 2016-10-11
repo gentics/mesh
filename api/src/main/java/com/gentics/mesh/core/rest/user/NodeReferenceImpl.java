@@ -2,6 +2,9 @@ package com.gentics.mesh.core.rest.user;
 
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 
+/**
+ * @see NodeReference
+ */
 public class NodeReferenceImpl implements NodeReference {
 
 	private String projectName;
@@ -20,17 +23,26 @@ public class NodeReferenceImpl implements NodeReference {
 	 * 
 	 * @param uuid
 	 *            Uuid of the node
+	 * @return Fluent API
 	 */
-	public void setUuid(String uuid) {
+	public NodeReferenceImpl setUuid(String uuid) {
 		this.uuid = uuid;
+		return this;
 	}
 
 	public String getPath() {
 		return path;
 	}
 
-	public void setPath(String path) {
+	/**
+	 * Set the path to the node.
+	 * 
+	 * @param path
+	 * @return Fluent API
+	 */
+	public NodeReferenceImpl setPath(String path) {
 		this.path = path;
+		return this;
 	}
 
 	/**
@@ -66,9 +78,11 @@ public class NodeReferenceImpl implements NodeReference {
 	 * 
 	 * @param displayName
 	 *            Display name
+	 * @return Fluent API
 	 */
-	public void setDisplayName(String displayName) {
+	public NodeReferenceImpl setDisplayName(String displayName) {
 		this.displayName = displayName;
+		return this;
 	}
 
 	/**
@@ -85,9 +99,11 @@ public class NodeReferenceImpl implements NodeReference {
 	 * 
 	 * @param schema
 	 *            Schema reference for the node
+	 * @return Fluent API
 	 */
-	public void setSchema(SchemaReference schema) {
+	public NodeReferenceImpl setSchema(SchemaReference schema) {
 		this.schema = schema;
+		return this;
 	}
 
 }
