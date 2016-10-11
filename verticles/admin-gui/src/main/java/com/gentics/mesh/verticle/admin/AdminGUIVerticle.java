@@ -44,11 +44,6 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 		super("mesh-ui", routerStorage);
 	}
 
-	@Override
-	public String getDescription() {
-		return "Provides endpoints which provides the mesh admin ui";
-	}
-
 	private static Properties readBuildProperties() {
 		try {
 			Properties buildProperties = new Properties();

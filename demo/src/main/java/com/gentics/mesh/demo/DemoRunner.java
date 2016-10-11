@@ -51,10 +51,11 @@ public class DemoRunner {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 
-			DemoVerticle verticle = new DemoVerticle(new DemoDataProvider(MeshInternal.get().database(), MeshInternal.get().meshLocalClientImpl()),
+			DemoVerticle demoVerticle = new DemoVerticle(new DemoDataProvider(MeshInternal.get().database(), MeshInternal.get().meshLocalClientImpl()),
 					MeshInternal.get().routerStorage());
-			DeploymentUtil.deployAndWait(vertx, config, verticle, false);
-			DeploymentUtil.deployAndWait(vertx, config, new AdminGUIVerticle(MeshInternal.get().routerStorage()), false);
+			AdminGUIVerticle adminVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorage());
+			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
+			DeploymentUtil.deployAndWait(vertx, config, adminVerticle, false);
 		});
 		mesh.run();
 	}

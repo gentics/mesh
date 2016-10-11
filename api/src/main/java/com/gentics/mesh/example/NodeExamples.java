@@ -14,8 +14,10 @@ import static com.gentics.mesh.FieldUtil.createStringField;
 import static com.gentics.mesh.FieldUtil.createStringListField;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
@@ -53,7 +55,7 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setCreator(getUserReference());
 		TagFamilyTagGroup tagGroup = new TagFamilyTagGroup().setUuid(randomUUID());
 		tagGroup.getItems().add(new TagReference().setName("red").setUuid(randomUUID()));
-		nodeResponse.getTags().put("colors",tagGroup);
+		nodeResponse.getTags().put("colors", tagGroup);
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
 		nodeResponse.setAvailableLanguages(Arrays.asList("en", "de"));
 		HashMap<String, String> languagePaths = new HashMap<>();
@@ -87,6 +89,11 @@ public class NodeExamples extends AbstractExamples {
 
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
+		breadcrumb.add(new NodeReferenceImpl().setDisplayName("news").setPath("/news"));
+		breadcrumb.add(new NodeReferenceImpl().setDisplayName("news").setPath("/news"));
+
+		nodeResponse.setBreadcrumb(breadcrumb);
 		return nodeResponse;
 	}
 

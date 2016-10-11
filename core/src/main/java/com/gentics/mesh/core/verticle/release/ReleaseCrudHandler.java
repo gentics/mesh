@@ -16,6 +16,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.tuple.Triple;
+import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
@@ -52,12 +54,9 @@ import rx.Single;
  */
 public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResponse> {
 
-	private NodeIndexHandler nodeIndexHandler;
-
 	@Inject
-	public ReleaseCrudHandler(Database db, NodeIndexHandler nodeIndexHandler) {
+	public ReleaseCrudHandler(Database db) {
 		super(db);
-		this.nodeIndexHandler = nodeIndexHandler;
 	}
 
 	@Override
@@ -135,10 +134,11 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			SchemaReferenceList schemaReferenceList = ac.fromJson(SchemaReferenceList.class);
 			Project project = ac.getProject();
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
-			return db.tx(() -> {
+			List<DeliveryOptions> events = new ArrayList<>();
+
+			Tuple<SearchQueueBatch, Single<SchemaReferenceList>> tuple = db.tx(() -> {
 				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
 
-				List<DeliveryOptions> events = new ArrayList<>();
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList) {
 					SchemaContainerVersion version = schemaContainerRoot.fromReference(reference);
@@ -165,17 +165,19 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
 					events.add(options);
 				}
-				//TODO move out of tx
-				// 1. Process batch and create need indices
-				batch.processSync();
 
-				// 2. Invoke migrations which will populate the created index
-				for (DeliveryOptions option : events) {
-					Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, option);
-				}
-
-				return getSchemaVersions(release);
+				return Tuple.tuple(batch, getSchemaVersions(release));
 			});
+
+			// 1. Process batch and create need indices
+			tuple.v1().processSync();
+
+			// 2. Invoke migrations which will populate the created index
+			for (DeliveryOptions option : events) {
+				Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, option);
+			}
+			return tuple.v2();
+
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}

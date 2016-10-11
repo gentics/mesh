@@ -2,9 +2,6 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
@@ -13,21 +10,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-import io.vertx.core.AbstractVerticle;
-
-public class UserVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
+public class UserVerticlePerformanceTest extends AbstractRestEndpointTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
-
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.userVerticle());
-		return list;
-	}
 
 	public void addUsers() {
 		for (int i = 0; i < 200; i++) {

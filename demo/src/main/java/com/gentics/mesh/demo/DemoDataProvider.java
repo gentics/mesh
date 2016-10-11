@@ -28,7 +28,6 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -36,7 +35,6 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -448,15 +446,6 @@ public class DemoDataProvider {
 				for (Schema schema : schemas.values()) {
 					call(() -> client.assignSchemaToProject(project.getName(), schema.getUuid()));
 				}
-				// Assign all schema versions to the latest release of the project
-				ReleaseListResponse list = call(() -> client.findReleases(projectName));
-				String releaseUuid = list.getData().get(0).getUuid();
-
-				SchemaReferenceList schemaVersionReferences = new SchemaReferenceList();
-				for (Schema schema : schemas.values()) {
-					schemaVersionReferences.add(schema.toReference());
-				}
-				call(() -> client.assignReleaseSchemaVersions(projectName, releaseUuid, schemaVersionReferences));
 			}
 
 		}

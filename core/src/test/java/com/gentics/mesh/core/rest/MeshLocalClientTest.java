@@ -3,27 +3,15 @@ package com.gentics.mesh.core.rest;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestEndpointTest;
 
-import io.vertx.core.AbstractVerticle;
-
-public class MeshLocalClientTest extends AbstractIsolatedRestVerticleTest {
-
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
+public class MeshLocalClientTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testClientParameterHandling() {

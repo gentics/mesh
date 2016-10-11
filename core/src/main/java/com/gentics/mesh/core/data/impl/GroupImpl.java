@@ -89,7 +89,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public List<? extends Role> getRoles() {
-		return in(HAS_ROLE).has(RoleImpl.class).toListExplicit(RoleImpl.class);
+		return in(HAS_ROLE).toListExplicit(RoleImpl.class);
 	}
 
 	public void addRole(Role role) {
