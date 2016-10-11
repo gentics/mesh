@@ -2,6 +2,12 @@ package com.gentics.mesh.changelog.changes;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -18,6 +24,8 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
+
+	protected static final char[] hexArray = "0123456789abcdef".toCharArray();
 
 	/**
 	 * Dummy map which will be used to detect webroot path conflicts without using the graph index
@@ -249,6 +257,37 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 		log.info("Completed migration of schema containers");
 	}
 
+	private String hashFile(String path) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-512");
+			try (InputStream is = Files.newInputStream(Paths.get(path)); DigestInputStream mis = new DigestInputStream(is, md)) {
+				byte[] buffer = new byte[4096];
+				while (mis.read(buffer) >= 0) {
+				}
+			}
+			byte[] digest = md.digest();
+			return bytesToHex(digest);
+		} catch (NoSuchAlgorithmException | IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Convert the byte array to a hex formatted string.
+	 * 
+	 * @param bytes
+	 * @return
+	 */
+	public static String bytesToHex(byte[] bytes) {
+		char[] hexChars = new char[bytes.length * 2];
+		for (int j = 0; j < bytes.length; j++) {
+			int v = bytes[j] & 0xFF;
+			hexChars[j * 2] = hexArray[v >>> 4];
+			hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+		}
+		return new String(hexChars);
+	}
+
 	/**
 	 * Migrate the node. Create a binary field for each NGFC if the node contains binary information.
 	 * 
@@ -279,9 +318,9 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 			Object fileSize = node.getProperty("binaryFileSize");
 			node.removeProperty("binaryFileSize");
 
-			String sha512sum = node.getProperty("binarySha512Sum");
 			node.removeProperty("binarySha512Sum");
 
+			String sha512sum = hashFile(oldBinaryFile.getAbsolutePath());
 			String mimeType = node.getProperty("binaryContentType");
 			node.removeProperty("binaryContentType");
 
@@ -349,7 +388,7 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 		Iterable<Vertex> containers = node.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER");
 		for (Vertex container : containers) {
 			container.addEdge("HAS_SCHEMA_CONTAINER_VERSION", schemaVersion);
-			//Add webrootPathInfo property (SegmentValue-ParentFolderUuid)
+			// Add webrootPathInfo property (SegmentValue-ParentFolderUuid)
 			if (segmentField != null) {
 				String segmentFieldValue = container.getProperty(segmentField + "-string");
 				if (!StringUtils.isEmpty(segmentFieldValue)) {
@@ -360,7 +399,7 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 					String id = uuid + "-" + container.getProperty("uuid");
 					if (webrootIndexMap.containsKey(webRootPath)) {
 						log.error("Found conflicting node:" + id + " with webroot path info " + webRootPath);
-						// Randomize the value 
+						// Randomize the value
 						segmentFieldValue = segmentFieldValue + "_" + randomUUID();
 						container.setProperty(segmentField + "-string", segmentFieldValue);
 						// Set the new webroot path
