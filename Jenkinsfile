@@ -1,4 +1,4 @@
-properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
+properties([disableConcurrentBuilds(),[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
 [$class: 'BooleanParameterDefinition', name: 'runTests', defaultValue: true],
 [$class: 'BooleanParameterDefinition', name: 'runPerformanceTests', defaultValue: true],
 [$class: 'BooleanParameterDefinition', name: 'runDocker', defaultValue: false],
