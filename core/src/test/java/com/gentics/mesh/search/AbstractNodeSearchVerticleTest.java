@@ -12,8 +12,6 @@ import java.util.Set;
 import org.codehaus.jettison.json.JSONException;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.junit.Before;
-import org.junit.BeforeClass;
 
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -31,26 +29,7 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 public abstract class AbstractNodeSearchVerticleTest extends AbstractSearchVerticleTest {
-
-	private static final Logger log = LoggerFactory.getLogger(AbstractNodeSearchVerticleTest.class);
-
-	@BeforeClass
-	public static void debug() {
-		// new RxDebugger().start();
-	}
-
-	@Before
-	public void deployWorker() throws Exception {
-		log.info("Deploying worker verticle...");
-		DeploymentOptions options = new DeploymentOptions();
-		options.setWorker(true);
-		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);
-	}
 
 	/**
 	 * Do the search with the given set of expected languages and assert correctness of the result.

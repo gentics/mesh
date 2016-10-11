@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -51,31 +51,31 @@ import io.vertx.ext.web.RoutingContext;
 
 public abstract class AbstractDBTest {
 
-	protected BootstrapInitializer boot;
-
-	private TestDataProvider dataProvider;
-
-	protected Database db;
-
-	protected MeshComponent meshDagger;
-
-	protected RouterStorage routerStorage;
-
-	protected ServerSchemaStorage schemaStorage;
-
-	protected SearchProvider searchProvider;
-
-	protected DummySearchProvider dummySearchProvider;
-
 	private static final Logger log = LoggerFactory.getLogger(AbstractDBTest.class);
+
+	public static BootstrapInitializer boot;
+
+	public static TestDataProvider dataProvider;
+
+	public static Database db;
+
+	public static MeshComponent meshDagger;
+
+	public static RouterStorage routerStorage;
+
+	public static ServerSchemaStorage schemaStorage;
+
+	public static SearchProvider searchProvider;
+
+	public static DummySearchProvider dummySearchProvider;
 
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
 
-	@Before
-	public void initMesh() throws Exception {
+	@BeforeClass
+	public static void initMesh() throws Exception {
 		init(false);
 		initDagger();
 	}
@@ -116,7 +116,7 @@ public abstract class AbstractDBTest {
 		Mesh.mesh(options);
 	}
 
-	public void initDagger() {
+	public static void initDagger() {
 		log.info("Initializing dagger context");
 		meshDagger = MeshInternal.create();
 		dataProvider = meshDagger.testDataProvider();
@@ -127,14 +127,8 @@ public abstract class AbstractDBTest {
 		searchProvider = meshDagger.searchProvider();
 		schemaStorage = meshDagger.serverSchemaStorage();
 		boot = meshDagger.boot();
-		boolean first = false;
-		if (db == null) {
-			first = true;
-		}
 		db = meshDagger.database();
-		if (first) {
-			new DatabaseHelper(db).init();
-		}
+		new DatabaseHelper(db).init();
 	}
 
 	@After
@@ -146,11 +140,6 @@ public abstract class AbstractDBTest {
 		// FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
 		// }
 		PermissionStore.invalidate();
-	}
-
-	@After
-	public void resetDagger() {
-		MeshInternal.clear();
 	}
 
 	protected void resetDatabase() {

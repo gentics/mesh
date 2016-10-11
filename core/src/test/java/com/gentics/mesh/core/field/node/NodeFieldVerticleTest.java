@@ -249,6 +249,7 @@ public class NodeFieldVerticleTest extends AbstractFieldVerticleTest {
 	@Test
 	public void testReadNodeExpandAllNoPerm() throws IOException {
 		try (NoTx noTx = db.noTx()) {
+			// Revoke the permission to the referenced node
 			Node referencedNode = folder("news");
 			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
 
@@ -261,12 +262,9 @@ public class NodeFieldVerticleTest extends AbstractFieldVerticleTest {
 			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
 					new VersioningParameters().draft()));
 
-			// Assert that the field has not been expanded
+			// Assert that the field has not been loaded
 			NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertNotNull("The referenced field should not be null", deserializedExpandedNodeField);
-			NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
-			assertEquals(referencedNode.getUuid(), expandedField.getUuid());
-			assertNull("The creator should be null since the field should not have been expanded.",expandedField.getCreator());
+			assertNull("The referenced field should be null", deserializedExpandedNodeField);
 
 		}
 	}

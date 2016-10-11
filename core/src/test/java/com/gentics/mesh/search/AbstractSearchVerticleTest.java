@@ -33,8 +33,8 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchVerticleTest.class);
 
-	@Override
-	public void initMesh() throws Exception {
+	@BeforeClass
+	public static void initMesh() throws Exception {
 		init(true);
 		initDagger();
 	}
@@ -50,11 +50,6 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	public void resetElasticSearch() {
 		// searchProvider.reset();
 		searchProvider.clear();
-	}
-
-	@Override
-	public void resetDagger() {
-		// NOOP - don't reset dagger. We want to reuse the previously initalized ES
 	}
 
 	@BeforeClass
