@@ -107,12 +107,15 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 			}
 
 			JsonObject authInfo = new JsonObject().put("jwt", token).put("options", options);
-
 			authProvider.authenticate(authInfo, res -> {
+
+				// Authentication was successful. Lets update the token cookie to keep it alive
 				if (res.succeeded()) {
 					final User user2 = res.result();
 					context.setUser(user2);
 					String jwtToken = authProvider.generateToken(user2);
+					// Remove the original cookie and set the new one
+					context.removeCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
 					context.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, jwtToken));
 					authorise(user2, context);
 				} else {
