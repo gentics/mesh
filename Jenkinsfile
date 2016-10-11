@@ -38,7 +38,7 @@ node('dockerRoot') {
 
 	stage 'Test'
 	if (Boolean.valueOf(runTests)) {
-		def splits = 45;
+		def splits = 25;
 		sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
 		sh "split -a 2 -d -n l/${splits} alltests  includes-"
 		stash includes: '*', name: 'project'
