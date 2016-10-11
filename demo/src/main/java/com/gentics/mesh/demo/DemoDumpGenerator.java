@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshSchemaException;
@@ -57,12 +58,24 @@ public class DemoDumpGenerator {
 	 * @throws Exception
 	 */
 	private void dump() throws Exception {
-		// Cleanup in preparation for dumping the demo data
+		// 1. Cleanup in preparation for dumping the demo data
 		cleanup();
+
+		// 2. Setup dagger
 		MeshComponent meshDagger = MeshInternal.create();
 
-		// Initialise mesh
+		// 3. Setup GraphDB
+		new DatabaseHelper(meshDagger.database()).init();
+
+		// 4. Initialise mesh
 		BootstrapInitializer boot = meshDagger.boot();
+		boot.initMandatoryData();
+		boot.initPermissions();
+		boot.markChangelogApplied();
+		boot.initSearchIndexHandlers();
+		boot.createSearchIndicesAndMappings();
+
+		// 5. Init demo data
 		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl());
 		SearchProvider searchProvider = meshDagger.searchProvider();
 		invokeDump(boot, provider);

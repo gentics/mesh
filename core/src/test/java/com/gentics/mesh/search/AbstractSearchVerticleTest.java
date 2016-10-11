@@ -106,18 +106,17 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		Project project = project();
 		for (Release release : project.getReleaseRoot().findAll()) {
 			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-				String type = NodeIndexHandler.getDocumentType();
 				String drafIndex = NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), DRAFT);
 				if (log.isDebugEnabled()) {
 					log.debug("Creating schema mapping for index {" + drafIndex + "}");
 				}
-				meshDagger.nodeIndexHandler().updateNodeIndexMapping(drafIndex, type, version.getSchema()).await();
+				meshDagger.nodeIndexHandler().updateNodeIndexMapping(drafIndex, version.getSchema()).await();
 
 				String publishIndex = NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), PUBLISHED);
 				if (log.isDebugEnabled()) {
 					log.debug("Creating schema mapping for index {" + publishIndex + "}");
 				}
-				meshDagger.nodeIndexHandler().updateNodeIndexMapping(publishIndex, type, version.getSchema()).await();
+				meshDagger.nodeIndexHandler().updateNodeIndexMapping(publishIndex, version.getSchema()).await();
 			}
 		}
 

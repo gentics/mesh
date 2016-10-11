@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.verticle.schema;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_INDEX;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
@@ -20,6 +23,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -37,6 +41,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -107,9 +112,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 							// Update the index type specific ES mapping
 							nodeIndexHandler.updateNodeIndexMapping("node-" + projectOfRelease.getUuid() + "-" + release.getUuid() + "-draft",
-									createdVersion.getName() + "-" + createdVersion.getVersion(), createdVersion.getSchema()).await();
+									createdVersion.getSchema()).await();
 							nodeIndexHandler.updateNodeIndexMapping("node-" + projectOfRelease.getUuid() + "-" + release.getUuid() + "-published",
-									createdVersion.getName() + "-" + createdVersion.getVersion(), createdVersion.getSchema()).await();
+									createdVersion.getSchema()).await();
 
 							// Invoke the node release migration
 							DeliveryOptions options = new DeliveryOptions();
@@ -177,11 +182,30 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			String projectUuid = project.getUuid();
 			if (ac.getUser().hasPermission(project.getImpl(), GraphPermission.UPDATE_PERM)) {
 				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
-				return db.tx(() -> {
-					// TODO SQB ?
+				Tuple<SearchQueueBatch, Single<Schema>> tuple = db.tx(() -> {
+
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
-					return schema.transformToRest(ac, 0);
+					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+
+					String releaseUuid = project.getLatestRelease().getUuid();
+					SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
+					batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT), Node.TYPE,
+							CREATE_INDEX);
+					batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED), Node.TYPE,
+							CREATE_INDEX);
+					//					nodeIndexHandler.
+					//					
+					//					String draftIndexName = NodeIndexHandler.getIndexName(projectUuid, project.getLatestRelease().getUuid(), schema.getUuid(), DRAFT);
+					//					nodeIndexHandler.updateNodeIndexMapping(draftIndexName, schema.getLatestVersion().getSchema()).await();
+					//
+					//					String publishIndexName = NodeIndexHandler.getIndexName(projectUuid, project.getLatestRelease().getUuid(), schema.getUuid(),
+					//							PUBLISHED);
+					//					nodeIndexHandler.updateNodeIndexMapping(publishIndexName, schema.getLatestVersion().getSchema()).await();
+
+					return Tuple.tuple(batch, schema.transformToRest(ac, 0));
 				});
+				tuple.v1().processSync();
+				return tuple.v2();
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
