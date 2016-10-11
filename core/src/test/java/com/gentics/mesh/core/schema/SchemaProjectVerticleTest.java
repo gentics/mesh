@@ -86,7 +86,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		Project extraProject;
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
-			Project project = project();
+			schemaUuid = schema.getUuid();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
@@ -94,9 +94,8 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 			ProjectResponse response = call(() -> getClient().createProject(request));
 			projectUuid = response.getUuid();
 			extraProject = projectRoot.findByUuid(projectUuid);
-			schemaUuid = schema.getUuid();
 			// Revoke Update perm on project
-			role().revokePermissions(project, UPDATE_PERM);
+			role().revokePermissions(extraProject, UPDATE_PERM);
 		}
 		call(() -> getClient().assignSchemaToProject("extraProject", schemaUuid), FORBIDDEN, "error_missing_perm", projectUuid);
 		try (NoTx noTx = db.noTx()) {

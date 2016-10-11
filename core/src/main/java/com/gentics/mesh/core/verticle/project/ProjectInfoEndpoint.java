@@ -16,12 +16,12 @@ import io.vertx.ext.web.Router;
 
 
 @Singleton
-public class ProjectInfoVerticle extends AbstractEndpoint {
+public class ProjectInfoEndpoint extends AbstractEndpoint {
 
 	private ProjectCrudHandler crudHandler;
 
 	@Inject
-	public ProjectInfoVerticle(RouterStorage routerStorage, ProjectCrudHandler crudHandler) {
+	public ProjectInfoEndpoint(RouterStorage routerStorage, ProjectCrudHandler crudHandler) {
 		super(null, routerStorage);
 		this.crudHandler = crudHandler;
 	}

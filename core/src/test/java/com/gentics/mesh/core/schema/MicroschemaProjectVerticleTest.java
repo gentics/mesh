@@ -83,17 +83,30 @@ public class MicroschemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddMicroschemaToProjectWithoutPerm() throws Exception {
+		String projectUuid;
+		String microschemaUuid;
+		Project extraProject;
 		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
-			Project project = project();
+			microschemaUuid = microschema.getUuid();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			Project extraProject = projectRoot.create("extraProject", user(), schemaContainer("folder").getLatestVersion());
-			// Add only read perms
-			role().grantPermissions(microschema, READ_PERM);
-			role().grantPermissions(project, READ_PERM);
-			call(() -> getClient().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()), FORBIDDEN, "error_missing_perm",
-					extraProject.getUuid());
-			// Reload the schema and check for expected changes
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName("extraProject");
+			request.setSchemaReference(new SchemaReference().setName("folder"));
+			ProjectResponse response = call(() -> getClient().createProject(request));
+			projectUuid = response.getUuid();
+			extraProject = projectRoot.findByUuid(projectUuid);
+			// Revoke Update perm on project
+			role().revokePermissions(extraProject, UPDATE_PERM);
+		}
+
+		call(() -> getClient().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm",
+				projectUuid);
+
+		try (NoTx noTx = db.noTx()) {
+			// Reload the microschema and check for expected changes
+			MicroschemaContainer microschema = microschemaContainer("vcard");
+
 			assertFalse("The microschema should not have been added to the extra project but it was",
 					extraProject.getMicroschemaContainerRoot().contains(microschema));
 		}

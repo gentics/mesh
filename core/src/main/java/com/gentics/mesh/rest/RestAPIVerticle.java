@@ -19,6 +19,7 @@ import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaEndpoint;
 import com.gentics.mesh.core.verticle.navroot.NavRootEndpoint;
 import com.gentics.mesh.core.verticle.node.NodeEndpoint;
 import com.gentics.mesh.core.verticle.project.ProjectEndpoint;
+import com.gentics.mesh.core.verticle.project.ProjectInfoEndpoint;
 import com.gentics.mesh.core.verticle.release.ReleaseEndpoint;
 import com.gentics.mesh.core.verticle.role.RoleEndpoint;
 import com.gentics.mesh.core.verticle.schema.ProjectSchemaEndpoint;
@@ -78,6 +79,9 @@ public class RestAPIVerticle extends AbstractVerticle {
 	@Inject
 	public ProjectSchemaEndpoint projectSchemaEndpoint;
 
+	@Inject
+	public ProjectInfoEndpoint projectInfoEndpoint;
+	
 	@Inject
 	public ProjectMicroschemaEndpoint projectMicroschemaEndpoint;
 
@@ -200,6 +204,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(adminEndpoint);
 		endpoints.add(eventbusEndpoint);
 		endpoints.add(utilityEndpoint);
+		endpoints.add(projectInfoEndpoint);
 
 		for (AbstractEndpoint endpoint : endpoints) {
 			endpoint.registerEndPoints();
