@@ -6,10 +6,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-public class RoleVerticlePerformanceTest extends AbstractRestVerticleTest {
+public class RoleVerticlePerformanceTest extends AbstractRestEndpointTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 

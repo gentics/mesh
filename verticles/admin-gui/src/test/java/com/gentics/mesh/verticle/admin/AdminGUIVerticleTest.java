@@ -19,14 +19,14 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestEndpointTest;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
 
-public class AdminGUIVerticleTest extends AbstractRestVerticleTest {
+public class AdminGUIVerticleTest extends AbstractRestEndpointTest {
 
 	private AdminGUIVerticle adminGuiVerticle;
 

@@ -15,14 +15,14 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.search.AbstractSearchVerticleTest;
+import com.gentics.mesh.search.AbstractSearchEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
+public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchPerformanceTest.class);
 

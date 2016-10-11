@@ -10,10 +10,10 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-public class UserVerticlePerformanceTest extends AbstractRestVerticleTest {
+public class UserVerticlePerformanceTest extends AbstractRestEndpointTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
