@@ -3,6 +3,7 @@ package com.gentics.mesh.rest.client;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
 
 import io.vertx.core.buffer.Buffer;
@@ -21,7 +22,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	protected HttpClient client;
 
-	protected MeshRestClientAuthenticationProvider authentication;
+	protected JWTAuthentication authentication;
 
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
@@ -57,8 +58,12 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 		return authentication.logout(getClient());
 	}
 
-	public void setAuthentication(MeshRestClientAuthenticationProvider authentication) {
+	public void setAuthentication(JWTAuthentication authentication) {
 		this.authentication = authentication;
+	}
+
+	public JWTAuthentication getAuthentication() {
+		return authentication;
 	}
 
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType) {

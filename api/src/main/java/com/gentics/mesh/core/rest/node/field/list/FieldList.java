@@ -25,6 +25,6 @@ public interface FieldList<T> extends Field {
 	 * 
 	 * @param items
 	 */
-	void setItems(List<T> items);
+	FieldList<T> setItems(List<T> items);
 
 }
