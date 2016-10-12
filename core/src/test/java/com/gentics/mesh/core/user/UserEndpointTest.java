@@ -616,6 +616,77 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	}
 
 	@Test
+	public void testUpdateExistingPasswordWithNoOldPassword() {
+		String uuid;
+		String oldHash;
+
+		try (NoTx noTx = db.noTx()) {
+			uuid = user().getUuid();
+			oldHash = user().getPasswordHash();
+		}
+
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setPassword("new_password");
+		// Old password not set
+
+		call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST, "user_error_missing_old_password");
+
+		try (NoTx noTx = db.noTx()) {
+			User reloadedUser = boot.userRoot().findByUuid(uuid);
+			assertEquals("The hash should not be different since the password should not have been updated.", oldHash,
+					reloadedUser.getPasswordHash());
+		}
+	}
+
+	@Test
+	public void testUpdateExistingPasswordWithWrongOldPassword() {
+		String uuid;
+		String oldHash;
+
+		try (NoTx noTx = db.noTx()) {
+			uuid = user().getUuid();
+			oldHash = user().getPasswordHash();
+		}
+
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setPassword("new_password");
+		updateRequest.setOldPassword("bogus");
+
+		call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST, "user_error_password_check_failed");
+
+		try (NoTx noTx = db.noTx()) {
+			User reloadedUser = boot.userRoot().findByUuid(uuid);
+			assertEquals("The hash should not be different since the password should not have been updated.", oldHash,
+					reloadedUser.getPasswordHash());
+		}
+
+	}
+
+	@Test
+	public void testUpdatePasswordWithNoOldPassword() {
+		String uuid;
+		String oldHash;
+
+		try (NoTx noTx = db.noTx()) {
+			user().setPasswordHash(null);
+			uuid = user().getUuid();
+			oldHash = user().getPasswordHash();
+		}
+
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setPassword("new_password");
+
+		UserResponse restUser = call(() -> getClient().updateUser(uuid, updateRequest));
+		assertThat(restUser).matches(updateRequest);
+
+		try (NoTx noTx = db.noTx()) {
+			User reloadedUser = boot.userRoot().findByUuid(uuid);
+			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
+		}
+
+	}
+
+	@Test
 	public void testUpdatePassword() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		String username;
 		String uuid;
@@ -628,11 +699,12 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setPassword("new_password");
+		updateRequest.setOldPassword("test123");
 
 		UserResponse restUser = call(() -> getClient().updateUser(uuid, updateRequest));
 		assertThat(restUser).matches(updateRequest);
 
-		try (Tx tx = db.tx()) {
+		try (NoTx noTx = db.noTx()) {
 			User reloadedUser = boot.userRoot().findByUsername(username);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
