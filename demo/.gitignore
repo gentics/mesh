@@ -10,3 +10,4 @@ data_*
 restore*.sh
 migrated.sh
 keystore.jceks
+mesh.yml

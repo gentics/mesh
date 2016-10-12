@@ -149,6 +149,17 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 	private void migrateTagFamilies(Vertex project) {
 		Vertex tagFamilyRoot = project.getVertices(Direction.OUT, "HAS_TAGFAMILY_ROOT").iterator().next();
 		for (Vertex tagFamily : tagFamilyRoot.getVertices(Direction.OUT, "HAS_TAG_FAMILY")) {
+
+			// Check dates
+			Object tagFamilyCreationTimeStamp = tagFamily.getProperty("creation_timestamp");
+			if (tagFamilyCreationTimeStamp == null) {
+				tagFamily.setProperty("creation_timestamp", System.currentTimeMillis());
+			}
+			Object tagFamilyEditTimeStamp = tagFamily.getProperty("last_edited_timestamp");
+			if (tagFamilyEditTimeStamp == null) {
+				tagFamily.setProperty("last_edited_timestamp", System.currentTimeMillis());
+			}
+
 			// Create a new tag root vertex for the tagfamily and link the tags to this vertex instead to the tag family itself.
 			Vertex tagRoot = getGraph().addVertex("class:TagRootImpl");
 			tagRoot.setProperty("ferma_type", "com.gentics.mesh.core.data.root.impl.TagRootImpl");
@@ -162,6 +173,14 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 				if (!tag.getEdges(Direction.OUT, "ASSIGNED_TO_PROJECT").iterator().hasNext()) {
 					log.error("Tag {" + tag.getProperty("uuid") + " has no project assigned to it. Fixing it...");
 					tag.addEdge("ASSIGNED_TO_PROJECT", project);
+				}
+				Object creationTimeStamp = tag.getProperty("creation_timestamp");
+				if (creationTimeStamp == null) {
+					tag.setProperty("creation_timestamp", System.currentTimeMillis());
+				}
+				Object editTimeStamp = tag.getProperty("last_edited_timestamp");
+				if (editTimeStamp == null) {
+					tag.setProperty("last_edited_timestamp", System.currentTimeMillis());
 				}
 			}
 			tagFamily.addEdge("HAS_TAG_ROOT", tagRoot);
