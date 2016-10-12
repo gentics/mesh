@@ -21,6 +21,7 @@ public class RoleTransformator extends AbstractTransformator<Role> {
 	 * @param role
 	 * @return JSON document representing the role
 	 */
+	@Override
 	public JsonObject toDocument(Role role) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, role.getName());
@@ -28,6 +29,10 @@ public class RoleTransformator extends AbstractTransformator<Role> {
 		return document;
 	}
 
+	/**
+	 * Return the type specific mapping properties.
+	 */
+	@Override
 	public JsonObject getMappingProperties() {
 		JsonObject props = new JsonObject();
 		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));

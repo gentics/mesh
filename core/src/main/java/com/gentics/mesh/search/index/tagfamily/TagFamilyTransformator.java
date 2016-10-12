@@ -10,6 +10,9 @@ import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Transformator for tagfamily search index documents.
+ */
 public class TagFamilyTransformator extends AbstractTransformator<TagFamily> {
 
 	@Override

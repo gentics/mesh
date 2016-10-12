@@ -1,5 +1,8 @@
 package com.gentics.mesh.api.common;
 
+/**
+ * Enum which contains the sortorder states.
+ */
 public enum SortOrder {
 
 	ASCENDING("asc"),
@@ -14,6 +17,11 @@ public enum SortOrder {
 		this.simpleName = simpleName;
 	}
 
+	/**
+	 * Return the human readable name of the sortorder.
+	 * 
+	 * @return
+	 */
 	public String getSimpleName() {
 		return simpleName;
 	}

@@ -18,6 +18,9 @@ import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Transformator for user search index documents.
+ */
 public class UserTransformator extends AbstractTransformator<User> {
 
 	public static final String EMAIL_KEY = "emailaddress";

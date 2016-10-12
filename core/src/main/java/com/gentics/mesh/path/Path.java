@@ -25,9 +25,11 @@ public class Path {
 	 * Add the path segment to the path.
 	 * 
 	 * @param segment
+	 * @return Fluent API
 	 */
-	public void addSegment(PathSegment segment) {
+	public Path addSegment(PathSegment segment) {
 		segments.add(segment);
+		return this;
 	}
 
 	/**
@@ -54,11 +56,23 @@ public class Path {
 		return segments.get(0);
 	}
 
+	/**
+	 * Return the target path.
+	 * 
+	 * @return
+	 */
 	public String getTargetPath() {
 		return targetPath;
 	}
 
-	public void setTargetPath(String targetPath) {
+	/**
+	 * Set the target path.
+	 * 
+	 * @param targetPath
+	 * @return Fluent API
+	 */
+	public Path setTargetPath(String targetPath) {
 		this.targetPath = targetPath;
+		return this;
 	}
 }

@@ -90,6 +90,12 @@ public final class FieldUtil {
 		return fieldSchema;
 	}
 
+	/**
+	 * Create a string field and set the given value.
+	 * 
+	 * @param stringValue
+	 * @return
+	 */
 	public static StringField createStringField(String stringValue) {
 		StringField field = new StringFieldImpl();
 		field.setString(stringValue);
@@ -102,12 +108,24 @@ public final class FieldUtil {
 		return field;
 	}
 
+	/**
+	 * Create a number field and set the given value.
+	 * 
+	 * @param numberValue
+	 * @return
+	 */
 	public static NumberField createNumberField(Number numberValue) {
 		NumberField field = new NumberFieldImpl();
 		field.setNumber(numberValue);
 		return field;
 	}
 
+	/**
+	 * Create a boolean field and set the given value.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	public static BooleanField createBooleanField(Boolean value) {
 		BooleanField field = new BooleanFieldImpl();
 		field.setValue(value);
@@ -120,6 +138,12 @@ public final class FieldUtil {
 		return field;
 	}
 
+	/**
+	 * Create a node field and set the uuid as node reference.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	public static NodeFieldImpl createNodeField(String uuid) {
 		NodeFieldImpl field = new NodeFieldImpl();
 		field.setUuid(uuid);

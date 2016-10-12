@@ -49,6 +49,9 @@ public class Endpoint implements Route {
 	 */
 	private Map<String, UriParameter> uriParameters = new HashMap<>();
 
+	/**
+	 * Map of example responses for the corresponding status code.
+	 */
 	private Map<Integer, Response> exampleResponses = new HashMap<>();
 
 	private String[] traits = new String[] {};

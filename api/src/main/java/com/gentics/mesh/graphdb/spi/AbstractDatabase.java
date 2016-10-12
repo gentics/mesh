@@ -68,7 +68,6 @@ public abstract class AbstractDatabase implements Database {
 			T result = txHandler.call();
 			return result;
 		} catch (Exception e) {
-			log.error("Error while handling no-transaction.", e);
 			throw new RuntimeException(e);
 		}
 	}

@@ -303,6 +303,11 @@ public interface Database {
 	 */
 	void setVertexType(Element element, Class<?> classOfVertex);
 
+	/**
+	 * Get the underlying raw transaction.
+	 * 
+	 * @return
+	 */
 	TransactionalGraph rawTx();
 
 	/**

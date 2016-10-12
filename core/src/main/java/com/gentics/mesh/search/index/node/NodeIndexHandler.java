@@ -187,7 +187,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Get the index name for the given project/release/version.
+	 * Get the index name for the given project/release/version and container type.
 	 * 
 	 * @param projectUuid
 	 * @param releaseUuid

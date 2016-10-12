@@ -8,6 +8,9 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleReference;
 
+/**
+ *	Utility class which provides.
+ */
 public class GroupExamples extends AbstractExamples {
 
 	public GroupResponse getGroupResponse1(String name) {
