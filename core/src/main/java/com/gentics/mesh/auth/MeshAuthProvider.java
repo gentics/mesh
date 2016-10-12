@@ -182,13 +182,6 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				// TODO Don't let the user know that we know that he did not exist?
 				resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
 			}
-
-			// , rh -> {
-			// if (rh.failed()) {
-			// log.error("Error while authenticating user.", rh.cause());
-			// resultHandler.handle(Future.failedFuture(rh.cause()));
-			// }
-			// });
 		}
 
 	}
@@ -208,7 +201,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	/**
 	 * Gets the {@link MeshAuthUser} by JWT token.
 	 *
-	 * @param user
+	 * @param vertxUser
 	 * @return
 	 * @throws Exception
 	 */

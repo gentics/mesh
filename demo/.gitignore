@@ -1,5 +1,6 @@
 /data
 /demo
+*.tgz 
 src/main/resources/mesh-demo.zip
 /target/
 mesh-dump.zip
@@ -9,3 +10,4 @@ data_*
 restore*.sh
 migrated.sh
 keystore.jceks
+mesh.yml

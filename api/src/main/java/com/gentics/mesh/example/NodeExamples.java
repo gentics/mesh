@@ -89,11 +89,25 @@ public class NodeExamples extends AbstractExamples {
 
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
-		breadcrumb.add(new NodeReferenceImpl().setDisplayName("news").setPath("/news"));
-		breadcrumb.add(new NodeReferenceImpl().setDisplayName("news").setPath("/news"));
 
+		// breadcrumb
+		Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
+		//		breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReferenceImpl().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReferenceImpl().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
 		nodeResponse.setBreadcrumb(breadcrumb);
+
+		// tags
+		TagFamilyTagGroup colorsGroup = new TagFamilyTagGroup();
+		colorsGroup.getItems().add(new TagReference().setName("red").setUuid(randomUUID()));
+		colorsGroup.getItems().add(new TagReference().setName("green").setUuid(randomUUID()));
+		nodeResponse.getTags().put("colors", colorsGroup);
+
+		TagFamilyTagGroup typesGroup = new TagFamilyTagGroup();
+		typesGroup.getItems().add(new TagReference().setName("car").setUuid(randomUUID()));
+		typesGroup.getItems().add(new TagReference().setName("ship").setUuid(randomUUID()));
+		nodeResponse.getTags().put("types", typesGroup);
+
 		return nodeResponse;
 	}
 
@@ -158,6 +172,25 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("content", createStringField("Content for language tag en"));
 
 		nodeResponse.setPermissions("READ", "CREATE");
+
+		// breadcrumb
+		Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
+		//		breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReferenceImpl().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReferenceImpl().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
+		nodeResponse.setBreadcrumb(breadcrumb);
+
+		// tags
+		TagFamilyTagGroup colorsGroup = new TagFamilyTagGroup();
+		colorsGroup.getItems().add(new TagReference().setName("red").setUuid(randomUUID()));
+		colorsGroup.getItems().add(new TagReference().setName("green").setUuid(randomUUID()));
+		nodeResponse.getTags().put("colors", colorsGroup);
+
+		TagFamilyTagGroup typesGroup = new TagFamilyTagGroup();
+		typesGroup.getItems().add(new TagReference().setName("car").setUuid(randomUUID()));
+		typesGroup.getItems().add(new TagReference().setName("ship").setUuid(randomUUID()));
+		nodeResponse.getTags().put("types", typesGroup);
+
 		return nodeResponse;
 	}
 
