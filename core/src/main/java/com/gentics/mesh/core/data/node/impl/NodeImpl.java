@@ -677,8 +677,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
 				if (fieldEntry.isRequired() && restField == null) {
 					// TODO i18n
-					//throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
-					//		+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+					// throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
+					// + "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and
+					// remove the required flag.");
 					restNode.getFields().put(fieldEntry.getName(), null);
 				}
 				if (restField == null) {
@@ -982,7 +983,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			PublishStatusModel status = new PublishStatusModel().setPublished(true)
 					.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString())).setPublisher(c.getEditor().transformToReference())
-					.setPublishTime(date);
+					.setPublishDate(date);
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
 
@@ -1100,7 +1101,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			String date = DateUtils.toISO8601(container.getLastEditedTimestamp(), 0);
 			return new PublishStatusModel().setPublished(true)
 					.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()))
-					.setPublisher(container.getEditor().transformToReference()).setPublishTime(date);
+					.setPublisher(container.getEditor().transformToReference()).setPublishDate(date);
 		} else {
 			container = getGraphFieldContainer(languageTag, release.getUuid(), ContainerType.DRAFT);
 			if (container != null) {
@@ -1509,8 +1510,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public void moveTo(InternalActionContext ac, Node targetNode, SearchQueueBatch batch) {
 		// TODO should we add a guard that terminates this loop when it runs to
 		// long?
-		// Check whether the target node is part of the subtree of the source
-		// node.
+
+		// Check whether the target node is part of the subtree of the source node.
 		String releaseUuid = ac.getRelease(getProject()).getUuid();
 		Node parent = targetNode.getParentNode(releaseUuid);
 		while (parent != null) {
@@ -1696,9 +1697,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		keyBuilder.append(release.getUuid());
 		keyBuilder.append("-");
 
-		//TODO version, language list
+		// TODO version, language list
 
-		// We can omit further etag keys since this would return a 404 anyhow since the requested container could not be found. 
+		// We can omit further etag keys since this would return a 404 anyhow since the requested container could not be found.
 		if (container == null) {
 			keyBuilder.append("404-no-container");
 			return keyBuilder.toString();

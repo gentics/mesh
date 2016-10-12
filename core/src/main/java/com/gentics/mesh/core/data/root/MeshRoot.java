@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.dagger.MeshInternal;
 
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 public interface MeshRoot extends MeshVertex {
 
 	static MeshRoot getInstance() {
-		return MeshRootImpl.getInstance();
+		return MeshInternal.get().boot().meshRoot();
 	}
 
 	/**

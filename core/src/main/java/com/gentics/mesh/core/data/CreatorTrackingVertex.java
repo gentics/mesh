@@ -5,9 +5,10 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import com.gentics.mesh.core.data.impl.UserImpl;
 
 /**
- * Interface for vertices that track their creator and creation time
+ * Interface for vertices that track their creator and creation time.
  */
 public interface CreatorTrackingVertex extends MeshVertex {
+
 	static final String CREATION_TIMESTAMP_PROPERTY_KEY = "creation_timestamp";
 
 	/**

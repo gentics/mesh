@@ -24,8 +24,7 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 
 /**
- * An abstract class that should be used when creating verticles which expose a http server. The verticle will automatically start a http server and add the
- * http server handler to the core router storage handler.
+ * An abstract class that should be used when creating new endpoints.
  */
 public abstract class AbstractEndpoint {
 
@@ -51,6 +50,14 @@ public abstract class AbstractEndpoint {
 	@Inject
 	public MeshAuthHandler authHandler;
 
+	/**
+	 * Constructor to be invoked from implementation.
+	 * 
+	 * @param basePath
+	 *            Basebase for the endpoint
+	 * @param routerStorage
+	 *            Router storage
+	 */
 	protected AbstractEndpoint(String basePath, RouterStorage routerStorage) {
 		this.basePath = basePath;
 		this.routerStorage = routerStorage;
@@ -78,6 +85,11 @@ public abstract class AbstractEndpoint {
 	 */
 	public abstract String getDescription();
 
+	/**
+	 * Setup the router for this endpoint using the endpoint basepath.
+	 * 
+	 * @return
+	 */
 	public Router setupLocalRouter() {
 		return routerStorage.getAPISubRouter(basePath);
 	}
@@ -105,16 +117,31 @@ public abstract class AbstractEndpoint {
 		return route;
 	}
 
+	/**
+	 * Create a new endpoint. Internally a new route will be wrapped.
+	 * 
+	 * @return
+	 */
 	protected Endpoint createEndpoint() {
 		Endpoint endpoint = new Endpoint(getRouter());
 		endpoints.add(endpoint);
 		return endpoint;
 	}
 
+	/**
+	 * Return a list of all endpoints that have been registered within this endpoint.
+	 * 
+	 * @return
+	 */
 	public List<Endpoint> getEndpoints() {
 		return endpoints;
 	}
 
+	/**
+	 * Return the endpoint basepath.
+	 * 
+	 * @return
+	 */
 	public String getBasePath() {
 		return basePath;
 	}

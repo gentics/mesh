@@ -19,6 +19,10 @@ import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Central schema storage system which is used to buffer/cache JSON schema data. Storing the schema pojo's in memory is not expensive and help peformance a lot
+ * since it is not required to load the schema from the graph everytime it is needed.
+ */
 @Singleton
 public class ServerSchemaStorage implements SchemaStorage {
 

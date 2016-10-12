@@ -21,6 +21,7 @@ import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
+import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;

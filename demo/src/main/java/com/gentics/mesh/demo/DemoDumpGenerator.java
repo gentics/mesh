@@ -72,7 +72,6 @@ public class DemoDumpGenerator {
 		boot.initMandatoryData();
 		boot.initPermissions();
 		boot.markChangelogApplied();
-		boot.initSearchIndexHandlers();
 		boot.createSearchIndicesAndMappings();
 
 		// 5. Init demo data
@@ -109,7 +108,6 @@ public class DemoDumpGenerator {
 	 */
 	public void invokeDump(BootstrapInitializer boot, DemoDataProvider provider)
 			throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		boot.initSearchIndexHandlers();
 		boot.initMandatoryData();
 		boot.initPermissions();
 		boot.markChangelogApplied();

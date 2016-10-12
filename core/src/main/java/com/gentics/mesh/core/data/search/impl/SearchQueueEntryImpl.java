@@ -6,6 +6,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.index.IndexHandler;
@@ -90,7 +91,7 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	 * @return
 	 */
 	public IndexHandler getIndexHandler(String type) {
-		return IndexHandlerRegistry.getInstance().get(type);
+		return MeshInternal.get().indexHandlerRegistry().getHandlerWithKey(type);
 	}
 
 	@Override

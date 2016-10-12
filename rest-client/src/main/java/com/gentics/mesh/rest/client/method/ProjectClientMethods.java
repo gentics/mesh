@@ -66,6 +66,7 @@ public interface ProjectClientMethods {
 	 * Update the project.
 	 * 
 	 * @param uuid
+	 *            Uuid of the project
 	 * @param request
 	 * @return
 	 */
@@ -75,6 +76,7 @@ public interface ProjectClientMethods {
 	 * Delete the project.
 	 * 
 	 * @param uuid
+	 *            Uuid of the project
 	 * @return
 	 */
 	MeshRequest<Void> deleteProject(String uuid);

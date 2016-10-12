@@ -11,6 +11,10 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 
+/**
+ * Response handler for webroot responses. The webroot endpoint is special since it may return a JSON response or the binary field value. This handler will wrap
+ * both possible values into one {@link WebRootResponse} object.
+ */
 public class MeshWebrootResponseHandler extends AbstractMeshResponseHandler<WebRootResponse> {
 
 	public MeshWebrootResponseHandler(HttpMethod method, String uri) {

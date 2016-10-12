@@ -71,48 +71,48 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 			if (model.getChanges().isEmpty()) {
 				return message(ac, "schema_update_no_difference_detected", name);
-			} else {
-				db.tx(() -> {
-					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
-					MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
+			}
+			db.tx(() -> {
+				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
-					SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
-					if (updateParams.getUpdateAssignedReleases()) {
-						Map<Release, MicroschemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
+				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
+				if (updateParams.getUpdateAssignedReleases()) {
+					Map<Release, MicroschemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
 
-						// Assign the created version to the found releases
-						for (Map.Entry<Release, MicroschemaContainerVersion> releaseEntry : referencedReleases.entrySet()) {
-							Release release = releaseEntry.getKey();
-							Project projectOfRelease = release.getProject();
+					// Assign the created version to the found releases
+					for (Map.Entry<Release, MicroschemaContainerVersion> releaseEntry : referencedReleases.entrySet()) {
+						Release release = releaseEntry.getKey();
+						Project projectOfRelease = release.getProject();
 
-							// Check whether a list of release names was specified and skip releases which were not included in the list.
-							List<String> releaseNames = updateParams.getReleaseNames();
-							if (releaseNames != null && !releaseNames.isEmpty() && !releaseNames.contains(release.getName())) {
-								continue;
-							}
-
-							MicroschemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
-
-							// Assign the new version to the release
-							release.assignMicroschemaVersion(createdVersion);
-
-							// start microschema migration
-							DeliveryOptions options = new DeliveryOptions();
-							options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectOfRelease.getUuid());
-							options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
-							options.addHeader(NodeMigrationVerticle.UUID_HEADER, createdVersion.getSchemaContainer().getUuid());
-							options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, previouslyReferencedVersion.getUuid());
-							options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, createdVersion.getUuid());
-							Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options);
-
+						// Check whether a list of release names was specified and skip releases which were not included in the list.
+						List<String> releaseNames = updateParams.getReleaseNames();
+						if (releaseNames != null && !releaseNames.isEmpty() && !releaseNames.contains(release.getName())) {
+							continue;
 						}
+
+						MicroschemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
+
+						// Assign the new version to the release
+						release.assignMicroschemaVersion(createdVersion);
+
+						// start microschema migration
+						DeliveryOptions options = new DeliveryOptions();
+						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectOfRelease.getUuid());
+						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
+						options.addHeader(NodeMigrationVerticle.UUID_HEADER, createdVersion.getSchemaContainer().getUuid());
+						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, previouslyReferencedVersion.getUuid());
+						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, createdVersion.getUuid());
+						Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options);
 
 					}
 
-					return batch;
-				}).processSync();
-				return message(ac, "migration_invoked", name);
-			}
+				}
+
+				return batch;
+			}).processSync();
+			return message(ac, "migration_invoked", name);
+
 		}, model -> ac.send(model, OK));
 
 	}
@@ -130,11 +130,6 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			return microschema.getLatestVersion().diff(ac, comparator, requestModel);
 		}, model -> ac.send(model, OK));
-	}
-
-	public void handleGetSchemaChanges(InternalActionContext ac, String schemaUuid) {
-		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -179,16 +174,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		validateParameter(microschemaUuid, "microschemaUuid");
 		operateNoTx(() -> {
 			Project project = ac.getProject();
-			if (ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
-				MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
-				return db.tx(() -> {
-					project.getMicroschemaContainerRoot().addMicroschema(microschema);
-					return microschema.transformToRest(ac, 0);
-				});
-			} else {
+			if (!ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
+			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+			return db.tx(() -> {
+				project.getMicroschemaContainerRoot().addMicroschema(microschema);
+				return microschema.transformToRest(ac, 0);
+			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -197,16 +191,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		operateNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			if (ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
-				// TODO check whether microschema is assigned to project
-				MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
-				return db.tx(() -> {
-					project.getMicroschemaContainerRoot().removeMicroschema(microschema);
-					return Single.just(null);
-				});
-			} else {
+			if (!ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
+			// TODO check whether microschema is assigned to project
+			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+			return db.tx(() -> {
+				project.getMicroschemaContainerRoot().removeMicroschema(microschema);
+				return Single.just(null);
+			});
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 }

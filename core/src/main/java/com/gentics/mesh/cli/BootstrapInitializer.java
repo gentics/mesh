@@ -92,7 +92,7 @@ public class BootstrapInitializer {
 
 	private RouterStorage routerStorage;
 
-	private Lazy<IndexHandlerRegistry> searchHandlerRegistry;
+	private Lazy<IndexHandlerRegistry> indexHandlerRegistry;
 
 	private Lazy<CoreVerticleLoader> loader;
 
@@ -103,13 +103,13 @@ public class BootstrapInitializer {
 	private List<String> allLanguageTags = new ArrayList<>();
 
 	@Inject
-	public BootstrapInitializer(Database db, Lazy<IndexHandlerRegistry> searchHandlerRegistry, BCryptPasswordEncoder encoder,
+	public BootstrapInitializer(Database db, Lazy<IndexHandlerRegistry> indexHandlerRegistry, BCryptPasswordEncoder encoder,
 			RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
 
 		clearReferences();
 
 		this.db = db;
-		this.searchHandlerRegistry = searchHandlerRegistry;
+		this.indexHandlerRegistry = indexHandlerRegistry;
 		this.schemaStorage = new ServerSchemaStorage(this);
 		this.encoder = encoder;
 		this.routerStorage = routerStorage;
@@ -148,6 +148,19 @@ public class BootstrapInitializer {
 	/**
 	 * Initialise mesh using the given configuration.
 	 * 
+	 * This method will startup mesh and take care of tasks which need to be executed before the REST endpoints can be accessed.
+	 * 
+	 * The following steps / checks will be performed:
+	 * <ul>
+	 * <li>Join the mesh cluster</li>
+	 * <li>Invoke the changelog check & execution</li>
+	 * <li>Initalize the graph database and update vertex types and indices</li>
+	 * <li>Create initial mandatory structure data</li>
+	 * <li>Initalize search indices</li>
+	 * <li>Process remaining search index batch entries</li>
+	 * <li>Load verticles and setup routes / endpoints</li>
+	 * </ul>
+	 * 
 	 * @param configuration
 	 * @param verticleLoader
 	 * @throws Exception
@@ -157,15 +170,18 @@ public class BootstrapInitializer {
 			joinCluster();
 		}
 
-		// Only execute the installation if there are any elements in the graph
 		boolean isEmptyInstallation = isEmptyInstallation();
+		// Only execute the changelog if there are any elements in the graph
 		if (!isEmptyInstallation) {
 			invokeChangelog();
 		}
 
+		// Update graph indices and vertex types (This may take some time)
 		new DatabaseHelper(db).init();
 
+		// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
 		initMandatoryData();
+
 		if (isEmptyInstallation) {
 			initPermissions();
 		}
@@ -173,26 +189,28 @@ public class BootstrapInitializer {
 		// Mark all changelog entries as applied for new installations
 		if (isEmptyInstallation) {
 			markChangelogApplied();
-		}
-
-		// initPermissions();
-		initSearchIndexHandlers();
-		if (isEmptyInstallation) {
 			createSearchIndicesAndMappings();
 		}
+
+		// Process remaining search queue batches
 		try {
 			invokeSearchQueueProcessing();
 		} catch (Exception e) {
 			log.error("Could not handle existing search queue entries", e);
 		}
 
+		// Load the verticles
 		loader.get().loadVerticles(configuration);
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}
+
+		// Initialise routes for existing projects
 		try (NoTx noTx = db.noTx()) {
 			initProjects();
 		}
+
+		// Finally fire the startup event and log that bootstrap has completed
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
 
@@ -243,16 +261,8 @@ public class BootstrapInitializer {
 		cls.markAllAsApplied();
 	}
 
-	/**
-	 * Initialise the search queue handlers.
-	 */
-	public void initSearchIndexHandlers() {
-		IndexHandlerRegistry registry = searchHandlerRegistry.get();
-		registry.init();
-	}
-
 	public void createSearchIndicesAndMappings() {
-		IndexHandlerRegistry registry = searchHandlerRegistry.get();
+		IndexHandlerRegistry registry = indexHandlerRegistry.get();
 		for (IndexHandler handler : registry.getHandlers()) {
 			handler.init().await();
 		}
@@ -327,6 +337,9 @@ public class BootstrapInitializer {
 		return meshRoot().getProjectRoot();
 	}
 
+	/**
+	 * Clear all stored references to main graph vertices.
+	 */
 	public static void clearReferences() {
 		BootstrapInitializer.meshRoot = null;
 		MeshRootImpl.clearReferences();
@@ -507,8 +520,6 @@ public class BootstrapInitializer {
 	 * @throws IOException
 	 */
 	protected void initLanguages(LanguageRoot root) throws JsonParseException, JsonMappingException, IOException {
-
-		long start = System.currentTimeMillis();
 		final String filename = "languages.json";
 		final InputStream ins = getClass().getResourceAsStream("/json/" + filename);
 		if (ins == null) {
@@ -528,10 +539,14 @@ public class BootstrapInitializer {
 				}
 			}
 		}
-		long diff = System.currentTimeMillis() - start;
-		log.debug("Handling languages took: " + diff + "[ms]");
+
 	}
 
+	/**
+	 * Return the list of all language tags.
+	 * 
+	 * @return
+	 */
 	public Collection<? extends String> getAllLanguageTags() {
 		if (allLanguageTags.isEmpty()) {
 			for (Language l : languageRoot().findAll()) {

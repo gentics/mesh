@@ -48,15 +48,21 @@ public abstract class AbstractParameters implements ParameterProvider {
 				if (query.length() != 0) {
 					query.append("&");
 				}
-				//				try {
-				query.append(entry.getKey() + "=" + value);//URLEncoder.encode(value, "UTF-8"));
-				//				} catch (UnsupportedEncodingException e) {
-				//				}
+				// try {
+				query.append(entry.getKey() + "=" + value);// URLEncoder.encode(value, "UTF-8"));
+				// } catch (UnsupportedEncodingException e) {
+				// }
 			}
 		}
 		return query.toString();
 	}
 
+	/**
+	 * Convert the provides object to a string representation.
+	 * 
+	 * @param value
+	 * @return String representation of value
+	 */
 	protected String convertToStr(Object value) {
 		if (value instanceof String[]) {
 			String stringVal = "";

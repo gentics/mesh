@@ -1,5 +1,8 @@
 package com.gentics.mesh.etc.config;
 
+/**
+ * Exception which is raised if configuration errors have been detected.
+ */
 public class MeshConfigurationException extends Exception {
 
 	private static final long serialVersionUID = -5888052417243276295L;

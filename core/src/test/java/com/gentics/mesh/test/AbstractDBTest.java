@@ -155,7 +155,6 @@ public abstract class AbstractDBTest {
 
 	public void setupData() throws Exception {
 		db.setMassInsertIntent();
-		boot.initSearchIndexHandlers();
 		boot.createSearchIndicesAndMappings();
 		dataProvider.setup();
 		db.resetIntent();

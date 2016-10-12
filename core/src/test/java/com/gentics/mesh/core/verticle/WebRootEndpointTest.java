@@ -71,7 +71,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
 					new NodeParameters().setResolveLinks(LinkType.FULL)));
 			NodeDownloadResponse downloadResponse = response.getDownloadResponse();
-			assertTrue(response.isBinary());
+			assertTrue(response.isDownload());
 			assertNotNull(downloadResponse);
 		}
 
@@ -222,7 +222,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testReadProjectBaseNode() {
 		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, "/", new VersioningParameters().draft()));
-		assertFalse(response.isBinary());
+		assertFalse(response.isDownload());
 		try (NoTx noTrx = db.noTx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
@@ -231,7 +231,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testReadDoubleSlashes() {
 		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, "//", new VersioningParameters().draft()));
-		assertFalse(response.isBinary());
+		assertFalse(response.isDownload());
 		try (NoTx noTrx = db.noTx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}

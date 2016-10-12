@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
@@ -38,7 +38,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	protected <E extends AbstractGenericRestResponse> void setRolePermissions(InternalActionContext ac, E model) {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Role role = MeshRoot.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(this);
 				Set<String> humanNames = new HashSet<>();

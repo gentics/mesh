@@ -21,11 +21,22 @@ public class PublishParameters extends AbstractParameters {
 	public PublishParameters() {
 	}
 
+	/**
+	 * Set the recursive flag which can be used to recursively publish a subtree of nodes.
+	 * 
+	 * @param flag
+	 * @return
+	 */
 	public ParameterProvider setRecursive(boolean flag) {
 		setParameter(RECURSIVE_PARAMETER_KEY, String.valueOf(flag));
 		return this;
 	}
 
+	/**
+	 * Check whether the recursive flag for recursively publishing is enabled.
+	 * 
+	 * @return
+	 */
 	public boolean isRecursive() {
 		return BooleanUtils.toBooleanDefaultIfNull(Boolean.valueOf(getParameter(RECURSIVE_PARAMETER_KEY)), false);
 	}

@@ -132,6 +132,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		String schemaUuid = reference.getUuid();
 		Integer schemaVersion = reference.getVersion();
 
+		// Prefer the name over the uuid
 		SchemaContainer schemaContainer = null;
 		if (!isEmpty(schemaName)) {
 			schemaContainer = findByName(schemaName);
@@ -139,6 +140,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			schemaContainer = findByUuid(schemaUuid);
 		}
 
+		// Check whether a container was actually found
 		if (schemaContainer == null) {
 			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
 					isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());

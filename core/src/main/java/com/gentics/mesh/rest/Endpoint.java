@@ -69,10 +69,18 @@ public class Endpoint implements Route {
 
 	private Map<String, QueryParameter> parameters = new HashMap<>();
 
+	/**
+	 * Create a new endpoint wrapper using the provided router to create the wrapped route instance.
+	 * 
+	 * @param router
+	 */
 	public Endpoint(Router router) {
 		this.route = router.route();
 	}
 
+	/**
+	 * Set the route path.
+	 */
 	public Route path(String path) {
 		return route.path(path);
 	}
@@ -148,6 +156,11 @@ public class Endpoint implements Route {
 
 	}
 
+	/**
+	 * Parse the raml path and return a list of all segment name variables.
+	 * 
+	 * @return
+	 */
 	public List<String> getNamedSegments() {
 		List<String> allMatches = new ArrayList<String>();
 		Matcher m = Pattern.compile("\\{[^}]*\\}").matcher(getRamlPath());
@@ -359,7 +372,7 @@ public class Endpoint implements Route {
 	}
 
 	/**
-	 * Return the endpoint http example request body.
+	 * Return the endpoint HTTP example request body.
 	 * 
 	 * @return
 	 */

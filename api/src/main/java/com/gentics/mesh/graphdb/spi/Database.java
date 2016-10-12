@@ -293,6 +293,14 @@ public interface Database {
 	 */
 	void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex);
 
+	/**
+	 * Utilize the index and locate the matching vertices.
+	 * 
+	 * @param classOfVertex
+	 * @param fieldNames
+	 * @param fieldValues
+	 * @return
+	 */
 	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues);
 
 	/**

@@ -18,5 +18,10 @@ public interface ParameterProvider {
 	 */
 	void validate();
 
+	/**
+	 * Return the RAML parameters for this provider.
+	 * 
+	 * @return
+	 */
 	Map<? extends String, ? extends QueryParameter> getRAMLParameters();
 }

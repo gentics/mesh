@@ -43,6 +43,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see MeshRoot
+ */
 public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static Logger log = LoggerFactory.getLogger(MeshRootImpl.class);
