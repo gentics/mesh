@@ -5,6 +5,9 @@ import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.search.index.AbstractTransformator;
 
@@ -13,7 +16,12 @@ import io.vertx.core.json.JsonObject;
 /**
  * Transformator for tagfamily search index documents.
  */
+@Singleton
 public class TagFamilyTransformator extends AbstractTransformator<TagFamily> {
+
+	@Inject
+	public TagFamilyTransformator() {
+	}
 
 	@Override
 	public JsonObject toDocument(TagFamily tagFamily) {

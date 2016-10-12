@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -17,9 +18,11 @@ import com.gentics.mesh.search.index.AbstractIndexHandler;
 /**
  * Handler for the elastic search group index.
  */
+@Singleton
 public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
-	private GroupTransformator transformator = new GroupTransformator();
+	@Inject
+	GroupTransformator transformator;
 
 	@Inject
 	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {

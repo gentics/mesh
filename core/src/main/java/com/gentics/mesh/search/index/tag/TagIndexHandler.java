@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -22,6 +23,7 @@ import com.gentics.mesh.search.index.AbstractIndexHandler;
 /**
  * Handler for the tag specific search index.
  */
+@Singleton
 public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	/**
@@ -29,7 +31,8 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
-	private TagTransformator transformator = new TagTransformator();
+	@Inject
+	TagTransformator transformator;
 
 	@Inject
 	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {

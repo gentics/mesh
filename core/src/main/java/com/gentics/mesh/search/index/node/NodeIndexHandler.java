@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -62,6 +63,7 @@ import rx.Completable;
  * </ul>
  * <p>
  */
+@Singleton
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
@@ -95,18 +97,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	public final static String CUSTOM_SCHEMAVERSION_UUID = "schemaVersionUuid";
 
-	private static NodeIndexHandler instance;
-
-	private NodeGraphFieldContainerTransformator transformator = new NodeGraphFieldContainerTransformator();
+	@Inject
+	NodeGraphFieldContainerTransformator transformator;
 
 	@Inject
 	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
 		super(searchProvider, db, boot);
-		NodeIndexHandler.instance = this;
-	}
-
-	public static NodeIndexHandler getInstance() {
-		return instance;
 	}
 
 	public NodeGraphFieldContainerTransformator getTransformator() {

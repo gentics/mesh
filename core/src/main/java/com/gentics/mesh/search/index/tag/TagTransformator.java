@@ -9,6 +9,9 @@ import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.search.index.AbstractTransformator;
@@ -18,7 +21,12 @@ import io.vertx.core.json.JsonObject;
 /**
  * Transformator for tag search index documents.
  */
+@Singleton
 public class TagTransformator extends AbstractTransformator<Tag> {
+
+	@Inject
+	public TagTransformator() {
+	}
 
 	@Override
 	public JsonObject toDocument(Tag tag) {
