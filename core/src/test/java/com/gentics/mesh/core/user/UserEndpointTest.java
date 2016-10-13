@@ -877,10 +877,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.setPassword("test123456");
 			request.setGroupUuid(group().getUuid());
 
-			MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			UserResponse restUser = future.result();
+			UserResponse restUser = call(() -> getClient().createUser(request));
 			assertThat(restUser).matches(request);
 
 			UserUpdateRequest updateRequest = new UserUpdateRequest();
@@ -894,10 +891,9 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateRequest.setLastname(LASTNAME);
 			updateRequest.setUsername(USERNAME);
 			updateRequest.setPassword("newPassword");
-			future = getClient().updateUser(restUser.getUuid(), updateRequest).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			restUser = future.result();
+			updateRequest.setOldPassword("test123456");
+			String uuid = restUser.getUuid();
+			restUser = call(() -> getClient().updateUser(uuid, updateRequest));
 			assertEquals(LASTNAME, restUser.getLastname());
 			assertEquals(FIRSTNAME, restUser.getFirstname());
 			assertEquals(EMAIL, restUser.getEmailAddress());
