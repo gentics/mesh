@@ -404,16 +404,23 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 		} catch (JSONException e) {
 			throw new RuntimeException("Could not parse schema json {" + json + "}", e);
 		}
-		
+
 		Iterable<Vertex> containers = node.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER");
 		for (Vertex container : containers) {
-			
-			//Fix date fields
-			System.out.println("------------------"); 
-			for(String key : container.getPropertyKeys()) {
-				System.out.println(key + " " + container.getProperty(key));
+
+			//Fix date fields which were stored in seconds instead of miliseconds
+			for (String key : container.getPropertyKeys()) {
+				if (key.endsWith("-date")) {
+					Long date = Long.valueOf(container.getProperty(key));
+					// Check whether the timestamp is seconds based or miliseconds based
+					if (date < 10081440150L) {
+						Long newDate = date * 1000;
+						System.out.println("Fixing date for field {" + key + "} from " + date + " to " + newDate);
+						container.setProperty(key, String.valueOf(newDate));
+					}
+				}
 			}
-			
+
 			container.addEdge("HAS_SCHEMA_CONTAINER_VERSION", schemaVersion);
 			// Add webrootPathInfo property (SegmentValue-ParentFolderUuid)
 			if (segmentField != null) {
