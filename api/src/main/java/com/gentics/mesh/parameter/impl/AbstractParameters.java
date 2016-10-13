@@ -9,6 +9,9 @@ import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.MultiMap;
 
+/**
+ * Abstract class for parameter provider implementations.
+ */
 public abstract class AbstractParameters implements ParameterProvider {
 
 	protected MultiMap parameters;

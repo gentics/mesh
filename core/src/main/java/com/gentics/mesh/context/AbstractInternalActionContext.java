@@ -16,6 +16,9 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
+/**
+ * Abstract class for internal action context.
+ */
 public abstract class AbstractInternalActionContext extends AbstractActionContext implements InternalActionContext {
 
 	@Override

@@ -7,6 +7,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.json.JsonUtil;
 
+/**
+ * Abstract class for various field lists.
+ * 
+ * @param <T>
+ *            Field list value type
+ */
 public abstract class AbstractFieldList<T> implements FieldList<T> {
 
 	private List<T> items = new ArrayList<>();

@@ -7,7 +7,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 /**
- * Central LRU permission cache
+ * Central LRU permission cache which is used to quickly lookup cached permissions.
  */
 public final class PermissionStore {
 

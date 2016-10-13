@@ -10,6 +10,11 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
+/**
+ * The intercepting edge frame is used in order to be able to switch the currently active graph database context within a single edge instance. This way a
+ * framed edge can be used across multiple transactions without the need to reload the instance from the graph. This is mainly achieved by overriding the
+ * {@link #getGraph()} method and using the {@link Database#getThreadLocalGraph()} method instead.
+ */
 public class AbstractInterceptingEdgeFrame extends AbstractEdgeFrame {
 
 	private Object id;

@@ -49,6 +49,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Central abstract class for all mesh unit tests which access dagger or the mesh test database graph.
+ */
 public abstract class AbstractDBTest {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDBTest.class);
@@ -74,12 +77,23 @@ public abstract class AbstractDBTest {
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
 
+	/**
+	 * Initialise mesh only once. The dagger context will only be setup once.
+	 * 
+	 * @throws Exception
+	 */
 	@BeforeClass
 	public static void initMesh() throws Exception {
 		init(false);
 		initDagger();
 	}
 
+	/**
+	 * Initalise mesh options.
+	 * 
+	 * @param enableES
+	 * @throws IOException
+	 */
 	public static void init(boolean enableES) throws IOException {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
@@ -116,6 +130,9 @@ public abstract class AbstractDBTest {
 		Mesh.mesh(options);
 	}
 
+	/**
+	 * Initialise the mesh dagger context and inject the dependencies within the test.
+	 */
 	public static void initDagger() {
 		log.info("Initializing dagger context");
 		meshDagger = MeshInternal.create();
@@ -142,6 +159,9 @@ public abstract class AbstractDBTest {
 		PermissionStore.invalidate();
 	}
 
+	/**
+	 * Clear the test data.
+	 */
 	protected void resetDatabase() {
 		BootstrapInitializer.clearReferences();
 		long start = System.currentTimeMillis();
@@ -153,6 +173,11 @@ public abstract class AbstractDBTest {
 		}
 	}
 
+	/**
+	 * Setup the test data.
+	 * 
+	 * @throws Exception
+	 */
 	public void setupData() throws Exception {
 		db.setMassInsertIntent();
 		boot.createSearchIndicesAndMappings();

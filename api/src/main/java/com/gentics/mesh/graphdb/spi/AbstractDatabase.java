@@ -12,6 +12,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Abstract class for graph database implementations.
+ */
 public abstract class AbstractDatabase implements Database {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);

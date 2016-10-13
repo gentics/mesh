@@ -94,6 +94,11 @@ public abstract class AbstractEndpoint {
 		return routerStorage.getAPISubRouter(basePath);
 	}
 
+	/**
+	 * Return the created local router.
+	 * 
+	 * @return
+	 */
 	public Router getRouter() {
 		return localRouter;
 	}

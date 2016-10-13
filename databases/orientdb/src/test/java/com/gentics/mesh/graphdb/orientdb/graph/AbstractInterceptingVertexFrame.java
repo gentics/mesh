@@ -14,6 +14,11 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
+/**
+ * The intercepting vertex frame is used in order to be able to switch the currently active graph database context within a single vertex instance. This way a
+ * framed vertex can be used across multiple transactions without the need to reload the instance from the graph. This is mainly achieved by overriding the
+ * {@link #getGraph()} method and using the {@link Database#getThreadLocalGraph()} method instead.
+ */
 public class AbstractInterceptingVertexFrame extends AbstractVertexFrame {
 
 	private Object id;

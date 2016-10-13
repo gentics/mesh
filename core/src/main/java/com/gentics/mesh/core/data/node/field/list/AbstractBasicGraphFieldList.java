@@ -12,8 +12,25 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.util.CompareUtils;
 
+/**
+ * Abstract class for basic graph field lists. Basic graph field lists are stored within dedicated vertices. The values of such lists are stored as properties
+ * within the vertex that represents the list.
+ *
+ * @param <T>
+ *            Field type that represents a list item
+ * @param <RM>
+ *            Rest model type of the list
+ * @param <U>
+ *            Value type that is stored in the list
+ */
 public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, RM extends Field, U> extends AbstractGraphFieldList<T, RM, U> {
 
+	/**
+	 * Create a new field wrapper which is used to handle the field value.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	protected abstract T createField(String key);
 
 	protected T convertBasicValue(String itemKey) {
@@ -21,6 +38,12 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 		return createField(key);
 	}
 
+	/**
+	 * Load the field for the given index.
+	 * 
+	 * @param index
+	 * @return
+	 */
 	protected T getField(int index) {
 		return createField("item-" + index);
 	}
@@ -82,6 +105,9 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 		return false;
 	}
 
+	/**
+	 * Delete the vertex which is used to store the field. This will effectively also delete the field.
+	 */
 	public void removeField() {
 		delete(null);
 	}

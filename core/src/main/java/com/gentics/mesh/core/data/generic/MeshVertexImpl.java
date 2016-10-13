@@ -30,7 +30,6 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	private Object id;
-	// public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedVertex) getGraph().getVertex(id)).getBaseElement());
 
 	public static void init(Database database) {
 		database.addVertexType(MeshVertexImpl.class, null);
@@ -171,17 +170,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
 	}
-
-	// @Override
-	// public Iterable<Edge> getEdges(MeshVertex target, Direction direction, String... labels) {
-	// Vertex sourceVertex = getElement();
-	// if (sourceVertex instanceof OrientVertex) {
-	// OrientVertex targetVertex = (OrientVertex) target.getElement();
-	// return ((OrientVertex) sourceVertex).getEdges(targetVertex, direction, labels);
-	// } else {
-	// throw new NotImplementedException("Not implemented for current graph database.");
-	// }
-	// }
 
 	@Override
 	public Vertex getElement() {
