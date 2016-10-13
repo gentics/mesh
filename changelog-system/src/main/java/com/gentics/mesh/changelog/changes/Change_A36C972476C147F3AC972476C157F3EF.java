@@ -415,7 +415,7 @@ public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
 					// Check whether the timestamp is seconds based or miliseconds based
 					if (date < 10081440150L) {
 						Long newDate = date * 1000;
-						System.out.println("Fixing date for field {" + key + "} from " + date + " to " + newDate);
+						log.info("Fixing date for field {" + key + "} from " + date + " to " + newDate);
 						container.setProperty(key, String.valueOf(newDate));
 					}
 				}
