@@ -66,7 +66,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			MicroschemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(MeshInternal.get().microschemaComparator().diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
+			model.getChanges().addAll(comparator.diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
 			String name = schemaContainer.getName();
 
 			if (model.getChanges().isEmpty()) {

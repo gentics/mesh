@@ -6,7 +6,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
-import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
@@ -21,7 +20,6 @@ import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
-import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -34,6 +32,9 @@ import com.gentics.mesh.search.index.user.UserIndexHandler;
 
 import dagger.Component;
 
+/**
+ * Central dagger mesh component which will expose dependencies.
+ */
 @Singleton
 @Component(modules = { MeshModule.class })
 public interface MeshComponent {
@@ -85,8 +86,6 @@ public interface MeshComponent {
 	TagFamilyIndexHandler tagFamilyIndexHandler();
 
 	NodeFieldAPIHandler nodeFieldAPIHandler();
-
-	MicroschemaComparator microschemaComparator();
 
 	ImageManipulator imageManipulator();
 

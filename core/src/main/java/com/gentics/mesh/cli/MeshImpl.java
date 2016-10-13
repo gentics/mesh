@@ -62,7 +62,7 @@ public class MeshImpl implements Mesh {
 	}
 
 	/**
-	 * Main entry point for mesh. This method will initialise the spring context and deploy mandatory verticles and extensions.
+	 * Main entry point for mesh. This method will initialise the dagger context and deploy mandatory verticles and extensions.
 	 * 
 	 * @throws Exception
 	 */

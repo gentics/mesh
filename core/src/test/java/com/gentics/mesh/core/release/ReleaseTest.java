@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -524,7 +525,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 		updatedMicroschema.addField(FieldUtil.createStringFieldSchema(newName));
 
 		SchemaChangesListModel model = new SchemaChangesListModel();
-		model.getChanges().addAll(meshDagger.microschemaComparator().diff(microschema, updatedMicroschema));
+		model.getChanges().addAll(new MicroschemaComparator().diff(microschema, updatedMicroschema));
 
 		InternalActionContext ac = getMockedInternalActionContext();
 		SearchQueueBatch batch = createBatch();
