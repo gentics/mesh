@@ -1,6 +1,5 @@
 package com.gentics.mesh.search.index.tag;
 
-import static com.gentics.mesh.search.index.MappingHelper.LONG;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
