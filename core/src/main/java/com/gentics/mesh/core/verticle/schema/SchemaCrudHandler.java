@@ -273,7 +273,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	}
 
 	/**
-	 * Helper handler which will handle requests for processing remaining unmigrated nodes.
+	 * Helper handler which will handle requests for processing remaining not yet migrated nodes.
 	 * 
 	 * @param ac
 	 */

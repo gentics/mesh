@@ -210,7 +210,6 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	public GraphField cloneTo(GraphFieldContainer container) {
 		MeshEdgeImpl edge = getGraph().addFramedEdge(container.getImpl(), this, HAS_FIELD, MeshEdgeImpl.class);
 		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, getFieldKey());
-
 		return container.getBinary(getFieldKey());
 	}
 

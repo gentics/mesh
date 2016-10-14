@@ -69,10 +69,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			throw error(BAD_REQUEST, "The microschema for micronode {" + getUuid() + "} could not be found.");
 		}
 
-		// Microschema Reference
 		restMicronode.setMicroschema(microschemaContainer.transformToReference());
-
-		// Uuid
 		restMicronode.setUuid(getUuid());
 
 		List<String> requestedLanguageTags = new ArrayList<>();

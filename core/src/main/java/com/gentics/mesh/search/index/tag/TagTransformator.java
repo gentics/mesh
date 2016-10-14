@@ -36,6 +36,12 @@ public class TagTransformator extends AbstractTransformator<Tag> {
 		return document;
 	}
 
+	/**
+	 * Add the tag family fields to the document.
+	 * 
+	 * @param document
+	 * @param tagFamily
+	 */
 	public void addTagFamily(JsonObject document, TagFamily tagFamily) {
 		JsonObject info = new JsonObject();
 		info.put(NAME_KEY, tagFamily.getName());

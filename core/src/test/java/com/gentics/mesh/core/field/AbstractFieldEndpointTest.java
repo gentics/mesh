@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field;
 
-import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
