@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
@@ -24,6 +24,12 @@ import com.gentics.mesh.util.DateUtils;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Abstract class for mesh core vertices that includes methods which are commonly used when transforming the vertices into REST POJO's.
+ * 
+ * @param <T>
+ * @param <R>
+ */
 public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertexImpl
 		implements MeshCoreVertex<T, R> {
 
@@ -38,7 +44,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	protected <E extends AbstractGenericRestResponse> void setRolePermissions(InternalActionContext ac, E model) {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Role role = MeshRoot.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(this);
 				Set<String> humanNames = new HashSet<>();
@@ -67,7 +73,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			if (editor != null) {
 				model.setEditor(editor.transformToReference());
 			} else {
-				// TODO throw error and log something
+				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no editor. Omitting editor field");
 			}
 
 			// Convert unixtime to iso-8601
@@ -82,9 +88,9 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 				model.setCreator(creator.transformToReference());
 			} else {
 				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
-				// TODO throw error and log something
 			}
 
+			// Convert unixtime to iso-8601
 			String date = DateUtils.toISO8601(created.getCreationTimestamp(), 0);
 			model.setCreated(date);
 		}
@@ -97,7 +103,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch , SearchQueueEntryAction action) {
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		batch.addEntry(this, action);
 		addRelatedEntries(batch, action);
 		return batch;

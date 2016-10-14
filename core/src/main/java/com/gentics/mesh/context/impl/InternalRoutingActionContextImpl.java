@@ -45,7 +45,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	public static final String LOCALE_MAP_DATA_KEY = "locale";
 
 	/**
-	 * Create a new routing context based mesh action context.
+	 * Create a new routing context based vertx action context.
 	 * 
 	 * @param rc
 	 */

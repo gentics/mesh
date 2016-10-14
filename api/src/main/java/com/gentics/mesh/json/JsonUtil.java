@@ -42,7 +42,6 @@ import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Main JSON Util which is used to register all custom JSON specific handlers and deserializers.
- *
  */
 public final class JsonUtil {
 
@@ -73,8 +72,7 @@ public final class JsonUtil {
 		module.addSerializer(FieldList.class, new FieldListSerializer());
 		module.addSerializer(FieldMapImpl.class, new JsonSerializer<FieldMapImpl>() {
 			@Override
-			public void serialize(FieldMapImpl value, JsonGenerator gen, SerializerProvider serializers)
-					throws IOException, JsonProcessingException {
+			public void serialize(FieldMapImpl value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
 				gen.writeObject(value.getNode());
 			}
 		});
@@ -98,6 +96,13 @@ public final class JsonUtil {
 
 	}
 
+	/**
+	 * Transform the given object into a JSON string.
+	 * 
+	 * @param obj
+	 * @return
+	 * @throws GenericRestException
+	 */
 	public static <T> String toJson(T obj) throws GenericRestException {
 		if (obj instanceof JSONObject) {
 			return ((JSONObject) obj).toString();
@@ -112,6 +117,17 @@ public final class JsonUtil {
 		}
 	}
 
+	/**
+	 * Transform the given JSON content back into a POJO.
+	 * 
+	 * @param content
+	 *            JSON string
+	 * @param valueType
+	 *            Class of the POJO
+	 * @return POJO instance
+	 * @throws GenericRestException
+	 *             Exception which contains information about the JSON error line, column
+	 */
 	public static <T> T readValue(String content, Class<T> valueType) throws GenericRestException {
 		try {
 			return defaultMapper.readValue(content, valueType);
@@ -142,6 +158,10 @@ public final class JsonUtil {
 		}
 	}
 
+	/**
+	 * Return the JSON object mapper.
+	 * @return
+	 */
 	public static ObjectMapper getMapper() {
 		return defaultMapper;
 	}

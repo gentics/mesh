@@ -9,6 +9,8 @@ public class UserUpdateRequest implements RestModel {
 
 	private String password;
 
+	private String oldPassword;
+
 	private String lastname;
 
 	private String firstname;
@@ -20,6 +22,15 @@ public class UserUpdateRequest implements RestModel {
 	private NodeReference nodeReference;
 
 	public UserUpdateRequest() {
+	}
+
+	/**
+	 * Return the plain text password.
+	 * 
+	 * @return plain text password
+	 */
+	public String getPassword() {
+		return password;
 	}
 
 	/**
@@ -35,12 +46,21 @@ public class UserUpdateRequest implements RestModel {
 	}
 
 	/**
-	 * Return the plain text password.
+	 * Return the old password which is needed to confirm permission to update the currently set password.
 	 * 
-	 * @return plain text password
+	 * @return
 	 */
-	public String getPassword() {
-		return password;
+	public String getOldPassword() {
+		return oldPassword;
+	}
+
+	/**
+	 * Set the old password which is needed to confirm the permission to update the currently set password.
+	 * 
+	 * @param oldPassword
+	 */
+	public void setOldPassword(String oldPassword) {
+		this.oldPassword = oldPassword;
 	}
 
 	/**

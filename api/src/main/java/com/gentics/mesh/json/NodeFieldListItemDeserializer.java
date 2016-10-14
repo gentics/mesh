@@ -15,7 +15,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 
 /**
  * Deserializer which is used to deserialize node list items.
- *
  */
 public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldListItem> {
 
@@ -26,6 +25,15 @@ public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldLis
 		return deserialize(jsonNode, jsonParser);
 	}
 
+	/**
+	 * Deserialize the node field list item.
+	 * 
+	 * @param jsonNode
+	 *            Node which represents the node field list item.
+	 * @param jsonParser
+	 * @return Deserialized field list item.
+	 * @throws JsonProcessingException
+	 */
 	public NodeFieldListItem deserialize(JsonNode jsonNode, JsonParser jsonParser) throws JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
 

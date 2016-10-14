@@ -12,6 +12,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
+/**
+ * Abstract class for mesh rest clients.
+ */
 public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestHttpClient.class);
@@ -57,22 +60,75 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 		return authentication.logout(getClient());
 	}
 
+	/**
+	 * Set the authentication provider.
+	 * 
+	 * @param authentication
+	 */
 	public void setAuthentication(MeshRestClientAuthenticationProvider authentication) {
 		this.authentication = authentication;
 	}
 
+	/**
+	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
+	 * 
+	 * @param method
+	 *            Http method
+	 * @param path
+	 *            Request path
+	 * @param classOfT
+	 *            POJO class for the response
+	 * @param bodyData
+	 *            Buffer which contains the body data which should be send to the server
+	 * @param contentType
+	 *            Content type of the posted data
+	 * @return
+	 */
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType) {
 		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, bodyData, contentType, client, authentication);
 	}
 
+	/**
+	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
+	 * 
+	 * @param method
+	 *            Http method
+	 * @param path
+	 *            Request path
+	 * @param classOfT
+	 *            POJO class for the response
+	 * @param restModel
+	 *            Rest model which should be used to construct the JSON post data
+	 * @return
+	 */
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
 		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, restModel, client, authentication);
 	}
 
+	/**
+	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
+	 * 
+	 * @param method
+	 * @param path
+	 * @param classOfT
+	 * @param jsonBodyData
+	 * @return
+	 */
 	protected <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData) {
 		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, jsonBodyData, client, authentication);
 	}
 
+	/**
+	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
+	 * 
+	 * @param method
+	 *            Http method
+	 * @param path
+	 *            Request path
+	 * @param classOfT
+	 *            POJO class for the response
+	 * @return
+	 */
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT) {
 		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, client, authentication);
 	}

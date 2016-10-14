@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 /**
  * The DateField Domain Model interface.
  * 
- * A date graph field is a basic node field which can be used to store date values.
+ * A date graph field is a basic node field which can be used to store a single date value.
  */
 public interface DateGraphField extends ListableGraphField, BasicGraphField<DateField> {
 
@@ -30,7 +30,7 @@ public interface DateGraphField extends ListableGraphField, BasicGraphField<Date
 		boolean restIsNullOrEmpty = dateField == null || dateField.getDate() == null;
 		GraphField.failOnMissingRequiredField(dateGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 
-		// Handle Deletion
+		// Handle Deletion - The field was explicitly set to null and is currently set in the graph so we can remove the field from the given container
 		if (isDateFieldSetToNull && dateGraphField != null) {
 			dateGraphField.removeField(container);
 			return;

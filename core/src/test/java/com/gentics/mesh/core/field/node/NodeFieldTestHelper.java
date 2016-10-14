@@ -2,7 +2,7 @@ package com.gentics.mesh.core.field.node;
 
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.demo.TestDataProvider;
+import com.gentics.mesh.test.TestDataProvider;
 
 public interface NodeFieldTestHelper {
 

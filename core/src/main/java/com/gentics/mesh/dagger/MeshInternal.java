@@ -27,6 +27,10 @@ public interface MeshInternal {
 
 	}
 
+	static void clear() {
+		applicationComponent.set(null);
+	}
+
 	/**
 	 * Return the created context.
 	 * 

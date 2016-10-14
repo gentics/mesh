@@ -27,6 +27,13 @@ public abstract class AbstractBasicGraphFieldContainerImpl extends MeshVertexImp
 		setLinkOut(language.getImpl(), HAS_LANGUAGE);
 	}
 
+	/**
+	 * Check whether the basic field with the given key and type exists in this field container.
+	 * 
+	 * @param key
+	 * @param type
+	 * @return
+	 */
 	public boolean fieldExists(String key, String type) {
 		return getProperty(key + "-" + type) != null;
 	}

@@ -11,7 +11,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -72,21 +71,21 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		MeshAuthUser requestUser = ac.getUser();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
-		BootstrapInitializer boot = MeshInternal.get().boot();
-
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 		}
-		MeshRoot root = boot.meshRoot();
+		MeshRoot root = MeshInternal.get().boot().meshRoot();
 
+		// Check whether a group with the same name already exists
 		Group groupWithSameName = findByName(requestModel.getName());
 		if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 			throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 		}
-		requestUser.reload();
+
+		// Finally create the group and set the permissions
 		Group group = create(requestModel.getName(), requestUser);
 		requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
 		group.addIndexBatchEntry(batch, STORE_ACTION);

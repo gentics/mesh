@@ -1,38 +1,50 @@
 package com.gentics.mesh.verticle.admin;
 
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.vertx.core.http.HttpMethod.GET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.test.AbstractRestEndpointTest;
 
-import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.json.JsonObject;
 
-public class AdminGUIVerticleTest extends AbstractIsolatedRestVerticleTest {
+public class AdminGUIVerticleTest extends AbstractRestEndpointTest {
 
 	private AdminGUIVerticle adminGuiVerticle;
 
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		if (adminGuiVerticle == null) {
-			adminGuiVerticle = new AdminGUIVerticle(meshDagger.routerStorage());
-		}
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(adminGuiVerticle);
-		return list;
+	@Before
+	public void setupVerticle() throws Exception {
+		adminGuiVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorage());
+		JsonObject config = new JsonObject();
+		config.put("port", getPort());
+		CountDownLatch latch = new CountDownLatch(1);
+		Mesh.vertx().deployVerticle(adminGuiVerticle, new DeploymentOptions().setConfig(config), dh -> {
+			latch.countDown();
+		});
+		failingLatch(latch);
+	}
+
+	@After
+	public void stopGuiVerticle() throws Exception {
+		adminGuiVerticle.stop();
 	}
 
 	@BeforeClass

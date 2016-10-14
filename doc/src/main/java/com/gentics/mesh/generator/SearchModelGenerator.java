@@ -22,6 +22,7 @@ import java.util.List;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -57,7 +58,11 @@ import io.vertx.core.json.JsonObject;
  * 
  * This generator will create JSON files which represent the JSON documents that are stored within the elastic search index.
  */
-public class SearchModelGenerator extends AbstractGenerator {
+public class SearchModelGenerator {
+
+	private File outputDir;
+
+	private ObjectMapper mapper = new ObjectMapper();
 
 	private DummySearchProvider provider;
 
@@ -234,5 +239,13 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing to {" + file.getAbsolutePath() + "}");
 		JsonNode node = getMapper().readTree(jsonObject.toString());
 		getMapper().writerWithDefaultPrettyPrinter().writeValue(file, node);
+	}
+
+	public File getOutputDir() {
+		return outputDir;
+	}
+
+	protected ObjectMapper getMapper() {
+		return mapper;
 	}
 }

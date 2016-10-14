@@ -4,7 +4,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
  * POJO for a tag create request model.
- *
  */
 public class TagFamilyCreateRequest implements RestModel {
 

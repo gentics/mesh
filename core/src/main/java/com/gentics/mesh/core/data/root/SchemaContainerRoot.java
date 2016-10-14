@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.error.MeshSchemaException;
 
+/**
+ * A schema container root is an aggregation vertex which is used to aggregate schema container vertices.
+ */
 public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 
 	public static final String TYPE = "schemas";

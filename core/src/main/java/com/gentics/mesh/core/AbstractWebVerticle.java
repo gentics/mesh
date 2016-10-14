@@ -1,57 +1,27 @@
 package com.gentics.mesh.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
-import com.gentics.mesh.example.GroupExamples;
-import com.gentics.mesh.example.MicroschemaExamples;
-import com.gentics.mesh.example.MiscExamples;
-import com.gentics.mesh.example.NodeExamples;
-import com.gentics.mesh.example.ProjectExamples;
-import com.gentics.mesh.example.RoleExamples;
-import com.gentics.mesh.example.SchemaExamples;
-import com.gentics.mesh.example.TagExamples;
-import com.gentics.mesh.example.TagFamilyExamples;
-import com.gentics.mesh.example.UserExamples;
-import com.gentics.mesh.example.VersioningExamples;
-import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 
 /**
- * An abstract class that should be used when creating verticles which expose a http server. The verticle will automatically start a http server and add the
- * http server handler to the core router storage handler.
+ * A web verticle is an verticle which starts an http server and provides various routes. The started web verticle http server will use the
+ * {@link RouterStorage} root router in order to setup the request handler.
  */
 public abstract class AbstractWebVerticle extends AbstractVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractWebVerticle.class);
-
-	private List<Endpoint> endpoints = new ArrayList<>();
-
-	protected NodeExamples nodeExamples = new NodeExamples();
-	protected TagExamples tagExamples = new TagExamples();
-	protected TagFamilyExamples tagFamilyExamples = new TagFamilyExamples();
-	protected GroupExamples groupExamples = new GroupExamples();
-	protected RoleExamples roleExamples = new RoleExamples();
-	protected MiscExamples miscExamples = new MiscExamples();
-	protected VersioningExamples versioningExamples = new VersioningExamples();
-	protected SchemaExamples schemaExamples = new SchemaExamples();
-	protected ProjectExamples projectExamples = new ProjectExamples();
-	protected UserExamples userExamples = new UserExamples();
-	protected MicroschemaExamples microschemaExamples = new MicroschemaExamples();
 
 	protected Router localRouter = null;
 	protected String basePath;
@@ -85,21 +55,21 @@ public abstract class AbstractWebVerticle extends AbstractVerticle {
 		HttpServerOptions options = new HttpServerOptions();
 		options.setPort(port);
 		options.setCompressionSupported(true);
-//		MeshOptions meshOptions = Mesh.mesh().getOptions();
-//		HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
-//		if (httpServerOptions.isSsl()) {
-//			if (log.isErrorEnabled()) {
-//				log.debug("Setting ssl server options");
-//			}
-//			options.setSsl(true);
-//			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
-//			if (isEmpty(httpServerOptions.getCertPath()) || isEmpty(httpServerOptions.getKeyPath())) {
-//				throw new MeshConfigurationException("SSL is enabled but either the server key or the cert path was not specified.");
-//			}
-//			keyOptions.setKeyPath(httpServerOptions.getKeyPath());
-//			keyOptions.setCertPath(httpServerOptions.getCertPath());
-//			options.setPemKeyCertOptions(keyOptions);
-//		}
+		//		MeshOptions meshOptions = Mesh.mesh().getOptions();
+		//		HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
+		//		if (httpServerOptions.isSsl()) {
+		//			if (log.isErrorEnabled()) {
+		//				log.debug("Setting ssl server options");
+		//			}
+		//			options.setSsl(true);
+		//			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
+		//			if (isEmpty(httpServerOptions.getCertPath()) || isEmpty(httpServerOptions.getKeyPath())) {
+		//				throw new MeshConfigurationException("SSL is enabled but either the server key or the cert path was not specified.");
+		//			}
+		//			keyOptions.setKeyPath(httpServerOptions.getKeyPath());
+		//			keyOptions.setCertPath(httpServerOptions.getCertPath());
+		//			options.setPemKeyCertOptions(keyOptions);
+		//		}
 
 		log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}");
 		server = vertx.createHttpServer(options);
@@ -134,12 +104,10 @@ public abstract class AbstractWebVerticle extends AbstractVerticle {
 	public abstract void registerEndPoints() throws Exception;
 
 	/**
-	 * Description of the endpoints in a broader scope.
+	 * Setup the api sub router for the basepath of the verticle.
 	 * 
 	 * @return
 	 */
-	public abstract String getDescription();
-
 	public Router setupLocalRouter() {
 		return routerStorage.getAPISubRouter(basePath);
 	}
@@ -176,18 +144,7 @@ public abstract class AbstractWebVerticle extends AbstractVerticle {
 		return route;
 	}
 
-	protected Endpoint createEndpoint() {
-		Endpoint endpoint = new Endpoint(getRouter());
-		endpoints.add(endpoint);
-		return endpoint;
-	}
-
-	public List<Endpoint> getEndpoints() {
-		return endpoints;
-	}
-
 	public String getBasePath() {
 		return basePath;
 	}
-
 }

@@ -16,6 +16,7 @@ public interface RoleClientMethods {
 	 * Load the role.
 	 * 
 	 * @param uuid
+	 *            Uuid of the role to be loaded
 	 * @param parameters
 	 * @return
 	 */
@@ -49,6 +50,7 @@ public interface RoleClientMethods {
 	 * Load multiple roles that were assigned to the given group.
 	 * 
 	 * @param groupUuid
+	 *            Uuid of the group
 	 * @param parameter
 	 * @return
 	 */

@@ -75,17 +75,4 @@ public interface TagClientMethods {
 	 */
 	MeshRequest<TagListResponse> findTags(String projectName, String tagFamilyUuid, ParameterProvider... parameters);
 
-	//
-	//	//TODO keep this?
-	//	/**
-	//	 * Load a tag using its name.
-	//	 * 
-	//	 * @param projectName
-	//	 * @param name
-	//	 * @return
-	//	 */
-	//	MeshRequest<TagResponse> findTagByName(String projectName, String name);
-	//
-
-
 }

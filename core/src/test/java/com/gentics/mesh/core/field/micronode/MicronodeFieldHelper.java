@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.demo.TestDataProvider;
+import com.gentics.mesh.test.TestDataProvider;
 
 public interface MicronodeFieldHelper {
 

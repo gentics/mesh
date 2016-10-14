@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 /**
  * The NumberField Domain Model interface.
  * 
- * A number graph field is a basic node field which can be used to store number values.
+ * A number graph field is a basic node field which can be used to store a single number value.
  */
 public interface NumberGraphField extends ListableGraphField, BasicGraphField<NumberField> {
 
@@ -19,6 +19,7 @@ public interface NumberGraphField extends ListableGraphField, BasicGraphField<Nu
 			return graphNumberField.transformToRest(ac);
 		}
 	};
+
 	FieldUpdater NUMBER_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		NumberGraphField numberGraphField = container.getNumber(fieldKey);
 		NumberField numberField = fieldMap.getNumberField(fieldKey);

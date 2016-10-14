@@ -137,11 +137,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 					SchemaContainerRoot schemaRoot = project.getSchemaContainerRoot();
 					return schemaRoot.resolveToElement(stack);
 				case MicroschemaContainerRoot.TYPE:
-					// MicroschemaContainerRoot microschemaRoot =
-					// project.get
-					// project.getMicroschemaRoot();
-					throw new NotImplementedException();
-					// break;
+					MicroschemaContainerRoot microschemaRoot = project.getMicroschemaContainerRoot();
+					return microschemaRoot.resolveToElement(stack);
 				case NodeRoot.TYPE:
 					NodeRoot nodeRoot = project.getNodeRoot();
 					return nodeRoot.resolveToElement(stack);

@@ -9,6 +9,11 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
+/**
+ * Abstract class for update changes for schemas or microschemas.
+ * 
+ * @param <T>
+ */
 public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSchemaContainer> extends AbstractSchemaChange<T>
 		implements FieldSchemaContainerUpdateChange<T> {
 
@@ -50,16 +55,19 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 	@Override
 	public <R extends FieldSchemaContainer> R apply(R container) {
 
+		// Update the name
 		String name = getName();
 		if (name != null) {
 			container.setName(name);
 		}
 
+		// Update the description
 		String description = getDescription();
 		if (description != null) {
 			container.setDescription(description);
 		}
 
+		// Update the fields if the order changes
 		List<String> order = getOrder();
 		if (order != null) {
 			List<FieldSchema> orderedList = new ArrayList<>();

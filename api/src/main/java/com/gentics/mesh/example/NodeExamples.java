@@ -14,8 +14,10 @@ import static com.gentics.mesh.FieldUtil.createStringField;
 import static com.gentics.mesh.FieldUtil.createStringListField;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
@@ -53,7 +55,7 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setCreator(getUserReference());
 		TagFamilyTagGroup tagGroup = new TagFamilyTagGroup().setUuid(randomUUID());
 		tagGroup.getItems().add(new TagReference().setName("red").setUuid(randomUUID()));
-		nodeResponse.getTags().put("colors",tagGroup);
+		nodeResponse.getTags().put("colors", tagGroup);
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
 		nodeResponse.setAvailableLanguages(Arrays.asList("en", "de"));
 		HashMap<String, String> languagePaths = new HashMap<>();
@@ -87,6 +89,25 @@ public class NodeExamples extends AbstractExamples {
 
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+
+		// breadcrumb
+		Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
+		//		breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReferenceImpl().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReferenceImpl().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
+		nodeResponse.setBreadcrumb(breadcrumb);
+
+		// tags
+		TagFamilyTagGroup colorsGroup = new TagFamilyTagGroup();
+		colorsGroup.getItems().add(new TagReference().setName("red").setUuid(randomUUID()));
+		colorsGroup.getItems().add(new TagReference().setName("green").setUuid(randomUUID()));
+		nodeResponse.getTags().put("colors", colorsGroup);
+
+		TagFamilyTagGroup typesGroup = new TagFamilyTagGroup();
+		typesGroup.getItems().add(new TagReference().setName("car").setUuid(randomUUID()));
+		typesGroup.getItems().add(new TagReference().setName("ship").setUuid(randomUUID()));
+		nodeResponse.getTags().put("types", typesGroup);
+
 		return nodeResponse;
 	}
 
@@ -151,6 +172,25 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("content", createStringField("Content for language tag en"));
 
 		nodeResponse.setPermissions("READ", "CREATE");
+
+		// breadcrumb
+		Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
+		//		breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReferenceImpl().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReferenceImpl().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
+		nodeResponse.setBreadcrumb(breadcrumb);
+
+		// tags
+		TagFamilyTagGroup colorsGroup = new TagFamilyTagGroup();
+		colorsGroup.getItems().add(new TagReference().setName("red").setUuid(randomUUID()));
+		colorsGroup.getItems().add(new TagReference().setName("green").setUuid(randomUUID()));
+		nodeResponse.getTags().put("colors", colorsGroup);
+
+		TagFamilyTagGroup typesGroup = new TagFamilyTagGroup();
+		typesGroup.getItems().add(new TagReference().setName("car").setUuid(randomUUID()));
+		typesGroup.getItems().add(new TagReference().setName("ship").setUuid(randomUUID()));
+		nodeResponse.getTags().put("types", typesGroup);
+
 		return nodeResponse;
 	}
 

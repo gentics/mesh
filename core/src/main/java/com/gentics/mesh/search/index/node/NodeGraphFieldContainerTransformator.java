@@ -2,6 +2,7 @@ package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
+import static com.gentics.mesh.search.index.MappingHelper.DOUBLE;
 import static com.gentics.mesh.search.index.MappingHelper.LONG;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NESTED;
@@ -16,6 +17,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -55,11 +59,16 @@ import rx.Observable;
  * Transformator which can be used to transform a {@link NodeGraphFieldContainer} into a elasticsearch document. Additionally the matching mapping can also be
  * generated using this class.
  */
+@Singleton
 public class NodeGraphFieldContainerTransformator extends AbstractTransformator<NodeGraphFieldContainer> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerTransformator.class);
 
 	private static final String VERSION_KEY = "version";
+
+	@Inject
+	public NodeGraphFieldContainerTransformator() {
+	}
 
 	/**
 	 * Transform the given schema and add it to the source map.
@@ -309,11 +318,11 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 		switch (type) {
 		case STRING:
 			fieldInfo.put("type", STRING);
-			addRawInfo(fieldInfo, "string");
+			addRawInfo(fieldInfo, STRING);
 			break;
 		case HTML:
 			fieldInfo.put("type", STRING);
-			addRawInfo(fieldInfo, "string");
+			addRawInfo(fieldInfo, STRING);
 			break;
 		case BOOLEAN:
 			fieldInfo.put("type", BOOLEAN);
@@ -330,25 +339,25 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 
 			// filename
 			JsonObject filenameInfo = new JsonObject();
-			filenameInfo.put("type", "string");
+			filenameInfo.put("type", STRING);
 			filenameInfo.put("index", NOT_ANALYZED);
 			binaryProps.put("filename", filenameInfo);
 
 			// filesize
 			JsonObject filesizeInfo = new JsonObject();
-			filesizeInfo.put("type", "long");
+			filesizeInfo.put("type", LONG);
 			filesizeInfo.put("index", NOT_ANALYZED);
 			binaryProps.put("filesize", filesizeInfo);
 
 			// mimeType
 			JsonObject mimeTypeInfo = new JsonObject();
-			mimeTypeInfo.put("type", "string");
+			mimeTypeInfo.put("type", STRING);
 			mimeTypeInfo.put("index", NOT_ANALYZED);
 			binaryProps.put("mimeType", mimeTypeInfo);
 
 			// imageWidth
 			JsonObject imageWidthInfo = new JsonObject();
-			imageWidthInfo.put("type", "long");
+			imageWidthInfo.put("type", LONG);
 			imageWidthInfo.put("index", NOT_ANALYZED);
 			binaryProps.put("width", imageWidthInfo);
 
@@ -367,7 +376,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 		case NUMBER:
 			// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
 			// The mesh json parser will not deserialize numbers into BigDecimal at this point. No need to check for big decimal is therefore needed.
-			fieldInfo.put("type", "double");
+			fieldInfo.put("type", DOUBLE);
 			break;
 		case NODE:
 			fieldInfo.put("type", STRING);

@@ -30,7 +30,7 @@ public interface SearchProvider {
 	 */
 	Completable createIndex(String indexName);
 
-	// TODO add a good response instead of void. We need this in oder to handle correct logging?
+	// TODO add a good response instead of void. We need this in order to handle correct logging?
 	/**
 	 * Update the document and invoke the handler when the document has been updated or an error occurred.
 	 * 

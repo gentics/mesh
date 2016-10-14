@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -62,6 +63,7 @@ import rx.Completable;
  * </ul>
  * <p>
  */
+@Singleton
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
@@ -95,23 +97,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	public final static String CUSTOM_SCHEMAVERSION_UUID = "schemaVersionUuid";
 
-	/**
-	 * Custom index type property key. Value: {@value #CUSTOM_INDEX_TYPE}
-	 */
-	public static final String CUSTOM_INDEX_TYPE = "indexType";
-
-	private static NodeIndexHandler instance;
-
-	private NodeGraphFieldContainerTransformator transformator = new NodeGraphFieldContainerTransformator();
+	@Inject
+	NodeGraphFieldContainerTransformator transformator;
 
 	@Inject
 	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
 		super(searchProvider, db, boot);
-		NodeIndexHandler.instance = this;
-	}
-
-	public static NodeIndexHandler getInstance() {
-		return instance;
 	}
 
 	public NodeGraphFieldContainerTransformator getTransformator() {
@@ -128,13 +119,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	protected String getIndex(SearchQueueEntry entry) {
-		return Node.TYPE;
+	protected String getDocumentType(SearchQueueEntry entry) {
+		return getDocumentType();
 	}
 
 	@Override
-	protected String getDocumentType(SearchQueueEntry entry) {
-		return entry.get(CUSTOM_INDEX_TYPE);
+	protected String getIndex(SearchQueueEntry entry) {
+		return Node.TYPE;
 	}
 
 	@Override
@@ -192,7 +183,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Get the index name for the given project/release/version.
+	 * Get the index name for the given project/release/version and container type.
 	 * 
 	 * @param projectUuid
 	 * @param releaseUuid
@@ -377,10 +368,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return observable
 	 */
 	public Completable updateNodeIndexMapping(Schema schema) {
-		String type = schema.getName() + "-" + schema.getVersion();
 		Set<Completable> obs = new HashSet<>();
 		for (String indexName : getIndices().keySet()) {
-			obs.add(updateNodeIndexMapping(indexName, type, schema));
+			obs.add(updateNodeIndexMapping(indexName, schema));
 		}
 		return Completable.merge(obs);
 	}
@@ -392,8 +382,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		SchemaContainerVersion version = boot.findSchemaContainerRoot().findByUuid(containerUuid).findVersionByUuid(containerVersionUuid);
 		Schema schema = version.getSchema();
 		String indexName = entry.getElementUuid();
-		String type = schema.getName() + "-" + schema.getVersion();
-		return updateNodeIndexMapping(indexName, type, schema);
+		return updateNodeIndexMapping(indexName, schema);
 	}
 
 	/**
@@ -401,14 +390,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *
 	 * @param indexName
 	 *            index name
-	 * @param type
-	 *            type name
 	 * @param schema
 	 *            schema
 	 * @return
 	 */
-	public Completable updateNodeIndexMapping(String indexName, String type, Schema schema) {
+	public Completable updateNodeIndexMapping(String indexName, Schema schema) {
 
+		//String type = schema.getName() + "-" + schema.getVersion();
+		String type = getDocumentType();
 		// Check whether the search provider is a dummy provider or not
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
@@ -454,7 +443,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	/**
-	 * Update all node specific index mappings.
+	 * Update all node specific index mappings for all projects and all releases.
 	 */
 	public void updateNodeIndexMappings() {
 		List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
@@ -464,10 +453,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			for (Release release : releases) {
 				// Each release specific index has also document type specific mappings
 				for (SchemaContainerVersion containerVersion : release.findAllSchemaVersions()) {
-					updateNodeIndexMapping(getIndexName(project.getUuid(), release.getUuid(), containerVersion.getUuid(), DRAFT), getDocumentType(),
+					updateNodeIndexMapping(getIndexName(project.getUuid(), release.getUuid(), containerVersion.getUuid(), DRAFT),
 							containerVersion.getSchema()).await();
 					updateNodeIndexMapping(getIndexName(project.getUuid(), release.getUuid(), containerVersion.getUuid(), PUBLISHED),
-							getDocumentType(), containerVersion.getSchema()).await();
+							containerVersion.getSchema()).await();
 				}
 			}
 		});

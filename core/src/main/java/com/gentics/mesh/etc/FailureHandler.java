@@ -30,6 +30,12 @@ public class FailureHandler implements Handler<RoutingContext> {
 		return new FailureHandler();
 	}
 
+	/**
+	 * Return the response status that may be stored within the exception.
+	 * 
+	 * @param failure
+	 * @return
+	 */
 	private int getResponseStatusCode(Throwable failure) {
 		if (failure instanceof AbstractRestException) {
 			AbstractRestException error = (AbstractRestException) failure;
@@ -54,11 +60,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 			rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
 			return;
 		} else {
-			log.error("Error for request in path: " + rc.normalisedPath());
 			Throwable failure = rc.failure();
-			if (failure != null) {
-				log.error("Error:", failure);
-			}
 
 			//TODO instead of unwrapping we should return all the exceptions we can and use ExceptionResponse to nest those exceptions
 			// Unwrap wrapped exceptions
@@ -75,6 +77,16 @@ public class FailureHandler implements Handler<RoutingContext> {
 				return;
 			}
 
+			int code = getResponseStatusCode(failure);
+			if (code == 404) {
+				log.error("Could not find resource for path {" + rc.normalisedPath() + "?" + rc.request().query() + "}");
+			} else {
+				log.error("Error for request in path: " + rc.normalisedPath() + "?" + rc.request().query());
+				if (failure != null) {
+					log.error("Error:", failure);
+				}
+			}
+
 			// TODO wrap this instead into a try/catch and throw the failure
 			rc.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
 			if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
@@ -84,12 +96,10 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 			if (failure != null && failure instanceof AbstractRestException) {
 				AbstractRestException error = (AbstractRestException) failure;
-				int code = getResponseStatusCode(failure);
 				rc.response().setStatusCode(code);
 				translateMessage(error, rc);
 				rc.response().end(JsonUtil.toJson(error));
 			} else if (failure != null) {
-				int code = getResponseStatusCode(failure);
 				rc.response().setStatusCode(code);
 				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
 			} else {

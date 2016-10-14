@@ -20,6 +20,9 @@ import com.gentics.mesh.dagger.MeshInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * A {@link NodeGraphField} is a field which is modeled using an edge instead of a dedicated vertex.
+ */
 public interface NodeGraphField extends ListableReferencingGraphField, MicroschemaListableGraphField {
 
 	static final Logger log = LoggerFactory.getLogger(NodeGraphField.class);

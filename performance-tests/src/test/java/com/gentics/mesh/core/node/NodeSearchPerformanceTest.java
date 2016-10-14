@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Test;
 
@@ -18,28 +15,18 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.search.AbstractSearchVerticleTest;
+import com.gentics.mesh.search.AbstractSearchEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class NodeSearchPerformanceTest extends AbstractSearchVerticleTest {
+public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchPerformanceTest.class);
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
-
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.searchVerticle());
-		list.add(meshDagger.projectSearchVerticle());
-		list.add(meshDagger.nodeVerticle());
-		return list;
-	}
 
 	@Test
 	public void testES() throws InterruptedException, InvalidArgumentException {

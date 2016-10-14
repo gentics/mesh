@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -17,9 +18,11 @@ import com.gentics.mesh.search.index.AbstractIndexHandler;
 /**
  * Handler for schema container index.
  */
+@Singleton
 public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaContainer> {
 
-	private SchemaTransformator transformator = new SchemaTransformator();
+	@Inject
+	SchemaTransformator transformator;
 
 	@Inject
 	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {

@@ -12,6 +12,11 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
 public class UserExamples extends AbstractExamples {
 
+	/**
+	 * Return a user response with user jane roe.
+	 * 
+	 * @return
+	 */
 	public UserResponse getUserResponse2() {
 		UserResponse user2 = getUserResponse1("jroe");
 		user2.setFirstname("Jane");
@@ -23,6 +28,12 @@ public class UserExamples extends AbstractExamples {
 		return user2;
 	}
 
+	/**
+	 * Return a user response with user joe doe.
+	 * 
+	 * @param username
+	 * @return
+	 */
 	public UserResponse getUserResponse1(String username) {
 		UserResponse user = new UserResponse();
 		user.setUuid(randomUUID());

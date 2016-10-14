@@ -246,6 +246,7 @@ public class SearchRestHandler {
 	public void handleReindex(InternalActionContext ac) {
 		operateNoTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
+				searchProvider.clear();
 				for (IndexHandler handler : registry.getHandlers()) {
 					// Create all indices.
 					handler.init().await();

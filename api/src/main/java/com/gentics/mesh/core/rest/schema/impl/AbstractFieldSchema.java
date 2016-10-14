@@ -25,6 +25,9 @@ import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
 import com.google.common.collect.Maps;
 
+/**
+ * Abstract class for field schema implementations. (eg.: {@link HtmlFieldSchemaImpl})
+ */
 public abstract class AbstractFieldSchema implements FieldSchema {
 
 	private String name;

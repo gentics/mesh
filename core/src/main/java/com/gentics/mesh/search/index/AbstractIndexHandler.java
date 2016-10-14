@@ -177,14 +177,14 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Completable updateMapping(String indexName, String documentType) {
 
 		if (searchProvider.getNode() != null) {
-			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
-			mappingRequestBuilder.setType(documentType);
-
-			// Generate the mapping for the specific type
-			JsonObject mapping = getTransformator().getMapping(documentType);
-			mappingRequestBuilder.setSource(mapping.toString());
-
 			return Completable.create(sub -> {
+				PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
+				mappingRequestBuilder.setType(documentType);
+
+				// Generate the mapping for the specific type
+				JsonObject mapping = getTransformator().getMapping(documentType);
+				mappingRequestBuilder.setSource(mapping.toString());
+
 				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
 
 					@Override

@@ -2,28 +2,16 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.test.AbstractIsolatedRestVerticleTest;
+import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-import io.vertx.core.AbstractVerticle;
-
-public class GroupVerticlePerformanceTest extends AbstractIsolatedRestVerticleTest {
+public class GroupVerticlePerformanceTest extends AbstractRestEndpointTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
-
-	@Override
-	public List<AbstractVerticle> getAdditionalVertices() {
-		List<AbstractVerticle> list = new ArrayList<>();
-		list.add(meshDagger.groupVerticle());
-		return list;
-	}
 
 	private void addGroups() {
 		for (int i = 0; i < 200; i++) {

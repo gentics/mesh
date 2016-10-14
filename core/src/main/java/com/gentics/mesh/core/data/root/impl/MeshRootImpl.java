@@ -43,6 +43,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see MeshRoot
+ */
 public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static Logger log = LoggerFactory.getLogger(MeshRootImpl.class);
@@ -138,7 +141,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public GroupRoot getGroupRoot() {
 		if (groupRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				GroupRoot foundGroupRoot = out(HAS_GROUP_ROOT).has(GroupRootImpl.class).nextOrDefaultExplicit(GroupRootImpl.class, null);
+				GroupRoot foundGroupRoot = out(HAS_GROUP_ROOT).nextOrDefaultExplicit(GroupRootImpl.class, null);
 				if (foundGroupRoot == null) {
 					groupRoot = getGraph().addFramedVertex(GroupRootImpl.class);
 					linkOut(groupRoot.getImpl(), HAS_GROUP_ROOT);
@@ -157,7 +160,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public TagRoot getTagRoot() {
 		if (tagRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				TagRoot foundTagRoot = out(HAS_TAG_ROOT).has(TagRootImpl.class).nextOrDefaultExplicit(TagRootImpl.class, null);
+				TagRoot foundTagRoot = out(HAS_TAG_ROOT).nextOrDefaultExplicit(TagRootImpl.class, null);
 				if (foundTagRoot == null) {
 					tagRoot = getGraph().addFramedVertex(TagRootImpl.class);
 					linkOut(tagRoot.getImpl(), HAS_TAG_ROOT);

@@ -18,28 +18,28 @@ import org.raml.model.Raml;
 import org.raml.model.Resource;
 import org.raml.model.Response;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.core.verticle.admin.AdminVerticle;
-import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
-import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
-import com.gentics.mesh.core.verticle.group.GroupVerticle;
-import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
-import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaVerticle;
-import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
-import com.gentics.mesh.core.verticle.role.RoleVerticle;
-import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
-import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.core.verticle.user.UserVerticle;
-import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
-import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
+import com.gentics.mesh.core.AbstractEndpoint;
+import com.gentics.mesh.core.verticle.admin.AdminEndpoint;
+import com.gentics.mesh.core.verticle.auth.AuthenticationEndpoint;
+import com.gentics.mesh.core.verticle.eventbus.EventbusEndpoint;
+import com.gentics.mesh.core.verticle.group.GroupEndpoint;
+import com.gentics.mesh.core.verticle.microschema.MicroschemaEndpoint;
+import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaEndpoint;
+import com.gentics.mesh.core.verticle.navroot.NavRootEndpoint;
+import com.gentics.mesh.core.verticle.node.NodeEndpoint;
+import com.gentics.mesh.core.verticle.project.ProjectEndpoint;
+import com.gentics.mesh.core.verticle.release.ReleaseEndpoint;
+import com.gentics.mesh.core.verticle.role.RoleEndpoint;
+import com.gentics.mesh.core.verticle.schema.ProjectSchemaEndpoint;
+import com.gentics.mesh.core.verticle.schema.SchemaEndpoint;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyEndpoint;
+import com.gentics.mesh.core.verticle.user.UserEndpoint;
+import com.gentics.mesh.core.verticle.utility.UtilityEndpoint;
+import com.gentics.mesh.core.verticle.webroot.WebRootEndpoint;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.Endpoint;
-import com.gentics.mesh.search.ProjectSearchVerticle;
-import com.gentics.mesh.search.SearchVerticle;
+import com.gentics.mesh.search.ProjectSearchEndpoint;
+import com.gentics.mesh.search.SearchEndpoint;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -97,7 +97,7 @@ public class RAMLGenerator {
 	 *            Verticle which provides endpoints
 	 * @throws IOException
 	 */
-	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractWebVerticle verticle) throws IOException {
+	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractEndpoint verticle) throws IOException {
 
 		Resource verticleResource = new Resource();
 		for (Endpoint endpoint : verticle.getEndpoints()) {
@@ -183,7 +183,7 @@ public class RAMLGenerator {
 		return ActionType.valueOf(method.name());
 	}
 
-	private void initVerticle(AbstractWebVerticle verticle) throws Exception {
+	private void initVerticle(AbstractEndpoint verticle) throws Exception {
 		Mockito.when(verticle.getRouter()).thenReturn(Router.router(Vertx.vertx()));
 		verticle.registerEndPoints();
 	}
@@ -195,36 +195,36 @@ public class RAMLGenerator {
 	 * @throws Exception
 	 */
 	private void addProjectVerticles(Map<String, Resource> resources) throws Exception {
-		NodeVerticle nodeVerticle = Mockito.spy(new NodeVerticle());
+		NodeEndpoint nodeVerticle = Mockito.spy(new NodeEndpoint());
 		initVerticle(nodeVerticle);
 		String projectBasePath = "/{project}";
 		addEndpoints(projectBasePath, resources, nodeVerticle);
 
-		TagFamilyVerticle tagFamilyVerticle = Mockito.spy(new TagFamilyVerticle());
+		TagFamilyEndpoint tagFamilyVerticle = Mockito.spy(new TagFamilyEndpoint());
 		initVerticle(tagFamilyVerticle);
 		addEndpoints(projectBasePath, resources, tagFamilyVerticle);
 
-		NavRootVerticle navVerticle = Mockito.spy(new NavRootVerticle());
+		NavRootEndpoint navVerticle = Mockito.spy(new NavRootEndpoint());
 		initVerticle(navVerticle);
 		addEndpoints(projectBasePath, resources, navVerticle);
 
-		WebRootVerticle webVerticle = Mockito.spy(new WebRootVerticle());
+		WebRootEndpoint webVerticle = Mockito.spy(new WebRootEndpoint());
 		initVerticle(webVerticle);
 		addEndpoints(projectBasePath, resources, webVerticle);
 
-		ReleaseVerticle releaseVerticle = Mockito.spy(new ReleaseVerticle());
+		ReleaseEndpoint releaseVerticle = Mockito.spy(new ReleaseEndpoint());
 		initVerticle(releaseVerticle);
 		addEndpoints(projectBasePath, resources, releaseVerticle);
 
-		ProjectSearchVerticle projectSearchVerticle = Mockito.spy(new ProjectSearchVerticle());
+		ProjectSearchEndpoint projectSearchVerticle = Mockito.spy(new ProjectSearchEndpoint());
 		initVerticle(projectSearchVerticle);
 		addEndpoints(projectBasePath, resources, projectSearchVerticle);
 
-		ProjectSchemaVerticle projectSchemaVerticle = Mockito.spy(new ProjectSchemaVerticle());
+		ProjectSchemaEndpoint projectSchemaVerticle = Mockito.spy(new ProjectSchemaEndpoint());
 		initVerticle(projectSchemaVerticle);
 		addEndpoints(projectBasePath, resources, projectSchemaVerticle);
 
-		ProjectMicroschemaVerticle projectMicroschemaVerticle = Mockito.spy(new ProjectMicroschemaVerticle());
+		ProjectMicroschemaEndpoint projectMicroschemaVerticle = Mockito.spy(new ProjectMicroschemaEndpoint());
 		initVerticle(projectMicroschemaVerticle);
 		addEndpoints(projectBasePath, resources, projectMicroschemaVerticle);
 
@@ -238,47 +238,47 @@ public class RAMLGenerator {
 	 */
 	private void addCoreVerticles(Map<String, Resource> resources) throws Exception {
 		String coreBasePath = "";
-		UserVerticle userVerticle = Mockito.spy(new UserVerticle());
+		UserEndpoint userVerticle = Mockito.spy(new UserEndpoint());
 		initVerticle(userVerticle);
 		addEndpoints(coreBasePath, resources, userVerticle);
 
-		RoleVerticle roleVerticle = Mockito.spy(new RoleVerticle());
+		RoleEndpoint roleVerticle = Mockito.spy(new RoleEndpoint());
 		initVerticle(roleVerticle);
 		addEndpoints(coreBasePath, resources, roleVerticle);
 
-		GroupVerticle groupVerticle = Mockito.spy(new GroupVerticle());
+		GroupEndpoint groupVerticle = Mockito.spy(new GroupEndpoint());
 		initVerticle(groupVerticle);
 		addEndpoints(coreBasePath, resources, groupVerticle);
 
-		ProjectVerticle projectVerticle = Mockito.spy(new ProjectVerticle());
+		ProjectEndpoint projectVerticle = Mockito.spy(new ProjectEndpoint());
 		initVerticle(projectVerticle);
 		addEndpoints(coreBasePath, resources, projectVerticle);
 
-		SchemaVerticle schemaVerticle = Mockito.spy(new SchemaVerticle());
+		SchemaEndpoint schemaVerticle = Mockito.spy(new SchemaEndpoint());
 		initVerticle(schemaVerticle);
 		addEndpoints(coreBasePath, resources, schemaVerticle);
 
-		MicroschemaVerticle microschemaVerticle = Mockito.spy(new MicroschemaVerticle());
+		MicroschemaEndpoint microschemaVerticle = Mockito.spy(new MicroschemaEndpoint());
 		initVerticle(microschemaVerticle);
 		addEndpoints(coreBasePath, resources, microschemaVerticle);
 
-		AdminVerticle adminVerticle = Mockito.spy(new AdminVerticle());
+		AdminEndpoint adminVerticle = Mockito.spy(new AdminEndpoint());
 		initVerticle(adminVerticle);
 		addEndpoints(coreBasePath, resources, adminVerticle);
 
-		SearchVerticle searchVerticle = Mockito.spy(new SearchVerticle());
+		SearchEndpoint searchVerticle = Mockito.spy(new SearchEndpoint());
 		initVerticle(searchVerticle);
 		addEndpoints(coreBasePath, resources, searchVerticle);
 
-		UtilityVerticle utilityVerticle = Mockito.spy(new UtilityVerticle());
+		UtilityEndpoint utilityVerticle = Mockito.spy(new UtilityEndpoint());
 		initVerticle(utilityVerticle);
 		addEndpoints(coreBasePath, resources, utilityVerticle);
 
-		AuthenticationVerticle authVerticle = Mockito.spy(new AuthenticationVerticle());
+		AuthenticationEndpoint authVerticle = Mockito.spy(new AuthenticationEndpoint());
 		initVerticle(authVerticle);
 		addEndpoints(coreBasePath, resources, authVerticle);
 
-		EventbusVerticle eventbusVerticle = Mockito.spy(new EventbusVerticle());
+		EventbusEndpoint eventbusVerticle = Mockito.spy(new EventbusEndpoint());
 		initVerticle(eventbusVerticle);
 		addEndpoints(coreBasePath, resources, eventbusVerticle);
 

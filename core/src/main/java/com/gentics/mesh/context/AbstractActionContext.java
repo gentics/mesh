@@ -14,6 +14,11 @@ import com.gentics.mesh.util.HttpQueryUtils;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Abstract class for action context.
+ * 
+ * @see ActionContext
+ */
 public abstract class AbstractActionContext implements ActionContext {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractActionContext.class);
@@ -53,6 +58,13 @@ public abstract class AbstractActionContext implements ActionContext {
 		return (Map<String, String>) data().get(QUERY_MAP_DATA_KEY);
 	}
 
+	/**
+	 * Examine the given <code>Accept-Language</code> header and determine the local that best matches the accept language header value.
+	 * 
+	 * @param header
+	 *            Accept-Language header value
+	 * @return Best matching local or default locale if no language matches
+	 */
 	public static Locale getLocale(String header) {
 		Locale bestMatchingLocale = I18NUtil.DEFAULT_LOCALE;
 		Double highesQ = 0.;
@@ -75,7 +87,7 @@ public abstract class AbstractActionContext implements ActionContext {
 					continue;
 				}
 
-				// Parse the q-value
+				// Parse the q-value in order to determine which language has the highest priority
 				Double q = 1.0D;
 				for (String s : arr) {
 					s = s.trim();

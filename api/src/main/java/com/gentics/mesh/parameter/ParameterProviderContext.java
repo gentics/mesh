@@ -9,6 +9,9 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 
+/**
+ * Collection / Convenience interface which provides getters for parameter providers to all context implementations which use this interface.
+ */
 public interface ParameterProviderContext extends ActionContext {
 
 	default NodeParameters getNodeParameters() {

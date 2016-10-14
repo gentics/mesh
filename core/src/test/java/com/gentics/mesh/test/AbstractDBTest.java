@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.RouterStorage;
@@ -49,31 +48,51 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Central abstract class for all mesh unit tests which access dagger or the mesh test database graph.
+ */
 public abstract class AbstractDBTest {
 
-	protected BootstrapInitializer boot;
-
-	private TestDataProvider dataProvider;
-
-	protected Database db;
-
-	protected MeshComponent meshDagger;
-
-	protected RouterStorage routerStorage;
-
-	protected ServerSchemaStorage schemaStorage;
-
-	protected SearchProvider searchProvider;
-
-	protected DummySearchProvider dummySearchProvider;
-
 	private static final Logger log = LoggerFactory.getLogger(AbstractDBTest.class);
+
+	public static BootstrapInitializer boot;
+
+	public static TestDataProvider dataProvider;
+
+	public static Database db;
+
+	public static MeshComponent meshDagger;
+
+	public static RouterStorage routerStorage;
+
+	public static ServerSchemaStorage schemaStorage;
+
+	public static SearchProvider searchProvider;
+
+	public static DummySearchProvider dummySearchProvider;
 
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
 
+	/**
+	 * Initialise mesh only once. The dagger context will only be setup once.
+	 * 
+	 * @throws Exception
+	 */
+	@BeforeClass
+	public static void initMesh() throws Exception {
+		init(false);
+		initDagger();
+	}
+
+	/**
+	 * Initalise mesh options.
+	 * 
+	 * @param enableES
+	 * @throws IOException
+	 */
 	public static void init(boolean enableES) throws IOException {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
@@ -110,17 +129,13 @@ public abstract class AbstractDBTest {
 		Mesh.mesh(options);
 	}
 
-	@Before
-	public void initMesh() throws Exception {
-		PermissionStore.invalidate();
-		init(false);
-		initDagger();
-	}
-
-	public void initDagger() {
+	/**
+	 * Initialise the mesh dagger context and inject the dependencies within the test.
+	 */
+	public static void initDagger() {
 		log.info("Initializing dagger context");
 		meshDagger = MeshInternal.create();
-		dataProvider = meshDagger.testDataProvider();
+		dataProvider = new TestDataProvider(meshDagger.boot(), meshDagger.database());
 		routerStorage = meshDagger.routerStorage();
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
 			dummySearchProvider = meshDagger.dummySearchProvider();
@@ -140,25 +155,30 @@ public abstract class AbstractDBTest {
 		// if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
 		// FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
 		// }
+		PermissionStore.invalidate();
 	}
 
+	/**
+	 * Clear the test data.
+	 */
 	protected void resetDatabase() {
 		BootstrapInitializer.clearReferences();
 		long start = System.currentTimeMillis();
 		db.clear();
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");
-		//		db.setMassInsertIntent();
-		//		new DatabaseHelper(db).init();
-		//		db.resetIntent();
 		if (dummySearchProvider != null) {
 			dummySearchProvider.reset();
 		}
 	}
 
+	/**
+	 * Setup the test data.
+	 * 
+	 * @throws Exception
+	 */
 	public void setupData() throws Exception {
 		db.setMassInsertIntent();
-		boot.initSearchIndexHandlers();
 		boot.createSearchIndicesAndMappings();
 		dataProvider.setup();
 		db.resetIntent();
