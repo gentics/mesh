@@ -135,7 +135,7 @@ public abstract class AbstractDBTest {
 	public static void initDagger() {
 		log.info("Initializing dagger context");
 		meshDagger = MeshInternal.create();
-		dataProvider = meshDagger.testDataProvider();
+		dataProvider = new TestDataProvider(meshDagger.boot(), meshDagger.database());
 		routerStorage = meshDagger.routerStorage();
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
 			dummySearchProvider = meshDagger.dummySearchProvider();

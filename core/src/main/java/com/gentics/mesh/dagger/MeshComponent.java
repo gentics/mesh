@@ -45,8 +45,6 @@ public interface MeshComponent {
 
 	SearchProvider searchProvider();
 
-	TestDataProvider testDataProvider();
-
 	BCryptPasswordEncoder passwordEncoder();
 
 	RouterStorage routerStorage();
