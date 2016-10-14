@@ -451,7 +451,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// of all binary fields
 		Map<String, String> existingBinaryFields = newVersion.getSchema().getFields().stream().filter(f -> "binary".equals(f.getType()))
 				.map(f -> Tuple.tuple(f.getName(), transformedRestModel.getFields().getBinaryField(f.getName()))).filter(t -> t.v2() != null)
-				.collect(Collectors.toMap(t -> t.v1(), t -> t.v2().getSha512sum()));
+				.filter(t -> t.v2().getSha512sum() != null).collect(Collectors.toMap(t -> t.v1(), t -> t.v2().getSha512sum()));
 
 		// check for every binary field in the migrated node,
 		// whether the binary file is present, if not, copy it
