@@ -14,6 +14,9 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
+/**
+ * Common interface for all graph fields. Every field has a key and can be removed from a container.
+ */
 public interface GraphField {
 
 	String FIELD_KEY_PROPERTY_KEY = "fieldkey";

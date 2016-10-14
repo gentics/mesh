@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
@@ -30,11 +31,19 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		String groupName = "testgroup42a";
 		String uuid = createGroup(groupName).getUuid();
 
-		MeshResponse<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("uuid", uuid)).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
-		assertEquals(1, searchFuture.result().getData().size());
-		assertEquals(uuid, searchFuture.result().getData().get(0).getUuid());
+		GroupListResponse result = call(() -> getClient().searchGroups(getSimpleTermQuery("uuid", uuid)));
+		assertThat(result.getData()).hasSize(1);
+		assertEquals(uuid, result.getData().get(0).getUuid());
+	}
+
+	@Test
+	public void testSearchByName() throws InterruptedException, JSONException {
+		String groupName = "test-grou  %!p42a";
+		String uuid = createGroup(groupName).getUuid();
+
+		GroupListResponse result = call(() -> getClient().searchGroups(getSimpleTermQuery("name", groupName)));
+		assertThat(result.getData()).hasSize(1);
+		assertEquals(uuid, result.getData().get(0).getUuid());
 	}
 
 	@Test
@@ -45,10 +54,8 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		GroupResponse group = createGroup(groupName);
 		deleteGroup(group.getUuid());
 
-		MeshResponse<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
-		assertEquals(0, searchFuture.result().getData().size());
+		GroupListResponse result = call(() -> getClient().searchGroups(getSimpleTermQuery("name", groupName)));
+		assertThat(result.getData()).hasSize(0);
 	}
 
 	@Test
@@ -60,15 +67,11 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		String newGroupName = "testgrouprenamed";
 		updateGroup(group.getUuid(), newGroupName);
 
-		MeshResponse<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
-		assertEquals(0, searchFuture.result().getData().size());
+		GroupListResponse result = call(() -> getClient().searchGroups(getSimpleTermQuery("name", groupName)));
+		assertThat(result.getData()).hasSize(0);
 
-		searchFuture = getClient().searchGroups(getSimpleTermQuery("name", newGroupName)).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
-		assertEquals(1, searchFuture.result().getData().size());
+		result = call(() -> getClient().searchGroups(getSimpleTermQuery("name", newGroupName)));
+		assertThat(result.getData()).hasSize(1);
 	}
 
 }

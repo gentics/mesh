@@ -12,7 +12,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Abstract implementation for various mesh response handler. 
+ * Abstract implementation for various mesh response handler.
  * 
  * @param <T>
  */
@@ -74,6 +74,11 @@ public abstract class AbstractMeshResponseHandler<T> implements MeshResponseHand
 		future.complete(null);
 	}
 
+	/**
+	 * Handler method which should be invoked for HTTP responses other than 2xx, 3xx status code.
+	 * 
+	 * @param response
+	 */
 	protected void handleError(HttpClientResponse response) {
 		response.bodyHandler(bh -> {
 			String body = bh.toString();
@@ -84,6 +89,7 @@ public abstract class AbstractMeshResponseHandler<T> implements MeshResponseHand
 			log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {" + body
 					+ "} for method {" + getMethod() + "} and uri {" + getUri() + "}");
 
+			// Try to parse the body data and fail using the extracted exception.
 			try {
 				GenericMessageResponse responseMessage = JsonUtil.readValue(body, GenericMessageResponse.class);
 				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage(), responseMessage));

@@ -13,7 +13,6 @@ import com.gentics.mesh.core.rest.node.FieldMapImpl;
 
 /**
  * The {@link FieldMapDeserializer} is used to deserialize the fieldmap within a node response/update request.
- *
  */
 public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 

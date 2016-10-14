@@ -11,6 +11,16 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
 
+/**
+ * Abstract class for referencing field lists.
+ *
+ * @param <T>
+ *            Type the listed field
+ * @param <RM>
+ *            Rest model type for the field
+ * @param <U>
+ *            Type of element that is referenced
+ */
 public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphField, RM extends Field, U> extends AbstractGraphFieldList<T, RM, U> {
 
 	@Override

@@ -15,6 +15,9 @@ import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
+/**
+ * The eventbus endpoint provides a SockJS compliant websocket eventbus bridge.
+ */
 @Singleton
 public class EventbusEndpoint extends AbstractEndpoint {
 

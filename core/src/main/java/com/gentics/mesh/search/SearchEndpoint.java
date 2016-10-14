@@ -171,7 +171,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(miscExamples.getSearchQueryExample());
 		endpoint.handler(rc -> {
 			try {
-				IndexHandler indexHandler = registry.get(indexHandlerKey);
+				IndexHandler indexHandler = registry.getHandlerWithKey(indexHandlerKey);
 				InternalActionContext ac = InternalActionContext.create(rc);
 				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac), indexHandler.getReadPermission(ac));
 			} catch (Exception e) {

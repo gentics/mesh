@@ -4,6 +4,9 @@ import org.apache.http.entity.ContentType;
 
 import io.vertx.core.http.HttpHeaders;
 
+/**
+ * List of commonly used http constants
+ */
 public final class HttpConstants {
 
 	public static final String LOCATION = HttpHeaders.LOCATION.toString();

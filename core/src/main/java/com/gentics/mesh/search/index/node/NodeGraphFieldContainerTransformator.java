@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -56,11 +59,16 @@ import rx.Observable;
  * Transformator which can be used to transform a {@link NodeGraphFieldContainer} into a elasticsearch document. Additionally the matching mapping can also be
  * generated using this class.
  */
+@Singleton
 public class NodeGraphFieldContainerTransformator extends AbstractTransformator<NodeGraphFieldContainer> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerTransformator.class);
 
 	private static final String VERSION_KEY = "version";
+
+	@Inject
+	public NodeGraphFieldContainerTransformator() {
+	}
 
 	/**
 	 * Transform the given schema and add it to the source map.

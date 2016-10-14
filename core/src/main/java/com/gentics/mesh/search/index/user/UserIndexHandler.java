@@ -20,7 +20,8 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	private final static Set<String> indices = Collections.singleton(User.TYPE);
 
-	private UserTransformator transformator = new UserTransformator();
+	@Inject
+	UserTransformator transformator;
 
 	@Inject
 	public UserIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {

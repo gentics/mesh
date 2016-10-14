@@ -9,11 +9,23 @@ public class ReleaseCreateRequest implements RestModel {
 	public ReleaseCreateRequest() {
 	}
 
+	/**
+	 * Return the release name.
+	 * 
+	 * @return
+	 */
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	/**
+	 * Set the release name.
+	 * 
+	 * @param name
+	 * @return Fluent API
+	 */
+	public ReleaseCreateRequest setName(String name) {
 		this.name = name;
+		return this;
 	}
 }

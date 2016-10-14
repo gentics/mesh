@@ -616,6 +616,77 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	}
 
 	@Test
+	public void testUpdateExistingPasswordWithNoOldPassword() {
+		String uuid;
+		String oldHash;
+
+		try (NoTx noTx = db.noTx()) {
+			uuid = user().getUuid();
+			oldHash = user().getPasswordHash();
+		}
+
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setPassword("new_password");
+		// Old password not set
+
+		call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST, "user_error_missing_old_password");
+
+		try (NoTx noTx = db.noTx()) {
+			User reloadedUser = boot.userRoot().findByUuid(uuid);
+			assertEquals("The hash should not be different since the password should not have been updated.", oldHash,
+					reloadedUser.getPasswordHash());
+		}
+	}
+
+	@Test
+	public void testUpdateExistingPasswordWithWrongOldPassword() {
+		String uuid;
+		String oldHash;
+
+		try (NoTx noTx = db.noTx()) {
+			uuid = user().getUuid();
+			oldHash = user().getPasswordHash();
+		}
+
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setPassword("new_password");
+		updateRequest.setOldPassword("bogus");
+
+		call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST, "user_error_password_check_failed");
+
+		try (NoTx noTx = db.noTx()) {
+			User reloadedUser = boot.userRoot().findByUuid(uuid);
+			assertEquals("The hash should not be different since the password should not have been updated.", oldHash,
+					reloadedUser.getPasswordHash());
+		}
+
+	}
+
+	@Test
+	public void testUpdatePasswordWithNoOldPassword() {
+		String uuid;
+		String oldHash;
+
+		try (NoTx noTx = db.noTx()) {
+			user().setPasswordHash(null);
+			uuid = user().getUuid();
+			oldHash = user().getPasswordHash();
+		}
+
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setPassword("new_password");
+
+		UserResponse restUser = call(() -> getClient().updateUser(uuid, updateRequest));
+		assertThat(restUser).matches(updateRequest);
+
+		try (NoTx noTx = db.noTx()) {
+			User reloadedUser = boot.userRoot().findByUuid(uuid);
+			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
+		}
+
+	}
+
+	@Test
 	public void testUpdatePassword() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		String username;
 		String uuid;
@@ -628,11 +699,12 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setPassword("new_password");
+		updateRequest.setOldPassword("test123");
 
 		UserResponse restUser = call(() -> getClient().updateUser(uuid, updateRequest));
 		assertThat(restUser).matches(updateRequest);
 
-		try (Tx tx = db.tx()) {
+		try (NoTx noTx = db.noTx()) {
 			User reloadedUser = boot.userRoot().findByUsername(username);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
@@ -805,10 +877,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.setPassword("test123456");
 			request.setGroupUuid(group().getUuid());
 
-			MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			UserResponse restUser = future.result();
+			UserResponse restUser = call(() -> getClient().createUser(request));
 			assertThat(restUser).matches(request);
 
 			UserUpdateRequest updateRequest = new UserUpdateRequest();
@@ -822,10 +891,9 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateRequest.setLastname(LASTNAME);
 			updateRequest.setUsername(USERNAME);
 			updateRequest.setPassword("newPassword");
-			future = getClient().updateUser(restUser.getUuid(), updateRequest).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			restUser = future.result();
+			updateRequest.setOldPassword("test123456");
+			String uuid = restUser.getUuid();
+			restUser = call(() -> getClient().updateUser(uuid, updateRequest));
 			assertEquals(LASTNAME, restUser.getLastname());
 			assertEquals(FIRSTNAME, restUser.getFirstname());
 			assertEquals(EMAIL, restUser.getEmailAddress());

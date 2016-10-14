@@ -8,8 +8,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * A verticle which provides REST endpoints for all registered projects. The router for this verticle will automatically be mounted for all registered projects.
- * E.g: /api/v1/yourproject/verticle_basePath
+ * A endpoint which provides more REST endpoints for all registered projects. The router for this endpoint will automatically be mounted for all registered
+ * projects. E.g: /api/v1/yourproject/endpoint_basePath
  */
 public abstract class AbstractProjectEndpoint extends AbstractEndpoint {
 
@@ -26,10 +26,22 @@ public abstract class AbstractProjectEndpoint extends AbstractEndpoint {
 		return localRouter;
 	}
 
+	/**
+	 * Load the project with the name that could be extracted from the routing context.
+	 * 
+	 * @param rc
+	 * @return
+	 */
 	public Project getProject(RoutingContext rc) {
 		return boot.projectRoot().findByName(getProjectName(rc));
 	}
 
+	/**
+	 * Return the project name which was stored in the routing context data during route resolving.
+	 * 
+	 * @param rc
+	 * @return
+	 */
 	public String getProjectName(RoutingContext rc) {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
 	}

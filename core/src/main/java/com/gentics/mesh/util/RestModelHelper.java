@@ -9,7 +9,7 @@ import java.util.Set;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
@@ -32,7 +32,7 @@ public final class RestModelHelper {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 
 		if (!isEmpty(roleUuid)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Role role = MeshRoot.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(sourceElement);
 				Set<String> humanNames = new HashSet<>();

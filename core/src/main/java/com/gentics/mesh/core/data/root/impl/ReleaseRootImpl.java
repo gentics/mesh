@@ -108,7 +108,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		ReleaseCreateRequest createRequest = ac.fromJson(ReleaseCreateRequest.class);
 		MeshAuthUser requestUser = ac.getUser();
 
-		// check for completeness of request
+		// Check for completeness of request
 		if (StringUtils.isEmpty(createRequest.getName())) {
 			throw error(BAD_REQUEST, "release_missing_name");
 		}
@@ -120,8 +120,6 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		if (!requestUser.hasPermission(project, GraphPermission.UPDATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName);
 		}
-
-		requestUser.reload();
 
 		// Check for uniqueness of release name (per project)
 		Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME, ReleaseImpl.class,

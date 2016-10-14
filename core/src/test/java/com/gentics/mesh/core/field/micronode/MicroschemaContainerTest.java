@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -282,7 +283,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			updatedMicroschema.addField(FieldUtil.createStringFieldSchema("newfield"));
 
 			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(meshDagger.microschemaComparator().diff(microschema, updatedMicroschema));
+			model.getChanges().addAll(new MicroschemaComparator().diff(microschema, updatedMicroschema));
 
 			InternalActionContext ac = getMockedInternalActionContext();
 			SearchQueueBatch batch = createBatch();

@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -18,12 +21,20 @@ import com.gentics.mesh.search.index.AbstractTransformator;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Transformator for user search index documents.
+ */
+@Singleton
 public class UserTransformator extends AbstractTransformator<User> {
 
 	public static final String EMAIL_KEY = "emailaddress";
 	public static final String USERNAME_KEY = "username";
 	public static final String FIRSTNAME_KEY = "firstname";
 	public static final String LASTNAME_KEY = "lastname";
+
+	@Inject
+	public UserTransformator() {
+	}
 
 	@Override
 	public JsonObject toDocument(User user) {
@@ -38,7 +49,7 @@ public class UserTransformator extends AbstractTransformator<User> {
 		if (referencedNode != null) {
 			document.put("nodeReference", referencedNode.getUuid());
 		}
-		//TODO add disabled / enabled flag
+		// TODO add disabled / enabled flag
 		return document;
 	}
 

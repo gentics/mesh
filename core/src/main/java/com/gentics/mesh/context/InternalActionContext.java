@@ -23,6 +23,13 @@ import io.vertx.ext.web.RoutingContext;
  */
 public interface InternalActionContext extends ActionContext, ParameterProviderContext {
 
+	/**
+	 * Construct a new action context
+	 * 
+	 * @param rc
+	 *            Vertx routing context which will be wrapped
+	 * @return
+	 */
 	public static InternalActionContext create(RoutingContext rc) {
 		return new InternalRoutingActionContextImpl(rc);
 	}

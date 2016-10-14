@@ -11,7 +11,7 @@ import com.gentics.mesh.parameter.impl.LinkType;
 /**
  * The HtmlField Domain Model interface.
  * 
- * A html graph field is a basic node field which can be used to store html string values.
+ * A HTML graph field is a basic node field which can be used to store a single HTML string value.
  */
 public interface HtmlGraphField extends ListableGraphField, BasicGraphField<HtmlField> {
 
@@ -43,7 +43,7 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 		boolean isHtmlFieldNull = htmlField == null || htmlField.getHTML() == null;
 		GraphField.failOnMissingRequiredField(htmlGraphField, isHtmlFieldNull, fieldSchema, fieldKey, schema);
 
-		// Handle Deletion
+		// Handle Deletion - The field was explicitly set to null and is currently set within the graph thus we must remove it.
 		if (isHtmlFieldSetToNull && htmlGraphField != null) {
 			htmlGraphField.removeField(container);
 			return;
@@ -67,14 +67,14 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 	};
 
 	/**
-	 * Set the html field value for the field.
+	 * Set the HTML field value for the field.
 	 * 
 	 * @param html
 	 */
 	void setHtml(String html);
 
 	/**
-	 * Return the html field value for the field.
+	 * Return the HTML field value for the field.
 	 * 
 	 * @return
 	 */

@@ -2,10 +2,10 @@ package com.gentics.mesh.changelog;
 
 import java.util.Iterator;
 import java.util.UUID;
+
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -126,12 +126,11 @@ public abstract class AbstractChange implements Change {
 		return true;
 	}
 
-	public void printEdges(Vertex vertex, Direction dir) {
-		for (Edge e : vertex.getEdges(dir)) {
-			System.out.println(e.getLabel());
-		}
-	}
-
+	/**
+	 * Add a reindex batch entry which will be handled during mesh startup.
+	 * 
+	 * @param elementType
+	 */
 	public void addFullReindexEntry(String elementType) {
 		MeshGraphHelper.addFullReindexEntry(getGraph(), elementType);
 	}

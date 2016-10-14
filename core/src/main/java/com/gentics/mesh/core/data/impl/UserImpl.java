@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -417,7 +418,16 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		}
 
 		if (!isEmpty(requestModel.getPassword())) {
-			setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
+			if (getPasswordHash() != null && isEmpty(requestModel.getOldPassword())) {
+				throw error(BAD_REQUEST, "user_error_missing_old_password");
+			}
+			BCryptPasswordEncoder encoder = MeshInternal.get().passwordEncoder();
+			// Check whether the old password matched up with the current one. Also allow update if no password has yet been set.
+			if (getPasswordHash() == null || encoder.matches(requestModel.getOldPassword(), getPasswordHash())) {
+				setPasswordHash(encoder.encode(requestModel.getPassword()));
+			} else {
+				throw error(BAD_REQUEST, "user_error_password_check_failed");
+			}
 		}
 
 		setEditor(ac.getUser());

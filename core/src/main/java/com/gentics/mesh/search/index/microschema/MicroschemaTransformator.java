@@ -7,6 +7,9 @@ import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.search.index.AbstractTransformator;
 
@@ -15,14 +18,19 @@ import io.vertx.core.json.JsonObject;
 /**
  * Transformator for microschema search index documents.
  */
+@Singleton
 public class MicroschemaTransformator extends AbstractTransformator<MicroschemaContainer> {
+
+	@Inject
+	public MicroschemaTransformator() {
+	}
 
 	@Override
 	public JsonObject toDocument(MicroschemaContainer microschema) {
 		JsonObject info = new JsonObject();
 		addBasicReferences(info, microschema);
 		info.put(NAME_KEY, microschema.getName());
-		//map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
+		// map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
 		return info;
 	}
 

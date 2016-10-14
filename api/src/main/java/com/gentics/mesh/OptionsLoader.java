@@ -76,6 +76,11 @@ public final class OptionsLoader {
 		return options;
 	}
 
+	/**
+	 * Return the preconfigured object mapper which is used to transform YAML documents.
+	 * 
+	 * @return
+	 */
 	private static ObjectMapper getYAMLMapper() {
 		YAMLFactory factory = new YAMLFactory();
 		ObjectMapper mapper = new ObjectMapper(factory);

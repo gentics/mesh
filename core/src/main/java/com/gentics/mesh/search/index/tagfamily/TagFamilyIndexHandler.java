@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -20,6 +21,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 
+@Singleton
 public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	/**
@@ -27,7 +29,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
-	private TagFamilyTransformator transformator = new TagFamilyTransformator();
+	@Inject
+	TagFamilyTransformator transformator;
 
 	@Inject
 	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {

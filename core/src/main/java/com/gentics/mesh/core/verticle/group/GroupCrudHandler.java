@@ -60,12 +60,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			MeshAuthUser requestUser = ac.getUser();
-			//			try {
+			// try {
 			PageImpl<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
 			return rolePage.transformToRest(ac, 0);
-			//			} catch (Exception e) {
-			//				return Single.error(e);
-			//			}
+			// } catch (Exception e) {
+			// return Single.error(e);
+			// }
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -142,12 +142,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
-			// try {
 			PageImpl<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
 			return userPage.transformToRest(ac, 0);
-			// } catch (Exception e) {
-			// return Single.error(e);
-			// }
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 

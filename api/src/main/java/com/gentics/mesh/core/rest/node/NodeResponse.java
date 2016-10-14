@@ -178,33 +178,6 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		this.project = project;
 	}
 
-	// /**
-	// * Return the field with the given key.
-	// *
-	// * @param key
-	// * Key of the field to be returned
-	// * @param classOfT
-	// * Class of the field
-	// * @return Field or null of no field could be found for the given key
-	// */
-	// public <T extends Field> T getField(String key, Class<T> classOfT) {
-	// return getFields().get(key, 22);
-	// }
-
-	// /**
-	// * Return the field with the given key.
-	// *
-	// * @param key
-	// * Name of the field
-	// * @return Found field or null when no field could be found
-	// * @param <T>
-	// * Class of the field
-	// */
-	// @SuppressWarnings("unchecked")
-	// public <T extends Field> T getField(String key) {
-	// return (T) getFields().get(key);
-	// }
-
 	/**
 	 * Return a map with fields of the node.
 	 * 

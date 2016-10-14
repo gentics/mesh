@@ -16,7 +16,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.tuple.Triple;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.Mesh;

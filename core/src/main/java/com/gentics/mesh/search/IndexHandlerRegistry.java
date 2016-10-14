@@ -1,14 +1,10 @@
 package com.gentics.mesh.search;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
@@ -22,14 +18,10 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 
 /**
- * Central location to register search index handlers.
+ * Central location for all search index handlers.
  */
 @Singleton
 public class IndexHandlerRegistry {
-
-	private Map<String, IndexHandler> handlers = Collections.synchronizedMap(new HashMap<>());
-
-	private static IndexHandlerRegistry instance;
 
 	@Inject
 	NodeIndexHandler nodeIndexHandler;
@@ -60,47 +52,7 @@ public class IndexHandlerRegistry {
 
 	@Inject
 	public IndexHandlerRegistry() {
-		instance = this;
 
-	}
-
-	public void init() {
-		registerHandler(nodeIndexHandler);
-		registerHandler(userIndexHandler);
-		registerHandler(groupIndexHandler);
-		registerHandler(roleIndexHandler);
-		registerHandler(projectIndexHandler);
-		registerHandler(tagFamilyIndexHandler);
-		registerHandler(tagIndexHandler);
-		registerHandler(schemaContainerIndexHandler);
-		registerHandler(microschemaContainerIndexHandler);
-	}
-
-	/**
-	 * Get the instance
-	 * 
-	 * @return instance
-	 */
-	public static IndexHandlerRegistry getInstance() {
-		return instance;
-	}
-
-	/**
-	 * Register the given handler.
-	 * 
-	 * @param handler
-	 */
-	public void registerHandler(IndexHandler handler) {
-		handlers.put(handler.getKey(), handler);
-	}
-
-	/**
-	 * Unregister the given handler.
-	 * 
-	 * @param handler
-	 */
-	public void unregisterHandler(IndexHandler handler) {
-		handlers.remove(handler.getKey());
 	}
 
 	/**
@@ -108,21 +60,28 @@ public class IndexHandlerRegistry {
 	 * 
 	 * @return
 	 */
-	public Collection<IndexHandler> getHandlers() {
-		return handlers.values();
+	public Set<IndexHandler> getHandlers() {
+		Set<IndexHandler> allIndexHandlers = new HashSet<>();
+		allIndexHandlers.add(nodeIndexHandler);
+		allIndexHandlers.add(userIndexHandler);
+		allIndexHandlers.add(groupIndexHandler);
+		allIndexHandlers.add(roleIndexHandler);
+		allIndexHandlers.add(projectIndexHandler);
+		allIndexHandlers.add(tagFamilyIndexHandler);
+		allIndexHandlers.add(tagIndexHandler);
+		allIndexHandlers.add(schemaContainerIndexHandler);
+		allIndexHandlers.add(microschemaContainerIndexHandler);
+		return allIndexHandlers;
 	}
 
 	/**
-	 * Get the index handler with given key
+	 * Return the handler for the given type.
 	 * 
-	 * @param key
-	 *            index handler key
-	 * @return index handler or null if not registered
+	 * @param type
+	 * @return
 	 */
-	public IndexHandler get(String key) {
-		if (!handlers.containsKey(key)) {
-			throw new NotImplementedException("Index type {" + key + "} was not registered.");
-		}
-		return handlers.get(key);
+	public IndexHandler getHandlerWithKey(String type) {
+		return getHandlers().stream().filter(handler -> handler.getKey().equals(type)).findFirst().orElseGet(null);
 	}
+
 }

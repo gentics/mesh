@@ -28,7 +28,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	protected FieldSchemaComparator fieldComparator = new FieldSchemaComparator();
 
 	/**
-	 * Compare the two field containers. The implementor should invoke {@link #diff(FieldSchemaContainer, FieldSchemaContainer, Class)} and specifiy the actual
+	 * Compare the two field containers. The implementor should invoke {@link #diff(FieldSchemaContainer, FieldSchemaContainer, Class)} and specify the actual
 	 * field container class.
 	 * 
 	 * @param containerA
@@ -37,6 +37,15 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 */
 	public abstract List<SchemaChangeModel> diff(FC containerA, FC containerB);
 
+	/**
+	 * Create a diff of both provides field containers.
+	 * 
+	 * @param containerA
+	 * @param containerB
+	 * @param classOfFC
+	 *            Implementation class of the field containers
+	 * @return
+	 */
 	protected List<SchemaChangeModel> diff(FC containerA, FC containerB, Class<? extends FC> classOfFC) {
 		Objects.requireNonNull(containerA, "containerA must not be null");
 		Objects.requireNonNull(containerB, "containerB must not be null");
@@ -100,15 +109,15 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 			}
 		}
 
-		// order of fields
+		// Compare the order of fields
 		if (containerB.getFields().size() > 0) {
 			compareAndAddOrderChange(changes, containerA, containerB, classOfFC);
 		}
 
-		//name
+		// Compare the name
 		compareAndAddSchemaProperty(changes, SchemaChangeModel.NAME_KEY, containerA.getName(), containerB.getName(), classOfFC);
 
-		// description
+		// Compare the description
 		compareAndAddSchemaProperty(changes, SchemaChangeModel.DESCRIPTION_KEY, containerA.getDescription(), containerB.getDescription(), classOfFC);
 
 		return changes;
@@ -198,7 +207,6 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 		} else {
 			throw error(INTERNAL_SERVER_ERROR, "Unknown field container type {" + classOfFC.getName() + "}");
 		}
-
 	}
 
 }

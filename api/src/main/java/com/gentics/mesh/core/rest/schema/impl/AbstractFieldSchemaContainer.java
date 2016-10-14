@@ -17,10 +17,14 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
+/**
+ * Abstract class for field container REST Model POJO's (e.g: {@link SchemaModel}, {@link MicroschemaModel}
+ */
 public abstract class AbstractFieldSchemaContainer implements FieldSchemaContainer {
 
 	private String uuid;

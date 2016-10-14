@@ -16,8 +16,17 @@ import com.gentics.mesh.core.rest.user.UserReference;
 
 public class VersioningExamples extends AbstractExamples {
 
+	/**
+	 * Create a publish status model with the given information.
+	 * 
+	 * @param published
+	 * @param publisher
+	 * @param publishDate
+	 * @param version
+	 * @return
+	 */
 	public PublishStatusModel createPublishStatusModel(boolean published, UserReference publisher, String publishDate, VersionReference version) {
-		return new PublishStatusModel().setPublished(published).setPublisher(publisher).setPublishTime(publishDate).setVersion(version);
+		return new PublishStatusModel().setPublished(published).setPublisher(publisher).setPublishDate(publishDate).setVersion(version);
 	}
 
 	public VersionReference getVersionReference(String number) {
@@ -51,7 +60,7 @@ public class VersioningExamples extends AbstractExamples {
 	public ReleaseUpdateRequest createReleaseUpdateRequest(String name) {
 		ReleaseUpdateRequest update = new ReleaseUpdateRequest();
 		update.setName(name);
-//		update.setActive(false);
+		// update.setActive(false);
 		return update;
 	}
 
@@ -59,11 +68,18 @@ public class VersioningExamples extends AbstractExamples {
 		return createPublishStatusModel(true, getUserReference(), getTimestamp(), getVersionReference("3.0"));
 	}
 
+	/**
+	 * Create a dummy release response with the given release name.
+	 * 
+	 * @param name
+	 *            Name of the release
+	 * @return Constructed response
+	 */
 	public ReleaseResponse createReleaseResponse(String name) {
 		ReleaseResponse response = new ReleaseResponse();
 		response.setName(name);
 		response.setUuid(randomUUID());
-//		response.setActive(true);
+		// response.setActive(true);
 		response.setCreated(getTimestamp());
 		response.setCreator(getUserReference());
 		response.setEdited(getTimestamp());

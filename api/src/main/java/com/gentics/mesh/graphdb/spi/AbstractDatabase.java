@@ -12,6 +12,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Abstract class for graph database implementations.
+ */
 public abstract class AbstractDatabase implements Database {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
@@ -68,7 +71,6 @@ public abstract class AbstractDatabase implements Database {
 			T result = txHandler.call();
 			return result;
 		} catch (Exception e) {
-			log.error("Error while handling no-transaction.", e);
 			throw new RuntimeException(e);
 		}
 	}

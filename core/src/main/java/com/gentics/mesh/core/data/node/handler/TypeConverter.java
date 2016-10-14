@@ -22,7 +22,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.api.scripting.ScriptUtils;
 
 /**
- * Type converter for the script engine used by the node migration handler
+ * Type converter for the script engine used by the node migration handler.
  */
 @SuppressWarnings("restriction")
 public class TypeConverter {
@@ -32,7 +32,7 @@ public class TypeConverter {
 	private NumberFormat format = NumberFormat.getInstance();
 
 	/**
-	 * Convert the given value into a binary value
+	 * Convert the given value into a binary value.
 	 *
 	 * @param value
 	 * @return
@@ -42,7 +42,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value to a string
+	 * Convert the given value to a string.
 	 *
 	 * @param value
 	 * @return
@@ -84,7 +84,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value to a boolean
+	 * Convert the given value to a boolean.
 	 *
 	 * @param value
 	 * @return
@@ -106,7 +106,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value to a boolean array
+	 * Convert the given value to a boolean array.
 	 *
 	 * @param value
 	 * @return
@@ -130,7 +130,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value to a date
+	 * Convert the given value to a date.
 	 *
 	 * @param value
 	 * @return
@@ -167,7 +167,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value to a date array
+	 * Convert the given value to a date array.
 	 *
 	 * @param value
 	 * @return
@@ -191,7 +191,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value to a number
+	 * Convert the given value to a number.
 	 *
 	 * @param value
 	 * @return
@@ -229,10 +229,10 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value to a number array
+	 * Convert the given value to a number array.
 	 *
 	 * @param value
-	 * @return
+	 * @return Array of numbers
 	 */
 	public Number[] toNumberList(Object value) {
 		if (value == null || isJSObject(value)) {
@@ -253,7 +253,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value into a micronode
+	 * Convert the given value into a micronode.
 	 *
 	 * @param value
 	 * @return
@@ -269,7 +269,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value into a list of micronodes
+	 * Convert the given value into a list of micronodes.
 	 *
 	 * @param value
 	 * @return
@@ -286,7 +286,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value into a node
+	 * Convert the given value into a node.
 	 *
 	 * @param value
 	 * @return
@@ -302,7 +302,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Convert the given value into a list of nodes
+	 * Convert the given value into a list of nodes.
 	 *
 	 * @param value
 	 * @return
@@ -319,7 +319,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Check whether the object represents a javascript array
+	 * Check whether the object represents a javascript array.
 	 *
 	 * @param value
 	 * @return
@@ -333,7 +333,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Check whether the object represents a javascript object
+	 * Check whether the object represents a javascript object.
 	 *
 	 * @param value
 	 * @return
@@ -347,7 +347,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Get array values as list
+	 * Get array values as list.
 	 *
 	 * @param value
 	 * @return
@@ -362,7 +362,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Check whether the given object is a binary
+	 * Check whether the given object is a binary.
 	 *
 	 * @param value
 	 * @return
@@ -377,7 +377,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Check whether the given object is a node
+	 * Check whether the given object is a node.
 	 *
 	 * @param value
 	 * @return
@@ -392,7 +392,7 @@ public class TypeConverter {
 	}
 
 	/**
-	 * Check whether the given object is a micronode
+	 * Check whether the given object is a micronode.
 	 *
 	 * @param value
 	 * @return
