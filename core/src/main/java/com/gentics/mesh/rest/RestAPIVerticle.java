@@ -29,6 +29,7 @@ import com.gentics.mesh.core.verticle.user.UserEndpoint;
 import com.gentics.mesh.core.verticle.utility.UtilityEndpoint;
 import com.gentics.mesh.core.verticle.webroot.WebRootEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.search.ProjectSearchEndpoint;
 import com.gentics.mesh.search.SearchEndpoint;
 
@@ -81,7 +82,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	@Inject
 	public ProjectInfoEndpoint projectInfoEndpoint;
-	
+
 	@Inject
 	public ProjectMicroschemaEndpoint projectMicroschemaEndpoint;
 
@@ -108,6 +109,9 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	@Inject
 	public SearchEndpoint searchEndpoint;
+
+	@Inject
+	public GraphQLEndpoint graphqlEndpoint;
 
 	@Inject
 	public AdminEndpoint adminEndpoint;
@@ -191,6 +195,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(projectSchemaEndpoint);
 		endpoints.add(projectMicroschemaEndpoint);
 		endpoints.add(releaseEndpoint);
+		endpoints.add(graphqlEndpoint);
 
 		// Global verticles
 		endpoints.add(webrootEndpoint);

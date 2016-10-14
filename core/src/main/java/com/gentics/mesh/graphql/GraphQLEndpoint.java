@@ -6,25 +6,26 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
 import io.vertx.ext.web.handler.StaticHandler;
 
 @Singleton
-public class GraphQLVerticle extends AbstractWebVerticle {
+public class GraphQLEndpoint extends AbstractProjectEndpoint {
 
 	private GraphQLHandler queryHandler;
 
-	public GraphQLVerticle() {
-		super("graphql", null);
+	public GraphQLEndpoint() {
+		super("graphql", null, null);
 	}
 
 	@Inject
-	public GraphQLVerticle(RouterStorage routerStorage, GraphQLHandler queryHandler) {
-		super("graphql", routerStorage);
+	public GraphQLEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, GraphQLHandler queryHandler) {
+		super("graphql", boot, routerStorage);
 		this.queryHandler = queryHandler;
 	}
 
