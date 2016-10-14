@@ -126,7 +126,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	/**
 	 * Authenticates the user and returns a JWToken if successful.
-	 * 
+	 *
 	 * @param username
 	 * @param password
 	 * @param resultHandler
@@ -146,11 +146,10 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	/**
 	 * Load the user with the given username and use the bcrypt encoder to compare the user password with the provided password.
-	 * 
+	 *
 	 * @param username
 	 * @param password
-	 * @param resultHandler
-	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
+	 * @param resultHandler Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
 	private void authenticate(String username, String password, Handler<AsyncResult<User>> resultHandler) {
 		try (NoTx noTx = db.noTx()) {
@@ -188,7 +187,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	/**
 	 * Generates a new JWToken with the user.
-	 * 
+	 *
 	 * @param user
 	 * @return The new token
 	 */
@@ -225,7 +224,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	/**
 	 * Handle the login action and set a token cookie if the credentials are valid.
-	 * 
+	 *
 	 * @param ac
 	 * @param username
 	 * @param password
@@ -235,7 +234,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			if (rh.failed()) {
 				throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
 			} else {
-				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result()).setPath("/"));
+				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result())
+						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()));
 				ac.send(JsonUtil.toJson(new TokenResponse(rh.result())));
 			}
 		});
