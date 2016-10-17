@@ -39,8 +39,8 @@ public class NavRootHandler {
 		MeshAuthUser requestUser = ac.getUser();
 
 		operateNoTx(() -> {
-			Single<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
-			PathSegment lastSegment = nodePath.toBlocking().value().getLast();
+			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
+			PathSegment lastSegment = nodePath.getLast();
 
 			if (lastSegment != null) {
 				Node node = lastSegment.getNode();

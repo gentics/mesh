@@ -1636,9 +1636,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Single<Path> resolvePath(String releaseUuid, ContainerType type, Path path, Stack<String> pathStack) {
+	public Path resolvePath(String releaseUuid, ContainerType type, Path path, Stack<String> pathStack) {
 		if (pathStack.isEmpty()) {
-			return Single.just(path);
+			return path;
 		}
 		String segment = pathStack.pop();
 

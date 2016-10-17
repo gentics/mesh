@@ -65,8 +65,8 @@ public class WebRootHandler {
 		operateNoTx(() -> {
 
 			// Load all nodes for the given path
-			Single<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
-			PathSegment lastSegment = nodePath.toBlocking().value().getLast();
+			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
+			PathSegment lastSegment = nodePath.getLast();
 
 			// Check whether the path actually points to a valid node
 			if (lastSegment != null) {

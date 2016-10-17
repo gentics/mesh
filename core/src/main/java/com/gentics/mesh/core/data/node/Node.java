@@ -433,7 +433,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param pathStack
 	 * @return
 	 */
-	Single<Path> resolvePath(String releaseUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
+	Path resolvePath(String releaseUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
 
 	/**
 	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
