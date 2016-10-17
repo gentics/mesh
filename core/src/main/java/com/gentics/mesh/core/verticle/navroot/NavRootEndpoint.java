@@ -14,6 +14,9 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.rest.Endpoint;
 
+/**
+ * Endpoint which returns navigation responses for a given webroot path.
+ */
 @Singleton
 public class NavRootEndpoint extends AbstractProjectEndpoint {
 

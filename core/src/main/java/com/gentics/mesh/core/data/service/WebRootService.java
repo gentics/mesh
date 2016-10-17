@@ -15,8 +15,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
-import rx.Single;
-
 @Singleton
 public class WebRootService {
 
@@ -31,7 +29,7 @@ public class WebRootService {
 	 * @param path
 	 * @return
 	 */
-	public Single<Path> findByProjectPath(InternalActionContext ac, String path) {
+	public Path findByProjectPath(InternalActionContext ac, String path) {
 		Project project = ac.getProject();
 		Node baseNode = project.getBaseNode();
 		Path nodePath = new Path();
@@ -40,7 +38,7 @@ public class WebRootService {
 		// Handle path to project root (baseNode)
 		if ("/".equals(path) || path.isEmpty()) {
 			nodePath.addSegment(new PathSegment(baseNode, null, null));
-			return Single.just(nodePath);
+			return nodePath;
 		}
 
 		// Prepare the stack which we use for resolving
@@ -52,9 +50,8 @@ public class WebRootService {
 		stack.addAll(list);
 
 		// Traverse the graph and buildup the result path while doing so
-		Single<Path> obsNode = baseNode.resolvePath(ac.getRelease(null).getUuid(),
+		return baseNode.resolvePath(ac.getRelease(null).getUuid(),
 				ContainerType.forVersion(ac.getVersioningParameters().getVersion()), nodePath, stack);
-		return obsNode;
 	}
 
 }
