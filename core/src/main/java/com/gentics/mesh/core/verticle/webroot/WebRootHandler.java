@@ -69,63 +69,60 @@ public class WebRootHandler {
 			PathSegment lastSegment = nodePath.getLast();
 
 			// Check whether the path actually points to a valid node
-			if (lastSegment != null) {
-				Node node = lastSegment.getNode();
-				if (node == null) {
-					throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
-				}
-				if (requestUser.hasPermission(node, READ_PERM)) {
-					GraphField field = lastSegment.getPathField();
-					if (field instanceof BinaryGraphField) {
-						BinaryGraphField binaryField = (BinaryGraphField) field;
-						String sha512sum = binaryField.getSHA512Sum();
-
-						// Check the etag
-						String etagKey = sha512sum;
-						if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
-							etagKey += ac.getImageParameters().getQueryParameters();
-						}
-						String etag = ETag.hash(etagKey);
-						ac.setEtag(etag, false);
-						if (ac.matches(etag, false)) {
-							return Single.error(new NotModifiedException());
-						} else {
-							try (NoTx tx = db.noTx()) {
-								// TODO move binary handler outside of event loop scope to avoid bogus object creation
-								BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
-								handler.handle(binaryField);
-								return null;
-							}
-						}
-					} else {
-						String etag = node.getETag(ac);
-						ac.setEtag(etag, true);
-						if (ac.matches(etag, true)) {
-							return Single.error(new NotModifiedException());
-						} else {
-							// Use the language for which the node was resolved
-							List<String> languageTags = new ArrayList<>();
-							languageTags.add(lastSegment.getLanguageTag());
-							languageTags.addAll(ac.getNodeParameters().getLanguageList());
-							return node.transformToRest(ac, 0, languageTags.toArray(new String[0]));
-						}
-					}
-
-				} else {
-					throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
-				}
-				// requestUser.isAuthorised(node, READ_PERM, rh -> {
-				// languageTags.add(lastSegment.getLanguageTag());
-				// if (rh.result()) {
-				// bch.complete(node);
-				// } else {
-				// bch.fail(error(FORBIDDEN, "error_missing_perm", node.getUuid());
-				// }
-				// });
-
-			} else {
+			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
+			Node node = lastSegment.getNode();
+			if (node == null) {
+				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
+			}
+			if (!requestUser.hasPermission(node, READ_PERM)) {
+				throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
+			}
+			GraphField field = lastSegment.getPathField();
+			if (field instanceof BinaryGraphField) {
+				BinaryGraphField binaryField = (BinaryGraphField) field;
+				String sha512sum = binaryField.getSHA512Sum();
+
+				// Check the etag
+				String etagKey = sha512sum;
+				if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
+					etagKey += ac.getImageParameters().getQueryParameters();
+				}
+				String etag = ETag.hash(etagKey);
+				ac.setEtag(etag, false);
+				if (ac.matches(etag, false)) {
+					return Single.error(new NotModifiedException());
+				} else {
+					try (NoTx tx = db.noTx()) {
+						// TODO move binary handler outside of event loop scope to avoid bogus object creation
+						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
+						handler.handle(binaryField);
+						return null;
+					}
+				}
+			} else {
+				String etag = node.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					return Single.error(new NotModifiedException());
+				} else {
+					// Use the language for which the node was resolved
+					List<String> languageTags = new ArrayList<>();
+					languageTags.add(lastSegment.getLanguageTag());
+					languageTags.addAll(ac.getNodeParameters().getLanguageList());
+					return node.transformToRest(ac, 0, languageTags.toArray(new String[0]));
+				}
+			}
+
+			// requestUser.isAuthorised(node, READ_PERM, rh -> {
+			// languageTags.add(lastSegment.getLanguageTag());
+			// if (rh.result()) {
+			// bch.complete(node);
+			// } else {
+			// bch.fail(error(FORBIDDEN, "error_missing_perm", node.getUuid());
+			// }
+			// });
 
 		}).subscribe(model -> {
 			if (model != null) {

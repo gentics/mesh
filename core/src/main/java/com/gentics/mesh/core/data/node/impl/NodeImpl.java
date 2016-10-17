@@ -137,21 +137,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return Node.TYPE;
 	}
 
-	@Override
-	public Single<String> getPathSegment(InternalActionContext ac) {
-		NodeParameters parameters = ac.getNodeParameters();
-		VersioningParameters versioningParameters = ac.getVersioningParameters();
-		NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
-				versioningParameters.getVersion());
-		if (container != null) {
-			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
-			StringGraphField field = container.getString(fieldName);
-			if (field != null) {
-				return Single.just(field.getString());
-			}
-		}
-		return Single.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid()));
-	}
+//	@Override
+//	public String getPathSegment(InternalActionContext ac) {
+//		NodeParameters parameters = ac.getNodeParameters();
+//		VersioningParameters versioningParameters = ac.getVersioningParameters();
+//		NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
+//				versioningParameters.getVersion());
+//		if (container != null) {
+//			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
+//			StringGraphField field = container.getString(fieldName);
+//			if (field != null) {
+//				return field.getString();
+//			}
+//		}
+//		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
+//	}
 
 	@Override
 	public String getPathSegment(String releaseUuid, ContainerType type, String... languageTag) {
