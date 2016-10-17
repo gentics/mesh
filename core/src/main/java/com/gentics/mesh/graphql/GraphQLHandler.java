@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -38,10 +39,10 @@ public class GraphQLHandler {
 		try (NoTx noTx = db.noTx()) {
 			JsonObject queryJson = new JsonObject(body);
 			String query = queryJson.getString("query");
-			Map<String, Object> result = (Map<String, Object>) new GraphQL(GarfieldSchema.GarfieldSchema).execute(query, GarfieldSchema.john).getData();
-//			Map<String, Object> result = (Map<String, Object>) new GraphQL(typeProvider.getRootSchema()).execute(query, ac).getData();
+			// Map<String, Object> result = (Map<String, Object>) new GraphQL(GarfieldSchema.GarfieldSchema).execute(query, GarfieldSchema.john).getData();
+			Map<String, Object> result = (Map<String, Object>) new GraphQL(typeProvider.getRootSchema()).execute(query, ac).getData();
 			if (result == null) {
-				ac.send("Query could not be executed", BAD_REQUEST);
+				ac.fail(error(BAD_REQUEST, "Query could not be executed"));
 			} else {
 				JsonObject response = new JsonObject();
 				response.put("data", new JsonObject(JsonUtil.toJson(result)));

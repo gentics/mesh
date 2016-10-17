@@ -74,6 +74,7 @@ import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshBinaryResponseHandler;
+import com.gentics.mesh.rest.client.handler.impl.MeshJsonObjectResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshWebrootResponseHandler;
 
 import io.vertx.core.Handler;
@@ -83,6 +84,7 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.WebSocket;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Http based rest client implementation.
@@ -975,6 +977,35 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	@Override
 	public MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
 			MicroschemaReference... microschemaVersionReferences) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+
 		return assignReleaseMicroschemaVersions(projectName, releaseUuid, new MicroschemaReferenceList(Arrays.asList(microschemaVersionReferences)));
+	}
+
+	@Override
+	public MeshRequest<JsonObject> graphql(String projectName, String query, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(query, "query must not be null");
+
+		String path = "/" + encodeFragment(projectName) + "/graphql" + getQuery(parameters);
+		String uri = BASEURI + path;
+		Buffer buffer = Buffer.buffer();
+		String json = new JsonObject().put("query", query).toString();
+		if (log.isDebugEnabled()) {
+			log.debug(json);
+		}
+		buffer.appendString(json);
+//		return MeshRestRequestUtil.prepareRequest(POST, path, JsonObject.class, buffer,
+//				"application/json", client, authentication);
+		
+		
+		MeshJsonObjectResponseHandler handler = new MeshJsonObjectResponseHandler(POST, uri);
+		HttpClientRequest request = client.request(POST, uri, handler);
+		authentication.addAuthenticationInformation(request).subscribe(() -> {
+			request.headers().add("Accept", "application/json");
+		});
+		return new MeshHttpRequestImpl<>(request, handler, buffer, "application/json", authentication);
+		
 	}
 }

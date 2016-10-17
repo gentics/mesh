@@ -33,6 +33,9 @@ public class MeshRestClientHttpException extends Exception {
 
 	@Override
 	public String getMessage() {
+		if (responseMessage == null) {
+			return super.getMessage();
+		}
 		return responseMessage.getMessage();
 	}
 

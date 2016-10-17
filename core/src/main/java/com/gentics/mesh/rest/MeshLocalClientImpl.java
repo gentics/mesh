@@ -94,6 +94,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.WebSocket;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import rx.Single;
 
@@ -1132,6 +1133,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<TagFamilyListResponse> searchTagFamilies(String projectName, String json, ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<JsonObject> graphql(String projectName, String query, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
