@@ -16,12 +16,9 @@ import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
-import rx.Single;
-
 public class NavRootHandler {
 
 	private WebRootService webrootService;
-
 
 	@Inject
 	public NavRootHandler(WebRootService webRootService) {
@@ -42,19 +39,17 @@ public class NavRootHandler {
 			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
 			PathSegment lastSegment = nodePath.getLast();
 
-			if (lastSegment != null) {
-				Node node = lastSegment.getNode();
-				if (node == null) {
-					throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
-				}
-				if (requestUser.hasPermission(node, READ_PERM)) {
-					return node.transformToNavigation(ac);
-				} else {
-					throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
-				}
-			} else {
+			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
+			Node node = lastSegment.getNode();
+			if (node == null) {
+				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
+			}
+			if (!requestUser.hasPermission(node, READ_PERM)) {
+				throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
+			}
+			return node.transformToNavigation(ac);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
