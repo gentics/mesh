@@ -1,22 +1,29 @@
 package com.gentics.mesh.graphql.type;
 
+import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLInterfaceType.newInterface;
 import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.GraphQLUnionType.newUnionType;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.graphql.DateTestField;
-import com.gentics.mesh.graphql.StringTestField;
 
-import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLUnionType;
 
 @Singleton
 public class NodeFieldTypeProvider {
@@ -31,30 +38,45 @@ public class NodeFieldTypeProvider {
 		this.dateFieldProvider = dateFieldProvider;
 	}
 
-	public GraphQLInterfaceType getFieldsType() {
-		GraphQLInterfaceType fieldType = newInterface().name("Fields").description("Fields of the node.")
-				//.field(newFieldDefinition().name("name").description("The name of the field.").type(GraphQLString).build())
+	public static Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
+
+	public GraphQLUnionType getFieldsType(Project project) {
+		GraphQLObjectType[] types = generateFieldType(project);
+		GraphQLUnionType fieldType = newUnionType().name("Fields").possibleTypes(types).description("Fields of the node.")
 				.typeResolver(object -> {
-					//TODO determine which node type it is and return the corresponding generated field type.
-					// Inspect the node's schema.
-//					if (object instanceof StringTestField) {
-//						return stringFieldProvider.getStringFieldType();
-//					}
-//					if (object instanceof DateTestField) {
-//						return dateFieldProvider.getDateFieldType();
-//					}
+					if (object instanceof NodeGraphFieldContainer) {
+						NodeGraphFieldContainer fieldContainer = (NodeGraphFieldContainer) object;
+						return schemaTypes.get(fieldContainer.getSchemaContainerVersion().getName());
+					}
 					return null;
 				}).build();
 		return fieldType;
 	}
 
-	public GraphQLObjectType generateFieldType(SchemaContainerVersion version) {
-		Schema schema  = version.getSchema();
-		Builder root = newObject();
-		for(FieldSchema fieldSchema : schema.getFields()) {
-			root.field(newFieldDefinition().name(fieldSchema.getName()).description(fieldSchema.getLabel()).type(GraphQLString).build());
+	public GraphQLObjectType[] generateFieldType(Project project) {
+
+//		public static GraphQLObjectType NodeType = newObject().name("Node").field(newFieldDefinition().name("name").type(GraphQLString).build())
+//				.field(newFieldDefinition().name("meows").type(GraphQLBoolean).build()).withInterface(FieldType).build();
+		
+		List<GraphQLObjectType> list = new ArrayList<>();
+		for (SchemaContainer container : project.getSchemaContainerRoot().findAll()) {
+			SchemaContainerVersion version = container.getLatestVersion();
+			Schema schema = version.getSchema();
+			Builder root = newObject();
+			root.name(version.getName());
+			root.field(newFieldDefinition().name("title").type(GraphQLString).staticValue("blar").build());
+//			for (FieldSchema fieldSchema : schema.getFields()) {
+//				root.field(newFieldDefinition().name(fieldSchema.getName()).description(fieldSchema.getLabel()).type(GraphQLString).dataFetcher(fetcher -> {
+//					System.out.println("adgasdgasdg");
+//					return null;
+//				}).build());
+//			}
+			GraphQLObjectType type = root.build();
+			list.add(type);
+			schemaTypes.put(schema.getName(), type);
 		}
-		return root.build();
+
+		return list.toArray(new GraphQLObjectType[list.size()]);
 	}
 
 }

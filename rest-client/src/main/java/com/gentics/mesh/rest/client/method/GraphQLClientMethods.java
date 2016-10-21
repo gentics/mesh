@@ -7,5 +7,13 @@ import io.vertx.core.json.JsonObject;
 
 public interface GraphQLClientMethods {
 
+	/**
+	 * Execute the Graph QL query.
+	 * 
+	 * @param projectName
+	 * @param query
+	 * @param parameters
+	 * @return
+	 */
 	MeshRequest<JsonObject> graphql(String projectName, String query, ParameterProvider... parameters);
 }

@@ -7,6 +7,8 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.Project;
+
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
@@ -20,12 +22,12 @@ public class ProjectTypeProvider {
 		this.nodeTypeProvider = nodeTypeProvider;
 	}
 
-	public GraphQLObjectType getProjectType() {
+	public GraphQLObjectType getProjectType(Project project) {
 		Builder root = newObject();
 		root.name("Project");
 		root.field(newFieldDefinition().name("name").description("The name of the project").type(GraphQLString).build());
 		root.field(newFieldDefinition().name("uuid").description("The uuid of the project").type(GraphQLString).build());
-		root.field(newFieldDefinition().name("baseNode").description("The base node of the project").type(nodeTypeProvider.getNodeType()).build());
+		root.field(newFieldDefinition().name("baseNode").description("The base node of the project").type(nodeTypeProvider.getNodeType(project)).build());
 		return root.build();
 	}
 

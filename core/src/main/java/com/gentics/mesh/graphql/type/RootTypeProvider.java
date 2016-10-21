@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.dagger.MeshInternal;
 
 import graphql.schema.GraphQLObjectType;
@@ -47,7 +48,7 @@ public class RootTypeProvider {
 	public RootTypeProvider() {
 	}
 
-	public GraphQLObjectType getRootType() {
+	public GraphQLObjectType getRootType(Project project) {
 		Builder root = newObject();
 		root.name("Mesh root");
 
@@ -67,28 +68,28 @@ public class RootTypeProvider {
 				.argument(newArgument().name("uuid").type(GraphQLString).description("Project uuid").build()).dataFetcher(fetcher -> {
 					String uuid = fetcher.getArgument("uuid");
 					return MeshInternal.get().boot().projectRoot().findByUuid(uuid);
-				}).type(projectTypeProvider.getProjectType()).build());
+				}).type(projectTypeProvider.getProjectType(project)).build());
 
 		// .nodes
-		root.field(newFieldDefinition().name("nodes").description("Load a node").argument(newArgument().name("uuid").type(GraphQLString).description("Node uuid").build())
-				.dataFetcher(fetcher -> {
+		root.field(newFieldDefinition().name("nodes").description("Load a node")
+				.argument(newArgument().name("uuid").type(GraphQLString).description("Node uuid").build()).dataFetcher(fetcher -> {
 					String uuid = fetcher.getArgument("uuid");
 					return MeshInternal.get().boot().nodeRoot().findByUuid(uuid);
-				}).type(nodeTypeProvider.getNodeType()).build());
+				}).type(nodeTypeProvider.getNodeType(project)).build());
 
-//		// .tags
-//		root.field(newFieldDefinition().name("tags").description("Load a tag").argument(newArgument().name("uuid").description("Tag uuid").build())
-//				.dataFetcher(fetcher -> {
-//					String uuid = fetcher.getArgument("uuid");
-//					return MeshInternal.get().boot().tagRoot().findByUuid(uuid);
-//				}).type(tagTypeProvider.getTagType()).build());
-//
-//		// .tagFamilies
-//		root.field(newFieldDefinition().name("tagFamilies").description("Load a tag family")
-//				.argument(newArgument().name("uuid").description("TagFamily uuid").build()).dataFetcher(fetcher -> {
-//					String uuid = fetcher.getArgument("uuid");
-//					return MeshInternal.get().boot().tagFamilyRoot().findByUuid(uuid);
-//				}).type(tagFamilyTypeProvider.getTagFamilyType()).build());
+		// // .tags
+		// root.field(newFieldDefinition().name("tags").description("Load a tag").argument(newArgument().name("uuid").description("Tag uuid").build())
+		// .dataFetcher(fetcher -> {
+		// String uuid = fetcher.getArgument("uuid");
+		// return MeshInternal.get().boot().tagRoot().findByUuid(uuid);
+		// }).type(tagTypeProvider.getTagType()).build());
+		//
+		// // .tagFamilies
+		// root.field(newFieldDefinition().name("tagFamilies").description("Load a tag family")
+		// .argument(newArgument().name("uuid").description("TagFamily uuid").build()).dataFetcher(fetcher -> {
+		// String uuid = fetcher.getArgument("uuid");
+		// return MeshInternal.get().boot().tagFamilyRoot().findByUuid(uuid);
+		// }).type(tagFamilyTypeProvider.getTagFamilyType()).build());
 
 		// .releases
 
@@ -97,30 +98,30 @@ public class RootTypeProvider {
 		// .microschemas
 
 		// .roles
-//		root.field(newFieldDefinition().name("roles").description("Load a role").argument(newArgument().name("uuid").description("Role uuid").build())
-//				.dataFetcher(fetcher -> {
-//					String uuid = fetcher.getArgument("uuid");
-//					return MeshInternal.get().boot().roleRoot().findByUuid(uuid);
-//				}).type(roleTypeProvider.getRoleType()).build());
-//
-//		// .groups
-//		root.field(newFieldDefinition().name("groups").description("Load a group")
-//				.argument(newArgument().name("uuid").description("Group uuid").build()).dataFetcher(fetcher -> {
-//					String uuid = fetcher.getArgument("uuid");
-//					return MeshInternal.get().boot().roleRoot().findByUuid(uuid);
-//				}).type(groupTypeProvider.getGroupType()).build());
-//
-//		// .users
-//		root.field(newFieldDefinition().name("users").description("Load a user").argument(newArgument().name("uuid").description("User uuid").build())
-//				.dataFetcher(fetcher -> {
-//					String uuid = fetcher.getArgument("uuid");
-//					return MeshInternal.get().boot().userRoot().findByUuid(uuid);
-//				}).type(userFieldProvider.getUserType()).build());
+		// root.field(newFieldDefinition().name("roles").description("Load a role").argument(newArgument().name("uuid").description("Role uuid").build())
+		// .dataFetcher(fetcher -> {
+		// String uuid = fetcher.getArgument("uuid");
+		// return MeshInternal.get().boot().roleRoot().findByUuid(uuid);
+		// }).type(roleTypeProvider.getRoleType()).build());
+		//
+		// // .groups
+		// root.field(newFieldDefinition().name("groups").description("Load a group")
+		// .argument(newArgument().name("uuid").description("Group uuid").build()).dataFetcher(fetcher -> {
+		// String uuid = fetcher.getArgument("uuid");
+		// return MeshInternal.get().boot().roleRoot().findByUuid(uuid);
+		// }).type(groupTypeProvider.getGroupType()).build());
+		//
+		// // .users
+		// root.field(newFieldDefinition().name("users").description("Load a user").argument(newArgument().name("uuid").description("User uuid").build())
+		// .dataFetcher(fetcher -> {
+		// String uuid = fetcher.getArgument("uuid");
+		// return MeshInternal.get().boot().userRoot().findByUuid(uuid);
+		// }).type(userFieldProvider.getUserType()).build());
 
 		return root.build();
 	}
 
-	public GraphQLSchema getRootSchema() {
+	public GraphQLSchema getRootSchema(Project project) {
 
 		// Builder obj = newObject().name("helloWorldQuery");
 		// obj.field(newFieldDefinition().type(GraphQLString).name("hello").staticValue("world").build());
@@ -146,8 +147,8 @@ public class RootTypeProvider {
 		// return stringFieldType;
 		// }
 		// }).build();
-
-		return GraphQLSchema.newSchema().query(getRootType()).build();
+		graphql.schema.GraphQLSchema.Builder schema = GraphQLSchema.newSchema();
+		return schema.query(getRootType(project)).build();
 
 	}
 

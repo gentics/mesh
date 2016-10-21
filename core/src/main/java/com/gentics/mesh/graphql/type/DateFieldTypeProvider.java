@@ -20,10 +20,10 @@ public class DateFieldTypeProvider {
 		this.nodeFieldTypeProvider = nodeFieldTypeProvider;
 	}
 
-	public GraphQLObjectType getDateFieldType() {
-		GraphQLObjectType dateFieldType = newObject().name("date").withInterface(nodeFieldTypeProvider.get().getFieldsType())
-				.field(newFieldDefinition().name("name").type(GraphQLString).build())
-				.field(newFieldDefinition().name("value").type(GraphQLString).build()).build();
-		return dateFieldType;
-	}
+//	public GraphQLObjectType getDateFieldType() {
+//		GraphQLObjectType dateFieldType = newObject().name("date").withInterface(nodeFieldTypeProvider.get().getFieldsType())
+//				.field(newFieldDefinition().name("name").type(GraphQLString).build())
+//				.field(newFieldDefinition().name("value").type(GraphQLString).build()).build();
+//		return dateFieldType;
+//	}
 }
