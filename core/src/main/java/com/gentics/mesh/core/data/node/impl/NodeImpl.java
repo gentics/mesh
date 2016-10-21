@@ -395,8 +395,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 							.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level).map(restField -> {
 								if (fieldEntry.isRequired() && restField == null) {
 									// TODO i18n
-									throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
-											+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+//									throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
+//											+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+									restNode.getFields().put(fieldEntry.getName(), null);
+									return restNode;
 								}
 								if (restField == null) {
 									log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");

@@ -77,8 +77,10 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 				if (fieldEntry.isRequired() && restField == null) {
 					/* TODO i18n */
 					// TODO no trx fail. Instead let obsRestField fail
-					throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
-							+ "} is a required field but it could not be found in the micronode. Please add the field using an update call or change the field schema and remove the required flag.");
+//					throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
+//							+ "} is a required field but it could not be found in the micronode. Please add the field using an update call or change the field schema and remove the required flag.");
+					restMicronode.getFields().put(fieldEntry.getName(), null);
+					return restMicronode;
 				}
 				if (restField == null) {
 					log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
