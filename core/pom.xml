@@ -117,6 +117,8 @@
 			<artifactId>${mesh.image.provider}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<!-- Changelog system -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-changelog-system</artifactId>

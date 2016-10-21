@@ -1,24 +1,25 @@
 package com.gentics.mesh.image;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.tika.exception.TikaException;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -182,6 +183,17 @@ public class ImgscalrImageManipulatorTest {
 		outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParameters().setStartx(1).setStarty(1).setCroph(20).setCropw(25));
 		assertEquals(25, outputImage.getWidth());
 		assertEquals(20, outputImage.getHeight());
+
+	}
+
+	@Test
+	public void testTikaMetadata() throws IOException, SAXException, TikaException {
+		InputStream ins = getClass().getResourceAsStream("/pictures/12382975864_09e6e069e7_o.jpg");
+		Map<String, String> metadata = manipulator.getMetadata(ins).toBlocking().value();
+		assertTrue(!metadata.isEmpty());
+		for (String key : metadata.keySet()) {
+			System.out.println(key + "=" + metadata.get(key));
+		}
 
 	}
 

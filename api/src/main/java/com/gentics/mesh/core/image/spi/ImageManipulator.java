@@ -3,6 +3,7 @@ package com.gentics.mesh.core.image.spi;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
+import java.util.Map;
 
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
@@ -58,5 +59,13 @@ public interface ImageManipulator {
 	 * @return
 	 */
 	int[] calculateDominantColor(BufferedImage image);
+
+	/**
+	 * Extract the metadata from the image data stream.
+	 * 
+	 * @param ins
+	 * @return
+	 */
+	Single<Map<String, String>> getMetadata(InputStream ins);
 
 }

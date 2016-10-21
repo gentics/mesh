@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>mesh-service-image-imgscalr</artifactId>
@@ -14,22 +15,30 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<imgscalr-lib.version>4.2</imgscalr-lib.version>
+		<tika.version>0.6</tika.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.imgscalr</groupId>
 			<artifactId>imgscalr-lib</artifactId>
-			<version>4.2</version>
+			<version>${imgscalr-lib.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parsers</artifactId>
+			<version>${tika.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-jpeg</artifactId>
 			<version>3.2</version>
 		</dependency>
-		<!-- <dependency> <groupId>com.twelvemonkeys.imageio</groupId> <artifactId>imageio-bmp</artifactId> <version>3.2</version> </dependency> -->
+		<!-- <dependency> <groupId>com.twelvemonkeys.imageio</groupId> <artifactId>imageio-bmp</artifactId> 
+			<version>3.2</version> </dependency> -->
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-tiff</artifactId>
@@ -44,7 +53,8 @@
 
 	<profiles>
 		<profile>
-			<!-- if ./inclusions.txt is present, use that as the inclusion list. Useful when skipping tests. -->
+			<!-- if ./inclusions.txt is present, use that as the inclusion list. Useful 
+				when skipping tests. -->
 			<id>inclusions</id>
 			<activation>
 				<file>

@@ -6,9 +6,16 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
@@ -151,6 +158,31 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		image.flush();
 		int[] color = pixel.getData().getPixel(0, 0, (int[]) null);
 		return color;
+	}
+
+	@Override
+	public Single<Map<String, String>> getMetadata(InputStream ins) {
+		return Single.create(sub -> {
+			Parser parser = new AutoDetectParser();
+			BodyContentHandler handler = new BodyContentHandler();
+			Metadata metadata = new Metadata();
+			ParseContext context = new ParseContext();
+			try {
+				parser.parse(ins, handler, metadata, context);
+				Map<String, String> map = new HashMap<>();
+				String[] metadataNames = metadata.names();
+
+				for (String name : metadataNames) {
+					map.put(name, metadata.get(name));
+				}
+
+				sub.onSuccess(map);
+
+			} catch (Exception e) {
+				sub.onError(e);
+			}
+			// ins.close();
+		});
 	}
 
 }
