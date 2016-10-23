@@ -192,7 +192,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			}
 
 			Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
-			return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
+			Single<GenericMessageResponse> response =  Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
 				SearchQueueBatch batch = db.tx(() -> {
 					SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 					SearchQueueBatch sqb = queue.createBatch();
@@ -216,6 +216,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				return batch.processAsync().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
 
 			}).flatMap(x -> x);
+			return response;
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 
 	}
@@ -346,7 +347,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							});
 						});
 
-				return obsHashAndSize.flatMap(hashAndSize -> {
+						Single<GenericMessageResponse> result = obsHashAndSize.flatMap(hashAndSize -> {
 					Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
 						SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 						SearchQueueBatch batch = queue.createBatch();
@@ -370,6 +371,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					String updatedNodeUuid = tuple.v2();
 					return batch.processAsync().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
 				});
+						return result;
 			} catch (GenericRestException e) {
 				throw e;
 			} catch (Exception e) {
