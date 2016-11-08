@@ -14,7 +14,6 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
@@ -46,8 +45,6 @@ public interface MeshComponent {
 	Database database();
 
 	SearchProvider searchProvider();
-
-	TestDataProvider testDataProvider();
 
 	BCryptPasswordEncoder passwordEncoder();
 

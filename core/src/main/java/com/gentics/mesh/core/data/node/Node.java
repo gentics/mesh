@@ -38,7 +38,6 @@ import rx.Single;
  * A node is the main building block for project structures. Each project has one base node which is basically a folder. Additional child nodes can be added to
  * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
  * vertices which contain the language specific data.
- * 
  */
 public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex {
 
@@ -47,7 +46,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	public static final String TYPE = "node";
 
-	public static final int MAX_TRANSFORMATION_LEVEL = 2;
+	/**
+	 * Maximum depth for transformations: {@value #MAX_TRANSFORMATION_LEVEL}
+	 */
+	public static final int MAX_TRANSFORMATION_LEVEL = 3;
 
 	/**
 	 * Add the given tag to the list of tags for this node in the given release.
@@ -416,12 +418,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	void deleteLanguageContainer(Release release, Language language, SearchQueueBatch batch);
 
-	/**
-	 * Return the path segment of this node.
-	 * 
-	 * @return
-	 */
-	Single<String> getPathSegment(InternalActionContext ac);
+	// /**
+	// * Return the path segment of this node.
+	// *
+	// * @return
+	// */
+	// String getPathSegment(InternalActionContext ac);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -433,7 +435,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param pathStack
 	 * @return
 	 */
-	Single<Path> resolvePath(String releaseUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
+	Path resolvePath(String releaseUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
 
 	/**
 	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.

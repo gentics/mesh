@@ -15,6 +15,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
 
@@ -37,6 +38,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
@@ -268,6 +270,53 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			return message(ac, "migration_invoked", schema.getName());
 		}, model -> ac.send(model, OK));
 
+	}
+
+	/**
+	 * Helper handler which will handle requests for processing remaining not yet migrated nodes.
+	 * 
+	 * @param ac
+	 */
+	public void handleMigrateRemaining(InternalActionContext ac) {
+		operateNoTx(ac, () -> {
+			for (SchemaContainer schemaContainer : boot.get().schemaContainerRoot().findAll()) {
+				SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
+				SchemaContainerVersion currentVersion = latestVersion;
+				while (true) {
+					currentVersion = currentVersion.getPreviousVersion();
+					if (currentVersion == null) {
+						break;
+					}
+					//TODO determine the releaseUuid
+					String releaseUuid = null;
+					System.out.println("Before migration " + schemaContainer.getName() + " - " + currentVersion.getUuid() + "="
+							+ currentVersion.getFieldContainers(releaseUuid).size());
+					//					if (!getLatestVersion().getUuid().equals(version.getUuid())) {
+					//						for (GraphFieldContainer container : version.getFieldContainers()) {
+					//							NodeImpl node = container.getImpl().in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
+					//							System.out.println(
+					//									"Node: " + node.getUuid() + "ne: " + node.getLastEditedTimestamp() + "nc: " + node.getCreationTimestamp());
+					//						}
+					//					}
+					CountDownLatch latch = new CountDownLatch(1);
+					DeliveryOptions options = new DeliveryOptions();
+					options.addHeader(NodeMigrationVerticle.UUID_HEADER, schemaContainer.getUuid());
+					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, currentVersion.getUuid());
+					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, latestVersion.getUuid());
+					SchemaContainerVersion version = currentVersion;
+					Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
+						try (NoTx noTrx = db.noTx()) {
+							System.out.println("After migration " + schemaContainer.getName() + " - " + version.getUuid() + "="
+									+ version.getFieldContainers(releaseUuid).size());
+						}
+						latch.countDown();
+					});
+					latch.await();
+				}
+
+			}
+			return message(ac, "schema_migration_invoked");
+		}, model -> ac.send(model, OK));
 	}
 
 }

@@ -19,6 +19,7 @@ public interface NumberGraphField extends ListableGraphField, BasicGraphField<Nu
 			return graphNumberField.transformToRest(ac);
 		}
 	};
+
 	FieldUpdater NUMBER_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		NumberGraphField numberGraphField = container.getNumber(fieldKey);
 		NumberField numberField = fieldMap.getNumberField(fieldKey);

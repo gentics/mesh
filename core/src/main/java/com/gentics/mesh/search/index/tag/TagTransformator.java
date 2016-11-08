@@ -1,6 +1,5 @@
 package com.gentics.mesh.search.index.tag;
 
-import static com.gentics.mesh.search.index.MappingHelper.LONG;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
@@ -37,6 +36,12 @@ public class TagTransformator extends AbstractTransformator<Tag> {
 		return document;
 	}
 
+	/**
+	 * Add the tag family fields to the document.
+	 * 
+	 * @param document
+	 * @param tagFamily
+	 */
 	public void addTagFamily(JsonObject document, TagFamily tagFamily) {
 		JsonObject info = new JsonObject();
 		info.put(NAME_KEY, tagFamily.getName());

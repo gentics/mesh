@@ -1,6 +1,6 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
