@@ -118,7 +118,8 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 					// Remove the original cookie and set the new one
 					context.removeCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
 					context.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
-							.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()));
+							.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime())
+							.setPath("/"));
 					authorise(user2, context);
 				} else {
 					log.warn("JWT decode failure", res.cause());
