@@ -134,6 +134,17 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
+	public void testSearchStringFieldRaw() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			fullIndex();
+		}
+
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.name.raw", "Concorde_english_name"),
+				new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
+		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
+	}
+
+	@Test
 	public void testDocumentUpdate() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();

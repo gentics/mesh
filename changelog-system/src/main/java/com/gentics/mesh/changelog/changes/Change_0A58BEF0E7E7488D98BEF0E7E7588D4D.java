@@ -11,6 +11,8 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.vertx.core.json.JsonObject;
+
 public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 
 	@Override
@@ -222,6 +224,18 @@ public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
 			// Set version to found container
 			Vertex fieldContainer = containerEdge.getVertex(Direction.IN);
 			fieldContainer.setProperty("version", "0.1");
+
+			// Add displayFieldValue
+			//1. Get schema container version and extract field name
+			Vertex schemaContainerVersion = fieldContainer.getVertices(Direction.OUT, "HAS_SCHEMA_CONTAINER_VERSION").iterator().next();
+			String schemaJson = schemaContainerVersion.getProperty("json");
+			JsonObject schema = new JsonObject(schemaJson);
+			String displayFieldName = schema.getString("displayField");
+			// 2. Load the field value for the given field 
+			String displayFieldValue = fieldContainer.getProperty(displayFieldName + "-string");
+			if (displayFieldValue != null) {
+				fieldContainer.setProperty("displayFieldValue", displayFieldValue);
+			}
 
 			// Migrate webroot path
 			String oldPathInfo = fieldContainer.getProperty("webrootPathInfo");

@@ -18,6 +18,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -401,6 +402,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		// Check whether the search provider is a dummy provider or not
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
+				//TODO Add trigram filter - https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html 
+//				UpdateSettingsRequestBuilder updateSettingsBuilder = searchProvider.getNode().client().admin().indices().prepareUpdateSettings(indexName);
+//				updateSettingsBuilder.set
+//				updateSettingsBuilder.execute();
 				PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
 				mappingRequestBuilder.setType(type);
 

@@ -61,7 +61,9 @@ public abstract class AbstractEndpoint {
 	protected AbstractEndpoint(String basePath, RouterStorage routerStorage) {
 		this.basePath = basePath;
 		this.routerStorage = routerStorage;
-		this.localRouter = setupLocalRouter();
+		if (routerStorage != null) {
+			this.localRouter = setupLocalRouter();
+		}
 	}
 
 	/**
