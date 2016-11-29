@@ -167,6 +167,8 @@ Transfer-Encoding: chunked
 
 ## IDE Setup - Eclipse
 
+Make sure that you use at least Eclipse Neon.
+
 Install the following maven m2e workshop plugins:
 
   * m2e-apt-plugin
