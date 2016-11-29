@@ -165,5 +165,12 @@ Transfer-Encoding: chunked
 }
 ```
 
+## IDE Setup - Eclipse
 
+Install the following maven m2e workshop plugins:
 
+  * m2e-apt-plugin
+
+Import all maven modules in your IDE.
+
+Please note that this project is using Google Dagger for dependency injection. Adding new dependencies or beans may require a fresh build (via Project->Clean) of the mesh-core/mesh-api modules.
