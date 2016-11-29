@@ -87,7 +87,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 				SearchQueueBatch batch = queue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION);
+				group.addIndexBatchEntry(batch, STORE_ACTION, true);
 				group.addRole(role);
 				return Tuple.tuple(batch, group);
 			});
@@ -119,7 +119,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			SearchQueueBatch sqBatch = db.tx(() -> {
 				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 				SearchQueueBatch batch = queue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION);
+				group.addIndexBatchEntry(batch, STORE_ACTION, true);
 				group.removeRole(role);
 				return batch;
 			});
@@ -167,7 +167,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				group.addUser(user);
 				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 				SearchQueueBatch batch = queue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION);
+				group.addIndexBatchEntry(batch, STORE_ACTION, true);
 				return Tuple.tuple(batch, group);
 			});
 			SearchQueueBatch batch = tuple.v1();
@@ -196,7 +196,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
 				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 				SearchQueueBatch batch = queue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION);
+				group.addIndexBatchEntry(batch, STORE_ACTION, true);
 				batch.addEntry(user, STORE_ACTION);
 				group.removeUser(user);
 				return Tuple.tuple(batch, group);

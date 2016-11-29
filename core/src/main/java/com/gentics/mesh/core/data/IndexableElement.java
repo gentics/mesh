@@ -23,9 +23,11 @@ public interface IndexableElement extends MeshElement {
 	 * 
 	 * @param batch
 	 * @param action
+	 * @param addRelatedEntries
+	 *            Flag which indicates whether related elements of the indexable element should also be updated
 	 * @return
 	 */
-	SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action);
+	SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, boolean addRelatedEntries);
 
 	/**
 	 * Add related {@link SearchQueueEntry} to the batch which also need to be handled within the index for the given action. Normally this method should only

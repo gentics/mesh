@@ -200,7 +200,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
 		creator.addPermissionsOnRole(this, CREATE_PERM, initialRelease);
 
-		project.addIndexBatchEntry(batch, STORE_ACTION);
+		project.addIndexBatchEntry(batch, STORE_ACTION, true);
 
 		String releaseUuid = initialRelease.getUuid();
 		String projectUuid = project.getUuid();

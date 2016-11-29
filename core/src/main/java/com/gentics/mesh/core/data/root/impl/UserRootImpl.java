@@ -157,7 +157,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 		NodeReference reference = requestModel.getNodeReference();
-		user.addIndexBatchEntry(batch, STORE_ACTION);
+		user.addIndexBatchEntry(batch, STORE_ACTION, true);
 
 		if (!isEmpty(groupUuid)) {
 			Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM);

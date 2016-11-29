@@ -118,7 +118,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 		SchemaContainer container = create(requestModel, requestUser);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-		container.addIndexBatchEntry(batch, STORE_ACTION);
+		container.addIndexBatchEntry(batch, STORE_ACTION, true);
 		return container;
 
 	}

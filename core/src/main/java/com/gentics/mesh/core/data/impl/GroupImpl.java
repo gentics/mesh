@@ -184,7 +184,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			}
 
 			setName(requestModel.getName());
-			addIndexBatchEntry(batch, STORE_ACTION);
+			addIndexBatchEntry(batch, STORE_ACTION, true);
 		}
 		return this;
 	}

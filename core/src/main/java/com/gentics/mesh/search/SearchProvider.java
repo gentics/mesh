@@ -18,10 +18,9 @@ public interface SearchProvider {
 	/**
 	 * Explicitly refresh one or more indices (making the content indexed since the last refresh searchable).
 	 * 
-	 * @deprecated Don't refresh all indices. Only refresh affected ones
+	 * @param indices
 	 */
-	@Deprecated
-	void refreshIndex();
+	void refreshIndex(String... indices);
 
 	/**
 	 * Create a search index with the given name.

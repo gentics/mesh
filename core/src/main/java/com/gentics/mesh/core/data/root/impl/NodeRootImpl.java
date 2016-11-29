@@ -184,7 +184,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
 		// TODO add container specific batch
-		node.addIndexBatchEntry(batch, STORE_ACTION);
+		node.addIndexBatchEntry(batch, STORE_ACTION, true);
 		return node;
 	}
 

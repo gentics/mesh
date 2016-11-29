@@ -18,7 +18,6 @@ import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -224,10 +223,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				Set<Completable> obs = new HashSet<>();
 				Completable deleteObs = Completable.complete();
 
+				String indexName = null;
+				
 				// Store all containers if no language was specified
 				if (languageTag == null) {
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-						String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, container.getSchemaContainerVersion().getUuid(),
+						indexName = getIndexName(node.getProject().getUuid(), releaseUuid, container.getSchemaContainerVersion().getUuid(),
 								type);
 						if (log.isDebugEnabled()) {
 							log.debug("Storing node {" + node.getUuid() + "} of type {" + type.name() + "} into index {" + indexName + "}");
@@ -242,7 +243,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 								+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
 						return Completable.complete();
 					}
-					String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, container.getSchemaContainerVersion().getUuid(), type);
+					indexName = getIndexName(node.getProject().getUuid(), releaseUuid, container.getSchemaContainerVersion().getUuid(), type);
 
 					// 1. Sanitize the search index for nodes.
 					// We'll need to delete all documents which match the given query:
@@ -295,8 +296,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					}
 				}
 
+				String name = indexName;
 				return Completable.merge(obs).andThen(deleteObs).doOnCompleted(() -> {
-					MeshInternal.get().searchProvider().refreshIndex();
+					MeshInternal.get().searchProvider().refreshIndex(name);
 				});
 
 			}

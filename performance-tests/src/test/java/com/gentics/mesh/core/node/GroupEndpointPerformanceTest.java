@@ -9,7 +9,7 @@ import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-public class GroupVerticlePerformanceTest extends AbstractRestEndpointTest {
+public class GroupEndpointPerformanceTest extends AbstractRestEndpointTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
