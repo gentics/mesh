@@ -75,7 +75,7 @@ public interface SearchClientMethods {
 	MeshRequest<UserListResponse> searchUsers(String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search users.
 	 *
 	 * @param query
 	 *            Elasticsearch search request
@@ -97,7 +97,7 @@ public interface SearchClientMethods {
 	MeshRequest<GroupListResponse> searchGroups(String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search groups.
 	 *
 	 * @param query
 	 *            Elasticsearch search request
@@ -119,7 +119,7 @@ public interface SearchClientMethods {
 	MeshRequest<RoleListResponse> searchRoles(String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search roles.
 	 *
 	 * @param query
 	 *            Elasticsearch search request
@@ -141,7 +141,7 @@ public interface SearchClientMethods {
 	MeshRequest<ProjectListResponse> searchProjects(String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search projects.
 	 *
 	 * @param query
 	 *            Elasticsearch search request
@@ -163,7 +163,7 @@ public interface SearchClientMethods {
 	MeshRequest<TagListResponse> searchTags(String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search tags.
 	 *
 	 * @param query
 	 *            Elasticsearch search request
@@ -186,7 +186,7 @@ public interface SearchClientMethods {
 	MeshRequest<TagListResponse> searchTags(String projectName, String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search tags in project
 	 *
 	 * @param projectName Project Name
 	 * @param query
@@ -208,7 +208,7 @@ public interface SearchClientMethods {
 	MeshRequest<TagFamilyListResponse> searchTagFamilies(String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search tag families.
 	 *
 	 * @param query
 	 *            Elasticsearch search request
@@ -230,7 +230,7 @@ public interface SearchClientMethods {
 	MeshRequest<TagFamilyListResponse> searchTagFamilies(String projectName, String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search tag families in project
 	 *
 	 * @param projectName Project Name
 	 * @param query
@@ -253,7 +253,7 @@ public interface SearchClientMethods {
 	MeshRequest<SchemaListResponse> searchSchemas(String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search schemas.
 	 *
 	 * @param query
 	 *            Elasticsearch search request
@@ -275,7 +275,7 @@ public interface SearchClientMethods {
 	MeshRequest<MicroschemaListResponse> searchMicroschemas(String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search microschemas.
 	 *
 	 * @param query
 	 *            Elasticsearch search request
