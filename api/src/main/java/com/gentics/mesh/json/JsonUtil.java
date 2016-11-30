@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.elasticsearch.index.query.QueryBuilder;
 
 /**
  * Main JSON Util which is used to register all custom JSON specific handlers and deserializers.
@@ -164,6 +165,18 @@ public final class JsonUtil {
 	 */
 	public static ObjectMapper getMapper() {
 		return defaultMapper;
+	}
+
+	/**
+	 * Transforms an elastic search query to string.
+	 * This wraps the query with a "query" JSON object, so that the result can be used with the search endpoints
+	 * in the rest client.
+	 *
+	 * @param query
+	 * @return
+	 */
+	public static String queryToString(QueryBuilder query) {
+		return "{\"query\" : " + query.toString() + "}";
 	}
 
 }

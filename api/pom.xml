@@ -129,6 +129,13 @@
 			<artifactId>rxjava</artifactId>
 			<version>1.2.1</version>
 		</dependency>
+
+		<!-- Elastic Search -->
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>${elasticsearch.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
