@@ -88,7 +88,7 @@ public abstract class AbstractDBTest {
 	}
 
 	/**
-	 * Initalise mesh options.
+	 * Initialise mesh options.
 	 * 
 	 * @param enableES
 	 * @throws IOException
@@ -125,6 +125,7 @@ public abstract class AbstractDBTest {
 		} else {
 			searchOptions.setDirectory(null);
 		}
+//		searchOptions.setHttpEnabled(true);
 		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);
 	}

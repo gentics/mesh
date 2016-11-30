@@ -211,15 +211,17 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			setLastEditedTimestamp();
 			setName(requestModel.getName());
 		}
-		addIndexBatchEntry(batch, STORE_ACTION);
+		addIndexBatchEntry(batch, STORE_ACTION, true);
 		return this;
 
 	}
 
 	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, boolean addRelatedEntries) {
 		batch.addEntry(this, action).set(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
-		addRelatedEntries(batch, action);
+		if (addRelatedEntries) {
+			addRelatedEntries(batch, action);
+		}
 		return batch;
 	}
 

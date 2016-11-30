@@ -23,7 +23,7 @@ public class DummySearchProvider implements SearchProvider {
 	private List<String> getEvents = new ArrayList<>();
 
 	@Override
-	public void refreshIndex() {
+	public void refreshIndex(String... indices) {
 	}
 
 	@Override

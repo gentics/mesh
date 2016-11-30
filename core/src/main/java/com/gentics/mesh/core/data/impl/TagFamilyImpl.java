@@ -155,7 +155,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		MeshInternal.get().boot().meshRoot().getTagRoot().addTag(newTag);
 		getTagRoot().addTag(newTag);
 
-		newTag.addIndexBatchEntry(batch, STORE_ACTION);
+		newTag.addIndexBatchEntry(batch, STORE_ACTION, true);
 		return newTag;
 	}
 
@@ -199,7 +199,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 		}
 		this.setName(newName);
-		addIndexBatchEntry(batch, STORE_ACTION);
+		addIndexBatchEntry(batch, STORE_ACTION, true);
 		return this;
 	}
 
@@ -237,9 +237,11 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, boolean addRelatedEntries) {
 		batch.addEntry(this, action).set(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
-		addRelatedEntries(batch, action);
+		if (addRelatedEntries) {
+			addRelatedEntries(batch, action);
+		}
 		return batch;
 	}
 

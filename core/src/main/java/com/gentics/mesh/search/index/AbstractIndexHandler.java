@@ -222,7 +222,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			// Add all elements from the root vertex of the handler to the created batch
 			for (T element : getRootVertex().findAll()) {
 				log.info("Invoking reindex for {" + element.getType() + "/" + element.getUuid() + "}");
-				element.addIndexBatchEntry(batch, STORE_ACTION);
+				element.addIndexBatchEntry(batch, STORE_ACTION, false);
 			}
 			return batch.processAsync();
 		});

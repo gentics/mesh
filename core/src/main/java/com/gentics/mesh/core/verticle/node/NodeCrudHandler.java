@@ -235,7 +235,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 				SearchQueueBatch batch = queue.createBatch();
 				node.addTag(tag, release);
-				node.addIndexBatchEntry(batch, STORE_ACTION);
+				node.addIndexBatchEntry(batch, STORE_ACTION, true);
 				return Tuple.tuple(batch, node);
 			});
 			SearchQueueBatch batch = tuple.v1();
@@ -268,7 +268,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 				SearchQueueBatch batch = queue.createBatch();
 				// TODO get release specific containers
-				node.addIndexBatchEntry(batch, STORE_ACTION);
+				node.addIndexBatchEntry(batch, STORE_ACTION, true);
 				node.removeTag(tag, release);
 				return batch;
 			});

@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -131,6 +132,37 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 				assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
 			}
 		}
+	}
+
+	@Test
+	public void testSearchStringFieldRaw() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			fullIndex();
+		}
+
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.name.raw", "Concorde_english_name"),
+				new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
+		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
+	}
+
+	@Test
+	public void testSearchStringFieldRawAfterReindex() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			fullIndex();
+		}
+
+		// Add the user to the admin group - this way the user is in fact an admin.
+		try (NoTx noTrx = db.noTx()) {
+			user().addGroup(groups().get("admin"));
+			searchProvider.refreshIndex();
+		}
+
+		GenericMessageResponse message = call(() -> getClient().invokeReindex());
+		expectResponseMessage(message, "search_admin_reindex_invoked");
+
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.name.raw", "Concorde_english_name"),
+				new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
+		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 	}
 
 	@Test

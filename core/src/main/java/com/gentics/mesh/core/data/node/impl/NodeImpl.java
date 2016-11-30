@@ -137,21 +137,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return Node.TYPE;
 	}
 
-//	@Override
-//	public String getPathSegment(InternalActionContext ac) {
-//		NodeParameters parameters = ac.getNodeParameters();
-//		VersioningParameters versioningParameters = ac.getVersioningParameters();
-//		NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
-//				versioningParameters.getVersion());
-//		if (container != null) {
-//			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
-//			StringGraphField field = container.getString(fieldName);
-//			if (field != null) {
-//				return field.getString();
-//			}
-//		}
-//		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
-//	}
+	//	@Override
+	//	public String getPathSegment(InternalActionContext ac) {
+	//		NodeParameters parameters = ac.getNodeParameters();
+	//		VersioningParameters versioningParameters = ac.getVersioningParameters();
+	//		NodeGraphFieldContainer container = findNextMatchingFieldContainer(parameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
+	//				versioningParameters.getVersion());
+	//		if (container != null) {
+	//			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
+	//			StringGraphField field = container.getString(fieldName);
+	//			if (field != null) {
+	//				return field.getString();
+	//			}
+	//		}
+	//		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
+	//	}
 
 	@Override
 	public String getPathSegment(String releaseUuid, ContainerType type, String... languageTag) {
@@ -1541,7 +1541,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				.forEach(container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
 
 		assertPublishConsistency(ac);
-		addIndexBatchEntry(batch, STORE_ACTION);
+		addIndexBatchEntry(batch, STORE_ACTION, true);
 	}
 
 	@Override
@@ -1566,7 +1566,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, boolean addRelatedEntries) {
 		// Add all graph field containers for all releases to the batch
 		getProject().getReleaseRoot().findAll().forEach((release) -> {
 			String releaseUuid = release.getUuid();
@@ -1576,7 +1576,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				});
 			}
 		});
-		addRelatedEntries(batch, action);
+		if (addRelatedEntries) {
+			addRelatedEntries(batch, action);
+		}
 		return batch;
 	}
 

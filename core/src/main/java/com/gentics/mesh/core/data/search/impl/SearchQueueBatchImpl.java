@@ -51,7 +51,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 	@Override
 	public SearchQueueEntry addEntry(SearchQueueEntry entry) {
-		setUniqueLinkOutTo(entry.getImpl(), HAS_ITEM);
+		linkOut(entry.getImpl(), HAS_ITEM);
 		return entry;
 	}
 
@@ -143,13 +143,13 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 					return null;
 				});
 
-				// 4. Refresh index
-				SearchProvider provider = MeshInternal.get().searchProvider();
-				if (provider != null) {
-					provider.refreshIndex();
-				} else {
-					log.error("Could not refresh index since the elasticsearch provider has not been initalized");
-				}
+//				// 4. Refresh index
+//				SearchProvider provider = MeshInternal.get().searchProvider();
+//				if (provider != null) {
+//					provider.refreshIndex();
+//				} else {
+//					log.error("Could not refresh index since the elasticsearch provider has not been initalized");
+//				}
 
 			}).doOnError(error -> {
 				// Add the batch back to the queue when an error occurs

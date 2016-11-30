@@ -142,9 +142,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void refreshIndex() {
-		// TODO it would be way better to only target specific indices
-		getNode().client().admin().indices().refresh(refreshRequest()).actionGet();
+	public void refreshIndex(String... indices) {
+		getNode().client().admin().indices().refresh(refreshRequest().indices(indices)).actionGet();
 	}
 
 	private Client getSearchClient() {

@@ -105,6 +105,18 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		super(searchProvider, db, boot);
 	}
 
+	@Override
+	public Completable init() {
+		Completable superCompletable = super.init();
+		return superCompletable.andThen(Completable.create(sub -> {
+			db.noTx(() -> {
+				updateNodeIndexMappings();
+				sub.onCompleted();
+				return null;
+			});
+		}));
+	}
+
 	public NodeGraphFieldContainerTransformator getTransformator() {
 		return transformator;
 	}
@@ -223,10 +235,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				Set<Completable> obs = new HashSet<>();
 				Completable deleteObs = Completable.complete();
 
+				String indexName = null;
+				
 				// Store all containers if no language was specified
 				if (languageTag == null) {
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-						String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, container.getSchemaContainerVersion().getUuid(),
+						indexName = getIndexName(node.getProject().getUuid(), releaseUuid, container.getSchemaContainerVersion().getUuid(),
 								type);
 						if (log.isDebugEnabled()) {
 							log.debug("Storing node {" + node.getUuid() + "} of type {" + type.name() + "} into index {" + indexName + "}");
@@ -241,7 +255,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 								+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
 						return Completable.complete();
 					}
-					String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, container.getSchemaContainerVersion().getUuid(), type);
+					indexName = getIndexName(node.getProject().getUuid(), releaseUuid, container.getSchemaContainerVersion().getUuid(), type);
 
 					// 1. Sanitize the search index for nodes.
 					// We'll need to delete all documents which match the given query:
@@ -294,8 +308,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					}
 				}
 
+				String name = indexName;
 				return Completable.merge(obs).andThen(deleteObs).doOnCompleted(() -> {
-					MeshInternal.get().searchProvider().refreshIndex();
+					MeshInternal.get().searchProvider().refreshIndex(name);
 				});
 
 			}
@@ -401,6 +416,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		// Check whether the search provider is a dummy provider or not
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
+				//TODO Add trigram filter - https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html 
+//				UpdateSettingsRequestBuilder updateSettingsBuilder = searchProvider.getNode().client().admin().indices().prepareUpdateSettings(indexName);
+//				updateSettingsBuilder.set
+//				updateSettingsBuilder.execute();
 				PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
 				mappingRequestBuilder.setType(type);
 

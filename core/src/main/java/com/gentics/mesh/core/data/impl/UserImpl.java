@@ -453,7 +453,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				setReferencedNode(node);
 			}
 		}
-		addIndexBatchEntry(batch, STORE_ACTION);
+		addIndexBatchEntry(batch, STORE_ACTION, true);
 		return this;
 
 	}

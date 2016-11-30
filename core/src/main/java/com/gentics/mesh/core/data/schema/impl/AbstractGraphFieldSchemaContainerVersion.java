@@ -230,7 +230,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		getSchemaContainer().setLatestVersion(nextVersion);
 
 		// Update the search index
-		addIndexBatchEntry(batch, STORE_ACTION);
+		addIndexBatchEntry(batch, STORE_ACTION, true);
 		return nextVersion;
 	}
 
@@ -238,9 +238,11 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	 * Overwrite default implementation since we need to add the parent container of all versions to the index and not the current version.
 	 */
 	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, boolean addRelatedEntries) {
 		batch.addEntry(this.getSchemaContainer(), action);
-		addRelatedEntries(batch, action);
+		if (addRelatedEntries) {
+			addRelatedEntries(batch, action);
+		}
 		return batch;
 	}
 

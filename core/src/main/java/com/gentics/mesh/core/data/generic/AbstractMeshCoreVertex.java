@@ -103,9 +103,11 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, boolean addRelatedEntries) {
 		batch.addEntry(this, action);
-		addRelatedEntries(batch, action);
+		if (addRelatedEntries) {
+			addRelatedEntries(batch, action);
+		}
 		return batch;
 	}
 

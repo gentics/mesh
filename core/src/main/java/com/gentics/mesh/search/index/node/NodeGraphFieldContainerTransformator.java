@@ -435,6 +435,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 			throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
 		}
 
+		//System.out.println(fieldInfo.toString());
 		return fieldInfo;
 	}
 

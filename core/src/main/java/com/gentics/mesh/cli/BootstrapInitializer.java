@@ -152,13 +152,13 @@ public class BootstrapInitializer {
 	 * 
 	 * The following steps / checks will be performed:
 	 * <ul>
-	 * <li>Join the mesh cluster</li>
-	 * <li>Invoke the changelog check & execution</li>
-	 * <li>Initalize the graph database and update vertex types and indices</li>
-	 * <li>Create initial mandatory structure data</li>
-	 * <li>Initalize search indices</li>
-	 * <li>Process remaining search index batch entries</li>
-	 * <li>Load verticles and setup routes / endpoints</li>
+	 * <li>Join the mesh cluster
+	 * <li>Invoke the changelog check &amp; execution
+	 * <li>Initalize the graph database and update vertex types and indices
+	 * <li>Create initial mandatory structure data
+	 * <li>Initalize search indices
+	 * <li>Process remaining search index batch entries
+	 * <li>Load verticles and setup routes / endpoints
 	 * </ul>
 	 * 
 	 * @param configuration

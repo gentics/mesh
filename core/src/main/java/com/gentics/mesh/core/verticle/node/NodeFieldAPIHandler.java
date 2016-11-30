@@ -210,7 +210,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 						newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 					}
 
-					return node.addIndexBatchEntry(sqb, STORE_ACTION);
+					return node.addIndexBatchEntry(sqb, STORE_ACTION, true);
 				});
 
 				return batch.processAsync().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
@@ -362,7 +362,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 						// node.setBinaryImageDPI(dpi);
 						// node.setBinaryImageHeight(heigth);
 						// node.setBinaryImageWidth(width);
-						node.addIndexBatchEntry(batch, STORE_ACTION);
+						node.addIndexBatchEntry(batch, STORE_ACTION, true);
 						return Tuple.tuple(batch, node.getUuid());
 					});
 

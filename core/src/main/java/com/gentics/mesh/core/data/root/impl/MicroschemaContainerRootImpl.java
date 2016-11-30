@@ -89,7 +89,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		}
 		MicroschemaContainer container = create(microschema, requestUser);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-		container.addIndexBatchEntry(batch, STORE_ACTION);
+		container.addIndexBatchEntry(batch, STORE_ACTION, true);
 		return container;
 
 	}
