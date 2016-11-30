@@ -111,6 +111,16 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
+	public void testSearchListOfNodes() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			addNodeListField();
+			fullIndex();
+		}
+
+		// TODO do actual search (currently, we just test that indexing works with the mappings)
+	}
+
+	@Test
 	public void testSearchDraftInRelease() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			fullIndex();
