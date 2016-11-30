@@ -387,16 +387,17 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 				ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 				switch (listFieldSchema.getListType()) {
 				case "node":
-					fieldInfo.put("type", NESTED);
+					fieldInfo.put("type", STRING);
+					fieldInfo.put("index", NOT_ANALYZED);
 					break;
 				case "date":
-					fieldInfo.put("type", NESTED);
+					fieldInfo.put("type", DATE);
 					break;
 				case "number":
-					fieldInfo.put("type", NESTED);
+					fieldInfo.put("type", DOUBLE);
 					break;
 				case "boolean":
-					fieldInfo.put("type", NESTED);
+					fieldInfo.put("type", BOOLEAN);
 					break;
 				case "micronode":
 					fieldInfo.put("type", NESTED);
@@ -404,10 +405,10 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 					// fieldProps.put(field.getName(), fieldInfo);
 					break;
 				case "string":
-					fieldInfo.put("type", NESTED);
+					fieldInfo.put("type", STRING);
 					break;
 				case "html":
-					fieldInfo.put("type", NESTED);
+					fieldInfo.put("type", STRING);
 					break;
 				default:
 					log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
