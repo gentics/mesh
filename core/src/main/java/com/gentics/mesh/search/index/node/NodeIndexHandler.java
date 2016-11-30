@@ -105,6 +105,18 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		super(searchProvider, db, boot);
 	}
 
+	@Override
+	public Completable init() {
+		Completable superCompletable = super.init();
+		return superCompletable.andThen(Completable.create(sub -> {
+			db.noTx(() -> {
+				updateNodeIndexMappings();
+				sub.onCompleted();
+				return null;
+			});
+		}));
+	}
+
 	public NodeGraphFieldContainerTransformator getTransformator() {
 		return transformator;
 	}
