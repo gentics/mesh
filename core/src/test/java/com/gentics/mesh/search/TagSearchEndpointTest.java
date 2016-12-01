@@ -24,7 +24,7 @@ public class TagSearchEndpointTest extends AbstractSearchEndpointTest implements
 			createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
 		}
 
-		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", tagName)).invoke();
+		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("name", tagName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -58,7 +58,7 @@ public class TagSearchEndpointTest extends AbstractSearchEndpointTest implements
 		}
 
 		start = System.currentTimeMillis();
-		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName + "2")).invoke();
+		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("name", newName + "2")).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -86,7 +86,7 @@ public class TagSearchEndpointTest extends AbstractSearchEndpointTest implements
 		}
 
 		// 1. Verify that the tag is indexed
-		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name)).invoke();
+		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("name", name)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("The tag with name {" + name + "} and uuid {" + uuid + "} could not be found in the search index.", 1,
