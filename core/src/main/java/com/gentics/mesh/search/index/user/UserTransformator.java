@@ -2,6 +2,7 @@ package com.gentics.mesh.search.index.user;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
+import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
@@ -31,6 +32,8 @@ public class UserTransformator extends AbstractTransformator<User> {
 	public static final String USERNAME_KEY = "username";
 	public static final String FIRSTNAME_KEY = "firstname";
 	public static final String LASTNAME_KEY = "lastname";
+	public static final String NODEREFERECE_KEY = "nodeReference";
+	public static final String GROUPS_KEY = "groups";
 
 	@Inject
 	public UserTransformator() {
@@ -47,7 +50,7 @@ public class UserTransformator extends AbstractTransformator<User> {
 		addGroups(document, user.getGroups());
 		Node referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
-			document.put("nodeReference", referencedNode.getUuid());
+			document.put(NODEREFERECE_KEY, referencedNode.getUuid());
 		}
 		// TODO add disabled / enabled flag
 		return document;
@@ -56,7 +59,7 @@ public class UserTransformator extends AbstractTransformator<User> {
 	/**
 	 * Add the given group uuid and names to the map.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param groups
 	 */
 	private void addGroups(JsonObject document, List<? extends Group> groups) {
@@ -69,7 +72,7 @@ public class UserTransformator extends AbstractTransformator<User> {
 		Map<String, List<String>> groupFields = new HashMap<>();
 		groupFields.put(UUID_KEY, groupUuids);
 		groupFields.put(NAME_KEY, groupNames);
-		document.put("groups", groupFields);
+		document.put(GROUPS_KEY, groupFields);
 	}
 
 	@Override
@@ -78,6 +81,17 @@ public class UserTransformator extends AbstractTransformator<User> {
 		props.put(LASTNAME_KEY, fieldType(STRING, NOT_ANALYZED));
 		props.put(FIRSTNAME_KEY, fieldType(STRING, NOT_ANALYZED));
 		props.put(EMAIL_KEY, fieldType(STRING, NOT_ANALYZED));
+		props.put(NODEREFERECE_KEY, fieldType(STRING, NOT_ANALYZED));
+
+		props
+		.put(GROUPS_KEY, new JsonObject()
+			.put("type", OBJECT)
+			.put("properties", new JsonObject()
+				.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED))
+				.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED))
+			)
+		);
+
 		return props;
 	}
 
