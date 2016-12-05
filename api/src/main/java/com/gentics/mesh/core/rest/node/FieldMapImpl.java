@@ -561,6 +561,21 @@ public class FieldMapImpl implements FieldMap {
 	}
 
 	@Override
+	public boolean isExpandedNodeField(String fieldKey) {
+		JsonNode field = node.get(fieldKey);
+		if (field == null) {
+			return false;
+		}
+		if (field.isObject() && field.has("fields")) {
+			return true;
+		}
+		if (field.isPojo()) {
+			return ((POJONode)field).getPojo() instanceof NodeResponse;
+		}
+		return false;
+	}
+
+	@Override
 	public NodeFieldList getNodeFieldList(String key) {
 		return getField(key, FieldTypes.LIST, "node");
 	}

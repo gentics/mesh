@@ -155,6 +155,14 @@ public interface FieldMap {
 	NodeResponse getNodeFieldExpanded(String fieldKey);
 
 	/**
+	 * Returns true if the given field is an expanded node field.
+	 *
+	 * @param fieldKey
+	 * @return
+	 */
+	boolean isExpandedNodeField(String fieldKey);
+
+	/**
 	 * Return the micronode field with the given key.
 	 * 
 	 * @param fieldKey
