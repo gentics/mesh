@@ -59,7 +59,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		request.setName("Test1234");
 		call(() -> getClient().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
 
-		request.setSchemaReference(new SchemaReference());
+		request.setSchema(new SchemaReference());
 		call(() -> getClient().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
 	}
 
@@ -67,7 +67,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testCreateBogusSchemaReference() {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("Test1234");
-		request.setSchemaReference(new SchemaReference().setName("bogus42"));
+		request.setSchema(new SchemaReference().setName("bogus42"));
 		call(() -> getClient().createProject(request), BAD_REQUEST, "error_schema_reference_not_found", "bogus42", "-", "-");
 	}
 
@@ -76,7 +76,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		String name = "Tä\u1F921 üst";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchemaReference(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReference().setName("folder"));
 
 		ProjectResponse restProject = call(() -> getClient().createProject(request));
 		assertEquals("The name of the project did not match.", name, restProject.getName());
@@ -98,7 +98,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		for (String name : names) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(name);
-			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReference().setName("folder"));
 			call(() -> getClient().createProject(request), BAD_REQUEST, "project_error_name_already_reserved", name);
 		}
 	}
@@ -109,7 +109,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchemaReference(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReference().setName("folder"));
 
 		ProjectResponse restProject = call(() -> getClient().createProject(request));
 
@@ -137,7 +137,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchemaReference(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReference().setName("folder"));
 
 		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(meshRoot().getProjectRoot(), CREATE_PERM);
@@ -160,7 +160,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchemaReference(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReference().setName("folder"));
 
 		try (NoTx noTx = db.noTx()) {
 			// Create a new project
@@ -271,7 +271,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			final String name = "test12345_" + i;
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(name);
-			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReference().setName("folder"));
 			call(() -> getClient().createProject(request));
 		}
 
@@ -546,7 +546,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		for (int i = 0; i < nJobs; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("test12345_" + i);
-			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReference().setName("folder"));
 			set.add(getClient().createProject(request).invoke());
 		}
 		validateCreation(set, null);

@@ -206,7 +206,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 					() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
 
 			ProjectCreateRequest createProject = new ProjectCreateRequest();
-			createProject.setSchemaReference(new SchemaReference().setName("folder"));
+			createProject.setSchema(new SchemaReference().setName("folder"));
 			createProject.setName("mynewproject");
 			ProjectResponse projectResponse = call(() -> getClient().createProject(createProject));
 
@@ -240,7 +240,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName("mynewproject");
-		createProject.setSchemaReference(new SchemaReference().setName("folder"));
+		createProject.setSchema(new SchemaReference().setName("folder"));
 		ProjectResponse projectResponse = call(() -> getClient().createProject(createProject));
 
 		NodeCreateRequest createNode = new NodeCreateRequest();

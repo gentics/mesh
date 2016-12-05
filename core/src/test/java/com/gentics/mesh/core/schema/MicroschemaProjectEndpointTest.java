@@ -47,7 +47,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReference().setName("folder"));
 			request.setName(name);
 
 			ProjectResponse restProject = call(() -> getClient().createProject(request));
@@ -63,7 +63,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReference().setName("folder"));
 			request.setName("extraProject");
 			ProjectResponse created = call(() -> getClient().createProject(request));
 			Project extraProject = projectRoot.findByUuid(created.getUuid());
@@ -92,7 +92,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
-			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReference().setName("folder"));
 			ProjectResponse response = call(() -> getClient().createProject(request));
 			projectUuid = response.getUuid();
 			extraProject = projectRoot.findByUuid(projectUuid);

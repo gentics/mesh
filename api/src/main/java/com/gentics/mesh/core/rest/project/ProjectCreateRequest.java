@@ -4,13 +4,13 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 public class ProjectCreateRequest extends ProjectUpdateRequest {
 
-	private SchemaReference schemaReference;
+	private SchemaReference schema;
 
-	public SchemaReference getSchemaReference() {
-		return schemaReference;
+	public SchemaReference getSchema() {
+		return schema;
 	}
 
-	public void setSchemaReference(SchemaReference schemaReference) {
-		this.schemaReference = schemaReference;
+	public void setSchema(SchemaReference schemaReference) {
+		this.schema = schemaReference;
 	}
 }

@@ -181,11 +181,11 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", requestModel.getName());
 		}
 
-		if (requestModel.getSchemaReference() == null || !requestModel.getSchemaReference().isSet()) {
+		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
 		}
 		SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot()
-				.fromReference(requestModel.getSchemaReference());
+				.fromReference(requestModel.getSchema());
 
 		Project project = create(projectName, creator, schemaContainerVersion);
 		Release initialRelease = project.getInitialRelease();

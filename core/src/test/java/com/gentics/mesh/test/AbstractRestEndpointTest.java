@@ -348,7 +348,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	protected ProjectResponse createProject(String projectName) {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(projectName);
-		projectCreateRequest.setSchemaReference(new SchemaReference().setName("folder"));
+		projectCreateRequest.setSchema(new SchemaReference().setName("folder"));
 		return call(() -> getClient().createProject(projectCreateRequest));
 	}
 
