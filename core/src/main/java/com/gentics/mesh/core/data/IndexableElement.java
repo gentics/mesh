@@ -31,7 +31,7 @@ public interface IndexableElement extends MeshElement {
 
 	/**
 	 * Add related {@link SearchQueueEntry} to the batch which also need to be handled within the index for the given action. Normally this method should only
-	 * be invoked when calling {@link #addIndexBatchEntry(SearchQueueBatch, SearchQueueEntryAction)}.
+	 * be invoked when calling {@link #addIndexBatchEntry(SearchQueueBatch, SearchQueueEntryAction, boolean)}.
 	 * 
 	 * @param batch
 	 *            Batch to add new entries to
