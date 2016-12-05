@@ -25,14 +25,19 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 
+/**
+ * Main CRUD handler
+ */
 public class TagCrudHandler extends AbstractHandler {
 
 	@Inject
 	public TagCrudHandler() {
 	}
 
-	public TagFamily getTagFamily(InternalActionContext ac, String uuid) {
-		return ac.getProject().getTagFamilyRoot().findByUuid(uuid);
+	public TagFamily getTagFamily(InternalActionContext ac, String tagFamilyUuid) {
+		validateParameter(tagFamilyUuid, "tagFamilyUuid");
+
+		return ac.getProject().getTagFamilyRoot().findByUuid(tagFamilyUuid);
 	}
 
 	/**

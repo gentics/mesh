@@ -15,6 +15,9 @@ import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
+/**
+ * Dummy search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.
+ */
 public class DummySearchProvider implements SearchProvider {
 
 	private Map<String, JsonObject> updateEvents = new HashMap<>();

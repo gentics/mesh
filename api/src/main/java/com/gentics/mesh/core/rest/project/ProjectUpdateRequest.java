@@ -9,10 +9,20 @@ public class ProjectUpdateRequest implements RestModel {
 	public ProjectUpdateRequest() {
 	}
 
+	/**
+	 * Return the project name.
+	 * 
+	 * @return
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Set the project name.
+	 * 
+	 * @param name
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}

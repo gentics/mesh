@@ -82,57 +82,6 @@ public class MeshModule {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
 	}
 
-//	@Provides
-//	@Singleton
-//	public SessionHandler sessionHandler() {
-//		SessionStore store = LocalSessionStore.create(Mesh.vertx());
-//		// TODO make session age configurable
-//		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
-//				store);
-//	}
-
-//	/**
-//	 * Handler which will authenticate the user credentials.
-//	 * 
-//	 * @return
-//	 */
-//	@Provides
-//	@Singleton
-//	public AuthHandler authHandler(MeshAuthProvider provider) {
-////		return MeshJWTAuthHandler.create(provider);
-////		return MeshBasicAuthHandler.create(provider);
-//	}
-//
-//	@Provides
-//	@Singleton
-//	public AuthenticationRestHandler authRestHandler(Database db, JWTAuthRestHandler jwtAuthHandler, BasicAuthRestHandler basicAuthHandler) {
-//		return jwtAuthHandler;
-//		return basicAuthHandler;
-//	}
-
-//	/**
-//	 * User session handler which will provider the user from within the session.
-//	 * 
-//	 * @return
-//	 */
-//	@Provides
-//	@Singleton
-//	public UserSessionHandler userSessionHandler(BCryptPasswordEncoder passwordEncoder, Database db) {
-//		return UserSessionHandler.create(authProvider(passwordEncoder, db));
-//	}
-//
-//	/**
-//	 * Return the mesh auth provider that can be used to authenticate a user.
-//	 * 
-//	 * @return
-//	 */
-//	@Provides
-//	@Singleton
-//	public MeshAuthProvider authProvider(BCryptPasswordEncoder passwordEncoder, Database db) {
-//		return new MeshJWTAuthProvider(passwordEncoder, db);
-//		return new MeshAuthProvider(passwordEncoder, db);
-//	}
-
 	/**
 	 * Return the configured CORS handler.
 	 * 
