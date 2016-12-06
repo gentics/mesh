@@ -397,7 +397,7 @@ public class DemoDataProvider {
 
 			log.info("Creating project {" + name + "}");
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReference().setName("folder"));
 			request.setName(name);
 			ProjectResponse project = call(() -> client.createProject(request));
 			projects.put(name, project);

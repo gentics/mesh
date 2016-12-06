@@ -12,7 +12,7 @@ public class CrossEndpointTest extends AbstractRestEndpointTest {
 	public void testAccessNewProjectRoute() {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
-		request.setSchemaReference(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReference().setName("folder"));
 		request.setName(name);
 
 		call(() -> getClient().createProject(request));

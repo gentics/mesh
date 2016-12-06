@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlFieldListImpl, String> {
 
 	String TYPE = "html";
+
 	FieldTransformator<HtmlFieldListImpl> HTML_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		HtmlGraphFieldList htmlFieldList = container.getHTMLList(fieldKey);
 		if (htmlFieldList == null) {

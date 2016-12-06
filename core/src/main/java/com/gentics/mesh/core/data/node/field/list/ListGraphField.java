@@ -8,6 +8,13 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
 
+/**
+ * A listable graph field is a field which can be nested in lists. Typical listable graph fields are date, string, number fields.
+ * 
+ * @param <T>
+ * @param <RM>
+ * @param <U>
+ */
 public interface ListGraphField<T extends ListableGraphField, RM extends Field, U> extends MicroschemaListableGraphField, MeshVertex {
 
 	/**
@@ -18,7 +25,7 @@ public interface ListGraphField<T extends ListableGraphField, RM extends Field, 
 	List<? extends T> getList();
 
 	/**
-	 * Return the values stored in the items
+	 * Return the values stored in the items.
 	 *
 	 * @return
 	 */

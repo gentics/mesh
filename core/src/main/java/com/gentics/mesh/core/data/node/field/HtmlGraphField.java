@@ -4,7 +4,6 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.LinkType;
 
@@ -18,7 +17,7 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 	FieldTransformator<HtmlField> HTML_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		HtmlGraphField graphHtmlField = container.getHtml(fieldKey);
 		if (graphHtmlField == null) {
-			return new HtmlFieldImpl();
+			return null;
 		} else {
 			HtmlField field = graphHtmlField.transformToRest(ac);
 			// If needed resolve links within the html

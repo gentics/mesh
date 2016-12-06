@@ -46,6 +46,9 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Single;
 
+/**
+ * Main CRUD handler for the Node Endpoint.
+ */
 public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	@Inject

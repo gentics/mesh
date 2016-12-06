@@ -6,6 +6,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 public class ProjectExamples extends AbstractExamples {
 
@@ -52,6 +53,7 @@ public class ProjectExamples extends AbstractExamples {
 	public ProjectCreateRequest getProjectCreateRequest(String name) {
 		ProjectCreateRequest projectCreate = new ProjectCreateRequest();
 		projectCreate.setName(name);
+		projectCreate.setSchema(new SchemaReference().setName("folder").setUuid(randomUUID()));
 		return projectCreate;
 	}
 

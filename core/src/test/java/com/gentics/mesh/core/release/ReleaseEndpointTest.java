@@ -211,7 +211,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName(newProjectName);
-		createProject.setSchemaReference(new SchemaReference().setName("folder"));
+		createProject.setSchema(new SchemaReference().setName("folder"));
 		call(() -> getClient().createProject(createProject));
 
 		call(() -> getClient().createRelease(newProjectName, request));

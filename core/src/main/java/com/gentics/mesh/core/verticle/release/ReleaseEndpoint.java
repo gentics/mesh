@@ -20,7 +20,7 @@ import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
- * Verticle for REST endpoints to manage Releases
+ * Verticle for REST endpoints to manage Releases.
  */
 @Singleton
 public class ReleaseEndpoint extends AbstractProjectEndpoint {

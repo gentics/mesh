@@ -11,7 +11,6 @@ public class PathSegment {
 
 	private Node node;
 	private GraphField pathField;
-
 	private String languageTag;
 
 	/**

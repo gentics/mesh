@@ -18,7 +18,7 @@ public class ProjectEndpointPerformanceTest extends AbstractRestEndpointTest {
 		for (int i = 0; i < 200; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("NewProject" + i);
-			request.setSchemaReference(new SchemaReference().setName("content"));
+			request.setSchema(new SchemaReference().setName("content"));
 			call(() -> getClient().createProject(request));
 		}
 	}
@@ -44,7 +44,7 @@ public class ProjectEndpointPerformanceTest extends AbstractRestEndpointTest {
 		loggingStopWatch(logger, "project.create", 200, (step) -> {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("Project" + step);
-			request.setSchemaReference(new SchemaReference().setName("content"));
+			request.setSchema(new SchemaReference().setName("content"));
 			call(() -> getClient().createProject(request));
 		});
 	}

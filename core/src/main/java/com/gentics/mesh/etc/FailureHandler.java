@@ -26,6 +26,11 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 	private static final Logger log = LoggerFactory.getLogger(FailureHandler.class);
 
+	/**
+	 * Create a new failure handler.
+	 * 
+	 * @return
+	 */
 	public static Handler<RoutingContext> create() {
 		return new FailureHandler();
 	}

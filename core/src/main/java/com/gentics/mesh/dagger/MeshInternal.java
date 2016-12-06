@@ -27,6 +27,9 @@ public interface MeshInternal {
 
 	}
 
+	/**
+	 * Clear the reference to the dagger mesh component. This is useful if you want to start a new dagger context (e.g. for unit tests).
+	 */
 	static void clear() {
 		applicationComponent.set(null);
 	}
