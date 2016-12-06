@@ -406,6 +406,7 @@ public class NodeGraphFieldContainerTransformator extends AbstractTransformator<
 					break;
 				case "string":
 					fieldInfo.put("type", STRING);
+					addRawInfo(fieldInfo, STRING);
 					break;
 				case "html":
 					fieldInfo.put("type", STRING);
