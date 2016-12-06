@@ -16,7 +16,7 @@ public interface DateGraphField extends ListableGraphField, BasicGraphField<Date
 	FieldTransformator<DateField> DATE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		DateGraphField graphDateField = container.getDate(fieldKey);
 		if (graphDateField == null) {
-			return new DateFieldImpl();
+			return null;
 		} else {
 			return graphDateField.transformToRest(ac);
 		}
