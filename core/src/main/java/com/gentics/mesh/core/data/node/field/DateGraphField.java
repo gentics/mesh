@@ -4,7 +4,6 @@ import static com.gentics.mesh.util.DateUtils.fromISO8601;
 
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.DateField;
-import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 
 /**
  * The DateField Domain Model interface.
