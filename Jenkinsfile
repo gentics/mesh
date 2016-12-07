@@ -133,7 +133,7 @@ node('dockerRoot') {
 
 	stage 'Deploy/Push'
 	if (Boolean.valueOf(runDeploy)) {
-	        if (!Boolean.valueOf(runDocker)) {
+	        if (Boolean.valueOf(runDocker)) {
 			withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
 				withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
 					sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD -e entwicklung@genitcs.com'
