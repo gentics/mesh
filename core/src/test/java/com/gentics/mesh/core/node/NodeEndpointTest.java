@@ -58,6 +58,7 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -1396,8 +1397,15 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			NodeGraphFieldContainer container = prod.getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", container.getString("name").getString());
 			assertEquals("Concorde english title", container.getString("title").getString());
+			UserInfo userInfo = dataProvider.createUserInfo("dummy", "Dummy Firstname", "Dummy Lastname");
+			group().addUser(userInfo.getUser());
 			return container;
 		});
+
+		// Now login with a different user to see that the editor field gets updated correctly
+		getClient().logout().toBlocking().value();
+		getClient().setLogin("dummy", "test123");
+		getClient().login().toBlocking().value();
 
 		// 2. Prepare the update request (change name field)
 		NodeUpdateRequest request = new NodeUpdateRequest();
@@ -1409,6 +1417,9 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		// 3. Invoke update
 		NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, uuid, request, new NodeParameters().setLanguages("en", "de")));
+		// Assert updater information
+		assertEquals("Dummy Firstname", restNode.getEditor().getFirstName());
+		assertEquals("Dummy Lastname", restNode.getEditor().getLastName());
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
 		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("1.1").hasStringField("name", newName)

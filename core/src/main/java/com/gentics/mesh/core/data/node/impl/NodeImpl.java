@@ -362,7 +362,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// Create the new container
 		NodeGraphFieldContainerImpl container = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		if (original != null) {
-			container.setEditor(original.getEditor());
+			container.setEditor(user);
 			container.setLastEditedTimestamp();
 			container.setLanguage(language);
 			container.setSchemaContainerVersion(original.getSchemaContainerVersion());
