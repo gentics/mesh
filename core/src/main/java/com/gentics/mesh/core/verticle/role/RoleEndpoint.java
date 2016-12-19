@@ -54,7 +54,8 @@ public class RoleEndpoint extends AbstractEndpoint {
 		permissionSetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
 		permissionSetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
-		permissionSetEndpoint.addUriParameter("pathToElement", "API path to the element.", "projects/" + UUIDUtil.randomUUID());
+		permissionSetEndpoint.addUriParameter("pathToElement", "API path to the element.",
+				"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
 		permissionSetEndpoint.method(POST);
 		permissionSetEndpoint.description("Set the permissions between role and the targeted element.");
 		permissionSetEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Permissions were set.");
@@ -71,7 +72,8 @@ public class RoleEndpoint extends AbstractEndpoint {
 		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		permissionGetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
 		permissionGetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
-		permissionGetEndpoint.addUriParameter("pathToElement", "API path to the element.", "projects/" + UUIDUtil.randomUUID());
+		permissionGetEndpoint.addUriParameter("pathToElement", "API path to the element.",
+				"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
 		permissionGetEndpoint.description("Load the permissions between given role and the targeted element.");
 		permissionGetEndpoint.method(GET);
 		permissionGetEndpoint.produces(APPLICATION_JSON);

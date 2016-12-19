@@ -122,6 +122,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "System status");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
+			//TODO this is currently polled by apa. We need to update their monitoring as well if we change this
 			handler.handleStatus(ac);
 		});
 

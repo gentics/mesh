@@ -26,6 +26,10 @@ public class ProjectInfoEndpoint extends AbstractEndpoint {
 		this.crudHandler = crudHandler;
 	}
 
+	public ProjectInfoEndpoint() {
+		super("", null);
+	}
+
 	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
