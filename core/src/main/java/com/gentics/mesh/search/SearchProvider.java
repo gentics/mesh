@@ -1,9 +1,11 @@
 package com.gentics.mesh.search;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.node.Node;
+import org.elasticsearch.node.NodeValidationException;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
@@ -85,18 +87,22 @@ public interface SearchProvider {
 
 	/**
 	 * Start the search provider.
+	 * @throws NodeValidationException 
 	 */
-	void start();
+	void start() throws NodeValidationException;
 
 	/**
 	 * Stop the search provider.
+	 * @throws IOException 
 	 */
-	void stop();
+	void stop() throws IOException;
 
 	/**
 	 * Reset the search provider.
+	 * @throws IOException 
+	 * @throws NodeValidationException 
 	 */
-	void reset();
+	void reset() throws IOException, NodeValidationException;
 
 	/**
 	 * Return the elastic search node.

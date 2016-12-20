@@ -16,9 +16,6 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryAction;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
@@ -31,9 +28,9 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.indices.IndexAlreadyExistsException;
+import org.elasticsearch.index.query.SimpleQueryStringBuilder;
 import org.elasticsearch.node.Node;
-import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
+import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
@@ -60,12 +57,12 @@ public class ElasticSearchProvider implements SearchProvider {
 	private ElasticSearchOptions options;
 
 	@Override
-	public void start() {
+	public void start() throws NodeValidationException {
 		if (log.isDebugEnabled()) {
 			log.debug("Creating elasticsearch node");
 		}
 		long start = System.currentTimeMillis();
-		Settings settings = Settings.settingsBuilder()
+		Settings settings = Settings.builder()
 
 				.put("threadpool.index.queue_size", -1)
 
@@ -77,8 +74,6 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				.put("node.name", MeshNameProvider.getInstance().getName())
 
-				.put("plugin.types", DeleteByQueryPlugin.class.getName())
-
 				.put("node.local", true)
 
 				.put("index.max_result_window", Integer.MAX_VALUE)
@@ -86,9 +81,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				.build();
 
 		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();
-		classpathPlugins.add(DeleteByQueryPlugin.class);
 		// TODO configure ES cluster options
-		node = new MeshNode(settings, classpathPlugins);
+		node = new Node(settings);
 		node.start();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
@@ -100,8 +94,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	 * 
 	 * @param options
 	 * @return Fluent API
+	 * @throws NodeValidationException 
 	 */
-	public ElasticSearchProvider init(ElasticSearchOptions options) {
+	public ElasticSearchProvider init(ElasticSearchOptions options) throws NodeValidationException {
 		this.options = options;
 		start();
 		return this;
@@ -113,7 +108,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void reset() {
+	public void reset() throws IOException, NodeValidationException {
 		if (log.isDebugEnabled()) {
 			log.debug("Resetting elastic search");
 		}
@@ -137,7 +132,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void stop() {
+	public void stop() throws IOException {
 		node.close();
 	}
 
@@ -179,15 +174,15 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 
 				@Override
-				public void onFailure(Throwable e) {
-					if (!(e instanceof IndexAlreadyExistsException)) {
-						sub.onError(e);
-						log.error("Error while creating index {" + indexName + "}", e);
-					} else {
+				public void onFailure(Exception e) {
+//					if (!(e instanceof IndexAlreadyExistsException)) {
+//						sub.onError(e);
+//						log.error("Error while creating index {" + indexName + "}", e);
+//					} else {
+					e.printStackTrace();
 						sub.onCompleted();
-					}
+//					}
 				}
-
 			});
 		});
 	}
@@ -207,7 +202,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 
 				@Override
-				public void onFailure(Throwable e) {
+				public void onFailure(Exception e) {
 					log.error("Could not get object {" + uuid + ":" + type + "} from index {" + index + "}");
 					sub.onError(e);
 				}
@@ -231,7 +226,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 
 				@Override
-				public void onFailure(Throwable e) {
+				public void onFailure(Exception e) {
 					log.error("Could not delete object {" + uuid + ":" + type + "} from index {" + index + "}");
 					sub.onError(e);
 				}
@@ -259,7 +254,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 
 				@Override
-				public void onFailure(Throwable e) {
+				public void onFailure(Exception e) {
 					log.error(
 							"Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
 							e);
@@ -290,7 +285,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 
 				@Override
-				public void onFailure(Throwable e) {
+				public void onFailure(Exception e) {
 					log.error("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
 							e);
 					sub.onError(e);
@@ -316,7 +311,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				};
 
 				@Override
-				public void onFailure(Throwable e) {
+				public void onFailure(Exception e) {
 					log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
@@ -331,29 +326,29 @@ public class ElasticSearchProvider implements SearchProvider {
 			if (log.isDebugEnabled()) {
 				log.debug("Clearing index {" + indexName + "}");
 			}
-
-			DeleteByQueryRequestBuilder builder = new DeleteByQueryRequestBuilder(getSearchClient(), DeleteByQueryAction.INSTANCE);
-			builder.setIndices(indexName).setQuery(QueryBuilders.matchAllQuery()).execute().addListener(new ActionListener<DeleteByQueryResponse>() {
-				public void onResponse(DeleteByQueryResponse response) {
-					if (log.isDebugEnabled()) {
-						log.debug("Clearing index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
-					}
-					sub.onCompleted();
-				};
-
-				@Override
-				public void onFailure(Throwable e) {
-					if (e instanceof IndexNotFoundException) {
-						if (log.isDebugEnabled()) {
-							log.debug("Clearing index failed since the index does not exists. We ignore this error", e);
-						}
-						sub.onCompleted();
-					} else {
-						log.error("Clearing index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-						sub.onError(e);
-					}
-				}
-			});
+//			DeleteByQueryRequestBuilder builder = new DeleteByQueryRequestBuilder(getSearchClient(), DeleteByQueryAction.INSTANCE);
+//			builder.setIndices(indexName).setQuery(QueryBuilders.matchAllQuery()).execute().addListener(new ActionListener<DeleteByQueryResponse>() {
+//				public void onResponse(DeleteByQueryResponse response) {
+//					if (log.isDebugEnabled()) {
+//						log.debug("Clearing index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+//					}
+//					sub.onCompleted();
+//				};
+//
+//				@Override
+//				public void onFailure(Exception e) {
+//					if (e instanceof IndexNotFoundException) {
+//						if (log.isDebugEnabled()) {
+//							log.debug("Clearing index failed since the index does not exists. We ignore this error", e);
+//						}
+//						sub.onCompleted();
+//					} else {
+//						log.error("Clearing index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+//						sub.onError(e);
+//					}
+//				}
+//			});
+			sub.onCompleted();
 
 		});
 	}
@@ -366,7 +361,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				log.debug("Deleting documents from index {" + indexName + "} via query {" + searchQuery + "}");
 			}
 			Client client = getNode().client();
-			SearchRequestBuilder builder = client.prepareSearch(indexName).setSource(searchQuery);
+			SimpleQueryStringBuilder queryBuilder = QueryBuilders.simpleQueryStringQuery(searchQuery);
+			SearchRequestBuilder builder = client.prepareSearch(indexName).setQuery(queryBuilder);
 
 			Set<Completable> obs = new HashSet<>();
 			builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
@@ -390,7 +386,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 
 				@Override
-				public void onFailure(Throwable e) {
+				public void onFailure(Exception e) {
 					log.error("Error deleting from index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
@@ -407,7 +403,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public String getVersion() {
 		NodesInfoResponse info = getNode().client().admin().cluster().prepareNodesInfo().all().get();
-		return info.getAt(0).getVersion().number();
+		return info.getNodes().get(0).getVersion().toString();
 	}
 
 }

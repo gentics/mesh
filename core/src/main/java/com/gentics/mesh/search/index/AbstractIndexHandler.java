@@ -196,7 +196,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					}
 
 					@Override
-					public void onFailure(Throwable e) {
+					public void onFailure(Exception e) {
 						sub.onError(e);
 					}
 				});

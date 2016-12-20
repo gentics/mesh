@@ -2,6 +2,7 @@ package com.gentics.mesh.dagger;
 
 import javax.inject.Singleton;
 
+import org.elasticsearch.node.NodeValidationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
@@ -122,6 +123,7 @@ public class MeshModule {
 	 * Return the configured search provider.
 	 * 
 	 * @return
+	 * @throws NodeValidationException
 	 */
 	@Provides
 	@Singleton
@@ -131,7 +133,11 @@ public class MeshModule {
 		if (options == null || options.getDirectory() == null) {
 			searchProvider = new DummySearchProvider();
 		} else {
-			searchProvider = new ElasticSearchProvider().init(options);
+			try {
+				searchProvider = new ElasticSearchProvider().init(options);
+			} catch (Exception e) {
+				log.error("Error while starting elasticsearch", e);
+			}
 		}
 		return searchProvider;
 	}

@@ -437,7 +437,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						}
 
 						@Override
-						public void onFailure(Throwable e) {
+						public void onFailure(Exception e) {
 							sub.onError(e);
 						}
 					});

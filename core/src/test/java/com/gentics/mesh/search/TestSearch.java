@@ -19,10 +19,11 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.search.SearchHit;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,9 +39,10 @@ public class TestSearch {
 	private Client client;
 
 	@Before
-	public void setup() throws IOException {
+	public void setup() throws IOException, NodeValidationException {
 		FileUtils.deleteDirectory(new File("data"));
-		Node node = NodeBuilder.nodeBuilder().node();
+		Settings settings = Settings.builder().build();
+		Node node = new Node(settings).start();
 		client = node.client();
 	}
 
@@ -69,14 +71,14 @@ public class TestSearch {
 	//	}
 
 	private void getDocument(String uuid, String language) {
-		GetResponse getResponse = client.prepareGet("node", "node-" + language, uuid).setFields("uuid", "name", "fields.name", "language").execute()
+		GetResponse getResponse = client.prepareGet("node", "node-" + language, uuid).setStoredFields("uuid", "name", "fields.name", "language").execute()
 				.actionGet();
-//		System.out.println("\nLoading object with uuid {" + uuid + "}");
-//		System.out.println("------------------------------");
-//		for (String field : getResponse.getFields().keySet()) {
-//			System.out.println(field + "=" + getResponse.getField(field).getValue());
-//		}
-//		System.out.println("------------------------------\n");
+		//		System.out.println("\nLoading object with uuid {" + uuid + "}");
+		//		System.out.println("------------------------------");
+		//		for (String field : getResponse.getFields().keySet()) {
+		//			System.out.println(field + "=" + getResponse.getField(field).getValue());
+		//		}
+		//		System.out.println("------------------------------\n");
 	}
 
 	private void search(String name) throws JsonParseException, JsonMappingException, IOException {
@@ -146,7 +148,7 @@ public class TestSearch {
 		json.put("fields", fields);
 		System.err.println(JsonUtil.toJson(json));
 		IndexResponse indexResponse = client.prepareIndex("node", "node-" + language, uuidForIndex).setSource(json).execute().actionGet();
-		System.out.println("Created document {" + uuidForIndex + "} with lang {" + language + "} name = " + indexResponse.isCreated());
+		System.out.println("Created document {" + uuidForIndex + "} with lang {" + language + "} name = " + indexResponse.getResult().name());
 	}
 
 }

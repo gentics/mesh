@@ -14,13 +14,17 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.apache.lucene.util.QueryBuilder;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.SimpleQueryStringBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -128,7 +132,8 @@ public class SearchRestHandler {
 			 */
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
+			SimpleQueryStringBuilder queryBuilder = QueryBuilders.simpleQueryStringQuery(queryStringObject.toString());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setQuery(queryBuilder);
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
@@ -226,7 +231,7 @@ public class SearchRestHandler {
 			}
 
 			@Override
-			public void onFailure(Throwable e) {
+			public void onFailure(Exception e) {
 				log.error("Search query failed", e);
 				throw error(BAD_REQUEST, "search_error_query");
 			}
