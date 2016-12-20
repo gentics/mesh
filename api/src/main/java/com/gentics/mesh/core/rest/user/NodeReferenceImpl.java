@@ -59,6 +59,7 @@ public class NodeReferenceImpl implements NodeReference {
 	 * 
 	 * @param projectName
 	 *            Name of the project to which the node belongs
+	 * @return Fluent API
 	 */
 	public NodeReferenceImpl setProjectName(String projectName) {
 		this.projectName = projectName;

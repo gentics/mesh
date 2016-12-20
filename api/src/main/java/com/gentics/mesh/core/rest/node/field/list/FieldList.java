@@ -24,6 +24,7 @@ public interface FieldList<T> extends Field {
 	 * Set the field list.
 	 * 
 	 * @param items
+	 * @return Fluent API
 	 */
 	FieldList<T> setItems(List<T> items);
 

@@ -83,9 +83,7 @@ public class UserTransformator extends AbstractTransformator<User> {
 		props.put(FIRSTNAME_KEY, fieldType(STRING, NOT_ANALYZED));
 		props.put(EMAIL_KEY, fieldType(STRING, NOT_ANALYZED));
 		props.put(NODEREFERECE_KEY, fieldType(STRING, NOT_ANALYZED));
-
-		props
-		.put(GROUPS_KEY, new JsonObject()
+		props.put(GROUPS_KEY, new JsonObject()
 			.put("type", OBJECT)
 			.put("properties", new JsonObject()
 				.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED))
