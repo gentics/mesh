@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.7.0-SNAPSHOT</version>
+	<version>0.7.0-tvc-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -21,6 +21,7 @@
 		<orientdb.version>2.2.13</orientdb.version>
 		<ferma.extensions.version>0.0.3-SNAPSHOT</ferma.extensions.version>
 		<dagger.version>2.6</dagger.version>
+		<rx.version>1.2.3</rx.version>
 
 		<surefire.forkcount>2</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>

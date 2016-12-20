@@ -418,16 +418,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		}
 
 		if (!isEmpty(requestModel.getPassword())) {
-			if (getPasswordHash() != null && isEmpty(requestModel.getOldPassword())) {
-				throw error(BAD_REQUEST, "user_error_missing_old_password");
-			}
 			BCryptPasswordEncoder encoder = MeshInternal.get().passwordEncoder();
-			// Check whether the old password matched up with the current one. Also allow update if no password has yet been set.
-			if (getPasswordHash() == null || encoder.matches(requestModel.getOldPassword(), getPasswordHash())) {
-				setPasswordHash(encoder.encode(requestModel.getPassword()));
-			} else {
-				throw error(BAD_REQUEST, "user_error_password_check_failed");
-			}
+			setPasswordHash(encoder.encode(requestModel.getPassword()));
 		}
 
 		setEditor(ac.getUser());

@@ -20,6 +20,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.CorsHandler;
+import io.vertx.ext.web.handler.LoggerHandler;
 
 /**
  * Central storage for all vertx web request routers.
@@ -95,7 +96,7 @@ public class RouterStorage {
 			rootRouter = Router.router(vertx);
 
 			// Root handlers
-			// rootRouter.route().handler(LoggerHandler.create());
+			rootRouter.route().handler(LoggerHandler.create());
 			// TODO add a dedicated error for api router that informs about APPLICATION_JSON requirements. This may not be true for other routes (eg. custom
 			// routes)
 			rootRouter.route().last().handler(DefaultNotFoundHandler.create());

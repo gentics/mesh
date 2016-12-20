@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.node;
 
 import java.util.Collection;
+import java.util.Map;
 
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -34,6 +35,14 @@ public interface FieldMap {
 	 * @return
 	 */
 	Field put(String fieldKey, Field field);
+
+	/**
+	 * Add or update all fields in the given map.
+	 *
+	 * @param fieldMap
+	 * @return
+	 */
+	FieldMap putAll(Map<String, Field> fieldMap);
 
 	/**
 	 * Return the size of the field map.
@@ -144,6 +153,14 @@ public interface FieldMap {
 	 * @return
 	 */
 	NodeResponse getNodeFieldExpanded(String fieldKey);
+
+	/**
+	 * Returns true if the given field is an expanded node field.
+	 *
+	 * @param fieldKey
+	 * @return
+	 */
+	boolean isExpandedNodeField(String fieldKey);
 
 	/**
 	 * Return the micronode field with the given key.

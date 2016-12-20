@@ -60,8 +60,9 @@ public class NodeReferenceImpl implements NodeReference {
 	 * @param projectName
 	 *            Name of the project to which the node belongs
 	 */
-	public void setProjectName(String projectName) {
+	public NodeReferenceImpl setProjectName(String projectName) {
 		this.projectName = projectName;
+		return this;
 	}
 
 	/**

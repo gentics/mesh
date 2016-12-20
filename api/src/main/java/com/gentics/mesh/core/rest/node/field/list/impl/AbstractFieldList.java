@@ -25,8 +25,9 @@ public abstract class AbstractFieldList<T> implements FieldList<T> {
 	}
 
 	@Override
-	public void setItems(List<T> items) {
+	public FieldList<T> setItems(List<T> items) {
 		this.items = items;
+		return this;
 	}
 
 	@JsonIgnore

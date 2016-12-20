@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.Mesh;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
@@ -116,7 +117,9 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 					String jwtToken = authProvider.generateToken(user2);
 					// Remove the original cookie and set the new one
 					context.removeCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
-					context.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, jwtToken));
+					context.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
+							.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime())
+							.setPath("/"));
 					authorise(user2, context);
 				} else {
 					log.warn("JWT decode failure", res.cause());

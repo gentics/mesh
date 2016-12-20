@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -539,6 +540,15 @@ public class FieldMapImpl implements FieldMap {
 	}
 
 	@Override
+	public FieldMap putAll(Map<String, Field> fieldMap) {
+		ObjectNode objectNode = ((ObjectNode) node);
+		fieldMap.forEach((key, field) -> {
+			objectNode.putPOJO(key, field);
+		});
+		return this;
+	}
+
+	@Override
 	public boolean remove(String fieldKey) {
 		ObjectNode objectNode = ((ObjectNode) node);
 		JsonNode object = objectNode.remove(fieldKey);
@@ -548,6 +558,21 @@ public class FieldMapImpl implements FieldMap {
 	@Override
 	public NodeResponse getNodeFieldExpanded(String key) {
 		return getField(key, FieldTypes.NODE, null, true);
+	}
+
+	@Override
+	public boolean isExpandedNodeField(String fieldKey) {
+		JsonNode field = node.get(fieldKey);
+		if (field == null) {
+			return false;
+		}
+		if (field.isObject() && field.has("fields")) {
+			return true;
+		}
+		if (field.isPojo()) {
+			return ((POJONode)field).getPojo() instanceof NodeResponse;
+		}
+		return false;
 	}
 
 	@Override

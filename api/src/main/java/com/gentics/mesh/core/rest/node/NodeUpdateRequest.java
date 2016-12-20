@@ -67,6 +67,18 @@ public class NodeUpdateRequest implements RestModel, FieldContainer {
 		return fields;
 	}
 
+
+	/**
+	 * Set the fields which should be updated.
+	 *
+	 * @param fields A field map containing all fields to be updated.
+	 * @return this
+	 */
+	public NodeUpdateRequest setFields(FieldMap fields) {
+		this.fields = fields;
+		return this;
+	}
+
 	/**
 	 * Get the version of the fields
 	 * @return version number
