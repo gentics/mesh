@@ -64,7 +64,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		long start = System.currentTimeMillis();
 		Settings settings = Settings.builder()
 
-				.put("threadpool.index.queue_size", -1)
+//				.put("threadpool.index.queue_size", -1)
 
 				.put("http.enabled", options.isHttpEnabled())
 
@@ -74,9 +74,15 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				.put("node.name", MeshNameProvider.getInstance().getName())
 
-				.put("node.local", true)
-
-				.put("index.max_result_window", Integer.MAX_VALUE)
+	            .put("transport.type", "local")
+//				.put("transport.profiles.default.port", "9300-9400")
+//				.put("transport.profiles.default.bind_host","10.0.0.1")
+//				.put("transport.profiles.client.port","9500-9600")
+//				.put("transport.profiles.client.bind_host","192.168.0.1")
+//				.put("transport.profiles.dmz.port","9700-9800")
+//				.put("transport.profiles.dmz.bind_host","172.16.1.2")
+				
+				//.put("index.max_result_window", Integer.MAX_VALUE)
 
 				.build();
 
