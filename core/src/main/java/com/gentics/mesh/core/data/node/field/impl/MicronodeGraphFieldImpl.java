@@ -77,7 +77,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		remove();
 		if (micronode != null) {
 			// Remove the micronode if this was the last edge to the micronode
-			if (micronode.getImpl().in(HAS_FIELD).count() == 0) {
+			if (micronode.in(HAS_FIELD).count() == 0) {
 				micronode.delete(null);
 			}
 		}
@@ -87,7 +87,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	public GraphField cloneTo(GraphFieldContainer container) {
 		Micronode micronode = getMicronode();
 
-		MicronodeGraphField field = getGraph().addFramedEdge(container.getImpl(), micronode.getImpl(), HAS_FIELD, MicronodeGraphFieldImpl.class);
+		MicronodeGraphField field = getGraph().addFramedEdge(container, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
 		field.setFieldKey(getFieldKey());
 		return field;
 	}

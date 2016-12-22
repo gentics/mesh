@@ -317,7 +317,7 @@ public abstract class AbstractDBTest {
 	}
 
 	public MeshAuthUser getRequestUser() {
-		return dataProvider.getUserInfo().getUser().getImpl().reframe(MeshAuthUserImpl.class);
+		return dataProvider.getUserInfo().getUser().reframe(MeshAuthUserImpl.class);
 	}
 
 	public SchemaContainer getSchemaContainer() {

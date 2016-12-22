@@ -86,7 +86,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 		if (container == null) {
 			container = getGraph().addFramedVertex(classOfU);
 			container.setLanguage(language);
-			GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(), GraphFieldContainerEdgeImpl.class);
+			GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 			edge.setLanguageTag(language.getLanguageTag());
 		}
 

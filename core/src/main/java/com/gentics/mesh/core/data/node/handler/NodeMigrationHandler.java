@@ -342,13 +342,13 @@ public class NodeMigrationHandler extends AbstractHandler {
 					return null;
 				}
 				node.getGraphFieldContainers(oldRelease, ContainerType.DRAFT).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl initialEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
+					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
 							GraphFieldContainerEdgeImpl.class);
 					initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 					initialEdge.setType(ContainerType.INITIAL);
 					initialEdge.setReleaseUuid(newReleaseUuid);
 
-					GraphFieldContainerEdgeImpl draftEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
+					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
 							GraphFieldContainerEdgeImpl.class);
 					draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 					draftEdge.setType(ContainerType.DRAFT);
@@ -358,7 +358,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 				});
 
 				node.getGraphFieldContainers(oldRelease, ContainerType.PUBLISHED).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl edge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
+					GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
 							GraphFieldContainerEdgeImpl.class);
 					edge.setLanguageTag(container.getLanguage().getLanguageTag());
 					edge.setType(ContainerType.PUBLISHED);
@@ -514,7 +514,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 				newMicronode.clone(oldMicronode);
 
 				// migrate the micronode, if it uses the fromVersion
-				if (newMicronode.getSchemaContainerVersion().getImpl().equals(fromVersion.getImpl())) {
+				if (newMicronode.getSchemaContainerVersion().equals(fromVersion)) {
 					// transform to rest and migrate
 					MicronodeResponse restModel = newMicronode.transformToRestSync(ac, 0);
 					migrate(ac, newMicronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);

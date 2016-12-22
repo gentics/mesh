@@ -182,7 +182,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		operateNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			if (ac.getUser().hasPermission(project.getImpl(), GraphPermission.UPDATE_PERM)) {
+			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
 				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
 				Tuple<SearchQueueBatch, Single<Schema>> tuple = db.tx(() -> {
 
@@ -229,7 +229,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		operateNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			if (ac.getUser().hasPermission(project.getImpl(), GraphPermission.UPDATE_PERM)) {
+			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
 				// TODO check whether schema is assigned to project
 
 				SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
@@ -293,7 +293,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 							+ currentVersion.getFieldContainers(releaseUuid).size());
 					//					if (!getLatestVersion().getUuid().equals(version.getUuid())) {
 					//						for (GraphFieldContainer container : version.getFieldContainers()) {
-					//							NodeImpl node = container.getImpl().in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
+					//							NodeImpl node = container.in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
 					//							System.out.println(
 					//									"Node: " + node.getUuid() + "ne: " + node.getLastEditedTimestamp() + "nc: " + node.getCreationTimestamp());
 					//						}

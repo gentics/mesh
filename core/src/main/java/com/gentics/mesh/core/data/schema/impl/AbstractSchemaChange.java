@@ -30,7 +30,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public SchemaChange<T> setNextChange(SchemaChange<?> change) {
-		setUniqueLinkOutTo(change.getImpl(), HAS_CHANGE);
+		setUniqueLinkOutTo(change, HAS_CHANGE);
 		return this;
 	}
 
@@ -41,7 +41,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public SchemaChange<T> setPreviousChange(SchemaChange<?> change) {
-		setUniqueLinkInTo(change.getImpl(), HAS_CHANGE);
+		setUniqueLinkInTo(change, HAS_CHANGE);
 		return this;
 	}
 
@@ -55,7 +55,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public SchemaChange<T> setPreviousContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> containerVersion) {
-		setSingleLinkInTo(containerVersion.getImpl(), HAS_SCHEMA_CONTAINER);
+		setSingleLinkInTo(containerVersion, HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 
@@ -66,7 +66,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public SchemaChange<T> setNextSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> containerVersion) {
-		setSingleLinkOutTo(containerVersion.getImpl(), HAS_SCHEMA_CONTAINER);
+		setSingleLinkOutTo(containerVersion, HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 

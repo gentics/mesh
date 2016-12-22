@@ -184,7 +184,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public void setReferencedNode(Node node) {
-		setUniqueLinkOutTo(node.getImpl(), HAS_NODE_REFERENCE);
+		setUniqueLinkOutTo(node, HAS_NODE_REFERENCE);
 	}
 
 	@Override
@@ -251,7 +251,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
 		}
-		return hasPermissionForId(vertex.getImpl().getId(), permission);
+		return hasPermissionForId(vertex.getId(), permission);
 	}
 
 	@Override
@@ -345,7 +345,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
 		// 1. Determine all roles that grant given permission on the source node.
-		List<? extends Role> rolesThatGrantPermission = sourceNode.getImpl().in(permission.label()).toListExplicit(RoleImpl.class);
+		List<? extends Role> rolesThatGrantPermission = sourceNode.in(permission.label()).toListExplicit(RoleImpl.class);
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : rolesThatGrantPermission) {
@@ -359,7 +359,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
 
 		for (GraphPermission perm : GraphPermission.values()) {
-			List<? extends Role> rolesWithPerm = sourceNode.getImpl().in(perm.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
+			List<? extends Role> rolesWithPerm = sourceNode.in(perm.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
 			for (Role role : rolesWithPerm) {
 				if (log.isDebugEnabled()) {
 					log.debug("Granting permission {" + perm.name() + "} to node {" + targetNode.getUuid() + "} on role {" + role.getName() + "}");

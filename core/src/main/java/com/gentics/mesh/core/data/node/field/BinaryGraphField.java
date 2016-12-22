@@ -6,6 +6,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 
@@ -15,7 +16,7 @@ import io.vertx.core.buffer.Buffer;
 /**
  * The BinaryField Domain Model interface.
  */
-public interface BinaryGraphField extends BasicGraphField<BinaryField> {
+public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVertex {
 
 	FieldTransformator<BinaryField> BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);

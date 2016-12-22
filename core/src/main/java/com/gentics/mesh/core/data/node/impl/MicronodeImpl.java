@@ -100,7 +100,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> version) {
-		setLinkOut(version.getImpl(), HAS_MICROSCHEMA_CONTAINER);
+		setLinkOut(version, HAS_MICROSCHEMA_CONTAINER);
 	}
 
 	@Override

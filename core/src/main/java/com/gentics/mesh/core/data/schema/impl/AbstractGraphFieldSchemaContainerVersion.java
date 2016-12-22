@@ -86,7 +86,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setNextChange(SchemaChange<?> change) {
-		setSingleLinkOutTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
+		setSingleLinkOutTo(change, HAS_SCHEMA_CONTAINER);
 	}
 
 	@Override
@@ -96,7 +96,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setPreviousChange(SchemaChange<?> change) {
-		setSingleLinkInTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
+		setSingleLinkInTo(change, HAS_SCHEMA_CONTAINER);
 	}
 
 	@Override
@@ -111,12 +111,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setPreviousVersion(SCV container) {
-		setSingleLinkInTo(container.getImpl(), HAS_VERSION);
+		setSingleLinkInTo(container, HAS_VERSION);
 	}
 
 	@Override
 	public void setNextVersion(SCV container) {
-		setSingleLinkOutTo(container.getImpl(), HAS_VERSION);
+		setSingleLinkOutTo(container, HAS_VERSION);
 	}
 
 	/**
@@ -267,7 +267,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setSchemaContainer(SC container) {
-		setUniqueLinkInTo(container.getImpl(), HAS_PARENT_CONTAINER);
+		setUniqueLinkInTo(container, HAS_PARENT_CONTAINER);
 	}
 
 	@Override

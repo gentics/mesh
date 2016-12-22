@@ -398,14 +398,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		container.updateDisplayFieldValue();
 
 		// create a new draft edge
-		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(), GraphFieldContainerEdgeImpl.class);
+		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 		edge.setLanguageTag(languageTag);
 		edge.setReleaseUuid(releaseUuid);
 		edge.setType(ContainerType.DRAFT);
 
 		// if there is no initial edge, create one
 		if (getGraphFieldContainerEdge(languageTag, releaseUuid, ContainerType.INITIAL) == null) {
-			GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(), GraphFieldContainerEdgeImpl.class);
+			GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 			initialEdge.setLanguageTag(languageTag);
 			initialEdge.setReleaseUuid(releaseUuid);
 			initialEdge.setType(ContainerType.INITIAL);
@@ -451,18 +451,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void addTag(Tag tag, Release release) {
 		removeTag(tag, release);
-		TagEdge edge = addFramedEdge(HAS_TAG, tag.getImpl(), TagEdgeImpl.class);
+		TagEdge edge = addFramedEdge(HAS_TAG, tag, TagEdgeImpl.class);
 		edge.setReleaseUuid(release.getUuid());
 	}
 
 	@Override
 	public void removeTag(Tag tag, Release release) {
-		outE(HAS_TAG).has(TagEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).mark().inV().retain(tag.getImpl()).back().removeAll();
+		outE(HAS_TAG).has(TagEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).mark().inV().retain(tag).back().removeAll();
 	}
 
 	@Override
 	public void setSchemaContainer(SchemaContainer schema) {
-		setLinkOut(schema.getImpl(), HAS_SCHEMA_CONTAINER);
+		setLinkOut(schema, HAS_SCHEMA_CONTAINER);
 	}
 
 	@Override
@@ -498,7 +498,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void setParentNode(String releaseUuid, Node parent) {
 		outE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).removeAll();
-		addFramedEdge(HAS_PARENT_NODE, parent.getImpl()).setProperty(RELEASE_UUID_KEY, releaseUuid);
+		addFramedEdge(HAS_PARENT_NODE, parent).setProperty(RELEASE_UUID_KEY, releaseUuid);
 	}
 
 	@Override
@@ -508,7 +508,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void setProject(Project project) {
-		setLinkOut(project.getImpl(), ASSIGNED_TO_PROJECT);
+		setLinkOut(project, ASSIGNED_TO_PROJECT);
 	}
 
 	@Override
@@ -1075,7 +1075,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Remove the published edge for each found container
 			getGraphFieldContainerEdges(releaseUuid, ContainerType.PUBLISHED).stream().forEach(EdgeFrame::remove);
 			// Reset the webroot property for each published container
-			published.forEach(c -> c.getImpl().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null));
+			published.forEach(c -> c.setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null));
 
 			// Handle recursion
 			PublishParameters parameters = ac.getPublishParameters();
@@ -1161,7 +1161,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			// remove the "published" edge
 			getGraphFieldContainerEdge(languageTag, releaseUuid, ContainerType.PUBLISHED).remove();
-			published.getImpl().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null);
+			published.setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 
 			assertPublishConsistency(ac);
 
@@ -1184,7 +1184,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// create new published edge
-		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(), GraphFieldContainerEdgeImpl.class);
+		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 		edge.setLanguageTag(languageTag);
 		edge.setReleaseUuid(releaseUuid);
 		edge.setType(ContainerType.PUBLISHED);

@@ -82,7 +82,7 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 
 	@Override
 	public void removeField(GraphFieldContainer container) {
-		container.getImpl().unlinkOut(getImpl(), HAS_LIST);
+		container.unlinkOut(this, HAS_LIST);
 
 		if (in(HAS_LIST).count() == 0) {
 			delete(null);
@@ -91,7 +91,7 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 
 	@Override
 	public GraphField cloneTo(GraphFieldContainer container) {
-		container.getImpl().linkOut(getImpl(), HAS_LIST);
+		container.linkOut(this, HAS_LIST);
 		return container.getList(getClass(), getFieldKey());
 	}
 

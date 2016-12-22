@@ -70,20 +70,20 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public void addUser(User user) {
-		setUniqueLinkInTo(user.getImpl(), HAS_USER);
+		setUniqueLinkInTo(user, HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
 		for (Role role : getRoles()) {
-			user.getImpl().setUniqueLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 	}
 
 	public void removeUser(User user) {
-		unlinkIn(user.getImpl(), HAS_USER);
+		unlinkIn(user, HAS_USER);
 
 		// Remove shortcut edge from user to roles of this group
 		for (Role role : getRoles()) {
-			user.getImpl().unlinkOut(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.unlinkOut(role, ASSIGNED_TO_ROLE);
 		}
 		PermissionStore.invalidate();
 	}
@@ -93,32 +93,32 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public void addRole(Role role) {
-		setUniqueLinkInTo(role.getImpl(), HAS_ROLE);
+		setUniqueLinkInTo(role, HAS_ROLE);
 
 		// Add shortcut edges from role to users of this group
 		for (User user : getUsers()) {
-			user.getImpl().setUniqueLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 
 	}
 
 	public void removeRole(Role role) {
-		unlinkIn(role.getImpl(), HAS_ROLE);
+		unlinkIn(role, HAS_ROLE);
 
 		// Remove shortcut edges from role to users of this group
 		for (User user : getUsers()) {
-			user.getImpl().unlinkOut(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.unlinkOut(role, ASSIGNED_TO_ROLE);
 		}
 		PermissionStore.invalidate();
 	}
 
 	// TODO add java handler
 	public boolean hasRole(Role role) {
-		return in(HAS_ROLE).retain(role.getImpl()).hasNext();
+		return in(HAS_ROLE).retain(role).hasNext();
 	}
 
 	public boolean hasUser(User user) {
-		return in(HAS_USER).retain(user.getImpl()).hasNext();
+		return in(HAS_USER).retain(user).hasNext();
 	}
 
 	/**
@@ -127,7 +127,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser.getImpl()).back().has(UserImpl.class);
+				.retain(requestUser).back().has(UserImpl.class);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, UserImpl.class);
 	}
 

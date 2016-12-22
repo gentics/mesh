@@ -49,7 +49,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	@Override
 	public void addRole(Role role) {
 		if (log.isDebugEnabled()) {
-			log.debug("Adding role {" + role.getUuid() + ":" + role.getName() + "#" + role.getImpl().getId() + "} to roleRoot {" + getId() + "}");
+			log.debug("Adding role {" + role.getUuid() + ":" + role.getName() + "#" + role.getId() + "} to roleRoot {" + getId() + "}");
 		}
 		addItem(role);
 	}

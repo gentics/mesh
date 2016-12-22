@@ -119,7 +119,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	private long countEdges(MeshVertex vertex, String label, Direction direction) {
 		long count = 0;
-		Iterator<Edge> it = vertex.getImpl().getElement().getEdges(direction, label).iterator();
+		Iterator<Edge> it = vertex.getElement().getEdges(direction, label).iterator();
 		while (it.hasNext()) {
 			it.next();
 			count++;
@@ -209,7 +209,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testRoleAddCrudPermissions() {
 		try (NoTx noTx = db.noTx()) {
-			MeshAuthUser requestUser = user().getImpl().reframe(MeshAuthUserImpl.class);
+			MeshAuthUser requestUser = user().reframe(MeshAuthUserImpl.class);
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 			Node parentNode = folder("2015");
 			assertNotNull(parentNode);

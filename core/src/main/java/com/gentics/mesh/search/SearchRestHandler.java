@@ -159,7 +159,7 @@ public class SearchRestHandler {
 						T element = rootVertex.call().findByUuid(uuid);
 						if (element == null) {
 							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {"
-									+ rootVertex.call().getImpl().getFermaType() + "}");
+									+ rootVertex.call().getRootLabel() + "}");
 							obsResult.toHandler().handle(Future.succeededFuture());
 						} else {
 							obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));

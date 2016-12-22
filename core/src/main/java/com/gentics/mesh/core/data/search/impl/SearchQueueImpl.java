@@ -57,12 +57,12 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
 	@Override
 	public void add(SearchQueueBatch batch) {
-		setUniqueLinkOutTo(batch.getImpl(), HAS_BATCH);
+		setUniqueLinkOutTo(batch, HAS_BATCH);
 	}
 
 	@Override
 	public void remove(SearchQueueBatch batch) {
-		unlinkOut(batch.getImpl(), HAS_BATCH);
+		unlinkOut(batch, HAS_BATCH);
 	}
 
 	@Override

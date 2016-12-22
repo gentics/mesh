@@ -80,7 +80,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void setTagRoot(TagRoot tagRoot) {
-		linkOut(tagRoot.getImpl(), HAS_TAG_ROOT);
+		linkOut(tagRoot, HAS_TAG_ROOT);
 	}
 
 	@Override
@@ -110,7 +110,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void setProject(Project project) {
-		setUniqueLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+		setUniqueLinkOutTo(project, ASSIGNED_TO_PROJECT);
 	}
 
 	@Override
@@ -200,11 +200,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		}
 		this.setName(newName);
 		addIndexBatchEntry(batch, STORE_ACTION, true);
-		return this;
-	}
-
-	@Override
-	public TagFamilyImpl getImpl() {
 		return this;
 	}
 

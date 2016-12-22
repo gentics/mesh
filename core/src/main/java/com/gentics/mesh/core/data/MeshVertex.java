@@ -2,17 +2,17 @@ package com.gentics.mesh.core.data;
 
 import java.util.Set;
 
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
+import com.syncleus.ferma.VertexFrame;
 import com.tinkerpop.blueprints.Vertex;
 
 /**
  * A mesh vertex is a mesh element that exposes various graph OGM specific methods. We use the interface abstraction in order to hide certain ferma methods
  * which would otherwise clutter the API.
  */
-public interface MeshVertex extends MeshElement {
+public interface MeshVertex extends MeshElement, VertexFrame {
 
 	/**
 	 * Return the tinkerpop blueprint vertex of this mesh vertex.
@@ -40,10 +40,14 @@ public interface MeshVertex extends MeshElement {
 	void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke);
 
 	/**
-	 * Return the implementation for this element which exposes various ferma methods.
+	 * Add a unique <b>out-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one
+	 * <b>out-bound</b> link exists between the two vertices for each label.
 	 * 
-	 * @return
+	 * @param vertex
+	 *            Target vertex
+	 * @param labels
+	 *            Labels to handle
 	 */
-	MeshVertexImpl getImpl();
+	void setUniqueLinkOutTo(VertexFrame vertex, String... labels);
 
 }

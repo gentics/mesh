@@ -153,7 +153,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Release setNextRelease(Release release) {
-		setUniqueLinkOutTo(release.getImpl(), HAS_NEXT_RELEASE);
+		setUniqueLinkOutTo(release, HAS_NEXT_RELEASE);
 		return this;
 	}
 
@@ -257,18 +257,18 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 			edgeLabel = HAS_MICROSCHEMA_VERSION;
 		}
 
-		setUniqueLinkOutTo(version.getImpl(), edgeLabel);
+		setUniqueLinkOutTo(version, edgeLabel);
 
 		// unlink all other versions
 		SCV previous = version.getPreviousVersion();
 		while (previous != null) {
-			unlinkOut(previous.getImpl(), edgeLabel);
+			unlinkOut(previous, edgeLabel);
 			previous = previous.getPreviousVersion();
 		}
 
 		SCV next = version.getNextVersion();
 		while (next != null) {
-			unlinkOut(next.getImpl(), edgeLabel);
+			unlinkOut(next, edgeLabel);
 			next = next.getNextVersion();
 		}
 	}
@@ -291,7 +291,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 		// Iterate over all versions of the container and unassign it from the release
 		while (version != null) {
-			unlinkOut(version.getImpl(), edgeLabel);
+			unlinkOut(version, edgeLabel);
 			version = version.getPreviousVersion();
 		}
 	}
@@ -313,7 +313,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Release setProject(Project project) {
-		setUniqueLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+		setUniqueLinkOutTo(project, ASSIGNED_TO_PROJECT);
 		return this;
 	}
 }

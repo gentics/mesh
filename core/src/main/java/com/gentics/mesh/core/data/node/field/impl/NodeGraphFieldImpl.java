@@ -73,7 +73,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	@Override
 	public GraphField cloneTo(GraphFieldContainer container) {
-		NodeGraphFieldImpl field = getGraph().addFramedEdge(container.getImpl(), getNode().getImpl(), HAS_FIELD, NodeGraphFieldImpl.class);
+		NodeGraphFieldImpl field = getGraph().addFramedEdge(container, getNode(), HAS_FIELD, NodeGraphFieldImpl.class);
 		field.setFieldKey(getFieldKey());
 		return field;
 	}

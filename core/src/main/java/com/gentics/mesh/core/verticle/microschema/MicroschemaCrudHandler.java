@@ -174,7 +174,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		validateParameter(microschemaUuid, "microschemaUuid");
 		operateNoTx(() -> {
 			Project project = ac.getProject();
-			if (!ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
+			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
@@ -191,7 +191,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		operateNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			if (!ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
+			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
 			// TODO check whether microschema is assigned to project

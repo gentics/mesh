@@ -38,7 +38,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 
 	@Override
 	protected BooleanGraphField createField(String key) {
-		return new BooleanGraphFieldImpl(key, getImpl());
+		return new BooleanGraphFieldImpl(key, this);
 	}
 
 	@Override

@@ -24,7 +24,7 @@ public abstract class AbstractBasicGraphFieldContainerImpl extends MeshVertexImp
 
 	@Override
 	public void setLanguage(Language language) {
-		setLinkOut(language.getImpl(), HAS_LANGUAGE);
+		setLinkOut(language, HAS_LANGUAGE);
 	}
 
 	/**

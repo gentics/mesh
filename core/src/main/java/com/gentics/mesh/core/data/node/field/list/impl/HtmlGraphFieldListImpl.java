@@ -32,7 +32,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 
 	@Override
 	protected HtmlGraphField createField(String key) {
-		return new HtmlGraphFieldImpl(key, getImpl());
+		return new HtmlGraphFieldImpl(key, this);
 	}
 
 	@Override

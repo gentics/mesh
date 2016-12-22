@@ -16,7 +16,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 * @return Editor
 	 */
 	default User getEditor() {
-		return getImpl().out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 	/**
@@ -26,7 +26,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 *            Editor
 	 */
 	default void setEditor(User user) {
-		getImpl().setLinkOut(user.getImpl(), HAS_EDITOR);
+		setLinkOut(user, HAS_EDITOR);
 	}
 
 	/**
@@ -35,7 +35,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 * @return Edit timestamp
 	 */
 	default Long getLastEditedTimestamp() {
-		return getImpl().getProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY);
+		return getProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	/**
@@ -45,7 +45,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 *            Edit timestamp
 	 */
 	default void setLastEditedTimestamp(long timestamp) {
-		getImpl().setProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY, timestamp);
+		setProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY, timestamp);
 	}
 
 	/**

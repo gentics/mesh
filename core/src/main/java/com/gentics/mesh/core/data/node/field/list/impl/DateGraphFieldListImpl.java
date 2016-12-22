@@ -34,7 +34,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 
 	@Override
 	protected DateGraphField createField(String key) {
-		return new DateGraphFieldImpl(key, getImpl());
+		return new DateGraphFieldImpl(key, this);
 	}
 
 	@Override

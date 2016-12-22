@@ -64,14 +64,14 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 		if (latestRelease == null) {
 			// if this is the first release, make it the initial release
-			setSingleLinkOutTo(release.getImpl(), HAS_INITIAL_RELEASE);
+			setSingleLinkOutTo(release, HAS_INITIAL_RELEASE);
 		} else {
 			// otherwise link the releases
 			latestRelease.setNextRelease(release);
 		}
 
 		// make the new release the latest
-		setSingleLinkOutTo(release.getImpl(), HAS_LATEST_RELEASE);
+		setSingleLinkOutTo(release, HAS_LATEST_RELEASE);
 
 		// set initial permissions on the release
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, release);

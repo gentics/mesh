@@ -86,7 +86,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public NodeGraphField createNode(String key, Node node) {
-		NodeGraphFieldImpl field = getGraph().addFramedEdge(this, node.getImpl(), HAS_FIELD, NodeGraphFieldImpl.class);
+		NodeGraphFieldImpl field = getGraph().addFramedEdge(this, node, HAS_FIELD, NodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;
 	}
@@ -177,8 +177,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			existing.getImpl().remove();
 
 			// If the existing micronode was only used by this container, remove it
-			if (existingMicronode.getImpl().in(HAS_FIELD).count() == 0) {
-				existingMicronode.getImpl().remove();
+			if (existingMicronode.in(HAS_FIELD).count() == 0) {
+				existingMicronode.remove();
 			}
 		}
 		// 3. Create a new edge from the container to the created micronode field
@@ -310,12 +310,12 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		T existing = getList(classOfT, fieldKey);
 		T list = getGraph().addFramedVertex(classOfT);
 		list.setFieldKey(fieldKey);
-		linkOut(list.getImpl(), HAS_LIST);
+		linkOut(list, HAS_LIST);
 
 		if (existing != null) {
-			unlinkOut(existing.getImpl(), HAS_LIST);
-			if (existing.getImpl().in(HAS_LIST).count() == 0) {
-				existing.getImpl().remove();
+			unlinkOut(existing, HAS_LIST);
+			if (existing.in(HAS_LIST).count() == 0) {
+				existing.remove();
 			}
 		}
 

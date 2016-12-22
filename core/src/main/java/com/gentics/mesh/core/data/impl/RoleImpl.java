@@ -68,7 +68,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
 		Set<GraphPermission> permissions = new HashSet<>();
 		for (GraphPermission permission : GraphPermission.values()) {
-			if (hasPermission(permission, vertex.getImpl())) {
+			if (hasPermission(permission, vertex)) {
 				permissions.add(permission);
 			}
 		}
@@ -79,7 +79,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
-				MeshInternal.get().database().createComposedIndexKey(vertex.getImpl().getId(), getId()));
+				MeshInternal.get().database().createComposedIndexKey(vertex.getId(), getId()));
 		return edges.iterator().hasNext();
 	}
 
@@ -87,7 +87,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public void grantPermissions(MeshVertex vertex, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
 			if (!hasPermission(permission, vertex)) {
-				addFramedEdge(permission.label(), vertex.getImpl());
+				addFramedEdge(permission.label(), vertex);
 			}
 		}
 	}

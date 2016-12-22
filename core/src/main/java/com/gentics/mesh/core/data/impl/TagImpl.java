@@ -85,7 +85,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public void removeNode(Node node) {
-		unlinkIn(node.getImpl(), HAS_TAG);
+		unlinkIn(node, HAS_TAG);
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public void setTagFamily(TagFamily tagFamily) {
-		setUniqueLinkOutTo(tagFamily.getImpl(), HAS_TAGFAMILY_ROOT);
+		setUniqueLinkOutTo(tagFamily, HAS_TAGFAMILY_ROOT);
 	}
 
 	@Override
@@ -124,7 +124,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public void setProject(Project project) {
-		setUniqueLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+		setUniqueLinkOutTo(project, ASSIGNED_TO_PROJECT);
 	}
 
 	@Override
@@ -184,7 +184,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			ContainerType type) {
 
 		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release).mark().in(READ_PERM.label())
-				.out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back().mark().outE(HAS_FIELD_CONTAINER)
+				.out(HAS_ROLE).in(HAS_USER).retain(requestUser).back().mark().outE(HAS_FIELD_CONTAINER)
 				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 
 		traversal = GraphFieldContainerEdgeImpl.filterLanguages(traversal, languageTags);

@@ -42,7 +42,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			for (String language : Arrays.asList("en", "de")) {
 				for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
 						NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
-					assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
+					assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
 							.as("Property " + property + " for " + language).isNotNull();
 				}
 			}
@@ -56,11 +56,11 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx2 = db.noTx()) {
 			for (String language : Arrays.asList("en", "de")) {
 				String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
-				assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
+				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
 						.as("Property " + property + " for " + language).isNotNull();
 
 				property = NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY;
-				assertThat(folder("products").getGraphFieldContainer(language).getImpl().getProperty(property, String.class))
+				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
 						.as("Property " + property + " for " + language).isNull();
 
 			}

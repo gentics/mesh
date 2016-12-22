@@ -17,7 +17,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * @return Creator
 	 */
 	default User getCreator() {
-		return getImpl().out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
 	}
 
 	/**
@@ -27,7 +27,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 *            Creator
 	 */
 	default void setCreator(User user) {
-		getImpl().setLinkOut(user.getImpl(), HAS_CREATOR);
+		setLinkOut(user, HAS_CREATOR);
 	}
 
 	/**
@@ -36,7 +36,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * @return Creation timestamp
 	 */
 	default Long getCreationTimestamp() {
-		return getImpl().getProperty(CREATION_TIMESTAMP_PROPERTY_KEY);
+		return getProperty(CREATION_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	/**
@@ -46,7 +46,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 *            Creation timestamp
 	 */
 	default void setCreationTimestamp(long timestamp) {
-		getImpl().setProperty(CREATION_TIMESTAMP_PROPERTY_KEY, timestamp);
+		setProperty(CREATION_TIMESTAMP_PROPERTY_KEY, timestamp);
 	}
 
 	/**

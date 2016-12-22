@@ -188,10 +188,10 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 									}
 								}
 								// Load used elements
-								TagFamily reloadedTagFamily = tx.getGraph().getFramedVertexExplicit(TagFamilyImpl.class, tagFamily.getImpl().getId());
-								Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
-								User reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getImpl().getId());
-								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getImpl().getId());
+								TagFamily reloadedTagFamily = tx.getGraph().getFramedVertexExplicit(TagFamilyImpl.class, tagFamily.getId());
+								Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
+								User reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getId());
+								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getId());
 
 								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
@@ -228,7 +228,7 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 			// Thread.sleep(1000);
 			try (Tx tx = db.tx()) {
 				int expect = nThreads * (r + 1);
-				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
+				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
 				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect,
 						reloadedNode.getTags(project().getLatestRelease()).size());

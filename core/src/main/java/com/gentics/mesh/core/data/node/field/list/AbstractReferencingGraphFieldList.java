@@ -29,7 +29,7 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	}
 
 	protected T addItem(String key, MeshVertex vertex) {
-		return addFramedEdge(HAS_ITEM, vertex.getImpl(), getListType());
+		return addFramedEdge(HAS_ITEM, vertex, getListType());
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	@Override
 	public void removeField(GraphFieldContainer container) {
 		// Detach the list from the given graph field container
-		container.getImpl().unlinkOut(getImpl(), HAS_LIST);
+		container.unlinkOut(this, HAS_LIST);
 
 		// Remove the field if no more containers are attached to it
 		if (in(HAS_LIST).count() == 0) {
@@ -55,7 +55,7 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 
 	@Override
 	public GraphField cloneTo(GraphFieldContainer container) {
-		container.getImpl().linkOut(getImpl(), HAS_LIST);
+		container.linkOut(this, HAS_LIST);
 		return container.getList(getClass(), getFieldKey());
 	}
 

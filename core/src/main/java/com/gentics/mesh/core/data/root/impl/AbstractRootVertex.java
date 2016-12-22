@@ -58,12 +58,12 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public void addItem(T item) {
-		setUniqueLinkOutTo(item.getImpl(), getRootLabel());
+		setUniqueLinkOutTo(item, getRootLabel());
 	}
 
 	@Override
 	public void removeItem(T item) {
-		unlinkOut(item.getImpl(), getRootLabel());
+		unlinkOut(item, getRootLabel());
 	}
 
 	@Override

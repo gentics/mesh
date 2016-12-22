@@ -51,7 +51,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 	@Override
 	public SearchQueueEntry addEntry(SearchQueueEntry entry) {
-		linkOut(entry.getImpl(), HAS_ITEM);
+		linkOut(entry, HAS_ITEM);
 		return entry;
 	}
 

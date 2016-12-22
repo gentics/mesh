@@ -379,7 +379,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(user.getEditor());
 			assertNotNull(user.getCreationTimestamp());
 			assertEquals(1, user.getGroups().size());
-			assertNotNull(user.getImpl());
+			assertNotNull(user);
 		}
 	}
 

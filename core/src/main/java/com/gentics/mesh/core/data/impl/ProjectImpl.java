@@ -91,7 +91,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void addLanguage(Language language) {
-		setUniqueLinkOutTo(language.getImpl(), HAS_LANGUAGE);
+		setUniqueLinkOutTo(language, HAS_LANGUAGE);
 	}
 
 	@Override
@@ -101,7 +101,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void removeLanguage(Language language) {
-		unlinkOut(language.getImpl(), HAS_LANGUAGE);
+		unlinkOut(language, HAS_LANGUAGE);
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		TagFamilyRoot root = out(HAS_TAGFAMILY_ROOT).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
 		if (root == null) {
 			root = getGraph().addFramedVertex(TagFamilyRootImpl.class);
-			linkOut(root.getImpl(), HAS_TAGFAMILY_ROOT);
+			linkOut(root, HAS_TAGFAMILY_ROOT);
 		}
 		return root;
 	}
@@ -124,7 +124,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		SchemaContainerRoot root = out(HAS_SCHEMA_ROOT).nextOrDefaultExplicit(ProjectSchemaContainerRootImpl.class, null);
 		if (root == null) {
 			root = getGraph().addFramedVertex(ProjectSchemaContainerRootImpl.class);
-			linkOut(root.getImpl(), HAS_SCHEMA_ROOT);
+			linkOut(root, HAS_SCHEMA_ROOT);
 		}
 		return root;
 	}
@@ -134,7 +134,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		MicroschemaContainerRoot root = out(HAS_MICROSCHEMA_ROOT).nextOrDefaultExplicit(ProjectMicroschemaContainerRootImpl.class, null);
 		if (root == null) {
 			root = getGraph().addFramedVertex(ProjectMicroschemaContainerRootImpl.class);
-			linkOut(root.getImpl(), HAS_MICROSCHEMA_ROOT);
+			linkOut(root, HAS_MICROSCHEMA_ROOT);
 		}
 		return root;
 	}
@@ -149,7 +149,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		TagRoot root = out(HAS_TAG_ROOT).nextOrDefaultExplicit(TagRootImpl.class, null);
 		if (root == null) {
 			root = getGraph().addFramedVertex(TagRootImpl.class);
-			linkOut(root.getImpl(), HAS_TAG_ROOT);
+			linkOut(root, HAS_TAG_ROOT);
 		}
 		return root;
 	}
@@ -159,14 +159,14 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		NodeRoot root = out(HAS_NODE_ROOT).nextOrDefaultExplicit(NodeRootImpl.class, null);
 		if (root == null) {
 			root = getGraph().addFramedVertex(NodeRootImpl.class);
-			linkOut(root.getImpl(), HAS_NODE_ROOT);
+			linkOut(root, HAS_NODE_ROOT);
 		}
 		return root;
 	}
 
 	@Override
 	public void setBaseNode(Node baseNode) {
-		linkOut(baseNode.getImpl(), HAS_ROOT_NODE);
+		linkOut(baseNode, HAS_ROOT_NODE);
 	}
 
 	@Override
@@ -305,7 +305,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		ReleaseRoot root = out(HAS_RELEASE_ROOT).has(ReleaseRootImpl.class).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
 		if (root == null) {
 			root = getGraph().addFramedVertex(ReleaseRootImpl.class);
-			linkOut(root.getImpl(), HAS_RELEASE_ROOT);
+			linkOut(root, HAS_RELEASE_ROOT);
 		}
 		return root;
 	}

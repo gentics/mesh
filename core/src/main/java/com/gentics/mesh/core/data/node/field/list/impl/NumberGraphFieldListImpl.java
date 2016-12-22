@@ -38,7 +38,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 
 	@Override
 	protected NumberGraphField createField(String key) {
-		return new NumberGraphFieldImpl(key, getImpl());
+		return new NumberGraphFieldImpl(key, this);
 	}
 
 	@Override

@@ -61,7 +61,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 
 	@Override
 	public void setLatestVersion(SCV version) {
-		setSingleLinkOutTo(version.getImpl(), HAS_LATEST_VERSION);
+		setSingleLinkOutTo(version, HAS_LATEST_VERSION);
 	}
 
 	@Override

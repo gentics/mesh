@@ -38,7 +38,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 
 	@Override
 	protected StringGraphField createField(String key) {
-		return new StringGraphFieldImpl(key, getImpl());
+		return new StringGraphFieldImpl(key, this);
 	}
 
 	@Override

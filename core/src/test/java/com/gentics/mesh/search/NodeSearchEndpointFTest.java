@@ -87,7 +87,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 			fullIndex();
 
 			Node node = content("honda nr");
-			node.getImpl().remove();
+			node.remove();
 			NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("the"), new PagingParameters().setPage(1).setPerPage(2)));
 			assertEquals(0, response.getData().size());
 			assertEquals(0, response.getMetainfo().getTotalCount());

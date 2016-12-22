@@ -85,7 +85,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> version) {
-		setSingleLinkOutTo(version.getImpl(), HAS_SCHEMA_CONTAINER_VERSION);
+		setSingleLinkOutTo(version, HAS_SCHEMA_CONTAINER_VERSION);
 	}
 
 	@Override
@@ -260,7 +260,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void setNextVersion(NodeGraphFieldContainer container) {
-		setSingleLinkOutTo(container.getImpl(), HAS_VERSION);
+		setSingleLinkOutTo(container, HAS_VERSION);
 	}
 
 	@Override
