@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
@@ -196,7 +197,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	public void testTransformation() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext("lang=en&version=draft", user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Node newsNode = content("concorde");
 
 			NodeResponse response = newsNode.transformToRest(ac, 0).toBlocking().value();

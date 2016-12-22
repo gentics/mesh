@@ -25,6 +25,7 @@ import org.elasticsearch.common.collect.Tuple;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -82,7 +83,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
-		InternalActionContext ac = InternalActionContext.create(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
@@ -297,7 +298,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 *            routing context
 	 */
 	public void handleTransformImage(RoutingContext rc, String uuid, String languageTag, String fieldName) {
-		InternalActionContext ac = InternalActionContext.create(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);

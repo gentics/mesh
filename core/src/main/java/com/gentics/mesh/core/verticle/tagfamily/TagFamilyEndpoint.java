@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
 import com.gentics.mesh.etc.RouterStorage;
@@ -88,7 +89,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleRequest(tagExamples.getTagUpdateRequest("Red"));
 		endpoint.exampleResponse(OK, tagExamples.getTagResponse1("Red"), "Updated tag.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("tagUuid");
 			tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
@@ -105,7 +106,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		createTag.path("/:tagFamilyUuid/tags").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		createTag.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		createTag.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			tagCrudHandler.handleCreate(ac, tagFamilyUuid);
 		});
@@ -122,7 +123,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readOne.exampleResponse(OK, tagExamples.getTagResponse1("red"), "Loaded tag.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("tagUuid");
 			tagCrudHandler.handleRead(ac, tagFamilyUuid, uuid);
@@ -137,7 +138,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readAll.produces(APPLICATION_JSON);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			tagCrudHandler.handleReadTagList(ac, tagFamilyUuid);
 		});
@@ -155,7 +156,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Remove the tag from the tag family.");
 		endpoint.exampleResponse(NO_CONTENT, "Tag was removed from the tag family");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("tagUuid");
 			tagCrudHandler.handleDelete(ac, tagFamilyUuid, uuid);
@@ -173,7 +174,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of nodes which were tagged using the provided tag.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("tagUuid");
 			tagCrudHandler.handleTaggedNodesList(ac, tagFamilyUuid, uuid);
@@ -189,7 +190,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Delete the tag family.");
 		endpoint.exampleResponse(NO_CONTENT, "Tag family was deleted.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");
 			tagFamilyCrudHandler.handleDelete(ac, uuid);
 		});
@@ -204,7 +205,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Colors"), "Loaded tag family.");
 		readOne.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");
 			tagFamilyCrudHandler.handleRead(ac, uuid);
 		});
@@ -217,7 +218,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.exampleResponse(OK, tagFamilyExamples.getTagFamilyListResponse(), "Loaded tag families.");
 		readAll.handler(rc -> {
-			tagFamilyCrudHandler.handleReadList(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			tagFamilyCrudHandler.handleReadList(ac);
 		});
 	}
 
@@ -231,7 +233,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyCreateRequest("Colors"));
 		endpoint.exampleResponse(CREATED, tagFamilyExamples.getTagFamilyResponse("Colors"), "Created tag family.");
 		endpoint.handler(rc -> {
-			tagFamilyCrudHandler.handleCreate(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			tagFamilyCrudHandler.handleCreate(ac);
 		});
 	}
 
@@ -246,7 +249,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
 		endpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated tag family.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");
 			tagFamilyCrudHandler.handleUpdate(ac, uuid);
 		});

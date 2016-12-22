@@ -2,12 +2,6 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -18,7 +12,6 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 

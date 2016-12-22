@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Tag;
@@ -96,7 +97,7 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 		endpoint.handler(rc -> {
 			try {
 				IndexHandler indexHandler = registry.getHandlerWithKey(indexHandlerKey);
-				InternalActionContext ac = InternalActionContext.create(rc);
+				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac), indexHandler.getReadPermission(ac));
 			} catch (Exception e) {
 				rc.fail(e);

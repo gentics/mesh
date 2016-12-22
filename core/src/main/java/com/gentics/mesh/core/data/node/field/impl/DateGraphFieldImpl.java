@@ -6,6 +6,9 @@ import static com.gentics.mesh.util.DateUtils.toISO8601;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
+import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
@@ -17,6 +20,46 @@ import com.syncleus.ferma.AbstractVertexFrame;
  * @see DateGraphField
  */
 public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements DateGraphField {
+
+	public static FieldTransformator<DateField> DATE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+		DateGraphField graphDateField = container.getDate(fieldKey);
+		if (graphDateField == null) {
+			return null;
+		} else {
+			return graphDateField.transformToRest(ac);
+		}
+	};
+
+	public static FieldUpdater DATE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		DateGraphField dateGraphField = container.getDate(fieldKey);
+		DateField dateField = fieldMap.getDateField(fieldKey);
+		boolean isDateFieldSetToNull = fieldMap.hasField(fieldKey) && (dateField == null || dateField.getDate() == null);
+		GraphField.failOnDeletionOfRequiredField(dateGraphField, isDateFieldSetToNull, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = dateField == null || dateField.getDate() == null;
+		GraphField.failOnMissingRequiredField(dateGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+
+		// Handle Deletion - The field was explicitly set to null and is currently set in the graph so we can remove the field from the given container
+		if (isDateFieldSetToNull && dateGraphField != null) {
+			dateGraphField.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Update / Create
+		if (dateGraphField == null) {
+			container.createDate(fieldKey).setDate(fromISO8601(dateField.getDate()));
+		} else {
+			dateGraphField.setDate(fromISO8601(dateField.getDate()));
+		}
+	};
+
+	public static FieldGetter DATE_GETTER = (container, fieldSchema) -> {
+		return container.getDate(fieldSchema.getName());
+	};
 
 	public DateGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);

@@ -1,11 +1,20 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
+import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
@@ -14,11 +23,72 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
 
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
+
+	public static FieldTransformator<NodeFieldList> NODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level,
+			parentNode) -> {
+		NodeGraphFieldList nodeFieldList = container.getNodeList(fieldKey);
+		if (nodeFieldList == null) {
+			return null;
+		} else {
+			return nodeFieldList.transformToRest(ac, fieldKey, languageTags, level);
+		}
+	};
+
+	public static FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
+		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
+		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
+		GraphField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
+		boolean restIsNull = nodeList == null;
+		GraphField.failOnMissingRequiredField(graphNodeFieldList, restIsNull, fieldSchema, fieldKey, schema);
+
+		// Handle Deletion
+		if (isNodeListFieldSetToNull && graphNodeFieldList != null) {
+			graphNodeFieldList.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNull) {
+			return;
+		}
+
+		// Always create a new list. 
+		// This will effectively unlink the old list and create a new one. 
+		// Otherwise the list which is linked to old versions would be updated. 
+		graphNodeFieldList = container.createNodeList(fieldKey);
+
+		// Handle Update
+		BootstrapInitializer boot = MeshInternal.get().boot();
+		// Remove all and add the listed items
+		graphNodeFieldList.removeAll();
+		AtomicInteger integer = new AtomicInteger();
+		for (NodeFieldListItem item : nodeList.getItems()) {
+			if (item == null) {
+				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
+			}
+			Node node = boot.nodeRoot().findByUuid(item.getUuid());
+			if (node == null) {
+				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
+			}
+			int pos = integer.getAndIncrement();
+			if (log.isDebugEnabled()) {
+				log.debug("Adding item {" + item.getUuid() + "} at position {" + pos + "}");
+			}
+			graphNodeFieldList.addItem(graphNodeFieldList.createNode(String.valueOf(pos), node));
+		}
+
+	};
+
+	public static FieldGetter NODE_LIST_GETTER = (container, fieldSchema) -> {
+		return container.getNodeList(fieldSchema.getName());
+	};
 
 	public static void init(Database database) {
 		database.addVertexType(NodeGraphFieldListImpl.class, MeshVertexImpl.class);

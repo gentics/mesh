@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.etc.RouterStorage;
@@ -40,7 +41,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 	public void registerEndPoints() throws Exception {
 		// Endpoint endpoint = createEndpoint();
 		routerStorage.getAPIRouter().route("/").method(GET).handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshServerInfoModel info = new MeshServerInfoModel();
 			info.setDatabaseVendor(db.getVendorName());
 			info.setDatabaseVersion(db.getVersion());

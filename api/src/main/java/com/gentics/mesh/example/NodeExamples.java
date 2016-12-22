@@ -39,7 +39,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.util.Tuple;
 
 public class NodeExamples extends AbstractExamples {

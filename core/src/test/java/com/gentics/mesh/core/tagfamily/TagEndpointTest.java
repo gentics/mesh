@@ -19,6 +19,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -250,7 +251,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			TagFamilyResponse response = tagFamily.transformToRestSync(ac, 0);
 			assertNotNull(response);
 			assertEquals(tagFamily.getName(), response.getName());

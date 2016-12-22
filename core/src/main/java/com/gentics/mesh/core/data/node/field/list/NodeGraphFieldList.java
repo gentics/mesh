@@ -24,66 +24,7 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 	final Logger log = LoggerFactory.getLogger(NodeGraphFieldList.class);
 
 	String TYPE = "node";
-
-	FieldTransformator<NodeFieldList> NODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
-		NodeGraphFieldList nodeFieldList = container.getNodeList(fieldKey);
-		if (nodeFieldList == null) {
-			return null;
-		} else {
-			return nodeFieldList.transformToRest(ac, fieldKey, languageTags, level);
-		}
-	};
-
-	FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
-		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
-		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
-		GraphField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNull = nodeList == null;
-		GraphField.failOnMissingRequiredField(graphNodeFieldList, restIsNull, fieldSchema, fieldKey, schema);
-
-		// Handle Deletion
-		if (isNodeListFieldSetToNull && graphNodeFieldList != null) {
-			graphNodeFieldList.removeField(container);
-			return;
-		}
-
-		// Rest model is empty or null - Abort
-		if (restIsNull) {
-			return;
-		}
-
-		// Always create a new list. 
-		// This will effectively unlink the old list and create a new one. 
-		// Otherwise the list which is linked to old versions would be updated. 
-		graphNodeFieldList = container.createNodeList(fieldKey);
-
-		// Handle Update
-		BootstrapInitializer boot = MeshInternal.get().boot();
-		// Remove all and add the listed items
-		graphNodeFieldList.removeAll();
-		AtomicInteger integer = new AtomicInteger();
-		for (NodeFieldListItem item : nodeList.getItems()) {
-			if (item == null) {
-				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
-			}
-			Node node = boot.nodeRoot().findByUuid(item.getUuid());
-			if (node == null) {
-				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
-			}
-			int pos = integer.getAndIncrement();
-			if (log.isDebugEnabled()) {
-				log.debug("Adding item {" + item.getUuid() + "} at position {" + pos + "}");
-			}
-			graphNodeFieldList.addItem(graphNodeFieldList.createNode(String.valueOf(pos), node));
-		}
-
-	};
-
-	FieldGetter NODE_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getNodeList(fieldSchema.getName());
-	};
-
+	
 	NodeGraphField createNode(String key, Node node);
 
 }

@@ -24,6 +24,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -224,7 +225,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			}
 
 			RoutingContext rc = getMockedRoutingContext();
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 			assertEquals(0, requestUser.getPermissions(node).size());
 			requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
@@ -260,7 +261,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 			role().grantPermissions(extraRole, READ_PERM);
 			RoutingContext rc = getMockedRoutingContext();
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
 			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParametersImpl(1, 10));
 			assertEquals(2, roles.getSize());
@@ -275,7 +276,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Page<? extends Role> page = boot.roleRoot().findAll(ac, new PagingParametersImpl(1, 5));
 			assertEquals(roles().size(), page.getTotalElements());
 			assertEquals(4, page.getSize());
@@ -312,7 +313,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Role role = role();
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			RoleResponse restModel = role.transformToRest(ac, 0).toBlocking().value();
 
 			assertNotNull(restModel);

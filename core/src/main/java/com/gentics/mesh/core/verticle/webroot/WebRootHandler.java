@@ -16,6 +16,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -57,7 +58,7 @@ public class WebRootHandler {
 	 * @param rc
 	 */
 	public void handleGetPath(RoutingContext rc) {
-		InternalActionContext ac = InternalActionContext.create(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = ac.getParameter("param0");
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();

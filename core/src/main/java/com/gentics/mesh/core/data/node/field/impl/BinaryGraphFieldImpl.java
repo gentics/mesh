@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 import java.util.Objects;
@@ -10,6 +13,9 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
+import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
@@ -19,6 +25,66 @@ import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 
 public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
+
+	public static FieldTransformator<BinaryField> BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
+		if (graphBinaryField == null) {
+			return null;
+		} else {
+			return graphBinaryField.transformToRest(ac);
+		}
+	};
+
+	public static FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		container.reload();
+		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
+		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
+		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
+		GraphField.failOnDeletionOfRequiredField(graphBinaryField, isBinaryFieldSetToNull, fieldSchema, fieldKey, schema);
+		boolean restIsNull = binaryField == null;
+		// The required check for binary fields is not enabled since binary fields can only be created using the field api
+
+		// Handle Deletion
+		if (isBinaryFieldSetToNull && graphBinaryField != null) {
+			graphBinaryField.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNull) {
+			return;
+		}
+
+		// Always create a new binary field since each update must create a new field instance. The old field must be detached from the given container.
+		BinaryGraphField newGraphBinaryField = container.createBinary(fieldKey);
+
+		// Handle Update - Dominant Color
+		if (binaryField.getDominantColor() != null) {
+			newGraphBinaryField.setImageDominantColor(binaryField.getDominantColor());
+		}
+
+		// Handle Update - Filename
+		if (binaryField.getFileName() != null) {
+			if (isEmpty(binaryField.getFileName())) {
+				throw error(BAD_REQUEST, "field_binary_error_emptyfilename", fieldKey);
+			} else {
+				newGraphBinaryField.setFileName(binaryField.getFileName());
+			}
+		}
+
+		// Handle Update - MimeType
+		if (binaryField.getMimeType() != null) {
+			if (isEmpty(binaryField.getMimeType())) {
+				throw error(BAD_REQUEST, "field_binary_error_emptymimetype", fieldKey);
+			}
+			newGraphBinaryField.setMimeType(binaryField.getMimeType());
+		}
+		// Don't update image width, height, SHA checksum - those are immutable
+	};
+
+	public static FieldGetter BINARY_GETTER = (container, fieldSchema) -> {
+		return container.getBinary(fieldSchema.getName());
+	};
 
 	private static final String BINARY_FILESIZE_PROPERTY_KEY = "binaryFileSize";
 

@@ -15,6 +15,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.Page;
@@ -69,7 +70,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Page<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParametersImpl(1, 19));
 
 			assertEquals(groups().size(), page.getTotalElements());
@@ -126,7 +127,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	public void testTransformation() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			GroupResponse response = group().transformToRest(ac, 0).toBlocking().value();
 

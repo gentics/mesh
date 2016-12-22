@@ -12,6 +12,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
@@ -56,7 +57,8 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Read all microschemas which are assigned to the project.");
 		endpoint.exampleResponse(OK, microschemaExamples.getMicroschemaListResponse(), "List of assigned microschemas.");
 		endpoint.handler(rc -> {
-			crudHandler.handleReadMicroschemaList(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleReadMicroschemaList(ac);
 		});
 	}
 
@@ -69,7 +71,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Add the microschema to the project.");
 		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschema(), "Microschema was added to the project.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleAddMicroschemaToProject(ac, uuid);
 		});
@@ -84,7 +86,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Remove the microschema from the project.");
 		endpoint.exampleResponse(NO_CONTENT, "Microschema was removed from project.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleRemoveMicroschemaFromProject(ac, uuid);
 		});

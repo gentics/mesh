@@ -6,6 +6,9 @@ import java.util.Locale;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
+import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
@@ -15,6 +18,46 @@ import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implements NumberGraphField {
+
+	public static FieldTransformator<NumberField> NUMBER_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+		NumberGraphField graphNumberField = container.getNumber(fieldKey);
+		if (graphNumberField == null) {
+			return null;
+		} else {
+			return graphNumberField.transformToRest(ac);
+		}
+	};
+
+	public static FieldUpdater NUMBER_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		NumberGraphField numberGraphField = container.getNumber(fieldKey);
+		NumberField numberField = fieldMap.getNumberField(fieldKey);
+		boolean isNumberFieldSetToNull = fieldMap.hasField(fieldKey) && (numberField == null || numberField.getNumber() == null);
+		GraphField.failOnDeletionOfRequiredField(numberGraphField, isNumberFieldSetToNull, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = numberField == null || numberField.getNumber() == null;
+		GraphField.failOnMissingRequiredField(numberGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+
+		// Handle Deletion
+		if (isNumberFieldSetToNull && numberGraphField != null) {
+			numberGraphField.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Update / Create
+		if (numberGraphField == null) {
+			container.createNumber(fieldKey).setNumber(numberField.getNumber());
+		} else {
+			numberGraphField.setNumber(numberField.getNumber());
+		}
+	};
+
+	public static FieldGetter NUMBER_GETTER = (container, fieldSchema) -> {
+		return container.getNumber(fieldSchema.getName());
+	};
 
 	public NumberGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);

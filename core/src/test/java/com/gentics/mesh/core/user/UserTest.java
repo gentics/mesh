@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -106,7 +107,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			Page<? extends User> page = boot.userRoot().findAll(ac, new PagingParametersImpl(1, 6));
 			assertEquals(users().size(), page.getTotalElements());
@@ -185,7 +186,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			group().addUser(extraUser);
 			role().grantPermissions(extraUser, READ_PERM);
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
 			Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParametersImpl(1, 10));
 
@@ -218,7 +219,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	public void testTransformation() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			UserResponse restUser = user().transformToRest(ac, 0).toBlocking().value();
 

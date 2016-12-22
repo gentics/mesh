@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -102,7 +103,8 @@ public class SearchEndpoint extends AbstractEndpoint {
 		statusEndpoint.produces(APPLICATION_JSON);
 		statusEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Search index status.");
 		statusEndpoint.handler(rc -> {
-			searchHandler.handleStatus(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			searchHandler.handleStatus(ac);
 		});
 
 		Endpoint clearBatches = createEndpoint();
@@ -112,7 +114,8 @@ public class SearchEndpoint extends AbstractEndpoint {
 		clearBatches.description("Removes the existing search queue batches from the queue.");
 		clearBatches.exampleResponse(OK, miscExamples.getMessageResponse(), "Invoked clearing of all batches.");
 		clearBatches.handler(rc -> {
-			searchHandler.handleClearBatches(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			searchHandler.handleClearBatches(ac);
 		});
 
 		Endpoint processBatches = createEndpoint();
@@ -122,10 +125,10 @@ public class SearchEndpoint extends AbstractEndpoint {
 		processBatches.description("Invoke batch processing of remaining batches in the queue.");
 		processBatches.exampleResponse(OK, miscExamples.getMessageResponse(), "Invoked all remaining batches.");
 		processBatches.handler(rc -> {
-			searchHandler.handleProcessBatches(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			searchHandler.handleProcessBatches(ac);
 		});
-		
-		
+
 		Endpoint createMappings = createEndpoint();
 		createMappings.path("/createMappings");
 		createMappings.method(GET);
@@ -133,7 +136,8 @@ public class SearchEndpoint extends AbstractEndpoint {
 		createMappings.description("Create search index mappings.");
 		createMappings.exampleResponse(OK, miscExamples.getMessageResponse(), "Create all mappings.");
 		createMappings.handler(rc -> {
-			searchHandler.createMappings(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			searchHandler.createMappings(ac);
 		});
 
 		Endpoint reindexEndpoint = createEndpoint();
@@ -143,7 +147,8 @@ public class SearchEndpoint extends AbstractEndpoint {
 		reindexEndpoint.description("Invokes a full reindex of the search indices. This operation may take some time to complete.");
 		reindexEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Invoked reindex command for all elements.");
 		reindexEndpoint.handler(rc -> {
-			searchHandler.handleReindex(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			searchHandler.handleReindex(ac);
 		});
 	}
 
@@ -172,7 +177,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 		endpoint.handler(rc -> {
 			try {
 				IndexHandler indexHandler = registry.getHandlerWithKey(indexHandlerKey);
-				InternalActionContext ac = InternalActionContext.create(rc);
+				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac), indexHandler.getReadPermission(ac));
 			} catch (Exception e) {
 				// fail(rc, "search_error_query");

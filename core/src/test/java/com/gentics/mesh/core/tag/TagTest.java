@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -423,7 +424,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			int depth = 3;
 
 			RoutingContext rc = getMockedRoutingContext("lang=de,en", user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			int nTransformations = 100;
 			for (int i = 0; i < nTransformations; i++) {
 				long start = System.currentTimeMillis();

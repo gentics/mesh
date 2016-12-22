@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -62,7 +63,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 		permissionSetEndpoint.exampleRequest(roleExamples.getRolePermissionRequest());
 		permissionSetEndpoint.consumes(APPLICATION_JSON);
 		permissionSetEndpoint.produces(APPLICATION_JSON).handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			crudHandler.handlePermissionUpdate(ac, roleUuid, pathToElement);
@@ -79,7 +80,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 		permissionGetEndpoint.produces(APPLICATION_JSON);
 		permissionGetEndpoint.exampleResponse(OK, roleExamples.getRolePermissionResponse(), "Loaded permissions.");
 		permissionGetEndpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			crudHandler.handlePermissionRead(ac, roleUuid, pathToElement);
@@ -94,7 +95,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 		endpoint.description("Delete the role with the given uuid");
 		endpoint.exampleResponse(NO_CONTENT, "Role was deleted.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
@@ -110,7 +111,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
 		endpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated role.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
@@ -125,7 +126,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, roleExamples.getRoleResponse1("Admin Role"), "Loaded role.");
 		readOne.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleRead(ac, uuid);
 		});
@@ -141,7 +142,8 @@ public class RoleEndpoint extends AbstractEndpoint {
 		readAll.exampleResponse(OK, roleExamples.getRoleListResponse(), "Loaded list of roles.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.handler(rc -> {
-			crudHandler.handleReadList(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleReadList(ac);
 		});
 	}
 
@@ -155,7 +157,8 @@ public class RoleEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(roleExamples.getRoleCreateRequest("New role"));
 		endpoint.exampleResponse(CREATED, roleExamples.getRoleResponse1("New role"), "Created role.");
 		endpoint.handler(rc -> {
-			crudHandler.handleCreate(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleCreate(ac);
 		});
 	}
 }

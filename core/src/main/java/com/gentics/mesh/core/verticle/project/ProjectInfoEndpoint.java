@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
@@ -42,7 +43,8 @@ public class ProjectInfoEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(OK, projectExamples.getProjectResponse("demo"), "Project information.");
 		endpoint.handler(rc -> {
 			String projectName = rc.request().params().get("project");
-			crudHandler.handleReadByName(InternalActionContext.create(rc), projectName);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleReadByName(ac, projectName);
 		});
 	}
 

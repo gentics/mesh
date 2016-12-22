@@ -4,8 +4,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.JWTAuthentication;
-import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;

@@ -14,6 +14,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -62,7 +63,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 
 		Route route = route("/:schemaUuid/migrate").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			crudHandler.handleMigrateRemaining(ac);
 		});
 
@@ -88,7 +89,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Schema migration was started.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
 		});
@@ -104,7 +105,8 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(schemaExamples.getSchemaCreateRequest());
 		endpoint.exampleResponse(CREATED, schemaExamples.getSchema(), "Created schema.");
 		endpoint.handler(rc -> {
-			crudHandler.handleCreate(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleCreate(ac);
 		});
 	}
 
@@ -120,7 +122,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		diffEndpoint.exampleResponse(OK, schemaExamples.getSchemaChangesListModel(),
 				"List of schema changes that were detected by comparing the posted schema and the current version.");
 		diffEndpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDiff(ac, uuid);
 		});
@@ -138,7 +140,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchema(), "Updated schema.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
@@ -153,7 +155,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully deleted.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
@@ -172,7 +174,8 @@ public class SchemaEndpoint extends AbstractEndpoint {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(InternalActionContext.create(rc), uuid);
+				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				crudHandler.handleRead(ac, uuid);
 			}
 		});
 
@@ -184,7 +187,8 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.exampleResponse(OK, schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
 		readAll.handler(rc -> {
-			crudHandler.handleReadList(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleReadList(ac);
 		});
 
 	}

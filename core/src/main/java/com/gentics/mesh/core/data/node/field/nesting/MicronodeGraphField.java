@@ -31,65 +31,6 @@ public interface MicronodeGraphField extends ListableReferencingGraphField, Mesh
 
 	static final Logger log = LoggerFactory.getLogger(MicronodeGraphField.class);
 
-	FieldTransformator<MicronodeField> MICRONODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
-		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
-		if (micronodeGraphField == null) {
-			return null;
-		} else {
-			return micronodeGraphField.transformToRest(ac, fieldKey, languageTags, level);
-		}
-	};
-
-	FieldUpdater MICRONODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
-		MicronodeFieldSchema microschemaFieldSchema = (MicronodeFieldSchema) fieldSchema;
-		MicronodeField micronodeRestField = fieldMap.getMicronodeField(fieldKey);
-		boolean isMicronodeFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeRestField == null;
-		GraphField.failOnDeletionOfRequiredField(micronodeGraphField, isMicronodeFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNullOrEmpty = micronodeRestField == null;
-		GraphField.failOnMissingRequiredField(container.getMicronode(fieldKey), restIsNullOrEmpty, fieldSchema, fieldKey, schema);
-
-		// Handle Deletion - Remove the field if the field has been explicitly set to null
-		if (isMicronodeFieldSetToNull && micronodeGraphField != null) {
-			micronodeGraphField.removeField(container);
-			return;
-		}
-
-		// Rest model is empty or null - Abort
-		if (micronodeRestField == null) {
-			return;
-		}
-
-		MicroschemaReference microschemaReference = micronodeRestField.getMicroschema();
-		if (microschemaReference == null || !microschemaReference.isSet()) {
-			throw error(BAD_REQUEST, "micronode_error_missing_reference", fieldKey);
-		}
-
-		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot()
-				.fromReference(microschemaReference, ac.getRelease(null));
-
-		Micronode micronode = null;
-
-		// check whether microschema is allowed
-		// TODO should we allow all microschemas if the list is empty?
-		if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
-				|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainerVersion.getName())) {
-			log.error("Node update not allowed since the microschema {" + microschemaContainerVersion.getName()
-					+ "} is now allowed. Allowed microschemas {" + microschemaFieldSchema.getAllowedMicroSchemas() + "}");
-			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaContainerVersion.getName());
-		}
-
-		// Always create a new micronode field since each update must create a new field instance. The old field must be detached from the given container.
-		micronodeGraphField = container.createMicronode(fieldKey, microschemaContainerVersion);
-		micronode = micronodeGraphField.getMicronode();
-
-		micronode.updateFieldsFromRest(ac, micronodeRestField.getFields());
-	};
-
-	FieldGetter MICRONODE_GETTER = (container, fieldSchema) -> {
-		return container.getMicronode(fieldSchema.getName());
-	};
-
 	/**
 	 * Returns the micronode for this field.
 	 * 

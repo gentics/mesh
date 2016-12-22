@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -191,7 +192,8 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			englishContainer.createString(fieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
-			node.publish(InternalActionContext.create(getMockedRoutingContext(user())), "en").await();
+			InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(user()));
+			node.publish(ac, "en").await();
 
 			doSchemaMigration(container, versionA, versionB);
 
@@ -225,7 +227,8 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 		}
 		try (NoTx tx = db.noTx()) {
 			node.reload();
-			node.publish(InternalActionContext.create(getMockedRoutingContext(user())), "en").await();
+			InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(user()));
+			node.publish(ac, "en").await();
 		}
 
 		try (NoTx tx = db.noTx()) {

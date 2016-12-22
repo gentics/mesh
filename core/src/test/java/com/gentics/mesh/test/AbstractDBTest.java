@@ -11,6 +11,7 @@ import org.junit.BeforeClass;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -328,7 +329,7 @@ public abstract class AbstractDBTest {
 
 	protected String getJson(Node node) throws Exception {
 		RoutingContext rc = Mocks.getMockedRoutingContext("lang=en&version=draft", user());
-		InternalActionContext ac = InternalActionContext.create(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
 	}

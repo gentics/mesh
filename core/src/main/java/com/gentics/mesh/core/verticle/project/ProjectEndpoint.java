@@ -14,6 +14,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -61,7 +62,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 		updateEndpoint.exampleRequest(projectExamples.getProjectUpdateRequest("New project name"));
 		updateEndpoint.exampleResponse(OK, projectExamples.getProjectResponse("New project name"), "Updated project.");
 		updateEndpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
@@ -79,7 +80,8 @@ public class ProjectEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(projectExamples.getProjectCreateRequest("New project"));
 		endpoint.exampleResponse(CREATED, projectExamples.getProjectResponse("New Project"), "Created project.");
 		endpoint.handler(rc -> {
-			crudHandler.handleCreate(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleCreate(ac);
 		});
 	}
 
@@ -97,7 +99,8 @@ public class ProjectEndpoint extends AbstractEndpoint {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(InternalActionContext.create(rc), uuid);
+				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				crudHandler.handleRead(ac, uuid);
 			}
 		});
 
@@ -110,7 +113,8 @@ public class ProjectEndpoint extends AbstractEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.handler(rc -> {
-			crudHandler.handleReadList(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleReadList(ac);
 		});
 	}
 
@@ -123,7 +127,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Project was deleted.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});

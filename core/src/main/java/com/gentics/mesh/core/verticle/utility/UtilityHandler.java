@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -35,7 +36,7 @@ public class UtilityHandler extends AbstractHandler {
 	 * @param rc
 	 */
 	public void handleResolveLinks(RoutingContext rc) {
-		InternalActionContext ac = InternalActionContext.create(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		operateNoTx(() -> {
 			String projectName = ac.getParameter("project");
 			if (projectName == null) {

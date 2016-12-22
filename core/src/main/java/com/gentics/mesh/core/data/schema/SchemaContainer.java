@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.schema;
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 
@@ -21,6 +21,6 @@ public interface SchemaContainer extends GraphFieldSchemaContainer<Schema, Schem
 	 * 
 	 * @return
 	 */
-	List<? extends NodeImpl> getNodes();
+	List<? extends Node> getNodes();
 
 }

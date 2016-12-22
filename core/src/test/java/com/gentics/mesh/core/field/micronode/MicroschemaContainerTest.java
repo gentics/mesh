@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -67,8 +68,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
-
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			int expectedMicroschemaContainers = microschemaContainers().size();
 
 			for (int i = 1; i <= expectedMicroschemaContainers + 1; i++) {
@@ -234,7 +234,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	public void testTransformation() throws IOException {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
 			Microschema schema = vcard.transformToRest(ac, 0, "en").toBlocking().value();
 			assertEquals(vcard.getUuid(), schema.getUuid());

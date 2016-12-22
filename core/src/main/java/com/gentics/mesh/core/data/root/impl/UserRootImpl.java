@@ -13,6 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Iterator;
 
 import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -26,7 +27,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
-import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;

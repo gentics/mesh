@@ -3,7 +3,6 @@ package com.gentics.mesh.dagger;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
-import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;

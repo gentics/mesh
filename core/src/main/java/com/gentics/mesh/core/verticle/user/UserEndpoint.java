@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -63,7 +64,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
 		endpoint.blockingHandler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String userUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			crudHandler.handlePermissionRead(ac, userUuid, pathToElement);
@@ -82,7 +83,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		readOne.addQueryParameters(VersioningParameters.class);
 		readOne.addQueryParameters(RolePermissionParameters.class);
 		readOne.blockingHandler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleRead(ac, uuid);
 		});
@@ -101,7 +102,8 @@ public class UserEndpoint extends AbstractEndpoint {
 		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.blockingHandler(rc -> {
-			crudHandler.handleReadList(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleReadList(ac);
 		});
 	}
 
@@ -115,7 +117,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "User was deactivated.");
 		endpoint.blockingHandler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
@@ -132,7 +134,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
 		endpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated user response.");
 		endpoint.blockingHandler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
@@ -148,7 +150,8 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(userExamples.getUserCreateRequest("newuser"));
 		endpoint.exampleResponse(CREATED, userExamples.getUserResponse1("newuser"), "User response of the created user.");
 		endpoint.blockingHandler(rc -> {
-			crudHandler.handleCreate(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleCreate(ac);
 		});
 	}
 }

@@ -2,7 +2,6 @@ package com.gentics.mesh.context;
 
 import java.util.Set;
 
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -10,29 +9,18 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.ParameterProviderContext;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * A internal action context exposes various internal method which an API action context would normally not dare to expose.
  */
 public interface InternalActionContext extends ActionContext, ParameterProviderContext {
-
-	/**
-	 * Construct a new action context
-	 * 
-	 * @param rc
-	 *            Vertx routing context which will be wrapped
-	 * @return
-	 */
-	public static InternalActionContext create(RoutingContext rc) {
-		return new InternalRoutingActionContextImpl(rc);
-	}
 
 	/**
 	 * Set the user to the context.

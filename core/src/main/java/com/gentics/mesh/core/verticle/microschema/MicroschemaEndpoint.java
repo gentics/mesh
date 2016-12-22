@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -66,7 +67,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.description(
 				"Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDiff(ac, schemaUuid);
 		});
@@ -96,7 +97,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Microschema migration was invoked.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
 		});
@@ -115,7 +116,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				InternalActionContext ac = InternalActionContext.create(rc);
+				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 				crudHandler.handleRead(ac, uuid);
 			}
 		});
@@ -128,7 +129,8 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
-			crudHandler.handleReadList(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleReadList(ac);
 		});
 	}
 
@@ -141,7 +143,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(NO_CONTENT, "Microschema was deleted.");
 		endpoint.description("Delete the microschema with the given uuid.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
@@ -158,7 +160,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschema(), "Updated microschema.");
 		endpoint.description("Update the microschema with the given uuid.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
@@ -173,7 +175,8 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
 		endpoint.exampleResponse(CREATED, microschemaExamples.getGeolocationMicroschema(), "Created microschema.");
 		endpoint.handler(rc -> {
-			crudHandler.handleCreate(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleCreate(ac);
 		});
 
 	}

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data;
 
 /**
- * Interface for vertices that track creation and editing
+ * Interface for vertices that track creation and editing.
  */
 public interface UserTrackingVertex extends CreatorTrackingVertex, EditorTrackingVertex {
 

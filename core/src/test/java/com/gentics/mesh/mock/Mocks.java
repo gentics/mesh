@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -402,7 +403,7 @@ public final class Mocks {
 	}
 
 	public static InternalActionContext getMockedVoidInternalActionContext(String query, User user) {
-		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query, true, user, null));
+		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, true, user, null));
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return ac;
 	}
@@ -420,7 +421,7 @@ public final class Mocks {
 	}
 
 	public static InternalActionContext getMockedInternalActionContext(String query, User user) {
-		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query, false, user, null));
+		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return ac;
 	}
