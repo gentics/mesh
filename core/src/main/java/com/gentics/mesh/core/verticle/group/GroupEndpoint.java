@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
@@ -60,7 +60,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		readRoles.method(GET);
 		readRoles.produces(APPLICATION_JSON);
 		readRoles.exampleResponse(OK, roleExamples.getRoleListResponse(), "List of roles which were assigned to the group.");
-		readRoles.addQueryParameters(PagingParameters.class);
+		readRoles.addQueryParameters(PagingParametersImpl.class);
 		readRoles.addQueryParameters(RolePermissionParameters.class);
 		readRoles.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -200,7 +200,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		readAll.description("Read multiple groups and return a paged list response.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(OK, groupExamples.getGroupListResponse(), "List response which contains the found  groups.");
-		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));

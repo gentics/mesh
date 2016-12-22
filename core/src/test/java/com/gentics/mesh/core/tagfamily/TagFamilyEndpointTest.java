@@ -37,7 +37,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
@@ -132,7 +132,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 			List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(page, perPage))
+				MeshResponse<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(page, perPage))
 						.invoke();
 				latchFor(tagPageFut);
 				assertSuccess(future);
@@ -159,21 +159,21 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 					.collect(Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			MeshResponse<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(-1, perPage)).invoke();
+			MeshResponse<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(-1, perPage)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(0, perPage)).invoke();
+			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(0, perPage)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
-			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(1, -1)).invoke();
+			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(1, -1)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 			perPage = 25;
 			totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
-			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(4242, perPage)).invoke();
+			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(4242, perPage)).invoke();
 			latchFor(pageFuture);
 			TagFamilyListResponse tagList = pageFuture.result();
 			assertEquals(0, tagList.getData().size());
@@ -187,7 +187,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(1, 0)).invoke();
+		MeshResponse<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(1, 0)).invoke();
 		latchFor(pageFuture);
 		assertSuccess(pageFuture);
 		assertEquals(0, pageFuture.result().getData().size());

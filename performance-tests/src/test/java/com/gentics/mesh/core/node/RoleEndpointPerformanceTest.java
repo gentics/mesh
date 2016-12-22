@@ -5,7 +5,7 @@ import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
@@ -28,11 +28,11 @@ public class RoleEndpointPerformanceTest extends AbstractRestEndpointTest {
 		String uuid = db.noTx(() -> role().getUuid());
 
 		loggingStopWatch(logger, "role.read-page-100", 200, (step) -> {
-			call(() -> getClient().findRoles(new PagingParameters().setPerPage(100)));
+			call(() -> getClient().findRoles(new PagingParametersImpl().setPerPage(100)));
 		});
 
 		loggingStopWatch(logger, "role.read-page-25", 200, (step) -> {
-			call(() -> getClient().findRoles(new PagingParameters().setPerPage(25)));
+			call(() -> getClient().findRoles(new PagingParametersImpl().setPerPage(25)));
 		});
 
 		loggingStopWatch(logger, "role.read-by-uuid", 200, (step) -> {

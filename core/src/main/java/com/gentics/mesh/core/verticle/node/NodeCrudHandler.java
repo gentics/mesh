@@ -40,7 +40,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -168,7 +168,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		operateNoTx(ac, () -> {
 			NodeParameters nodeParams = ac.getNodeParameters();
-			PagingParameters pagingParams = ac.getPagingParameters();
+			PagingParametersImpl pagingParams = ac.getPagingParameters();
 			VersioningParameters versionParams = ac.getVersioningParameters();
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Page<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(), ac.getRelease(node.getProject()).getUuid(),

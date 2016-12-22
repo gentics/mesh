@@ -17,7 +17,7 @@ import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -125,7 +125,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		readAll.method(GET);
 		readAll.description("Read multiple microschemas and return a paged list response.");
 		readAll.exampleResponse(OK, microschemaExamples.getMicroschemaListResponse(), "List of miroschemas.");
-		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));

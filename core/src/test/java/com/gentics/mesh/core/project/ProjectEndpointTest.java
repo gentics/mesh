@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -203,7 +203,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			// Don't grant permissions to no perm project
 
 			// Test default paging parameters
-			MeshResponse<ProjectListResponse> future = getClient().findProjects(new PagingParameters()).invoke();
+			MeshResponse<ProjectListResponse> future = getClient().findProjects(new PagingParametersImpl()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			ProjectListResponse restResponse = future.result();
@@ -212,7 +212,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 11;
-			future = getClient().findProjects(new PagingParameters(3, perPage)).invoke();
+			future = getClient().findProjects(new PagingParametersImpl(3, perPage)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -230,7 +230,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			List<ProjectResponse> allProjects = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
 				final int currentPage = page;
-				restResponse = call(() -> getClient().findProjects(new PagingParameters(currentPage, perPage)));
+				restResponse = call(() -> getClient().findProjects(new PagingParametersImpl(currentPage, perPage)));
 				allProjects.addAll(restResponse.getData());
 			}
 			assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
@@ -240,15 +240,15 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 					.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
 			assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
-			future = getClient().findProjects(new PagingParameters(-1, perPage)).invoke();
+			future = getClient().findProjects(new PagingParametersImpl(-1, perPage)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findProjects(new PagingParameters(1, -1)).invoke();
+			future = getClient().findProjects(new PagingParametersImpl(1, -1)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findProjects(new PagingParameters(4242, 25)).invoke();
+			future = getClient().findProjects(new PagingParametersImpl(4242, 25)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -276,25 +276,25 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 
 		// perPage: 0
-		ProjectListResponse list = call(() -> getClient().findProjects(new PagingParameters(1, 0)));
+		ProjectListResponse list = call(() -> getClient().findProjects(new PagingParametersImpl(1, 0)));
 		assertEquals("The page count should be one.", 0, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be zero", 0, list.getData().size());
 
 		// perPage: 1
-		list = call(() -> getClient().findProjects(new PagingParameters(1, 1)));
+		list = call(() -> getClient().findProjects(new PagingParametersImpl(1, 1)));
 		assertEquals("The page count should be one.", 11, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be one.", 1, list.getData().size());
 
 		// perPage: 2
-		list = call(() -> getClient().findProjects(new PagingParameters(1, 2)));
+		list = call(() -> getClient().findProjects(new PagingParametersImpl(1, 2)));
 		assertEquals("The page count should be one.", 6, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be one.", 2, list.getData().size());
 
 		// page: 6
-		list = call(() -> getClient().findProjects(new PagingParameters(6, 2)));
+		list = call(() -> getClient().findProjects(new PagingParametersImpl(6, 2)));
 		assertEquals("The page count should be one.", 6, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be one.", 1, list.getData().size());

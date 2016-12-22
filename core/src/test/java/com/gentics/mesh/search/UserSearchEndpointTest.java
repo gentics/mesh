@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 
 public class UserSearchEndpointTest extends AbstractSearchEndpointTest implements BasicSearchCrudTestcases {
@@ -283,7 +283,7 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 		}
 
 		MeshResponse<UserListResponse> searchFuture = getClient()
-				.searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()), new PagingParameters().setPerPage(0)).invoke();
+				.searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()), new PagingParametersImpl().setPerPage(0)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

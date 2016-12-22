@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -103,7 +103,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			Page<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(getMockedInternalActionContext(user()),
-					new PagingParameters(1, 25));
+					new PagingParametersImpl(1, 25));
 			assertNotNull(page);
 		}
 	}

@@ -384,11 +384,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public MeshAuthUserImpl getImpl() {
-				return null;
-			}
-
-			@Override
 			public Vertex getElement() {
 				// TODO Auto-generated method stub
 				return null;
@@ -746,6 +741,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
 				
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		};
 		return user;

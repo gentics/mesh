@@ -39,7 +39,7 @@ import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
@@ -206,7 +206,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 6;
-			future = getClient().findGroups(new PagingParameters(3, perPage)).invoke();
+			future = getClient().findGroups(new PagingParametersImpl(3, perPage)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -224,7 +224,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			List<GroupResponse> allGroups = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<GroupListResponse> pageFuture = getClient().findGroups(new PagingParameters(page, perPage)).invoke();
+				MeshResponse<GroupListResponse> pageFuture = getClient().findGroups(new PagingParametersImpl(page, perPage)).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -237,13 +237,13 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 					.collect(Collectors.toList());
 			assertTrue("Extra group should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			call(()->getClient().findGroups(new PagingParameters(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+			call(()->getClient().findGroups(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findGroups(new PagingParameters(1, -1)).invoke();
+			future = getClient().findGroups(new PagingParametersImpl(1, -1)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findGroups(new PagingParameters(4242, 1)).invoke();
+			future = getClient().findGroups(new PagingParametersImpl(4242, 1)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -257,7 +257,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<GroupListResponse> future = getClient().findGroups(new PagingParameters(1, 0)).invoke();
+		MeshResponse<GroupListResponse> future = getClient().findGroups(new PagingParametersImpl(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -405,7 +405,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 				latchFor(future);
 			}
 
-			ParameterProvider[] params = new ParameterProvider[] { new PagingParameters().setPerPage(10000),
+			ParameterProvider[] params = new ParameterProvider[] { new PagingParametersImpl().setPerPage(10000),
 					new RolePermissionParameters().setRoleUuid(role().getUuid()) };
 
 			int readCount = 100;

@@ -62,7 +62,7 @@ import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -512,7 +512,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			String firstUuid = null;
 			for (int i = 0; i < 10; i++) {
 				NodeListResponse response = call(
-						() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 100), new VersioningParameters().draft()));
+						() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 100), new VersioningParameters().draft()));
 				if (firstUuid == null) {
 					firstUuid = response.getData().get(0).getUuid();
 				}
@@ -546,7 +546,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull(noPermNode.getUuid());
 			int perPage = 11;
 			NodeListResponse restResponse = call(
-					() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(3, perPage), new VersioningParameters().draft()));
+					() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(3, perPage), new VersioningParameters().draft()));
 			assertEquals(perPage, restResponse.getData().size());
 
 			// Extra Nodes + permitted nodes
@@ -561,7 +561,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			List<NodeResponse> allNodes = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
 				MeshResponse<NodeListResponse> pageFuture = getClient()
-						.findNodes(PROJECT_NAME, new PagingParameters(page, perPage), new VersioningParameters().draft()).invoke();
+						.findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage), new VersioningParameters().draft()).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -574,20 +574,20 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 					.collect(Collectors.toList());
 			assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			MeshResponse<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(-1, 25)).invoke();
+			MeshResponse<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(0, 25)).invoke();
+			pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
-			pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameters(1, -1)).invoke();
+			pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 			NodeListResponse list = call(
-					() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(4242, 25), new VersioningParameters().draft()));
+					() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(4242, 25), new VersioningParameters().draft()));
 			assertEquals(4242, list.getMetainfo().getCurrentPage());
 			assertEquals(0, list.getData().size());
 			assertEquals(25, list.getMetainfo().getPerPage());
@@ -599,7 +599,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testReadMultipleOnlyMetadata() {
 		NodeListResponse listResponse = call(
-				() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 0), new VersioningParameters().draft()));
+				() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 0), new VersioningParameters().draft()));
 		assertEquals(0, listResponse.getData().size());
 	}
 
@@ -608,7 +608,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		// TODO add node that has no perms and check the response
 		NodeListResponse restResponse = call(
-				() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 10), new VersioningParameters().draft()));
+				() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 10), new VersioningParameters().draft()));
 
 		int nElements = restResponse.getData().size();
 		assertEquals("The amount of elements in the list did not match the expected count", 10, nElements);
@@ -626,10 +626,10 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			NodeListResponse restResponse = call(
-					() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000), new VersioningParameters().draft()));
+					() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParameters().draft()));
 			assertThat(restResponse.getData()).as("Node List for latest release").isEmpty();
 
-			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000),
+			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000),
 					new VersioningParameters().setRelease(initialRelease.getName()).draft()));
 			assertThat(restResponse.getData()).as("Node List for initial release").hasSize(getNodeCount());
 
@@ -641,10 +641,10 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update));
 
 			// check whether there is one node in the new release now
-			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000), new VersioningParameters().draft()));
+			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParameters().draft()));
 			assertThat(restResponse.getData()).as("Node List for latest release").hasSize(1);
 
-			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000),
+			restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000),
 					new VersioningParameters().draft().setRelease(newRelease.getName())));
 			assertThat(restResponse.getData()).as("Node List for latest release").hasSize(1);
 		}
@@ -657,7 +657,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 
 			// 2. Assert that all nodes are offline. The findNodes method should not find any node because it searches for published nodes by default.
-			NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000)));
+			NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 			List<Node> nodes = Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015"));
@@ -667,7 +667,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 					.collect(Collectors.toList());
 			assertThat(publishedNodes).hasSize(nodes.size());
 
-			listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000)));
+			listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid")
 					.containsOnlyElementsOf(publishedNodes);
 		}
@@ -680,7 +680,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			// Take all nodes offline
 			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 
-			NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000)));
+			NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 			List<Node> nodes = new ArrayList<>(Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015")));
@@ -698,7 +698,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 						.collect(Collectors.toList());
 				assertThat(publishedNodes).hasSize(nodes.size());
 
-				listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters(1, 1000)));
+				listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000)));
 				assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid")
 						.containsOnlyElementsOf(publishedNodes);
 			}

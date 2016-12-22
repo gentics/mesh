@@ -29,7 +29,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.util.ResultInfo;
 
 import io.vertx.core.AsyncResult;
@@ -180,7 +180,7 @@ public final class HandlerUtilities {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 
-			PagingParameters pagingInfo = new PagingParameters(ac);
+			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			Page<? extends T> page = root.findAll(ac, pagingInfo);
 
 			// Handle etag

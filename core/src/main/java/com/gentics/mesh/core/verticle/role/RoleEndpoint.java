@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -139,7 +139,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(OK, roleExamples.getRoleListResponse(), "Loaded list of roles.");
-		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});

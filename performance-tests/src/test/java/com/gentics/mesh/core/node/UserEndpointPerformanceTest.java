@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
@@ -54,11 +54,11 @@ public class UserEndpointPerformanceTest extends AbstractRestEndpointTest {
 		String uuid = db.noTx(() -> user().getUuid());
 
 		loggingStopWatch(logger, "user.read-page-100", 200, (step) -> {
-			call(() -> getClient().findUsers(new PagingParameters().setPerPage(100)));
+			call(() -> getClient().findUsers(new PagingParametersImpl().setPerPage(100)));
 		});
 
 		loggingStopWatch(logger, "user.read-page-25", 200, (step) -> {
-			call(() -> getClient().findUsers(new PagingParameters().setPerPage(25)));
+			call(() -> getClient().findUsers(new PagingParametersImpl().setPerPage(25)));
 		});
 
 		loggingStopWatch(logger, "user.read-by-uuid", 200, (step) -> {

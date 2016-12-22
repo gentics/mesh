@@ -35,7 +35,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -56,7 +56,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
 				NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
-						new PagingParameters().setPage(1).setPerPage(2), new NodeParameters().setResolveLinks(LinkType.FULL),
+						new PagingParametersImpl().setPage(1).setPerPage(2), new NodeParameters().setResolveLinks(LinkType.FULL),
 						new VersioningParameters().draft()));
 
 				if (expectResult) {
@@ -86,7 +86,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		String uuid = db.noTx(() -> content("concorde").getUuid());
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid),
-				new PagingParameters().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
+				new PagingParametersImpl().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
 		assertEquals("We expect to find the two language versions.", 2, response.getData().size());
 
 		// 3. Prepare an updated schema
@@ -124,7 +124,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 6. Assert that the two migrated language variations can be found
 		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid),
-				new PagingParameters().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
+				new PagingParametersImpl().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
 		assertEquals("We only expect to find the two language versions while searching for uuid {" + uuid + "}", 2, response.getData().size());
 	}
 
@@ -155,7 +155,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			fullIndex();
 
 			NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
-					new PagingParameters().setPage(1).setPerPage(numAdditionalNodes + 1), new VersioningParameters().draft()));
+					new PagingParametersImpl().setPage(1).setPerPage(numAdditionalNodes + 1), new VersioningParameters().draft()));
 
 			assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());
 		}

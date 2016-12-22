@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
@@ -54,11 +54,11 @@ public class NodeEndpointPerformanceTest extends AbstractRestEndpointTest {
 	public void testReadPage() {
 		addNodes();
 		loggingStopWatch(logger, "node.read-page-100", 200, (step) -> {
-			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(100)));
+			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(100)));
 		});
 
 		loggingStopWatch(logger, "node.read-page-25", 200, (step) -> {
-			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(25)));
+			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(25)));
 		});
 	}
 

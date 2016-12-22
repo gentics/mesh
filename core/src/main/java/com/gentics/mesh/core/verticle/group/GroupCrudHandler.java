@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 import dagger.Lazy;
 import rx.Single;
@@ -58,7 +58,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		operateNoTx(() -> {
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
-			PagingParameters pagingInfo = new PagingParameters(ac);
+			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			MeshAuthUser requestUser = ac.getUser();
 			// try {
 			Page<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
@@ -140,7 +140,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		operateNoTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
-			PagingParameters pagingInfo = new PagingParameters(ac);
+			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
 			Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
 			return userPage.transformToRest(ac, 0);

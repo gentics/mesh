@@ -40,7 +40,7 @@ import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
@@ -239,7 +239,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			int perPage = 11;
 			final int currentPage = 1;
-			restResponse = call(() -> getClient().findRoles(new PagingParameters(currentPage, perPage)));
+			restResponse = call(() -> getClient().findRoles(new PagingParametersImpl(currentPage, perPage)));
 			assertEquals("The amount of items for page {" + currentPage + "} does not match the expected amount.", 11, restResponse.getData().size());
 
 			// created roles + test data role
@@ -259,7 +259,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			List<RoleResponse> allRoles = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
 				final int cPage = page;
-				restResponse = call(() -> getClient().findRoles(new PagingParameters(cPage, perPage)));
+				restResponse = call(() -> getClient().findRoles(new PagingParametersImpl(cPage, perPage)));
 				allRoles.addAll(restResponse.getData());
 			}
 			assertEquals("Somehow not all roles were loaded when loading all pages.", totalRoles, allRoles.size());
@@ -269,9 +269,9 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 					.collect(Collectors.toList());
 			assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			call(() -> getClient().findRoles(new PagingParameters(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
-			call(() -> getClient().findRoles(new PagingParameters(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
-			RoleListResponse response = call(() -> getClient().findRoles(new PagingParameters(4242, 25)));
+			call(() -> getClient().findRoles(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+			call(() -> getClient().findRoles(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
+			RoleListResponse response = call(() -> getClient().findRoles(new PagingParametersImpl(4242, 25)));
 
 			assertEquals(0, response.getData().size());
 			assertEquals(4242, response.getMetainfo().getCurrentPage());
@@ -283,7 +283,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<RoleListResponse> future = getClient().findRoles(new PagingParameters(1, 0)).invoke();
+		MeshResponse<RoleListResponse> future = getClient().findRoles(new PagingParametersImpl(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());

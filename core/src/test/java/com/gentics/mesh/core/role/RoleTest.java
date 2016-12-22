@@ -41,7 +41,7 @@ import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.tinkerpop.blueprints.Direction;
@@ -262,7 +262,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext();
 			InternalActionContext ac = InternalActionContext.create(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParameters(1, 10));
+			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParametersImpl(1, 10));
 			assertEquals(2, roles.getSize());
 			assertEquals(1, extraRole.getGroups().size());
 
@@ -276,11 +276,11 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
-			Page<? extends Role> page = boot.roleRoot().findAll(ac, new PagingParameters(1, 5));
+			Page<? extends Role> page = boot.roleRoot().findAll(ac, new PagingParametersImpl(1, 5));
 			assertEquals(roles().size(), page.getTotalElements());
 			assertEquals(4, page.getSize());
 
-			page = boot.roleRoot().findAll(ac, new PagingParameters(1, 15));
+			page = boot.roleRoot().findAll(ac, new PagingParametersImpl(1, 15));
 			assertEquals(roles().size(), page.getTotalElements());
 			assertEquals(4, page.getSize());
 		}

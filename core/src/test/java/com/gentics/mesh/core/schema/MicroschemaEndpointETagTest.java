@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
@@ -31,7 +31,7 @@ public class MicroschemaEndpointETagTest extends AbstractETagTest {
 			assertNotNull(etag);
 
 			expect304(getClient().findMicroschemas(), etag, true);
-			expectNo304(getClient().findMicroschemas(new PagingParameters().setPage(2)), etag, true);
+			expectNo304(getClient().findMicroschemas(new PagingParametersImpl().setPage(2)), etag, true);
 		}
 	}
 

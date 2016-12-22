@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
@@ -30,11 +30,11 @@ public class ProjectEndpointPerformanceTest extends AbstractRestEndpointTest {
 		String uuid = db.noTx(() -> project().getUuid());
 
 		loggingStopWatch(logger, "project.read-page-100", 200, (step) -> {
-			call(() -> getClient().findProjects(new PagingParameters().setPerPage(100)));
+			call(() -> getClient().findProjects(new PagingParametersImpl().setPerPage(100)));
 		});
 
 		loggingStopWatch(logger, "project.read-page-25", 200, (step) -> {
-			call(() -> getClient().findProjects(new PagingParameters().setPerPage(25)));
+			call(() -> getClient().findProjects(new PagingParametersImpl().setPerPage(25)));
 		});
 
 		loggingStopWatch(logger, "project.read-by-uuid", 200, (step) -> {

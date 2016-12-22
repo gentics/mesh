@@ -34,7 +34,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 
 import io.vertx.ext.web.RoutingContext;
@@ -64,7 +64,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 			Release releaseTwo = releaseRoot.create("Two", user());
 			Release releaseThree = releaseRoot.create("Three", user());
 
-			Page<? extends Release> page = releaseRoot.findAll(getMockedInternalActionContext(user()), new PagingParameters(1, 25));
+			Page<? extends Release> page = releaseRoot.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 25));
 			assertThat(page).isNotNull();
 			ArrayList<Release> arrayList = new ArrayList<Release>();
 			page.iterator().forEachRemaining(r -> arrayList.add(r));

@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ElementIdComparator;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.syncleus.ferma.FramedGraph;

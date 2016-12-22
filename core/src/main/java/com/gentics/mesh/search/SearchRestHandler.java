@@ -39,7 +39,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.Tuple;
@@ -98,7 +98,7 @@ public class SearchRestHandler {
 			Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
-		PagingParameters pagingInfo = ac.getPagingParameters();
+		PagingParametersImpl pagingInfo = ac.getPagingParameters();
 		if (pagingInfo.getPage() < 1) {
 			throw new InvalidArgumentException("The page must always be positive");
 		}

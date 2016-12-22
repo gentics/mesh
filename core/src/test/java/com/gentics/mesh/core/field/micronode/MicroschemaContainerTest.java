@@ -34,7 +34,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.MeshJsonException;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.UUIDUtil;
@@ -72,7 +72,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			int expectedMicroschemaContainers = microschemaContainers().size();
 
 			for (int i = 1; i <= expectedMicroschemaContainers + 1; i++) {
-				Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(ac, new PagingParameters(1, i));
+				Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(ac, new PagingParametersImpl(1, i));
 
 				assertEquals(microschemaContainers().size(), page.getTotalElements());
 				assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());

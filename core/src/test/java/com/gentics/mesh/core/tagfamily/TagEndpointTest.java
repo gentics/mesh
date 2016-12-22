@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -67,7 +67,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			root.findAll(getMockedInternalActionContext(user()), new PagingParameters(1, 10));
+			root.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 10));
 		}
 	}
 

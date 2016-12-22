@@ -18,7 +18,7 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.performance.TestUtils;
 
@@ -66,7 +66,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"), new PagingParameters().setPage(1).setPerPage(2),
+				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"), new PagingParametersImpl().setPage(1).setPerPage(2),
 						new NodeParameters().setResolveLinks(LinkType.FULL), new VersioningParameters().draft()));
 
 		assertEquals("Check returned search results", 1, response.getData().size());
@@ -93,7 +93,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
 				NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
-						new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
+						new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 
 				if (expectResult) {
 					assertEquals("Check returned search results", 1, response.getData().size());

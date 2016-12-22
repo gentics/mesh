@@ -16,7 +16,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -135,7 +135,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readAll.description("Load tags which were assigned to this tag family and return a paged list response.");
 		readAll.exampleResponse(OK, tagExamples.getTagListResponse(), "List of tags.");
 		readAll.produces(APPLICATION_JSON);
-		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
@@ -170,7 +170,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Load all nodes that have been tagged with the tag and return a paged list response.");
-		endpoint.addQueryParameters(PagingParameters.class);
+		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of nodes which were tagged using the provided tag.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = InternalActionContext.create(rc);
@@ -214,7 +214,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
 		readAll.description("Load multiple tag families and return a paged list response.");
-		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.exampleResponse(OK, tagFamilyExamples.getTagFamilyListResponse(), "Loaded tag families.");
 		readAll.handler(rc -> {
 			tagFamilyCrudHandler.handleReadList(InternalActionContext.create(rc));

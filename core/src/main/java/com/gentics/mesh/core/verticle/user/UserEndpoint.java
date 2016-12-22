@@ -15,7 +15,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.Endpoint;
@@ -99,7 +99,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		readAll.addQueryParameters(NodeParameters.class);
 		readAll.addQueryParameters(VersioningParameters.class);
 		readAll.addQueryParameters(RolePermissionParameters.class);
-		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.blockingHandler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});

@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
@@ -38,8 +38,8 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			assertNotNull(etag);
 
 			expect304(getClient().findNodes(PROJECT_NAME), etag, true);
-			expectNo304(getClient().findNodes(PROJECT_NAME, new PagingParameters().setPage(2)), etag, true);
-			expectNo304(getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(2)), etag, true);
+			expectNo304(getClient().findNodes(PROJECT_NAME, new PagingParametersImpl().setPage(2)), etag, true);
+			expectNo304(getClient().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(2)), etag, true);
 		}
 	}
 
@@ -55,8 +55,8 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			assertNotNull(etag);
 
 			expect304(getClient().findTagsForNode(PROJECT_NAME, nodeUuid), etag, true);
-			expectNo304(getClient().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParameters().setPage(2)), etag, true);
-			expectNo304(getClient().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParameters().setPerPage(2)), etag, true);
+			expectNo304(getClient().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParametersImpl().setPage(2)), etag, true);
+			expectNo304(getClient().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParametersImpl().setPerPage(2)), etag, true);
 
 			// Add another tag to the node
 			call(() -> getClient().addTagToNode(PROJECT_NAME, nodeUuid, tag("red").getUuid()));
@@ -76,8 +76,8 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			assertNotNull(etag);
 
 			expect304(getClient().findNodeChildren(PROJECT_NAME, uuid), etag, true);
-			expectNo304(getClient().findNodeChildren(PROJECT_NAME, uuid, new PagingParameters().setPage(2)), etag, true);
-			expectNo304(getClient().findNodeChildren(PROJECT_NAME, uuid, new PagingParameters().setPerPage(2)), etag, true);
+			expectNo304(getClient().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPage(2)), etag, true);
+			expectNo304(getClient().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPerPage(2)), etag, true);
 
 			// Create a new node in the parent folder
 			NodeCreateRequest request = new NodeCreateRequest();

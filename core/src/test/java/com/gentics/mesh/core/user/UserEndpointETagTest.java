@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
@@ -34,7 +34,7 @@ public class UserEndpointETagTest extends AbstractETagTest {
 			assertNotNull(etag);
 
 			expect304(getClient().findUsers(), etag, true);
-			expectNo304(getClient().findUsers(new PagingParameters().setPage(2)), etag, true);
+			expectNo304(getClient().findUsers(new PagingParametersImpl().setPage(2)), etag, true);
 
 		}
 	}

@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 
 public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpointTest {
@@ -47,7 +47,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 		String uuid = db.noTx(() -> content("concorde").getUuid());
 
 		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParameters().setPage(1).setPerPage(100),
+				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParametersImpl().setPage(1).setPerPage(100),
 						new NodeParameters().setLanguages(expectedLanguages), new VersioningParameters().draft()));
 		assertEquals("Check # of returned nodes", expectedLanguages.length, response.getData().size());
 		assertEquals("Check total count", expectedLanguages.length, response.getMetainfo().getTotalCount());

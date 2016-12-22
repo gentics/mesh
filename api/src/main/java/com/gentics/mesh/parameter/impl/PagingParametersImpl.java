@@ -11,12 +11,13 @@ import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.NumberUtils;
 
 /**
- * A {@link PagingParameters} can be used to add additional paging parameters to the rest requests.
+ * A {@link PagingParametersImpl} can be used to add additional paging parameters to the rest requests.
  */
-public class PagingParameters extends AbstractParameters {
+public class PagingParametersImpl extends AbstractParameters implements PagingParameters {
 
 	public static final String PAGE_PARAMETER_KEY = "page";
 	public static final String PER_PAGE_PARAMETER_KEY = "perPage";
@@ -26,7 +27,7 @@ public class PagingParameters extends AbstractParameters {
 	public static final int DEFAULT_PAGE = 1;
 	public static final int DEFAULT_PAGE_SIZE = 25;
 
-	public PagingParameters(ActionContext ac) {
+	public PagingParametersImpl(ActionContext ac) {
 		super(ac);
 
 		// Validate settings
@@ -40,7 +41,7 @@ public class PagingParameters extends AbstractParameters {
 		}
 	}
 
-	public PagingParameters(int page, int perPage, String sortBy, SortOrder order) {
+	public PagingParametersImpl(int page, int perPage, String sortBy, SortOrder order) {
 		super();
 		setPage(page);
 		setPerPage(perPage);
@@ -51,7 +52,7 @@ public class PagingParameters extends AbstractParameters {
 	/**
 	 * Create a new paging info for page one.
 	 */
-	public PagingParameters() {
+	public PagingParametersImpl() {
 		this(1);
 	}
 
@@ -61,7 +62,7 @@ public class PagingParameters extends AbstractParameters {
 	 * @param page
 	 *            Page number
 	 */
-	public PagingParameters(int page) {
+	public PagingParametersImpl(int page) {
 		// TODO use reference for default page size
 		this(page, 25);
 	}
@@ -74,87 +75,45 @@ public class PagingParameters extends AbstractParameters {
 	 * @param perPage
 	 *            Per page count
 	 */
-	public PagingParameters(int page, int perPage) {
+	public PagingParametersImpl(int page, int perPage) {
 		this(page, perPage, "uuid", SortOrder.ASCENDING);
 	}
 
-	/**
-	 * Return the current page.
-	 * 
-	 * @return Current page number
-	 */
+	@Override
 	public int getPage() {
 		return NumberUtils.toInt(getParameter(PAGE_PARAMETER_KEY), DEFAULT_PAGE);
 	}
 
-	/**
-	 * Return the per page count.
-	 * 
-	 * @return Per page count
-	 */
+	@Override
 	public int getPerPage() {
 		return NumberUtils.toInt(getParameter(PER_PAGE_PARAMETER_KEY), DEFAULT_PAGE_SIZE);
 	}
 
-	/**
-	 * Set the current page.
-	 * 
-	 * @param page
-	 *            Current page number
-	 * @return Fluent API
-	 */
+	@Override
 	public PagingParameters setPage(int page) {
 		setParameter(PAGE_PARAMETER_KEY, String.valueOf(page));
 		return this;
 	}
 
-	/**
-	 * Set the per page count.
-	 * 
-	 * @param perPage
-	 *            Per page count
-	 * @return Fluent API
-	 */
+	@Override
 	public PagingParameters setPerPage(int perPage) {
 		setParameter(PER_PAGE_PARAMETER_KEY, String.valueOf(perPage));
 		return this;
 	}
 
-	/**
-	 * Set the used sort order.
-	 * 
-	 * @param sortBy
-	 *            Sort order
-	 * @return Fluent API
-	 * @deprecated not yet implemented
-	 * 
-	 */
-	@Deprecated
+	@Override
 	public PagingParameters setSortOrder(String sortBy) {
 		setParameter(SORT_BY_PARAMETER_KEY, sortBy);
 		return this;
 	}
 
-	/**
-	 * Set the order by parameter.
-	 * 
-	 * @param orderBy
-	 * @return
-	 * @deprecated not yet implemented
-	 */
-	@Deprecated
-	PagingParameters setOrderBy(String orderBy) {
+	@Override
+	public PagingParameters setOrderBy(String orderBy) {
 		setParameter(SORT_BY_PARAMETER_KEY, orderBy);
 		return this;
 	}
 
-	/**
-	 * Return the sort by parameter value.
-	 * 
-	 * @return Field to be sorted by
-	 * @deprecated not yet implemented
-	 */
-	@Deprecated
+	@Override
 	public String getSortBy() {
 		return getParameter(SORT_BY_PARAMETER_KEY);
 	}

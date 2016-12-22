@@ -3,7 +3,7 @@ package com.gentics.mesh.parameter;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
@@ -22,8 +22,8 @@ public interface ParameterProviderContext extends ActionContext {
 		return new VersioningParameters(this);
 	}
 
-	default PagingParameters getPagingParameters() {
-		return new PagingParameters(this);
+	default PagingParametersImpl getPagingParameters() {
+		return new PagingParametersImpl(this);
 	}
 
 	default RolePermissionParameters getRolePermissionParameters() {

@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -70,12 +70,12 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
-			Page<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParameters(1, 19));
+			Page<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParametersImpl(1, 19));
 
 			assertEquals(groups().size(), page.getTotalElements());
 			assertEquals(groups().size(), page.getSize());
 
-			page = boot.groupRoot().findAll(ac, new PagingParameters(1, 3));
+			page = boot.groupRoot().findAll(ac, new PagingParametersImpl(1, 3));
 			assertEquals(groups().size(), page.getTotalElements());
 			assertEquals(3, page.getSize());
 		}

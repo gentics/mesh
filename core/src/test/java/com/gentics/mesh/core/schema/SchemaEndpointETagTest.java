@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
@@ -31,7 +31,7 @@ public class SchemaEndpointETagTest extends AbstractETagTest {
 			assertNotNull(etag);
 
 			expect304(getClient().findSchemas(), etag, true);
-			expectNo304(getClient().findSchemas(new PagingParameters().setPage(2)), etag, true);
+			expectNo304(getClient().findSchemas(new PagingParametersImpl().setPage(2)), etag, true);
 		}
 	}
 

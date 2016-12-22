@@ -52,7 +52,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -236,7 +236,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			int perPage = 2;
 			int totalUsers = 3 + nUsers;
 			int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
-			future = getClient().findUsers(new PagingParameters(3, perPage)).invoke();
+			future = getClient().findUsers(new PagingParametersImpl(3, perPage)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -252,7 +252,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			List<UserResponse> allUsers = new ArrayList<>();
 			for (int page = 1; page < totalPages; page++) {
-				MeshResponse<UserListResponse> pageFuture = getClient().findUsers(new PagingParameters(page, perPage)).invoke();
+				MeshResponse<UserListResponse> pageFuture = getClient().findUsers(new PagingParametersImpl(page, perPage)).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -266,11 +266,11 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 					.collect(Collectors.toList());
 			assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			future = getClient().findUsers(new PagingParameters(1, -1)).invoke();
+			future = getClient().findUsers(new PagingParametersImpl(1, -1)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findUsers(new PagingParameters(4242, 25)).invoke();
+			future = getClient().findUsers(new PagingParametersImpl(4242, 25)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -285,7 +285,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testInvalidPageParameter() {
-		MeshResponse<UserListResponse> future = getClient().findUsers(new PagingParameters(1, 0)).invoke();
+		MeshResponse<UserListResponse> future = getClient().findUsers(new PagingParametersImpl(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -294,7 +294,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testInvalidPageParameter2() {
-		MeshResponse<UserListResponse> future = getClient().findUsers(new PagingParameters(-1, 25)).invoke();
+		MeshResponse<UserListResponse> future = getClient().findUsers(new PagingParametersImpl(-1, 25)).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 	}
@@ -486,7 +486,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 			MeshResponse<UserListResponse> userListResponseFuture = getClient()
-					.findUsers(new PagingParameters().setPerPage(100), new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en"))
+					.findUsers(new PagingParametersImpl().setPerPage(100), new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en"))
 					.invoke();
 			latchFor(userListResponseFuture);
 			assertSuccess(userListResponseFuture);

@@ -37,7 +37,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
@@ -134,7 +134,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 11;
-			future = getClient().findSchemas(new PagingParameters(2, perPage)).invoke();
+			future = getClient().findSchemas(new PagingParametersImpl(2, perPage)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -150,7 +150,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			List<Schema> allSchemas = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<SchemaListResponse> pageFuture = getClient().findSchemas(new PagingParameters(page, perPage)).invoke();
+				MeshResponse<SchemaListResponse> pageFuture = getClient().findSchemas(new PagingParametersImpl(page, perPage)).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 
@@ -165,15 +165,15 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 			// .collect(Collectors.toList());
 			// assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
 
-			future = getClient().findSchemas(new PagingParameters(-1, perPage)).invoke();
+			future = getClient().findSchemas(new PagingParametersImpl(-1, perPage)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findSchemas(new PagingParameters(1, -1)).invoke();
+			future = getClient().findSchemas(new PagingParametersImpl(1, -1)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findSchemas(new PagingParameters(4242, 25)).invoke();
+			future = getClient().findSchemas(new PagingParametersImpl(4242, 25)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -185,7 +185,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<SchemaListResponse> future = getClient().findSchemas(new PagingParameters(1, 0)).invoke();
+		MeshResponse<SchemaListResponse> future = getClient().findSchemas(new PagingParametersImpl(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());

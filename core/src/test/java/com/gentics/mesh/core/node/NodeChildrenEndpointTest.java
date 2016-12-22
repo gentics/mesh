@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
@@ -140,7 +140,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 			int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
 
 			NodeListResponse nodeList = call(
-					() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(), new VersioningParameters().draft()));
+					() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(), new VersioningParameters().draft()));
 
 			assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
 			assertEquals(expectedItemsInPage, nodeList.getData().size());
@@ -157,7 +157,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 			role().revokePermissions(nodeWithNoPerm, READ_PERM);
 
 			NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(),
-					new PagingParameters().setPerPage(20000), new VersioningParameters().draft()));
+					new PagingParametersImpl().setPerPage(20000), new VersioningParameters().draft()));
 
 			assertEquals(node.getChildren().size() - 1, nodeList.getMetainfo().getTotalCount());
 			assertEquals(0, nodeList.getData().stream().filter(p -> nodeWithNoPerm.getUuid().equals(p.getUuid())).count());
@@ -175,7 +175,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 			role().revokePermissions(node, READ_PERM);
 
 			MeshResponse<NodeListResponse> future = getClient()
-					.findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(), new NodeParameters()).invoke();
+					.findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(), new NodeParameters()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		}
@@ -193,12 +193,12 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
-			NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
+			NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParameters().setRelease(initialRelease.getName()).draft()));
 			assertEquals("Total children in initial release", childrenSize, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in initial release", expectedItemsInPage, nodeList.getData().size());
 
-			nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
+			nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParameters().setRelease(newRelease.getName()).draft()));
 			assertEquals("Total children in initial release", 0, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in initial release", 0, nodeList.getData().size());
@@ -208,7 +208,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 			update.getFields().put("name", FieldUtil.createStringField("new"));
 			call(() -> getClient().updateNode(PROJECT_NAME, firstChild.getUuid(), update));
 
-			nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameters(),
+			nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParameters().setRelease(newRelease.getName()).draft()));
 			assertEquals("Total children in new release", 1, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in new release", 1, nodeList.getData().size());

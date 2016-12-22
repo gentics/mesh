@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -295,11 +295,11 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
-			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParameters(1, 10));
+			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 10));
 			assertEquals(12, tagPage.getTotalElements());
 			assertEquals(10, tagPage.getSize());
 
-			tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParameters(1, 14));
+			tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 14));
 			assertEquals(tags().size(), tagPage.getTotalElements());
 			assertEquals(12, tagPage.getSize());
 		}
@@ -317,15 +317,15 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			assertEquals(tags().size() + 1, meshRoot().getTagRoot().findAll().size());
 
 			Page<? extends Tag> projectTagpage = project().getTagRoot().findAll(getMockedInternalActionContext(user()),
-					new PagingParameters(1, 20));
+					new PagingParametersImpl(1, 20));
 			assertPage(projectTagpage, tags().size());
 
 			Page<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()),
-					new PagingParameters(1, 20));
+					new PagingParametersImpl(1, 20));
 			assertPage(globalTagPage, tags().size());
 
 			role().grantPermissions(noPermTag, READ_PERM);
-			globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()), new PagingParameters(1, 20));
+			globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 20));
 			assertPage(globalTagPage, tags().size() + 1);
 		}
 	}

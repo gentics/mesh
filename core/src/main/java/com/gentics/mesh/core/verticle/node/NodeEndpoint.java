@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -305,7 +305,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of loaded node children.");
 		endpoint.description("Load all child nodes and return a paged list response.");
-		endpoint.addQueryParameters(PagingParameters.class);
+		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.addQueryParameters(NodeParameters.class);
 		endpoint.addQueryParameters(VersioningParameters.class);
 		endpoint.handler(rc -> {
@@ -411,7 +411,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readAll.addQueryParameters(VersioningParameters.class);
 		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.addQueryParameters(NodeParameters.class);
-		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.handler(rc -> crudHandler.handleReadList(InternalActionContext.create(rc)));
 
 	}

@@ -29,7 +29,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 
@@ -47,7 +47,7 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 			role().grantPermissions(extraUser, READ_PERM);
 			String groupUuid = group().getUuid();
 
-			MeshResponse<UserListResponse> future = getClient().findUsersOfGroup(groupUuid, new PagingParameters()).invoke();
+			MeshResponse<UserListResponse> future = getClient().findUsersOfGroup(groupUuid, new PagingParametersImpl()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 

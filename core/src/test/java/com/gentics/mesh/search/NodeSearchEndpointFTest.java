@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 
 public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
@@ -65,7 +65,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("the"),
-				new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
+				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -88,7 +88,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 			Node node = content("honda nr");
 			node.remove();
-			NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("the"), new PagingParameters().setPage(1).setPerPage(2)));
+			NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("the"), new PagingParametersImpl().setPage(1).setPerPage(2)));
 			assertEquals(0, response.getData().size());
 			assertEquals(0, response.getMetainfo().getTotalCount());
 		}

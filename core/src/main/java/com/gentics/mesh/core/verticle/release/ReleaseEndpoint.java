@@ -15,7 +15,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -67,7 +67,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		readSchemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readSchemas.method(GET);
 		readSchemas.description("Load schemas that are assigned to the release and return a paged list response.");
-		readSchemas.addQueryParameters(PagingParameters.class);
+		readSchemas.addQueryParameters(PagingParametersImpl.class);
 		readSchemas.produces(APPLICATION_JSON);
 		readSchemas.exampleResponse(OK, schemaExamples.createSchemaReferenceList(), "Loaded schema list.");
 		readSchemas.handler(rc -> {
@@ -82,7 +82,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		readMicroschemas.description("Load microschemas that are assigned to the release and return a paged list response.");
 		readMicroschemas.produces(APPLICATION_JSON);
 		readMicroschemas.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "List of microschemas.");
-		readMicroschemas.addQueryParameters(PagingParameters.class);
+		readMicroschemas.addQueryParameters(PagingParametersImpl.class);
 		readMicroschemas.handler(rc -> {
 			String uuid = rc.request().getParam("releaseUuid");
 			crudHandler.handleGetMicroschemaVersions(InternalActionContext.create(rc), uuid);
@@ -109,7 +109,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		readAll.method(GET);
 		readAll.description("Load multiple releases and return a paged list response.");
 		readAll.exampleResponse(OK, versioningExamples.createReleaseListResponse(), "Loaded releases.");
-		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));

@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
@@ -33,7 +33,7 @@ public class TagEndpointETagTest extends AbstractETagTest {
 			assertNotNull(etag);
 
 			expect304(getClient().findTags(PROJECT_NAME, tagFamilyUuid), etag, true);
-			expectNo304(getClient().findTags(PROJECT_NAME, tagFamilyUuid, new PagingParameters().setPage(2)), etag, true);
+			expectNo304(getClient().findTags(PROJECT_NAME, tagFamilyUuid, new PagingParametersImpl().setPage(2)), etag, true);
 		}
 	}
 

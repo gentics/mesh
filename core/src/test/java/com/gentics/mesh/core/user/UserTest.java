@@ -32,7 +32,7 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -108,11 +108,11 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
-			Page<? extends User> page = boot.userRoot().findAll(ac, new PagingParameters(1, 6));
+			Page<? extends User> page = boot.userRoot().findAll(ac, new PagingParametersImpl(1, 6));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(3, page.getSize());
 
-			page = boot.userRoot().findAll(ac, new PagingParameters(1, 15));
+			page = boot.userRoot().findAll(ac, new PagingParametersImpl(1, 15));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(users().size(), page.getSize());
 		}
@@ -122,7 +122,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
-			Page<? extends User> page = boot.userRoot().findAll(getMockedInternalActionContext(null, user()), new PagingParameters(1, 25));
+			Page<? extends User> page = boot.userRoot().findAll(getMockedInternalActionContext(null, user()), new PagingParametersImpl(1, 25));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
 		}
@@ -187,7 +187,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParameters(1, 10));
+			Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParametersImpl(1, 10));
 
 			assertEquals(2, userPage.getTotalElements());
 		}
