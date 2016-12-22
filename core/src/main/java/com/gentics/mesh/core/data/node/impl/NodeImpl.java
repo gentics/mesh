@@ -85,7 +85,8 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -798,14 +799,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return;
 		}
 
-		Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
+		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
 		while (current != null) {
 			// Don't add the base node to the breadcrumb
 			// TODO should we add the basenode to the breadcrumb?
 			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
 				break;
 			}
-			NodeReferenceImpl reference = new NodeReferenceImpl();
+			NodeReference reference = new NodeReference();
 			reference.setUuid(current.getUuid());
 			reference.setDisplayName(current.getDisplayName(ac));
 
@@ -949,11 +950,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeReferenceImpl transformToReference(InternalActionContext ac) {
-		NodeReferenceImpl nodeReference = new NodeReferenceImpl();
+	public NodeReference transformToReference(InternalActionContext ac) {
+		NodeReference nodeReference = new NodeReference();
 		nodeReference.setUuid(getUuid());
 		nodeReference.setDisplayName(getDisplayName(ac));
 		nodeReference.setSchema(getSchemaContainer().transformToReference());
+		nodeReference.setProjectName(getProject().getName());
 		return nodeReference;
 	}
 

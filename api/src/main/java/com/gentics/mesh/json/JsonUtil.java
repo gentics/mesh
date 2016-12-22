@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 
 import org.codehaus.jettison.json.JSONObject;
+import org.elasticsearch.index.query.QueryBuilder;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -35,11 +36,10 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.ExpandableNode;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.elasticsearch.index.query.QueryBuilder;
 
 /**
  * Main JSON Util which is used to register all custom JSON specific handlers and deserializers.
@@ -79,7 +79,7 @@ public final class JsonUtil {
 		});
 
 		module.addDeserializer(FieldMap.class, new FieldMapDeserializer());
-		module.addDeserializer(NodeReference.class, new UserNodeReferenceDeserializer());
+		module.addDeserializer(ExpandableNode.class, new UserNodeReferenceDeserializer());
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 

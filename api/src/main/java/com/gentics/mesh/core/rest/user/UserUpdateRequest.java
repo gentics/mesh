@@ -19,7 +19,7 @@ public class UserUpdateRequest implements RestModel {
 
 	private String emailAddress;
 
-	private NodeReference nodeReference;
+	private ExpandableNode nodeReference;
 
 	public UserUpdateRequest() {
 	}
@@ -151,7 +151,7 @@ public class UserUpdateRequest implements RestModel {
 	 * 
 	 * @return Node reference of the user
 	 */
-	public NodeReference getNodeReference() {
+	public ExpandableNode getNodeReference() {
 		return nodeReference;
 	}
 
@@ -162,7 +162,7 @@ public class UserUpdateRequest implements RestModel {
 	 *            Node reference of the user
 	 * @return Fluent API
 	 */
-	public UserUpdateRequest setNodeReference(NodeReference nodeReference) {
+	public UserUpdateRequest setNodeReference(ExpandableNode nodeReference) {
 		this.nodeReference = nodeReference;
 		return this;
 	}

@@ -14,13 +14,13 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
+import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 
 /**
  * POJO for the node rest response model.
  */
-public class NodeResponse extends AbstractGenericRestResponse implements NodeField, NodeFieldListItem, NodeReference {
+public class NodeResponse extends AbstractGenericRestResponse implements NodeField, NodeFieldListItem, ExpandableNode {
 
 	private String language;
 
@@ -28,7 +28,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private Map<String, String> languagePaths;
 
-	private NodeReferenceImpl parentNode;
+	private NodeReference parentNode;
 
 	private Map<String, TagFamilyTagGroup> tags = new HashMap<>();
 
@@ -49,7 +49,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private String path;
 
-	private Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
+	private Deque<NodeReference> breadcrumb = new ArrayDeque<>();
 
 	private VersionReference version;
 
@@ -62,7 +62,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return Node reference
 	 */
-	public NodeReferenceImpl getParentNode() {
+	public NodeReference getParentNode() {
 		return parentNode;
 	}
 
@@ -72,7 +72,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * @param parentNode
 	 *            Parent node reference
 	 */
-	public void setParentNode(NodeReferenceImpl parentNode) {
+	public void setParentNode(NodeReference parentNode) {
 		this.parentNode = parentNode;
 	}
 
@@ -253,9 +253,11 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @param path
 	 *            webroot path
+	 * @return Fluent API
 	 */
-	public void setPath(String path) {
+	public NodeResponse setPath(String path) {
 		this.path = path;
+		return this;
 	}
 
 	/**
@@ -264,7 +266,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return
 	 */
-	public Deque<NodeReferenceImpl> getBreadcrumb() {
+	public Deque<NodeReference> getBreadcrumb() {
 		return breadcrumb;
 	}
 
@@ -272,9 +274,11 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * Set the breadcrumb for the node.
 	 * 
 	 * @param breadcrumb
+	 * @return Fluent API
 	 */
-	public void setBreadcrumb(Deque<NodeReferenceImpl> breadcrumb) {
+	public NodeResponse setBreadcrumb(Deque<NodeReference> breadcrumb) {
 		this.breadcrumb = breadcrumb;
+		return this;
 	}
 
 	/**
@@ -290,9 +294,11 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * Set the version of the fields
 	 * 
 	 * @param version
+	 * @return Fluent API
 	 */
-	public void setVersion(VersionReference version) {
+	public NodeResponse setVersion(VersionReference version) {
 		this.version = version;
+		return this;
 	}
 
 	@JsonIgnore

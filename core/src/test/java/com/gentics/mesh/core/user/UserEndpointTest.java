@@ -43,7 +43,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
@@ -411,7 +411,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateRequest.setLastname("Epic Stark");
 			updateRequest.setUsername("dummy_user_changed");
 
-			NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
+			NodeReference userNodeReference = new NodeReference();
 			userNodeReference.setProjectName(PROJECT_NAME);
 			userNodeReference.setUuid(nodeUuid);
 			updateRequest.setNodeReference(userNodeReference);
@@ -423,7 +423,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			user().reload();
 			assertNotNull(user().getReferencedNode());
 			assertNotNull(restUser.getNodeReference());
-			assertEquals(PROJECT_NAME, ((NodeReferenceImpl) restUser.getNodeReference()).getProjectName());
+			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
 			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
@@ -443,7 +443,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			Node node = folder("2015");
 			assertTrue(user().hasPermission(node, READ_PERM));
 
-			NodeReferenceImpl reference = new NodeReferenceImpl();
+			NodeReference reference = new NodeReference();
 			reference.setProjectName(PROJECT_NAME);
 			reference.setUuid(node.getUuid());
 
@@ -453,12 +453,10 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			MeshResponse<UserResponse> future = getClient().createUser(newUser).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			UserResponse response = future.result();
+			UserResponse response = call(() -> getClient().createUser(newUser));
+			assertTrue(response.isReference());
 			assertNotNull(response.getNodeReference());
-			assertNotNull(((NodeReferenceImpl) response.getNodeReference()).getProjectName());
+			assertNotNull(response.getReferencedNodeReference().getProjectName());
 			assertNotNull(response.getNodeReference().getUuid());
 		}
 	}
@@ -468,7 +466,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		UserResponse userCreateResponse = db.noTx(() -> {
 			Node node = folder("2015");
 
-			NodeReferenceImpl reference = new NodeReferenceImpl();
+			NodeReference reference = new NodeReference();
 			reference.setUuid(node.getUuid());
 			reference.setProjectName(PROJECT_NAME);
 
@@ -485,16 +483,11 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
-			MeshResponse<UserListResponse> userListResponseFuture = getClient()
-					.findUsers(new PagingParametersImpl().setPerPage(100), new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en"))
-					.invoke();
-			latchFor(userListResponseFuture);
-			assertSuccess(userListResponseFuture);
-			UserListResponse userResponse = userListResponseFuture.result();
+			UserListResponse userResponse =  call(() -> getClient().findUsers(new PagingParametersImpl().setPerPage(100),
+					new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")));
 			assertNotNull(userResponse);
 
 			UserResponse foundUser = userResponse.getData().stream().filter(u -> u.getUuid().equals(userCreateResponse.getUuid())).findFirst().get();
-
 			assertNotNull(foundUser.getNodeReference());
 			assertEquals(node.getUuid(), foundUser.getNodeReference().getUuid());
 			assertEquals(NodeResponse.class, foundUser.getNodeReference().getClass());
@@ -510,7 +503,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			Node node = folder("2015");
 			folderUuid = node.getUuid();
 
-			NodeReferenceImpl reference = new NodeReferenceImpl();
+			NodeReference reference = new NodeReference();
 			reference.setUuid(node.getUuid());
 			reference.setProjectName(PROJECT_NAME);
 
@@ -544,7 +537,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
 
-			NodeReferenceImpl reference = new NodeReferenceImpl();
+			NodeReference reference = new NodeReference();
 			reference.setProjectName("bogus_name");
 			reference.setUuid(node.getUuid());
 
@@ -563,7 +556,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testCreateUserWithBogusUuidInNodeReference() {
 		try (NoTx noTx = db.noTx()) {
-			NodeReferenceImpl reference = new NodeReferenceImpl();
+			NodeReference reference = new NodeReference();
 			reference.setProjectName(PROJECT_NAME);
 			reference.setUuid("bogus_uuid");
 
@@ -582,7 +575,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testCreateUserWithMissingProjectNameInNodeReference() {
 		try (NoTx noTx = db.noTx()) {
-			NodeReferenceImpl reference = new NodeReferenceImpl();
+			NodeReference reference = new NodeReference();
 			reference.setUuid("bogus_uuid");
 
 			UserCreateRequest newUser = new UserCreateRequest();
@@ -601,7 +594,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testCreateUserWithMissingUuidNameInNodeReference() {
 
 		try (NoTx noTx = db.noTx()) {
-			NodeReferenceImpl reference = new NodeReferenceImpl();
+			NodeReference reference = new NodeReference();
 			reference.setProjectName(PROJECT_NAME);
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setUsername("new_user");

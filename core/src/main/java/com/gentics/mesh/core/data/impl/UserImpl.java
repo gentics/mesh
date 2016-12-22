@@ -43,8 +43,10 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupReference;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
@@ -300,25 +302,22 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 */
 	private void setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
 		NodeParameters parameters = new NodeParameters(ac);
+
+		// Check whether a node reference was set. 
 		Node node = getReferencedNode();
 		if (node == null) {
 			return;
-		} else {
-			boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
-			if (expandReference) {
-				restUser.setNodeReference(node.transformToRestSync(ac, level));
-			} else {
-				NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
-				userNodeReference.setUuid(node.getUuid());
-				if (node.getProject() != null) {
-					userNodeReference.setProjectName(node.getProject().getName());
-				} else {
-					log.error("Project of node is null. Can't set project field of user nodeReference.");
-					// TODO handle this case
-				}
-				restUser.setNodeReference(userNodeReference);
-			}
 		}
+
+		// Check whether the node reference field of the user should be expanded
+		boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
+		if (expandReference) {
+			restUser.setNodeResponse(node.transformToRestSync(ac, level));
+		} else {
+			NodeReference userNodeReference = node.transformToReference(ac);
+			restUser.setNodeReference(userNodeReference);
+		}
+
 	}
 
 	@Override
@@ -426,10 +425,13 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		setLastEditedTimestamp();
 
 		if (requestModel.getNodeReference() != null) {
-			NodeReference reference = requestModel.getNodeReference();
-			// TODO also handle full node response inside node reference field
-			if (reference instanceof NodeReferenceImpl) {
-				NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
+			ExpandableNode reference = requestModel.getNodeReference();
+			if (reference instanceof NodeResponse) {
+				// TODO also handle full node response inside node reference field
+				throw error(BAD_REQUEST, "Handling node responses for user updates is not yet supported");
+			}
+			if (reference instanceof NodeReference) {
+				NodeReference basicReference = ((NodeReference) reference);
 				if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
 					throw error(BAD_REQUEST, "user_incomplete_node_reference");
 				}

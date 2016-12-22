@@ -38,7 +38,8 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.util.Tuple;
 
 public class NodeExamples extends AbstractExamples {
@@ -46,7 +47,7 @@ public class NodeExamples extends AbstractExamples {
 	public NodeResponse getNodeResponseWithAllFields() {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(randomUUID());
-		NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
+		NodeReference parentNodeReference = new NodeReference();
 		parentNodeReference.setUuid(randomUUID());
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 		nodeResponse.setParentNode(parentNodeReference);
@@ -91,10 +92,10 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 
 		// breadcrumb
-		Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
+		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
 		//		breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
-		breadcrumb.add(new NodeReferenceImpl().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
-		breadcrumb.add(new NodeReferenceImpl().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
 		nodeResponse.setBreadcrumb(breadcrumb);
 
 		// tags
@@ -155,7 +156,7 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setUuid(randomUUID());
 		nodeResponse.setSchema(getSchemaReference("content"));
 
-		NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
+		NodeReference parentNodeReference = new NodeReference();
 		parentNodeReference.setUuid(randomUUID());
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 
@@ -174,10 +175,10 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setPermissions("READ", "CREATE");
 
 		// breadcrumb
-		Deque<NodeReferenceImpl> breadcrumb = new ArrayDeque<>();
+		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
 		//		breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
-		breadcrumb.add(new NodeReferenceImpl().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
-		breadcrumb.add(new NodeReferenceImpl().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
+		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
 		nodeResponse.setBreadcrumb(breadcrumb);
 
 		// tags

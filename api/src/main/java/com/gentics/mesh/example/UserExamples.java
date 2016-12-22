@@ -3,7 +3,8 @@ package com.gentics.mesh.example;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import com.gentics.mesh.core.rest.group.GroupReference;
-import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
+import com.gentics.mesh.core.rest.user.ExpandableNode;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
@@ -46,7 +47,7 @@ public class UserExamples extends AbstractExamples {
 		user.setLastname("Doe");
 		user.setEnabled(true);
 
-		NodeReferenceImpl reference = new NodeReferenceImpl();
+		NodeReference reference = new NodeReference();
 		reference.setProjectName("dummy");
 		reference.setUuid(randomUUID());
 		user.setNodeReference(reference);
@@ -71,7 +72,8 @@ public class UserExamples extends AbstractExamples {
 		userUpdate.setFirstname("Joe");
 		userUpdate.setLastname("Doe");
 		userUpdate.setEmailAddress("j.doe@nowhere.com");
-		userUpdate.setNodeReference(getUserResponse1("jdoe").getNodeReference());
+		ExpandableNode node = getUserResponse1("jdoe").getNodeReference();
+		userUpdate.setNodeReference(node);
 		return userUpdate;
 	}
 

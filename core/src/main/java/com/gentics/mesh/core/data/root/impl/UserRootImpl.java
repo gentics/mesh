@@ -25,8 +25,9 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -156,7 +157,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		user.setEmailAddress(requestModel.getEmailAddress());
 		user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
-		NodeReference reference = requestModel.getNodeReference();
+		ExpandableNode reference = requestModel.getNodeReference();
 		user.addIndexBatchEntry(batch, STORE_ACTION, true);
 
 		if (!isEmpty(groupUuid)) {
@@ -166,8 +167,8 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 		}
 
-		if (reference != null && reference instanceof NodeReferenceImpl) {
-			NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
+		if (reference != null && reference instanceof NodeReference) {
+			NodeReference basicReference = ((NodeReference) reference);
 			String referencedNodeUuid = basicReference.getUuid();
 			String projectName = basicReference.getProjectName();
 
