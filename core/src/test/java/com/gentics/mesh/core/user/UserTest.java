@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -108,7 +108,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 
-			PageImpl<? extends User> page = boot.userRoot().findAll(ac, new PagingParameters(1, 6));
+			Page<? extends User> page = boot.userRoot().findAll(ac, new PagingParameters(1, 6));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(3, page.getSize());
 
@@ -122,7 +122,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
-			PageImpl<? extends User> page = boot.userRoot().findAll(getMockedInternalActionContext(null, user()), new PagingParameters(1, 25));
+			Page<? extends User> page = boot.userRoot().findAll(getMockedInternalActionContext(null, user()), new PagingParameters(1, 25));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
 		}
@@ -187,7 +187,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			PageImpl<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParameters(1, 10));
+			Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParameters(1, 10));
 
 			assertEquals(2, userPage.getTotalElements());
 		}

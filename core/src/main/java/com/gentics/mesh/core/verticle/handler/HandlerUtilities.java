@@ -19,7 +19,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -181,7 +181,7 @@ public final class HandlerUtilities {
 			RootVertex<T> root = handler.call();
 
 			PagingParameters pagingInfo = new PagingParameters(ac);
-			PageImpl<? extends T> page = root.findAll(ac, pagingInfo);
+			Page<? extends T> page = root.findAll(ac, pagingInfo);
 
 			// Handle etag
 			String etag = page.getETag(ac);

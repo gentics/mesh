@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -125,7 +126,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext("version=draft", user());
-			PageImpl<? extends Node> page = boot.nodeRoot().findAll(ac, new PagingParameters(1, 10));
+			Page<? extends Node> page = boot.nodeRoot().findAll(ac, new PagingParameters(1, 10));
 
 			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(10, page.getSize());
@@ -158,7 +159,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			List<String> languageTags = new ArrayList<>();
 			languageTags.add("de");
 			languageTags.add("en");
-			PageImpl<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), languageTags, new PagingParameters(1, 25));
+			Page<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), languageTags, new PagingParameters(1, 25));
 			assertNotNull(page);
 		}
 	}

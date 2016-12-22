@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -102,7 +102,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
-			PageImpl<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(getMockedInternalActionContext(user()),
+			Page<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(getMockedInternalActionContext(user()),
 					new PagingParameters(1, 25));
 			assertNotNull(page);
 		}

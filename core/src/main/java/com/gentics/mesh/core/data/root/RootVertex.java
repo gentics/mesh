@@ -6,7 +6,7 @@ import java.util.Stack;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -37,7 +37,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @throws InvalidArgumentException
 	 *             if the paging options are malformed.
 	 */
-	PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException;
+	Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Find the element with the given name.

@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -61,7 +61,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			MeshAuthUser requestUser = ac.getUser();
 			// try {
-			PageImpl<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
+			Page<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
 			return rolePage.transformToRest(ac, 0);
 			// } catch (Exception e) {
 			// return Single.error(e);
@@ -142,7 +142,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameters pagingInfo = new PagingParameters(ac);
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
-			PageImpl<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
+			Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
 			return userPage.transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}

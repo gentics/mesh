@@ -10,6 +10,7 @@ import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -45,7 +46,7 @@ public final class TraversalHelper {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	private static <T extends TransformableElement<? extends RestModel>> PageImpl<T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy,
+	private static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy,
 			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) throws InvalidArgumentException {
 
 		if (page < 1) {
@@ -99,7 +100,7 @@ public final class TraversalHelper {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	public static <T extends TransformableElement<? extends RestModel>> PageImpl<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
+	public static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
 			PagingParameters pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
 		return getPagedResult(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
 				pagingInfo.getPerPage(), classOfT);

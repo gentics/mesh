@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -186,7 +186,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Tag> getTags(Release release, PagingParameters params) throws InvalidArgumentException;
+	Page<? extends Tag> getTags(Release release, PagingParameters params) throws InvalidArgumentException;
 
 	/**
 	 * Return a list of language names for draft versions in the latest release
@@ -299,7 +299,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
+	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
 			PagingParameters pagingParameter) throws InvalidArgumentException;
 
 	/**

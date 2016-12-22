@@ -20,7 +20,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
@@ -72,7 +72,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			int expectedMicroschemaContainers = microschemaContainers().size();
 
 			for (int i = 1; i <= expectedMicroschemaContainers + 1; i++) {
-				PageImpl<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(ac, new PagingParameters(1, i));
+				Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(ac, new PagingParameters(1, i));
 
 				assertEquals(microschemaContainers().size(), page.getTotalElements());
 				assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());

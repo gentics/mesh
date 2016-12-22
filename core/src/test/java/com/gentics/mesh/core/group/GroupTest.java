@@ -17,7 +17,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -70,7 +70,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
-			PageImpl<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParameters(1, 19));
+			Page<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParameters(1, 19));
 
 			assertEquals(groups().size(), page.getTotalElements());
 			assertEquals(groups().size(), page.getSize());

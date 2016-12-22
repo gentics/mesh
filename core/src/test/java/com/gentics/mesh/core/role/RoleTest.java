@@ -31,7 +31,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -262,7 +262,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext();
 			InternalActionContext ac = InternalActionContext.create(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			PageImpl<? extends Role> roles = group().getRoles(requestUser, new PagingParameters(1, 10));
+			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParameters(1, 10));
 			assertEquals(2, roles.getSize());
 			assertEquals(1, extraRole.getGroups().size());
 
@@ -276,7 +276,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = InternalActionContext.create(rc);
-			PageImpl<? extends Role> page = boot.roleRoot().findAll(ac, new PagingParameters(1, 5));
+			Page<? extends Role> page = boot.roleRoot().findAll(ac, new PagingParameters(1, 5));
 			assertEquals(roles().size(), page.getTotalElements());
 			assertEquals(4, page.getSize());
 

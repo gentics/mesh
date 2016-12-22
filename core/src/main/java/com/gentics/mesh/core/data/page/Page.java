@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.page;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 
@@ -9,7 +10,7 @@ import rx.Single;
 /**
  * A page is the result of a query which returns paged data. Each page may contain multiple items. A page can be transformed into a rest response.
  */
-public interface Page {
+public interface Page<T extends TransformableElement<? extends RestModel>> extends Iterable<T> {
 
 	/**
 	 * Return the per page parameter value.

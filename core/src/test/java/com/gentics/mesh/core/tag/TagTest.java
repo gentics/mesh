@@ -32,7 +32,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -295,7 +295,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
-			PageImpl<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParameters(1, 10));
+			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParameters(1, 10));
 			assertEquals(12, tagPage.getTotalElements());
 			assertEquals(10, tagPage.getSize());
 
@@ -316,11 +316,11 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(noPermTag.getUuid());
 			assertEquals(tags().size() + 1, meshRoot().getTagRoot().findAll().size());
 
-			PageImpl<? extends Tag> projectTagpage = project().getTagRoot().findAll(getMockedInternalActionContext(user()),
+			Page<? extends Tag> projectTagpage = project().getTagRoot().findAll(getMockedInternalActionContext(user()),
 					new PagingParameters(1, 20));
 			assertPage(projectTagpage, tags().size());
 
-			PageImpl<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()),
+			Page<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()),
 					new PagingParameters(1, 20));
 			assertPage(globalTagPage, tags().size());
 
@@ -330,7 +330,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 		}
 	}
 
-	private void assertPage(PageImpl<? extends Tag> page, int expectedTagCount) {
+	private void assertPage(Page<? extends Tag> page, int expectedTagCount) {
 		assertNotNull(page);
 
 		int nTags = 0;
