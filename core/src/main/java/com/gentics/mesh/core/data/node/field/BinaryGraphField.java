@@ -1,13 +1,8 @@
 package com.gentics.mesh.core.data.node.field;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 import java.io.File;
 
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 
 import io.vertx.core.Future;
@@ -178,7 +173,5 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVert
 	 * @param uuid
 	 */
 	void setUuid(String uuid);
-
-	BinaryGraphFieldImpl getImpl();
 
 }

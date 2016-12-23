@@ -174,7 +174,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			micronode.clone(existingMicronode);
 
 			// Remove the old field (edge)
-			existing.getImpl().remove();
+			existing.remove();
 
 			// If the existing micronode was only used by this container, remove it
 			if (existingMicronode.in(HAS_FIELD).count() == 0) {
@@ -206,10 +206,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			// Copy the old values to the new field
 			existing.copyTo(field);
 
-			unlinkOut(existing.getImpl(), HAS_FIELD);
+			unlinkOut(existing, HAS_FIELD);
 			// Remove the field if no more containers are using it
-			if (existing.getImpl().in(HAS_FIELD).count() == 0) {
-				existing.getImpl().remove();
+			if (existing.in(HAS_FIELD).count() == 0) {
+				existing.remove();
 			}
 		}
 		return field;

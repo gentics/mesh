@@ -262,7 +262,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	@Override
 	public void removeField(GraphFieldContainer container) {
 		// Detach the list from the given graph field container
-		container.unlinkOut(getImpl(), HAS_FIELD);
+		container.unlinkOut(this, HAS_FIELD);
 
 		// Remove the field if no more containers are attached to it
 		if (in(HAS_FIELD).count() == 0) {
@@ -327,8 +327,4 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		return false;
 	}
 
-	@Override
-	public BinaryGraphFieldImpl getImpl() {
-		return this;
-	}
 }
