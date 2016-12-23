@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
@@ -15,6 +17,7 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -161,6 +164,16 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/roles/" + getUuid();
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 }

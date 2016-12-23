@@ -747,6 +747,18 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 				// TODO Auto-generated method stub
 				return null;
 			}
+
+			@Override
+			public User getCreator() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public User getEditor() {
+				// TODO Auto-generated method stub
+				return null;
+			}
 		};
 		return user;
 	}

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
@@ -25,10 +26,12 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
@@ -444,6 +447,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public String getETag(InternalActionContext ac) {
 		return ETag.hash(getUuid());
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 }

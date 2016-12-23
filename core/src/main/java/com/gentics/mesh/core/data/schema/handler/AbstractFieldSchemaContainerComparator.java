@@ -21,20 +21,13 @@ import com.gentics.mesh.util.CompareUtils;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSchemaContainer> {
+public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSchemaContainer> implements FieldSchemaContainerComparator<FC> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractFieldSchemaContainerComparator.class);
 
 	protected FieldSchemaComparator fieldComparator = new FieldSchemaComparator();
 
-	/**
-	 * Compare the two field containers. The implementor should invoke {@link #diff(FieldSchemaContainer, FieldSchemaContainer, Class)} and specify the actual
-	 * field container class.
-	 * 
-	 * @param containerA
-	 * @param containerB
-	 * @return
-	 */
+	@Override
 	public abstract List<SchemaChangeModel> diff(FC containerA, FC containerB);
 
 	/**

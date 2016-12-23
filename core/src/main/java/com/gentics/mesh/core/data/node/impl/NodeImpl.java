@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
@@ -55,6 +56,7 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
@@ -1834,5 +1836,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/" + encodeFragment(getProject().getName()) + "/nodes/" + getUuid();
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
 	}
 }

@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 
-import com.gentics.mesh.core.data.impl.UserImpl;
-
 /**
  * Interface for vertices that track their editor and editing time
  */
@@ -15,9 +13,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 * 
 	 * @return Editor
 	 */
-	default User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
-	}
+	User getEditor();
 
 	/**
 	 * Set the editor of the vertex.

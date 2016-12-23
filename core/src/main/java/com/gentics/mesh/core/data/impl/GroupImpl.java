@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
@@ -215,6 +217,16 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/groups/" + getUuid();
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 }

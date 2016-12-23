@@ -236,7 +236,7 @@ public class SearchRestHandler {
 
 	public void handleStatus(InternalActionContext ac) {
 		db.noTx(() -> {
-			SearchQueue queue = MeshRoot.getInstance().getSearchQueue();
+			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 			SearchStatusResponse statusResponse = new SearchStatusResponse();
 			statusResponse.setBatchCount(queue.getSize());
 			return Observable.just(statusResponse);

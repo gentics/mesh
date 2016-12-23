@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -142,7 +143,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Microschema schema = new MicroschemaModel();
 			schema.setName("test");
-			MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
+			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
 			assertNotNull("The container was not created.", container);
 			assertNotNull("The container schema was not set", container.getLatestVersion().getSchema());
 			assertEquals("The creator was not set.", user().getUuid(), container.getCreator().getUuid());
@@ -169,11 +170,11 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Microschema schema = new MicroschemaModel();
 			schema.setName("test");
-			MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
-			assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test"));
+			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
+			assertNotNull(MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
 			SearchQueueBatch batch = createBatch();
 			container.delete(batch);
-			assertNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test"));
+			assertNull(MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
 		}
 	}
 

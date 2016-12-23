@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -336,7 +337,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testUpdateConflictCheck() {
 		try (NoTx noTx = db.noTx()) {
-			MeshRoot.getInstance().getRoleRoot().create("test123", user());
+			MeshInternal.get().boot().meshRoot().getRoleRoot().create("test123", user());
 			RoleUpdateRequest request = new RoleUpdateRequest();
 			request.setName("test123");
 

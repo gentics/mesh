@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
@@ -26,6 +28,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -249,5 +252,15 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/" + encodeFragment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/" + getUuid();
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 }

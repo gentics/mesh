@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
@@ -248,5 +250,15 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/" + encodeFragment(getProject().getName()) + "/tagFamilies/" + getUuid();
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 }

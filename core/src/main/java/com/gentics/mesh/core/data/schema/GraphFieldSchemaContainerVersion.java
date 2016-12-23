@@ -4,7 +4,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
+import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -113,7 +113,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 *            Rest model of the container that should be compared
 	 * @return Rest model which contains the changes list
 	 */
-	SchemaChangesListModel diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator<?> comparator, FieldSchemaContainer restModel);
+	SchemaChangesListModel diff(InternalActionContext ac, FieldSchemaContainerComparator<?> comparator, FieldSchemaContainer restModel);
 
 	/**
 	 * Apply changes which will be extracted from the action context.

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
@@ -40,6 +42,7 @@ import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
@@ -227,7 +230,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		String newName = requestModel.getName();
 		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
-			Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(newName);
+			Project projectWithSameName = MeshInternal.get().boot().meshRoot().getProjectRoot().findByName(newName);
 			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
 				throw conflict(projectWithSameName.getUuid(), newName, "project_conflicting_name");
 			}
@@ -318,5 +321,15 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/projects/" + getUuid();
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 }

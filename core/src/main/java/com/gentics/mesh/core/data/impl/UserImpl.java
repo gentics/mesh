@@ -7,6 +7,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
@@ -491,6 +493,16 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		} else {
 			return ac.getUser().hasPermission(node, GraphPermission.READ_PERM);
 		}
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 }

@@ -96,7 +96,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		operateNoTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
-			Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
+			Language language = MeshInternal.get().boot().meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}

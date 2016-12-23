@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 
-import com.gentics.mesh.core.data.impl.UserImpl;
-
 /**
  * Interface for vertices that track their creator and creation time.
  */
@@ -16,9 +14,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * 
 	 * @return Creator
 	 */
-	default User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
-	}
+	User getCreator();
 
 	/**
 	 * Set the creator of the vertex.

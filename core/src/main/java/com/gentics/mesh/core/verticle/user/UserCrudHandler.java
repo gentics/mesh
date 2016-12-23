@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -71,7 +72,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			MeshVertex targetElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
+			MeshVertex targetElement = MeshInternal.get().boot().meshRoot().resolvePathToElement(pathToElement);
 			return db.noTx(() -> {
 				if (targetElement == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);

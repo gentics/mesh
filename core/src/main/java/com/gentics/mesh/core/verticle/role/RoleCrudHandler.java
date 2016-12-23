@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -79,7 +80,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			MeshVertex targetElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
+			MeshVertex targetElement = MeshInternal.get().boot().meshRoot().resolvePathToElement(pathToElement);
 			if (targetElement == null) {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
@@ -118,7 +119,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			MeshVertex element = MeshRoot.getInstance().resolvePathToElement(pathToElement);
+			MeshVertex element = MeshInternal.get().boot().meshRoot().resolvePathToElement(pathToElement);
 
 			if (element == null) {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);

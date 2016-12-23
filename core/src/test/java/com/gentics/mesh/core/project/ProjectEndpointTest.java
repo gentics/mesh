@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
@@ -359,7 +360,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testUpdateWithBogusNames() {
 		try (NoTx noTx = db.noTx()) {
-			MeshRoot.getInstance().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
+			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
 
 			String uuid = project().getUuid();
 			ProjectUpdateRequest request = new ProjectUpdateRequest();

@@ -14,6 +14,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.LinkType;
 
@@ -133,7 +134,7 @@ public class WebRootLinkReplacer {
 	public String resolve(String releaseUuid, ContainerType edgeType, String uuid, LinkType type, String projectName, String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid);
+		Node node = MeshInternal.get().boot().meshRoot().getNodeRoot().findByUuid(uuid);
 
 		// check for null
 		if (node == null) {

@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
+import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -257,7 +257,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public SchemaChangesListModel diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator comparator,
+	public SchemaChangesListModel diff(InternalActionContext ac, FieldSchemaContainerComparator comparator,
 			FieldSchemaContainer fieldContainerModel) {
 		SchemaChangesListModel list = new SchemaChangesListModel();
 		fieldContainerModel.validate();

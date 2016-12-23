@@ -151,7 +151,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				vcardField.getMicronode().createString("lastName").setString("Mouse");
 				role().grantPermissions(node, GraphPermission.READ_PERM);
 			}
-			MeshRoot.getInstance().getNodeRoot().reload();
+			MeshInternal.get().boot().meshRoot().getNodeRoot().reload();
 			fullIndex();
 
 			NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),

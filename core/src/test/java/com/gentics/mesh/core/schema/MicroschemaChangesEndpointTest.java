@@ -26,6 +26,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
@@ -91,7 +92,7 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 		micronode.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 		micronode.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
 		NodeResponse response = createNode("micronodeField", micronode);
-		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(response.getUuid());
+		Node node = MeshInternal.get().boot().meshRoot().getNodeRoot().findByUuid(response.getUuid());
 		assertNotNull("The node should have been created.", node);
 		assertNotNull("The node should have a micronode graph field", node.getGraphFieldContainer("en").getMicronode("micronodeField"));
 

@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
@@ -14,6 +16,7 @@ import java.util.List;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
@@ -315,5 +318,15 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	public Release setProject(Project project) {
 		setUniqueLinkOutTo(project, ASSIGNED_TO_PROJECT);
 		return this;
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 }
