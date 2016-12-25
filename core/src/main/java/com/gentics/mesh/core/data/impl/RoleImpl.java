@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +32,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
+
+import rx.Single;
 
 /**
  * @see Role
@@ -174,6 +177,13 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public User getEditor() {
 		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+	}
+
+	@Override
+	public Single<RoleResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 
 }

@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -38,6 +39,8 @@ import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
+
+import rx.Single;
 
 /**
  * @see Group
@@ -126,15 +129,17 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	/**
 	 * Get all users within this group that are visible for the given user.
 	 */
-	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo)
+			throws InvalidArgumentException {
 
-		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser).back().has(UserImpl.class);
+		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE)
+				.in(HAS_USER).retain(requestUser).back().has(UserImpl.class);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, UserImpl.class);
 	}
 
 	@Override
-	public Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameters pagingInfo)
+			throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
 		Page<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
 		return page;
@@ -182,7 +187,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
+				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name",
+						requestModel.getName());
 			}
 
 			setName(requestModel.getName());
@@ -192,7 +198,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+			Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (User user : getUsers()) {
 				user.applyPermissions(role, false, permissionsToGrant, permissionsToRevoke);
@@ -204,7 +211,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		for (User user : getUsers()) {
-			//We need to store users as well since users list their groups - See {@link UserTransformator#toDocument(User)}
+			// We need to store users as well since users list their groups -
+			// See {@link UserTransformator#toDocument(User)}
 			batch.addEntry(user, STORE_ACTION);
 		}
 	}
@@ -227,6 +235,13 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public User getEditor() {
 		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+	}
+
+	@Override
+	public Single<GroupResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 
 }

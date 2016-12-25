@@ -46,7 +46,7 @@
 		<!-- Internal dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-api</artifactId>
+			<artifactId>mesh-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

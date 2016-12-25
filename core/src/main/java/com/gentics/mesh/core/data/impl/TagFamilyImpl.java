@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -53,6 +54,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Single;
 
 /**
  * @see TagFamily
@@ -121,7 +123,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameters pagingInfo)
+			throws InvalidArgumentException {
 		// TODO check perms
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, TagImpl.class);
@@ -149,7 +152,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 		Tag conflictingTag = getTagRoot().findByName(tagName);
 		if (conflictingTag != null) {
-			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
+			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName,
+					getName());
 		}
 
 		Tag newTag = create(requestModel.getName(), project, requestUser);
@@ -206,7 +210,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+			Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Tag tag : getTagRoot().findAll()) {
 				tag.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
@@ -234,7 +239,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, boolean addRelatedEntries) {
+	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action,
+			boolean addRelatedEntries) {
 		batch.addEntry(this, action).set(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
 		if (addRelatedEntries) {
 			addRelatedEntries(batch, action);
@@ -260,5 +266,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public User getEditor() {
 		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+	}
+
+	@Override
+	public Single<TagFamilyResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 }

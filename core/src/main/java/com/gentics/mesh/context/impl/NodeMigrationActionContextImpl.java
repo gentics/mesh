@@ -1,5 +1,7 @@
 package com.gentics.mesh.context.impl;
 
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +44,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
+import rx.Single;
 
 /**
  * Action context implementation which will be used within the node migration.
@@ -758,6 +761,13 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			public User getEditor() {
 				// TODO Auto-generated method stub
 				return null;
+			}
+
+			@Override
+			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+				return operateNoTx(() -> {
+					return Single.just(transformToRestSync(ac, level, languageTags));
+				});
 			}
 		};
 		return user;

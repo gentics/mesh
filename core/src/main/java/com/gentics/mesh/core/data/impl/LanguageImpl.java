@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
+
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -11,6 +13,8 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
+
+import rx.Single;
 
 /**
  * @see Language
@@ -96,6 +100,13 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public String getAPIPath(InternalActionContext ac) {
 		// Languages don't have a public location
 		return null;
+	}
+
+	@Override
+	public Single<LanguageResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 
 }

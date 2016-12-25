@@ -1842,4 +1842,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public User getCreator() {
 		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
 	}
+
+	@Override
+	public Single<NodeResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
+	}
 }

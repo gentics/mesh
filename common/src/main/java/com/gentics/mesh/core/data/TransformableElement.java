@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -35,11 +33,7 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * @param languageTags
 	 *            optional list of language tags to be used for language fallback
 	 */
-	default Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return operateNoTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
+	Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags);
 
 	/**
 	 * Transform the element into the matching rest model response synchronously.

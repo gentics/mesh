@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 
 import java.util.List;
 
@@ -26,11 +27,14 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.RestModelHelper;
 
+import rx.Single;
+
 /**
  * @see SchemaContainerVersion
  */
 public class SchemaContainerVersionImpl extends
-		AbstractGraphFieldSchemaContainerVersion<Schema, SchemaReference, SchemaContainerVersion, SchemaContainer> implements SchemaContainerVersion {
+		AbstractGraphFieldSchemaContainerVersion<Schema, SchemaReference, SchemaContainerVersion, SchemaContainer>
+		implements SchemaContainerVersion {
 
 	@Override
 	public String getType() {
@@ -60,7 +64,8 @@ public class SchemaContainerVersionImpl extends
 	public List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
 		return in(HAS_SCHEMA_CONTAINER_VERSION).mark().inE(HAS_FIELD_CONTAINER)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back().toListExplicit(NodeGraphFieldContainerImpl.class);
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back()
+				.toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -91,7 +96,8 @@ public class SchemaContainerVersionImpl extends
 
 		// Sort the list by project name
 		// restSchema.getProjects()
-		// Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
+		// Collections.sort(restSchema.getProjects(), new
+		// Comparator<ProjectResponse>() {
 		// @Override
 		// public int compare(ProjectResponse o1, ProjectResponse o2) {
 		// return o1.getName().compareTo(o2.getName());
@@ -137,6 +143,13 @@ public class SchemaContainerVersionImpl extends
 	@Override
 	public Release getRelease() {
 		return in(HAS_SCHEMA_VERSION).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	}
+
+	@Override
+	public Single<Schema> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 
 }
