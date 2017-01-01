@@ -5,8 +5,8 @@ import java.util.List;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.InvalidArgumentException;
 
 /**
  * Graph domain model interface for groups.

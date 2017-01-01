@@ -21,10 +21,10 @@ import org.junit.BeforeClass;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
-import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

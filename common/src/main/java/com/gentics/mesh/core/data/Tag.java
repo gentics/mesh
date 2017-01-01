@@ -6,8 +6,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.InvalidArgumentException;
 
 /**
  * Graph domain model interface for a tag.

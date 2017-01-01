@@ -1,4 +1,4 @@
-package com.gentics.mesh.util;
+package com.gentics.mesh.error;
 
 public class InvalidArgumentException extends Exception {
 

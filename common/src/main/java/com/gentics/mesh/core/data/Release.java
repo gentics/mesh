@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
-import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.error.InvalidArgumentException;
 
 /**
  * The Release domain model interface.
