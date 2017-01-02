@@ -53,9 +53,12 @@ import rx.Single;
  */
 public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResponse> {
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public ReleaseCrudHandler(Database db) {
+	public ReleaseCrudHandler(Database db, SearchQueue searchQueue) {
 		super(db);
+		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -74,9 +77,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			Database db = MeshInternal.get().database();
 
 			ResultInfo info = db.tx(() -> {
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 				RootVertex<Release> root = getRootVertex(ac);
-				SearchQueueBatch batch = queue.createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 
 				Release created = root.create(ac, batch);
 				Project project = created.getProject();
@@ -136,7 +138,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			List<DeliveryOptions> events = new ArrayList<>();
 
 			Tuple<SearchQueueBatch, Single<SchemaReferenceList>> tuple = db.tx(() -> {
-				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList) {

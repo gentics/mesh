@@ -1004,7 +1004,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public List<Completable> publish(InternalActionContext ac, Release release) {
 		String releaseUuid = release.getUuid();
 
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+		SearchQueue queue = MeshInternal.get().searchQueue();
 		SearchQueueBatch batch = queue.createBatch();
 		List<Completable> obs = new ArrayList<>();
 		// publish all unpublished containers
@@ -1042,7 +1042,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<Completable> obs = new ArrayList<>();
 
 		obs.add(db.tx(() -> {
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueue queue = MeshInternal.get().searchQueue();
 			SearchQueueBatch batch = queue.createBatch();
 			// publish all unpublished containers
 			List<NodeGraphFieldContainer> published = unpublishedContainers.stream().map(c -> publish(c.getLanguage(), release, ac.getUser()))
@@ -1071,7 +1071,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String releaseUuid = release.getUuid();
 
 		return db.tx(() -> {
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueue queue = MeshInternal.get().searchQueue();
 			SearchQueueBatch batch = queue.createBatch();
 			List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, ContainerType.PUBLISHED);
 
@@ -1138,7 +1138,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// TODO check whether all required fields are filled, if not -> unable to publish
 
 		return db.tx(() -> {
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueue queue = MeshInternal.get().searchQueue();
 			SearchQueueBatch batch = queue.createBatch();
 			NodeGraphFieldContainer published = publish(draftVersion.getLanguage(), release, ac.getUser());
 
@@ -1154,7 +1154,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String releaseUuid = release.getUuid();
 
 		return db.tx(() -> {
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueue queue = MeshInternal.get().searchQueue();
 			SearchQueueBatch batch = queue.createBatch();
 
 			NodeGraphFieldContainer published = getGraphFieldContainer(languageTag, releaseUuid, ContainerType.PUBLISHED);

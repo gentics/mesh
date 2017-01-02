@@ -103,7 +103,6 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 			SearchQueueBatch batch = createBatch();
 			Project project = project();
 			project.delete(batch);
-			batch.reload();
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
 			assertAffectedElements(affectedElements, batch);
 		}

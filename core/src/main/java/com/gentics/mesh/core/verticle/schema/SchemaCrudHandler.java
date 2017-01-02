@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -57,12 +58,16 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	private NodeIndexHandler nodeIndexHandler;
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot, NodeIndexHandler nodeIndexHandler) {
+	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot, NodeIndexHandler nodeIndexHandler,
+			SearchQueue searchQueue) {
 		super(db);
 		this.comparator = comparator;
 		this.boot = boot;
 		this.nodeIndexHandler = nodeIndexHandler;
+		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -88,7 +93,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 				List<DeliveryOptions> events = new ArrayList<>();
 				db.tx(() -> {
-					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+					SearchQueueBatch batch = searchQueue.createBatch();
 					// Apply the found changes to the schema
 					SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
@@ -187,7 +192,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				Tuple<SearchQueueBatch, Single<Schema>> tuple = db.tx(() -> {
 
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
-					SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+					SearchQueueBatch batch = searchQueue.createBatch();
 
 					String releaseUuid = project.getLatestRelease().getUuid();
 					SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
@@ -263,7 +268,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		operateNoTx(ac, () -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
-				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				schema.getLatestVersion().applyChanges(ac, batch);
 				return batch;
 			}).processSync();

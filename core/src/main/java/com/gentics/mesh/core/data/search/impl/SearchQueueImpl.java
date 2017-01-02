@@ -1,27 +1,22 @@
 package com.gentics.mesh.core.data.search.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BATCH;
-import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -29,61 +24,42 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see SearchQueue
  */
-public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
+public class SearchQueueImpl extends ConcurrentLinkedQueue<SearchQueueBatch> implements SearchQueue {
+
+	private static final long serialVersionUID = 9183657952215904748L;
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueImpl.class);
 
-	public static void init(Database database) {
-		database.addVertexType(SearchQueueImpl.class, MeshVertexImpl.class);
-	}
-
-	@Override
-	synchronized public SearchQueueBatch take() throws InterruptedException {
-		SearchQueueBatch batch = out(HAS_BATCH).nextOrDefault(SearchQueueBatchImpl.class, null);
-		if (batch != null) {
-			remove(batch);
-		}
-		return batch;
-	}
-
-	@Override
-	synchronized public SearchQueueBatch take(String batchId) {
-		SearchQueueBatch batch = out(HAS_BATCH).has(BATCH_ID_PROPERTY_KEY).nextOrDefault(SearchQueueBatchImpl.class, null);
-		if (batch != null) {
-			remove(batch);
-		}
-		return batch;
-	}
-
-	@Override
-	public void add(SearchQueueBatch batch) {
-		setUniqueLinkOutTo(batch, HAS_BATCH);
-	}
-
-	@Override
-	public void remove(SearchQueueBatch batch) {
-		unlinkOut(batch, HAS_BATCH);
-	}
-
 	@Override
 	public SearchQueueBatch createBatch() {
-		SearchQueueBatch batch = getGraph().addFramedVertex(SearchQueueBatchImpl.class);
-		batch.setBatchId(UUIDUtil.randomUUID());
-		batch.setTimestamp(System.currentTimeMillis());
+		SearchQueueBatchImpl batch = new SearchQueueBatchImpl();
 		add(batch);
 		return batch;
 	}
 
 	@Override
-	public long getSize() {
-		return out(HAS_BATCH).count();
+	public long processAll() throws InterruptedException {
+		SearchQueueBatch batch;
+		long count = 0;
+		while ((batch = poll()) != null) {
+			if (batch.getEntries().size() > 0) {
+				batch.processSync(30, TimeUnit.MINUTES);
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Proccessed batch.");
+			}
+			count++;
+		}
+		if (count > 0) {
+			MeshInternal.get().searchProvider().refreshIndex();
+		}
+		return count;
 	}
 
 	@Override
-	public void addFullIndex() {
+	public SearchQueue addFullIndex() {
 		BootstrapInitializer boot = MeshInternal.get().boot();
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		SearchQueueBatch batch = createBatch();
 		for (Node node : boot.nodeRoot().findAll()) {
 			node.addIndexBatchEntry(batch, STORE_ACTION, false);
 		}
@@ -113,36 +89,9 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		// searchQueue.put(microschema, CREATE_ACTION);
 		// }
 		if (log.isDebugEnabled()) {
-			log.debug("Search Queue size:" + getSize());
+			log.debug("Search Queue size:" + size());
 		}
-
-	}
-
-	@Override
-	public long processAll() throws InterruptedException {
-		SearchQueueBatch batch;
-		long count = 0;
-		while ((batch = take()) != null) {
-			if (batch.getEntries().size() > 0) {
-				batch.processSync(30, TimeUnit.MINUTES);
-			}
-			if (log.isDebugEnabled()) {
-				log.debug("Proccessed batch.");
-			}
-			count++;
-		}
-		if (count > 0) {
-			MeshInternal.get().searchProvider().refreshIndex();
-		}
-		return count;
-	}
-
-	@Override
-	public void clear() {
-		List<? extends SearchQueueBatchImpl> batches = out(HAS_BATCH).toListExplicit(SearchQueueBatchImpl.class);
-		for (SearchQueueBatchImpl batch : batches) {
-			batch.delete();
-		}
+		return this;
 	}
 
 }

@@ -27,7 +27,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -68,13 +67,16 @@ public class SearchRestHandler {
 	private Database db;
 
 	private IndexHandlerRegistry registry;
+	
+	private SearchQueue searchQueue;
 
 	@Inject
-	public SearchRestHandler(Lazy<BootstrapInitializer> boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry) {
+	public SearchRestHandler(Lazy<BootstrapInitializer> boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, SearchQueue searchQueue) {
 		this.boot = boot;
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.registry = registry;
+		this.searchQueue = searchQueue;
 	}
 
 	/**
@@ -236,9 +238,9 @@ public class SearchRestHandler {
 
 	public void handleStatus(InternalActionContext ac) {
 		db.noTx(() -> {
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
+			SearchQueue queue = MeshInternal.get().searchQueue();
 			SearchStatusResponse statusResponse = new SearchStatusResponse();
-			statusResponse.setBatchCount(queue.getSize());
+			statusResponse.setBatchCount(queue.size());
 			return Observable.just(statusResponse);
 		}).subscribe(message -> ac.send(message, OK), ac::fail);
 	}
@@ -262,9 +264,9 @@ public class SearchRestHandler {
 						// }
 					}).await();
 				}
-				boot.get().meshRoot().getSearchQueue().clear();
-				boot.get().meshRoot().getSearchQueue().addFullIndex();
-				boot.get().meshRoot().getSearchQueue().processAll();
+				searchQueue.clear();
+				searchQueue.addFullIndex();
+				searchQueue.processAll();
 				return Single.just(message(ac, "search_admin_reindex_invoked"));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
@@ -275,7 +277,7 @@ public class SearchRestHandler {
 	public void handleClearBatches(InternalActionContext ac) {
 		operateNoTx(ac, () -> {
 			if (ac.getUser().hasAdminRole()) {
-				boot.get().meshRoot().getSearchQueue().clear();
+				searchQueue.clear();
 				return message(ac, "search_admin_clear_invoked");
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
@@ -286,7 +288,7 @@ public class SearchRestHandler {
 	public void handleProcessBatches(InternalActionContext ac) {
 		operateNoTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
-				boot.get().meshRoot().getSearchQueue().processAll();
+				searchQueue.processAll();
 				return Single.just(message(ac, "search_admin_reindex_invoked"));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");

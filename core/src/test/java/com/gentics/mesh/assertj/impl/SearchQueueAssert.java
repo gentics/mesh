@@ -14,7 +14,7 @@ public class SearchQueueAssert extends AbstractAssert<SearchQueueAssert, SearchQ
 
 	public SearchQueueAssert hasEntries(int count) {
 		isNotNull();
-		assertEquals("The search queue did not contain the expected amount of entries.", count, actual.getSize());
+		assertEquals("The search queue did not contain the expected amount of entries.", count, actual.size());
 		return this;
 	}
 

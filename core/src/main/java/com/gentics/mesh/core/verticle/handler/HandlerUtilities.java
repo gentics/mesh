@@ -53,10 +53,8 @@ public final class HandlerUtilities {
 		operateNoTx(ac, () -> {
 			Database db = MeshInternal.get().database();
 			ResultInfo info = db.tx(() -> {
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
 				RootVertex<T> root = handler.call();
-				SearchQueueBatch batch = queue.createBatch();
-
+				SearchQueueBatch batch = MeshInternal.get().searchQueue().createBatch();
 				T created = root.create(ac, batch);
 				RM model = created.transformToRestSync(ac, 0);
 				String path = created.getAPIPath(ac);
@@ -96,8 +94,7 @@ public final class HandlerUtilities {
 
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 				if (element instanceof IndexableElement) {
-					SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-					SearchQueueBatch batch = queue.createBatch();
+					SearchQueueBatch batch = MeshInternal.get().searchQueue().createBatch();
 					element.delete(batch);
 					return batch;
 				} else {
@@ -122,11 +119,10 @@ public final class HandlerUtilities {
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 			TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
+			SearchQueue queue = MeshInternal.get().searchQueue();
 			Database db = MeshInternal.get().database();
 			RootVertex<T> root = handler.call();
 			T element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-
 			Tuple<SearchQueueBatch, RM> tuple = db.tx(() -> {
 				SearchQueueBatch batch = queue.createBatch();
 				T updatedElement = element.update(ac, batch);

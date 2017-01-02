@@ -1,13 +1,11 @@
 package com.gentics.mesh.core.data.search.impl;
 
+import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.IndexHandler;
 
 import rx.Completable;
@@ -15,55 +13,45 @@ import rx.Completable;
 /**
  * @see SearchQueueEntry
  */
-public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueEntry, Comparable<SearchQueueEntry> {
+public class SearchQueueEntryImpl implements SearchQueueEntry, Comparable<SearchQueueEntry> {
 
-	public static final String ACTION_KEY = "element_action";
-	public static final String ELEMENT_UUID = "element_uuid";
-	public static final String ELEMENT_TYPE = "element_type";
-	public static final String ELEMENT_INDEX_TYPE = "element_index_type";
-	public static final String ENTRY_TIME = "entry_time";
-
-	private static final String CUSTOM_PREFIX = "custom_";
-
-	public static void init(Database database) {
-		database.addVertexType(SearchQueueEntryImpl.class, MeshVertexImpl.class);
-	}
+	private String elementUuid;
+	private String elementType;
+	private SearchQueueEntryAction elementAction;
+	private String elementIndexType;
+	private long timestamp;
+	private Map<String, Object> properties = new HashMap<>();
 
 	@Override
 	public String getElementUuid() {
-		return getProperty(ELEMENT_UUID);
+		return elementUuid;
 	}
 
 	@Override
 	public SearchQueueEntry setElementUuid(String uuid) {
-		setProperty(ELEMENT_UUID, uuid);
+		this.elementUuid = uuid;
 		return this;
 	}
 
 	@Override
 	public SearchQueueEntryAction getElementAction() {
-		return SearchQueueEntryAction.valueOfName(getElementActionName());
+		return elementAction;
 	}
 
 	@Override
-	public String getElementActionName() {
-		return getProperty(ACTION_KEY);
-	}
-
-	@Override
-	public SearchQueueEntry setElementAction(String action) {
-		setProperty(ACTION_KEY, action);
+	public SearchQueueEntry setElementAction(SearchQueueEntryAction action) {
+		this.elementAction = action;
 		return this;
 	}
 
 	@Override
 	public String getElementType() {
-		return getProperty(ELEMENT_TYPE);
+		return elementType;
 	}
 
 	@Override
 	public SearchQueueEntry setElementType(String type) {
-		setProperty(ELEMENT_TYPE, type);
+		this.elementType = type;
 		return this;
 	}
 
@@ -72,16 +60,13 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	//		return getProperty(ELEMENT_INDEX_TYPE);
 	//	}
 	//
-	//	@Override
+	//	@Overridefor (Map.Entry<String, Object> entry : properties.entrySet()) {
+	//	setProperty(entry.getKey(), entry.getValue());}
+
 	//	public SearchQueueEntry setElementIndexType(String indexType) {
 	//		setProperty(ELEMENT_INDEX_TYPE, indexType);
 	//		return this;
 	//	}
-
-	@Override
-	public void delete(SearchQueueBatch batch) {
-		getVertex().remove();
-	}
 
 	/**
 	 * Return the index handler for the given type.
@@ -100,47 +85,40 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 
 	@Override
 	public String toString() {
-		return "uuid: " + getElementUuid() + " type: " + getElementType() + " action: " + getElementActionName();
+		return "uuid: {" + getElementUuid() + "} type: {" + getElementType() + "} action: {" + getElementAction().name() + "}";
 	}
 
 	@Override
-	public <T> T get(String name) {
-		return getProperty(CUSTOM_PREFIX + name);
+	public <T> T get(String key) {
+		return (T) properties.get(key);
 	}
 
 	@Override
 	public SearchQueueEntry set(String name, Object value) {
-		setProperty(CUSTOM_PREFIX + name, value);
+		this.properties.put(name, value);
 		return this;
 	}
 
 	@Override
 	public SearchQueueEntry set(Map<String, Object> properties) {
-		for (Map.Entry<String, Object> entry : properties.entrySet()) {
-			setProperty(entry.getKey(), entry.getValue());
-		}
+		this.properties.putAll(properties);
 		return this;
 	}
 
 	@Override
-	public SearchQueueEntry setTime(long timeInMs) {
-		setProperty(ENTRY_TIME, timeInMs);
+	public SearchQueueEntry setTime(long timestamp) {
+		this.timestamp = timestamp;
 		return this;
 	}
 
 	@Override
 	public long getTime() {
-		return getProperty(ENTRY_TIME);
+		return timestamp;
 	}
 
 	@Override
 	public int compareTo(SearchQueueEntry o) {
 		return getElementAction().getOrder().compareTo(o.getElementAction().getOrder());
-	}
-
-	@Override
-	public void delete() {
-		getElement().remove();
 	}
 
 }

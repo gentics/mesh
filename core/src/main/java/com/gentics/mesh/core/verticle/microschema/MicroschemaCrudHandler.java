@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
@@ -45,11 +45,14 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot) {
+	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
 		super(db);
 		this.comparator = comparator;
 		this.boot = boot;
+		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -73,7 +76,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				return message(ac, "schema_update_no_difference_detected", name);
 			}
 			db.tx(() -> {
-				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
@@ -144,7 +147,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		operateNoTx(ac, () -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
-				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				schema.getLatestVersion().applyChanges(ac, batch);
 				return batch;
 			}).processSync();

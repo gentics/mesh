@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.search.index.IndexHandler;
@@ -84,12 +85,12 @@ public class SearchEndpointTest extends AbstractSearchEndpointTest {
 			String uuid = node.getUuid();
 			String indexType = NodeIndexHandler.getDocumentType();
 			for (int i = 0; i < 10; i++) {
-				meshRoot().getSearchQueue().createBatch().addEntry(uuid, Node.TYPE, STORE_ACTION);
+				MeshInternal.get().searchQueue().createBatch().addEntry(uuid, Node.TYPE, STORE_ACTION);
 			}
 
 			String documentId = NodeIndexHandler.composeDocumentId(node, "en");
 			searchProvider.deleteDocument(Node.TYPE, indexType, documentId).await();
-			meshRoot().getSearchQueue().processAll();
+			MeshInternal.get().searchQueue().processAll();
 			assertNull(
 					"The document with uuid {" + uuid + "} could still be found within the search index. Used index type {" + indexType
 							+ "} document id {" + documentId + "}",

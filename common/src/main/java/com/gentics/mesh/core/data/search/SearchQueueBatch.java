@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.MeshVertex;
 
 import rx.Completable;
 
@@ -13,9 +12,7 @@ import rx.Completable;
  * A batch of search queue entries. Usually a batch groups those elements that need to be updated in order to sync the search index with the graph database
  * changes.
  */
-public interface SearchQueueBatch extends MeshVertex {
-
-	public static final String BATCH_ID_PROPERTY_KEY = "batch_id";
+public interface SearchQueueBatch {
 
 	/**
 	 * Add an entry to this batch.

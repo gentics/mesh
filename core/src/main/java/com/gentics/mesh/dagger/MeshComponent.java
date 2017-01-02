@@ -2,12 +2,13 @@ package com.gentics.mesh.dagger;
 
 import javax.inject.Singleton;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -42,6 +43,8 @@ public interface MeshComponent {
 	BootstrapInitializer boot();
 
 	Database database();
+
+	SearchQueue searchQueue();
 
 	SearchProvider searchProvider();
 

@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -33,8 +34,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	TagFamilyTransformator transformator;
 
 	@Inject
-	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
-		super(searchProvider, db, boot);
+	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
+		super(searchProvider, db, boot, searchQueue);
 	}
 
 	public TagFamilyTransformator getTransformator() {

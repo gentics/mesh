@@ -213,7 +213,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertThat(dummySearchProvider).recordedStoreEvents(1);
 
 			// We created the node. The searchqueue batch should have been processed
-			assertThat(meshRoot().getSearchQueue()).hasEntries(0);
+			assertThat(MeshInternal.get().searchQueue()).hasEntries(0);
 			// SearchQueueBatch batch = searchQueue.take();
 			// assertEquals(1, batch.getEntries().size());
 			// SearchQueueEntry entry = batch.getEntries().get(0);
@@ -1450,8 +1450,8 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			assertEquals(1, dummySearchProvider.getStoreEvents().size());
 
-			SearchQueue searchQueue = meshRoot().getSearchQueue();
-			assertEquals("We updated the node. The search queue batch should have been processed.", 0, searchQueue.getSize());
+			SearchQueue searchQueue = MeshInternal.get().searchQueue();
+			assertEquals("We updated the node. The search queue batch should have been processed.", 0, searchQueue.size());
 			// SearchQueueBatch batch = searchQueue.take();
 			// assertEquals(1, batch.getEntries().size());
 			// SearchQueueEntry entry = batch.getEntries().get(0);
@@ -1632,7 +1632,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
 			assertThat(dummySearchProvider).as("Delete Events after node delete. We expect 4 since both languages have draft and publish version.")
 					.recordedDeleteEvents(4);
-			SearchQueue searchQueue = meshRoot().getSearchQueue();
+			SearchQueue searchQueue = MeshInternal.get().searchQueue();
 			assertThat(searchQueue).hasEntries(0);
 			// SearchQueueBatch batch = searchQueue.take();
 			// assertEquals(1, batch.getEntries().size());

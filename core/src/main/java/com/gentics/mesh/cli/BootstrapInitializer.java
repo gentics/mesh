@@ -157,7 +157,6 @@ public class BootstrapInitializer {
 	 * <li>Initalize the graph database and update vertex types and indices
 	 * <li>Create initial mandatory structure data
 	 * <li>Initalize search indices
-	 * <li>Process remaining search index batch entries
 	 * <li>Load verticles and setup routes / endpoints
 	 * </ul>
 	 * 
@@ -192,13 +191,6 @@ public class BootstrapInitializer {
 			createSearchIndicesAndMappings();
 		}
 
-		// Process remaining search queue batches
-		try {
-			invokeSearchQueueProcessing();
-		} catch (Exception e) {
-			log.error("Could not handle existing search queue entries", e);
-		}
-
 		// Load the verticles
 		loader.get().loadVerticles(configuration);
 		if (verticleLoader != null) {
@@ -225,20 +217,6 @@ public class BootstrapInitializer {
 		try (NoTx noTx = db.noTx()) {
 			return noTx.getGraph().v().count() == 0;
 		}
-	}
-
-	/**
-	 * Process remaining search queue batches.
-	 * 
-	 * @throws InterruptedException
-	 */
-	private void invokeSearchQueueProcessing() throws InterruptedException {
-		db.tx(() -> {
-			log.info("Starting search queue processing of remaining entries...");
-			long processed = meshRoot().getSearchQueue().processAll();
-			log.info("Processed {" + processed + "} elements.");
-			return null;
-		});
 	}
 
 	/**
@@ -365,7 +343,6 @@ public class BootstrapInitializer {
 			meshRoot.getTagRoot();
 			meshRoot.getTagFamilyRoot();
 			meshRoot.getProjectRoot();
-			meshRoot.getSearchQueue();
 			meshRoot.getLanguageRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();

@@ -326,7 +326,6 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			}
 
 			MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, false);
-			batch.reload();
 			assertAffectedElements(affectedElements, batch);
 		}
 	}

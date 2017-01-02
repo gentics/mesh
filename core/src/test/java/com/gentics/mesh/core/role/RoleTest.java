@@ -394,7 +394,6 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 				role.delete(batch);
 				tx.success();
 			}
-			batch.reload();
 			assertElement(boot.roleRoot(), uuid, false);
 
 			// Check role entry

@@ -5,6 +5,8 @@ import javax.inject.Singleton;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.ElasticSearchOptions;
@@ -74,6 +76,12 @@ public class MeshModule {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Provides
+	@Singleton
+	public static SearchQueue searchQueue() {
+		return new SearchQueueImpl();
 	}
 
 	@Provides

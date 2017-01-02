@@ -21,6 +21,7 @@ import org.junit.BeforeClass;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -120,8 +121,9 @@ public abstract class AbstractSearchEndpointTest extends AbstractRestEndpointTes
 			}
 		}
 
-		boot.meshRoot().getSearchQueue().addFullIndex();
-		boot.meshRoot().getSearchQueue().processAll();
+		//TODO Add full index
+		MeshInternal.get().searchQueue().addFullIndex();
+		MeshInternal.get().searchQueue().processAll();
 	}
 
 }

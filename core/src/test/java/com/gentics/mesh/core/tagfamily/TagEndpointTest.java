@@ -194,7 +194,6 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 				tagFamily.delete(batch);
 				tx.success();
 			}
-			batch.reload();
 			assertAffectedElements(affectedElements, batch);
 		}
 	}

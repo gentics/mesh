@@ -10,6 +10,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -25,8 +26,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	SchemaTransformator transformator;
 
 	@Inject
-	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
-		super(searchProvider, db, boot);
+	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
+		super(searchProvider, db, boot, searchQueue);
 	}
 
 	public SchemaTransformator getTransformator() {

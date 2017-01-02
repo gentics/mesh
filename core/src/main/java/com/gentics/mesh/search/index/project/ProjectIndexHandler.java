@@ -10,6 +10,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -25,8 +26,8 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	ProjectTransformator transformator;
 
 	@Inject
-	public ProjectIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
-		super(searchProvider, db, boot);
+	public ProjectIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
+		super(searchProvider, db, boot, searchQueue);
 	}
 
 	public ProjectTransformator getTransformator() {

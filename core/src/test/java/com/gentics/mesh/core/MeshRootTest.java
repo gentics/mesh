@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 

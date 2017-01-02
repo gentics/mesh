@@ -492,7 +492,6 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 					project().getLatestRelease().getUuid(), ContainerType.DRAFT, "en", "de"));
 			SearchQueueBatch batch = createBatch();
 			tag.delete(batch);
-			batch.reload();
 			assertAffectedElements(expectedEntries, batch);
 		}
 	}

@@ -43,7 +43,6 @@ import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -75,11 +74,14 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot) {
+	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
+		this.searchQueue = searchQueue;
 	}
 
 	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
@@ -195,8 +197,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
 			return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
 				SearchQueueBatch batch = db.tx(() -> {
-					SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-					SearchQueueBatch sqb = queue.createBatch();
+					SearchQueueBatch sqb = searchQueue.createBatch();
 
 					field.setFileName(fileName);
 					field.setFileSize(ul.size());
@@ -349,8 +350,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 				return obsHashAndSize.flatMap(hashAndSize -> {
 					Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
-						SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-						SearchQueueBatch batch = queue.createBatch();
+						SearchQueueBatch batch = searchQueue.createBatch();
 
 						field.setSHA512Sum(hashAndSize.v1());
 						field.setFileSize(hashAndSize.v2());

@@ -46,7 +46,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -67,10 +66,13 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 	private Database db;
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public NodeMigrationHandler(NodeFieldAPIHandler nodeFieldAPIHandler, Database db) {
+	public NodeMigrationHandler(NodeFieldAPIHandler nodeFieldAPIHandler, Database db, SearchQueue searchQueue) {
 		this.db = db;
 		this.nodeFieldAPIHandler = nodeFieldAPIHandler;
+		this.searchQueue = searchQueue;
 	}
 
 	/**
@@ -112,8 +114,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		} catch (IOException e) {
 			return Completable.error(e);
 		}
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		SearchQueueBatch batch = searchQueue.createBatch();
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
@@ -231,8 +232,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return Completable.error(e);
 		}
 
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		SearchQueueBatch batch = searchQueue.createBatch();
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
@@ -334,22 +334,19 @@ public class NodeMigrationHandler extends AbstractHandler {
 		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
 		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
 
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		SearchQueueBatch batch = searchQueue.createBatch();
 		for (Node node : nodes) {
 			db.tx(() -> {
 				if (!node.getGraphFieldContainers(newRelease, ContainerType.INITIAL).isEmpty()) {
 					return null;
 				}
 				node.getGraphFieldContainers(oldRelease, ContainerType.DRAFT).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
-							GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 					initialEdge.setType(ContainerType.INITIAL);
 					initialEdge.setReleaseUuid(newReleaseUuid);
 
-					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
-							GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 					draftEdge.setType(ContainerType.DRAFT);
 					draftEdge.setReleaseUuid(newReleaseUuid);
@@ -358,8 +355,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 				});
 
 				node.getGraphFieldContainers(oldRelease, ContainerType.PUBLISHED).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
-							GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					edge.setLanguageTag(container.getLanguage().getLanguageTag());
 					edge.setType(ContainerType.PUBLISHED);
 					edge.setReleaseUuid(newReleaseUuid);

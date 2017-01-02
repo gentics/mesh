@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -51,9 +50,12 @@ import rx.Single;
  */
 public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public NodeCrudHandler(Database db) {
+	public NodeCrudHandler(Database db, SearchQueue searchQueue) {
 		super(db);
+		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -73,8 +75,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			db.tx(() -> {
 				// Create the batch first since we can't delete the container and access it later in batch creation
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				node.deleteFromRelease(ac.getRelease(null), batch);
 				return batch;
 			}).processSync();
@@ -103,7 +104,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			db.tx(() -> {
 				// Create the batch first since we can't delete the container and access it later in batch creation
-				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
 				return batch;
 			}).processSync();
@@ -131,7 +132,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node sourceNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Node targetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 			db.tx(() -> {
-				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				sourceNode.moveTo(ac, targetNode, batch);
 				return batch;
 			}).processSync();
@@ -235,8 +236,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 			Tuple<SearchQueueBatch, Node> tuple = db.tx(() -> {
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				node.addTag(tag, release);
 				node.addIndexBatchEntry(batch, STORE_ACTION, true);
 				return Tuple.tuple(batch, node);
@@ -268,8 +268,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tag tag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			SearchQueueBatch sqBatch = db.tx(() -> {
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				// TODO get release specific containers
 				node.addIndexBatchEntry(batch, STORE_ACTION, true);
 				node.removeTag(tag, release);

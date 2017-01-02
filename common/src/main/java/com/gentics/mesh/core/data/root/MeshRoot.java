@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.search.SearchQueue;
 
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
@@ -77,13 +76,6 @@ public interface MeshRoot extends MeshVertex {
 	 * @return
 	 */
 	MicroschemaContainerRoot getMicroschemaContainerRoot();
-
-	/**
-	 * Returns the search queue vertex.
-	 * 
-	 * @return
-	 */
-	SearchQueue getSearchQueue();
 
 	/**
 	 * This method will try to resolve the given path and return the element that is matching the path.

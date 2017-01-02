@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,10 +46,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected BootstrapInitializer boot;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot) {
+	private SearchQueue searchQueue;
+
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.boot = boot;
+		this.searchQueue = searchQueue;
 	}
 
 	/**
@@ -138,7 +142,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Completable handleAction(SearchQueueEntry entry) {
-		String actionName = entry.getElementActionName();
 
 		if (!isSearchClientAvailable()) {
 			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";
@@ -149,7 +152,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		if (log.isDebugEnabled()) {
 			log.debug("Handling entry {" + entry.toString() + "}");
 		}
-		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
+		SearchQueueEntryAction action = entry.getElementAction();
 		switch (action) {
 		case DELETE_ACTION:
 			return delete(entry);
@@ -217,8 +220,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Completable reindexAll() {
 		return Completable.defer(() -> {
 			log.info("Handling full reindex entry");
-			SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-			SearchQueueBatch batch = queue.createBatch();
+			SearchQueueBatch batch = searchQueue.createBatch();
 			// Add all elements from the root vertex of the handler to the created batch
 			for (T element : getRootVertex().findAll()) {
 				log.info("Invoking reindex for {" + element.getType() + "/" + element.getUuid() + "}");

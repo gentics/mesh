@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SEARCH_QUEUE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER_ROOT;
@@ -36,7 +35,6 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -115,26 +113,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			}
 		}
 		return roleRoot;
-	}
-
-	@Override
-	public SearchQueue getSearchQueue() {
-		if (searchQueueRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				SearchQueue foundSearchQueueRoot = out(HAS_SEARCH_QUEUE_ROOT).has(SearchQueueImpl.class).nextOrDefaultExplicit(SearchQueueImpl.class,
-						null);
-				if (foundSearchQueueRoot == null) {
-					searchQueueRoot = getGraph().addFramedVertex(SearchQueueImpl.class);
-					linkOut(searchQueueRoot, HAS_SEARCH_QUEUE_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Created search queue root {" + searchQueueRoot.getUuid() + "}");
-					}
-				} else {
-					searchQueueRoot = foundSearchQueueRoot;
-				}
-			}
-		}
-		return searchQueueRoot;
 	}
 
 	@Override

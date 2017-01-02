@@ -30,8 +30,11 @@ import com.gentics.mesh.util.ResultInfo;
  */
 public class TagCrudHandler extends AbstractHandler {
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public TagCrudHandler() {
+	public TagCrudHandler(SearchQueue searchQueue) {
+		this.searchQueue = searchQueue;
 	}
 
 	public TagFamily getTagFamily(InternalActionContext ac, String tagFamilyUuid) {
@@ -94,8 +97,7 @@ public class TagCrudHandler extends AbstractHandler {
 		operateNoTx(ac, () -> {
 			Database db = MeshInternal.get().database();
 			ResultInfo info = db.tx(() -> {
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
 				TagResponse model = tag.transformToRestSync(ac, 0);

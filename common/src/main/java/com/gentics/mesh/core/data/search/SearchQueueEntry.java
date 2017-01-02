@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data.search;
 
 import java.util.Map;
 
-import com.gentics.mesh.core.data.MeshVertex;
-
 import rx.Completable;
 
 /**
@@ -19,7 +17,7 @@ import rx.Completable;
  * </ul>
  *
  */
-public interface SearchQueueEntry extends MeshVertex {
+public interface SearchQueueEntry {
 
 	/**
 	 * Return the search queue entry element uuid which identifies the element that should be handled.
@@ -58,14 +56,7 @@ public interface SearchQueueEntry extends MeshVertex {
 	 * @param action
 	 * @return
 	 */
-	SearchQueueEntry setElementAction(String action);
-
-	/**
-	 * Return the search queue action name.
-	 * 
-	 * @return
-	 */
-	String getElementActionName();
+	SearchQueueEntry setElementAction(SearchQueueEntryAction action);
 
 	/**
 	 * Process the entry.
@@ -116,10 +107,5 @@ public interface SearchQueueEntry extends MeshVertex {
 	 * @return
 	 */
 	long getTime();
-
-	/**
-	 * Delete the entry.
-	 */
-	void delete();
 
 }

@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 
@@ -26,28 +27,28 @@ public class SearchQueueTest extends AbstractIsolatedBasicDBTest {
 	@Test
 	public void testQueue() throws InterruptedException, JSONException {
 		try (NoTx noTx = db.noTx()) {
-			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			SearchQueue searchQueue = MeshInternal.get().searchQueue();
 			SearchQueueBatch batch = searchQueue.createBatch();
 			int i = 0;
 			for (Node node : boot.nodeRoot().findAll()) {
 				batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION);
 				i++;
 			}
-			long size = searchQueue.getSize();
-			SearchQueueBatch loadedBatch = searchQueue.take();
+			long size = searchQueue.size();
+			SearchQueueBatch loadedBatch = searchQueue.poll();
 			assertNotNull(loadedBatch);
 
 			assertEquals(i, loadedBatch.getEntries().size());
 			SearchQueueEntry entry = loadedBatch.getEntries().get(0);
 			assertNotNull(entry);
-			assertEquals(size - 1, searchQueue.getSize());
-			size = searchQueue.getSize();
+			assertEquals(size - 1, searchQueue.size());
+			size = searchQueue.size();
 			for (int e = 0; e < size; e++) {
-				batch = searchQueue.take();
+				batch = searchQueue.poll();
 				assertNotNull("Batch " + e + " was null.", batch);
 			}
-			assertEquals("We took all elements. The queue should be empty", 0, searchQueue.getSize());
-			batch = searchQueue.take();
+			assertEquals("We took all elements. The queue should be empty", 0, searchQueue.size());
+			batch = searchQueue.poll();
 			assertNull(batch);
 		}
 	}
@@ -56,13 +57,13 @@ public class SearchQueueTest extends AbstractIsolatedBasicDBTest {
 	public void testQueueThreadSafety() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// Add some entries to the search queue
-			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			SearchQueue searchQueue = MeshInternal.get().searchQueue();
 			SearchQueueBatch batch = searchQueue.createBatch();
 			for (Node node : boot.nodeRoot().findAll()) {
 				batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION);
 			}
 
-			long size = searchQueue.getSize();
+			long size = searchQueue.size();
 			System.out.println("Size: " + size);
 
 			CountDownLatch latch = new CountDownLatch((int) size);
@@ -71,7 +72,7 @@ public class SearchQueueTest extends AbstractIsolatedBasicDBTest {
 					while (true) {
 						try (Tx txTake = db.tx()) {
 							try {
-								SearchQueueBatch currentBatch = searchQueue.take();
+								SearchQueueBatch currentBatch = searchQueue.poll();
 								assertNotNull("Batch was null.", currentBatch);
 							} catch (Exception e) {
 								fail(e.getMessage());
@@ -88,9 +89,8 @@ public class SearchQueueTest extends AbstractIsolatedBasicDBTest {
 				failingLatch(latch);
 			}
 
-			searchQueue.reload();
-			assertEquals("We took all elements. The queue should be empty", 0, searchQueue.getSize());
-			batch = searchQueue.take();
+			assertEquals("We took all elements. The queue should be empty", 0, searchQueue.size());
+			batch = searchQueue.poll();
 			assertNull(batch);
 
 			CountDownLatch latch2 = new CountDownLatch(10);
@@ -99,7 +99,7 @@ public class SearchQueueTest extends AbstractIsolatedBasicDBTest {
 				Runnable r = () -> {
 					try (Tx tx2 = db.tx()) {
 						try {
-							SearchQueueBatch currentBatch = searchQueue.take();
+							SearchQueueBatch currentBatch = searchQueue.poll();
 							latch2.countDown();
 							try {
 								assertNull("Batch was null.", currentBatch);

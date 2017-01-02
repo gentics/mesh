@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -103,8 +102,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		MeshInternal.get().serverSchemaStorage().clear();
 
 		try (NoTx noTx = db.noTx()) {
-			meshRoot().getSearchQueue().reload();
-			assertEquals("No more entries should remain in the search queue", 0, meshRoot().getSearchQueue().getSize());
+			assertEquals("No more entries should remain in the search queue", 0, MeshInternal.get().searchQueue().size());
 		}
 
 		// 4. Invoke the schema migration
