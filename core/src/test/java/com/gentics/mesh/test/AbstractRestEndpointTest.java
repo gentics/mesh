@@ -122,6 +122,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		});
 		failingLatch(latch2);
 
+		// Setup the rest client
 		try (NoTx trx = db.noTx()) {
 			client = MeshRestClient.create("localhost", getPort(), vertx);
 			client.setLogin(user().getUsername(), getUserInfo().getPassword());
@@ -142,12 +143,6 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		for (String id : deploymentIds) {
 			vertx.undeploy(id);
 		}
-		//		if (restVerticle != null) {
-		//			restVerticle.stop();
-		//		}
-		//		if (nodeMigrationVerticle != null) {
-		//			nodeMigrationVerticle.stop();
-		//		}
 		resetDatabase();
 	}
 
@@ -213,7 +208,6 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	}
 
 	// Role
-
 	protected RoleResponse createRole(String roleName, String groupUuid) {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
@@ -256,7 +250,6 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	}
 
 	// Node
-
 	protected NodeResponse createNode(String projectName, String nameField) {
 		NodeCreateRequest request = new NodeCreateRequest();
 		return call(() -> getClient().createNode(projectName, request));

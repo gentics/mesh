@@ -2,17 +2,14 @@ package com.gentics.mesh.core.data.search.impl;
 
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -24,40 +21,17 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see SearchQueue
  */
-public class SearchQueueImpl extends ConcurrentLinkedQueue<SearchQueueBatch> implements SearchQueue {
-
-	private static final long serialVersionUID = 9183657952215904748L;
+public class SearchQueueImpl implements SearchQueue {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueImpl.class);
 
 	@Override
 	public SearchQueueBatch createBatch() {
-		SearchQueueBatchImpl batch = new SearchQueueBatchImpl();
-		add(batch);
-		return batch;
+		return new SearchQueueBatchImpl();
 	}
 
 	@Override
-	public long processAll() throws InterruptedException {
-		SearchQueueBatch batch;
-		long count = 0;
-		while ((batch = poll()) != null) {
-			if (batch.getEntries().size() > 0) {
-				batch.processSync(30, TimeUnit.MINUTES);
-			}
-			if (log.isDebugEnabled()) {
-				log.debug("Proccessed batch.");
-			}
-			count++;
-		}
-		if (count > 0) {
-			MeshInternal.get().searchProvider().refreshIndex();
-		}
-		return count;
-	}
-
-	@Override
-	public SearchQueue addFullIndex() {
+	public SearchQueueBatch addFullIndex() {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		SearchQueueBatch batch = createBatch();
 		for (Node node : boot.nodeRoot().findAll()) {
@@ -89,9 +63,9 @@ public class SearchQueueImpl extends ConcurrentLinkedQueue<SearchQueueBatch> imp
 		// searchQueue.put(microschema, CREATE_ACTION);
 		// }
 		if (log.isDebugEnabled()) {
-			log.debug("Search Queue size:" + size());
+			log.debug("Search Queue Batch size:" + batch.getEntries().size());
 		}
-		return this;
+		return batch;
 	}
 
 }

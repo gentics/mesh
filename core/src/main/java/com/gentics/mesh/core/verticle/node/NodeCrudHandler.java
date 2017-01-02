@@ -17,7 +17,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -73,9 +72,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 			}
 
+			SearchQueueBatch batch = searchQueue.createBatch();
 			db.tx(() -> {
 				// Create the batch first since we can't delete the container and access it later in batch creation
-				SearchQueueBatch batch = searchQueue.createBatch();
 				node.deleteFromRelease(ac.getRelease(null), batch);
 				return batch;
 			}).processSync();
@@ -102,9 +101,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
 
+			SearchQueueBatch batch = searchQueue.createBatch();
 			db.tx(() -> {
 				// Create the batch first since we can't delete the container and access it later in batch creation
-				SearchQueueBatch batch = searchQueue.createBatch();
 				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
 				return batch;
 			}).processSync();
@@ -131,8 +130,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			Node sourceNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Node targetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
+			SearchQueueBatch batch = searchQueue.createBatch();
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
 				sourceNode.moveTo(ac, targetNode, batch);
 				return batch;
 			}).processSync();
@@ -235,14 +234,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tag tag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
-			Tuple<SearchQueueBatch, Node> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.createBatch();
+			Node updatedNode = db.tx(() -> {
 				node.addTag(tag, release);
 				node.addIndexBatchEntry(batch, STORE_ACTION, true);
-				return Tuple.tuple(batch, node);
+				return node;
 			});
-			SearchQueueBatch batch = tuple.v1();
-			Node updatedNode = tuple.v2();
 			return batch.processAsync().andThen(updatedNode.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -267,14 +264,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
-			SearchQueueBatch sqBatch = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.createBatch();
+			db.tx(() -> {
 				// TODO get release specific containers
 				node.addIndexBatchEntry(batch, STORE_ACTION, true);
 				node.removeTag(tag, release);
-				return batch;
+				return node;
 			});
-			return sqBatch.processAsync().andThen(Single.just(null));
+			return batch.processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -385,6 +382,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+			//TODO sqb
 			return node.takeOffline(ac, languageTag).toSingle(() -> {
 				return db.noTx(() -> {
 					node.reload();

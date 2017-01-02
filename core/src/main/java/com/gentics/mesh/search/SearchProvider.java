@@ -3,7 +3,6 @@ package com.gentics.mesh.search;
 import java.util.Map;
 
 import org.codehaus.jettison.json.JSONObject;
-import org.elasticsearch.node.Node;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
@@ -104,7 +103,7 @@ public interface SearchProvider {
 	 * @return Elasticsearch node
 	 */
 	// TODO get rid of the elastic search dependency within the interface
-	Node getNode();
+	Object getNode();
 
 	/**
 	 * Clear the given index. This will effectively remove all documents from the index without removing the index itself.

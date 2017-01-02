@@ -11,7 +11,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 
@@ -29,6 +28,7 @@ public class TagSearchEndpointTest extends AbstractSearchEndpointTest implements
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
+
 	}
 
 	@Test
@@ -49,7 +49,6 @@ public class TagSearchEndpointTest extends AbstractSearchEndpointTest implements
 
 		try (NoTx noTx = db.noTx()) {
 			assertEquals("The tag name was not updated as expected.", newName + "2", tag("red").getName());
-			assertEquals("The tag has been updated and there should be no more entries in the queue.", 0, MeshInternal.get().searchQueue().size());
 		}
 
 		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("name", newName + "2")).invoke();

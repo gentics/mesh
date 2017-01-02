@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.elasticsearch.node.Node;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -13,6 +14,7 @@ import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.SearchProvider;
@@ -78,7 +80,16 @@ public class DemoDumpGenerator {
 		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl());
 		SearchProvider searchProvider = meshDagger.searchProvider();
 		invokeDump(boot, provider);
-		searchProvider.getNode().close();
+
+		// Close the elastic search instance
+		org.elasticsearch.node.Node esNode = null;
+		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
+			esNode = (Node) searchProvider.getNode();
+		} else {
+			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+		}
+		esNode.close();
+
 		System.exit(0);
 	}
 

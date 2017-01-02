@@ -121,9 +121,7 @@ public abstract class AbstractSearchEndpointTest extends AbstractRestEndpointTes
 			}
 		}
 
-		//TODO Add full index
-		MeshInternal.get().searchQueue().addFullIndex();
-		MeshInternal.get().searchQueue().processAll();
+		MeshInternal.get().searchQueue().addFullIndex().processSync();
 	}
 
 }

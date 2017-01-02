@@ -1064,34 +1064,39 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return Completable.merge(obs);
 	}
 
+	public SearchQueueBatch takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters) {
+		List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, ContainerType.PUBLISHED);
+
+		String releaseUuid = release.getUuid();
+
+		// Remove the published edge for each found container
+		getGraphFieldContainerEdges(releaseUuid, ContainerType.PUBLISHED).stream().forEach(EdgeFrame::remove);
+		// Reset the webroot property for each published container
+		published.forEach(c -> c.setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null));
+
+		// Handle recursion
+		if (parameters.isRecursive()) {
+			for (Node node : getChildren()) {
+				node.takeOffline(ac, batch, release, parameters);
+			}
+		}
+
+		assertPublishConsistency(ac);
+
+		// Remove the published node from the index
+		addIndexBatch(batch, DELETE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
+		return batch;
+	}
+	
 	@Override
 	public Completable takeOffline(InternalActionContext ac) {
 		Database db = MeshInternal.get().database();
 		Release release = ac.getRelease(getProject());
-		String releaseUuid = release.getUuid();
-
+		SearchQueue queue = MeshInternal.get().searchQueue();
+		SearchQueueBatch batch = queue.createBatch();
+		PublishParameters parameters = ac.getPublishParameters();
 		return db.tx(() -> {
-			SearchQueue queue = MeshInternal.get().searchQueue();
-			SearchQueueBatch batch = queue.createBatch();
-			List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, ContainerType.PUBLISHED);
-
-			// Remove the published edge for each found container
-			getGraphFieldContainerEdges(releaseUuid, ContainerType.PUBLISHED).stream().forEach(EdgeFrame::remove);
-			// Reset the webroot property for each published container
-			published.forEach(c -> c.setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null));
-
-			// Handle recursion
-			PublishParameters parameters = ac.getPublishParameters();
-			if (parameters.isRecursive()) {
-				for (Node node : getChildren()) {
-					node.takeOffline(ac).await();
-				}
-			}
-
-			assertPublishConsistency(ac);
-
-			// Remove the published node from the index
-			return addIndexBatch(batch, DELETE_ACTION, published, releaseUuid, ContainerType.PUBLISHED);
+			return takeOffline(ac, batch, release, parameters);
 		}).processAsync();
 	}
 
@@ -1586,7 +1591,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	/**
-	 * Create an index batch for the given list of containers
+	 * Create an index batch for the given list of containers.
 	 * 
 	 * @param batch
 	 * @param action

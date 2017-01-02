@@ -23,7 +23,7 @@ import com.gentics.mesh.assertj.impl.SchemaAssert;
 import com.gentics.mesh.assertj.impl.SchemaChangeModelAssert;
 import com.gentics.mesh.assertj.impl.SchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.SchemaContainerVersionAssert;
-import com.gentics.mesh.assertj.impl.SearchQueueAssert;
+import com.gentics.mesh.assertj.impl.SearchQueueBatchAssert;
 import com.gentics.mesh.assertj.impl.TagFamilyResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -65,8 +65,8 @@ public class MeshAssertions extends Assertions {
 		return new NodeResponseAssert(actual);
 	}
 
-	public static SearchQueueAssert assertThat(SearchQueue actual) {
-		return new SearchQueueAssert(actual);
+	public static SearchQueueBatchAssert assertThat(SearchQueueBatch actual) {
+		return new SearchQueueBatchAssert(actual);
 	}
 
 	public static GroupResponseAssert assertThat(GroupResponse actual) {

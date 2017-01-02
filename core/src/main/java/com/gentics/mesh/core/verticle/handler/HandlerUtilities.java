@@ -67,7 +67,6 @@ public final class HandlerUtilities {
 			String path = info.getProperty("path");
 			SearchQueueBatch batch = info.getBatch();
 			ac.setLocation(path);
-			// TODO don't wait forever in order to prevent locking the thread
 			batch.processSync();
 			return model;
 		}, model -> ac.send(model, CREATED));
@@ -89,20 +88,20 @@ public final class HandlerUtilities {
 			Database db = MeshInternal.get().database();
 			RootVertex<T> root = handler.call();
 			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+			SearchQueueBatch batch = MeshInternal.get().searchQueue().createBatch();
 			String elementUuid = element.getUuid();
-			SearchQueueBatch sqb = db.tx(() -> {
-
+			db.tx(() -> {
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 				if (element instanceof IndexableElement) {
-					SearchQueueBatch batch = MeshInternal.get().searchQueue().createBatch();
 					element.delete(batch);
-					return batch;
+					return element;
 				} else {
 					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 				}
 			});
 			log.info("Deleted element {" + elementUuid + "}");
-			return sqb.processAsync().andThen(Single.just((RM) null)).toBlocking().value();
+			batch.processSync();
+			return (RM) null;
 		}, model -> ac.send(NO_CONTENT));
 	}
 

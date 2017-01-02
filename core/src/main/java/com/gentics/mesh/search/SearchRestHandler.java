@@ -20,15 +20,16 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.node.Node;
 import org.elasticsearch.search.SearchHit;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -36,6 +37,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
+import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
@@ -43,7 +45,6 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.util.Tuple;
 
-import dagger.Lazy;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -60,19 +61,16 @@ public class SearchRestHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchRestHandler.class);
 
-	private Lazy<BootstrapInitializer> boot;
-
 	private SearchProvider searchProvider;
 
 	private Database db;
 
 	private IndexHandlerRegistry registry;
-	
+
 	private SearchQueue searchQueue;
 
 	@Inject
-	public SearchRestHandler(Lazy<BootstrapInitializer> boot, SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, SearchQueue searchQueue) {
-		this.boot = boot;
+	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, SearchQueue searchQueue) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.registry = registry;
@@ -95,10 +93,11 @@ public class SearchRestHandler {
 	 * @throws IllegalAccessException
 	 * @throws InvalidArgumentException
 	 * @throws MeshJsonException
+	 * @throws MeshConfigurationException 
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
 			Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
-			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
+			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
 
 		PagingParametersImpl pagingInfo = ac.getPagingParameters();
 		if (pagingInfo.getPage() < 1) {
@@ -110,7 +109,14 @@ public class SearchRestHandler {
 
 		RL listResponse = classOfRL.newInstance();
 		MeshAuthUser requestUser = ac.getUser();
-		Client client = searchProvider.getNode().client();
+
+		org.elasticsearch.node.Node esNode = null;
+		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
+			esNode = (Node) searchProvider.getNode();
+		} else {
+			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+		}
+		Client client = esNode.client();
 
 		String searchQuery = ac.getBodyAsString();
 		if (log.isDebugEnabled()) {
@@ -160,8 +166,7 @@ public class SearchRestHandler {
 						// Locate the node
 						T element = rootVertex.call().findByUuid(uuid);
 						if (element == null) {
-							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {"
-									+ rootVertex.call().getRootLabel() + "}");
+							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.call().getRootLabel() + "}");
 							obsResult.toHandler().handle(Future.succeededFuture());
 						} else {
 							obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
@@ -238,9 +243,7 @@ public class SearchRestHandler {
 
 	public void handleStatus(InternalActionContext ac) {
 		db.noTx(() -> {
-			SearchQueue queue = MeshInternal.get().searchQueue();
 			SearchStatusResponse statusResponse = new SearchStatusResponse();
-			statusResponse.setBatchCount(queue.size());
 			return Observable.just(statusResponse);
 		}).subscribe(message -> ac.send(message, OK), ac::fail);
 	}
@@ -249,6 +252,8 @@ public class SearchRestHandler {
 		operateNoTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				searchProvider.clear();
+
+				// Iterate over all index handlers update the index
 				for (IndexHandler handler : registry.getHandlers()) {
 					// Create all indices.
 					handler.init().await();
@@ -264,31 +269,8 @@ public class SearchRestHandler {
 						// }
 					}).await();
 				}
-				searchQueue.clear();
-				searchQueue.addFullIndex();
-				searchQueue.processAll();
-				return Single.just(message(ac, "search_admin_reindex_invoked"));
-			} else {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-		}).subscribe(message -> ac.send(message, OK), ac::fail);
-	}
-
-	public void handleClearBatches(InternalActionContext ac) {
-		operateNoTx(ac, () -> {
-			if (ac.getUser().hasAdminRole()) {
-				searchQueue.clear();
-				return message(ac, "search_admin_clear_invoked");
-			} else {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-		}, message -> ac.send(message, OK));
-	}
-
-	public void handleProcessBatches(InternalActionContext ac) {
-		operateNoTx(() -> {
-			if (ac.getUser().hasAdminRole()) {
-				searchQueue.processAll();
+				SearchQueueBatch batch = searchQueue.addFullIndex();
+				batch.processSync();
 				return Single.just(message(ac, "search_admin_reindex_invoked"));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
@@ -299,11 +281,11 @@ public class SearchRestHandler {
 	public void createMappings(InternalActionContext ac) {
 		operateNoTx(ac, () -> {
 			if (ac.getUser().hasAdminRole()) {
-				for(IndexHandler handler : registry.getHandlers()) {
+				for (IndexHandler handler : registry.getHandlers()) {
 					handler.init().await();
 				}
 				MeshInternal.get().nodeIndexHandler().updateNodeIndexMappings();
-					return message(ac, "search_admin_createmappings_created");
+				return message(ac, "search_admin_createmappings_created");
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

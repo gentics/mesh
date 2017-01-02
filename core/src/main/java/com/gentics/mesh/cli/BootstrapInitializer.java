@@ -239,6 +239,9 @@ public class BootstrapInitializer {
 		cls.markAllAsApplied();
 	}
 
+	/**
+	 * Initialise the search index mappings
+	 */
 	public void createSearchIndicesAndMappings() {
 		IndexHandlerRegistry registry = indexHandlerRegistry.get();
 		for (IndexHandler handler : registry.getHandlers()) {

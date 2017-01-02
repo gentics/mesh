@@ -18,7 +18,6 @@ public class MiscExamples extends AbstractExamples {
 
 	public SearchStatusResponse searchStatusJson() {
 		SearchStatusResponse status = new SearchStatusResponse();
-		status.setBatchCount(42);
 		return status;
 	}
 

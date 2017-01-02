@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -114,12 +113,10 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 				//					log.error("Could not refresh index since the elasticsearch provider has not been initialized");
 				//				}
 
+				// Clear the batch entries so that the GC can claim the memory
+				entries.clear();
 			}).doOnError(error -> {
-				// Add the batch back to the queue when an error occurs
-				//TODO mark the batch as failed
-				SearchQueue searchQueue = MeshInternal.get().searchQueue();
 				log.error("Error while processing batch {" + this.getBatchId() + "}. Adding batch {" + this.getBatchId() + "} back to queue.", error);
-				searchQueue.add(this);
 			});
 		});
 
@@ -131,7 +128,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 			throw error(INTERNAL_SERVER_ERROR,
 					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name() + "} exceeded.");
 		}
-		MeshInternal.get().searchQueue().remove(this);
+		// Clear the batch entries so that the GC can claim the memory
+		entries.clear();
 	}
 
 	@Override

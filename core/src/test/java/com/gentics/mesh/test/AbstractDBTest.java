@@ -126,7 +126,7 @@ public abstract class AbstractDBTest {
 		} else {
 			searchOptions.setDirectory(null);
 		}
-//		searchOptions.setHttpEnabled(true);
+		searchOptions.setHttpEnabled(true);
 		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);
 	}

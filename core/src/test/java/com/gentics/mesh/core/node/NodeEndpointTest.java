@@ -46,7 +46,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -211,15 +210,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			NodeResponse restNode = call(() -> getClient().createNode(PROJECT_NAME, request));
 			assertThat(restNode).matches(request);
 			assertThat(dummySearchProvider).recordedStoreEvents(1);
-
-			// We created the node. The searchqueue batch should have been processed
-			assertThat(MeshInternal.get().searchQueue()).hasEntries(0);
-			// SearchQueueBatch batch = searchQueue.take();
-			// assertEquals(1, batch.getEntries().size());
-			// SearchQueueEntry entry = batch.getEntries().get(0);
-			// assertEquals(restNode.getUuid(), entry.getElementUuid());
-			// assertEquals(Node.TYPE, entry.getElementType());
-			// assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getElementAction());
 		}
 	}
 
@@ -1449,17 +1439,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertThat(origContainer.getPreviousVersion()).isFirst();
 
 			assertEquals(1, dummySearchProvider.getStoreEvents().size());
-
-			SearchQueue searchQueue = MeshInternal.get().searchQueue();
-			assertEquals("We updated the node. The search queue batch should have been processed.", 0, searchQueue.size());
-			// SearchQueueBatch batch = searchQueue.take();
-			// assertEquals(1, batch.getEntries().size());
-			// SearchQueueEntry entry = batch.getEntries().get(0);
-			//
-			// assertEquals(restNode.getUuid(), entry.getElementUuid());
-			// assertEquals(Node.TYPE, entry.getElementType());
-			// assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getElementAction());
-
 		}
 
 	}
@@ -1632,8 +1611,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
 			assertThat(dummySearchProvider).as("Delete Events after node delete. We expect 4 since both languages have draft and publish version.")
 					.recordedDeleteEvents(4);
-			SearchQueue searchQueue = MeshInternal.get().searchQueue();
-			assertThat(searchQueue).hasEntries(0);
 			// SearchQueueBatch batch = searchQueue.take();
 			// assertEquals(1, batch.getEntries().size());
 			// SearchQueueEntry entry = batch.getEntries().get(0);

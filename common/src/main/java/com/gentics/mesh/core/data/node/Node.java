@@ -26,6 +26,7 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
@@ -372,6 +373,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	Completable takeOffline(InternalActionContext ac);
 
+	SearchQueueBatch takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters);
+
 	/**
 	 * Transform the node language into a publish status response rest model.
 	 *
@@ -554,5 +557,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags);
+
+
 
 }

@@ -107,28 +107,6 @@ public class SearchEndpoint extends AbstractEndpoint {
 			searchHandler.handleStatus(ac);
 		});
 
-		Endpoint clearBatches = createEndpoint();
-		clearBatches.path("/clearBatches");
-		clearBatches.method(GET);
-		clearBatches.produces(APPLICATION_JSON);
-		clearBatches.description("Removes the existing search queue batches from the queue.");
-		clearBatches.exampleResponse(OK, miscExamples.getMessageResponse(), "Invoked clearing of all batches.");
-		clearBatches.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			searchHandler.handleClearBatches(ac);
-		});
-
-		Endpoint processBatches = createEndpoint();
-		processBatches.path("/processBatches");
-		processBatches.method(GET);
-		processBatches.produces(APPLICATION_JSON);
-		processBatches.description("Invoke batch processing of remaining batches in the queue.");
-		processBatches.exampleResponse(OK, miscExamples.getMessageResponse(), "Invoked all remaining batches.");
-		processBatches.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			searchHandler.handleProcessBatches(ac);
-		});
-
 		Endpoint createMappings = createEndpoint();
 		createMappings.path("/createMappings");
 		createMappings.method(GET);

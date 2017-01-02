@@ -13,7 +13,6 @@ import java.util.Set;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -181,7 +180,14 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
-				PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
+				org.elasticsearch.node.Node esNode = null;
+				if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
+					esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
+				} else {
+					throw new RuntimeException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+				}
+
+				PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
 				mappingRequestBuilder.setType(documentType);
 
 				// Generate the mapping for the specific type

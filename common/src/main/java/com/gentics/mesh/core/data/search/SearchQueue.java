@@ -1,20 +1,10 @@
 package com.gentics.mesh.core.data.search;
 
-import java.util.Queue;
-
 /**
- * A search queue is a queue which holds search queue batches. Each batch is used to update the search index documents. Once a batch has been processed it
- * should be removed from the search queue.
+ * The search queue maintains the search queue batch related actions. Each batch is used to update the search index documents.
  */
-public interface SearchQueue extends Queue<SearchQueueBatch> {
-
-	/**
-	 * Process all search queue batches.
-	 * 
-	 * @throws InterruptedException
-	 * @return Amount of batches that have been processed
-	 */
-	long processAll() throws InterruptedException;
+//TODO rename class because it is no longer a queue
+public interface SearchQueue {
 
 	/**
 	 * Create a new search queue batch and add it to the queue.
@@ -24,10 +14,10 @@ public interface SearchQueue extends Queue<SearchQueueBatch> {
 	SearchQueueBatch createBatch();
 
 	/**
-	 * Add all objects within the graph via a single batch to the search queue.
+	 * Add all objects within the graph via a single batch.
 	 * 
 	 * @return Fluent API
 	 */
-	SearchQueue addFullIndex();
+	SearchQueueBatch addFullIndex();
 
 }

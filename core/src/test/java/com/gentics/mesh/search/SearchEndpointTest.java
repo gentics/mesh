@@ -30,7 +30,6 @@ public class SearchEndpointTest extends AbstractSearchEndpointTest {
 		assertSuccess(future);
 		SearchStatusResponse status = future.result();
 		assertNotNull(status);
-		assertEquals(0, status.getBatchCount());
 	}
 
 	@Test
@@ -53,7 +52,6 @@ public class SearchEndpointTest extends AbstractSearchEndpointTest {
 
 		SearchStatusResponse status = call(() -> getClient().loadSearchStatus());
 		assertNotNull(status);
-		assertEquals(0, status.getBatchCount());
 	}
 
 	@Test
@@ -90,7 +88,6 @@ public class SearchEndpointTest extends AbstractSearchEndpointTest {
 
 			String documentId = NodeIndexHandler.composeDocumentId(node, "en");
 			searchProvider.deleteDocument(Node.TYPE, indexType, documentId).await();
-			MeshInternal.get().searchQueue().processAll();
 			assertNull(
 					"The document with uuid {" + uuid + "} could still be found within the search index. Used index type {" + indexType
 							+ "} document id {" + documentId + "}",
