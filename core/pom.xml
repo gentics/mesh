@@ -51,6 +51,11 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>mesh-elasticsearch</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-rest-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -77,18 +82,6 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.3.2</version>
-		</dependency>
-
-		<!-- Elastic Search -->
-		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<version>${elasticsearch.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.elasticsearch.plugin</groupId>
-			<artifactId>delete-by-query</artifactId>
-			<version>${elasticsearch.version}</version>
 		</dependency>
 
 		<!-- Import optional dependencies from ES -->
