@@ -15,8 +15,6 @@ public class GraphRelationships {
 	public static void init(Database db) {
 
 		db.noTx(() -> {
-			db.addEdgeType(HAS_SEARCH_QUEUE_ROOT);
-
 			db.addEdgeType(HAS_INITIAL_RELEASE);
 			db.addEdgeType(HAS_LATEST_RELEASE);
 			db.addEdgeType(HAS_NEXT_RELEASE);
@@ -52,7 +50,6 @@ public class GraphRelationships {
 
 			// db.addEdgeType(HAS_FIELD);
 			db.addEdgeType(HAS_ITEM);
-			db.addEdgeType(HAS_BATCH);
 			db.addEdgeType(HAS_LIST);
 
 			// Versioning
@@ -72,9 +69,6 @@ public class GraphRelationships {
 		});
 
 	}
-
-	// Search
-	public static final String HAS_SEARCH_QUEUE_ROOT = "HAS_SEARCH_QUEUE_ROOT";
 
 	// Project
 	public static final String HAS_PROJECT = "HAS_PROJECT";
@@ -136,7 +130,6 @@ public class GraphRelationships {
 
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";
-	public static final String HAS_BATCH = "HAS_BATCH";
 
 	public static final String HAS_LIST = "HAS_LIST";
 

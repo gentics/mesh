@@ -6,7 +6,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 
 import org.codehaus.jettison.json.JSONObject;
-import org.elasticsearch.index.query.QueryBuilder;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -165,18 +164,6 @@ public final class JsonUtil {
 	 */
 	public static ObjectMapper getMapper() {
 		return defaultMapper;
-	}
-
-	/**
-	 * Transforms an elastic search query to string.
-	 * This wraps the query with a "query" JSON object, so that the result can be used with the search endpoints
-	 * in the rest client.
-	 *
-	 * @param query
-	 * @return
-	 */
-	public static String queryToString(QueryBuilder query) {
-		return "{\"query\" : " + query.toString() + "}";
 	}
 
 }

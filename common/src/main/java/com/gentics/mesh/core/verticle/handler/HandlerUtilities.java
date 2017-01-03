@@ -207,7 +207,7 @@ public class HandlerUtilities {
 	}
 
 	/**
-	 * Asynchronously execute the handler
+	 * Asynchronously execute the handler.
 	 * 
 	 * @param ac
 	 * @param handler

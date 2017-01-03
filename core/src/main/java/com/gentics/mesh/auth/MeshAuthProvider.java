@@ -162,7 +162,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 					if (log.isDebugEnabled()) {
 						log.debug("The account password hash or token password string are invalid.");
 					}
-					resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
+					resultHandler.handle(Future.failedFuture("Invalid credentials!"));
 				} else {
 					if (log.isDebugEnabled()) {
 						log.debug("Validating password using the bcrypt password encoder");
@@ -172,14 +172,14 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				if (hashMatches) {
 					resultHandler.handle(Future.succeededFuture(user));
 				} else {
-					resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
+					resultHandler.handle(Future.failedFuture("Invalid credentials!"));
 				}
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with username {" + username + "}.");
 				}
 				// TODO Don't let the user know that we know that he did not exist?
-				resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
+				resultHandler.handle(Future.failedFuture("Invalid credentials!"));
 			}
 		}
 
