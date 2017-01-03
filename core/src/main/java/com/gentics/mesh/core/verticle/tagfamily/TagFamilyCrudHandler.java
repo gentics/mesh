@@ -8,14 +8,15 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 
 @Singleton
 public class TagFamilyCrudHandler extends AbstractCrudHandler<TagFamily, TagFamilyResponse> {
 
 	@Inject
-	public TagFamilyCrudHandler(Database db) {
-		super(db);
+	public TagFamilyCrudHandler(Database db, HandlerUtilities utils) {
+		super(db, utils);
 	}
 
 	@Override

@@ -30,6 +30,8 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	private Object id;
+	
+	protected Database db;
 
 	public static void init(Database database) {
 		database.addVertexType(MeshVertexImpl.class, null);
@@ -40,12 +42,14 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	protected void init() {
 		super.init();
 		setProperty("uuid", UUIDUtil.randomUUID());
+		this.db = MeshInternal.get().database();
 	}
 
 	@Override
 	protected void init(FramedGraph graph, Element element) {
 		super.init(graph, element);
 		this.id = element.getId();
+		this.db = MeshInternal.get().database();
 	}
 
 	/**

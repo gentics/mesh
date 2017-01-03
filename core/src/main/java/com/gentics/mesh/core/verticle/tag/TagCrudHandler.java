@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -32,9 +31,15 @@ public class TagCrudHandler extends AbstractHandler {
 
 	private SearchQueue searchQueue;
 
+	private Database db;
+
+	private HandlerUtilities utils;
+
 	@Inject
-	public TagCrudHandler(SearchQueue searchQueue) {
+	public TagCrudHandler(SearchQueue searchQueue, Database db, HandlerUtilities utils) {
 		this.searchQueue = searchQueue;
+		this.db = db;
+		this.utils = utils;
 	}
 
 	public TagFamily getTagFamily(InternalActionContext ac, String tagFamilyUuid) {
@@ -56,7 +61,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			PagingParametersImpl pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
@@ -79,7 +84,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		HandlerUtilities.readElementList(ac, () -> {
+		utils.readElementList(ac, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
 		});
 	}
@@ -94,7 +99,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			Database db = MeshInternal.get().database();
 			ResultInfo info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.createBatch();
@@ -131,7 +136,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		HandlerUtilities.updateElement(ac, tagUuid, () -> {
+		utils.updateElement(ac, tagUuid, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
 		});
 
@@ -150,7 +155,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		HandlerUtilities.readElement(ac, tagUuid, () -> {
+		utils.readElement(ac, tagUuid, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
 		});
 
@@ -169,7 +174,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		HandlerUtilities.deleteElement(ac, () -> {
+		utils.deleteElement(ac, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
 		}, tagUuid);
 

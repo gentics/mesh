@@ -3,8 +3,8 @@ package com.gentics.mesh.core;
 import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
+import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.etc.config.MeshConfigurationException;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;

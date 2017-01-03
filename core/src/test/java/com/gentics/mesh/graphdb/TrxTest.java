@@ -1,6 +1,5 @@
 package com.gentics.mesh.graphdb;
 
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -122,7 +121,7 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 	@Test(expected = RuntimeException.class)
 	public void testAsyncNoTrxWithError() throws Throwable {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			throw new RuntimeException("error");
 		}).toBlocking().value();
 		assertEquals("error", cf.get().getMessage());
@@ -131,7 +130,7 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
-		String result = operateNoTx(() -> {
+		String result = db.operateNoTx(() -> {
 			TestUtils.run(() -> {
 				TestUtils.sleep(1000);
 			});
@@ -142,7 +141,7 @@ public class TrxTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testAsyncNoTrxSuccess() throws Throwable {
-		String result = operateNoTx(() -> {
+		String result = db.operateNoTx(() -> {
 			return Single.just("OK");
 		}).toBlocking().value();
 		assertEquals("OK", result);

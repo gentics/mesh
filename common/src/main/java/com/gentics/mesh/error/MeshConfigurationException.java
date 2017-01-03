@@ -1,4 +1,4 @@
-package com.gentics.mesh.etc.config;
+package com.gentics.mesh.error;
 
 /**
  * Exception which is raised if configuration errors have been detected.

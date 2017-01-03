@@ -6,8 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -181,7 +179,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public Single<RoleResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return operateNoTx(() -> {
+		return db.operateNoTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

@@ -149,6 +149,7 @@ public class MeshModule {
 	public SearchProvider searchProvider() {
 		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
 		SearchProvider searchProvider = null;
+		// Automatically select the dummy search provider if no directory or options have been specified
 		if (options == null || options.getDirectory() == null) {
 			searchProvider = new DummySearchProvider();
 		} else {

@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -29,6 +28,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -43,8 +43,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public RoleCrudHandler(Database db, BootstrapInitializer boot) {
-		super(db);
+	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils) {
+		super(db, utils);
 		this.boot = boot;
 	}
 
@@ -70,7 +70,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
@@ -102,7 +102,9 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	 *            Path to the element for which the permissions should be updated
 	 */
 	public void handlePermissionUpdate(InternalActionContext ac, String roleUuid, String pathToElement) {
-		operateNoTx(() -> {
+		//TODO validate uuids
+		
+		db.operateNoTx(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}

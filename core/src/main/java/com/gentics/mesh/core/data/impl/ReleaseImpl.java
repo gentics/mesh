@@ -9,7 +9,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 
 import java.util.List;
@@ -341,7 +340,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Single<ReleaseResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return operateNoTx(() -> {
+		return db.operateNoTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

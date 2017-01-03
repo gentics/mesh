@@ -9,11 +9,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.elasticsearch.common.collect.Tuple;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
@@ -25,22 +22,29 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 import rx.functions.Action1;
 
-public final class HandlerUtilities {
+@Singleton
+public class HandlerUtilities {
 
 	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
+
+	private Database database;
+	private SearchQueue searchQueue;
+
+	@Inject
+	public HandlerUtilities(Database database, SearchQueue searchQueue) {
+		this.searchQueue = searchQueue;
+		this.database = database;
+	}
 
 	/**
 	 * Create an object using the given aggregation node and respond with a transformed object.
@@ -48,13 +52,11 @@ public final class HandlerUtilities {
 	 * @param ac
 	 * @param handler
 	 */
-	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac,
-			TxHandler<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
-			Database db = MeshInternal.get().database();
-			ResultInfo info = db.tx(() -> {
+			ResultInfo info = database.tx(() -> {
 				RootVertex<T> root = handler.call();
-				SearchQueueBatch batch = MeshInternal.get().searchQueue().createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				T created = root.create(ac, batch);
 				RM model = created.transformToRestSync(ac, 0);
 				String path = created.getAPIPath(ac);
@@ -82,15 +84,14 @@ public final class HandlerUtilities {
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac,
-			TxHandler<RootVertex<T>> handler, String uuid) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxHandler<RootVertex<T>> handler,
+			String uuid) {
 		operateNoTx(ac, () -> {
-			Database db = MeshInternal.get().database();
 			RootVertex<T> root = handler.call();
 			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
-			SearchQueueBatch batch = MeshInternal.get().searchQueue().createBatch();
+			SearchQueueBatch batch = searchQueue.createBatch();
 			String elementUuid = element.getUuid();
-			db.tx(() -> {
+			database.tx(() -> {
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 				if (element instanceof IndexableElement) {
 					element.delete(batch);
@@ -100,8 +101,10 @@ public final class HandlerUtilities {
 				}
 			});
 			log.info("Deleted element {" + elementUuid + "}");
-			batch.processSync();
-			return (RM) null;
+			return database.noTx(() -> {
+				batch.processSync();
+				return (RM) null;
+			});
 		}, model -> ac.send(NO_CONTENT));
 	}
 
@@ -115,24 +118,24 @@ public final class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 * 
 	 */
-	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 			TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
-			SearchQueue queue = MeshInternal.get().searchQueue();
-			Database db = MeshInternal.get().database();
 			RootVertex<T> root = handler.call();
+
+			// 1. Load the element from the root element using the given uuid
 			T element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Tuple<SearchQueueBatch, RM> tuple = db.tx(() -> {
-				SearchQueueBatch batch = queue.createBatch();
+
+			// 2. Create a batch before starting the update to prevent creation of duplicate batches due to trx retry actions
+			SearchQueueBatch batch = searchQueue.createBatch();
+			RM model = database.tx(() -> {
 				T updatedElement = element.update(ac, batch);
-				RM model = updatedElement.transformToRestSync(ac, 0);
-				return Tuple.tuple(batch, model);
+				return updatedElement.transformToRestSync(ac, 0);
 			});
-			// The updating transaction has succeeded. Now lets store it in the index
-			return db.noTx(() -> {
-				SearchQueueBatch batch = tuple.v1();
+
+			// 3. The updating transaction has succeeded. Now lets store it in the index
+			return database.noTx(() -> {
 				batch.processSync();
-				RM model = tuple.v2();
 				return model;
 			});
 		}, model -> ac.send(model, OK));
@@ -147,7 +150,7 @@ public final class HandlerUtilities {
 	 * @param handler
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 			TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
@@ -170,12 +173,11 @@ public final class HandlerUtilities {
 	 * @param handler
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac,
-			TxHandler<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 
-			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
+			PagingParameters pagingInfo = ac.getPagingParameters();
 			Page<? extends T> page = root.findAll(ac, pagingInfo);
 
 			// Handle etag
@@ -198,10 +200,9 @@ public final class HandlerUtilities {
 	 * @param action
 	 *            Action which will be invoked once the handler has finished
 	 */
-	public static <RM extends RestModel> void operateNoTx(InternalActionContext ac, TxHandler<RM> handler, Action1<RM> action) {
-		Database db = MeshInternal.get().database();
+	public <RM extends RestModel> void operateNoTx(InternalActionContext ac, TxHandler<RM> handler, Action1<RM> action) {
 		operate(ac, () -> {
-			return db.noTx(handler);
+			return database.noTx(handler);
 		}, action);
 	}
 
@@ -212,7 +213,7 @@ public final class HandlerUtilities {
 	 * @param handler
 	 * @param action
 	 */
-	private static <RM extends RestModel> void operate(InternalActionContext ac, TxHandler<RM> handler, Action1<RM> action) {
+	private <RM extends RestModel> void operate(InternalActionContext ac, TxHandler<RM> handler, Action1<RM> action) {
 		Mesh.vertx().executeBlocking(bc -> {
 			try {
 				bc.complete(handler.call());
@@ -225,52 +226,6 @@ public final class HandlerUtilities {
 			} else {
 				action.call(rh.result());
 			}
-		});
-	}
-
-	/**
-	 * Asynchronously execute the trxHandler within the scope of a non transaction.
-	 * 
-	 * @param trxHandler
-	 * @return
-	 */
-	public static <T> Single<T> operateNoTx(TxHandler<Single<T>> trxHandler) {
-		// Create an exception which we can use to enhance error information in case of timeout or other tranaction errors
-		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
-		try {
-			throw new Exception("Transaction timeout exception");
-		} catch (Exception e1) {
-			reference.set(e1);
-		}
-
-		return Single.create(sub -> {
-			Database db = MeshInternal.get().database();
-			Mesh.vertx().executeBlocking(bc -> {
-				try (NoTx noTx = db.noTx()) {
-					Single<T> result = trxHandler.call();
-					if (result == null) {
-						bc.complete();
-					} else {
-						try {
-							T ele = result.toBlocking().toFuture().get(20, TimeUnit.SECONDS);
-							bc.complete(ele);
-						} catch (TimeoutException e2) {
-							log.error("Timeout while processing result of transaction handler.", e2);
-							log.error("Calling transaction stacktrace.", reference.get());
-							bc.fail(reference.get());
-						}
-					}
-				} catch (Exception e) {
-					log.error("Error while handling no-transaction.", e);
-					bc.fail(e);
-				}
-			}, false, (AsyncResult<T> done) -> {
-				if (done.failed()) {
-					sub.onError(done.cause());
-				} else {
-					sub.onSuccess(done.result());
-				}
-			});
 		});
 	}
 

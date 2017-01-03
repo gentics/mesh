@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -48,8 +47,9 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	private SearchQueue searchQueue;
 
 	@Inject
-	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
-		super(db);
+	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
+			HandlerUtilities utils) {
+		super(db, utils);
 		this.comparator = comparator;
 		this.boot = boot;
 		this.searchQueue = searchQueue;
@@ -64,7 +64,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
 			MicroschemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
@@ -128,7 +128,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema uuid
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			return microschema.getLatestVersion().diff(ac, comparator, requestModel);
@@ -144,7 +144,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema which should be modified
 	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.createBatch();
@@ -162,7 +162,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 * @param ac
 	 */
 	public void handleReadMicroschemaList(InternalActionContext ac) {
-		HandlerUtilities.readElementList(ac, () -> ac.getProject().getMicroschemaContainerRoot());
+		utils.readElementList(ac, () -> ac.getProject().getMicroschemaContainerRoot());
 	}
 
 	/**
@@ -175,7 +175,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 */
 	public void handleAddMicroschemaToProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
-		operateNoTx(() -> {
+
+		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
@@ -191,7 +192,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	public void handleRemoveMicroschemaFromProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
-		operateNoTx(() -> {
+
+		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {

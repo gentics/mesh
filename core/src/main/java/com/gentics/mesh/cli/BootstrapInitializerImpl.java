@@ -147,6 +147,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		boolean isEmptyInstallation = isEmptyInstallation();
+
 		// Only execute the changelog if there are any elements in the graph
 		if (!isEmptyInstallation) {
 			invokeChangelog();
@@ -244,11 +245,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 		}
 		return meshRoot;
-	}
-
-	@Override
-	public SchemaContainerRoot findSchemaContainerRoot() {
-		return meshRoot().getSchemaContainerRoot();
 	}
 
 	@Override

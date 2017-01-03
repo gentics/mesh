@@ -28,28 +28,81 @@ import io.vertx.core.Vertx;
  */
 public interface BootstrapInitializer {
 
+	/**
+	 * Return the project root element.
+	 * 
+	 * @return
+	 */
 	ProjectRoot projectRoot();
 
+	/**
+	 * Return the language root element.
+	 * 
+	 * @return
+	 */
 	LanguageRoot languageRoot();
 
+	/**
+	 * Return the group root element.
+	 * 
+	 * @return
+	 */
 	GroupRoot groupRoot();
 
+	/**
+	 * Return the user root element.
+	 * 
+	 * @return
+	 */
 	UserRoot userRoot();
 
+	/**
+	 * Return the global node root element. Note that projects have their own node root element.
+	 * 
+	 * @return
+	 */
 	NodeRoot nodeRoot();
 
+	/**
+	 * Return the global tagfamily root element. Note that each project has their own tag family root element.
+	 * 
+	 * @return
+	 */
 	TagFamilyRoot tagFamilyRoot();
 
+	/**
+	 * Return the global tag root element. Note that each project has their own tag root element.
+	 * 
+	 * @return
+	 */
 	TagRoot tagRoot();
 
+	/**
+	 * Return the role root element.
+	 * 
+	 * @return
+	 */
 	RoleRoot roleRoot();
 
+	/**
+	 * Return the global microschema root element.
+	 * 
+	 * @return
+	 */
 	MicroschemaContainerRoot microschemaContainerRoot();
 
+	/**
+	 * Return the global schema container root element.
+	 * 
+	 * @return
+	 */
 	SchemaContainerRoot schemaContainerRoot();
 
-	SchemaContainerRoot findSchemaContainerRoot();
-
+	/**
+	 * Return the mesh root element. All other mesh graph elements are connected to this element. It represents the main root of the whole mesh graph.
+	 * 
+	 * @return
+	 */
 	MeshRoot meshRoot();
 
 	/**

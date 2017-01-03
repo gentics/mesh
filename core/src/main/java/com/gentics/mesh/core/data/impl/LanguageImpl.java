@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
-
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -104,7 +102,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	@Override
 	public Single<LanguageResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return operateNoTx(() -> {
+		return db.operateNoTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

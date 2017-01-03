@@ -483,7 +483,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
-			UserListResponse userResponse =  call(() -> getClient().findUsers(new PagingParametersImpl().setPerPage(100),
+			UserListResponse userResponse = call(() -> getClient().findUsers(new PagingParametersImpl().setPerPage(100),
 					new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")));
 			assertNotNull(userResponse);
 
@@ -608,52 +608,52 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 	}
 
-	@Test
-	public void testUpdateExistingPasswordWithNoOldPassword() {
-		String uuid;
-		String oldHash;
+	//	@Test
+	//	public void testUpdateExistingPasswordWithNoOldPassword() {
+	//		String uuid;
+	//		String oldHash;
+	//
+	//		try (NoTx noTx = db.noTx()) {
+	//			uuid = user().getUuid();
+	//			oldHash = user().getPasswordHash();
+	//		}
+	//
+	//		UserUpdateRequest updateRequest = new UserUpdateRequest();
+	//		updateRequest.setPassword("new_password");
+	//		// Old password not set
+	//
+	//		call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST, "user_error_missing_old_password");
+	//
+	//		try (NoTx noTx = db.noTx()) {
+	//			User reloadedUser = boot.userRoot().findByUuid(uuid);
+	//			assertEquals("The hash should not be different since the password should not have been updated.", oldHash,
+	//					reloadedUser.getPasswordHash());
+	//		}
+	//	}
 
-		try (NoTx noTx = db.noTx()) {
-			uuid = user().getUuid();
-			oldHash = user().getPasswordHash();
-		}
-
-		UserUpdateRequest updateRequest = new UserUpdateRequest();
-		updateRequest.setPassword("new_password");
-		// Old password not set
-
-		call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST, "user_error_missing_old_password");
-
-		try (NoTx noTx = db.noTx()) {
-			User reloadedUser = boot.userRoot().findByUuid(uuid);
-			assertEquals("The hash should not be different since the password should not have been updated.", oldHash,
-					reloadedUser.getPasswordHash());
-		}
-	}
-
-	@Test
-	public void testUpdateExistingPasswordWithWrongOldPassword() {
-		String uuid;
-		String oldHash;
-
-		try (NoTx noTx = db.noTx()) {
-			uuid = user().getUuid();
-			oldHash = user().getPasswordHash();
-		}
-
-		UserUpdateRequest updateRequest = new UserUpdateRequest();
-		updateRequest.setPassword("new_password");
-		updateRequest.setOldPassword("bogus");
-
-		call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST, "user_error_password_check_failed");
-
-		try (NoTx noTx = db.noTx()) {
-			User reloadedUser = boot.userRoot().findByUuid(uuid);
-			assertEquals("The hash should not be different since the password should not have been updated.", oldHash,
-					reloadedUser.getPasswordHash());
-		}
-
-	}
+	//	@Test
+	//	public void testUpdateExistingPasswordWithWrongOldPassword() {
+	//		String uuid;
+	//		String oldHash;
+	//
+	//		try (NoTx noTx = db.noTx()) {
+	//			uuid = user().getUuid();
+	//			oldHash = user().getPasswordHash();
+	//		}
+	//
+	//		UserUpdateRequest updateRequest = new UserUpdateRequest();
+	//		updateRequest.setPassword("new_password");
+	//		updateRequest.setOldPassword("bogus");
+	//
+	//		call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST, "user_error_password_check_failed");
+	//
+	//		try (NoTx noTx = db.noTx()) {
+	//			User reloadedUser = boot.userRoot().findByUuid(uuid);
+	//			assertEquals("The hash should not be different since the password should not have been updated.", oldHash,
+	//					reloadedUser.getPasswordHash());
+	//		}
+	//
+	//	}
 
 	@Test
 	public void testUpdatePasswordWithNoOldPassword() {
@@ -963,21 +963,21 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			UserCreateRequest request = new UserCreateRequest();
-			request.setEmailAddress("n.user@spam.gentics.com");
-			request.setFirstname("Joe");
-			request.setLastname("Doe");
-			request.setUsername("new_user");
-			request.setPassword("test123456");
-			request.setGroupUuid(group().getUuid());
+		String groupUuid = db.noTx(() -> group().getUuid());
 
-			UserResponse restUser = call(() -> getClient().createUser(request));
-			assertThat(restUser).matches(request);
+		UserCreateRequest request = new UserCreateRequest();
+		request.setEmailAddress("n.user@spam.gentics.com");
+		request.setFirstname("Joe");
+		request.setLastname("Doe");
+		request.setUsername("new_user");
+		request.setPassword("test123456");
+		request.setGroupUuid(groupUuid);
 
-			call(() -> getClient().findUserByUuid(restUser.getUuid()));
-			call(() -> getClient().deleteUser(restUser.getUuid()));
-		}
+		UserResponse restUser = call(() -> getClient().createUser(request));
+		assertThat(restUser).matches(request);
+
+		call(() -> getClient().findUserByUuid(restUser.getUuid()));
+		call(() -> getClient().deleteUser(restUser.getUuid()));
 	}
 
 	@Test

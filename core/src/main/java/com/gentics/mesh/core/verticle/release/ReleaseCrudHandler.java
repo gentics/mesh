@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -38,6 +37,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -56,8 +56,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	private SearchQueue searchQueue;
 
 	@Inject
-	public ReleaseCrudHandler(Database db, SearchQueue searchQueue) {
-		super(db);
+	public ReleaseCrudHandler(Database db, SearchQueue searchQueue, HandlerUtilities utils) {
+		super(db, utils);
 		this.searchQueue = searchQueue;
 	}
 
@@ -73,7 +73,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			Database db = MeshInternal.get().database();
 
 			ResultInfo info = db.tx(() -> {
@@ -114,7 +114,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			Release release = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
 			return getSchemaVersions(release);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -129,7 +129,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleAssignSchemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
 			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			SchemaReferenceList schemaReferenceList = ac.fromJson(SchemaReferenceList.class);
@@ -192,7 +192,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			Release release = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
 			return getMicroschemaVersions(release);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -207,7 +207,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleAssignMicroschemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
 			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			MicroschemaReferenceList microschemaReferenceList = ac.fromJson(MicroschemaReferenceList.class);

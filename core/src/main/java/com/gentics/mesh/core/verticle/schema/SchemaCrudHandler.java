@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_INDEX;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -62,8 +61,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	@Inject
 	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot, NodeIndexHandler nodeIndexHandler,
-			SearchQueue searchQueue) {
-		super(db);
+			SearchQueue searchQueue, HandlerUtilities utils) {
+		super(db, utils);
 		this.comparator = comparator;
 		this.boot = boot;
 		this.nodeIndexHandler = nodeIndexHandler;
@@ -78,7 +77,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
@@ -157,7 +156,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	 *            Uuid of the schema which should also be used for comparison
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
-		operateNoTx(ac, () -> {
+		validateParameter(uuid, "uuid");
+
+		utils.operateNoTx(ac, () -> {
 			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			return schema.getLatestVersion().diff(ac, comparator, requestModel);
@@ -170,7 +171,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	 * @param ac
 	 */
 	public void handleReadProjectList(InternalActionContext ac) {
-		HandlerUtilities.readElementList(ac, () -> ac.getProject().getSchemaContainerRoot());
+		utils.readElementList(ac, () -> ac.getProject().getSchemaContainerRoot());
 	}
 
 	/**
@@ -184,7 +185,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleAddSchemaToProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
@@ -231,7 +232,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleRemoveSchemaFromProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
@@ -265,7 +266,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.createBatch();
@@ -283,7 +284,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	 * @param ac
 	 */
 	public void handleMigrateRemaining(InternalActionContext ac) {
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			for (SchemaContainer schemaContainer : boot.get().schemaContainerRoot().findAll()) {
 				SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 				SchemaContainerVersion currentVersion = latestVersion;

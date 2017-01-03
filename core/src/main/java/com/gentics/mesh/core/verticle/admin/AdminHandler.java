@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.admin;
 
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
@@ -43,7 +42,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleBackup(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
 			return Single.just(message(ac, "backup_finished"));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -56,7 +55,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleRestore(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			File backupFile = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory(), "");
 			db.restoreGraph(backupFile.getAbsolutePath());
 			return Single.just(message(ac, "restore_finished"));
@@ -70,7 +69,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleExport(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			db.exportGraph(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
 			return Single.just(message(ac, "export_finished"));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -84,7 +83,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleImport(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			File importFile = new File(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory(), "");
 			db.importGraph(importFile.getAbsolutePath());
 			return Single.just(message(ac, "import_finished"));

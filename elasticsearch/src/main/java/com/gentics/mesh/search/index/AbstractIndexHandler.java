@@ -180,6 +180,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
+
+				// Fetch the elastic search instance
 				org.elasticsearch.node.Node esNode = null;
 				if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
 					esNode = (org.elasticsearch.node.Node) searchProvider.getNode();

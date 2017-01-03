@@ -3,8 +3,6 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
-
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -147,7 +145,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Single<Schema> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return operateNoTx(() -> {
+		return MeshInternal.get().database().operateNoTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

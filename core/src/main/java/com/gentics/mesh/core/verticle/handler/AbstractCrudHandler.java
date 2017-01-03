@@ -22,9 +22,11 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	public static final String TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY = "rootElement";
 
 	protected Database db;
+	protected HandlerUtilities utils;
 
-	public AbstractCrudHandler(Database db) {
+	public AbstractCrudHandler(Database db, HandlerUtilities utils) {
 		this.db = db;
+		this.utils = utils;
 	}
 
 	/**
@@ -41,7 +43,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param ac
 	 */
 	public void handleCreate(InternalActionContext ac) {
-		HandlerUtilities.createElement(ac, () -> getRootVertex(ac));
+		utils.createElement(ac, () -> getRootVertex(ac));
 	}
 
 	/**
@@ -53,7 +55,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid);
+		utils.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
 	
 	/**
@@ -65,7 +67,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		HandlerUtilities.readElement(ac, uuid, () -> getRootVertex(ac));
+		utils.readElement(ac, uuid, () -> getRootVertex(ac));
 	}
 
 	/**
@@ -77,7 +79,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		HandlerUtilities.updateElement(ac, uuid, () -> getRootVertex(ac));
+		utils.updateElement(ac, uuid, () -> getRootVertex(ac));
 	}
 
 	/**
@@ -86,7 +88,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param ac
 	 */
 	public void handleReadList(InternalActionContext ac) {
-		HandlerUtilities.readElementList(ac, () -> getRootVertex(ac));
+		utils.readElementList(ac, () -> getRootVertex(ac));
 	}
 
 	/**

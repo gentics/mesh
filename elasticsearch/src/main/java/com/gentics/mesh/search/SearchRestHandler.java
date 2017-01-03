@@ -2,7 +2,6 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -35,14 +34,15 @@ import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.etc.config.MeshConfigurationException;
+import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.search.index.IndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.Future;
@@ -69,12 +69,19 @@ public class SearchRestHandler {
 
 	private SearchQueue searchQueue;
 
+	private NodeIndexHandler nodeIndexHandler;
+
+	private HandlerUtilities utils;
+
 	@Inject
-	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, SearchQueue searchQueue) {
+	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, SearchQueue searchQueue,
+			NodeIndexHandler nodeIndexHandler, HandlerUtilities utils) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.registry = registry;
 		this.searchQueue = searchQueue;
+		this.nodeIndexHandler = nodeIndexHandler;
+		this.utils = utils;
 	}
 
 	/**
@@ -93,7 +100,7 @@ public class SearchRestHandler {
 	 * @throws IllegalAccessException
 	 * @throws InvalidArgumentException
 	 * @throws MeshJsonException
-	 * @throws MeshConfigurationException 
+	 * @throws MeshConfigurationException
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
 			Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
@@ -249,7 +256,7 @@ public class SearchRestHandler {
 	}
 
 	public void handleReindex(InternalActionContext ac) {
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				searchProvider.clear();
 
@@ -279,12 +286,12 @@ public class SearchRestHandler {
 	}
 
 	public void createMappings(InternalActionContext ac) {
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler handler : registry.getHandlers()) {
 					handler.init().await();
 				}
-				MeshInternal.get().nodeIndexHandler().updateNodeIndexMappings();
+				nodeIndexHandler.updateNodeIndexMappings();
 				return message(ac, "search_admin_createmappings_created");
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
