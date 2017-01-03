@@ -33,7 +33,6 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -310,7 +309,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 				String name = indexName;
 				return Completable.merge(obs).andThen(deleteObs).doOnCompleted(() -> {
-					MeshInternal.get().searchProvider().refreshIndex(name);
+					searchProvider.refreshIndex(name);
 				});
 
 			}

@@ -183,6 +183,13 @@ public class RouterStorage {
 
 	}
 
+	/**
+	 * Remove the project router with the given name from the list of project router.
+	 * 
+	 * @param name
+	 *            Name of the project router
+	 * @return
+	 */
 	public boolean removeProjectRouter(String name) {
 		Router projectRouter = projectRouters.get(name);
 		if (projectRouter != null) {
@@ -200,6 +207,7 @@ public class RouterStorage {
 	 * Add a new project router with the given name to the api router. This method will return an existing router when one already has been setup.
 	 * 
 	 * @param name
+	 *            Name of the project router
 	 * @return Router for the given project name
 	 * @throws InvalidNameException
 	 */

@@ -17,7 +17,6 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
@@ -103,7 +102,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	protected RootVertex<TagFamily> getRootVertex() {
-		return MeshInternal.get().boot().meshRoot().getTagFamilyRoot();
+		return boot.meshRoot().getTagFamilyRoot();
 	}
 
 }

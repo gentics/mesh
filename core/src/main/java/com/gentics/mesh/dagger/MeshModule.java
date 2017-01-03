@@ -19,9 +19,9 @@ import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
+import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 import dagger.Lazy;

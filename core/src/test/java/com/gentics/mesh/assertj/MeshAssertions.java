@@ -50,7 +50,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.search.impl.DummySearchProvider;
+import com.gentics.mesh.search.DummySearchProvider;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

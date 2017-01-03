@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.search.impl.DummySearchProvider;
+import com.gentics.mesh.search.DummySearchProvider;
 
 public class DummySearchProviderAssert extends AbstractAssert<DummySearchProviderAssert, DummySearchProvider> {
 

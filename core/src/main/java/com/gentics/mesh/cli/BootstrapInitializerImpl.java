@@ -14,8 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -78,7 +76,6 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 /**
  * @See {@link BootstrapInitializer}
  */
-//@Singleton
 public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
@@ -101,7 +98,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private List<String> allLanguageTags = new ArrayList<>();
 
-//	@Inject
 	public BootstrapInitializerImpl(Database db, Lazy<IndexHandlerRegistry> indexHandlerRegistry, BCryptPasswordEncoder encoder,
 			RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
 
