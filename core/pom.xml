@@ -84,19 +84,6 @@
 			<version>3.3.2</version>
 		</dependency>
 
-		<!-- Import optional dependencies from ES -->
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-expressions</artifactId>
-			<version>4.10.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<version>2.4.4</version>
-			<scope>compile</scope>
-		</dependency>
-
 		<!-- Default Image Provider -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>

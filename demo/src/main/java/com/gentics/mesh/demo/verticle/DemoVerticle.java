@@ -7,7 +7,7 @@ import java.io.File;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.AbstractCustomVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
@@ -52,7 +52,7 @@ public class DemoVerticle extends AbstractCustomVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		// We only want to setup the demo data once
-		if (BootstrapInitializer.isInitialSetup) {
+		if (BootstrapInitializerImpl.isInitialSetup) {
 			vertx.executeBlocking(bc -> {
 				try {
 					demoDataProvider.setup();

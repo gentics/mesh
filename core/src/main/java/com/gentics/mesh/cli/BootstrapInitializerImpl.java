@@ -76,11 +76,10 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
- * The bootstrap initialiser takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
- * GroupRoot, UserRoot and various element such as the Admin User, Admin Group, Admin Role.
+ * @See {@link BootstrapInitializer}
  */
-@Singleton
-public class BootstrapInitializer {
+//@Singleton
+public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
@@ -102,8 +101,8 @@ public class BootstrapInitializer {
 
 	private List<String> allLanguageTags = new ArrayList<>();
 
-	@Inject
-	public BootstrapInitializer(Database db, Lazy<IndexHandlerRegistry> indexHandlerRegistry, BCryptPasswordEncoder encoder,
+//	@Inject
+	public BootstrapInitializerImpl(Database db, Lazy<IndexHandlerRegistry> indexHandlerRegistry, BCryptPasswordEncoder encoder,
 			RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
 
 		clearReferences();
@@ -145,25 +144,7 @@ public class BootstrapInitializer {
 		});
 	}
 
-	/**
-	 * Initialise mesh using the given configuration.
-	 * 
-	 * This method will startup mesh and take care of tasks which need to be executed before the REST endpoints can be accessed.
-	 * 
-	 * The following steps / checks will be performed:
-	 * <ul>
-	 * <li>Join the mesh cluster
-	 * <li>Invoke the changelog check &amp; execution
-	 * <li>Initalize the graph database and update vertex types and indices
-	 * <li>Create initial mandatory structure data
-	 * <li>Initalize search indices
-	 * <li>Load verticles and setup routes / endpoints
-	 * </ul>
-	 * 
-	 * @param configuration
-	 * @param verticleLoader
-	 * @throws Exception
-	 */
+	@Override
 	public void init(MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		if (configuration.isClusterMode()) {
 			joinCluster();
@@ -219,9 +200,7 @@ public class BootstrapInitializer {
 		}
 	}
 
-	/**
-	 * Invoke the changelog system to execute database changes.
-	 */
+	@Override
 	public void invokeChangelog() {
 		log.info("Invoking database changelog check...");
 		ChangelogSystem cls = new ChangelogSystem(db);
@@ -230,18 +209,14 @@ public class BootstrapInitializer {
 		}
 	}
 
-	/***
-	 * Marking all changes as applied since this is an initial mesh setup
-	 */
+	@Override
 	public void markChangelogApplied() {
 		log.info("This is the initial setup.. marking all found changelog entries as applied");
 		ChangelogSystem cls = new ChangelogSystem(db);
 		cls.markAllAsApplied();
 	}
 
-	/**
-	 * Initialise the search index mappings
-	 */
+	@Override
 	public void createSearchIndicesAndMappings() {
 		IndexHandlerRegistry registry = indexHandlerRegistry.get();
 		for (IndexHandler handler : registry.getHandlers()) {
@@ -254,6 +229,7 @@ public class BootstrapInitializer {
 	 * 
 	 * @return
 	 */
+	@Override
 	public MeshRoot meshRoot() {
 		if (meshRoot == null) {
 			synchronized (BootstrapInitializer.class) {
@@ -274,46 +250,57 @@ public class BootstrapInitializer {
 		return meshRoot;
 	}
 
+	@Override
 	public SchemaContainerRoot findSchemaContainerRoot() {
 		return meshRoot().getSchemaContainerRoot();
 	}
 
+	@Override
 	public SchemaContainerRoot schemaContainerRoot() {
 		return meshRoot().getSchemaContainerRoot();
 	}
 
+	@Override
 	public MicroschemaContainerRoot microschemaContainerRoot() {
 		return meshRoot().getMicroschemaContainerRoot();
 	}
 
+	@Override
 	public RoleRoot roleRoot() {
 		return meshRoot().getRoleRoot();
 	}
 
+	@Override
 	public TagRoot tagRoot() {
 		return meshRoot().getTagRoot();
 	}
 
+	@Override
 	public TagFamilyRoot tagFamilyRoot() {
 		return meshRoot().getTagFamilyRoot();
 	}
 
+	@Override
 	public NodeRoot nodeRoot() {
 		return meshRoot().getNodeRoot();
 	}
 
+	@Override
 	public UserRoot userRoot() {
 		return meshRoot().getUserRoot();
 	}
 
+	@Override
 	public GroupRoot groupRoot() {
 		return meshRoot().getGroupRoot();
 	}
 
+	@Override
 	public LanguageRoot languageRoot() {
 		return meshRoot().getLanguageRoot();
 	}
 
+	@Override
 	public ProjectRoot projectRoot() {
 		return meshRoot().getProjectRoot();
 	}
@@ -322,18 +309,11 @@ public class BootstrapInitializer {
 	 * Clear all stored references to main graph vertices.
 	 */
 	public static void clearReferences() {
-		BootstrapInitializer.meshRoot = null;
+		BootstrapInitializerImpl.meshRoot = null;
 		MeshRootImpl.clearReferences();
 	}
 
-	/**
-	 * Setup various mandatory data. This includes mandatory root nodes and the admin user, group.
-	 * 
-	 * @throws IOException
-	 * @throws JsonMappingException
-	 * @throws JsonParseException
-	 * @throws MeshSchemaException
-	 */
+	@Override
 	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		Role adminRole;
 		MeshRoot meshRoot;
@@ -472,9 +452,7 @@ public class BootstrapInitializer {
 
 	}
 
-	/**
-	 * Grant CRUD to all objects within the graph to the Admin Role.
-	 */
+	@Override
 	public void initPermissions() {
 		try (Tx tx = db.tx()) {
 			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
@@ -490,16 +468,8 @@ public class BootstrapInitializer {
 		}
 	}
 
-	/**
-	 * Initialize the languages by loading the json file and creating the language graph elements.
-	 * 
-	 * @param root
-	 *            Aggregation node to which the languages will be assigned
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws IOException
-	 */
-	protected void initLanguages(LanguageRoot root) throws JsonParseException, JsonMappingException, IOException {
+	@Override
+	public void initLanguages(LanguageRoot root) throws JsonParseException, JsonMappingException, IOException {
 		final String filename = "languages.json";
 		final InputStream ins = getClass().getResourceAsStream("/json/" + filename);
 		if (ins == null) {
@@ -522,11 +492,7 @@ public class BootstrapInitializer {
 
 	}
 
-	/**
-	 * Return the list of all language tags.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Collection<? extends String> getAllLanguageTags() {
 		if (allLanguageTags.isEmpty()) {
 			for (Language l : languageRoot().findAll()) {

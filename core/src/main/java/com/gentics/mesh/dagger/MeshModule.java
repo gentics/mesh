@@ -5,20 +5,26 @@ import javax.inject.Singleton;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.BootstrapInitializerImpl;
+import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.GraphStorageOptions;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
+import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
+import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Handler;
@@ -38,6 +44,13 @@ public class MeshModule {
 	private static final Logger log = LoggerFactory.getLogger(MeshModule.class);
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
+
+	@Provides
+	@Singleton
+	public BootstrapInitializer bootstrapInitializer(Database db, Lazy<IndexHandlerRegistry> indexHandlerRegistry, BCryptPasswordEncoder encoder,
+			RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
+		return new BootstrapInitializerImpl(db, indexHandlerRegistry, encoder, routerStorage, loader);
+	}
 
 	@Provides
 	@Singleton

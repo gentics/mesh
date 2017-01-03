@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -164,7 +165,7 @@ public abstract class AbstractDBTest {
 	 * Clear the test data.
 	 */
 	protected void resetDatabase() {
-		BootstrapInitializer.clearReferences();
+		BootstrapInitializerImpl.clearReferences();
 		long start = System.currentTimeMillis();
 		db.clear();
 		long duration = System.currentTimeMillis() - start;
