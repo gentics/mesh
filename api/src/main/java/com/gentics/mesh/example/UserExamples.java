@@ -24,6 +24,8 @@ public class UserExamples extends AbstractExamples {
 		UserResponse user2 = getUserResponse1("jroe");
 		user2.setFirstname("Jane");
 		user2.setLastname("Roe");
+		user2.setEdited(getTimestamp());
+		user2.setCreated(getTimestamp());
 		user2.setEmailAddress("j.roe@nowhere.com");
 		user2.getGroups().add(new GroupReference().setName("super-editors").setUuid(randomUUID()));
 		user2.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
@@ -101,7 +103,7 @@ public class UserExamples extends AbstractExamples {
 	}
 
 	public UserTokenResponse getTokenResponse() {
-		return new UserTokenResponse().setToken(randomToken());
+		return new UserTokenResponse().setToken(randomToken()).setCreated(getTimestamp());
 	}
 
 }

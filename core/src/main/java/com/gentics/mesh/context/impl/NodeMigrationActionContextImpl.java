@@ -711,7 +711,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public void setTypeResolution(Class<?> type) {
-				// TODO Auto-generated method stub
 
 			}
 
@@ -783,6 +782,18 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public String getResetToken() {
+				return null;
+			}
+
+			@Override
+			public Long getResetTokenIssueTimestamp() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public User setResetTokenIssueTimestamp(Long timestamp) {
+				// TODO Auto-generated method stub
 				return null;
 			}
 		};

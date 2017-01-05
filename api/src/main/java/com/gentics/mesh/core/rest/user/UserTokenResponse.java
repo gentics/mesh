@@ -6,11 +6,13 @@ public class UserTokenResponse implements RestModel {
 
 	private String token;
 
+	private String created;
+
 	/**
 	 * Set the token.
 	 * 
 	 * @param token
-	 * @return
+	 * @return Fluent API
 	 */
 	public UserTokenResponse setToken(String token) {
 		this.token = token;
@@ -26,4 +28,23 @@ public class UserTokenResponse implements RestModel {
 		return token;
 	}
 
+	/**
+	 * Return the date on which the token was created.
+	 * 
+	 * @return
+	 */
+	public String getCreated() {
+		return created;
+	}
+
+	/**
+	 * Set the date on which the token was created.
+	 * 
+	 * @param created
+	 * @return Fluent API
+	 */
+	public UserTokenResponse setCreated(String created) {
+		this.created = created;
+		return this;
+	}
 }

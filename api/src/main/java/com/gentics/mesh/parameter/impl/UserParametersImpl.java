@@ -14,6 +14,9 @@ public class UserParametersImpl extends AbstractParameters implements UserParame
 
 	public static final String TOKEN_PARAMETER_KEY = "token";
 
+	public UserParametersImpl() {
+	}
+
 	public UserParametersImpl(String token) {
 		super();
 		setToken(token);

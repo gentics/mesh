@@ -24,14 +24,20 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
 
 /**
- * The user token authentication handler grants access to routes by validating the provides token query parameter value. Please note that is very important to
- * always chain the MeshAuthHandler after this handler because it will just inject a User into the routing context. This handler will also call rc.next() if no
- * token has been provided. The token code is only a fallback mechanism and should not replace the JWT auth handler. If this handler fails the
- * {@link MeshAuthHandler} should try to extract the JWT token from the cookie and load the correct user.
+ * The user token authentication handler grants access to routes by validating
+ * the provides token query parameter value.
+ * 
+ * Please note that is very important to always chain the MeshAuthHandler after
+ * this handler because it will just inject a User into the routing context.
+ * This handler will also call rc.next() if no token has been provided. The
+ * token code is only a fallback mechanism and should not replace the JWT auth
+ * handler. If this handler fails the {@link MeshAuthHandler} should try to
+ * extract the JWT token from the cookie and load the correct user.
  */
 @Singleton
 public class UserTokenAuthHandler extends AuthHandlerImpl {
 
+	public static final int DEFAULT_MAX_TOKEN_AGE_IN_MINS = 30;
 	private BootstrapInitializer boot;
 	private Database db;
 
@@ -51,7 +57,8 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 		if (ac.getUser() == null && !isEmpty(token)) {
 
 			MeshAuthUser lastEditor = db.tx(() -> {
-				// 1. Load the element from the root element using the given uuid
+				// 1. Load the element from the root element using the given
+				// uuid
 				UserRoot root = boot.userRoot();
 				User element = root.findByUuid(uuid);
 
@@ -60,22 +67,28 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 				}
 
 				// 2. Validate the provided token code
-				String currentToken = element.getResetToken();
-				if (!token.equals(currentToken)) {
-					throw error(UNAUTHORIZED, "user_error_provided_token_invalid");
+				if (!element.isResetTokenValid(token, DEFAULT_MAX_TOKEN_AGE_IN_MINS)) {
+					return null;
 				}
 
-				//TODO maybe the token should only be reset once the user update ocurred
-				element.setResetToken(null);
-				//TODO it would be better to store the designated token requester instead and use that user
+				// TODO maybe the token should only be reset once the user
+				// update occurred
+				element.invalidateResetToken();
+
+				// TODO it would be better to store the designated token
+				// requester instead and use that user
 				return (MeshAuthUser) element.getEditor().reframeExplicit(MeshAuthUserImpl.class);
 			});
+			if (lastEditor == null) {
+				throw error(UNAUTHORIZED, "user_error_provided_token_invalid");
+			}
 			rc.setUser(lastEditor);
 
 			// Token found and validated. Lets continue
 			rc.next();
 		} else {
-			// No token could be found. Lets continue with another auth handler which should be added to the original request route.
+			// No token could be found. Lets continue with another auth handler
+			// which should be added to the original request route.
 			rc.next();
 		}
 	}
