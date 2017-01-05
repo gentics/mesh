@@ -191,8 +191,9 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public void setImageDominantColor(String dominantColor) {
+	public BinaryGraphField setImageDominantColor(String dominantColor) {
 		setProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
+		return this;
 	}
 
 	@Override

@@ -28,8 +28,8 @@ public class NodeEndpointPerformanceTest extends AbstractRestEndpointTest {
 			request.setSchema(new SchemaReference().setName("content"));
 			request.getFields().put("name", FieldUtil.createStringField("someNode_" + i));
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
-			NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, request));
-			call(() -> getClient().publishNode(PROJECT_NAME, response.getUuid()));
+			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
+			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 		}
 	}
 
@@ -38,7 +38,7 @@ public class NodeEndpointPerformanceTest extends AbstractRestEndpointTest {
 		addNodes();
 		String baseUuid = db.noTx(() -> project().getBaseNode().getUuid());
 		loggingStopWatch(logger, "node.read-nav-expanded-full-4", 200, (step) -> {
-			call(() -> getClient().loadNavigation(PROJECT_NAME, baseUuid, new NodeParameters().setExpandAll(true).setResolveLinks(LinkType.FULL),
+			call(() -> client().loadNavigation(PROJECT_NAME, baseUuid, new NodeParameters().setExpandAll(true).setResolveLinks(LinkType.FULL),
 					new NavigationParameters().setMaxDepth(4)));
 		});
 	}
@@ -47,11 +47,11 @@ public class NodeEndpointPerformanceTest extends AbstractRestEndpointTest {
 	public void testReadPage() {
 		addNodes();
 		loggingStopWatch(logger, "node.read-page-100", 200, (step) -> {
-			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(100)));
+			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(100)));
 		});
 
 		loggingStopWatch(logger, "node.read-page-25", 200, (step) -> {
-			call(() -> getClient().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(25)));
+			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(25)));
 		});
 	}
 
@@ -59,11 +59,11 @@ public class NodeEndpointPerformanceTest extends AbstractRestEndpointTest {
 	public void testReadSingle() {
 		String uuid = db.noTx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.read-by-uuid", 7000, (step) -> {
-			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 		});
 
 		loggingStopWatch(logger, "node.read-by-uuid-full", 800, (step) -> {
-			call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setExpandAll(true).setResolveLinks(LinkType.FULL)));
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setExpandAll(true).setResolveLinks(LinkType.FULL)));
 		});
 	}
 
@@ -79,7 +79,7 @@ public class NodeEndpointPerformanceTest extends AbstractRestEndpointTest {
 			request.getFields().put("filename", FieldUtil.createStringField("new-page_" + step + ".html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
-			call(() -> getClient().createNode(PROJECT_NAME, request));
+			call(() -> client().createNode(PROJECT_NAME, request));
 		});
 	}
 }

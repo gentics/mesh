@@ -24,7 +24,7 @@ public class TagSearchEndpointTest extends AbstractSearchEndpointTest implements
 			createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
 		}
 
-		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("name", tagName)).invoke();
+		MeshResponse<TagListResponse> searchFuture = client().searchTags(getSimpleTermQuery("name", tagName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -51,7 +51,7 @@ public class TagSearchEndpointTest extends AbstractSearchEndpointTest implements
 			assertEquals("The tag name was not updated as expected.", newName + "2", tag("red").getName());
 		}
 
-		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("name", newName + "2")).invoke();
+		MeshResponse<TagListResponse> searchFuture = client().searchTags(getSimpleTermQuery("name", newName + "2")).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -77,7 +77,7 @@ public class TagSearchEndpointTest extends AbstractSearchEndpointTest implements
 		}
 
 		// 1. Verify that the tag is indexed
-		MeshResponse<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("name", name)).invoke();
+		MeshResponse<TagListResponse> searchFuture = client().searchTags(getSimpleTermQuery("name", name)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("The tag with name {" + name + "} and uuid {" + uuid + "} could not be found in the search index.", 1,
@@ -87,7 +87,7 @@ public class TagSearchEndpointTest extends AbstractSearchEndpointTest implements
 		deleteTag(PROJECT_NAME, parentTagFamilyUuid, uuid);
 
 		// 3. Search again and verify that the document was removed from the index
-		searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name)).invoke();
+		searchFuture = client().searchTags(getSimpleTermQuery("fields.name", name)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

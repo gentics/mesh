@@ -20,7 +20,7 @@ public class EventbusEndpointTest extends AbstractRestEndpointTest {
 
 		String allowedAddress = MESH_MIGRATION.toString();
 		CountDownLatch latch = new CountDownLatch(1);
-		getClient().eventbus(ws -> {
+		client().eventbus(ws -> {
 			// Register
 			JsonObject msg = new JsonObject().put("type", "register").put("address", allowedAddress);
 			ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
@@ -49,7 +49,7 @@ public class EventbusEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testRegisterToEventbus() throws Exception {
 		CountDownLatch latch = new CountDownLatch(1);
-		getClient().eventbus(ws -> {
+		client().eventbus(ws -> {
 			// Register
 			JsonObject msg = new JsonObject().put("type", "register").put("address", "some-address");
 			ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));

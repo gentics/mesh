@@ -24,13 +24,13 @@ public class RoleEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {
-			MeshResponse<RoleListResponse> response = getClient().findRoles().invoke();
+			MeshResponse<RoleListResponse> response = client().findRoles().invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findRoles(), etag, true);
-			expectNo304(getClient().findRoles(new PagingParametersImpl().setPage(2)), etag, true);
+			expect304(client().findRoles(), etag, true);
+			expectNo304(client().findRoles(new PagingParametersImpl().setPage(2)), etag, true);
 		}
 	}
 
@@ -38,21 +38,21 @@ public class RoleEndpointETagTest extends AbstractETagTest {
 	public void testReadOne() {
 		try (NoTx noTx = db.noTx()) {
 			Role role = role();
-			MeshResponse<RoleResponse> response = getClient().findRoleByUuid(role.getUuid()).invoke();
+			MeshResponse<RoleResponse> response = client().findRoleByUuid(role.getUuid()).invoke();
 			latchFor(response);
 			String etag = role.getETag(getMockedInternalActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<RoleResponse> request = getClient().findRoleByUuid(role.getUuid());
+			MeshRequest<RoleResponse> request = client().findRoleByUuid(role.getUuid());
 			assertEquals(etag, expect304(request, etag, true));
 
 			// The role has no node reference and thus expanding will not affect the etag
-			assertEquals(etag, expect304(getClient().findRoleByUuid(role.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
+			assertEquals(etag, expect304(client().findRoleByUuid(role.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(getClient().findRoleByUuid(role.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
-			expect304(getClient().findRoleByUuid(role.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
+			expect304(client().findRoleByUuid(role.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
+			expect304(client().findRoleByUuid(role.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
 		}
 
 	}

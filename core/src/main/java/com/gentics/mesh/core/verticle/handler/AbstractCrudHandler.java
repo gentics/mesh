@@ -57,7 +57,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 		validateParameter(uuid, "uuid");
 		utils.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
-	
+
 	/**
 	 * Handle read requests that target a single object.
 	 * 

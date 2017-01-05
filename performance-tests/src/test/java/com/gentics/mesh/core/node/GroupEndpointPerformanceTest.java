@@ -17,7 +17,7 @@ public class GroupEndpointPerformanceTest extends AbstractRestEndpointTest {
 		for (int i = 0; i < 200; i++) {
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName("Group" + i);
-			call(() -> getClient().createGroup(request));
+			call(() -> client().createGroup(request));
 		}
 	}
 
@@ -28,21 +28,21 @@ public class GroupEndpointPerformanceTest extends AbstractRestEndpointTest {
 		String uuid = db.noTx(() -> group().getUuid());
 
 		loggingStopWatch(logger, "group.read-page-100", 200, (step) -> {
-			call(() -> getClient().findGroups(new PagingParametersImpl().setPerPage(100)));
+			call(() -> client().findGroups(new PagingParametersImpl().setPerPage(100)));
 		});
 
 		loggingStopWatch(logger, "group.read-page-25", 200, (step) -> {
-			call(() -> getClient().findGroups(new PagingParametersImpl().setPerPage(25)));
+			call(() -> client().findGroups(new PagingParametersImpl().setPerPage(25)));
 		});
 
 		loggingStopWatch(logger, "group.read-by-uuid", 200, (step) -> {
-			call(() -> getClient().findGroupByUuid(uuid));
+			call(() -> client().findGroupByUuid(uuid));
 		});
 
 		loggingStopWatch(logger, "group.create", 200, (step) -> {
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName("NameNew" + step);
-			call(() -> getClient().createGroup(request));
+			call(() -> client().createGroup(request));
 		});
 	}
 

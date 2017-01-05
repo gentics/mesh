@@ -29,7 +29,6 @@ import com.gentics.mesh.json.JsonUtil;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -97,9 +96,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			jwtProvider.authenticate(authInfo, rh -> {
 				if (rh.failed()) {
 					log.error("Could not authenticate token", rh.cause());
-					resultHandler.handle(Future.failedFuture(new VertxException("Invalid Token")));
+					resultHandler.handle(Future.failedFuture("Invalid Token"));
 				} else {
-
 					try {
 						User user = getUserByJWT(rh.result());
 						resultHandler.handle(Future.succeededFuture(user));

@@ -45,6 +45,13 @@ public interface PagingParameters extends ParameterProvider {
 	@Deprecated
 	String getSortBy();
 
+	/**
+	 * Return the sortorder.
+	 * 
+	 * @return
+	 * @deprecated not yet implemented
+	 */
+	@Deprecated
 	SortOrder getOrder();
 
 	/**

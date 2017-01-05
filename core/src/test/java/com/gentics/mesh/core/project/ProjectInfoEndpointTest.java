@@ -12,7 +12,7 @@ public class ProjectInfoEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadProjectByName() {
-		ProjectResponse project = call(() -> getClient().findProjectByName(PROJECT_NAME));
+		ProjectResponse project = call(() -> client().findProjectByName(PROJECT_NAME));
 		assertEquals(PROJECT_NAME, project.getName());
 	}
 

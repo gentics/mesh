@@ -212,38 +212,38 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void setUsername(String string) {
-
+			public User setUsername(String string) {
+				return this;
 			}
 
 			@Override
-			public void setReferencedNode(Node node) {
-
+			public User setReferencedNode(Node node) {
+				return this;
 			}
 
 			@Override
-			public void setPasswordHash(String hash) {
-
+			public User setPasswordHash(String hash) {
+				return this;
 			}
 
 			@Override
-			public void setPassword(String password) {
-
+			public User setPassword(String password) {
+				return this;
 			}
 
 			@Override
-			public void setLastname(String lastname) {
-
+			public User setLastname(String lastname) {
+				return this;
 			}
 
 			@Override
-			public void setFirstname(String firstname) {
-
+			public User setFirstname(String firstname) {
+				return this;
 			}
 
 			@Override
-			public void setEmailAddress(String email) {
-
+			public User setEmailAddress(String email) {
+				return this;
 			}
 
 			@Override
@@ -252,7 +252,8 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
+			public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
+				return this;
 			}
 
 			@Override
@@ -327,15 +328,18 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void enable() {
+			public User enable() {
+				return this;
 			}
 
 			@Override
-			public void disable() {
+			public User disable() {
+				return this;
 			}
 
 			@Override
-			public void deactivate() {
+			public User deactivate() {
+				return this;
 			}
 
 			@Override
@@ -344,15 +348,18 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+			public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+				return this;
 			}
 
 			@Override
-			public void addGroup(Group group) {
+			public User addGroup(Group group) {
+				return this;
 			}
 
 			@Override
-			public void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
+			public User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
+				return this;
 			}
 
 			@Override
@@ -501,55 +508,55 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void linkOut(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void linkIn(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void linkBoth(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void unlinkOut(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void unlinkIn(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void unlinkBoth(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void setLinkOut(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void setLinkIn(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void setLinkBoth(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
@@ -663,13 +670,13 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void remove() {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void setElement(Element element) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
@@ -693,7 +700,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void setProperty(String name, Object value) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
@@ -705,13 +712,13 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void setTypeResolution(Class<?> type) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void removeTypeResolution() {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
@@ -741,7 +748,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
@@ -767,6 +774,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 				return MeshInternal.get().database().operateNoTx(() -> {
 					return Single.just(transformToRestSync(ac, level, languageTags));
 				});
+			}
+
+			@Override
+			public User setResetToken(String token) {
+				return this;
+			}
+
+			@Override
+			public String getResetToken() {
+				return null;
 			}
 		};
 		return user;

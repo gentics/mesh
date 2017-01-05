@@ -1,5 +1,6 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -9,6 +10,7 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
 public class UserExamples extends AbstractExamples {
@@ -96,6 +98,10 @@ public class UserExamples extends AbstractExamples {
 		userPermResponse.getPermissions().add("update");
 		userPermResponse.getPermissions().add("delete");
 		return userPermResponse;
+	}
+
+	public UserTokenResponse getTokenResponse() {
+		return new UserTokenResponse().setToken(randomToken());
 	}
 
 }

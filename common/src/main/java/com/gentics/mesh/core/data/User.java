@@ -43,8 +43,9 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * 
 	 * @param string
 	 *            Username
+	 * @return Fluent API
 	 */
-	void setUsername(String string);
+	User setUsername(String string);
 
 	/**
 	 * Return the email address.
@@ -58,8 +59,9 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * 
 	 * @param email
 	 *            Email address
+	 * @return Fluent API
 	 */
-	void setEmailAddress(String email);
+	User setEmailAddress(String email);
 
 	/**
 	 * Return the lastname.
@@ -72,8 +74,9 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * Set the lastname.
 	 * 
 	 * @param lastname
+	 * @return Fluent API
 	 */
-	void setLastname(String lastname);
+	User setLastname(String lastname);
 
 	/**
 	 * Return the firstname.
@@ -86,8 +89,9 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * Set the lastname.
 	 * 
 	 * @param firstname
+	 * @return Fluent API
 	 */
-	void setFirstname(String firstname);
+	User setFirstname(String firstname);
 
 	/**
 	 * Return the password hash.
@@ -101,16 +105,18 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * 
 	 * @param hash
 	 *            Password hash
+	 * @return Fluent API
 	 */
 	// TODO change this to an async call since hashing of the password is blocking
-	void setPasswordHash(String hash);
+	User setPasswordHash(String hash);
 
 	/**
 	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set.
 	 * 
 	 * @param password
+	 * @return Fluent API
 	 */
-	void setPassword(String password);
+	User setPassword(String password);
 
 	/**
 	 * Return the referenced node which was assigned to the user.
@@ -124,7 +130,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * 
 	 * @param node
 	 */
-	void setReferencedNode(Node node);
+	User setReferencedNode(Node node);
 
 	/**
 	 * Return an array of human readable permissions for the given vertex.
@@ -159,7 +165,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param targetNode
 	 *            Node to which the CRUD permissions will be assigned.
 	 */
-	void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode);
+	User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode);
 
 	/**
 	 * This method adds additional permissions to the target node. The roles are selected like in method
@@ -174,7 +180,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param toGrant
 	 *            permissions to grant
 	 */
-	void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant);
+	User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant);
 
 	/**
 	 * Inherit permissions egdes from the source node and assign those permissions to the target node.
@@ -182,7 +188,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param sourceNode
 	 * @param targetNode
 	 */
-	void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
+	User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
 
 	/**
 	 * Return a list of groups to which the user was assigned.
@@ -196,7 +202,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * 
 	 * @param group
 	 */
-	void addGroup(Group group);
+	User addGroup(Group group);
 
 	/**
 	 * Return a list of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.
@@ -215,7 +221,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Disable the user.
 	 */
-	void disable();
+	User disable();
 
 	/**
 	 * Check whether the user is enabled.
@@ -227,12 +233,12 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Enable the user.
 	 */
-	void enable();
+	User enable();
 
 	/**
 	 * Disable the user and remove him from all groups
 	 */
-	void deactivate();
+	User deactivate();
 
 	/**
 	 * Check whether the user has the given permission on the given element.
@@ -268,5 +274,20 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	boolean canReadNode(InternalActionContext ac, Node node);
+
+	/**
+	 * Set the reset token for the user.
+	 * 
+	 * @param token
+	 * @return Fluent API
+	 */
+	User setResetToken(String token);
+
+	/**
+	 * Return the currently stored reset token.
+	 * 
+	 * @return Token or null if no token has been set or if the token has been used up
+	 */
+	String getResetToken();
 
 }

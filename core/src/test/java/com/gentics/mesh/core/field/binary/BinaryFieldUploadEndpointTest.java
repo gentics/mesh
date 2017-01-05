@@ -164,13 +164,13 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldKey);
 
-			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 			String originalVersion = response.getVersion().getNumber();
 
 			// 1. Upload the image
 			int size = uploadImage(node.getUuid(), "en", fieldKey, fileName, mimeType);
 
-			response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 			assertNotEquals(originalVersion, response.getVersion().getNumber());
 			originalVersion = response.getVersion().getNumber();
 
@@ -181,7 +181,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			expectResponseMessage(message, "node_binary_field_updated", fieldKey);
 
 			node.reload();
-			response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 			assertNotEquals(originalVersion, response.getVersion().getNumber());
 			BinaryField binaryField = response.getFields().getBinaryField(fieldKey);
 
@@ -255,7 +255,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 
 			node.reload();
 
-			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 			BinaryField binaryField = response.getFields().getBinaryField("binary");
 
 			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
@@ -266,7 +266,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			assertNull("The data did contain image information.", binaryField.getWidth());
 			assertNull("The data did contain image information.", binaryField.getHeight());
 
-			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary")
+			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary")
 					.invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
@@ -322,7 +322,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			int size = uploadImage(node.getUuid(), "en", fieldName, fileName, contentType);
 
 			node.reload();
-			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 
 			BinaryField binaryField = response.getFields().getBinaryField(fieldName);
 			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
@@ -333,7 +333,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			assertEquals("The data did not contain correct image width information.", 1160, binaryField.getWidth().intValue());
 			assertEquals("The data did not contain correct image height information.", 1376, binaryField.getHeight().intValue());
 
-			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName)
+			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName)
 					.invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
@@ -352,7 +352,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
 		GenericMessageResponse message = call(
-				() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldname, buffer, filename, contentType));
+				() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldname, buffer, filename, contentType));
 
 		expectResponseMessage(message, "node_binary_field_updated", fieldname);
 		return bytes.length;

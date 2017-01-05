@@ -36,12 +36,12 @@ public class NodeEndpointFieldAPIeTagTest extends AbstractETagTest {
 			node.reload();
 
 			// 2. Download the data using the field api
-			MeshResponse<NodeDownloadResponse> response = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary").invoke();
+			MeshResponse<NodeDownloadResponse> response = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary").invoke();
 			latchFor(response);
 			assertSuccess(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull("A etag should have been generated.", etag);
-			expect304(getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"), etag, false);
+			expect304(client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"), etag, false);
 		}
 
 	}

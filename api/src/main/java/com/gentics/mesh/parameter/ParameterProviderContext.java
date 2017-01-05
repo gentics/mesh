@@ -7,6 +7,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
+import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 
 /**
@@ -16,6 +17,10 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default NodeParameters getNodeParameters() {
 		return new NodeParameters(this);
+	}
+
+	default UserParameters getUserParameters() {
+		return new UserParametersImpl(this);
 	}
 
 	default VersioningParameters getVersioningParameters() {

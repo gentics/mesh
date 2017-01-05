@@ -32,7 +32,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
 			GenericMessageResponse message = call(
-					() -> getClient().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request));
+					() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
 
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
@@ -51,7 +51,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 			request.getPermissions().add("read");
 			request.getPermissions().add("update");
 			request.getPermissions().add("create");
-			GenericMessageResponse message = call(() -> getClient().updateRolePermissions(role().getUuid(),
+			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(),
 					"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
 
@@ -79,7 +79,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 			request.getPermissions().add("update");
 			request.getPermissions().add("create");
 			GenericMessageResponse message = call(
-					() -> getClient().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request));
+					() -> client().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
 
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
@@ -101,7 +101,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 			request.getPermissions().add("create");
 			assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 
-			GenericMessageResponse message = call(() -> getClient().updateRolePermissions(role().getUuid(), pathToElement, request));
+			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), pathToElement, request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
 			assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 		}
@@ -116,7 +116,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 
 			String pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid();
-			MeshResponse<RolePermissionResponse> future = getClient().readRolePermissions(role().getUuid(), pathToElement).invoke();
+			MeshResponse<RolePermissionResponse> future = client().readRolePermissions(role().getUuid(), pathToElement).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			RolePermissionResponse response = future.result();
@@ -139,7 +139,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 			request.getPermissions().add("update");
 			request.getPermissions().add("create");
 
-			GenericMessageResponse message = call(() -> getClient().updateRolePermissions(role().getUuid(),
+			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(),
 					"projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
 
@@ -153,7 +153,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.getPermissions().add("read");
 			String path = "projects/bogus1234/nodes";
-			call(() -> getClient().updateRolePermissions(role().getUuid(), path, request), NOT_FOUND, "error_element_for_path_not_found", path);
+			call(() -> client().updateRolePermissions(role().getUuid(), path, request), NOT_FOUND, "error_element_for_path_not_found", path);
 		}
 	}
 }

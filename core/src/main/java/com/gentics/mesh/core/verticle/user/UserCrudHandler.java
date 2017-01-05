@@ -1,16 +1,16 @@
 package com.gentics.mesh.core.verticle.user;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
-
+import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -19,10 +19,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.TokenUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -57,17 +59,14 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	 * @param pathToElement
 	 */
 	public void handlePermissionRead(InternalActionContext ac, String userUuid, String pathToElement) {
-		if (StringUtils.isEmpty(userUuid)) {
-			throw error(BAD_REQUEST, "error_uuid_must_be_specified");
-		}
-		if (StringUtils.isEmpty(pathToElement)) {
-			throw error(BAD_REQUEST, "user_permission_path_missing");
-		}
+		validateParameter(userUuid, "error_uuid_must_be_specified");
+		validateParameter(pathToElement, "user_permission_path_missing");
+
 		if (log.isDebugEnabled()) {
 			log.debug("Handling permission request for element on path {" + pathToElement + "}");
 		}
 		db.operateNoTx(() -> {
-			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
+			// 1. Load the user that should be used - read perm implies that the user is able to read the attached permissions
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
@@ -84,6 +83,29 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
+	}
+
+	/**
+	 * Handle the fetch token action for the user with the given uuid.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            User uuid
+	 */
+	public void handleFetchToken(InternalActionContext ac, String userUuid) {
+		validateParameter(userUuid, "The userUuid must not be empty");
+
+		db.operateNoTx(() -> {
+			// 1. Load the user that should be used 
+			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+			return db.noTx(() -> {
+				String token = TokenUtil.randomToken();
+				user.setResetToken(token);
+				UserTokenResponse response = new UserTokenResponse();
+				response.setToken(token);
+				return Single.just(response);
+			});
+		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
 }

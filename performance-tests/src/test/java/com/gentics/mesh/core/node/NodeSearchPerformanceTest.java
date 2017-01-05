@@ -44,9 +44,9 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 			request.setSchema(new SchemaReference().setName("content"));
 			request.getFields().put("name", FieldUtil.createStringField("someNode_" + i));
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
-			NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, request));
+			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
 			lastNodeUuid = response.getUuid();
-			call(() -> getClient().publishNode(PROJECT_NAME, response.getUuid()));
+			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 			if (i % 100 == 0) {
 				log.info("Created " + i + " of " + total + " nodes.");
 			}
@@ -76,7 +76,7 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 
 		String search = json;
 		loggingStopWatch(logger, "node.search-filter-one-perm", 400, (step) -> {
-			NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
+			NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
 			assertEquals(1, response.getMetainfo().getTotalCount());
 		});
 
@@ -97,8 +97,8 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 			request.setSchema(new SchemaReference().setName("content"));
 			request.getFields().put("name", FieldUtil.createStringField("someNode_" + i));
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
-			NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, request));
-			call(() -> getClient().publishNode(PROJECT_NAME, response.getUuid()));
+			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
+			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 			if (i % 100 == 0) {
 				log.info("Created " + i + " of " + total + " nodes.");
 			}
@@ -119,7 +119,7 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 
 		String search = json;
 		loggingStopWatch(logger, "node.search-filter-schema", 200, (step) -> {
-			call(() -> getClient().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
+			call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
 		});
 
 	}

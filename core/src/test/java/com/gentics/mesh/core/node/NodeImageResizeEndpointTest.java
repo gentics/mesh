@@ -45,7 +45,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
-			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
+			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
 					.invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
@@ -66,7 +66,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth() + 1).setHeight(102);
-			call(() -> getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), BAD_REQUEST,
+			call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), BAD_REQUEST,
 					"image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(options.getMaxWidth() + 1));
 		}
 	}
@@ -81,7 +81,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth()).setHeight(102);
-			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
+			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
 					.invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
@@ -100,13 +100,13 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 			// 2. Transform the image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			MeshResponse<GenericMessageResponse> transformFuture = getClient()
+			MeshResponse<GenericMessageResponse> transformFuture = client()
 					.transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
 			latchFor(transformFuture);
 			assertSuccess(transformFuture);
 
 			// 3. Download the image
-			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image").invoke();
+			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image").invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 
@@ -124,7 +124,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 			// 2. Transform the image
 			ImageManipulationParameters params = new ImageManipulationParameters();
-			MeshResponse<GenericMessageResponse> transformFuture = getClient()
+			MeshResponse<GenericMessageResponse> transformFuture = client()
 					.transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_no_image_transformation", "image");
@@ -138,7 +138,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 			// try to transform the "name"
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			MeshResponse<GenericMessageResponse> transformFuture = getClient()
+			MeshResponse<GenericMessageResponse> transformFuture = client()
 					.transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "name", params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_found_field_is_not_binary", "name");
@@ -153,7 +153,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 			prepareSchema(node, "*/*", "image");
 
 			// upload non-image data
-			MeshResponse<GenericMessageResponse> uploadFuture = getClient()
+			MeshResponse<GenericMessageResponse> uploadFuture = client()
 					.updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", Buffer.buffer("I am not an image"), "test.txt", "text/plain")
 					.invoke();
 			latchFor(uploadFuture);
@@ -161,7 +161,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 			// Transform
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			MeshResponse<GenericMessageResponse> transformFuture = getClient()
+			MeshResponse<GenericMessageResponse> transformFuture = client()
 					.transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
 			latchFor(transformFuture);
 			expectException(transformFuture, BAD_REQUEST, "error_transformation_non_image", "image");
@@ -177,7 +177,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 			// 2. Transform the image
 			ImageManipulationParameters params = new ImageManipulationParameters();
-			call(() -> getClient().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), NOT_FOUND,
+			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), NOT_FOUND,
 					"error_binaryfield_not_found_with_name", "image");
 		}
 	}

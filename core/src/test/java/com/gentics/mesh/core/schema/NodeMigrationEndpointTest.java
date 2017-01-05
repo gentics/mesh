@@ -68,7 +68,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 	public void testEmptyMigration() throws Throwable {
 		try (NoTx tx = db.noTx()) {
 
-			CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			String fieldName = "changedfield";
 
@@ -334,7 +334,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			String fieldName = "changedfield";
 			String micronodeFieldName = "micronodefield";
 
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);

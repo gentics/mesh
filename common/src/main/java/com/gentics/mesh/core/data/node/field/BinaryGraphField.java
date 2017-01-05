@@ -105,8 +105,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVert
 	 * Set the binary image dominant color.
 	 * 
 	 * @param dominantColor
+	 * @return Fluent API
 	 */
-	void setImageDominantColor(String dominantColor);
+	BinaryGraphField setImageDominantColor(String dominantColor);
 
 	/**
 	 * Return the binary image dominant color.

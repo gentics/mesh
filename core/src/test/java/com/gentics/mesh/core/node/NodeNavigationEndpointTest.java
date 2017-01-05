@@ -38,7 +38,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(0),
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(0),
 					new VersioningParameters().draft()));
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
 			assertThat(response).hasDepth(0).isValid(1);
@@ -56,7 +56,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(42),
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(42),
 					new VersioningParameters().draft()));
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
 			assertThat(response).hasDepth(0).isValid(1);
@@ -70,7 +70,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	public void testReadNavigationWithNoParameters() {
 		try (NoTx noTx = db.noTx()) {
 			Node node = project().getBaseNode();
-			NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 			assertThat(response).hasDepth(3).isValid(7);
 		}
 	}
@@ -82,7 +82,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	public void testReadNavigationWithNegativeDepth() {
 		try (NoTx noTx = db.noTx()) {
 			Node node = folder("2015");
-			call(() -> getClient().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParameters().setMaxDepth(-10),
+			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParameters().setMaxDepth(-10),
 					new VersioningParameters().draft()), BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
 	}
@@ -95,7 +95,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			assertFalse("The node must not be a container.", node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
-			call(() -> getClient().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParameters().setMaxDepth(1),
+			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParameters().setMaxDepth(1),
 					new VersioningParameters().draft()), BAD_REQUEST, "navigation_error_no_container");
 		}
 	}
@@ -111,7 +111,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(1),
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(1),
 					new VersioningParameters().draft()));
 
 			assertThat(response).hasDepth(1).isValid(4);
@@ -130,7 +130,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(2),
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(2),
 					new VersioningParameters().draft()));
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
 			assertThat(response).hasDepth(2).isValid(6);
@@ -150,7 +150,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			MeshResponse<NavigationResponse> future = getClient()
+			MeshResponse<NavigationResponse> future = client()
 					.loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(2).setIncludeAll(true)).invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -178,7 +178,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			MeshResponse<NavigationResponse> future = getClient()
+			MeshResponse<NavigationResponse> future = client()
 					.loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(2).setIncludeAll(false)).invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -204,7 +204,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(42),
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(42),
 					new VersioningParameters().draft()));
 			assertEquals(uuid, response.getRoot().getUuid());
 			assertNotNull("root was null", response.getRoot());
@@ -219,7 +219,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			String baseNodeUuid = baseNode.getUuid();
 
 			// latest release
-			NavigationResponse response = call(() -> getClient().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParameters().setMaxDepth(1),
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParameters().setMaxDepth(1),
 					new VersioningParameters().draft()));
 			assertThat(response).hasDepth(1).isValid(4);
 
@@ -227,17 +227,17 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// latest release (again)
-			response = call(() -> getClient().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParameters().setMaxDepth(1),
+			response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParameters().setMaxDepth(1),
 					new VersioningParameters().draft()));
 			assertThat(response).hasDepth(0);
 
 			// latest release by name
-			response = call(() -> getClient().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParameters().setMaxDepth(1),
+			response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParameters().setMaxDepth(1),
 					new VersioningParameters().draft().setRelease(newRelease.getName())));
 			assertThat(response).hasDepth(0);
 
 			// initial release by name
-			response = call(() -> getClient().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParameters().setMaxDepth(1),
+			response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParameters().setMaxDepth(1),
 					new VersioningParameters().draft().setRelease(initialRelease.getName())));
 			assertThat(response).hasDepth(1).isValid(4);
 		}

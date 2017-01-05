@@ -22,7 +22,7 @@ public class UserEndpointPerformanceTest extends AbstractRestEndpointTest {
 			UserCreateRequest request = new UserCreateRequest();
 			request.setUsername("Name" + i);
 			request.setPassword("Test1234");
-			call(() -> getClient().createUser(request));
+			call(() -> client().createUser(request));
 		}
 	}
 
@@ -54,22 +54,22 @@ public class UserEndpointPerformanceTest extends AbstractRestEndpointTest {
 		String uuid = db.noTx(() -> user().getUuid());
 
 		loggingStopWatch(logger, "user.read-page-100", 200, (step) -> {
-			call(() -> getClient().findUsers(new PagingParametersImpl().setPerPage(100)));
+			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100)));
 		});
 
 		loggingStopWatch(logger, "user.read-page-25", 200, (step) -> {
-			call(() -> getClient().findUsers(new PagingParametersImpl().setPerPage(25)));
+			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(25)));
 		});
 
 		loggingStopWatch(logger, "user.read-by-uuid", 200, (step) -> {
-			call(() -> getClient().findUserByUuid(uuid));
+			call(() -> client().findUserByUuid(uuid));
 		});
 
 		loggingStopWatch(logger, "user.create", 200, (step) -> {
 			UserCreateRequest request = new UserCreateRequest();
 			request.setUsername("NameNew" + step);
 			request.setPassword("Test1234");
-			call(() -> getClient().createUser(request));
+			call(() -> client().createUser(request));
 		});
 	}
 }

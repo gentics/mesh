@@ -67,7 +67,7 @@ public class SchemaDiffEndpointTest extends AbstractRestEndpointTest {
 			Schema request = getSchema();
 			request.setDisplayField("name");
 
-			MeshResponse<SchemaChangesListModel> future = getClient().diffSchema(container.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = client().diffSchema(container.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();
@@ -83,7 +83,7 @@ public class SchemaDiffEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
-			MeshResponse<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = client().diffSchema(schema.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();
@@ -100,7 +100,7 @@ public class SchemaDiffEndpointTest extends AbstractRestEndpointTest {
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binary");
 			binaryField.setAllowedMimeTypes("one", "two");
 			request.addField(binaryField);
-			MeshResponse<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = client().diffSchema(schema.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();
@@ -118,7 +118,7 @@ public class SchemaDiffEndpointTest extends AbstractRestEndpointTest {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
 			request.removeField("content");
-			MeshResponse<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = client().diffSchema(schema.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();

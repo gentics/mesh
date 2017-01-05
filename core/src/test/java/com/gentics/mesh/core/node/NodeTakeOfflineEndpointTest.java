@@ -31,9 +31,9 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 
-			assertThat(call(() -> getClient().publishNode(PROJECT_NAME, uuid))).as("Publish Status").isPublished("en").isPublished("de");
+			assertThat(call(() -> client().publishNode(PROJECT_NAME, uuid))).as("Publish Status").isPublished("en").isPublished("de");
 			return uuid;
 		});
 
@@ -48,8 +48,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			}
 		}
 
-		call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
-		assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
+		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+		assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 				.isNotPublished("de");
 
 		// assert that the containers have only the draft webrootpath properties set
@@ -75,25 +75,25 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			String nodeUuid = node.getUuid();
 
 			// 1. Take all nodes offline
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 
 			// 2. publish the test node
-			assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
+			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			// 3. Take only en offline 
-			call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
-			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en");
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en");
 
 			// 4. Assert status
-			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isPublished("de");
 
 			// 5. Take also de offline
-			call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
-			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("de");
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("de");
 
 			// 6. Assert that both are offline
-			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isNotPublished("de");
 		}
 	}
@@ -104,13 +104,13 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
-			assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
+			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db.tx(() -> {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
+			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
 		}
 	}
 
@@ -120,13 +120,13 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
-			assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
+			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db.tx(() -> {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
-			call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid);
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid);
 		}
 	}
 
@@ -136,12 +136,12 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
-			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
+			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isNotPublished("de");
 			// The request should work fine if we call it again 
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
-			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
+			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isNotPublished("de");
 		}
 	}
@@ -152,19 +152,19 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
-			assertThat(call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"))).as("Initial publish status").isPublished();
+			assertThat(call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"))).as("Initial publish status").isPublished();
 
 			// All nodes are initially published so lets take german offline  
-			call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
 
 			// Another take offline call should fail since there is no german page online anymore.
-			call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
 		}
 	}
 
 	@Test
 	public void testTakeOfflineBogusUuid() {
-		call(() -> getClient().takeNodeOffline(PROJECT_NAME, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().takeNodeOffline(PROJECT_NAME, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
@@ -173,7 +173,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
-			call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "fr"), NOT_FOUND, "error_language_not_found", "fr");
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "fr"), NOT_FOUND, "error_language_not_found", "fr");
 		}
 	}
 
@@ -183,10 +183,10 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			Node news = folder("news");
 			Node news2015 = folder("2015");
 
-			call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid()));
-			call(() -> getClient().publishNode(PROJECT_NAME, news2015.getUuid()));
+			call(() -> client().publishNode(PROJECT_NAME, news.getUuid()));
+			call(() -> client().publishNode(PROJECT_NAME, news2015.getUuid()));
 
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, news.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published");
+			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published");
 		}
 	}
 
@@ -195,12 +195,12 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 		String newsUuid = db.noTx(() -> folder("news").getUuid());
 		String news2015Uuid = db.noTx(() -> folder("2015").getUuid());
 
-		call(() -> getClient().publishNode(PROJECT_NAME, newsUuid));
-		call(() -> getClient().publishNode(PROJECT_NAME, news2015Uuid));
+		call(() -> client().publishNode(PROJECT_NAME, newsUuid));
+		call(() -> client().publishNode(PROJECT_NAME, news2015Uuid));
 
-		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "de"));
+		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "de"));
 
-		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published",
+		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published",
 				news2015Uuid);
 
 	}
@@ -217,21 +217,21 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.getFields().put("name", FieldUtil.createStringField("News"));
-			call(() -> getClient().updateNode(PROJECT_NAME, news.getUuid(), update, new VersioningParameters().setRelease(newRelease.getName())));
+			call(() -> client().updateNode(PROJECT_NAME, news.getUuid(), update, new VersioningParameters().setRelease(newRelease.getName())));
 
 			// publish in initial and new release
-			call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(initialRelease.getName())));
-			call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(newRelease.getName())));
+			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(initialRelease.getName())));
+			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(newRelease.getName())));
 
 			// take offline in initial release
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(initialRelease.getName()),
+			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(initialRelease.getName()),
 					new PublishParameters().setRecursive(true)));
 
 			// check publish status
-			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
 					new VersioningParameters().setRelease(initialRelease.getName())))).as("Initial release publish status").isNotPublished("en")
 							.isNotPublished("de");
-			assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
 					new VersioningParameters().setRelease(newRelease.getName())))).as("New release publish status").isPublished("en")
 							.doesNotContain("de");
 
@@ -256,15 +256,15 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 		db.noTx(() -> {
 			// 1. Take folder offline
 			Node node = folder("news");
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, node.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published");
+			call(() -> client().takeNodeOffline(PROJECT_NAME, node.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published");
 			return null;
 		});
 
 		//3. Take sub nodes offline
 		db.noTx(() -> {
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new PublishParameters().setRecursive(false)));
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new PublishParameters().setRecursive(true)));
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, folder("2014").getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new PublishParameters().setRecursive(false)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2014").getUuid(), new PublishParameters().setRecursive(true)));
 			return null;
 		});
 
@@ -272,7 +272,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 		db.noTx(() -> {
 			// 1. Take folder offline
 			Node node = folder("news");
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, node.getUuid()));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, node.getUuid()));
 			return null;
 		});
 

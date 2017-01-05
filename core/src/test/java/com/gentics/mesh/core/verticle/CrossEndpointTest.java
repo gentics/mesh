@@ -15,11 +15,11 @@ public class CrossEndpointTest extends AbstractRestEndpointTest {
 		request.setSchema(new SchemaReference().setName("folder"));
 		request.setName(name);
 
-		call(() -> getClient().createProject(request));
+		call(() -> client().createProject(request));
 
-		call(() -> getClient().findNodes(name));
+		call(() -> client().findNodes(name));
 
-		call(() -> getClient().findTagFamilies(name));
+		call(() -> client().findTagFamilies(name));
 
 	}
 

@@ -31,23 +31,23 @@ public class NodeLanguagesEndpointTest extends AbstractRestEndpointTest {
 			assertThat(node.getAvailableLanguageNames()).contains("en", "de");
 
 			// Delete the english version 
-			MeshResponse<Void> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
+			MeshResponse<Void> future = client().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			assertSuccess(future);
 
 			// Loading is still be possible but the node will contain no fields
-			MeshResponse<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en")).invoke();
+			MeshResponse<NodeResponse> response = client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en")).invoke();
 			latchFor(response);
 			assertSuccess(response);
 			assertThat(response.result().getAvailableLanguages()).contains("de");
 			assertThat(response.result().getFields()).isEmpty();
 
-			response = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de")).invoke();
+			response = client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de")).invoke();
 			latchFor(response);
 			assertSuccess(future);
 
 			// Delete the english version again
-			future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
+			future = client().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "node_no_language_found", "en");
 
@@ -58,10 +58,10 @@ public class NodeLanguagesEndpointTest extends AbstractRestEndpointTest {
 			assertEquals(nLanguagesBefore - 1, node.getAvailableLanguageNames().size());
 
 			// Now delete the remaining german version
-			future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "de").invoke();
+			future = client().deleteNode(PROJECT_NAME, node.getUuid(), "de").invoke();
 			latchFor(future);
 			assertThat(dummySearchProvider).recordedDeleteEvents(2 + 2);
-			response = getClient().findNodeByUuid(PROJECT_NAME, uuid).invoke();
+			response = client().findNodeByUuid(PROJECT_NAME, uuid).invoke();
 			latchFor(response);
 			expectException(response, NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", uuid,
 					project().getLatestRelease().getUuid());
@@ -73,7 +73,7 @@ public class NodeLanguagesEndpointTest extends AbstractRestEndpointTest {
 	public void testDeleteBogusLanguage() {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
-			MeshResponse<Void> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "blub").invoke();
+			MeshResponse<Void> future = client().deleteNode(PROJECT_NAME, node.getUuid(), "blub").invoke();
 			latchFor(future);
 			expectException(future, NOT_FOUND, "error_language_not_found", "blub");
 		}
@@ -84,7 +84,7 @@ public class NodeLanguagesEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			role().revokePermissions(node, DELETE_PERM);
-			MeshResponse<Void> future = getClient().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
+			MeshResponse<Void> future = client().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		}

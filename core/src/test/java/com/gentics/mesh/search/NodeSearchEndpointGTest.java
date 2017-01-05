@@ -29,12 +29,12 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		String oldContent = "supersonic";
 		String newContent = "urschnell";
 		String uuid = db.noTx(() -> content("concorde").getUuid());
-		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
+		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParameters().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		// change draft version of content
@@ -42,12 +42,12 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		update.setLanguage("en");
 		update.getFields().put("content", FieldUtil.createHtmlField(newContent));
 		update.setVersion(new VersionReference().setNumber("1.0"));
-		call(() -> getClient().updateNode(PROJECT_NAME, concorde.getUuid(), update));
+		call(() -> client().updateNode(PROJECT_NAME, concorde.getUuid(), update));
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParameters().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
@@ -58,19 +58,19 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		String uuid = db.noTx(() -> content("concorde").getUuid());
-		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
-		call(() -> getClient().publishNode(PROJECT_NAME, uuid));
+		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
+		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
 		createRelease.setName("newrelease");
-		call(() -> getClient().createRelease(PROJECT_NAME, createRelease));
+		call(() -> client().createRelease(PROJECT_NAME, createRelease));
 		failingLatch(latch);
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic")));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic")));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
 				new VersioningParameters().setRelease(db.noTx(() -> project().getInitialRelease().getName()))));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}

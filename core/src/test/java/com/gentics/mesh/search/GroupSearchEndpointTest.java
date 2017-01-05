@@ -20,7 +20,7 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		String groupName = "testgroup42a";
 		createGroup(groupName);
 
-		MeshResponse<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
+		MeshResponse<GroupListResponse> searchFuture = client().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -31,7 +31,7 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		String groupName = "testgroup42a";
 		String uuid = createGroup(groupName).getUuid();
 
-		GroupListResponse result = call(() -> getClient().searchGroups(getSimpleTermQuery("uuid", uuid)));
+		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("uuid", uuid)));
 		assertThat(result.getData()).hasSize(1);
 		assertEquals(uuid, result.getData().get(0).getUuid());
 	}
@@ -41,7 +41,7 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		String groupName = "test-grou  %!p42a";
 		String uuid = createGroup(groupName).getUuid();
 
-		GroupListResponse result = call(() -> getClient().searchGroups(getSimpleTermQuery("name", groupName)));
+		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name", groupName)));
 		assertThat(result.getData()).hasSize(1);
 		assertEquals(uuid, result.getData().get(0).getUuid());
 	}
@@ -54,7 +54,7 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		GroupResponse group = createGroup(groupName);
 		deleteGroup(group.getUuid());
 
-		GroupListResponse result = call(() -> getClient().searchGroups(getSimpleTermQuery("name", groupName)));
+		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name", groupName)));
 		assertThat(result.getData()).hasSize(0);
 	}
 
@@ -67,10 +67,10 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		String newGroupName = "testgrouprenamed";
 		updateGroup(group.getUuid(), newGroupName);
 
-		GroupListResponse result = call(() -> getClient().searchGroups(getSimpleTermQuery("name", groupName)));
+		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name", groupName)));
 		assertThat(result.getData()).hasSize(0);
 
-		result = call(() -> getClient().searchGroups(getSimpleTermQuery("name", newGroupName)));
+		result = call(() -> client().searchGroups(getSimpleTermQuery("name", newGroupName)));
 		assertThat(result.getData()).hasSize(1);
 	}
 

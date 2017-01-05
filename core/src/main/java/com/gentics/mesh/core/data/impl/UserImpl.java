@@ -54,6 +54,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.UserParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
@@ -84,6 +85,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	public static final String ENABLED_FLAG_PROPERTY_KEY = "enabledFlag";
 
+	public static final String RESET_TOKEN_KEY = "resetToken";
+
 	public static void init(Database database) {
 		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(ASSIGNED_TO_ROLE, false, false, true);
@@ -95,20 +98,34 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void disable() {
+	public User disable() {
 		setProperty(ENABLED_FLAG_PROPERTY_KEY, false);
+		return this;
 	}
 
 	// TODO do we really need disable and deactivate and remove?!
 	@Override
-	public void deactivate() {
+	public User deactivate() {
 		outE(HAS_GROUP).removeAll();
 		disable();
+		return this;
 	}
 
 	@Override
-	public void enable() {
+	public User setResetToken(String token) {
+		setProperty(RESET_TOKEN_KEY, token);
+		return this;
+	}
+
+	@Override
+	public String getResetToken() {
+		return getProperty(RESET_TOKEN_KEY);
+	}
+
+	@Override
+	public User enable() {
 		setProperty(ENABLED_FLAG_PROPERTY_KEY, true);
+		return this;
 	}
 
 	@Override
@@ -122,8 +139,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void setFirstname(String name) {
+	public User setFirstname(String name) {
 		setProperty(FIRSTNAME_PROPERTY_KEY, name);
+		return this;
 	}
 
 	@Override
@@ -132,8 +150,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void setLastname(String name) {
+	public User setLastname(String name) {
 		setProperty(LASTNAME_PROPERTY_KEY, name);
+		return this;
 	}
 
 	@Override
@@ -152,8 +171,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void setUsername(String name) {
+	public User setUsername(String name) {
 		setProperty(USERNAME_PROPERTY_KEY, name);
+		return this;
 	}
 
 	@Override
@@ -162,8 +182,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void setEmailAddress(String emailAddress) {
+	public User setEmailAddress(String emailAddress) {
 		setProperty(EMAIL_PROPERTY_KEY, emailAddress);
+		return this;
 	}
 
 	@Override
@@ -187,8 +208,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void setReferencedNode(Node node) {
+	public User setReferencedNode(Node node) {
 		setUniqueLinkOutTo(node, HAS_NODE_REFERENCE);
+		return this;
 	}
 
 	@Override
@@ -323,9 +345,10 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void addGroup(Group group) {
+	public User addGroup(Group group) {
 		// Redirect to group implementation
 		group.addUser(this);
+		return this;
 	}
 
 	@Override
@@ -334,17 +357,19 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void setPasswordHash(String hash) {
+	public User setPasswordHash(String hash) {
 		setProperty(PASSWORD_HASH_PROPERTY_KEY, hash);
+		return this;
 	}
 
 	@Override
-	public void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
+	public User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
 		addPermissionsOnRole(sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
+		return this;
 	}
 
 	@Override
-	public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+	public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
 		// 1. Determine all roles that grant given permission on the source node.
 		List<? extends Role> rolesThatGrantPermission = sourceNode.in(permission.label()).toListExplicit(RoleImpl.class);
 
@@ -354,10 +379,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		}
 
 		inheritRolePermissions(sourceNode, targetNode);
+		return this;
 	}
 
 	@Override
-	public void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
+	public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
 
 		for (GraphPermission perm : GraphPermission.values()) {
 			List<? extends Role> rolesWithPerm = sourceNode.in(perm.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
@@ -368,7 +394,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				role.grantPermissions(targetNode, perm);
 			}
 		}
-
+		return this;
 	}
 
 	@Override
@@ -391,8 +417,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 * @param password
 	 */
 	@Override
-	public void setPassword(String password) {
+	public User setPassword(String password) {
 		setPasswordHash(MeshInternal.get().passwordEncoder().encode(password));
+		return this;
 	}
 
 	@Override
@@ -430,6 +457,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			ExpandableNode reference = requestModel.getNodeReference();
 			if (reference instanceof NodeResponse) {
 				// TODO also handle full node response inside node reference field
+				//TODO i18n
 				throw error(BAD_REQUEST, "Handling node responses for user updates is not yet supported");
 			}
 			if (reference instanceof NodeReference) {

@@ -28,17 +28,17 @@ public class NodeImageResizeEndpointETagTest extends AbstractETagTest {
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
-			MeshResponse<NodeDownloadResponse> response = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
+			MeshResponse<NodeDownloadResponse> response = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
 					.invoke();
 			latchFor(response);
 			assertSuccess(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 
-			expect304(getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), etag, false);
+			expect304(client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), etag, false);
 
 			params.setHeight(103);
-			String newETag = expectNo304(getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), etag, false);
-			expect304(getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), newETag, false);
+			String newETag = expectNo304(client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), etag, false);
+			expect304(client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), newETag, false);
 
 		}
 	}

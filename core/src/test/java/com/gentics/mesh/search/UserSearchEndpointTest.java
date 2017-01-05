@@ -34,7 +34,7 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 				+ "          \"analyzer\": \"snowball\",\n" + "          \"fields\": [\"name^5\",\"_all\"],\n"
 				+ "          \"default_operator\": \"and\"\n" + "      }\n" + "  }\n" + "}";
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(json).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(json).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -53,7 +53,7 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 				+ "          \"analyzer\": \"snowball\",\n" + "          \"fields\": [\"name^5\",\"_all\"],\n"
 				+ "          \"default_operator\": \"and\"\n" + "      }\n" + "  }\n" + "}";
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(json).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(json).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -68,7 +68,7 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 			createUser(username);
 		}
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", username)).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleTermQuery("username", username)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -82,9 +82,9 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 		try (NoTx noTx = db.noTx()) {
 			UserUpdateRequest updateRequest = new UserUpdateRequest();
 			updateRequest.setLastname(impossibleName);
-			call(() -> getClient().updateUser(user().getUuid(), updateRequest));
+			call(() -> client().updateUser(user().getUuid(), updateRequest));
 		}
-		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleTermQuery("lastname", impossibleName)).invoke();
+		MeshResponse<UserListResponse> future = client().searchUsers(getSimpleTermQuery("lastname", impossibleName)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		UserListResponse response = future.result();
@@ -100,9 +100,9 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 		try (NoTx noTx = db.noTx()) {
 			UserUpdateRequest updateRequest = new UserUpdateRequest();
 			updateRequest.setLastname(impossibleName);
-			call(() -> getClient().updateUser(user().getUuid(), updateRequest));
+			call(() -> client().updateUser(user().getUuid(), updateRequest));
 		}
-		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName + "*")).invoke();
+		MeshResponse<UserListResponse> future = client().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName + "*")).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		ListResponse<UserResponse> response = future.result();
@@ -118,9 +118,9 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 		try (NoTx noTx = db.noTx()) {
 			UserUpdateRequest updateRequest = new UserUpdateRequest();
 			updateRequest.setLastname(impossibleName);
-			call(() -> getClient().updateUser(user().getUuid(), updateRequest));
+			call(() -> client().updateUser(user().getUuid(), updateRequest));
 		}
-		MeshResponse<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*"))
+		MeshResponse<UserListResponse> future = client().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*"))
 				.invoke();
 		latchFor(future);
 		assertSuccess(future);
@@ -141,11 +141,11 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 		request.setEmailAddress(email);
 		request.setGroupUuid(db.noTx(() -> group().getUuid()));
 
-		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
+		MeshResponse<UserResponse> future = client().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleWildCardQuery("emailaddress", "*")).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleWildCardQuery("emailaddress", "*")).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("We expected to see one result.", 1, searchFuture.result().getData().size());
@@ -160,7 +160,7 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 			createUser(username);
 		}
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("We expected to see one result.", 1, searchFuture.result().getData().size());
@@ -178,11 +178,11 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 		request.setPassword("test1234");
 		request.setGroupUuid(group.getUuid());
 
-		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
+		MeshResponse<UserResponse> future = client().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals("We expected to see one result.", 1, searchFuture.result().getData().size());
@@ -200,17 +200,17 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 		UserCreateRequest request = new UserCreateRequest();
 		request.setUsername(username);
 		request.setPassword("test1234");
-		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
+		MeshResponse<UserResponse> future = client().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
 		// 3. Assign the previously created user to the group
-		MeshResponse<GroupResponse> futureAdd = getClient().addUserToGroup(group.getUuid(), future.result().getUuid()).invoke();
+		MeshResponse<GroupResponse> futureAdd = client().addUserToGroup(group.getUuid(), future.result().getUuid()).invoke();
 		latchFor(futureAdd);
 		assertSuccess(futureAdd);
 
 		// Check whether the user index was updated
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(
@@ -230,15 +230,15 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 		request.setPassword("test1234");
 		request.setGroupUuid(group.getUuid());
 
-		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
+		MeshResponse<UserResponse> future = client().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
 		String userUuid = future.result().getUuid();
 
-		call(() -> getClient().removeUserFromGroup(group.getUuid(), userUuid));
+		call(() -> client().removeUserFromGroup(group.getUuid(), userUuid));
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -256,17 +256,17 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 		request.setPassword("test1234");
 		request.setGroupUuid(group.getUuid());
 
-		MeshResponse<UserResponse> future = getClient().createUser(request).invoke();
+		MeshResponse<UserResponse> future = client().createUser(request).invoke();
 		latchFor(future);
 		assertSuccess(future);
 
 		String userUuid = future.result().getUuid();
 
-		MeshResponse<Void> futureDelete = getClient().deleteUser(userUuid).invoke();
+		MeshResponse<Void> futureDelete = client().deleteUser(userUuid).invoke();
 		latchFor(futureDelete);
 		assertSuccess(futureDelete);
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase())).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -282,7 +282,7 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 			createUser(username);
 		}
 
-		MeshResponse<UserListResponse> searchFuture = getClient()
+		MeshResponse<UserListResponse> searchFuture = client()
 				.searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()), new PagingParametersImpl().setPerPage(0)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
@@ -300,7 +300,7 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 			deleteUser(user.getUuid());
 		}
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", userName)).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleTermQuery("username", userName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -316,12 +316,12 @@ public class UserSearchEndpointTest extends AbstractSearchEndpointTest implement
 			user = updateUser(user.getUuid(), newUserName);
 		}
 
-		MeshResponse<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", userName)).invoke();
+		MeshResponse<UserListResponse> searchFuture = client().searchUsers(getSimpleTermQuery("username", userName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
 
-		searchFuture = getClient().searchUsers(getSimpleTermQuery("username", newUserName)).invoke();
+		searchFuture = client().searchUsers(getSimpleTermQuery("username", newUserName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());

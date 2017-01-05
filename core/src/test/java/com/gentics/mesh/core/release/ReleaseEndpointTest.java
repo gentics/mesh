@@ -56,7 +56,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findReleaseByUuid(projectName, uuid).invoke());
+				set.add(client().findReleaseByUuid(projectName, uuid).invoke());
 			}
 
 			for (MeshResponse<?> future : set) {
@@ -83,7 +83,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			for (int i = 0; i < nJobs; i++) {
 				ReleaseCreateRequest request = new ReleaseCreateRequest();
 				request.setName(releaseName + i);
-				MeshResponse<ReleaseResponse> future = getClient().createRelease(project.getName(), request).invoke();
+				MeshResponse<ReleaseResponse> future = client().createRelease(project.getName(), request).invoke();
 				responseFutures.add(future);
 			}
 
@@ -125,7 +125,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Set<MeshResponse<ReleaseResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findReleaseByUuid(project().getName(), project().getInitialRelease().getUuid()).invoke());
+				set.add(client().findReleaseByUuid(project().getName(), project().getInitialRelease().getUuid()).invoke());
 			}
 			for (MeshResponse<ReleaseResponse> future : set) {
 				latchFor(future);
@@ -144,7 +144,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(releaseName);
 
-			ReleaseResponse response = call(() -> getClient().createRelease(project.getName(), request));
+			ReleaseResponse response = call(() -> client().createRelease(project.getName(), request));
 			assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive().isNotMigrated();
 		}
 	}
@@ -162,7 +162,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(releaseName);
 
-			call(() -> getClient().createRelease(project.getName(), request), FORBIDDEN, "error_missing_perm", uuid + "/" + name);
+			call(() -> client().createRelease(project.getName(), request), FORBIDDEN, "error_missing_perm", uuid + "/" + name);
 		}
 	}
 
@@ -170,7 +170,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testCreateWithoutName() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
-			call(() -> getClient().createRelease(project.getName(), new ReleaseCreateRequest()), BAD_REQUEST, "release_missing_name");
+			call(() -> client().createRelease(project.getName(), new ReleaseCreateRequest()), BAD_REQUEST, "release_missing_name");
 		}
 	}
 
@@ -181,7 +181,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(project.getName());
 
-			call(() -> getClient().createRelease(project.getName(), request), CONFLICT, "release_conflicting_name", project.getName());
+			call(() -> client().createRelease(project.getName(), request), CONFLICT, "release_conflicting_name", project.getName());
 		}
 	}
 
@@ -193,9 +193,9 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(releaseName);
 
-			call(() -> getClient().createRelease(project.getName(), request));
+			call(() -> client().createRelease(project.getName(), request));
 
-			call(() -> getClient().createRelease(project.getName(), request), CONFLICT, "release_conflicting_name", releaseName);
+			call(() -> client().createRelease(project.getName(), request), CONFLICT, "release_conflicting_name", releaseName);
 		}
 	}
 
@@ -207,14 +207,14 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(releaseName);
 
-		call(() -> getClient().createRelease(projectName, request));
+		call(() -> client().createRelease(projectName, request));
 
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName(newProjectName);
 		createProject.setSchema(new SchemaReference().setName("folder"));
-		call(() -> getClient().createProject(createProject));
+		call(() -> client().createProject(createProject));
 
-		call(() -> getClient().createRelease(newProjectName, request));
+		call(() -> client().createRelease(newProjectName, request));
 
 	}
 
@@ -235,7 +235,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Release thirdRelease = project.getReleaseRoot().create("Three", user());
 
 			for (Release release : Arrays.asList(initialRelease, firstRelease, secondRelease, thirdRelease)) {
-				ReleaseResponse response = call(() -> getClient().findReleaseByUuid(project.getName(), release.getUuid()));
+				ReleaseResponse response = call(() -> client().findReleaseByUuid(project.getName(), release.getUuid()));
 				assertThat(response).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive();
 			}
 		}
@@ -245,7 +245,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testReadByBogusUUID() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
-			call(() -> getClient().findReleaseByUuid(project.getName(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			call(() -> client().findReleaseByUuid(project.getName(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
 	}
 
@@ -258,7 +258,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			String uuid = project.getInitialRelease().getUuid();
 
 			ReleaseResponse response = call(
-					() -> getClient().findReleaseByUuid(projectName, uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+					() -> client().findReleaseByUuid(projectName, uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
 			assertThat(response.getRolePerms()).isNotNull().contains("read", "create", "update", "delete");
 		}
 	}
@@ -272,7 +272,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			String name = project.getName();
 			role().revokePermissions(project.getInitialRelease(), READ_PERM);
 
-			call(() -> getClient().findReleaseByUuid(name, releaseUuid), FORBIDDEN, "error_missing_perm", releaseUuid);
+			call(() -> client().findReleaseByUuid(name, releaseUuid), FORBIDDEN, "error_missing_perm", releaseUuid);
 		}
 	}
 
@@ -286,7 +286,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Release secondRelease = project.getReleaseRoot().create("Two", user());
 			Release thirdRelease = project.getReleaseRoot().create("Three", user());
 
-			ListResponse<ReleaseResponse> responseList = call(() -> getClient().findReleases(project.getName()));
+			ListResponse<ReleaseResponse> responseList = call(() -> client().findReleases(project.getName()));
 
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 
@@ -308,7 +308,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			role().revokePermissions(firstRelease, READ_PERM);
 			role().revokePermissions(thirdRelease, READ_PERM);
 
-			ListResponse<ReleaseResponse> responseList = call(() -> getClient().findReleases(project.getName()));
+			ListResponse<ReleaseResponse> responseList = call(() -> client().findReleases(project.getName()));
 
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 			assertThat(responseList).isNotNull();
@@ -330,20 +330,20 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			// change name
 			ReleaseUpdateRequest request1 = new ReleaseUpdateRequest();
 			request1.setName(newName);
-			ReleaseResponse response = call(() -> getClient().updateRelease(projectName, uuid, request1));
+			ReleaseResponse response = call(() -> client().updateRelease(projectName, uuid, request1));
 			assertThat(response).as("Updated Release").isNotNull().hasName(newName).isActive();
 
 			// change active
 			ReleaseUpdateRequest request2 = new ReleaseUpdateRequest();
 			// request2.setActive(false);
-			response = call(() -> getClient().updateRelease(projectName, uuid, request2));
+			response = call(() -> client().updateRelease(projectName, uuid, request2));
 			assertThat(response).as("Updated Release").isNotNull().hasName(newName).isInactive();
 
 			// change active and name
 			ReleaseUpdateRequest request3 = new ReleaseUpdateRequest();
 			// request3.setActive(true);
 			request3.setName(anotherNewName);
-			response = call(() -> getClient().updateRelease(projectName, uuid, request3));
+			response = call(() -> client().updateRelease(projectName, uuid, request3));
 			assertThat(response).as("Updated Release").isNotNull().hasName(anotherNewName).isActive();
 		}
 	}
@@ -357,7 +357,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
 			request.setName(newName);
-			call(() -> getClient().updateRelease(project.getName(), project.getInitialRelease().getUuid(), request), CONFLICT,
+			call(() -> client().updateRelease(project.getName(), project.getInitialRelease().getUuid(), request), CONFLICT,
 					"release_conflicting_name", newName);
 		}
 	}
@@ -372,7 +372,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
 			// request.setActive(false);
-			call(() -> getClient().updateRelease(projectName, project.getInitialRelease().getUuid(), request), FORBIDDEN, "error_missing_perm",
+			call(() -> client().updateRelease(projectName, project.getInitialRelease().getUuid(), request), FORBIDDEN, "error_missing_perm",
 					project.getInitialRelease().getUuid());
 		}
 	}
@@ -385,7 +385,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
 			// request.setActive(false);
-			call(() -> getClient().updateRelease(project.getName(), "bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			call(() -> client().updateRelease(project.getName(), "bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
 	}
 
@@ -407,7 +407,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testReadSchemaVersions() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
-			SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			SchemaReferenceList list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 
 			SchemaReference content = schemaContainer("content").getLatestVersion().transformToReference();
 			SchemaReference folder = schemaContainer("folder").getLatestVersion().transformToReference();
@@ -426,13 +426,13 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 
 			// Assign schema to project
-			call(() -> getClient().assignSchemaToProject(project.getName(), schema.getUuid()));
+			call(() -> client().assignSchemaToProject(project.getName(), schema.getUuid()));
 
 			// Generate version 2
 			updateSchema(schema.getUuid(), "newschemaname");
 
 			// Assert that version 2 is assigned to release
-			SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			SchemaReferenceList list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid()).setVersion(2));
 
@@ -440,7 +440,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
 
 			// Assert that version 2 is still assigned to release
-			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid()).setVersion(2));
 
@@ -449,7 +449,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames(project.getInitialRelease().getName()));
 
 			// Assert that version 2 is still assigned to the release
-			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid()).setVersion(2));
 
@@ -457,7 +457,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateSchema(schema.getUuid(), "anothernewschemaname2", new SchemaUpdateParameters().setUpdateAssignedReleases(true));
 
 			// Assert that version 4 is assigned to the release
-			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new SchemaReference().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion(4));
 
@@ -466,7 +466,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames("bla", "bogus", "moped"));
 
 			// Assert that version 4 is still assigned to the release since non of the names matches the project release
-			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new SchemaReference().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion(4));
 
@@ -481,7 +481,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 
 			// assign schema to project
-			call(() -> getClient().assignSchemaToProject(project.getName(), schema.getUuid()));
+			call(() -> client().assignSchemaToProject(project.getName(), schema.getUuid()));
 
 			// generate version 2
 			updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
@@ -490,16 +490,16 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
 
 			// check that version 1 is assigned to release
-			SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			SchemaReferenceList list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new SchemaReference().setName("schemaname").setUuid(schema.getUuid()).setVersion(1));
 
 			// assign version 2 to the release
-			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new SchemaReferenceList(Arrays.asList(new SchemaReference().setUuid(schema.getUuid()).setVersion(2)))));
 
 			// assert
-			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid()).setVersion(2));
 		}
@@ -510,7 +510,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
-			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new SchemaReference().setName("content").setVersion(4711)), BAD_REQUEST, "error_schema_reference_not_found", "content", "-",
 					"4711");
 		}
@@ -521,7 +521,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
-			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new SchemaReference().setUuid("bogusuuid").setVersion(1)), BAD_REQUEST, "error_schema_reference_not_found", "-", "bogusuuid",
 					"1");
 		}
@@ -532,7 +532,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
-			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new SchemaReference().setName("bogusname").setVersion(1)), BAD_REQUEST, "error_schema_reference_not_found", "bogusname", "-",
 					"1");
 		}
@@ -544,7 +544,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Schema schema = createSchema("schemaname");
 			Project project = project();
 
-			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new SchemaReference().setName(schema.getName()).setVersion(schema.getVersion())), BAD_REQUEST, "error_schema_reference_not_found",
 					schema.getName(), "-", Integer.toString(schema.getVersion()));
 		}
@@ -561,10 +561,10 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateSchema(schema.getUuid(), "newschemaname");
 
 			// assign schema to project
-			call(() -> getClient().assignSchemaToProject(project.getName(), schema.getUuid()));
+			call(() -> client().assignSchemaToProject(project.getName(), schema.getUuid()));
 
 			// try to downgrade schema version
-			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new SchemaReference().setUuid(schema.getUuid()).setVersion(1)), BAD_REQUEST, "release_error_downgrade_schema_version",
 					"schemaname", "2", "1");
 		}
@@ -576,7 +576,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 			role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
 
-			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new SchemaReference().setName("content").setVersion(1)), FORBIDDEN, "error_missing_perm", project.getInitialRelease().getUuid());
 		}
 	}
@@ -589,7 +589,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 
 			// assign schema to project
-			call(() -> getClient().assignSchemaToProject(project.getName(), schema.getUuid()));
+			call(() -> client().assignSchemaToProject(project.getName(), schema.getUuid()));
 
 			// generate version 2
 			updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
@@ -598,16 +598,16 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
 
 			// check that version 1 is assigned to release
-			SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			SchemaReferenceList list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new SchemaReference().setName("schemaname").setUuid(schema.getUuid()).setVersion(1));
 
 			// assign latest version to the release
-			call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new SchemaReferenceList(Arrays.asList(new SchemaReference().setUuid(schema.getUuid())))));
 
 			// assert
-			list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new SchemaReference().setName("anothernewschemaname").setUuid(schema.getUuid()).setVersion(3));
 		}
@@ -620,7 +620,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			MicroschemaReferenceList list = call(
-					() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+					() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 
 			MicroschemaReference vcard = microschemaContainer("vcard").getLatestVersion().transformToReference();
 			MicroschemaReference captionedImage = microschemaContainer("captionedImage").getLatestVersion().transformToReference();
@@ -638,7 +638,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 
 			// assign microschema to project
-			call(() -> getClient().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
+			call(() -> client().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
 
 			// generate version 2
 			updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
@@ -648,16 +648,16 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			// check that version 1 is assigned to release
 			MicroschemaReferenceList list = call(
-					() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+					() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new MicroschemaReference().setName("microschemaname").setUuid(microschema.getUuid()).setVersion(1));
 
 			// assign version 2 to the release
-			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new MicroschemaReferenceList(Arrays.asList(new MicroschemaReference().setUuid(microschema.getUuid()).setVersion(2)))));
 
 			// assert
-			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
 		}
@@ -671,7 +671,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 
 			// assign microschema to project
-			call(() -> getClient().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
+			call(() -> client().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
 
 			// generate version 2
 			updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(true));
@@ -681,7 +681,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			// check that version 3 is assigned to release
 			MicroschemaReferenceList list = call(
-					() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+					() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new MicroschemaReference().setName("anothernewmicroschemaname").setUuid(microschema.getUuid()).setVersion(3));
 
@@ -701,7 +701,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
-			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new MicroschemaReference().setName("vcard").setVersion(4711)), BAD_REQUEST, "error_microschema_reference_not_found", "vcard", "-",
 					"4711");
 		}
@@ -712,7 +712,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
-			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new MicroschemaReference().setUuid("bogusuuid").setVersion(1)), BAD_REQUEST, "error_microschema_reference_not_found", "-",
 					"bogusuuid", "1");
 		}
@@ -723,7 +723,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 
-			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new MicroschemaReference().setName("bogusname").setVersion(1)), BAD_REQUEST, "error_microschema_reference_not_found", "bogusname",
 					"-", "1");
 		}
@@ -735,7 +735,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Schema schema = createSchema("microschemaname");
 			Project project = project();
 
-			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new MicroschemaReference().setName(schema.getName()).setVersion(schema.getVersion())), BAD_REQUEST,
 					"error_microschema_reference_not_found", schema.getName(), "-", Integer.toString(schema.getVersion()));
 		}
@@ -752,10 +752,10 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateMicroschema(microschema.getUuid(), "newmicroschemaname");
 
 			// assign microschema to project
-			call(() -> getClient().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
+			call(() -> client().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
 
 			// try to downgrade microschema version
-			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new MicroschemaReference().setUuid(microschema.getUuid()).setVersion(1)), BAD_REQUEST,
 					"release_error_downgrade_microschema_version", "microschemaname", "2", "1");
 		}
@@ -767,7 +767,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 			role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
 
-			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			call(() -> client().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
 					new MicroschemaReference().setName("vcard").setVersion(1)), FORBIDDEN, "error_missing_perm",
 					project.getInitialRelease().getUuid());
 		}
@@ -781,14 +781,14 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 
 			// Assign microschema to project
-			call(() -> getClient().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
+			call(() -> client().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
 
 			// Generate version 2
 			updateMicroschema(microschema.getUuid(), "newmicroschemaname");
 
 			// Assert that version 2 is assigned to release
 			MicroschemaReferenceList list = call(
-					() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+					() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
 
@@ -796,7 +796,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
 
 			// Assert that version 2 is still assigned to release
-			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
 
@@ -805,7 +805,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames(project.getInitialRelease().getName()));
 
 			// Assert that version 4 is assigned to the release
-			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new MicroschemaReference().setName("anothernewschemaname1").setUuid(microschema.getUuid()).setVersion(4));
 
@@ -813,7 +813,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname2", new SchemaUpdateParameters().setUpdateAssignedReleases(true));
 
 			// Assert that version 5
-			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new MicroschemaReference().setName("anothernewschemaname2").setUuid(microschema.getUuid()).setVersion(5));
 
@@ -822,7 +822,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames("bla", "bogus", "moped"));
 
 			// Assert that version 4 is still assigned to the release since non of the names matches the project release
-			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			list = call(() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 			assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
 					.contains(new MicroschemaReference().setName("anothernewschemaname2").setUuid(microschema.getUuid()).setVersion(5));
 		}

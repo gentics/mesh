@@ -47,7 +47,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 		String uuid = db.noTx(() -> content("concorde").getUuid());
 
 		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParametersImpl().setPage(1).setPerPage(100),
+				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParametersImpl().setPage(1).setPerPage(100),
 						new NodeParameters().setLanguages(expectedLanguages), new VersioningParameters().draft()));
 		assertEquals("Check # of returned nodes", expectedLanguages.length, response.getData().size());
 		assertEquals("Check total count", expectedLanguages.length, response.getMetainfo().getTotalCount());

@@ -20,7 +20,7 @@ public class TagNodeEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testReadNodesForTag() {
 		try (NoTx noTx = db.noTx()) {
-			NodeListResponse nodeList = call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
+			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParameters().draft()));
 			NodeResponse concorde = new NodeResponse();
 			concorde.setUuid(content("concorde").getUuid());
@@ -32,8 +32,8 @@ public class TagNodeEndpointTest extends AbstractRestEndpointTest {
 	public void testReadPublishedNodesForTag() {
 		try (NoTx noTx = db.noTx()) {
 
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
-			NodeListResponse nodeList = call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
 			assertThat(nodeList.getData()).as("Published tagged nodes").isNotNull().isEmpty();
 
 			// publish the node and its parent
@@ -41,7 +41,7 @@ public class TagNodeEndpointTest extends AbstractRestEndpointTest {
 			content("concorde").getParentNode(project().getLatestRelease().getUuid()).publish(ac);
 			content("concorde").publish(ac);
 
-			nodeList = call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
+			nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
 			NodeResponse concorde = new NodeResponse();
 			concorde.setUuid(content("concorde").getUuid());
 			assertThat(nodeList.getData()).as("Tagged nodes").isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
@@ -59,16 +59,16 @@ public class TagNodeEndpointTest extends AbstractRestEndpointTest {
 			Release newRelease = project().getReleaseRoot().create("newrelease", user());
 
 			// get for latest release (must be empty)
-			assertThat(call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
+			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParameters().draft())).getData()).as("Nodes tagged in latest release").isNotNull().isEmpty();
 
 			// get for new release (must be empty)
-			assertThat(call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
+			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParameters().draft().setRelease(newRelease.getUuid()))).getData()).as("Nodes tagged in new release").isNotNull()
 							.isEmpty();
 
 			// get for initial release
-			assertThat(call(() -> getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
+			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParameters().draft().setRelease(initialRelease.getUuid()))).getData()).as("Nodes tagged in initial release")
 							.isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
 		}

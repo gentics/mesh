@@ -66,7 +66,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"), new PagingParametersImpl().setPage(1).setPerPage(2),
+				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"), new PagingParametersImpl().setPage(1).setPerPage(2),
 						new NodeParameters().setResolveLinks(LinkType.FULL), new VersioningParameters().draft()));
 
 		assertEquals("Check returned search results", 1, response.getData().size());
@@ -92,7 +92,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 				// valid names always begin with the same character
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
-				NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
+				NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
 						new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 
 				if (expectResult) {
@@ -127,20 +127,20 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeResponse concorde = call(
-				() -> getClient().findNodeByUuid(PROJECT_NAME, db.noTx(() -> content("concorde").getUuid()), new VersioningParameters().draft()));
+				() -> client().findNodeByUuid(PROJECT_NAME, db.noTx(() -> content("concorde").getUuid()), new VersioningParameters().draft()));
 
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
 		createRelease.setName("newrelease");
-		call(() -> getClient().createRelease(PROJECT_NAME, createRelease));
+		call(() -> client().createRelease(PROJECT_NAME, createRelease));
 		failingLatch(latch);
 
 		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParameters().draft()));
+				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		String releaseName = db.noTx(() -> project().getInitialRelease().getName());
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
 				new VersioningParameters().setRelease(releaseName).draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}

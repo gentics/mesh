@@ -27,13 +27,13 @@ public class TagEndpointETagTest extends AbstractETagTest {
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {
 			String tagFamilyUuid = tagFamily("colors").getUuid();
-			MeshResponse<TagListResponse> response = getClient().findTags(PROJECT_NAME, tagFamilyUuid).invoke();
+			MeshResponse<TagListResponse> response = client().findTags(PROJECT_NAME, tagFamilyUuid).invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findTags(PROJECT_NAME, tagFamilyUuid), etag, true);
-			expectNo304(getClient().findTags(PROJECT_NAME, tagFamilyUuid, new PagingParametersImpl().setPage(2)), etag, true);
+			expect304(client().findTags(PROJECT_NAME, tagFamilyUuid), etag, true);
+			expectNo304(client().findTags(PROJECT_NAME, tagFamilyUuid, new PagingParametersImpl().setPage(2)), etag, true);
 		}
 	}
 
@@ -43,24 +43,24 @@ public class TagEndpointETagTest extends AbstractETagTest {
 			TagFamily tagfamily = tagFamily("colors");
 			Tag tag = tag("red");
 
-			MeshResponse<TagResponse> response = getClient().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid()).invoke();
+			MeshResponse<TagResponse> response = client().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid()).invoke();
 			latchFor(response);
 			String etag = tag.getETag(getMockedInternalActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<TagResponse> request = getClient().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid());
+			MeshRequest<TagResponse> request = client().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid());
 			assertEquals(etag, expect304(request, etag, true));
 
 			// The node has no node reference and thus expanding will not affect the etag
 			assertEquals(etag,
-					expect304(getClient().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid(), new NodeParameters().setExpandAll(true)),
+					expect304(client().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid(), new NodeParameters().setExpandAll(true)),
 							etag, true));
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(getClient().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid(), new NodeParameters().setExpandAll(false)), etag,
+			expect304(client().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid(), new NodeParameters().setExpandAll(false)), etag,
 					true);
-			expect304(getClient().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid(), new NodeParameters().setExpandAll(true)), etag,
+			expect304(client().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid(), new NodeParameters().setExpandAll(true)), etag,
 					true);
 		}
 

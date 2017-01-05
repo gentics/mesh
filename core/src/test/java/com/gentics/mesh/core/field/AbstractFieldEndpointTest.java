@@ -26,7 +26,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractRestEndpointTest
 		NodeParameters parameters = new NodeParameters();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
-		return call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParameters().draft()));
+		return call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParameters().draft()));
 	}
 
 	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
@@ -40,7 +40,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractRestEndpointTest
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
 
-		call(() -> getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")), status, bodyMessageI18nKey,
+		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")), status, bodyMessageI18nKey,
 				i18nParams);
 	}
 
@@ -73,7 +73,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractRestEndpointTest
 		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
 
 		NodeResponse response = call(
-				() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")));
+				() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")));
 		assertNotNull("The response could not be found in the result of the future.", response);
 		assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));
 		return response;
@@ -87,7 +87,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractRestEndpointTest
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
 
-		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")), status,
+		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")), status,
 				bodyMessageI18nKey, i18nParams);
 	}
 

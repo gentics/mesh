@@ -15,6 +15,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.parameter.UserParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -27,14 +28,17 @@ public class UserEndpoint extends AbstractEndpoint {
 
 	private UserCrudHandler crudHandler;
 
+	private UserTokenAuthHandler userTokenHandler;
+
 	public UserEndpoint() {
 		super("users", null);
 	}
 
 	@Inject
-	public UserEndpoint(RouterStorage routerStorage, UserCrudHandler userCrudHandler) {
+	public UserEndpoint(RouterStorage routerStorage, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
 		super("users", routerStorage);
 		this.crudHandler = userCrudHandler;
+		this.userTokenHandler = userTokenHandler;
 	}
 
 	@Override
@@ -44,11 +48,12 @@ public class UserEndpoint extends AbstractEndpoint {
 
 	@Override
 	public void registerEndPoints() throws Exception {
+		addUpdateHandler();
 		secureAll();
 		addCreateHandler();
 		addReadHandler();
-		addUpdateHandler();
 		addDeleteHandler();
+		addTokenHandler();
 
 		addReadPermissionHandler();
 	}
@@ -68,6 +73,22 @@ public class UserEndpoint extends AbstractEndpoint {
 			String userUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			crudHandler.handlePermissionRead(ac, userUuid, pathToElement);
+		});
+	}
+
+	private void addTokenHandler() {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:userUuid/token");
+		endpoint.setRAMLPath("/{userUuid}/token");
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		endpoint.description("Return a one time token which can be used by any user to update a user (e.g.: Reset the password)");
+		endpoint.method(GET);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, userExamples.getTokenResponse(), "User token response.");
+		endpoint.blockingHandler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("userUuid");
+			crudHandler.handleFetchToken(ac, uuid);
 		});
 	}
 
@@ -124,6 +145,12 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addUpdateHandler() {
+
+		// Add the user token handler first in order to allow for recovery token handling 
+		getRouter().route("/:userUuid").method(POST).handler(userTokenHandler);
+		// Chain the regular auth handler afterwards in order to handle non-token code requests
+		getRouter().route("/:userUuid").method(POST).handler(authHandler);
+
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:userUuid");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -131,6 +158,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(UserParameters.class);
 		endpoint.exampleRequest(userExamples.getUserUpdateRequest("jdoe42"));
 		endpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe42"), "Updated user response.");
 		endpoint.blockingHandler(rc -> {

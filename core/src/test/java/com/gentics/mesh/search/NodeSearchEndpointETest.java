@@ -24,12 +24,12 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 			fullIndex();
 		}
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 		assertEquals(1, response.getData().size());
 		deleteNode(PROJECT_NAME, db.noTx(() -> content("concorde").getUuid()));
 
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new PagingParametersImpl().setPage(1).setPerPage(2),
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new PagingParametersImpl().setPage(1).setPerPage(2),
 				new VersioningParameters().draft()));
 		assertEquals("We added the delete action and therefore the document should no longer be part of the index.", 0, response.getData().size());
 
@@ -37,7 +37,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testBogusQuery() {
-		call(() -> getClient().searchNodes(PROJECT_NAME, "bogus}J}son"), BAD_REQUEST, "search_query_not_parsable");
+		call(() -> client().searchNodes(PROJECT_NAME, "bogus}J}son"), BAD_REQUEST, "search_query_not_parsable");
 	}
 
 	@Test
@@ -47,7 +47,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name", "content"), new VersioningParameters().draft()));
+				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name", "content"), new VersioningParameters().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
@@ -61,7 +61,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 		String parentNodeUuid = db.noTx(() -> folder("news").getUuid());
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("parentNode.uuid", parentNodeUuid),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("parentNode.uuid", parentNodeUuid),
 				new VersioningParameters().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
@@ -93,7 +93,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 		json += "			}";
 
 		String search = json;
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2),
 				new VersioningParameters().draft()));
 		assertEquals(0, response.getData().size());
 
@@ -104,10 +104,10 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 		create.getFields().put("name", FieldUtil.createStringField("bla"));
 		create.setParentNodeUuid(db.noTx(() -> folder("2015").getUuid()));
 
-		call(() -> getClient().createNode(PROJECT_NAME, create));
+		call(() -> client().createNode(PROJECT_NAME, create));
 
 		// Search again and make sure we found our document
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2),
+		response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2),
 				new VersioningParameters().draft()));
 		assertEquals("Check search result after document creation", 1, response.getData().size());
 	}

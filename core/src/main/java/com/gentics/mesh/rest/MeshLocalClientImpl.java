@@ -65,6 +65,7 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.admin.AdminHandler;
 import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
@@ -98,7 +99,8 @@ import io.vertx.ext.web.FileUpload;
 import rx.Single;
 
 /**
- * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests.
+ * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests. Please note that is implementation is not very
+ * well tested and may lack a lot of endpoint implementations.
  */
 @Singleton
 public class MeshLocalClientImpl implements MeshRestClient {
@@ -1132,6 +1134,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<TagFamilyListResponse> searchTagFamilies(String projectName, String json, ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<UserTokenResponse> getUserToken(String userUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}

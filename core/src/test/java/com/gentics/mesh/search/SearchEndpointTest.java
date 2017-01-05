@@ -25,7 +25,7 @@ public class SearchEndpointTest extends AbstractSearchEndpointTest {
 
 	@Test
 	public void testLoadSearchStatus() {
-		MeshResponse<SearchStatusResponse> future = getClient().loadSearchStatus().invoke();
+		MeshResponse<SearchStatusResponse> future = client().loadSearchStatus().invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SearchStatusResponse status = future.result();
@@ -34,7 +34,7 @@ public class SearchEndpointTest extends AbstractSearchEndpointTest {
 
 	@Test
 	public void testNoPermReIndex() {
-		MeshResponse<GenericMessageResponse> future = getClient().invokeReindex().invoke();
+		MeshResponse<GenericMessageResponse> future = client().invokeReindex().invoke();
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_admin_permission_required");
 	}
@@ -47,10 +47,10 @@ public class SearchEndpointTest extends AbstractSearchEndpointTest {
 			searchProvider.refreshIndex();
 		}
 
-		GenericMessageResponse message = call(() -> getClient().invokeReindex());
+		GenericMessageResponse message = call(() -> client().invokeReindex());
 		expectResponseMessage(message, "search_admin_reindex_invoked");
 
-		SearchStatusResponse status = call(() -> getClient().loadSearchStatus());
+		SearchStatusResponse status = call(() -> client().loadSearchStatus());
 		assertNotNull(status);
 	}
 

@@ -9,7 +9,7 @@ public class AdminEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMigrationStatusWithNoMigrationRunning() {
-		GenericMessageResponse message = call(() -> getClient().schemaMigrationStatus());
+		GenericMessageResponse message = call(() -> client().schemaMigrationStatus());
 		expectResponseMessage(message, "migration_status_idle");
 	}
 

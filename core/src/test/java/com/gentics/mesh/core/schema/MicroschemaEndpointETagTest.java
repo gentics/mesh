@@ -25,13 +25,13 @@ public class MicroschemaEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {
-			MeshResponse<MicroschemaListResponse> response = getClient().findMicroschemas().invoke();
+			MeshResponse<MicroschemaListResponse> response = client().findMicroschemas().invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findMicroschemas(), etag, true);
-			expectNo304(getClient().findMicroschemas(new PagingParametersImpl().setPage(2)), etag, true);
+			expect304(client().findMicroschemas(), etag, true);
+			expectNo304(client().findMicroschemas(new PagingParametersImpl().setPage(2)), etag, true);
 		}
 	}
 
@@ -40,22 +40,22 @@ public class MicroschemaEndpointETagTest extends AbstractETagTest {
 		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer schema = microschemaContainers().get("vcard");
 
-			MeshResponse<Microschema> response = getClient().findMicroschemaByUuid(schema.getUuid()).invoke();
+			MeshResponse<Microschema> response = client().findMicroschemaByUuid(schema.getUuid()).invoke();
 			latchFor(response);
 			String etag = schema.getETag(getMockedInternalActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<Microschema> request = getClient().findMicroschemaByUuid(schema.getUuid());
+			MeshRequest<Microschema> request = client().findMicroschemaByUuid(schema.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertThat(expect304(getClient().findMicroschemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(true)), etag, true))
+			assertThat(expect304(client().findMicroschemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(true)), etag, true))
 					.contains(etag);
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(getClient().findMicroschemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
-			expect304(getClient().findMicroschemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
+			expect304(client().findMicroschemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
+			expect304(client().findMicroschemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
 		}
 
 	}

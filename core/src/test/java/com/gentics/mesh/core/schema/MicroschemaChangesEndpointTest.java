@@ -37,7 +37,7 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 	public void testRemoveField() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// 1. Setup eventbus bridge latch
-			CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// 2. Create node that uses the microschema
 			Node node = createMicronodeNode();
@@ -52,9 +52,9 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 
 			// 4. Invoke migration
 			assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
-			call(() -> getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges));
-			Microschema microschema = call(() -> getClient().findMicroschemaByUuid(container.getUuid()));
-			call(() -> getClient().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
+			call(() -> client().applyChangesToMicroschema(container.getUuid(), listOfChanges));
+			Microschema microschema = call(() -> client().findMicroschemaByUuid(container.getUuid()));
+			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
 					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
 
 			// 5. Wait for migration to finish
@@ -111,12 +111,12 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 			listOfChanges.getChanges().add(change);
 
 			// 2. Setup eventbus bridged latch
-			CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// 3. Invoke migration
-			call(() -> getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges));
-			Microschema microschema = call(() -> getClient().findMicroschemaByUuid(container.getUuid()));
-			call(() -> getClient().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
+			call(() -> client().applyChangesToMicroschema(container.getUuid(), listOfChanges));
+			Microschema microschema = call(() -> client().findMicroschemaByUuid(container.getUuid()));
+			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
 					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
 
 			// 4. Latch for completion
@@ -141,13 +141,13 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 			request.setName(name);
 
 			// 2. Setup eventbus bridged latch
-			CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// 3. Invoke migration
-			call(() -> getClient().updateMicroschema(vcardContainer.getUuid(), request,
+			call(() -> client().updateMicroschema(vcardContainer.getUuid(), request,
 					new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
-			Microschema microschema = call(() -> getClient().findMicroschemaByUuid(vcardContainer.getUuid()));
-			call(() -> getClient().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
+			Microschema microschema = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
+			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
 					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
 
 			// 4. Wait and assert
@@ -168,7 +168,7 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 			Microschema request = new MicroschemaModel();
 			request.setName(name);
 
-			call(() -> getClient().updateMicroschema(microschema.getUuid(), request), CONFLICT, "schema_conflicting_name", name);
+			call(() -> client().updateMicroschema(microschema.getUuid(), request), CONFLICT, "schema_conflicting_name", name);
 			microschema.reload();
 			assertEquals("The name of the microschema was updated but it should not.", originalSchemaName, microschema.getName());
 		}

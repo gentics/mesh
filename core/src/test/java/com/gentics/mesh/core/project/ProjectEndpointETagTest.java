@@ -24,13 +24,13 @@ public class ProjectEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {
-			MeshResponse<ProjectListResponse> response = getClient().findProjects().invoke();
+			MeshResponse<ProjectListResponse> response = client().findProjects().invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findProjects(), etag, true);
-			expectNo304(getClient().findProjects(new PagingParametersImpl().setPage(2)), etag, true);
+			expect304(client().findProjects(), etag, true);
+			expectNo304(client().findProjects(new PagingParametersImpl().setPage(2)), etag, true);
 		}
 	}
 
@@ -38,21 +38,21 @@ public class ProjectEndpointETagTest extends AbstractETagTest {
 	public void testReadOne() {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
-			MeshResponse<ProjectResponse> response = getClient().findProjectByUuid(project.getUuid()).invoke();
+			MeshResponse<ProjectResponse> response = client().findProjectByUuid(project.getUuid()).invoke();
 			latchFor(response);
 			String etag = project.getETag(getMockedInternalActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<ProjectResponse> request = getClient().findProjectByUuid(project.getUuid());
+			MeshRequest<ProjectResponse> request = client().findProjectByUuid(project.getUuid());
 			assertEquals(etag, expect304(request, etag, true));
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertEquals(etag, expect304(getClient().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
+			assertEquals(etag, expect304(client().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(getClient().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
-			expect304(getClient().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
+			expect304(client().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
+			expect304(client().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
 		}
 
 	}
