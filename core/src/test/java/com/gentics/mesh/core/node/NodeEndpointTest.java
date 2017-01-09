@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -67,6 +68,7 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
+import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -793,7 +795,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	@Override
-	@Ignore("Disabled since test is unstable - CL-246")
 	public void testCreateMultithreaded() throws InterruptedException {
 		try (NoTx noTx = db.noTx()) {
 			Node parentNode = folder("news");
@@ -801,25 +802,29 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull(parentNode);
 			assertNotNull(parentNode.getUuid());
 
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.getFields().put("title", FieldUtil.createStringField("some title"));
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setParentNodeUuid(uuid);
-
-			int nJobs = 50;
+			int nJobs = 500;
 			// CyclicBarrier barrier = new CyclicBarrier(nJobs);
 			// Trx.enableDebug();
 			// Trx.setBarrier(barrier);
 			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
+			final AtomicInteger e = new AtomicInteger(0);
 			for (int i = 0; i < nJobs; i++) {
-				set.add(client().createNode(PROJECT_NAME, request).invoke());
+				new Thread(() -> {
+					NodeCreateRequest request = new NodeCreateRequest();
+					request.setSchema(new SchemaReference().setName("content"));
+					request.setLanguage("en");
+					request.getFields().put("title", FieldUtil.createStringField("some title"));
+					request.getFields().put("name", FieldUtil.createStringField("some name"));
+					request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+					request.setParentNodeUuid(uuid);
+					request.getFields().put("filename", FieldUtil.createStringField("new-page" + e.incrementAndGet() + ".html"));
+					set.add(client().createNode(PROJECT_NAME, request).invoke());
+				}).start();
 			}
 
-			// Check each call response
+			Thread.sleep(10000);
+			//
+			//			// Check each call response
 			Set<String> uuids = new HashSet<>();
 			for (MeshResponse<NodeResponse> future : set) {
 				latchFor(future);
@@ -836,37 +841,41 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	@Override
-	@Ignore("Disabled since test is unstable - CL-246")
+	@Ignore("Multithreaded update is currently only possible for multiple nodes not a single node")
 	public void testUpdateMultithreaded() throws InterruptedException {
 
 		final String newName = "english renamed name";
-		Node node = folder("2015");
-		String uuid = node.getUuid();
-		assertEquals("2015", node.getLatestDraftFieldContainer(english()).getString("name").getString());
+		String uuid = db.noTx(() -> folder("2015").getUuid());
+		assertEquals("2015", db.noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getString("name").getString()));
+		VersionNumber version = db.noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("folder");
-		schemaReference.setUuid(schemaContainer("folder").getUuid());
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
-		request.getFields().put("name", FieldUtil.createStringField(newName));
 
 		NodeParameters parameters = new NodeParameters();
 		parameters.setLanguages("en", "de");
 
-		int nJobs = 115;
+		int nJobs = 5;
 		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
 		// Trx.enableDebug();
 		// Trx.setBarrier(barrier);
 		Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
+			System.out.println(version.getFullVersion());
+			request.setVersion(new VersionReference().setNumber(version.getFullVersion()));
+			request.getFields().put("name", FieldUtil.createStringField(newName + ":" + i));
 			set.add(client().updateNode(PROJECT_NAME, uuid, request, parameters).invoke());
+			//			version = version.nextDraft();
+			//			VersionNumber currentVersion = db.noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
+			//			System.out.println("CurrentVersion: " + currentVersion.getFullVersion());
 		}
 
-		for (MeshResponse<NodeResponse> future : set) {
-			latchFor(future);
-			assertSuccess(future);
+		for (MeshResponse<NodeResponse> response : set) {
+			latchFor(response);
+			assertSuccess(response);
 		}
 		// Trx.disableDebug();
 		// assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
@@ -1016,8 +1025,9 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 					.hasVersion("1.3").hasLanguage("en").hasStringField("name", "three");
 
 			// Test german versions
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"),
-					new VersioningParameters().draft()))).as("German draft").hasVersion("0.3").hasLanguage("de").hasStringField("name", "drei");
+			assertThat(call(
+					() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"), new VersioningParameters().draft())))
+							.as("German draft").hasVersion("0.3").hasLanguage("de").hasStringField("name", "drei");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de"),
 					new VersioningParameters().setVersion("0.1")))).as("German version 0.1").hasVersion("0.1").hasLanguage("de")
 							.hasStringField("name", "eins");
@@ -1088,12 +1098,11 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 in new release"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParameters().setRelease(newRelease.getName())));
 
-			assertThat(call(
-					() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setRelease(initialRelease.getName()).draft())))
-							.as("Initial Release Version").hasVersion("1.0").hasStringField("name", "2015");
 			assertThat(
-					call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getName()).draft())))
-							.as("New Release Version").hasVersion("0.1").hasStringField("name", "2015 in new release");
+					call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setRelease(initialRelease.getName()).draft())))
+							.as("Initial Release Version").hasVersion("1.0").hasStringField("name", "2015");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getName()).draft())))
+					.as("New Release Version").hasVersion("0.1").hasStringField("name", "2015 in new release");
 		}
 	}
 
@@ -1132,15 +1141,15 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParameters().setRelease(initialRelease.getName()).setVersion("0.1")))).as("Initial Release Version")
 							.hasVersion("0.1").hasStringField("name", "2015");
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
-					new VersioningParameters().setRelease(newRelease.getName()).setVersion("0.1")))).as("New Release Version").hasVersion("0.1")
-							.hasStringField("name", "2015 v0.1 new release");
+			assertThat(call(
+					() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getName()).setVersion("0.1"))))
+							.as("New Release Version").hasVersion("0.1").hasStringField("name", "2015 v0.1 new release");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParameters().setRelease(initialRelease.getName()).setVersion("1.1")))).as("Initial Release Version")
 							.hasVersion("1.1").hasStringField("name", "2015 v1.1 initial release");
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
-					new VersioningParameters().setRelease(newRelease.getName()).setVersion("0.2")))).as("New Release Version").hasVersion("0.2")
-							.hasStringField("name", "2015 v0.2 new release");
+			assertThat(call(
+					() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setRelease(newRelease.getName()).setVersion("0.2"))))
+							.as("New Release Version").hasVersion("0.2").hasStringField("name", "2015 v0.2 new release");
 		}
 	}
 
@@ -1577,8 +1586,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("de", "en");
-			call(() -> client().updateNode(PROJECT_NAME, uuid, request, parameters), BAD_REQUEST, "node_unhandled_fields", "folder",
-					"[someField]");
+			call(() -> client().updateNode(PROJECT_NAME, uuid, request, parameters), BAD_REQUEST, "node_unhandled_fields", "folder", "[someField]");
 
 			NodeGraphFieldContainer englishContainer = folder("2015").getLatestDraftFieldContainer(english());
 			assertNotEquals("The name should not have been changed.", newName, englishContainer.getString("name").getString());
