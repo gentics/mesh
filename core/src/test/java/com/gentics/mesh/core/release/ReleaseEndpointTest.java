@@ -243,24 +243,19 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadByBogusUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			Project project = project();
-			call(() -> client().findReleaseByUuid(project.getName(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
-		}
+		String projectName = db.noTx(() -> project().getName());
+		call(() -> client().findReleaseByUuid(projectName, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (NoTx noTx = db.noTx()) {
-			Project project = project();
-			String projectName = project.getName();
-			String uuid = project.getInitialRelease().getUuid();
+		String projectName = db.noTx(() -> project().getName());
+		String uuid = db.noTx(() -> project().getInitialRelease().getUuid());
+		String roleUuid = db.noTx(() -> role().getUuid());
 
-			ReleaseResponse response = call(
-					() -> client().findReleaseByUuid(projectName, uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
-			assertThat(response.getRolePerms()).isNotNull().contains("read", "create", "update", "delete");
-		}
+		ReleaseResponse response = call(() -> client().findReleaseByUuid(projectName, uuid, new RolePermissionParameters().setRoleUuid(roleUuid)));
+		assertThat(response.getRolePerms()).isNotNull().contains("read", "create", "update", "delete");
 	}
 
 	@Test
@@ -686,13 +681,13 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 					.contains(new MicroschemaReference().setName("anothernewmicroschemaname").setUuid(microschema.getUuid()).setVersion(3));
 
 			// assign version 2 to the release
-//			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
-//					new MicroschemaReferenceList(Arrays.asList(new MicroschemaReference().setUuid(microschema.getUuid()).setVersion(2)))));
+			//			call(() -> getClient().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+			//					new MicroschemaReferenceList(Arrays.asList(new MicroschemaReference().setUuid(microschema.getUuid()).setVersion(2)))));
 
 			// assert
-//			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
-//			assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
-//					.contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
+			//			list = call(() -> getClient().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+			//			assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
+			//					.contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
 		}
 	}
 

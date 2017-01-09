@@ -1,7 +1,6 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
@@ -14,7 +13,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -22,15 +20,6 @@ import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 public class SearchEndpointTest extends AbstractSearchEndpointTest {
-
-	@Test
-	public void testLoadSearchStatus() {
-		MeshResponse<SearchStatusResponse> future = client().loadSearchStatus().invoke();
-		latchFor(future);
-		assertSuccess(future);
-		SearchStatusResponse status = future.result();
-		assertNotNull(status);
-	}
 
 	@Test
 	public void testNoPermReIndex() {
@@ -49,9 +38,6 @@ public class SearchEndpointTest extends AbstractSearchEndpointTest {
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		expectResponseMessage(message, "search_admin_reindex_invoked");
-
-		SearchStatusResponse status = call(() -> client().loadSearchStatus());
-		assertNotNull(status);
 	}
 
 	@Test

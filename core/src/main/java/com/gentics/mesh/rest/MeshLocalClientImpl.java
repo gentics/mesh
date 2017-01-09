@@ -52,7 +52,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -794,12 +793,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<MicroschemaListResponse> searchMicroschemas(String json, ParameterProvider... parameters) {
 		LocalActionContextImpl<MicroschemaListResponse> ac = createContext(MicroschemaListResponse.class, parameters);
-		return new MeshLocalRequestImpl<>(ac.getFuture());
-	}
-
-	@Override
-	public MeshRequest<SearchStatusResponse> loadSearchStatus() {
-		LocalActionContextImpl<SearchStatusResponse> ac = createContext(SearchStatusResponse.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

@@ -140,13 +140,6 @@ public interface SearchClientMethods {
 	MeshRequest<MicroschemaListResponse> searchMicroschemas(String json, ParameterProvider... parameters);
 
 	/**
-	 * Load the search queue status.
-	 * 
-	 * @return
-	 */
-	MeshRequest<SearchStatusResponse> loadSearchStatus();
-
-	/**
 	 * Trigger a reindex action which will rebuild the index for all elements. This is useful when you want to sync the search index after restoring a backup.
 	 * 
 	 * @return

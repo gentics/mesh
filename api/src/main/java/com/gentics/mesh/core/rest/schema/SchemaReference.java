@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
  */
 public class SchemaReference extends NameUuidReference<SchemaReference> {
 
-	Integer version;
+	private Integer version;
 
 	/**
 	 * Return the version of the referenced schema.
