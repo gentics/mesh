@@ -25,9 +25,14 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
-public class Change_A36C972476C147F3AC972476C157F3EF extends AbstractChange {
+public class ChangeTVCMigration extends AbstractChange {
 
 	protected static final char[] hexArray = "0123456789abcdef".toCharArray();
+
+	@Override
+	public String getUuid() {
+		return "A36C972476C147F3AC972476C157F3EF";
+	}
 
 	/**
 	 * Dummy map which will be used to detect webroot path conflicts without using the graph index

@@ -23,12 +23,11 @@ public abstract class AbstractChange implements Change {
 
 	private long duration;
 
+	@Override
 	public abstract void apply();
 
 	@Override
-	public String getUuid() {
-		return getClass().getName().replaceAll("Change_", "");
-	}
+	public abstract String getUuid();
 
 	@Override
 	public boolean isApplied() {

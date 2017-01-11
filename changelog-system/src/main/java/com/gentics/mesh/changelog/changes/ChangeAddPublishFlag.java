@@ -4,8 +4,13 @@ import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
-public class Change_07F0975BD47249C6B0975BD472E9C6A4 extends AbstractChange {
+public class ChangeAddPublishFlag extends AbstractChange {
 
+	@Override
+	public String getUuid() {
+		return "07F0975BD47249C6B0975BD472E9C6A4";
+	}
+	
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub

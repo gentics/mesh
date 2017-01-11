@@ -2,7 +2,12 @@ package com.gentics.mesh.changelog.changes;
 
 import com.gentics.mesh.changelog.AbstractChange;
 
-public class Change_093BEFB47FA4476FBE37FD27C613F7AA extends AbstractChange {
+public class ChangeReindex2 extends AbstractChange {
+
+	@Override
+	public String getUuid() {
+		return "610A32F04FC7414E8A32F04FC7614EF3";
+	}
 
 	@Override
 	public String getName() {
@@ -11,7 +16,7 @@ public class Change_093BEFB47FA4476FBE37FD27C613F7AA extends AbstractChange {
 
 	@Override
 	public String getDescription() {
-		return "Reindex all nodes due to new publish field in node documents";
+		return "Reindex all nodes due to fixed displayFieldValue in node documents";
 	}
 
 	@Override

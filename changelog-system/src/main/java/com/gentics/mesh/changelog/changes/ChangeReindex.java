@@ -2,7 +2,12 @@ package com.gentics.mesh.changelog.changes;
 
 import com.gentics.mesh.changelog.AbstractChange;
 
-public class Change_610A32F04FC7414E8A32F04FC7614EF3 extends AbstractChange {
+public class ChangeReindex extends AbstractChange {
+
+	@Override
+	public String getUuid() {
+		return "610A32F04FC7414E8A32F04FC7614EF5";
+	}
 
 	@Override
 	public String getName() {

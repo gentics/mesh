@@ -5,7 +5,12 @@ import com.gentics.mesh.changelog.MeshGraphHelper;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
-public class Change_266B8BCC3FFC473AAB8BCC3FFC173AA4 extends AbstractChange {
+public class ChangeFixReleaseRelationship extends AbstractChange {
+
+	@Override
+	public String getUuid() {
+		return "266B8BCC3FFC473AAB8BCC3FFC173AA4";
+	}
 
 	@Override
 	public String getName() {

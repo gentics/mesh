@@ -13,8 +13,13 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.json.JsonObject;
 
-public class Change_0A58BEF0E7E7488D98BEF0E7E7588D4D extends AbstractChange {
+public class ChangeAddVersioning extends AbstractChange {
 
+	@Override
+	public String getUuid() {
+		return "0A58BEF0E7E7488D98BEF0E7E7588D4D";
+	}
+	
 	@Override
 	public String getName() {
 		return "Add versioning support";
