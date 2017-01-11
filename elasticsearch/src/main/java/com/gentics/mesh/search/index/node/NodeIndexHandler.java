@@ -399,6 +399,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return updateNodeIndexMapping(indexName, schema);
 	}
 
+	public Completable updateNodeIndexMapping(Project project, Release release, SchemaContainerVersion schemaVersion, ContainerType containerType,
+			Schema schema) {
+		String indexName = getIndexName(project.getUuid(), release.getUuid(), schemaVersion.getUuid(), containerType);
+		return updateNodeIndexMapping(indexName, schema);
+	}
+
 	/**
 	 * Update the mapping for the given type in the given index for the schema.
 	 *
@@ -413,48 +419,48 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		//String type = schema.getName() + "-" + schema.getVersion();
 		String type = getDocumentType();
 		// Check whether the search provider is a dummy provider or not
-		if (searchProvider.getNode() != null) {
-			return Completable.create(sub -> {
-				//TODO Add trigram filter - https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html 
-				//				UpdateSettingsRequestBuilder updateSettingsBuilder = searchProvider.getNode().client().admin().indices().prepareUpdateSettings(indexName);
-				//				updateSettingsBuilder.set
-				//				updateSettingsBuilder.execute();
-				org.elasticsearch.node.Node esNode = null;
-				if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-					esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
-				} else {
-					throw new RuntimeException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
-				}
-
-				PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
-				mappingRequestBuilder.setType(type);
-
-				try {
-					JsonObject mappingJson = transformator.getMapping(schema, type);
-					if (log.isDebugEnabled()) {
-						log.debug(mappingJson.toString());
-					}
-					mappingRequestBuilder.setSource(mappingJson.toString());
-					mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
-
-						@Override
-						public void onResponse(PutMappingResponse response) {
-							sub.onCompleted();
-						}
-
-						@Override
-						public void onFailure(Throwable e) {
-							sub.onError(e);
-						}
-					});
-
-				} catch (Exception e) {
-					sub.onError(e);
-				}
-			});
-		} else {
+		if (searchProvider.getNode() == null) {
 			return Completable.complete();
 		}
+		return Completable.create(sub -> {
+			//TODO Add trigram filter - https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html 
+			//				UpdateSettingsRequestBuilder updateSettingsBuilder = searchProvider.getNode().client().admin().indices().prepareUpdateSettings(indexName);
+			//				updateSettingsBuilder.set
+			//				updateSettingsBuilder.execute();
+			org.elasticsearch.node.Node esNode = null;
+			if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
+				esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
+			} else {
+				throw new RuntimeException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+			}
+
+			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
+			mappingRequestBuilder.setType(type);
+
+			try {
+				JsonObject mappingJson = transformator.getMapping(schema, type);
+				if (log.isDebugEnabled()) {
+					log.debug(mappingJson.toString());
+				}
+				mappingRequestBuilder.setSource(mappingJson.toString());
+				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+
+					@Override
+					public void onResponse(PutMappingResponse response) {
+						sub.onCompleted();
+					}
+
+					@Override
+					public void onFailure(Throwable e) {
+						sub.onError(e);
+					}
+				});
+
+			} catch (Exception e) {
+				sub.onError(e);
+			}
+		});
+
 	}
 
 	@Override
@@ -478,10 +484,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			for (Release release : releases) {
 				// Each release specific index has also document type specific mappings
 				for (SchemaContainerVersion containerVersion : release.findAllSchemaVersions()) {
-					updateNodeIndexMapping(getIndexName(project.getUuid(), release.getUuid(), containerVersion.getUuid(), DRAFT),
-							containerVersion.getSchema()).await();
-					updateNodeIndexMapping(getIndexName(project.getUuid(), release.getUuid(), containerVersion.getUuid(), PUBLISHED),
-							containerVersion.getSchema()).await();
+					updateNodeIndexMapping(project, release, containerVersion, DRAFT, containerVersion.getSchema()).await();
+					updateNodeIndexMapping(project, release, containerVersion, PUBLISHED, containerVersion.getSchema()).await();
 				}
 			}
 		});

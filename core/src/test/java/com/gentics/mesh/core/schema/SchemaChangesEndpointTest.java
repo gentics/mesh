@@ -566,7 +566,7 @@ public class SchemaChangesEndpointTest extends AbstractRestEndpointTest {
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// Update the schema server side
-			call(() -> client().updateSchema(container.getUuid(), schema, new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
+			call(() -> client().updateSchema(container.getUuid(), schema, new SchemaUpdateParameters().setUpdateAssignedReleases(true)));
 
 			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),

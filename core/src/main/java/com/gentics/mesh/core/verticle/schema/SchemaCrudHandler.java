@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
@@ -117,9 +118,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 							release.assignSchemaVersion(createdVersion);
 
 							// Update the index type specific ES mapping
-							nodeIndexHandler.updateNodeIndexMapping("node-" + projectOfRelease.getUuid() + "-" + release.getUuid() + "-draft",
+							nodeIndexHandler.updateNodeIndexMapping(projectOfRelease, release, createdVersion, ContainerType.DRAFT,
 									createdVersion.getSchema()).await();
-							nodeIndexHandler.updateNodeIndexMapping("node-" + projectOfRelease.getUuid() + "-" + release.getUuid() + "-published",
+							nodeIndexHandler.updateNodeIndexMapping(projectOfRelease, release, createdVersion, ContainerType.PUBLISHED,
 									createdVersion.getSchema()).await();
 
 							// Invoke the node release migration

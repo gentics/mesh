@@ -107,11 +107,11 @@ public abstract class AbstractSearchEndpointTest extends AbstractRestEndpointTes
 		Project project = project();
 		for (Release release : project.getReleaseRoot().findAll()) {
 			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-				String drafIndex = NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), DRAFT);
+				String draftIndex = NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), DRAFT);
 				if (log.isDebugEnabled()) {
-					log.debug("Creating schema mapping for index {" + drafIndex + "}");
+					log.debug("Creating schema mapping for index {" + draftIndex + "}");
 				}
-				meshDagger.nodeIndexHandler().updateNodeIndexMapping(drafIndex, version.getSchema()).await();
+				meshDagger.nodeIndexHandler().updateNodeIndexMapping(draftIndex, version.getSchema()).await();
 
 				String publishIndex = NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), PUBLISHED);
 				if (log.isDebugEnabled()) {
