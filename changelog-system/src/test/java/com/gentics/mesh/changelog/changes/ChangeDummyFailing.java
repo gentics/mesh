@@ -2,7 +2,12 @@ package com.gentics.mesh.changelog.changes;
 
 import com.gentics.mesh.changelog.AbstractChange;
 
-public class Change_424FA7436B6541269E6CE90C8C3D812D_Failing extends AbstractChange {
+public class ChangeDummyFailing extends AbstractChange {
+
+	@Override
+	public String getUuid() {
+		return "424FA7436B6541269E6CE90C8C3D812D";
+	}
 
 	@Override
 	public String getName() {
