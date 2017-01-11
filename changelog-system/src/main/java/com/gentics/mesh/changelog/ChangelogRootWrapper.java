@@ -37,7 +37,8 @@ public class ChangelogRootWrapper {
 			}
 			// Backport handling for legacy changelog entries
 			// TODO write a changelog entry to clearup the existing changelog entries and remove this check
-			if (uuid.equals("com.gentics.mesh.changelog.changes." + change.getUuid())) {
+			String legacyUuid = "com.gentics.mesh.changelog.changes." + uuid;
+			if (legacyUuid.equals(change.getUuid())) {
 				return true;
 			}
 		}
