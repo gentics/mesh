@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -34,7 +35,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.UpdateBatchEntry;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -135,8 +136,8 @@ public class SearchModelGenerator {
 		Node parentNode = mockNodeBasic("folder", user);
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
-		NodeIndexHandler nodeIndexHandler = meshDagger.nodeIndexHandler();
-		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), null, null).await();
+		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
+		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), null, null).toCompletable().await();
 		writeStoreEvent("node.search");
 
 	}
@@ -146,7 +147,7 @@ public class SearchModelGenerator {
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Project project = mockProject(user);
 		ProjectIndexHandler projectIndexHandler = meshDagger.projectIndexHandler();
-		projectIndexHandler.store(project, "project", null).await();
+		projectIndexHandler.store(project, null).await();
 		writeStoreEvent("project.search");
 	}
 
@@ -154,7 +155,7 @@ public class SearchModelGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Group group = mockGroup("adminGroup", user);
 		GroupIndexHandler groupIndexHandler = meshDagger.groupIndexHandler();
-		groupIndexHandler.store(group, "group", null).await();
+		groupIndexHandler.store(group, null).await();
 		writeStoreEvent("group.search");
 	}
 
@@ -162,7 +163,7 @@ public class SearchModelGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Role role = mockRole("adminRole", user);
 		RoleIndexHandler roleIndexHandler = meshDagger.roleIndexHandler();
-		roleIndexHandler.store(role, "role", null).await();
+		roleIndexHandler.store(role, null).await();
 		writeStoreEvent("role.search");
 	}
 
@@ -173,7 +174,7 @@ public class SearchModelGenerator {
 		Group groupB = mockGroup("superEditors", user);
 		Mockito.<List<? extends Group>> when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
 		UserIndexHandler userIndexHandler = meshDagger.userIndexHandler();
-		userIndexHandler.store(user, "user", null).await();
+		userIndexHandler.store(user, null).await();
 		writeStoreEvent("user.search");
 	}
 
@@ -189,9 +190,11 @@ public class SearchModelGenerator {
 			return tagList;
 		});
 		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();
-		SearchQueueEntry entry = mock(SearchQueueEntry.class);
-		when(entry.get("projectUuid")).thenReturn(UUIDUtil.randomUUID());
-		tagFamilyIndexHandler.store(tagFamily, "tagFamily", entry).await();
+		UpdateBatchEntry entry = mock(UpdateBatchEntry.class);
+		HandleContext context = new HandleContext();
+		context.setProjectUuid(UUIDUtil.randomUUID());
+		when(entry.getContext()).thenReturn(context);
+		tagFamilyIndexHandler.store(tagFamily, entry).await();
 		writeStoreEvent("tagFamily.search");
 	}
 
@@ -200,7 +203,7 @@ public class SearchModelGenerator {
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 
 		SchemaContainerIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
-		searchIndexHandler.store(schemaContainer, "schema", null).await();
+		searchIndexHandler.store(schemaContainer, null).await();
 		writeStoreEvent("schema.search");
 	}
 
@@ -209,7 +212,7 @@ public class SearchModelGenerator {
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer("geolocation", user);
 
 		MicroschemaContainerIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
-		searchIndexHandler.store(microschemaContainer, "schema", null).await();
+		searchIndexHandler.store(microschemaContainer, null).await();
 		writeStoreEvent("microschema.search");
 	}
 
@@ -219,9 +222,11 @@ public class SearchModelGenerator {
 		TagFamily tagFamily = mockTagFamily("colors", user, project);
 		Tag tag = mockTag("red", user, tagFamily, project);
 		TagIndexHandler tagIndexHandler = meshDagger.tagIndexHandler();
-		SearchQueueEntry entry = mock(SearchQueueEntry.class);
-		when(entry.get("projectUuid")).thenReturn(UUIDUtil.randomUUID());
-		tagIndexHandler.store(tag, "tag", entry).await();
+		UpdateBatchEntry entry = mock(UpdateBatchEntry.class);
+		HandleContext context = new HandleContext();
+		context.setProjectUuid(UUIDUtil.randomUUID());
+		when(entry.getContext()).thenReturn(context);
+		tagIndexHandler.store(tag, entry).await();
 		writeStoreEvent("tag.search");
 	}
 

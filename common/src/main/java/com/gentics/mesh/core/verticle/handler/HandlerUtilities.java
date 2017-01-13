@@ -100,7 +100,7 @@ public class HandlerUtilities {
 					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 				}
 			});
-			log.info("Deleted element {" + elementUuid + "}");
+			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
 			return database.noTx(() -> {
 				batch.processSync();
 				return (RM) null;

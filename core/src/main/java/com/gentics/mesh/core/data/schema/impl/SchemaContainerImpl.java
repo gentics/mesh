@@ -3,11 +3,11 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -53,11 +53,6 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	}
 
 	@Override
-	public String getType() {
-		return SchemaContainer.TYPE;
-	}
-
-	@Override
 	public List<? extends NodeImpl> getNodes() {
 		return in(HAS_SCHEMA_CONTAINER).toListExplicit(NodeImpl.class);
 	}
@@ -67,7 +62,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 		// Check whether the schema is currently being referenced by nodes.
 		List<? extends NodeImpl> list = getNodes();
 		if (list.isEmpty()) {
-			batch.addEntry(this, DELETE_ACTION);
+			batch.delete(this, true);
 			getElement().remove();
 			// TODO handel related elements?
 		} else {

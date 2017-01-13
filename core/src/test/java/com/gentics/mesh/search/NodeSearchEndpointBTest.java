@@ -62,7 +62,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchMicronodeResolveLinks() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			addMicronodeField();
-			fullIndex();
+			recreateIndices();
 		}
 
 		NodeListResponse response = call(
@@ -84,7 +84,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchListOfMicronodes() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			addMicronodeListField();
-			fullIndex();
+			recreateIndices();
 		}
 
 		for (String firstName : Arrays.asList("Mickey", "Donald")) {
@@ -114,7 +114,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchListOfNodes() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			addNodeListField();
-			fullIndex();
+			recreateIndices();
 		}
 
 		// TODO do actual search (currently, we just test that indexing works with the mappings)
@@ -123,7 +123,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchDraftInRelease() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		NodeResponse concorde = call(

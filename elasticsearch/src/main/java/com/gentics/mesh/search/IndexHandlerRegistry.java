@@ -1,12 +1,13 @@
 package com.gentics.mesh.search;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.search.index.IndexHandler;
+import com.gentics.mesh.core.data.IndexableElement;
+import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -60,8 +61,8 @@ public class IndexHandlerRegistry {
 	 * 
 	 * @return
 	 */
-	public Set<IndexHandler> getHandlers() {
-		Set<IndexHandler> allIndexHandlers = new HashSet<>();
+	public List<IndexHandler> getHandlers() {
+		List<IndexHandler> allIndexHandlers = new ArrayList<>();
 		allIndexHandlers.add(nodeIndexHandler);
 		allIndexHandlers.add(userIndexHandler);
 		allIndexHandlers.add(groupIndexHandler);
@@ -75,13 +76,29 @@ public class IndexHandlerRegistry {
 	}
 
 	/**
-	 * Return the handler for the given type.
+	 * Identify the handler and return the matching one.
 	 * 
-	 * @param type
+	 * @param element
 	 * @return
 	 */
-	public IndexHandler getHandlerWithKey(String type) {
-		return getHandlers().stream().filter(handler -> handler.getKey().equals(type)).findFirst().orElseGet(null);
+	public IndexHandler getForClass(IndexableElement element) {
+		Class<?> clazzOfElement = element.getClass();
+		return getForClass(clazzOfElement);
+	}
+
+	/**
+	 * Return the matching handler for the given element class.
+	 * 
+	 * @param elementClass
+	 * @return
+	 */
+	public IndexHandler getForClass(Class<?> elementClass) {
+		for (IndexHandler handler : getHandlers()) {
+			if (handler.accepts(elementClass)) {
+				return (IndexHandler) handler;
+			}
+		}
+		return null;
 	}
 
 }

@@ -37,7 +37,7 @@ import dagger.Component;
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class })
+@Component(modules = { MeshModule.class, ExtraModule.class })
 public interface MeshComponent {
 
 	BootstrapInitializer boot();
@@ -62,7 +62,7 @@ public interface MeshComponent {
 
 	ServerSchemaStorage serverSchemaStorage();
 
-	NodeIndexHandler nodeIndexHandler();
+	NodeIndexHandler nodeContainerIndexHandler();
 
 	NodeMigrationHandler nodeMigrationHandler();
 

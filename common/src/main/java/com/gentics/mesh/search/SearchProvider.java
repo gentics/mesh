@@ -128,25 +128,25 @@ public interface SearchProvider {
 	/**
 	 * Delete all documents which were found using the query.
 	 * 
-	 * @param indexName
-	 *            Index to be searched for documents
 	 * @param query
 	 *            Search query
-	 * @return Observable which emits the amount of deleted documents
+	 * @param indices
+	 *            Indices to be searched for documents
+	 * @return Single which emits the amount of deleted documents
 	 */
-	Single<Integer> deleteDocumentsViaQuery(String indexName, String query);
+	Single<Integer> deleteDocumentsViaQuery(String query, String... indices);
 
 	/**
 	 * Delete all documents which were found using the query.
 	 * 
-	 * @param indexName
-	 *            Index to be searched for documents
 	 * @param query
 	 *            Search query
-	 * @return Observable which emits the amount of deleted nodes
+	 * @param indices
+	 *            Indices to be searched for documents
+	 * @return Single which emits the amount of deleted nodes
 	 */
-	default Single<Integer> deleteDocumentsViaQuery(String indexName, JSONObject query) {
-		return deleteDocumentsViaQuery(indexName, query.toString());
+	default Single<Integer> deleteDocumentsViaQuery(JSONObject query, String... indices) {
+		return deleteDocumentsViaQuery(query.toString(), indices);
 	}
 
 	/**

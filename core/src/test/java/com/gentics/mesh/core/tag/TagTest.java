@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.tag;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
-import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -386,8 +386,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("car");
 			assertNotNull("The tag with the uuid could not be found", meshRoot().getTagRoot().findByUuid(tag.getUuid()));
-			assertNull("A tag with the a bogus uuid should not be found but it was.",
-					meshRoot().getTagRoot().findByUuid("bogus"));
+			assertNull("A tag with the a bogus uuid should not be found but it was.", meshRoot().getTagRoot().findByUuid("bogus"));
 		}
 	}
 
@@ -487,12 +486,14 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			Tag tag = tag("red");
 			Map<String, ElementEntry> expectedEntries = new HashMap<>();
 			String uuid = tag.getUuid();
+
+			// Deletion of a tag must remove the tag from the index and update the nodes which reference the tag
 			expectedEntries.put("tag", new ElementEntry(DELETE_ACTION, uuid));
 			expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), project().getUuid(),
-					project().getLatestRelease().getUuid(), ContainerType.DRAFT, "en", "de"));
+					project().getLatestRelease().getUuid(), ContainerType.DRAFT));
 			SearchQueueBatch batch = createBatch();
 			tag.delete(batch);
-			assertAffectedElements(expectedEntries, batch);
+			assertThat(batch).containsEntries(expectedEntries);
 		}
 	}
 

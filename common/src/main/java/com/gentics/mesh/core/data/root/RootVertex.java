@@ -80,9 +80,10 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	MeshVertex resolveToElement(Stack<String> stack);
 
 	/**
-	 * Create a new object within this aggregation vertex.
+	 * Create a new object which is connected or directly related to this aggregation vertex.
 	 * 
 	 * @param ac
+	 *            Context which is used to load information needed for the object creation
 	 * @param batch
 	 */
 	T create(InternalActionContext ac, SearchQueueBatch batch);

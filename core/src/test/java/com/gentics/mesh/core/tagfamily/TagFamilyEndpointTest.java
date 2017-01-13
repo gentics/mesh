@@ -273,7 +273,6 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			call(() -> client().deleteTagFamily(PROJECT_NAME, uuid));
 			assertElement(project().getTagFamilyRoot(), uuid, false);
 		}
-
 	}
 
 	@Test

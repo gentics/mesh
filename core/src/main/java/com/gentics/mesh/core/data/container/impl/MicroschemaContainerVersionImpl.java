@@ -42,7 +42,7 @@ public class MicroschemaContainerVersionImpl
 
 	@Override
 	public String getType() {
-		return MicroschemaContainer.TYPE;
+		return MicroschemaContainerVersion.TYPE;
 	}
 
 	@Override

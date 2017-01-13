@@ -41,7 +41,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 	 */
 	protected void searchWithLanguages(String... expectedLanguages) throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String uuid = db.noTx(() -> content("concorde").getUuid());
@@ -109,7 +109,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		meshDagger.nodeIndexHandler().updateNodeIndexMapping(schema).await();
+		meshDagger.nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
 
 		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
@@ -138,7 +138,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 		schema.addField(nodeListFieldSchema);
 
 		// Set the mapping for the schema
-		meshDagger.nodeIndexHandler().updateNodeIndexMapping(schema).await();
+		meshDagger.nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
 
 		// create a non-empty list for the english version
 		NodeGraphFieldList nodeListField = node.getLatestDraftFieldContainer(english()).createNodeList("nodelist");

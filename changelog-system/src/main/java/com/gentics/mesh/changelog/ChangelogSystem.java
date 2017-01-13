@@ -5,6 +5,7 @@ import java.util.List;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.TransactionalGraph;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -26,10 +27,12 @@ public class ChangelogSystem {
 	/**
 	 * Apply all listed changes.
 	 * 
+	 * @param reindexAction
 	 * @param list
 	 * @return Flag which indicates whether all changes were applied successfully
 	 */
-	public boolean applyChanges(List<Change> list) {
+	public boolean applyChanges(ReindexAction reindexAction, List<Change> list) {
+		boolean reindex = false;
 		for (Change change : list) {
 			// Execute each change in a new transaction
 			TransactionalGraph graph = db.rawTx();
@@ -47,6 +50,7 @@ public class ChangelogSystem {
 						throw new Exception("Validation for change {" + change.getUuid() + "/" + change.getName() + "} failed.");
 					}
 					change.markAsComplete();
+					reindex |= change.requiresReindex();
 				} else {
 					log.debug("Change {" + change.getUuid() + "} is already applied.");
 				}
@@ -57,6 +61,9 @@ public class ChangelogSystem {
 			} finally {
 				graph.shutdown();
 			}
+		}
+		if (reindex) {
+			reindexAction.invoke();
 		}
 		return true;
 	}
@@ -80,10 +87,11 @@ public class ChangelogSystem {
 	/**
 	 * Apply all changes from the {@link ChangesList}.
 	 * 
+	 * @param reindexAction
 	 * @return
 	 */
-	public boolean applyChanges() {
-		return applyChanges(ChangesList.getList());
+	public boolean applyChanges(ReindexAction reindexAction) {
+		return applyChanges(reindexAction, ChangesList.getList());
 	}
 
 	/**

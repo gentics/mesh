@@ -8,7 +8,6 @@ import java.util.Map;
 import org.elasticsearch.node.Node;
 
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
@@ -24,6 +23,8 @@ public class DummySearchProvider implements SearchProvider {
 	private List<String> deleteEvents = new ArrayList<>();
 	private Map<String, JsonObject> storeEvents = new HashMap<>();
 	private List<String> getEvents = new ArrayList<>();
+	private List<String> dropIndexEvents = new ArrayList<>();
+	private List<String> createIndexEvents = new ArrayList<>();
 
 	@Override
 	public void refreshIndex(String... indices) {
@@ -31,6 +32,7 @@ public class DummySearchProvider implements SearchProvider {
 
 	@Override
 	public Completable createIndex(String indexName) {
+		createIndexEvents.add(indexName);
 		return Completable.complete();
 	}
 
@@ -75,6 +77,12 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public Completable deleteIndex(String indexName) {
+		dropIndexEvents.add(indexName);
+		return Completable.complete();
+	}
+
+	@Override
 	public void reset() {
 		updateEvents.clear();
 		deleteEvents.clear();
@@ -84,6 +92,35 @@ public class DummySearchProvider implements SearchProvider {
 	@Override
 	public Node getNode() {
 		return null;
+	}
+
+	@Override
+	public Completable clearIndex(String indexName) {
+		return Completable.complete();
+	}
+
+	@Override
+	public void clear() {
+		updateEvents.clear();
+		deleteEvents.clear();
+		storeEvents.clear();
+		dropIndexEvents.clear();
+		createIndexEvents.clear();
+	}
+
+	@Override
+	public Single<Integer> deleteDocumentsViaQuery(String query, String... indices) {
+		return Single.just(0);
+	}
+
+	@Override
+	public String getVendorName() {
+		return "dummy";
+	}
+
+	@Override
+	public String getVersion() {
+		return "1.0";
 	}
 
 	public Map<String, JsonObject> getStoreEvents() {
@@ -98,36 +135,11 @@ public class DummySearchProvider implements SearchProvider {
 		return updateEvents;
 	}
 
-	@Override
-	public Completable clearIndex(String indexName) {
-		return Completable.complete();
+	public List<String> getCreateIndexEvents() {
+		return createIndexEvents;
 	}
 
-	@Override
-	public void clear() {
-		updateEvents.clear();
-		deleteEvents.clear();
-		storeEvents.clear();
+	public List<String> getDropIndexEvents() {
+		return dropIndexEvents;
 	}
-
-	@Override
-	public Completable deleteIndex(String indexName) {
-		return Completable.complete();
-	}
-
-	@Override
-	public Single<Integer> deleteDocumentsViaQuery(String index, String query) {
-		return Single.just(0);
-	}
-
-	@Override
-	public String getVendorName() {
-		return "dummy";
-	}
-
-	@Override
-	public String getVersion() {
-		return "1.0";
-	}
-
 }

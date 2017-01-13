@@ -60,14 +60,14 @@ import rx.Observable;
  * generated using this class.
  */
 @Singleton
-public class NodeGraphFieldContainerTransformator extends AbstractTransformator<NodeGraphFieldContainer> {
+public class NodeContainerTransformator extends AbstractTransformator<NodeGraphFieldContainer> {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerTransformator.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeContainerTransformator.class);
 
 	private static final String VERSION_KEY = "version";
 
 	@Inject
-	public NodeGraphFieldContainerTransformator() {
+	public NodeContainerTransformator() {
 	}
 
 	/**

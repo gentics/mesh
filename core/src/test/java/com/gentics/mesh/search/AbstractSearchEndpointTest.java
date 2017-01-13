@@ -1,8 +1,5 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -18,13 +15,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.search.index.IndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 
 import io.vertx.core.logging.Logger;
@@ -42,6 +34,7 @@ public abstract class AbstractSearchEndpointTest extends AbstractRestEndpointTes
 
 	@Before
 	public void setupHandlers() throws Exception {
+		// We need to call init() again in order create missing indices for the created test data
 		for (IndexHandler handler : meshDagger.indexHandlerRegistry().getHandlers()) {
 			handler.init().await();
 		}
@@ -49,7 +42,6 @@ public abstract class AbstractSearchEndpointTest extends AbstractRestEndpointTes
 
 	@After
 	public void resetElasticSearch() {
-		// searchProvider.reset();
 		searchProvider.clear();
 	}
 
@@ -103,25 +95,19 @@ public abstract class AbstractSearchEndpointTest extends AbstractRestEndpointTes
 		return "{ \"query\": " + range.toString() + "}";
 	}
 
-	protected void fullIndex() throws InterruptedException, InvalidArgumentException {
-		Project project = project();
-		for (Release release : project.getReleaseRoot().findAll()) {
-			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-				String draftIndex = NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), DRAFT);
-				if (log.isDebugEnabled()) {
-					log.debug("Creating schema mapping for index {" + draftIndex + "}");
-				}
-				meshDagger.nodeIndexHandler().updateNodeIndexMapping(draftIndex, version.getSchema()).await();
-
-				String publishIndex = NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), PUBLISHED);
-				if (log.isDebugEnabled()) {
-					log.debug("Creating schema mapping for index {" + publishIndex + "}");
-				}
-				meshDagger.nodeIndexHandler().updateNodeIndexMapping(publishIndex, version.getSchema()).await();
-			}
+	/**
+	 * Drop all indices and create a new index using the current data.
+	 * 
+	 * @throws Exception
+	 */
+	protected void recreateIndices() throws Exception {
+		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
+		searchProvider.clear();
+		setupHandlers();
+		IndexHandlerRegistry registry = MeshInternal.get().indexHandlerRegistry();
+		for (IndexHandler handler : registry.getHandlers()) {
+			handler.reindexAll().await();
 		}
-
-		MeshInternal.get().searchQueue().addFullIndex().processSync();
 	}
 
 }

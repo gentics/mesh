@@ -525,7 +525,7 @@ empty array, any type of node may be used.
 
 | List
 | ```list```
-| A list field **must** be typed via the ```listType``` property. Possible listTypes are ```node``` ```boolean``` ```string``` ```number``` ```date``` ```micronode```
+| A list field **must** be typed via the ```listType``` property. Possible listTypes are ```node``` ```boolean``` ```string``` ```html``` ```number``` ```date``` ```micronode```
 |======
 
 ==== Media type whitelist for binary schemas

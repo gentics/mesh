@@ -13,8 +13,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GRO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -43,7 +41,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
@@ -91,11 +88,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public static void init(Database database) {
 		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(ASSIGNED_TO_ROLE, false, false, true);
-	}
-
-	@Override
-	public String getType() {
-		return User.TYPE;
 	}
 
 	@Override
@@ -351,8 +343,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		}
 
 		// Check whether the node reference field of the user should be expanded
-		boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference")
-				|| parameters.getExpandAll();
+		boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
 		if (expandReference) {
 			restUser.setNodeResponse(node.transformToRestSync(ac, level));
 		} else {
@@ -382,18 +373,15 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
-		addPermissionsOnRole(sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM,
-				PUBLISH_PERM, READ_PUBLISHED_PERM);
+		addPermissionsOnRole(sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
 		return this;
 	}
 
 	@Override
-	public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode,
-			GraphPermission... toGrant) {
+	public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
 		// 1. Determine all roles that grant given permission on the source
 		// node.
-		List<? extends Role> rolesThatGrantPermission = sourceNode.in(permission.label())
-				.toListExplicit(RoleImpl.class);
+		List<? extends Role> rolesThatGrantPermission = sourceNode.in(permission.label()).toListExplicit(RoleImpl.class);
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : rolesThatGrantPermission) {
@@ -408,12 +396,10 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
 
 		for (GraphPermission perm : GraphPermission.values()) {
-			List<? extends Role> rolesWithPerm = sourceNode.in(perm.label()).has(RoleImpl.class)
-					.toListExplicit(RoleImpl.class);
+			List<? extends Role> rolesWithPerm = sourceNode.in(perm.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
 			for (Role role : rolesWithPerm) {
 				if (log.isDebugEnabled()) {
-					log.debug("Granting permission {" + perm.name() + "} to node {" + targetNode.getUuid()
-							+ "} on role {" + role.getName() + "}");
+					log.debug("Granting permission {" + perm.name() + "} to node {" + targetNode.getUuid() + "} on role {" + role.getName() + "}");
 				}
 				role.grantPermissions(targetNode, perm);
 			}
@@ -432,7 +418,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		batch.addEntry(this, DELETE_ACTION);
+		batch.delete(this, false);
 		getElement().remove();
 		PermissionStore.invalidate();
 	}
@@ -495,8 +481,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				String referencedNodeUuid = basicReference.getUuid();
 				String projectName = basicReference.getProjectName();
 				/*
-				 * TODO decide whether we need to check perms on the project as
-				 * well
+				 * TODO decide whether we need to check perms on the project as well
 				 */
 				Project project = MeshInternal.get().boot().projectRoot().findByName(projectName);
 				if (project == null) {
@@ -507,14 +492,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				setReferencedNode(node);
 			}
 		}
-		addIndexBatchEntry(batch, STORE_ACTION, true);
+		batch.store(this, true);
 		return this;
-
-	}
-
-	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		// Users have no foreign relationships.
 	}
 
 	@Override

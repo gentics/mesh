@@ -4,7 +4,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
-import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -94,15 +93,15 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 		}
 	}
 
-//	@Test
-//	public void testGetSegmentPath() {
-//		try (NoTx noTx = db.noTx()) {
-//			Node newsNode = content("news overview");
-//			RoutingContext rc = getMockedRoutingContext("?version=draft");
-//			InternalActionContext ac = InternalActionContext.create(rc);
-//			assertNotNull(newsNode.getPathSegment(ac));
-//		}
-//	}
+	//	@Test
+	//	public void testGetSegmentPath() {
+	//		try (NoTx noTx = db.noTx()) {
+	//			Node newsNode = content("news overview");
+	//			RoutingContext rc = getMockedRoutingContext("?version=draft");
+	//			InternalActionContext ac = InternalActionContext.create(rc);
+	//			assertNotNull(newsNode.getPathSegment(ac));
+	//		}
+	//	}
 
 	@Test
 	public void testTaggingOfMeshNode() {
@@ -226,7 +225,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			Node subNode = folder.create(user(), getSchemaContainer().getLatestVersion(), project());
 			assertNotNull(subNode.getUuid());
 			SearchQueueBatch batch = createBatch();
-			subNode.delete(batch);
+			subNode.deleteFromRelease(project().getLatestRelease(), batch, false);
 		}
 	}
 
@@ -251,6 +250,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			assertEquals("folder", node.getSchemaContainer().getLatestVersion().getSchema().getName());
 			assertTrue(node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
 			NodeGraphFieldContainer englishVersion = node.getGraphFieldContainer("en");
+			assertNotNull(englishVersion);
 		}
 	}
 
@@ -321,12 +321,12 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
 			SearchQueueBatch batch = createBatch();
 			try (Tx tx = db.tx()) {
-				node.delete(batch);
+				node.deleteFromRelease(project().getLatestRelease(), batch, false);
 				tx.success();
 			}
 
 			MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, false);
-			assertAffectedElements(affectedElements, batch);
+			assertThat(batch).containsEntries(affectedElements);
 		}
 	}
 
@@ -401,7 +401,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 			// 2. delete folder for initial release
 			SearchQueueBatch batch = createBatch();
-			subFolder.deleteFromRelease(initialRelease, batch);
+			subFolder.deleteFromRelease(initialRelease, batch, false);
 			folder.reload();
 
 			// 3. assert for new release
@@ -418,7 +418,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
 					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
-			assertAffectedElements(affectedElements, batch);
+			assertThat(batch).containsEntries(affectedElements);
 		}
 	}
 
@@ -476,7 +476,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 			// 8. delete folder for initial release
 			batch = createBatch();
-			subFolder.deleteFromRelease(initialRelease, batch);
+			subFolder.deleteFromRelease(initialRelease, batch, false);
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
@@ -499,7 +499,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
 			affectedElements.put("subSubFolder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, subSubFolderUuid, project.getUuid(),
 					initialRelease.getUuid(), ContainerType.DRAFT, "en"));
-			assertAffectedElements(affectedElements, batch);
+			assertThat(batch).containsEntries(affectedElements);
 		}
 	}
 
@@ -516,16 +516,16 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 				folder.applyPermissions(role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
 						Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
-				folder.publish(getMockedInternalActionContext(user())).await();
+				SearchQueueBatch batch = createBatch();
+				folder.publish(getMockedInternalActionContext(user()), batch).await();
 				return folder.getUuid();
 			});
 
 			// 2. assert published and draft node
 			db.noTx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot()
-						.findAll(getMockedInternalActionContext("version=draft", user()), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
-						.forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(getMockedInternalActionContext("version=draft", user()),
+						new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 				nodeUuids.clear();
 				project.getNodeRoot().findAll(getMockedInternalActionContext("version=published", user()),
@@ -537,16 +537,15 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 3. delete
 			SearchQueueBatch batch = db.noTx(() -> {
 				SearchQueueBatch innerBatch = createBatch();
-				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(initialRelease, innerBatch);
+				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(initialRelease, innerBatch, false);
 				return innerBatch;
 			});
 
 			// 4. assert published and draft gone
 			db.noTx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot()
-						.findAll(getMockedInternalActionContext("version=draft", user()), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
-						.forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(getMockedInternalActionContext("version=draft", user()),
+						new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
@@ -564,7 +563,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 				affectedElements.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
 						initialRelease.getUuid(), ContainerType.PUBLISHED, "en"));
 
-				assertAffectedElements(affectedElements, batch);
+				assertThat(batch).containsEntries(affectedElements);
 				return null;
 			});
 		}
@@ -583,7 +582,8 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 				folder.applyPermissions(role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
 						Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
-				folder.publish(getMockedInternalActionContext(user())).await();
+				SearchQueueBatch batch = createBatch();
+				folder.publish(getMockedInternalActionContext(user()), batch).await();
 				return folder.getUuid();
 			});
 
@@ -597,7 +597,7 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 3. delete from initial release
 			SearchQueueBatch batch = db.noTx(() -> {
 				SearchQueueBatch innerBatch = createBatch();
-				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(initialRelease, innerBatch);
+				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(initialRelease, innerBatch, false);
 				return innerBatch;
 			});
 
@@ -618,9 +618,8 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 			// 5. assert published and draft still there for new release
 			db.noTx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot()
-						.findAll(getMockedInternalActionContext("version=draft", user()), new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED))
-						.forEach(node -> nodeUuids.add(node.getUuid()));
+				project.getNodeRoot().findAll(getMockedInternalActionContext("version=draft", user()),
+						new PagingParametersImpl(1, 10000, null, SortOrder.UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 
 				nodeUuids.clear();
@@ -632,13 +631,12 @@ public class NodeTest extends AbstractBasicIsolatedObjectTest {
 
 			// 6. assert searchqueuebatch
 			db.noTx(() -> {
-				Map<String, ElementEntry> affectedElements = new HashMap<>();
-				affectedElements.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
+				Map<String, ElementEntry> expectedEntries = new HashMap<>();
+				expectedEntries.put("draft folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
 						initialRelease.getUuid(), ContainerType.DRAFT, "en"));
-				affectedElements.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
+				expectedEntries.put("published folder", new ElementEntry(SearchQueueEntryAction.DELETE_ACTION, folderUuid, project.getUuid(),
 						initialRelease.getUuid(), ContainerType.PUBLISHED, "en"));
-
-				assertAffectedElements(affectedElements, batch);
+				assertThat(batch).containsEntries(expectedEntries);
 				return null;
 			});
 		}

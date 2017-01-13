@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
@@ -20,12 +21,47 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
  * (called basenode). Additionally languages and schemas can be assigned to projects to make them available for node creation. Various root vertices (eg.:
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
-public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex {
+public interface Project
+		extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex, IndexableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	public static final String TYPE = "project";
+	static final String TYPE = "project";
+
+	@Override
+	default String getType() {
+		return TYPE;
+	}
+
+	/**
+	 * Compose the index name for the project index.
+	 * 
+	 * @return
+	 */
+	static String composeIndexName() {
+		return TYPE.toLowerCase();
+	}
+
+	/**
+	 * Compose the index type for the project index.
+	 * 
+	 * @return
+	 */
+	static String composeIndexType() {
+		return TYPE.toLowerCase();
+	}
+
+	/**
+	 * Compose the document id for project index documents.
+	 * 
+	 * @param projectUuid
+	 * @return
+	 */
+	static String composeDocumentId(String projectUuid) {
+		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
+		return projectUuid;
+	}
 
 	/**
 	 * Create the base node of the project using the user as a reference for the editor and creator fields.
@@ -68,7 +104,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	SchemaContainerRoot getSchemaContainerRoot();
 
 	/**
-	 * Return the microschema container root for the project
+	 * Return the microschema container root for the project.
 	 *
 	 * @return
 	 */
@@ -110,14 +146,14 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	NodeRoot getNodeRoot();
 
 	/**
-	 * Get the initial release of the project
+	 * Get the initial release of the project.
 	 *
 	 * @return
 	 */
 	Release getInitialRelease();
 
 	/**
-	 * Get the latest release of the project
+	 * Get the latest release of the project.
 	 *
 	 * @return
 	 */
@@ -129,4 +165,5 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @return Release root element
 	 */
 	ReleaseRoot getReleaseRoot();
+
 }

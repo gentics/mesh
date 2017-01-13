@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.index.schema;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -11,10 +12,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.UpdateBatchEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.AbstractIndexHandler;
+import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
 /**
  * Handler for schema container index.
@@ -30,28 +31,39 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 		super(searchProvider, db, boot, searchQueue);
 	}
 
+	@Override
+	protected String composeDocumentIdFromEntry(UpdateBatchEntry entry) {
+		return SchemaContainer.composeDocumentId(entry.getElementUuid());
+	}
+
+	@Override
+	protected String composeIndexNameFromEntry(UpdateBatchEntry entry) {
+		return SchemaContainer.composeIndexName();
+	}
+
+	@Override
+	protected String composeIndexTypeFromEntry(UpdateBatchEntry entry) {
+		return SchemaContainer.composeIndexType();
+	}
+
+	@Override
+	public Class<SchemaContainer> getElementClass() {
+		return SchemaContainer.class;
+	}
+
+	@Override
 	public SchemaTransformator getTransformator() {
 		return transformator;
 	}
 
 	@Override
-	protected String getIndex(SearchQueueEntry entry) {
-		return "schema_container";
-	}
-
-	@Override
-	protected String getDocumentType(SearchQueueEntry entry) {
-		return "schema_container";
-	}
-
-	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
-		return Collections.singleton(getIndex(null));
+		return Collections.singleton(SchemaContainer.TYPE.toLowerCase());
 	}
 
 	@Override
-	public String getKey() {
-		return SchemaContainer.TYPE;
+	public Map<String, String> getIndices() {
+		return Collections.singletonMap(SchemaContainer.TYPE.toLowerCase(), SchemaContainer.TYPE.toLowerCase());
 	}
 
 	@Override

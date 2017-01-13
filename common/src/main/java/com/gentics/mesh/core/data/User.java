@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -21,18 +22,49 @@ import com.gentics.mesh.core.rest.user.UserResponse;
  * </pre>
  *
  * <p>
- * <img src=
- * "http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg"
- * alt="">
+ * <img src= "http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public interface User
-		extends MeshCoreVertex<UserResponse, User>, ReferenceableElement<UserReference>, UserTrackingVertex {
+public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableElement<UserReference>, UserTrackingVertex, IndexableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	public static final String TYPE = "user";
+	static final String TYPE = "user";
+
+	@Override
+	default String getType() {
+		return User.TYPE;
+	}
+
+	/**
+	 * Compose the index type for the user index.
+	 * 
+	 * @return
+	 */
+	static String composeIndexType() {
+		return TYPE.toLowerCase();
+	}
+
+	/**
+	 * Compose the index name for the user index.
+	 * 
+	 * @return
+	 */
+	static String composeIndexName() {
+		return TYPE.toLowerCase();
+	}
+
+	/**
+	 * Compose the document id for the user documents.
+	 * 
+	 * @param elementUuid
+	 * @return
+	 */
+	static String composeDocumentId(String elementUuid) {
+		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
+		return elementUuid;
+	}
 
 	/**
 	 * Return the username.
@@ -115,8 +147,7 @@ public interface User
 	User setPasswordHash(String hash);
 
 	/**
-	 * Set the plaintext password. Internally the password string will be hashed
-	 * and the password hash will be set.
+	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set.
 	 * 
 	 * @param password
 	 * @return Fluent API
@@ -155,38 +186,26 @@ public interface User
 	Set<GraphPermission> getPermissions(MeshVertex vertex);
 
 	/**
-	 * This method will set CRUD permissions to the target node for all roles
-	 * that would grant the given permission on the node. The method is most
-	 * often used to assign CRUD permissions on newly created elements. Example
-	 * for adding CRUD permissions on a newly created project: The method will
-	 * first determine the list of roles that would initially enable you to
-	 * create a new project. It will do so by examining the projectRoot node.
-	 * After this step the CRUD permissions will be added to the newly created
-	 * project and the found roles. In this case the call would look like this:
-	 * addCRUDPermissionOnRole(projectRoot, Permission.CREATE_PERM,
-	 * newlyCreatedProject); This method will ensure that all users/roles that
-	 * would be able to create an element will also be able to CRUD it even when
-	 * the creator of the element was only assigned to one of the enabling
-	 * roles. Additionally the permissions of the source node are inherited by
-	 * the target node. All permissions between the source node and roles are
-	 * copied to the target node.
+	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used
+	 * to assign CRUD permissions on newly created elements. Example for adding CRUD permissions on a newly created project: The method will first determine the
+	 * list of roles that would initially enable you to create a new project. It will do so by examining the projectRoot node. After this step the CRUD
+	 * permissions will be added to the newly created project and the found roles. In this case the call would look like this:
+	 * addCRUDPermissionOnRole(projectRoot, Permission.CREATE_PERM, newlyCreatedProject); This method will ensure that all users/roles that would be able to
+	 * create an element will also be able to CRUD it even when the creator of the element was only assigned to one of the enabling roles. Additionally the
+	 * permissions of the source node are inherited by the target node. All permissions between the source node and roles are copied to the target node.
 	 * 
 	 * @param sourceNode
-	 *            Node that will be checked against to find all roles that would
-	 *            grant the given permission.
+	 *            Node that will be checked against to find all roles that would grant the given permission.
 	 * @param permission
-	 *            Permission that is used in conjunction with the node to
-	 *            determine the list of affected roles.
+	 *            Permission that is used in conjunction with the node to determine the list of affected roles.
 	 * @param targetNode
 	 *            Node to which the CRUD permissions will be assigned.
 	 */
 	User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode);
 
 	/**
-	 * This method adds additional permissions to the target node. The roles are
-	 * selected like in method
-	 * {@link #addCRUDPermissionOnRole(MeshVertex, GraphPermission, MeshVertex)}
-	 * .
+	 * This method adds additional permissions to the target node. The roles are selected like in method
+	 * {@link #addCRUDPermissionOnRole(MeshVertex, GraphPermission, MeshVertex)} .
 	 * 
 	 * @param sourceNode
 	 *            Node that will be checked
@@ -197,12 +216,10 @@ public interface User
 	 * @param toGrant
 	 *            permissions to grant
 	 */
-	User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode,
-			GraphPermission... toGrant);
+	User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant);
 
 	/**
-	 * Inherit permissions egdes from the source node and assign those
-	 * permissions to the target node.
+	 * Inherit permissions egdes from the source node and assign those permissions to the target node.
 	 * 
 	 * @param sourceNode
 	 * @param targetNode
@@ -224,16 +241,14 @@ public interface User
 	User addGroup(Group group);
 
 	/**
-	 * Return a list of roles which belong to this user. Internally this will
-	 * fetch all groups of the user and collect the assigned roles.
+	 * Return a list of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.
 	 * 
 	 * @return
 	 */
 	List<? extends Role> getRoles();
 
 	/**
-	 * Return a list of roles that belong to the user. Internally this will
-	 * check the user role shortcut edge.
+	 * Return a list of roles that belong to the user. Internally this will check the user role shortcut edge.
 	 * 
 	 * @return
 	 */
@@ -271,8 +286,7 @@ public interface User
 	boolean hasPermission(MeshVertex element, GraphPermission permission);
 
 	/**
-	 * Check whether the user has the given permission on the element with the
-	 * given id.
+	 * Check whether the user has the given permission on the element with the given id.
 	 * 
 	 * @param elementId
 	 * @param permission
@@ -288,10 +302,8 @@ public interface User
 	boolean hasAdminRole();
 
 	/**
-	 * Check whether the user is allowed to read the given node. Internally this
-	 * check the currently configured version scope and check for
-	 * {@link GraphPermission#READ_PERM} or
-	 * {@link GraphPermission#READ_PUBLISHED_PERM}.
+	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
+	 * {@link GraphPermission#READ_PERM} or {@link GraphPermission#READ_PUBLISHED_PERM}.
 	 * 
 	 * @param ac
 	 * @param node
@@ -310,8 +322,7 @@ public interface User
 	/**
 	 * Return the currently stored reset token.
 	 * 
-	 * @return Token or null if no token has been set or if the token has been
-	 *         used up
+	 * @return Token or null if no token has been set or if the token has been used up
 	 */
 	String getResetToken();
 
@@ -323,8 +334,7 @@ public interface User
 	Long getResetTokenIssueTimestamp();
 
 	/**
-	 * Set the token code issue timestamp. This is used to influence the token
-	 * expire moment.
+	 * Set the token code issue timestamp. This is used to influence the token expire moment.
 	 * 
 	 * @param timestamp
 	 * @return
@@ -343,8 +353,7 @@ public interface User
 	}
 
 	/**
-	 * Check whether the given token code is valid. This method will also clear
-	 * the token code if the token has expired.
+	 * Check whether the given token code is valid. This method will also clear the token code if the token has expired.
 	 * 
 	 * @param token
 	 *            Token Code

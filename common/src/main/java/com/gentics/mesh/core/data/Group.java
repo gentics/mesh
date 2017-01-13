@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -11,36 +12,70 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * Graph domain model interface for groups.
  */
-public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex {
+public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex, IndexableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	public static final String TYPE = "group";
+	static final String TYPE = "group";
+
+	@Override
+	default String getType() {
+		return Group.TYPE;
+	}
 
 	/**
-	 * Assign the given user to this group
+	 * Compose the index name for the group index.
+	 * 
+	 * @return
+	 */
+	static String composeIndexName() {
+		return Group.TYPE.toLowerCase();
+	}
+
+	/**
+	 * Compose the document id for the group index.
+	 * 
+	 * @param groupUuid
+	 * @return
+	 */
+	static String composeDocumentId(String groupUuid) {
+		Objects.requireNonNull(groupUuid, "A groupUuid must be provided.");
+		return groupUuid;
+	}
+
+	/**
+	 * Compose the index type for the group index.
+	 * 
+	 * @return
+	 */
+	static String composeIndexType() {
+		return Group.TYPE.toLowerCase();
+	}
+
+	/**
+	 * Assign the given user to this group.
 	 * 
 	 * @param user
 	 */
 	void addUser(User user);
 
 	/**
-	 * Unassign the user from the group
+	 * Unassign the user from the group.
 	 * 
 	 * @param user
 	 */
 	void removeUser(User user);
 
 	/**
-	 * Assign the given role to this group
+	 * Assign the given role to this group.
 	 * 
 	 * @param role
 	 */
 	void addRole(Role role);
 
 	/**
-	 * Unassign the role from this group
+	 * Unassign the role from this group.
 	 * 
 	 * @param role
 	 */

@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -19,6 +17,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -27,7 +26,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
@@ -54,11 +52,6 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public GroupReference transformToReference() {
 		return new GroupReference().setName(getName()).setUuid(getUuid());
-	}
-
-	@Override
-	public String getType() {
-		return Group.TYPE;
 	}
 
 	public String getName() {
@@ -128,17 +121,15 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	/**
 	 * Get all users within this group that are visible for the given user.
 	 */
-	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo)
-			throws InvalidArgumentException {
+	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
 
-		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE)
-				.in(HAS_USER).retain(requestUser).back().has(UserImpl.class);
+		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser)
+				.back().has(UserImpl.class);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, UserImpl.class);
 	}
 
 	@Override
-	public Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameters pagingInfo)
-			throws InvalidArgumentException {
+	public Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
 		Page<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
 		return page;
@@ -168,8 +159,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		// TODO don't allow deletion of the admin group
-		batch.addEntry(this, DELETE_ACTION);
-		addRelatedEntries(batch, DELETE_ACTION);
+		batch.delete(this, true);
 		getElement().remove();
 		PermissionStore.invalidate();
 	}
@@ -186,19 +176,17 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name",
-						requestModel.getName());
+				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 			}
 
 			setName(requestModel.getName());
-			addIndexBatchEntry(batch, STORE_ACTION, true);
+			batch.store(this, true);
 		}
 		return this;
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (User user : getUsers()) {
 				user.applyPermissions(role, false, permissionsToGrant, permissionsToRevoke);
@@ -208,11 +196,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
+	public void handleRelatedEntries(HandleElementAction action) {
 		for (User user : getUsers()) {
 			// We need to store users as well since users list their groups -
 			// See {@link UserTransformator#toDocument(User)}
-			batch.addEntry(user, STORE_ACTION);
+			action.call(user, null);
 		}
 	}
 

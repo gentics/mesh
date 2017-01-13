@@ -21,7 +21,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testDocumentDeletion() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"),
@@ -43,7 +43,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testCustomQuery() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		NodeListResponse response = call(
@@ -56,7 +56,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchForChildNodes() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String parentNodeUuid = db.noTx(() -> folder("news").getUuid());
@@ -75,7 +75,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testDocumentCreation() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		// Invoke a dummy search on an empty index

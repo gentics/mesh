@@ -67,7 +67,7 @@ public class ChangelogSystemTest {
 		Collection<Object[]> data = new ArrayList<Object[]>();
 		for (String version : metadata.getVersions()) {
 			// Only test mesh release dumps since a specific version
-			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.6.17")) >= 0) {
+			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.6.20")) >= 0) {
 				data.add(new Object[] { version });
 			}
 		}
@@ -95,15 +95,6 @@ public class ChangelogSystemTest {
 	}
 
 	@Test
-	public void testRunner() throws Exception {
-		MeshOptions options = new MeshOptions();
-		options.getStorageOptions().setDirectory("target/dump/graphdb");
-		//		options.getStorageOptions().setStartServer(true);
-		new ChangelogRunner().run(options);
-		//		System.out.println("done");
-	}
-
-	@Test
 	public void testChangelogSystem() {
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory("target/dump/graphdb");
@@ -114,9 +105,9 @@ public class ChangelogSystemTest {
 		List<Change> testChanges = new ArrayList<>();
 		testChanges.add(new ChangeDummy2());
 		testChanges.add(new ChangeDummy());
-		assertTrue("All changes should have been applied", cls.applyChanges(testChanges));
-		assertTrue("All changes should have been applied", cls.applyChanges(testChanges));
-		assertTrue("All changes should have been applied", cls.applyChanges(testChanges));
+		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
+		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
+		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
 		Iterator<Vertex> it = db.rawTx().getVertices("name", "moped2").iterator();
 		assertTrue("The changelog was executed but the expected vertex which was created could not be found.", it.hasNext());
 		Vertex vertex = it.next();

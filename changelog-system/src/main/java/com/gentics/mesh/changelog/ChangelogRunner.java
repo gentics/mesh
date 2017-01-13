@@ -1,6 +1,5 @@
 package com.gentics.mesh.changelog;
 
-import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
@@ -21,40 +20,6 @@ public class ChangelogRunner {
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-	}
-
-	public static void main(String[] args) {
-		new ChangelogRunner().run();
-	}
-
-	/**
-	 * Start dedicated changelog runner which executes the stored changelog.
-	 */
-	public void run() {
-		run(OptionsLoader.createOrloadOptions());
-	}
-
-	/**
-	 * Start dedicated changelog runner which executes the stored changelog.
-	 * 
-	 * @param options
-	 */
-	public void run(MeshOptions options) {
-		log.info("Starting changelog runner");
-//		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ChangelogSpringConfiguration.class)) {
-//			ctx.start();
-			try {
-
-				ChangelogSystem cls = new ChangelogSystem(getDatabase(options));
-				if (!cls.applyChanges()) {
-					log.error("The changelog could not be applied successfully. See log above.");
-					System.exit(10);
-				}
-			} catch (Exception e) {
-				log.error(e);
-			}
-//		}
-		log.info("Terminating changelog runner");
 	}
 
 	/**

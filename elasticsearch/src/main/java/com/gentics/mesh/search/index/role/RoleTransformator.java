@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.index.role;
+ package com.gentics.mesh.search.index.role;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;

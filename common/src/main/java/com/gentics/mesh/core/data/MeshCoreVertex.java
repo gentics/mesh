@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
  * @param <V>
  *            The core vertex itself
  */
-public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R, V>> extends MeshVertex, IndexableElement, TransformableElement<R> {
+public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R, V>> extends MeshVertex, TransformableElement<R> {
 
 	/**
 	 * Update the vertex using the action context information.
@@ -23,4 +23,11 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	 *            Batch to which entries will be added in order to update the search index.
 	 */
 	V update(InternalActionContext ac, SearchQueueBatch batch);
+
+	/**
+	 * Return the type of the element.
+	 * 
+	 * @return
+	 */
+	String getType();
 }

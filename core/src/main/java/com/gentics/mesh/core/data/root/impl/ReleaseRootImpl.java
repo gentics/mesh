@@ -24,18 +24,15 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 public class ReleaseRootImpl extends AbstractRootVertex<Release> implements ReleaseRoot {
 
@@ -132,10 +129,8 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 		// A new release was created - We also need to create new indices for the nodes within the release
 		for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-			batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), DRAFT), Node.TYPE,
-					SearchQueueEntryAction.CREATE_INDEX);
-			batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), PUBLISHED), Node.TYPE,
-					SearchQueueEntryAction.CREATE_INDEX);
+			batch.addNodeIndex(project, release, version, DRAFT);
+			batch.addNodeIndex(project, release, version, PUBLISHED);
 		}
 
 		return release;

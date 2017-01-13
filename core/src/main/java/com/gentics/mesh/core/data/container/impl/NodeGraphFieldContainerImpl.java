@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
@@ -8,7 +10,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -46,15 +47,12 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -98,17 +96,18 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public String getDisplayFieldValue() {
-		// Normally the display field value would be loaded by 
+		// Normally the display field value would be loaded by
 		// 1. Loading the displayField name from the used schema
 		// 2. Loading the string field with the found name
 		// 3. Loading the value from that field
-		// This is very costly and thus we store the precomputed display field within a local property.
+		// This is very costly and thus we store the precomputed display field
+		// within a local property.
 		return getProperty(DISPLAY_FIELD_PROPERTY_KEY);
 	}
 
 	@Override
 	public void updateDisplayFieldValue() {
-		//TODO use schema storage instead
+		// TODO use schema storage instead
 		Schema schema = getSchemaContainerVersion().getSchema();
 		String displayFieldName = schema.getDisplayField();
 		StringGraphField field = getString(displayFieldName);
@@ -121,16 +120,18 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void delete(SearchQueueBatch batch) {
 		// TODO delete linked aggregation nodes for node lists etc
 
+		// Recursively delete all versions of the container
 		NodeGraphFieldContainer next = getNextVersion();
 		if (next != null) {
 			next.delete(batch);
 		}
 
+		// Delete the container from all releases and types
 		getReleaseTypes().forEach(tuple -> {
 			String releaseUuid = tuple.v1();
 			ContainerType type = tuple.v2();
 			if (type != ContainerType.INITIAL) {
-				addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, type);
+				batch.delete(this, releaseUuid, type, false);
 			}
 		});
 
@@ -142,9 +143,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void deleteFromRelease(Release release, SearchQueueBatch batch) {
 		String releaseUuid = release.getUuid();
 
-		addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, ContainerType.DRAFT);
+		batch.delete(this, releaseUuid, DRAFT, false);
 		if (isPublished(releaseUuid)) {
-			addIndexBatchEntry(batch, DELETE_ACTION, releaseUuid, ContainerType.PUBLISHED);
+			batch.delete(this, releaseUuid, PUBLISHED, false);
 		}
 		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
@@ -229,7 +230,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public Node getParentNode() {
 		Node parentNode = in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
 		if (parentNode == null) {
-			// the field container is not directly linked to its Node, get the initial field container
+			// the field container is not directly linked to its Node, get the
+			// initial field container
 			NodeGraphFieldContainer initial = null;
 			NodeGraphFieldContainer previous = getPreviousVersion();
 			while (previous != null) {
@@ -326,16 +328,17 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		});
 	}
 
-	@Override
-	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, ContainerType type) {
-		Node node = getParentNode();
-		SearchQueueEntry entry = batch.addEntry(node.getUuid(), node.getType(), action);
-		entry.set(NodeIndexHandler.CUSTOM_LANGUAGE_TAG, getLanguage().getLanguageTag());
-		entry.set(NodeIndexHandler.CUSTOM_RELEASE_UUID, releaseUuid);
-		entry.set(NodeIndexHandler.CUSTOM_VERSION, type.toString().toLowerCase());
-		entry.set(NodeIndexHandler.CUSTOM_PROJECT_UUID, node.getProject().getUuid());
-		entry.set(NodeIndexHandler.CUSTOM_SCHEMAVERSION_UUID, getSchemaContainerVersion().getUuid());
-	}
+	//	@Override
+	//	public void handleRelatedEntries(Action2<IndexableElement, Boolean> action) {
+	//
+	//		Node node = getParentNode();
+	//		SearchQueueEntry entry = batch.addEntry(node.getUuid(), node.getType(), action);
+	//		entry.set(NodeIndexHandler.CUSTOM_LANGUAGE_TAG, getLanguage().getLanguageTag());
+	//		entry.set(NodeIndexHandler.CUSTOM_RELEASE_UUID, releaseUuid);
+	//		entry.set(NodeIndexHandler.CUSTOM_VERSION, type.toString().toLowerCase());
+	//		entry.set(NodeIndexHandler.CUSTOM_PROJECT_UUID, node.getProject().getUuid());
+	//		entry.set(NodeIndexHandler.CUSTOM_SCHEMAVERSION_UUID, getSchemaContainerVersion().getUuid());
+	//	}
 
 	@Override
 	public List<FieldContainerChange> compareTo(FieldMap fieldMap) {
@@ -358,7 +361,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				// Field only exists in B
 				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
 			} else if (fieldA != null && fieldB != null) {
-				// Field exists in A and B and the fields are not equal to each other. 
+				// Field exists in A and B and the fields are not equal to each
+				// other.
 				changes.addAll(fieldA.compareTo(fieldB));
 			} else {
 				// Both fields are equal if those fields are both null
@@ -376,7 +380,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		Map<String, FieldSchema> fieldMapA = schemaA.getFieldsAsMap();
 		Schema schemaB = container.getSchemaContainerVersion().getSchema();
 		Map<String, FieldSchema> fieldMapB = schemaB.getFieldsAsMap();
-		// Generate a structural diff first. This way it is easy to determine which fields have been added or removed.
+		// Generate a structural diff first. This way it is easy to determine
+		// which fields have been added or removed.
 		MapDifference<String, FieldSchema> diff = Maps.difference(fieldMapA, fieldMapB, new Equivalence<FieldSchema>() {
 
 			@Override
@@ -392,12 +397,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		});
 
-		// Handle fields which exist only in A - They have been removed in B 
+		// Handle fields which exist only in A - They have been removed in B
 		for (FieldSchema field : diff.entriesOnlyOnLeft().values()) {
 			changes.add(new FieldContainerChange(field.getName(), FieldChangeTypes.REMOVED));
 		}
 
-		// Handle fields which don't exist in A - They have been added in B 
+		// Handle fields which don't exist in A - They have been added in B
 		for (FieldSchema field : diff.entriesOnlyOnRight().values()) {
 			changes.add(new FieldContainerChange(field.getName(), FieldChangeTypes.ADDED));
 		}

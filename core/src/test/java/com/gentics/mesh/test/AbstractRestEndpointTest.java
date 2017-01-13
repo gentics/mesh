@@ -128,6 +128,9 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 			client.setLogin(user().getUsername(), getUserInfo().getPassword());
 			client.login().toBlocking().value();
 		}
+		if (dummySearchProvider != null) {
+			dummySearchProvider.clear();
+		}
 	}
 
 	public HttpClient createHttpClient() {
@@ -243,10 +246,6 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		tagUpdateRequest.setName(newTagName);
 		return call(() -> client().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest));
-	}
-
-	protected void deleteTag(String projectName, String tagFamilyUuid, String uuid) {
-		call(() -> client().deleteTag(projectName, tagFamilyUuid, uuid));
 	}
 
 	// Node

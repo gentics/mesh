@@ -1,6 +1,6 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
@@ -11,13 +11,14 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.search.index.IndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 public class SearchEndpointTest extends AbstractSearchEndpointTest {
 
@@ -43,7 +44,7 @@ public class SearchEndpointTest extends AbstractSearchEndpointTest {
 	@Test
 	public void testClearIndex() throws Exception {
 		try (NoTx noTrx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		// Make sure the document was added to the index.
@@ -67,12 +68,15 @@ public class SearchEndpointTest extends AbstractSearchEndpointTest {
 
 			Node node = folder("2015");
 			String uuid = node.getUuid();
-			String indexType = NodeIndexHandler.getDocumentType();
+			SearchQueueBatch batch = MeshInternal.get().searchQueue().createBatch();
 			for (int i = 0; i < 10; i++) {
-				MeshInternal.get().searchQueue().createBatch().addEntry(uuid, Node.TYPE, STORE_ACTION);
+				String releaseUuid = project().getLatestRelease().getUuid();
+				batch.store(node, releaseUuid, DRAFT, true);
 			}
 
-			String documentId = NodeIndexHandler.composeDocumentId(node, "en");
+			String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en");
+			String indexType = NodeGraphFieldContainer.composeIndexType();
+
 			searchProvider.deleteDocument(Node.TYPE, indexType, documentId).await();
 			assertNull(
 					"The document with uuid {" + uuid + "} could still be found within the search index. Used index type {" + indexType

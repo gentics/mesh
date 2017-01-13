@@ -13,7 +13,6 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.search.AbstractSearchEndpointTest;
@@ -29,9 +28,9 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
 	@Test
-	public void testES() throws InterruptedException, InvalidArgumentException {
+	public void testES() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String lastNodeUuid = null;
@@ -85,7 +84,7 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 	@Test
 	public void testSearchAndSort() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String uuid = db.noTx(() -> folder("news").getUuid());

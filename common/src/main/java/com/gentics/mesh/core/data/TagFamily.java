@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data;
 
+import java.util.Objects;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -16,12 +18,52 @@ import com.gentics.mesh.parameter.PagingParameters;
  * A tag family is the parent element for multiple tags. A typical tag family would be "colors" for tags "red", "blue", "green". Tag families are bound to
  * projects via the {@link TagFamilyRootImpl} class.
  */
-public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex {
+public interface TagFamily
+		extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex, IndexableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	public static final String TYPE = "tagFamily";
+	static final String TYPE = "tagFamily";
+
+	/**
+	 * Construct the index name for tag family indices. Use the projectUuid in order to create a project specific index.
+	 * 
+	 * @param projectUuid
+	 * @return
+	 */
+	static String composeIndexName(String projectUuid) {
+		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
+		StringBuilder indexName = new StringBuilder();
+		indexName.append(TYPE.toLowerCase());
+		indexName.append("-").append(projectUuid);
+		return indexName.toString();
+	}
+
+	/**
+	 * Construct the type name for tag family indices.
+	 * 
+	 * @return
+	 */
+	static String composeTypeName() {
+		return TYPE.toLowerCase();
+	}
+
+	/**
+	 * Construct the documentId for tag family index documents.
+	 * 
+	 * @param elementUuid
+	 * @return documentId
+	 */
+	static String composeDocumentId(String elementUuid) {
+		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
+		return elementUuid;
+	}
+
+	@Override
+	default String getType() {
+		return TYPE;
+	}
 
 	/**
 	 * Return the description of the tag family.
@@ -104,4 +146,5 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * @return
 	 */
 	Tag create(InternalActionContext ac, SearchQueueBatch batch);
+
 }

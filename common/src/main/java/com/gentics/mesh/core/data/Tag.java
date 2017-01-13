@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -14,12 +15,49 @@ import com.gentics.mesh.parameter.PagingParameters;
  * 
  * Tags can currently only hold a single string value. Tags are not localizable. A tag can only be assigned to a single tag family.
  */
-public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElement<TagReference>, UserTrackingVertex {
+public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElement<TagReference>, UserTrackingVertex, IndexableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	public static final String TYPE = "tag";
+	static final String TYPE = "tag";
+
+	/**
+	 * Compose the index name for tags. Use the projectUuid in order to create a project specific index.
+	 * 
+	 * @param projectUuid
+	 * @return
+	 */
+	static String composeIndexName(String projectUuid) {
+		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
+		StringBuilder indexName = new StringBuilder();
+		indexName.append(TYPE.toLowerCase());
+		indexName.append("-").append(projectUuid);
+		return indexName.toString();
+	}
+
+	static String composeDocumentId(String elementUuid) {
+		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
+		return elementUuid;
+	}
+
+	static String composeIndexType() {
+		return TYPE.toLowerCase();
+	}
+
+	/**
+	 * Compose the type name for tags.
+	 * 
+	 * @return
+	 */
+	static String composeTypeName() {
+		return Tag.TYPE.toLowerCase();
+	}
+
+	@Override
+	default String getType() {
+		return TYPE;
+	}
 
 	/**
 	 * Return the tag family to which the tag belongs.

@@ -1,6 +1,6 @@
 package com.gentics.mesh.demo;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -13,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
@@ -24,7 +25,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 public class DemoDumpGeneratorTest {
 
@@ -72,12 +72,24 @@ public class DemoDumpGeneratorTest {
 				user.hasPermission(boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
 
 		assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().findAll().size() > 5);
+
+		// Verify that all documents are stored in the index
 		for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
-			String languageTag = container.getLanguage().getLanguageTag();
-			String indexName = NodeIndexHandler.getIndexName(node.getProject().getUuid(), node.getProject().getLatestRelease().getUuid(), container.getSchemaContainerVersion().getUuid(), DRAFT);
-			String documentType = NodeIndexHandler.getDocumentType();
-			String documentId = NodeIndexHandler.composeDocumentId(node, languageTag);
+			//			HandleContext context = new HandleContext();
+			//			context.setProjectUuid(node.getProject().getUuid());
+			//			context.setReleaseUuid(node.getProject().getLatestRelease().getUuid());
+			//			context.setContainerType(DRAFT);
+			//			UpdateBatchEntry entry = new UpdateBatchEntryImpl(MeshInternal.get().nodeContainerIndexHandler(), node, context, STORE_ACTION);
+
+			String languageTag = "en";
+			String projectUuid = node.getProject().getUuid();
+			String releaseUuid = node.getProject().getInitialRelease().getUuid();
+			String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
+			ContainerType type = PUBLISHED;
+			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type);
+			String documentType = NodeGraphFieldContainer.composeIndexType();
+			String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), languageTag);
 			if (searchProvider.getDocument(indexName, documentType, documentId).toBlocking().single() == null) {
 				String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag + "} could not be found within index {"
 						+ indexName + "} - {" + documentType + "} - {" + documentId + "}";

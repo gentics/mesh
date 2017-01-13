@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
@@ -44,17 +43,17 @@ import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
 
 public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 
-	// Create Tests
-
 	@Test
 	@Override
 	public void testCreate() throws GenericRestException, Exception {
 		try (NoTx noTx = db.noTx()) {
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).events(0, 0, 0, 0);
 			Schema restSchema = call(() -> client().createSchema(schema));
-			assertThat(dummySearchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider).events(1, 0, 0, 0);
+			assertThat(dummySearchProvider).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeIndexType(),
+					SchemaContainer.composeDocumentId(restSchema.getUuid()));
 			assertThat(schema).matches(restSchema);
 			assertThat(restSchema.getPermissions()).isNotEmpty().contains("create", "read", "update", "delete");
 
@@ -82,25 +81,22 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		try (NoTx noTx = db.noTx()) {
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider).events(0, 0, 0, 0);
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
 			Schema restSchema = call(() -> client().createSchema(schema));
-			assertThat(dummySearchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider).events(1, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
 			assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
-			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
-
 			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
+
+			dummySearchProvider.clear();
 			call(() -> client().deleteSchema(restSchema.getUuid()));
-			// TODO actually also the used nodes should have been deleted
-			assertThat(dummySearchProvider).recordedDeleteEvents(1);
-			assertThat(dummySearchProvider).recordedStoreEvents(1);
+			// Only schemas which are not in use can be delete and also removed from the index
+			assertThat(dummySearchProvider).events(0, 1, 0, 0);
 		}
 
 	}
-
-	// Read Tests
 
 	@Test
 	@Override
@@ -209,12 +205,9 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testReadByUuidWithRolePerms() {
 		String uuid = db.noTx(() -> schemaContainer("content").getUuid());
 
-		MeshResponse<Schema> future = client().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTx(() -> role().getUuid())))
-				.invoke();
-		latchFor(future);
-		assertSuccess(future);
-		assertNotNull(future.result().getRolePerms());
-		assertEquals(6, future.result().getRolePerms().length);
+		Schema schema = call(() -> client().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTx(() -> role().getUuid()))));
+		assertNotNull(schema.getRolePerms());
+		assertEquals(6, schema.getRolePerms().length);
 	}
 
 	@Test
@@ -244,8 +237,6 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
-	// Update Tests
-
 	@Test
 	@Override
 	@Ignore("Update tests are covered by dedicated test class")
@@ -262,9 +253,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		request.setDisplayField("name");
 		request.setName(name);
 
-		MeshResponse<Schema> future = client().createSchema(request).invoke();
-		latchFor(future);
-		expectException(future, CONFLICT, "schema_conflicting_name", name);
+		call(() -> client().createSchema(request), CONFLICT, "schema_conflicting_name", name);
 	}
 
 	@Test
@@ -275,9 +264,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 			Schema request = new SchemaModel();
 			request.setName("new-name");
 
-			MeshResponse<GenericMessageResponse> future = client().updateSchema("bogus", request).invoke();
-			latchFor(future);
-			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			call(() -> client().updateSchema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
 			SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
@@ -294,10 +281,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertThat(schema.getNodes()).isNotEmpty();
 
 			String uuid = schema.getUuid();
-			MeshResponse<Void> future = client().deleteSchema(schema.getUuid()).invoke();
-			latchFor(future);
-
-			expectException(future, BAD_REQUEST, "schema_delete_still_in_use", uuid);
+			call(() -> client().deleteSchema(schema.getUuid()), BAD_REQUEST, "schema_delete_still_in_use", uuid);
 
 			SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(uuid);
 			assertNotNull("The schema should not have been deleted.", reloaded);
@@ -309,9 +293,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 				node.delete(batch);
 			}
 
-			future = client().deleteSchema(schema.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			call(() -> client().deleteSchema(schema.getUuid()));
 
 			boot.schemaContainerRoot().reload();
 			reloaded = boot.schemaContainerRoot().findByUuid(uuid);
@@ -325,11 +307,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			role().revokePermissions(schema, DELETE_PERM);
-
-			MeshResponse<Void> future = client().deleteSchema(schema.getUuid()).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
-
+			call(() -> client().deleteSchema(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid());
 			assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		}
 	}
@@ -433,10 +411,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Schema request = new SchemaModel();
 			request.setName("new-name");
-
-			MeshResponse<GenericMessageResponse> future = client().updateSchema(schemaUuid, request).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", schemaUuid);
+			call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid);
 		}
 
 	}

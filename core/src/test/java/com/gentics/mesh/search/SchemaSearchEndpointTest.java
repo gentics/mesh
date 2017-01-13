@@ -40,7 +40,7 @@ public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest impleme
 	@Test
 	public void testSearchSchema() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		MeshResponse<SchemaListResponse> future = client().searchSchemas(getSimpleQuery("folder"), new PagingParametersImpl().setPage(1).setPerPage(2))

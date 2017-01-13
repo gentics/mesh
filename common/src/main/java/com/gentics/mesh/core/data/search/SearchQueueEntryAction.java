@@ -5,31 +5,31 @@ package com.gentics.mesh.core.data.search;
  */
 public enum SearchQueueEntryAction {
 
-	DELETE_ACTION("delete", 5),
+	DROP_INDEX("drop_index", 100),
 
-	REINDEX_ALL("reindex_all", 3),
+	CREATE_INDEX("create_index", 90),
 
-	STORE_ACTION("store", 4),
+	DELETE_ACTION("delete", 80),
 
-	CREATE_INDEX("create_index", 0),
+	REINDEX_ALL("reindex_all", 70),
 
-	UPDATE_MAPPING("update_mapping", 1);
+	STORE_ACTION("store", 60);
 
 	private String name;
 
-	private int order;
+	private int priority;
 
 	/**
 	 * Create a new action.
 	 * 
 	 * @param name
 	 *            Name of the action
-	 * @param order
-	 *            Order of the action. A higher order means that the action will be execute later.
+	 * @param priority
+	 *            Priority of the action. A higher priority means that the action will be executed earlier.
 	 */
-	private SearchQueueEntryAction(String name, int order) {
+	private SearchQueueEntryAction(String name, int priority) {
 		this.name = name;
-		this.order = order;
+		this.priority = priority;
 	}
 
 	/**
@@ -47,7 +47,7 @@ public enum SearchQueueEntryAction {
 	 * @return
 	 */
 	public Integer getOrder() {
-		return new Integer(order);
+		return new Integer(priority);
 	}
 
 	/**

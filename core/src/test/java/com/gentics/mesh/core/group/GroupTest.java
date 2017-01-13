@@ -3,7 +3,6 @@ package com.gentics.mesh.core.group;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -205,7 +204,6 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 			group.delete(batch);
 			assertElement(meshRoot().getGroupRoot(), uuid, false);
 			assertElement(meshRoot().getUserRoot(), userUuid, true);
-			assertThat(batch.findEntryByUuid(uuid)).isPresent();
 			assertEquals(1, batch.getEntries().size());
 		}
 

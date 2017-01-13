@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -141,9 +140,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node root {" + getUuid() + "}");
 		}
+		// Delete all containers of all nodes
 		for (Node node : findAll()) {
-			node.delete(batch);
+			for (NodeGraphFieldContainer container : node.getAllInitialGraphFieldContainers()) {
+				container.delete(batch);
+			}
+			// Finally remove the node element itself
+			node.getElement().remove();
 		}
+		// All nodes are gone. Lets remove the node root element.
 		getElement().remove();
 	}
 
@@ -162,7 +167,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
 		String body = ac.getBodyAsString();
-
 		NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
 		if (isEmpty(requestModel.getParentNodeUuid())) {
 			throw error(BAD_REQUEST, "node_missing_parentnode_field");
@@ -170,21 +174,25 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (isEmpty(requestModel.getLanguage())) {
 			throw error(BAD_REQUEST, "node_no_languagecode_specified");
 		}
+
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM);
 		Release release = ac.getRelease(project);
 		Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release);
+
+		// Add initial permissions to the created node
 		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 		requestUser.addPermissionsOnRole(parentNode, READ_PUBLISHED_PERM, node, READ_PUBLISHED_PERM);
 		requestUser.addPermissionsOnRole(parentNode, PUBLISH_PERM, node, PUBLISH_PERM);
+
+		// Create the language specific graph field container for the node
 		Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 		if (language == null) {
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}
 		NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
-		// TODO add container specific batch
-		node.addIndexBatchEntry(batch, STORE_ACTION, true);
+		batch.store(node, release.getUuid(), ContainerType.DRAFT, true);
 		return node;
 	}
 

@@ -65,8 +65,6 @@ import io.vertx.core.http.HttpHeaders;
 
 public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
-	// Read Tests
-
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
@@ -443,20 +441,19 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testUpdate() throws Exception {
 		String oldName = db.tx(() -> user().getUsername());
+		String uuid = db.noTx(() -> user().getUuid());
 
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
 		updateRequest.setFirstname("Tony Awesome");
 		updateRequest.setLastname("Epic Stark");
 		updateRequest.setUsername("dummy_user_changed");
+		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 
-		UserResponse restUser = db.tx(() -> {
-			User user = user();
-			MeshResponse<UserResponse> future = client().updateUser(user.getUuid(), updateRequest).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			return future.result();
-		});
+		assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), uuid);
+		assertThat(dummySearchProvider).events(1, 0, 0, 0);
+		dummySearchProvider.clear();
+
 		try (NoTx noTx = db.noTx()) {
 			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldName));
@@ -471,13 +468,9 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateWithSpecialCharacters() throws Exception {
-		String uuid;
-		String oldUsername;
-		try (NoTx noTx = db.noTx()) {
-			User user = user();
-			uuid = user.getUuid();
-			oldUsername = user.getUsername();
-		}
+		String uuid = db.noTx(() -> user().getUuid());
+		String oldUsername = db.noTx(() -> user().getUsername());
+
 		final char c = '\u2665';
 		String email = "t.stark@stärk-industries.com" + c;
 		String firstname = "Töny Awesöme" + c;
@@ -1121,6 +1114,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (NoTx noTx = db.noTx()) {
+			dummySearchProvider.clear();
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -1129,10 +1123,10 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			newUser.setPassword("test123456");
 			newUser.setGroupUuid(group().getUuid());
 
-			MeshResponse<UserResponse> createFuture = client().createUser(newUser).invoke();
-			latchFor(createFuture);
-			assertSuccess(createFuture);
-			UserResponse restUser = createFuture.result();
+			UserResponse restUser = call(() -> client().createUser(newUser));
+			assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), restUser.getUuid());
+			assertThat(dummySearchProvider).events(2, 0, 0, 0);
+			dummySearchProvider.clear();
 
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
@@ -1147,10 +1141,10 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			}
 
 			// Load the user again and check whether it is disabled
-			MeshResponse<UserResponse> userFuture = client().findUserByUuid(uuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertNull(userFuture.result());
+			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
+
+			assertThat(dummySearchProvider).hasDelete(User.composeIndexName(), User.composeIndexType(), uuid);
+			assertThat(dummySearchProvider).events(0, 1, 0, 0);
 		}
 
 	}

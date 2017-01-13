@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -56,6 +57,8 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		request.setName("new_role");
 
 		RoleResponse restRole = call(() -> client().createRole(request));
+		assertThat(dummySearchProvider).hasStore(Role.composeIndexName(), Role.composeIndexType(), restRole.getUuid());
+		assertThat(dummySearchProvider).events(1, 0, 0, 0);
 
 		try (NoTx noTx = db.noTx()) {
 			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
@@ -388,8 +391,6 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	}
 
-	// Delete tests
-
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
@@ -398,12 +399,13 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
 			String roleUuid = extraRole.getUuid();
-			String roleName = extraRole.getName();
 			role().grantPermissions(extraRole, DELETE_PERM);
 
-			MeshResponse<Void> future = client().deleteRole(roleUuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			dummySearchProvider.clear();
+			call(() -> client().deleteRole(roleUuid));
+			assertThat(dummySearchProvider).hasStore(Group.composeIndexName(), Group.composeIndexType(), group().getUuid());
+			assertThat(dummySearchProvider).hasDelete(Role.composeIndexName(), Role.composeIndexType(), roleUuid);
+			assertThat(dummySearchProvider).events(1, 1, 0, 0);
 			meshRoot().getRoleRoot().reload();
 			assertElement(meshRoot().getRoleRoot(), roleUuid, false);
 		}
@@ -418,9 +420,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		try (NoTx noTx = db.noTx()) {
 			String uuid = role().getUuid();
-			MeshResponse<Void> future = client().deleteRole(uuid).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().deleteRole(uuid), FORBIDDEN, "error_missing_perm", uuid);
 			assertElement(meshRoot().getRoleRoot(), uuid, true);
 		}
 	}
