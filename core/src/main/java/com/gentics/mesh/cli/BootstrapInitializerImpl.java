@@ -74,7 +74,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
- * @See {@link BootstrapInitializer}
+ * @see BootstrapInitializer
  */
 public class BootstrapInitializerImpl implements BootstrapInitializer {
 
