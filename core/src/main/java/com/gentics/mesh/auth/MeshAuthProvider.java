@@ -29,7 +29,6 @@ import com.gentics.mesh.json.JsonUtil;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -97,9 +96,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			jwtProvider.authenticate(authInfo, rh -> {
 				if (rh.failed()) {
 					log.error("Could not authenticate token", rh.cause());
-					resultHandler.handle(Future.failedFuture(new VertxException("Invalid Token")));
+					resultHandler.handle(Future.failedFuture("Invalid Token"));
 				} else {
-
 					try {
 						User user = getUserByJWT(rh.result());
 						resultHandler.handle(Future.succeededFuture(user));
@@ -126,7 +124,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	/**
 	 * Authenticates the user and returns a JWToken if successful.
-	 * 
+	 *
 	 * @param username
 	 * @param password
 	 * @param resultHandler
@@ -146,11 +144,10 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	/**
 	 * Load the user with the given username and use the bcrypt encoder to compare the user password with the provided password.
-	 * 
+	 *
 	 * @param username
 	 * @param password
-	 * @param resultHandler
-	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
+	 * @param resultHandler Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
 	private void authenticate(String username, String password, Handler<AsyncResult<User>> resultHandler) {
 		try (NoTx noTx = db.noTx()) {
@@ -163,7 +160,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 					if (log.isDebugEnabled()) {
 						log.debug("The account password hash or token password string are invalid.");
 					}
-					resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
+					resultHandler.handle(Future.failedFuture("Invalid credentials!"));
 				} else {
 					if (log.isDebugEnabled()) {
 						log.debug("Validating password using the bcrypt password encoder");
@@ -173,14 +170,14 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				if (hashMatches) {
 					resultHandler.handle(Future.succeededFuture(user));
 				} else {
-					resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
+					resultHandler.handle(Future.failedFuture("Invalid credentials!"));
 				}
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with username {" + username + "}.");
 				}
 				// TODO Don't let the user know that we know that he did not exist?
-				resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
+				resultHandler.handle(Future.failedFuture("Invalid credentials!"));
 			}
 		}
 
@@ -188,7 +185,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	/**
 	 * Generates a new JWToken with the user.
-	 * 
+	 *
 	 * @param user
 	 * @return The new token
 	 */
@@ -225,7 +222,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	/**
 	 * Handle the login action and set a token cookie if the credentials are valid.
-	 * 
+	 *
 	 * @param ac
 	 * @param username
 	 * @param password
@@ -235,7 +232,9 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			if (rh.failed()) {
 				throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
 			} else {
-				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result()).setPath("/"));
+				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result())
+						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime())
+						.setPath("/"));
 				ac.send(JsonUtil.toJson(new TokenResponse(rh.result())));
 			}
 		});

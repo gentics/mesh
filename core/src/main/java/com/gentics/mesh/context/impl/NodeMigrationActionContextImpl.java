@@ -18,13 +18,18 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.syncleus.ferma.ClassInitializer;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.TEdge;
+import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -37,6 +42,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
+import rx.Single;
 
 /**
  * Action context implementation which will be used within the node migration.
@@ -129,6 +135,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public String getType() {
+				return User.TYPE;
+			}
+
+			@Override
 			public String getName() {
 				return "node_migration";
 			}
@@ -154,21 +165,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public String getType() {
-				return null;
-			}
-
-			@Override
-			public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-
-			}
-
-			@Override
-			public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
-				return null;
-			}
-
-			@Override
 			public void setUuid(String uuid) {
 
 			}
@@ -180,11 +176,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public String getUuid() {
-				return null;
-			}
-
-			@Override
-			public Element getElement() {
 				return null;
 			}
 
@@ -210,38 +201,38 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void setUsername(String string) {
-
+			public User setUsername(String string) {
+				return this;
 			}
 
 			@Override
-			public void setReferencedNode(Node node) {
-
+			public User setReferencedNode(Node node) {
+				return this;
 			}
 
 			@Override
-			public void setPasswordHash(String hash) {
-
+			public User setPasswordHash(String hash) {
+				return this;
 			}
 
 			@Override
-			public void setPassword(String password) {
-
+			public User setPassword(String password) {
+				return this;
 			}
 
 			@Override
-			public void setLastname(String lastname) {
-
+			public User setLastname(String lastname) {
+				return this;
 			}
 
 			@Override
-			public void setFirstname(String firstname) {
-
+			public User setFirstname(String firstname) {
+				return this;
 			}
 
 			@Override
-			public void setEmailAddress(String email) {
-
+			public User setEmailAddress(String email) {
+				return this;
 			}
 
 			@Override
@@ -250,7 +241,8 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
+			public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
+				return this;
 			}
 
 			@Override
@@ -325,15 +317,18 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void enable() {
+			public User enable() {
+				return this;
 			}
 
 			@Override
-			public void disable() {
+			public User disable() {
+				return this;
 			}
 
 			@Override
-			public void deactivate() {
+			public User deactivate() {
+				return this;
 			}
 
 			@Override
@@ -342,15 +337,18 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+			public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+				return this;
 			}
 
 			@Override
-			public void addGroup(Group group) {
+			public User addGroup(Group group) {
+				return this;
 			}
 
 			@Override
-			public void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
+			public User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
+				return this;
 			}
 
 			@Override
@@ -383,7 +381,408 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public MeshAuthUserImpl getImpl() {
+			public Vertex getElement() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <T> T addFramedEdge(String label, VertexFrame inVertex, ClassInitializer<T> initializer) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <T> T addFramedEdge(String label, VertexFrame inVertex, Class<T> kind) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <T> T addFramedEdgeExplicit(String label, VertexFrame inVertex, ClassInitializer<T> initializer) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <T> T addFramedEdgeExplicit(String label, VertexFrame inVertex, Class<T> kind) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public TEdge addFramedEdge(String label, VertexFrame inVertex) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public TEdge addFramedEdgeExplicit(String label, VertexFrame inVertex) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> out(int branchFactor, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> out(String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> in(int branchFactor, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> in(String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> both(int branchFactor, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> both(String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public EdgeTraversal<?, ?, ?> outE(int branchFactor, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public EdgeTraversal<?, ?, ?> outE(String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public EdgeTraversal<?, ?, ?> inE(int branchFactor, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public EdgeTraversal<?, ?, ?> inE(String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public EdgeTraversal<?, ?, ?> bothE(int branchFactor, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public EdgeTraversal<?, ?, ?> bothE(String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void linkOut(VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void linkIn(VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void linkBoth(VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void unlinkOut(VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void unlinkIn(VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void unlinkBoth(VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void setLinkOut(VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void setLinkIn(VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void setLinkBoth(VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public <K> K setLinkOut(ClassInitializer<K> initializer, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkOut(Class<K> kind, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkOutExplicit(ClassInitializer<K> initializer, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkOutExplicit(Class<K> kind, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkIn(ClassInitializer<K> initializer, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkIn(Class<K> kind, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkInExplicit(ClassInitializer<K> initializer, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkInExplicit(Class<K> kind, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkBoth(ClassInitializer<K> initializer, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkBoth(Class<K> kind, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkBothExplicit(ClassInitializer<K> initializer, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <K> K setLinkBothExplicit(Class<K> kind, String... labels) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> traversal() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public com.google.gson.JsonObject toJson() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <T> T reframe(Class<T> kind) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <T> T reframeExplicit(Class<T> kind) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <N> N getId() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Set<String> getPropertyKeys() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void remove() {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void setElement(Element element) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public FramedGraph getGraph() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <T> T getProperty(String name) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <T> T getProperty(String name, Class<T> type) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void setProperty(String name, Object value) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public Class<?> getTypeResolution() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void setTypeResolution(Class<?> type) {
+
+			}
+
+			@Override
+			public void removeTypeResolution() {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> v() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public EdgeTraversal<?, ?, ?> e() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> v(Object... ids) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public EdgeTraversal<?, ?, ?> e(Object... ids) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public User getCreator() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public User getEditor() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+				return MeshInternal.get().database().operateNoTx(() -> {
+					return Single.just(transformToRestSync(ac, level, languageTags));
+				});
+			}
+
+			@Override
+			public User setResetToken(String token) {
+				return this;
+			}
+
+			@Override
+			public String getResetToken() {
+				return null;
+			}
+
+			@Override
+			public Long getResetTokenIssueTimestamp() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public User setResetTokenIssueTimestamp(Long timestamp) {
+				// TODO Auto-generated method stub
 				return null;
 			}
 		};

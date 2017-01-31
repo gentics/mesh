@@ -59,4 +59,23 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 		return Single.just(new GenericMessageResponse("OK"));
 	}
 
+	/**
+	 * Return the JWT token.
+	 * 
+	 * @return
+	 */
+	public String getToken() {
+		return token;
+	}
+
+	/**
+	 * Set the JWT token.
+	 * 
+	 * @param token
+	 * @return
+	 */
+	public JWTAuthentication setToken(String token) {
+		this.token = token;
+		return this;
+	}
 }

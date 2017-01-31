@@ -54,7 +54,7 @@ public class ReleaseMigrationEndpointTest extends AbstractRestEndpointTest {
 			Project project = project();
 			assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
 
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 
 			List<? extends Node> published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 			List<? extends Node> nodes = project.getNodeRoot().findAll().stream()
@@ -64,7 +64,7 @@ public class ReleaseMigrationEndpointTest extends AbstractRestEndpointTest {
 
 			// publish some nodes
 			published.forEach(node -> {
-				call(() -> getClient().publishNode(project.getName(), node.getUuid()));
+				call(() -> client().publishNode(project.getName(), node.getUuid()));
 			});
 
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -191,7 +191,7 @@ public class ReleaseMigrationEndpointTest extends AbstractRestEndpointTest {
 					create.setLanguage("en");
 					create.setSchema(new SchemaReference().setName("folder"));
 					create.setParentNodeUuid(baseNodeUuid);
-					call(() -> getClient().createNode(projectName, create));
+					call(() -> client().createNode(projectName, create));
 					createdNode.mark();
 					return true;
 				}));

@@ -28,12 +28,12 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testReadProjectMicroschemas() {
 		try (NoTx noTx = db.noTx()) {
-			MicroschemaListResponse list = call(() -> getClient().findMicroschemas(PROJECT_NAME));
+			MicroschemaListResponse list = call(() -> client().findMicroschemas(PROJECT_NAME));
 			assertEquals(2, list.getData().size());
 
-			call(() -> getClient().unassignMicroschemaFromProject(PROJECT_NAME, microschemaContainer("vcard").getUuid()));
+			call(() -> client().unassignMicroschemaFromProject(PROJECT_NAME, microschemaContainer("vcard").getUuid()));
 
-			list = call(() -> getClient().findMicroschemas(PROJECT_NAME));
+			list = call(() -> client().findMicroschemas(PROJECT_NAME));
 			assertEquals(1, list.getData().size());
 		}
 	}
@@ -47,12 +47,12 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReference().setName("folder"));
 			request.setName(name);
 
-			ProjectResponse restProject = call(() -> getClient().createProject(request));
+			ProjectResponse restProject = call(() -> client().createProject(request));
 
-			call(() -> getClient().assignMicroschemaToProject(restProject.getName(), microschema.getUuid()));
+			call(() -> client().assignMicroschemaToProject(restProject.getName(), microschema.getUuid()));
 		}
 	}
 
@@ -63,16 +63,16 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReference().setName("folder"));
 			request.setName("extraProject");
-			ProjectResponse created = call(() -> getClient().createProject(request));
+			ProjectResponse created = call(() -> client().createProject(request));
 			Project extraProject = projectRoot.findByUuid(created.getUuid());
 
 			// Add only read perms
 			role().grantPermissions(microschema, READ_PERM);
 			role().grantPermissions(extraProject, UPDATE_PERM);
 
-			Microschema restMicroschema = call(() -> getClient().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
+			Microschema restMicroschema = call(() -> client().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
 			assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
 			extraProject.reload();
 			extraProject.getMicroschemaContainerRoot().reload();
@@ -92,15 +92,15 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
-			request.setSchemaReference(new SchemaReference().setName("folder"));
-			ProjectResponse response = call(() -> getClient().createProject(request));
+			request.setSchema(new SchemaReference().setName("folder"));
+			ProjectResponse response = call(() -> client().createProject(request));
 			projectUuid = response.getUuid();
 			extraProject = projectRoot.findByUuid(projectUuid);
 			// Revoke Update perm on project
 			role().revokePermissions(extraProject, UPDATE_PERM);
 		}
 
-		call(() -> getClient().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm",
+		call(() -> client().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm",
 				projectUuid);
 
 		try (NoTx noTx = db.noTx()) {
@@ -120,9 +120,9 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 			Project project = project();
 			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
 
-			call(() -> getClient().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()));
+			call(() -> client().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()));
 
-			MicroschemaListResponse list = call(() -> getClient().findMicroschemas(PROJECT_NAME));
+			MicroschemaListResponse list = call(() -> client().findMicroschemas(PROJECT_NAME));
 
 			assertEquals("The removed microschema should not be listed in the response", 0,
 					list.getData().stream().filter(s -> s.getUuid().equals(microschema.getUuid())).count());
@@ -141,7 +141,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 			// Revoke update perms on the project
 			role().revokePermissions(project, UPDATE_PERM);
 
-			call(() -> getClient().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()), FORBIDDEN, "error_missing_perm",
+			call(() -> client().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()), FORBIDDEN, "error_missing_perm",
 					project.getUuid());
 
 			// Reload the microschema and check for expected changes

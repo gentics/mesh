@@ -23,12 +23,11 @@ public abstract class AbstractChange implements Change {
 
 	private long duration;
 
+	@Override
 	public abstract void apply();
 
 	@Override
-	public String getUuid() {
-		return getClass().getName().replaceAll("Change_", "");
-	}
+	public abstract String getUuid();
 
 	@Override
 	public boolean isApplied() {
@@ -126,13 +125,9 @@ public abstract class AbstractChange implements Change {
 		return true;
 	}
 
-	/**
-	 * Add a reindex batch entry which will be handled during mesh startup.
-	 * 
-	 * @param elementType
-	 */
-	public void addFullReindexEntry(String elementType) {
-		MeshGraphHelper.addFullReindexEntry(getGraph(), elementType);
+	@Override
+	public boolean requiresReindex() {
+		return false;
 	}
 
 }

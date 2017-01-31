@@ -37,7 +37,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
@@ -51,7 +51,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			assertNotNull(tagFamily);
 
-			MeshResponse<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid()).invoke();
+			MeshResponse<TagFamilyResponse> future = client().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			TagFamilyResponse response = future.result();
@@ -68,7 +68,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
 
-			MeshResponse<TagFamilyResponse> future = getClient()
+			MeshResponse<TagFamilyResponse> future = client()
 					.findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -88,7 +88,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull(tagFamily);
 			role.revokePermissions(tagFamily, READ_PERM);
 
-			MeshResponse<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
+			MeshResponse<TagFamilyResponse> future = client().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -99,7 +99,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			String uuid = tagFamily.getUuid();
-			MeshResponse<TagListResponse> future = getClient().findTags(PROJECT_NAME, uuid).invoke();
+			MeshResponse<TagListResponse> future = client().findTags(PROJECT_NAME, uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 		}
@@ -117,7 +117,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull(noPermTagFamily.getUuid());
 
 			// Test default paging parameters
-			MeshResponse<TagFamilyListResponse> future = getClient().findTagFamilies(PROJECT_NAME).invoke();
+			MeshResponse<TagFamilyListResponse> future = client().findTagFamilies(PROJECT_NAME).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -132,7 +132,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 			List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(page, perPage))
+				MeshResponse<TagFamilyListResponse> tagPageFut = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(page, perPage))
 						.invoke();
 				latchFor(tagPageFut);
 				assertSuccess(future);
@@ -159,21 +159,21 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 					.collect(Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			MeshResponse<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(-1, perPage)).invoke();
+			MeshResponse<TagFamilyListResponse> pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(-1, perPage)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(0, perPage)).invoke();
+			pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(0, perPage)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
-			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(1, -1)).invoke();
+			pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(1, -1)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 			perPage = 25;
 			totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
-			pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(4242, perPage)).invoke();
+			pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(4242, perPage)).invoke();
 			latchFor(pageFuture);
 			TagFamilyListResponse tagList = pageFuture.result();
 			assertEquals(0, tagList.getData().size());
@@ -187,7 +187,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameters(1, 0)).invoke();
+		MeshResponse<TagFamilyListResponse> pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(1, 0)).invoke();
 		latchFor(pageFuture);
 		assertSuccess(pageFuture);
 		assertEquals(0, pageFuture.result().getData().size());
@@ -197,7 +197,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testCreateWithConflictingName() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("colors");
-		call(() -> getClient().createTagFamily(PROJECT_NAME, request), CONFLICT, "tagfamily_conflicting_name", "colors");
+		call(() -> client().createTagFamily(PROJECT_NAME, request), CONFLICT, "tagfamily_conflicting_name", "colors");
 	}
 
 	@Test
@@ -205,7 +205,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testCreate() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("newTagFamily");
-		TagFamilyResponse response = call(() -> getClient().createTagFamily(PROJECT_NAME, request));
+		TagFamilyResponse response = call(() -> client().createTagFamily(PROJECT_NAME, request));
 		assertEquals(request.getName(), response.getName());
 	}
 
@@ -218,7 +218,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 		}
-		call(() -> getClient().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", tagFamilyRootUuid);
+		call(() -> client().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", tagFamilyRootUuid);
 	}
 
 	@Test
@@ -228,15 +228,15 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 		request.setName("newTagFamily");
 
 		// 1. Create
-		TagFamilyResponse tagFamily = call(() -> getClient().createTagFamily(PROJECT_NAME, request));
+		TagFamilyResponse tagFamily = call(() -> client().createTagFamily(PROJECT_NAME, request));
 
 		// 2. Read
 		String tagFamilyUuid = tagFamily.getUuid();
-		tagFamily = call(() -> getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamilyUuid));
+		tagFamily = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, tagFamilyUuid));
 
 		// 3. Delete
 		String tagFamilyUuid2 = tagFamily.getUuid();
-		call(() -> getClient().deleteTagFamily(PROJECT_NAME, tagFamilyUuid2));
+		call(() -> client().deleteTagFamily(PROJECT_NAME, tagFamilyUuid2));
 
 	}
 
@@ -246,7 +246,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName("SuperDoll");
-			MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
+			MeshResponse<TagFamilyResponse> future = client().createTagFamily(PROJECT_NAME, request).invoke();
 			latchFor(future);
 
 			expectException(future, FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
@@ -257,7 +257,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testCreateWithNoName() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		// Don't set the name
-		MeshResponse<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request).invoke();
+		MeshResponse<TagFamilyResponse> future = client().createTagFamily(PROJECT_NAME, request).invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "tagfamily_name_not_set");
 	}
@@ -270,10 +270,9 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			String uuid = basicTagFamily.getUuid();
 			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid));
 
-			call(() -> getClient().deleteTagFamily(PROJECT_NAME, uuid));
+			call(() -> client().deleteTagFamily(PROJECT_NAME, uuid));
 			assertElement(project().getTagFamilyRoot(), uuid, false);
 		}
-
 	}
 
 	@Test
@@ -286,7 +285,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
-			call(() -> getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()), FORBIDDEN, "error_missing_perm",
+			call(() -> client().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()), FORBIDDEN, "error_missing_perm",
 					basicTagFamily.getUuid());
 
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
@@ -301,7 +300,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName(newName);
 
-			MeshResponse<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request).invoke();
+			MeshResponse<TagFamilyResponse> future = client().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "tagfamily_conflicting_name", newName);
 		}
@@ -316,7 +315,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			String name = tagFamily.getName();
 
 			// 1. Read the current tagfamily
-			MeshResponse<TagFamilyResponse> readTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
+			MeshResponse<TagFamilyResponse> readTagFut = client().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
 			latchFor(readTagFut);
 			assertSuccess(readTagFut);
 			assertNotNull("The name of the tag should be loaded.", name);
@@ -333,14 +332,14 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertEquals(newName, tagUpdateRequest.getName());
 
 			// 3. Send the request to the server
-			MeshResponse<TagFamilyResponse> updatedTagFut = getClient().updateTagFamily(PROJECT_NAME, uuid, tagUpdateRequest).invoke();
+			MeshResponse<TagFamilyResponse> updatedTagFut = client().updateTagFamily(PROJECT_NAME, uuid, tagUpdateRequest).invoke();
 			latchFor(updatedTagFut);
 			assertSuccess(updatedTagFut);
 			TagFamilyResponse tagFamily2 = updatedTagFut.result();
 			assertThat(tagFamily2).matches(tagFamily("basic"));
 
 			// 4. read the tag again and verify that it was changed
-			MeshResponse<TagFamilyResponse> reloadedTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
+			MeshResponse<TagFamilyResponse> reloadedTagFut = client().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
 			latchFor(reloadedTagFut);
 			assertSuccess(reloadedTagFut);
 			TagFamilyResponse reloadedTagFamily = reloadedTagFut.result();
@@ -355,7 +354,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("new Name");
 
-		MeshResponse<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, "bogus", request).invoke();
+		MeshResponse<TagFamilyResponse> future = client().updateTagFamily(PROJECT_NAME, "bogus", request).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -373,7 +372,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName("new Name");
 
-			MeshResponse<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, uuid, request).invoke();
+			MeshResponse<TagFamilyResponse> future = client().updateTagFamily(PROJECT_NAME, uuid, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
@@ -393,7 +392,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().updateTagFamily(PROJECT_NAME, tagFamily("colors").getUuid(), request).invoke());
+				set.add(client().updateTagFamily(PROJECT_NAME, tagFamily("colors").getUuid(), request).invoke());
 			}
 			validateSet(set, barrier);
 		}
@@ -409,7 +408,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke());
+				set.add(client().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke());
 			}
 			validateSet(set, barrier);
 		}
@@ -425,7 +424,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<Void>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().deleteTagFamily(PROJECT_NAME, uuid).invoke());
+				set.add(client().deleteTagFamily(PROJECT_NAME, uuid).invoke());
 			}
 			validateDeletion(set, barrier);
 		}
@@ -442,7 +441,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().createTagFamily(PROJECT_NAME, request).invoke());
+			set.add(client().createTagFamily(PROJECT_NAME, request).invoke());
 		}
 		validateCreation(set, barrier);
 	}
@@ -454,7 +453,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			int nJobs = 200;
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily("colors").getUuid()).invoke());
+				set.add(client().findTagFamilyByUuid(PROJECT_NAME, tagFamily("colors").getUuid()).invoke());
 			}
 			for (MeshResponse<?> future : set) {
 				latchFor(future);

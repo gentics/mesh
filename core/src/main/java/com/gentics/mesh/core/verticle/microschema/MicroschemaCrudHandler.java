@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -23,6 +22,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -30,7 +30,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
@@ -45,11 +44,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot) {
-		super(db);
+	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
+			HandlerUtilities utils) {
+		super(db, utils);
 		this.comparator = comparator;
 		this.boot = boot;
+		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -61,7 +64,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
 			MicroschemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
@@ -73,7 +76,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				return message(ac, "schema_update_no_difference_detected", name);
 			}
 			db.tx(() -> {
-				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
@@ -125,7 +128,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema uuid
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			return microschema.getLatestVersion().diff(ac, comparator, requestModel);
@@ -141,10 +144,10 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema which should be modified
 	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
-				SearchQueueBatch batch = MeshInternal.get().boot().meshRoot().getSearchQueue().createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 				schema.getLatestVersion().applyChanges(ac, batch);
 				return batch;
 			}).processSync();
@@ -159,7 +162,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 * @param ac
 	 */
 	public void handleReadMicroschemaList(InternalActionContext ac) {
-		HandlerUtilities.readElementList(ac, () -> ac.getProject().getMicroschemaContainerRoot());
+		utils.readElementList(ac, () -> ac.getProject().getMicroschemaContainerRoot());
 	}
 
 	/**
@@ -172,9 +175,10 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 */
 	public void handleAddMicroschemaToProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
-		operateNoTx(() -> {
+
+		db.operateNoTx(() -> {
 			Project project = ac.getProject();
-			if (!ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
+			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
@@ -188,10 +192,11 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	public void handleRemoveMicroschemaFromProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
-		operateNoTx(() -> {
+
+		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			if (!ac.getUser().hasPermission(project.getImpl(), UPDATE_PERM)) {
+			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
 			// TODO check whether microschema is assigned to project

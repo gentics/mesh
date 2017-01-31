@@ -1,10 +1,17 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
+import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
@@ -19,6 +26,53 @@ import com.gentics.mesh.util.CompareUtils;
  */
 public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl, String> implements HtmlGraphFieldList {
 
+	public static FieldTransformator<HtmlFieldListImpl> HTML_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level,
+			parentNode) -> {
+		HtmlGraphFieldList htmlFieldList = container.getHTMLList(fieldKey);
+		if (htmlFieldList == null) {
+			return null;
+		} else {
+			return htmlFieldList.transformToRest(ac, fieldKey, languageTags, level);
+		}
+	};
+
+	public static FieldUpdater HTML_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		HtmlGraphFieldList graphHtmlFieldList = container.getHTMLList(fieldKey);
+		HtmlFieldListImpl htmlList = fieldMap.getHtmlFieldList(fieldKey);
+		boolean isHtmlListFieldSetToNull = fieldMap.hasField(fieldKey) && htmlList == null;
+		GraphField.failOnDeletionOfRequiredField(graphHtmlFieldList, isHtmlListFieldSetToNull, fieldSchema, fieldKey, schema);
+		boolean restIsNull = htmlList == null;
+		GraphField.failOnMissingRequiredField(graphHtmlFieldList, htmlList == null, fieldSchema, fieldKey, schema);
+
+		// Handle Deletion
+		if (isHtmlListFieldSetToNull && graphHtmlFieldList != null) {
+			graphHtmlFieldList.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNull) {
+			return;
+		}
+
+		// Always create a new list. 
+		// This will effectively unlink the old list and create a new one. 
+		// Otherwise the list which is linked to old versions would be updated. 
+		graphHtmlFieldList = container.createHTMLList(fieldKey);
+
+		// Add items from rest model
+		for (String item : htmlList.getItems()) {
+			if (item == null) {
+				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
+			}
+			graphHtmlFieldList.createHTML(item);
+		}
+	};
+
+	public static FieldGetter HTML_LIST_GETTER = (container, fieldSchema) -> {
+		return container.getHTMLList(fieldSchema.getName());
+	};
+
 	public static void init(Database database) {
 		database.addVertexType(HtmlGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
@@ -32,7 +86,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 
 	@Override
 	protected HtmlGraphField createField(String key) {
-		return new HtmlGraphFieldImpl(key, getImpl());
+		return new HtmlGraphFieldImpl(key, this);
 	}
 
 	@Override

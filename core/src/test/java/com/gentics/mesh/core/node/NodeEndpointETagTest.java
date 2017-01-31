@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
@@ -32,14 +32,14 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {
-			MeshResponse<NodeListResponse> response = getClient().findNodes(PROJECT_NAME).invoke();
+			MeshResponse<NodeListResponse> response = client().findNodes(PROJECT_NAME).invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findNodes(PROJECT_NAME), etag, true);
-			expectNo304(getClient().findNodes(PROJECT_NAME, new PagingParameters().setPage(2)), etag, true);
-			expectNo304(getClient().findNodes(PROJECT_NAME, new PagingParameters().setPerPage(2)), etag, true);
+			expect304(client().findNodes(PROJECT_NAME), etag, true);
+			expectNo304(client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPage(2)), etag, true);
+			expectNo304(client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(2)), etag, true);
 		}
 	}
 
@@ -49,20 +49,20 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			Node node = content();
 			String nodeUuid = node.getUuid();
 
-			MeshResponse<TagListResponse> response = getClient().findTagsForNode(PROJECT_NAME, nodeUuid).invoke();
+			MeshResponse<TagListResponse> response = client().findTagsForNode(PROJECT_NAME, nodeUuid).invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findTagsForNode(PROJECT_NAME, nodeUuid), etag, true);
-			expectNo304(getClient().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParameters().setPage(2)), etag, true);
-			expectNo304(getClient().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParameters().setPerPage(2)), etag, true);
+			expect304(client().findTagsForNode(PROJECT_NAME, nodeUuid), etag, true);
+			expectNo304(client().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParametersImpl().setPage(2)), etag, true);
+			expectNo304(client().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParametersImpl().setPerPage(2)), etag, true);
 
 			// Add another tag to the node
-			call(() -> getClient().addTagToNode(PROJECT_NAME, nodeUuid, tag("red").getUuid()));
+			call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tag("red").getUuid()));
 
 			// We added another tag to the node thus the tags result is different
-			expectNo304(getClient().findTagsForNode(PROJECT_NAME, nodeUuid), etag, true);
+			expectNo304(client().findTagsForNode(PROJECT_NAME, nodeUuid), etag, true);
 		}
 	}
 
@@ -70,14 +70,14 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 	public void testReadChildren() {
 		try (NoTx noTx = db.noTx()) {
 			String uuid = project().getBaseNode().getUuid();
-			MeshResponse<NodeListResponse> response = getClient().findNodeChildren(PROJECT_NAME, uuid).invoke();
+			MeshResponse<NodeListResponse> response = client().findNodeChildren(PROJECT_NAME, uuid).invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findNodeChildren(PROJECT_NAME, uuid), etag, true);
-			expectNo304(getClient().findNodeChildren(PROJECT_NAME, uuid, new PagingParameters().setPage(2)), etag, true);
-			expectNo304(getClient().findNodeChildren(PROJECT_NAME, uuid, new PagingParameters().setPerPage(2)), etag, true);
+			expect304(client().findNodeChildren(PROJECT_NAME, uuid), etag, true);
+			expectNo304(client().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPage(2)), etag, true);
+			expectNo304(client().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPerPage(2)), etag, true);
 
 			// Create a new node in the parent folder
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -85,15 +85,15 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			request.setParentNodeUuid(uuid);
 			request.setSchema(new SchemaReference().setName("content"));
 			request.getFields().put("name", FieldUtil.createStringField("someName"));
-			NodeResponse createdNode = call(() -> getClient().createNode(PROJECT_NAME, request));
+			NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, request));
 
 			// We added another node but it has not yet been published
-			expect304(getClient().findNodeChildren(PROJECT_NAME, uuid), etag, true);
+			expect304(client().findNodeChildren(PROJECT_NAME, uuid), etag, true);
 
-			call(() -> getClient().publishNode(PROJECT_NAME, createdNode.getUuid()));
+			call(() -> client().publishNode(PROJECT_NAME, createdNode.getUuid()));
 
 			// We published the node thus the children result is different
-			expectNo304(getClient().findNodeChildren(PROJECT_NAME, uuid), etag, true);
+			expectNo304(client().findNodeChildren(PROJECT_NAME, uuid), etag, true);
 		}
 	}
 
@@ -108,23 +108,23 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			node.getGraphFieldContainer("en").getSchemaContainerVersion().setSchema(schema);
 			node.getGraphFieldContainer("en").createNode("reference", folder("2015"));
 
-			MeshResponse<NodeResponse> response = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid()).invoke();
+			MeshResponse<NodeResponse> response = client().findNodeByUuid(PROJECT_NAME, node.getUuid()).invoke();
 			latchFor(response);
 			String etag = node.getETag(getMockedInternalActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<NodeResponse> request = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
+			MeshRequest<NodeResponse> request = client().findNodeByUuid(PROJECT_NAME, node.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
 			assertNotEquals("A different etag should have been generated since we are not requesting the expanded node.", etag,
-					expectNo304(getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
+					expectNo304(client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
 
 			String newETag = expectNo304(
-					getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandedFieldNames("reference")), etag, true);
+					client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandedFieldNames("reference")), etag, true);
 			assertNotEquals("We added parameters and thus a new etag should have been generated.", newETag,
 					expectNo304(
-							getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandedFieldNames("reference", "bla")),
+							client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandedFieldNames("reference", "bla")),
 							newETag, true));
 
 		}

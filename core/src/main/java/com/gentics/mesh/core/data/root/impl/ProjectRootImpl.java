@@ -6,8 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_INDEX;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -28,12 +26,9 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -47,9 +42,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
-import com.gentics.mesh.search.index.tag.TagIndexHandler;
-import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -93,7 +85,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		project.setName(name);
 		project.getNodeRoot();
 
-		// Create the initial release for the project and add the used schema version to it
+		// Create the initial release for the project and add the used schema
+		// version to it
 		Release release = project.getReleaseRoot().create(name, creator).setMigrated(true);
 		release.assignSchemaVersion(schemaContainerVersion);
 
@@ -160,8 +153,10 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		RouterStorage routerStorage = RouterStorage.getIntance();
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
-		// TODO also create a default object schema for the project. Move this into service class
-		// ObjectSchema defaultContentSchema = objectSchemaRoot.findByName(, name)
+		// TODO also create a default object schema for the project. Move this
+		// into service class
+		// ObjectSchema defaultContentSchema = objectSchemaRoot.findByName(,
+		// name)
 		ProjectCreateRequest requestModel = ac.fromJson(ProjectCreateRequest.class);
 		String projectName = requestModel.getName();
 		MeshAuthUser creator = ac.getUser();
@@ -181,11 +176,10 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", requestModel.getName());
 		}
 
-		if (requestModel.getSchemaReference() == null || !requestModel.getSchemaReference().isSet()) {
+		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
 		}
-		SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot()
-				.fromReference(requestModel.getSchemaReference());
+		SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot().fromReference(requestModel.getSchema());
 
 		Project project = create(projectName, creator, schemaContainerVersion);
 		Release initialRelease = project.getInitialRelease();
@@ -200,23 +194,25 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
 		creator.addPermissionsOnRole(this, CREATE_PERM, initialRelease);
 
-		project.addIndexBatchEntry(batch, STORE_ACTION);
+		// Store the project in the index
+		batch.store(project, true);
 
 		String releaseUuid = initialRelease.getUuid();
 		String projectUuid = project.getUuid();
 
 		// 1. Create needed indices
-		batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT), Node.TYPE, CREATE_INDEX);
-		batch.addEntry(NodeIndexHandler.getIndexName(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED), Node.TYPE, CREATE_INDEX);
-		batch.addEntry(TagIndexHandler.getIndexName(projectUuid), Tag.TYPE, CREATE_INDEX);
-		batch.addEntry(TagFamilyIndexHandler.getIndexName(project.getUuid()), TagFamily.TYPE, CREATE_INDEX);
+		batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT);
+		batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED);
+		batch.createTagIndex(projectUuid);
+		batch.createTagFamilyIndex(projectUuid);
 
 		// 3. Add created basenode to SQB
 		NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
-		baseNodeFieldContainer.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
+		batch.store(project.getBaseNode(), releaseUuid, ContainerType.DRAFT, false);
 
 		try {
-			// TODO BUG project should only be added to router when tx and ES finished successfully
+			// TODO BUG project should only be added to router when tx and ES
+			// finished successfully
 			routerStorage.addProjectRouter(projectName);
 			if (log.isInfoEnabled()) {
 				log.info("Registered project {" + projectName + "}");

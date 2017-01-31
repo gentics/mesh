@@ -11,11 +11,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -63,11 +63,10 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 	}
 
 	@Test
-	@Ignore("Unstable test")
 	public void testEmptyMigration() throws Throwable {
 		try (NoTx tx = db.noTx()) {
 
-			CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			String fieldName = "changedfield";
 
@@ -82,15 +81,11 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 
 			// Trigger migration by sending a event
 			vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-				// future.complete(rh);
+				latch.countDown();
 			});
 
 			failingLatch(latch);
 
-			// AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-			// if (result.cause() != null) {
-			// throw result.cause();
-			// }
 		}
 
 	}
@@ -136,6 +131,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 					.isEqualTo("modified second content");
+			assertThat(dummySearchProvider).events(2, 0, 0, 0);
 		}
 	}
 
@@ -191,7 +187,8 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			englishContainer.createString(fieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
-			node.publish(InternalActionContext.create(getMockedRoutingContext(user())), "en").await();
+			InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(user()));
+			node.publish(ac, "en").await();
 
 			doSchemaMigration(container, versionA, versionB);
 
@@ -225,7 +222,8 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 		}
 		try (NoTx tx = db.noTx()) {
 			node.reload();
-			node.publish(InternalActionContext.create(getMockedRoutingContext(user())), "en").await();
+			InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(user()));
+			node.publish(ac, "en").await();
 		}
 
 		try (NoTx tx = db.noTx()) {
@@ -331,7 +329,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			String fieldName = "changedfield";
 			String micronodeFieldName = "micronodefield";
 
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);

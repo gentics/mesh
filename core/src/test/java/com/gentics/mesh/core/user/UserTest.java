@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.user;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
@@ -8,7 +9,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLI
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -18,23 +18,24 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
-import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -106,13 +107,13 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
-			PageImpl<? extends User> page = boot.userRoot().findAll(ac, new PagingParameters(1, 6));
+			Page<? extends User> page = boot.userRoot().findAll(ac, new PagingParametersImpl(1, 6));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(3, page.getSize());
 
-			page = boot.userRoot().findAll(ac, new PagingParameters(1, 15));
+			page = boot.userRoot().findAll(ac, new PagingParametersImpl(1, 15));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(users().size(), page.getSize());
 		}
@@ -122,7 +123,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
-			PageImpl<? extends User> page = boot.userRoot().findAll(getMockedInternalActionContext(null, user()), new PagingParameters(1, 25));
+			Page<? extends User> page = boot.userRoot().findAll(getMockedInternalActionContext(null, user()), new PagingParametersImpl(1, 25));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
 		}
@@ -185,9 +186,9 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			group().addUser(extraUser);
 			role().grantPermissions(extraUser, READ_PERM);
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			PageImpl<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParameters(1, 10));
+			Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParametersImpl(1, 10));
 
 			assertEquals(2, userPage.getTotalElements());
 		}
@@ -218,7 +219,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	public void testTransformation() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			UserResponse restUser = user().transformToRest(ac, 0).toBlocking().value();
 
@@ -379,7 +380,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(user.getEditor());
 			assertNotNull(user.getCreationTimestamp());
 			assertEquals(1, user.getGroups().size());
-			assertNotNull(user.getImpl());
+			assertNotNull(user);
 		}
 	}
 

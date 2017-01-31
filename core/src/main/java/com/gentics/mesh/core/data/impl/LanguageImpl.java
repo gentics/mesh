@@ -7,10 +7,11 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
+
+import rx.Single;
 
 /**
  * @see Language
@@ -31,7 +32,6 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 		return Language.TYPE;
 	}
 
-	// TODO add index
 	@Override
 	public String getName() {
 		return getProperty(LANGUAGE_NAME_PROPERTY_KEY);
@@ -73,17 +73,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public LanguageImpl getImpl() {
-		return this;
-	}
-
-	@Override
 	public void delete(SearchQueueBatch batch) {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		throw new NotImplementedException();
 	}
 
@@ -101,6 +91,13 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public String getAPIPath(InternalActionContext ac) {
 		// Languages don't have a public location
 		return null;
+	}
+
+	@Override
+	public Single<LanguageResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return db.operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 
 }

@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.tagfamily;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
-import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -19,6 +19,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -31,11 +32,11 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
-import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -67,7 +68,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			root.findAll(getMockedInternalActionContext(user()), new PagingParameters(1, 10));
+			root.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 10));
 		}
 	}
 
@@ -193,8 +194,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 				tagFamily.delete(batch);
 				tx.success();
 			}
-			batch.reload();
-			assertAffectedElements(affectedElements, batch);
+			assertThat(batch).containsEntries(affectedElements);
 		}
 	}
 
@@ -250,7 +250,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			TagFamilyResponse response = tagFamily.transformToRestSync(ac, 0);
 			assertNotNull(response);
 			assertEquals(tagFamily.getName(), response.getName());

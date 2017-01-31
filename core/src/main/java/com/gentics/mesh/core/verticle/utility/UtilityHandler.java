@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.verticle.utility;
 
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -35,8 +35,8 @@ public class UtilityHandler extends AbstractHandler {
 	 * @param rc
 	 */
 	public void handleResolveLinks(RoutingContext rc) {
-		InternalActionContext ac = InternalActionContext.create(rc);
-		operateNoTx(() -> {
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		db.operateNoTx(() -> {
 			String projectName = ac.getParameter("project");
 			if (projectName == null) {
 				projectName = "project";

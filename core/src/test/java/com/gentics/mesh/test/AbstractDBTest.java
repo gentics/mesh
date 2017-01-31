@@ -10,7 +10,9 @@ import org.junit.BeforeClass;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -38,8 +40,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
+import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -88,7 +90,7 @@ public abstract class AbstractDBTest {
 	}
 
 	/**
-	 * Initalise mesh options.
+	 * Initialise mesh options.
 	 * 
 	 * @param enableES
 	 * @throws IOException
@@ -125,6 +127,7 @@ public abstract class AbstractDBTest {
 		} else {
 			searchOptions.setDirectory(null);
 		}
+		searchOptions.setHttpEnabled(true);
 		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);
 	}
@@ -162,7 +165,7 @@ public abstract class AbstractDBTest {
 	 * Clear the test data.
 	 */
 	protected void resetDatabase() {
-		BootstrapInitializer.clearReferences();
+		BootstrapInitializerImpl.clearReferences();
 		long start = System.currentTimeMillis();
 		db.clear();
 		long duration = System.currentTimeMillis() - start;
@@ -301,7 +304,7 @@ public abstract class AbstractDBTest {
 	}
 
 	public SearchQueueBatch createBatch() {
-		return meshRoot().getSearchQueue().createBatch();
+		return MeshInternal.get().searchQueue().createBatch();
 	}
 
 	/**
@@ -316,7 +319,7 @@ public abstract class AbstractDBTest {
 	}
 
 	public MeshAuthUser getRequestUser() {
-		return dataProvider.getUserInfo().getUser().getImpl().reframe(MeshAuthUserImpl.class);
+		return dataProvider.getUserInfo().getUser().reframe(MeshAuthUserImpl.class);
 	}
 
 	public SchemaContainer getSchemaContainer() {
@@ -327,7 +330,7 @@ public abstract class AbstractDBTest {
 
 	protected String getJson(Node node) throws Exception {
 		RoutingContext rc = Mocks.getMockedRoutingContext("lang=en&version=draft", user());
-		InternalActionContext ac = InternalActionContext.create(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
 	}

@@ -39,7 +39,7 @@ public class UtilityEndpoint extends AbstractEndpoint {
 	}
 
 	/**
-	 * Add the handler for link resolving
+	 * Add the handler for link resolving.
 	 */
 	private void addResolveLinkHandler() {
 		Endpoint resolver = createEndpoint();

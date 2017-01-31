@@ -3,6 +3,10 @@ package com.gentics.mesh.core.data.node.field.impl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
+import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
@@ -10,6 +14,46 @@ import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> implements BooleanGraphField {
+
+	public static FieldTransformator<BooleanField> BOOLEAN_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+		BooleanGraphField graphBooleanField = container.getBoolean(fieldKey);
+		if (graphBooleanField == null) {
+			return null;
+		} else {
+			return graphBooleanField.transformToRest(ac);
+		}
+	};
+
+	public static FieldUpdater BOOLEAN_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		BooleanGraphField booleanGraphField = container.getBoolean(fieldKey);
+		BooleanField booleanField = fieldMap.getBooleanField(fieldKey);
+		boolean isBooleanFieldSetToNull = fieldMap.hasField(fieldKey) && (booleanField == null || booleanField.getValue() == null);
+		GraphField.failOnDeletionOfRequiredField(booleanGraphField, isBooleanFieldSetToNull, fieldSchema, fieldKey, schema);
+		boolean restIsNullOrEmpty = booleanField == null || booleanField.getValue() == null;
+		GraphField.failOnMissingRequiredField(booleanGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+
+		// Handle deletion
+		if (isBooleanFieldSetToNull && booleanGraphField != null) {
+			booleanGraphField.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNullOrEmpty) {
+			return;
+		}
+
+		// Handle Update / Create
+		if (booleanGraphField == null) {
+			container.createBoolean(fieldKey).setBoolean(booleanField.getValue());
+		} else {
+			booleanGraphField.setBoolean(booleanField.getValue());
+		}
+	};
+
+	public static FieldGetter BOOLEAN_GETTER = (container, fieldSchema) -> {
+		return container.getBoolean(fieldSchema.getName());
+	};
 
 	public BooleanGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);

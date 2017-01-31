@@ -138,14 +138,14 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			Node updatedNode = folder("2015");
 			// Load the node so that we can use it to prepare the update request
-			NodeResponse loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			NodeResponse loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 
 			// Update the field to point to node
 			NodeResponse response = updateNode(FIELD_NAME, loadedNode);
 			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertEquals(node.getUuid(), field.getUuid());
 
-			loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParameters().setLanguages("en"),
+			loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParameters().setLanguages("en"),
 					new VersioningParameters().draft()));
 			field = loadedNode.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertEquals(node.getUuid(), field.getUuid());
@@ -155,7 +155,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertEquals(node2.getUuid(), field.getUuid());
 
-			loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParameters().setLanguages("en"),
+			loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParameters().setLanguages("en"),
 					new VersioningParameters().draft()));
 			field = loadedNode.getFields().getNodeFieldExpanded("nodeField");
 			assertEquals(node2.getUuid(), field.getUuid());
@@ -175,7 +175,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.getFields().put(FIELD_NAME, null);
 
-			MeshResponse<NodeResponse> future = getClient()
+			MeshResponse<NodeResponse> future = client()
 					.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")).invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -233,7 +233,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, referencedNode);
 
-			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
 					new VersioningParameters().draft()));
 
 			// Check expanded node field
@@ -259,7 +259,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, referencedNode);
 
-			NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
 					new VersioningParameters().draft()));
 
 			// Assert that the field has not been loaded
@@ -318,7 +318,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			createGermanNode.setLanguage("de");
 			createGermanNode.getFields().put("name", FieldUtil.createStringField("German Target"));
 
-			MeshResponse<NodeResponse> createGermanFuture = getClient().createNode(PROJECT_NAME, createGermanNode).invoke();
+			MeshResponse<NodeResponse> createGermanFuture = client().createNode(PROJECT_NAME, createGermanNode).invoke();
 			latchFor(createGermanFuture);
 			assertSuccess(createGermanFuture);
 			NodeResponse germanTarget = createGermanFuture.result();
@@ -328,7 +328,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			createEnglishNode.setLanguage("en");
 			createEnglishNode.getFields().put("name", FieldUtil.createStringField("English Target"));
 
-			MeshResponse<NodeResponse> updateEnglishNode = getClient().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode).invoke();
+			MeshResponse<NodeResponse> updateEnglishNode = client().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode).invoke();
 			latchFor(updateEnglishNode);
 			assertSuccess(updateEnglishNode);
 
@@ -340,14 +340,14 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			createSourceNode.getFields().put("name", FieldUtil.createStringField("German Source"));
 			createSourceNode.getFields().put(FIELD_NAME, FieldUtil.createNodeField(germanTarget.getUuid()));
 
-			MeshResponse<NodeResponse> createSourceFuture = getClient().createNode(PROJECT_NAME, createSourceNode).invoke();
+			MeshResponse<NodeResponse> createSourceFuture = client().createNode(PROJECT_NAME, createSourceNode).invoke();
 			latchFor(createSourceFuture);
 			assertSuccess(createSourceFuture);
 			NodeResponse source = createSourceFuture.result();
 
 			// read source node with expanded field
 			for (String[] requestedLangs : Arrays.asList(new String[] { "de" }, new String[] { "de", "en" }, new String[] { "en", "de" })) {
-				MeshResponse<NodeResponse> resultFuture = getClient().findNodeByUuid(PROJECT_NAME, source.getUuid(),
+				MeshResponse<NodeResponse> resultFuture = client().findNodeByUuid(PROJECT_NAME, source.getUuid(),
 						new NodeParameters().setLanguages(requestedLangs).setExpandAll(true), new VersioningParameters().draft()).invoke();
 				latchFor(resultFuture);
 				assertSuccess(resultFuture);

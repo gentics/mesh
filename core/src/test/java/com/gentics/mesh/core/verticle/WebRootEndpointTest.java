@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -68,7 +69,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
-			WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+			WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
 					new NodeParameters().setResolveLinks(LinkType.FULL)));
 			NodeDownloadResponse downloadResponse = response.getDownloadResponse();
 			assertTrue(response.isDownload());
@@ -83,7 +84,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			Node folder = folder("2015");
 			String path = "/News/2015";
 
-			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft()));
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder).hasLanguage("en");
 		}
 	}
@@ -97,7 +98,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 					.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 
 			String path = "/News/2015/News_2015.en.html";
-			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
 					new NodeParameters().setResolveLinks(LinkType.FULL).setLanguages("en")));
 			HtmlFieldImpl contentField = restNode.getNodeResponse().getFields().getHtmlField("content");
 			assertNotNull(contentField);
@@ -112,7 +113,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		String path = "/News/2015/News_2015.en.html";
 
 		WebRootResponse restNode = call(
-				() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
+				() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
 
 		try (NoTx noTrx = db.noTx()) {
 			Node node = content("news_2015");
@@ -148,14 +149,14 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			parentNode.getLatestDraftFieldContainer(english()).createNode("nodeRef", node);
 
 			String path = "/News/2015";
-			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
 					new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en", "de")));
 			assertEquals("The node reference did not point to the german node.", "/dummy/News/2015/test.de.html",
 					restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
 			assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
 
 			// Again with no german fallback option (only english)
-			restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+			restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
 					new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en")));
 			assertEquals("The node reference did not point to the 404 path.", "/dummy/error/404",
 					restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
@@ -171,8 +172,8 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		List<MeshResponse<WebRootResponse>> futures = new ArrayList<>();
 		for (int i = 0; i < nJobs; i++) {
-			futures.add(getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de"))
-					.invoke());
+			futures.add(
+					client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")).invoke());
 		}
 
 		for (MeshResponse<WebRootResponse> fut : futures) {
@@ -184,7 +185,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testPathWithSpaces() throws Exception {
 		String[] path = new String[] { "News", "2015", "Special News_2014.en.html" };
-		call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
+		call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
 	}
 
 	@Test
@@ -198,7 +199,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		}
 
 		String[] path = new String[] { "News", newName };
-		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
 				new NodeParameters().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
 		assertEquals(uuid, response.getNodeResponse().getUuid());
 		assertEquals("/News/" + URIUtils.encodeFragment(newName), response.getNodeResponse().getPath());
@@ -207,12 +208,12 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testReadFolderWithBogusPath() throws Exception {
 		String path = "/blub";
-		call(() -> getClient().webroot(PROJECT_NAME, path), NOT_FOUND, "node_not_found_for_path", path);
+		call(() -> client().webroot(PROJECT_NAME, path), NOT_FOUND, "node_not_found_for_path", path);
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void testReadWithEmptyPath() {
-		MeshResponse<WebRootResponse> future = getClient().webroot(PROJECT_NAME, "").invoke();
+		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, "").invoke();
 		latchFor(future);
 		assertSuccess(future);
 		WebRootResponse response = future.result();
@@ -221,7 +222,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadProjectBaseNode() {
-		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, "/", new VersioningParameters().draft()));
+		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "/", new VersioningParameters().draft()));
 		assertFalse(response.isDownload());
 		try (NoTx noTrx = db.noTx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
@@ -230,7 +231,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadDoubleSlashes() {
-		WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME, "//", new VersioningParameters().draft()));
+		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "//", new VersioningParameters().draft()));
 		assertFalse(response.isDownload());
 		try (NoTx noTrx = db.noTx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
@@ -245,7 +246,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			for (String path2 : Arrays.asList("2014")) {
 				for (String path3 : Arrays.asList("March", "März")) {
 					for (String language : Arrays.asList("en", "de")) {
-						WebRootResponse response = call(() -> getClient().webroot(PROJECT_NAME,
+						WebRootResponse response = call(() -> client().webroot(PROJECT_NAME,
 								new String[] { path1, path2, path3, name + "." + language + ".html" }, new VersioningParameters().draft()));
 
 						assertEquals("Check response language", language, response.getNodeResponse().getLanguage());
@@ -265,7 +266,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			role().revokePermissions(newsFolder, READ_PERM);
 		}
 
-		MeshResponse<WebRootResponse> future = getClient().webroot(PROJECT_NAME, englishPath, new VersioningParameters().draft()).invoke();
+		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, englishPath, new VersioningParameters().draft()).invoke();
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
@@ -274,7 +275,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	public void testReadContentByInvalidPath() throws Exception {
 		String invalidPath = "/News/2015/no-valid-content.html";
 
-		MeshResponse<WebRootResponse> future = getClient().webroot(PROJECT_NAME, invalidPath).invoke();
+		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, invalidPath).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "node_not_found_for_path", invalidPath);
 	}
@@ -282,7 +283,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testReadContentByInvalidPath2() throws Exception {
 		String invalidPath = "/News/no-valid-folder/no-valid-content.html";
-		MeshResponse<WebRootResponse> future = getClient().webroot(PROJECT_NAME, invalidPath).invoke();
+		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, invalidPath).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "node_not_found_for_path", invalidPath);
 	}
@@ -291,7 +292,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	public void testRead404Page() {
 		String notFoundPath = "/error/404";
 
-		MeshResponse<WebRootResponse> future = getClient().webroot(PROJECT_NAME, notFoundPath).invoke();
+		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, notFoundPath).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "node_not_found_for_path", notFoundPath);
 	}
@@ -310,7 +311,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
 			createErrorFolder.getFields().put("name", FieldUtil.createStringField("error"));
 			createErrorFolder.setLanguage("en");
-			NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, createErrorFolder));
+			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, createErrorFolder));
 			String errorNodeUuid = response.getUuid();
 
 			NodeCreateRequest create404Node = new NodeCreateRequest();
@@ -320,10 +321,9 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			create404Node.getFields().put("name", FieldUtil.createStringField("Error Content"));
 			create404Node.getFields().put("content", FieldUtil.createStringField("An error happened"));
 			create404Node.setLanguage("en");
-			call(() -> getClient().createNode(PROJECT_NAME, create404Node));
+			call(() -> client().createNode(PROJECT_NAME, create404Node));
 
-			MeshResponse<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft())
-					.invoke();
+			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft()).invoke();
 			latchFor(webrootFuture);
 			expectFailureMessage(webrootFuture, NOT_FOUND, null);
 		}
@@ -334,22 +334,23 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		String path = "/News/2015";
 
 		try (NoTx noTx = db.noTx()) {
-			call(() -> getClient().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 		}
 		// 1. Assert that published path cannot be found
 		try (NoTx noTx = db.noTx()) {
-			call(() -> getClient().webroot(PROJECT_NAME, path, new NodeParameters()), NOT_FOUND, "node_not_found_for_path", path);
+			call(() -> client().webroot(PROJECT_NAME, path, new NodeParameters()), NOT_FOUND, "node_not_found_for_path", path);
 		}
 
 		// 2. Publish nodes
 		try (NoTx noTx = db.noTx()) {
-			folder("news").publish(getMockedInternalActionContext(user())).await();
-			folder("2015").publish(getMockedInternalActionContext(user())).await();
+			SearchQueueBatch batch = createBatch();
+			folder("news").publish(getMockedInternalActionContext(user()), batch).await();
+			folder("2015").publish(getMockedInternalActionContext(user()), batch).await();
 		}
 
 		// 3. Assert that published path can be found
 		try (NoTx noTx = db.noTx()) {
-			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, path, new NodeParameters()));
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new NodeParameters()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("2.0").hasLanguage("en");
 		}
 	}
@@ -361,8 +362,9 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		// 1. Publish nodes
 		db.noTx(() -> {
-			folder("news").publish(getMockedInternalActionContext()).await();
-			folder("2015").publish(getMockedInternalActionContext()).await();
+			SearchQueueBatch batch = createBatch();
+			folder("news").publish(getMockedInternalActionContext(), batch).await();
+			folder("2015").publish(getMockedInternalActionContext(), batch).await();
 			return null;
 		});
 
@@ -375,28 +377,28 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		// 3. Assert published path in published
 		db.noTx(() -> {
-			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, publishedPath, new NodeParameters()));
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, publishedPath, new NodeParameters()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 			return null;
 		});
 
 		// 4. Assert published path in draft
 		db.noTx(() -> {
-			call(() -> getClient().webroot(PROJECT_NAME, publishedPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
+			call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
 					publishedPath);
 			return null;
 		});
 
 		// 5. Assert draft path in draft
 		db.noTx(() -> {
-			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, draftPath, new VersioningParameters().draft()));
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParameters().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
 			return null;
 		});
 
 		// 6. Assert draft path in published
 		db.noTx(() -> {
-			call(() -> getClient().webroot(PROJECT_NAME, draftPath, new NodeParameters()), NOT_FOUND, "node_not_found_for_path", draftPath);
+			call(() -> client().webroot(PROJECT_NAME, draftPath, new NodeParameters()), NOT_FOUND, "node_not_found_for_path", draftPath);
 			return null;
 		});
 	}
@@ -423,14 +425,14 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		// 3. Assert new names in new release
 		db.noTx(() -> {
-			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, newPath, new VersioningParameters().draft()));
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, newPath, new VersioningParameters().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
 			return null;
 		});
 
 		// 4. Assert new names in initial release
 		db.noTx(() -> {
-			call(() -> getClient().webroot(PROJECT_NAME, newPath,
+			call(() -> client().webroot(PROJECT_NAME, newPath,
 					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())), NOT_FOUND, "node_not_found_for_path",
 					newPath);
 			return null;
@@ -438,7 +440,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		// 5. Assert old names in initial release
 		db.noTx(() -> {
-			WebRootResponse restNode = call(() -> getClient().webroot(PROJECT_NAME, initialPath,
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, initialPath,
 					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 			return null;
@@ -446,7 +448,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		// 6. Assert old names in new release
 		db.noTx(() -> {
-			call(() -> getClient().webroot(PROJECT_NAME, initialPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
+			call(() -> client().webroot(PROJECT_NAME, initialPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
 					initialPath);
 			return null;
 		});
@@ -468,7 +470,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		update.setVersion(
 				new VersionReference(node.getGraphFieldContainer(language).getUuid(), node.getGraphFieldContainer(language).getVersion().toString()));
 		update.getFields().put("name", FieldUtil.createStringField(newName));
-		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update));
+		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update));
 	}
 
 	/**
@@ -487,6 +489,6 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
 		update.getFields().put("name", FieldUtil.createStringField(newName));
-		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update, new VersioningParameters().setRelease(release.getUuid())));
+		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update, new VersioningParameters().setRelease(release.getUuid())));
 	}
 }

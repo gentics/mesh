@@ -7,7 +7,6 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -29,7 +28,8 @@ public interface SearchClientMethods {
 	/**
 	 * Search nodes in project
 	 *
-	 * @param projectName Project Name
+	 * @param projectName
+	 *            Project Name
 	 * @param json
 	 *            Elasticsearch search request
 	 * @param parameters
@@ -90,7 +90,8 @@ public interface SearchClientMethods {
 	/**
 	 * Search tags in project
 	 *
-	 * @param projectName project name
+	 * @param projectName
+	 *            project name
 	 * @param json
 	 *            Elasticsearch search request
 	 * @param parameters
@@ -136,13 +137,6 @@ public interface SearchClientMethods {
 	 * @return
 	 */
 	MeshRequest<MicroschemaListResponse> searchMicroschemas(String json, ParameterProvider... parameters);
-
-	/**
-	 * Load the search queue status.
-	 * 
-	 * @return
-	 */
-	MeshRequest<SearchStatusResponse> loadSearchStatus();
 
 	/**
 	 * Trigger a reindex action which will rebuild the index for all elements. This is useful when you want to sync the search index after restoring a backup.

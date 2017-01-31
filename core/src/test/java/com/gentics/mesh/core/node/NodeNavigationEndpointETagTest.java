@@ -17,10 +17,10 @@ public class NodeNavigationEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testReadOne() {
 		try (NoTx noTx = db.noTx()) {
-			MeshResponse<NavigationResponse> response = getClient().loadNavigation(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
+			MeshResponse<NavigationResponse> response = client().loadNavigation(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
-			expect304(getClient().loadNavigation(PROJECT_NAME, project().getBaseNode().getUuid()), etag, true);
+			expect304(client().loadNavigation(PROJECT_NAME, project().getBaseNode().getUuid()), etag, true);
 		}
 	}
 

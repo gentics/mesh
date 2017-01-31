@@ -137,6 +137,6 @@ public class LinkRendererEndpointTest extends AbstractRestEndpointTest {
 	 * @return rendered result
 	 */
 	private String renderContent(String content, LinkType linkType) {
-		return call(() -> getClient().resolveLinks(content, new NodeParameters().setResolveLinks(linkType)));
+		return call(() -> client().resolveLinks(content, new NodeParameters().setResolveLinks(linkType)));
 	}
 }

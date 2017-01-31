@@ -17,6 +17,7 @@ import org.raml.model.Resource;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
@@ -24,7 +25,7 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -103,7 +104,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, responseExample, "Loaded navigation.");
 		endpoint.addQueryParameters(NavigationParameters.class);
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleNavigation(ac, uuid);
 		});
@@ -119,7 +120,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Delete the language specific content of the node.");
 		endpoint.exampleResponse(NO_CONTENT, "Language variation of the node has been deleted.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String languageTag = ac.getParameter("language");
 			crudHandler.handleDeleteLanguage(ac, uuid, languageTag);
@@ -141,7 +142,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("language");
 			String fieldName = rc.request().getParam("field");
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			fieldAPIHandler.handleCreateField(ac, uuid, languageTag, fieldName);
 		});
 
@@ -169,7 +170,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("language");
 			String fieldName = rc.request().getParam("field");
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			fieldAPIHandler.handleUpdateField(ac, uuid, languageTag, fieldName);
 		});
 
@@ -183,7 +184,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldDelete.description("Delete the field with the given name");
 		fieldDelete.exampleResponse(NO_CONTENT, "Field with the given name was deleted.");
 		fieldDelete.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String languageTag = ac.getParameter("language");
 			String fieldName = ac.getParameter("field");
@@ -221,7 +222,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		listItemDelete.exampleResponse(OK, miscExamples.getMessageResponse(), "Item was deleted.");
 		listItemDelete.description("Delete the field list item at the given index position (Not yet implemented)");
 		listItemDelete.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("language");
 			String fieldName = rc.request().getParam("field");
@@ -238,7 +239,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		listItemGet.exampleResponse(OK, miscExamples.getMessageResponse(), "Loaded item.");
 		listItemGet.description("Load the field list item at the given index position. (Not yet implemented)");
 		listItemGet.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("language");
 			String fieldName = rc.request().getParam("field");
@@ -254,7 +255,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		updateFieldItem.method(POST);
 		updateFieldItem.description("Update the field list item at the given index position. (Not yet implemented)");
 		updateFieldItem.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("language");
 			String fieldName = rc.request().getParam("field");
@@ -271,7 +272,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		moveFieldItem.method(POST);
 		moveFieldItem.description("Move the field list item on a new index position. (Not yet implemented)");
 		moveFieldItem.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			String languageTag = rc.request().getParam("language");
 			String fieldName = rc.request().getParam("field");
@@ -290,7 +291,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(NO_CONTENT, "Node was moved.");
 		endpoint.addQueryParameters(VersioningParameters.class);
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String toUuid = ac.getParameter("toUuid");
 			crudHandler.handleMove(ac, uuid, toUuid);
@@ -305,11 +306,11 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of loaded node children.");
 		endpoint.description("Load all child nodes and return a paged list response.");
-		endpoint.addQueryParameters(PagingParameters.class);
+		endpoint.addQueryParameters(PagingParametersImpl.class);
 		endpoint.addQueryParameters(NodeParameters.class);
 		endpoint.addQueryParameters(VersioningParameters.class);
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleReadChildren(ac, uuid);
 		});
@@ -326,7 +327,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getTags.description("Return a list of all tags which tag the node.");
 		getTags.addQueryParameters(VersioningParameters.class);
 		getTags.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.readTags(ac, uuid);
 		});
@@ -341,7 +342,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addTag.description("Assign the given tag to the node.");
 		addTag.addQueryParameters(VersioningParameters.class);
 		addTag.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String tagUuid = ac.getParameter("tagUuid");
 			crudHandler.handleAddTag(ac, uuid, tagUuid);
@@ -357,7 +358,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		removeTag.description("Remove the given tag from the node.");
 		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");
 		removeTag.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String tagUuid = ac.getParameter("tagUuid");
 			crudHandler.handleRemoveTag(ac, uuid, tagUuid);
@@ -376,7 +377,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleRequest(nodeExamples.getNodeCreateRequest());
 		endpoint.exampleResponse(CREATED, nodeExamples.getNodeResponseWithAllFields(), "Created node.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			ac.getVersioningParameters().setVersion("draft");
 			crudHandler.handleCreate(ac);
 		});
@@ -398,7 +399,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(InternalActionContext.create(rc), uuid);
+				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				crudHandler.handleRead(ac, uuid);
 			}
 		});
 
@@ -411,8 +413,11 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readAll.addQueryParameters(VersioningParameters.class);
 		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.addQueryParameters(NodeParameters.class);
-		readAll.addQueryParameters(PagingParameters.class);
-		readAll.handler(rc -> crudHandler.handleReadList(InternalActionContext.create(rc)));
+		readAll.addQueryParameters(PagingParametersImpl.class);
+		readAll.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleReadList(ac);
+		});
 
 	}
 
@@ -425,7 +430,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Deletion was successful.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
@@ -451,7 +456,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
 		endpoint.exampleResponse(CONFLICT, miscExamples.getMessageResponse(), "A conflict has been detected.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			ac.getVersioningParameters().setVersion("draft");
 			crudHandler.handleUpdate(ac, uuid);
@@ -468,8 +473,9 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getEndpoint.produces(APPLICATION_JSON);
 		getEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
 		getEndpoint.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = rc.request().getParam("nodeUuid");
-			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), uuid);
+			crudHandler.handleGetPublishStatus(ac, uuid);
 		});
 
 		Endpoint putEndpoint = createEndpoint();
@@ -481,7 +487,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
 		putEndpoint.addQueryParameters(PublishParameters.class);
 		putEndpoint.handler(rc -> {
-			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handlePublish(ac, rc.request().getParam("nodeUuid"));
 		});
 
 		Endpoint deleteEndpoint = createEndpoint();
@@ -493,7 +500,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteEndpoint.exampleResponse(NO_CONTENT, "Node was unpublished.");
 		deleteEndpoint.addQueryParameters(PublishParameters.class);
 		deleteEndpoint.handler(rc -> {
-			crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleTakeOffline(ac, rc.request().getParam("nodeUuid"));
 		});
 
 		// Language specific
@@ -507,8 +515,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getLanguageRoute.produces(APPLICATION_JSON);
 		getLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Publish status of the specific language.");
 		getLanguageRoute.handler(rc -> {
-			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"),
-					rc.request().getParam("language"));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleGetPublishStatus(ac, rc.request().getParam("nodeUuid"), rc.request().getParam("language"));
 		});
 
 		Endpoint putLanguageRoute = createEndpoint();
@@ -520,7 +528,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Updated publish status.");
 		putLanguageRoute.produces(APPLICATION_JSON);
 		putLanguageRoute.handler(rc -> {
-			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"), rc.request().getParam("language"));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handlePublish(ac, rc.request().getParam("nodeUuid"), rc.request().getParam("language"));
 		});
 
 		Endpoint deleteLanguageRoute = createEndpoint();
@@ -531,7 +540,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteLanguageRoute.exampleResponse(NO_CONTENT, versioningExamples.createPublishStatusModel(), "Node language was taken offline.");
 		deleteLanguageRoute.produces(APPLICATION_JSON);
 		deleteLanguageRoute.handler(rc -> {
-			crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.request().getParam("nodeUuid"), rc.request().getParam("language"));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleTakeOffline(ac, rc.request().getParam("nodeUuid"), rc.request().getParam("language"));
 		});
 
 	}

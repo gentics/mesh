@@ -16,6 +16,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -26,7 +27,7 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 
 public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpointTest {
@@ -40,13 +41,13 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 	 */
 	protected void searchWithLanguages(String... expectedLanguages) throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String uuid = db.noTx(() -> content("concorde").getUuid());
 
 		NodeListResponse response = call(
-				() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParameters().setPage(1).setPerPage(100),
+				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParametersImpl().setPage(1).setPerPage(100),
 						new NodeParameters().setLanguages(expectedLanguages), new VersioningParameters().draft()));
 		assertEquals("Check # of returned nodes", expectedLanguages.length, response.getData().size());
 		assertEquals("Check total count", expectedLanguages.length, response.getMetainfo().getTotalCount());
@@ -108,7 +109,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		meshDagger.nodeIndexHandler().updateNodeIndexMapping(schema).await();
+		meshDagger.nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
 
 		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
@@ -117,6 +118,34 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 			micronode.createString("firstName").setString(testdata.v1());
 			micronode.createString("lastName").setString(testdata.v2());
 		}
+
+		// create an empty vcard list field
+		node.getLatestDraftFieldContainer(german()).createMicronodeFieldList("vcardlist");
+	}
+
+	/**
+	 * Add a node list field to the tested content
+	 */
+	protected void addNodeListField() {
+		Node node = content("concorde");
+
+		// Update the schema
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
+		nodeListFieldSchema.setName("nodelist");
+		nodeListFieldSchema.setListType("node");
+		nodeListFieldSchema.setAllowedSchemas(schema.getName());
+		schema.addField(nodeListFieldSchema);
+
+		// Set the mapping for the schema
+		meshDagger.nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
+
+		// create a non-empty list for the english version
+		NodeGraphFieldList nodeListField = node.getLatestDraftFieldContainer(english()).createNodeList("nodelist");
+		nodeListField.addItem(nodeListField.createNode("testNode", node));
+
+		// create an empty list for the german version
+		node.getLatestDraftFieldContainer(german()).createNodeList("nodelist");
 	}
 
 	/**

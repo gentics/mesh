@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -12,7 +11,7 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -22,17 +21,31 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.util.ResultInfo;
 
+/**
+ * Main CRUD handler
+ */
 public class TagCrudHandler extends AbstractHandler {
 
+	private SearchQueue searchQueue;
+
+	private Database db;
+
+	private HandlerUtilities utils;
+
 	@Inject
-	public TagCrudHandler() {
+	public TagCrudHandler(SearchQueue searchQueue, Database db, HandlerUtilities utils) {
+		this.searchQueue = searchQueue;
+		this.db = db;
+		this.utils = utils;
 	}
 
-	public TagFamily getTagFamily(InternalActionContext ac, String uuid) {
-		return ac.getProject().getTagFamilyRoot().findByUuid(uuid);
+	public TagFamily getTagFamily(InternalActionContext ac, String tagFamilyUuid) {
+		validateParameter(tagFamilyUuid, "tagFamilyUuid");
+
+		return ac.getProject().getTagFamilyRoot().findByUuid(tagFamilyUuid);
 	}
 
 	/**
@@ -48,12 +61,12 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		operateNoTx(() -> {
-			PagingParameters pagingParams = ac.getPagingParameters();
+		db.operateNoTx(() -> {
+			PagingParametersImpl pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 			// try {
-			PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null), nodeParams.getLanguageList(),
+			Page<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null), nodeParams.getLanguageList(),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 			return page.transformToRest(ac, 0);
 			// } catch (Exception e) {
@@ -71,7 +84,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		HandlerUtilities.readElementList(ac, () -> {
+		utils.readElementList(ac, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
 		});
 	}
@@ -86,11 +99,10 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		operateNoTx(ac, () -> {
+		utils.operateNoTx(ac, () -> {
 			Database db = MeshInternal.get().database();
 			ResultInfo info = db.tx(() -> {
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch();
+				SearchQueueBatch batch = searchQueue.createBatch();
 
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
 				TagResponse model = tag.transformToRestSync(ac, 0);
@@ -124,7 +136,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		HandlerUtilities.updateElement(ac, tagUuid, () -> {
+		utils.updateElement(ac, tagUuid, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
 		});
 
@@ -143,7 +155,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		HandlerUtilities.readElement(ac, tagUuid, () -> {
+		utils.readElement(ac, tagUuid, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
 		});
 
@@ -162,7 +174,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		HandlerUtilities.deleteElement(ac, () -> {
+		utils.deleteElement(ac, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
 		}, tagUuid);
 

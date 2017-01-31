@@ -1,22 +1,32 @@
 package com.gentics.mesh.dagger;
 
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.BootstrapInitializerImpl;
+import com.gentics.mesh.cli.CoreVerticleLoader;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.GraphStorageOptions;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
+import com.gentics.mesh.search.DummySearchProvider;
+import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
+import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Handler;
@@ -39,6 +49,13 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
+	public BootstrapInitializer bootstrapInitializer(Database db, SearchProvider searchProvider, Lazy<IndexHandlerRegistry> indexHandlerRegistry,
+			BCryptPasswordEncoder encoder, RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
+		return new BootstrapInitializerImpl(db, searchProvider, indexHandlerRegistry, encoder, routerStorage, loader);
+	}
+
+	@Provides
+	@Singleton
 	public ImageManipulatorService imageProviderService() {
 		return ImageManipulatorService.getInstance();
 	}
@@ -46,7 +63,8 @@ public class MeshModule {
 	@Provides
 	@Singleton
 	public ImageManipulator imageProvider() {
-		// ImageManipulator provider = imageProviderService().getImageProvider();
+		// ImageManipulator provider =
+		// imageProviderService().getImageProvider();
 		// TODO assert provider
 		// return provider;
 		return new ImgscalrImageManipulator();
@@ -78,60 +96,15 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
+	public static SearchQueue searchQueue(Provider<SearchQueueBatch> provider) {
+		return new SearchQueueImpl(provider);
+	}
+
+	@Provides
+	@Singleton
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
 	}
-
-//	@Provides
-//	@Singleton
-//	public SessionHandler sessionHandler() {
-//		SessionStore store = LocalSessionStore.create(Mesh.vertx());
-//		// TODO make session age configurable
-//		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
-//				store);
-//	}
-
-//	/**
-//	 * Handler which will authenticate the user credentials.
-//	 * 
-//	 * @return
-//	 */
-//	@Provides
-//	@Singleton
-//	public AuthHandler authHandler(MeshAuthProvider provider) {
-////		return MeshJWTAuthHandler.create(provider);
-////		return MeshBasicAuthHandler.create(provider);
-//	}
-//
-//	@Provides
-//	@Singleton
-//	public AuthenticationRestHandler authRestHandler(Database db, JWTAuthRestHandler jwtAuthHandler, BasicAuthRestHandler basicAuthHandler) {
-//		return jwtAuthHandler;
-//		return basicAuthHandler;
-//	}
-
-//	/**
-//	 * User session handler which will provider the user from within the session.
-//	 * 
-//	 * @return
-//	 */
-//	@Provides
-//	@Singleton
-//	public UserSessionHandler userSessionHandler(BCryptPasswordEncoder passwordEncoder, Database db) {
-//		return UserSessionHandler.create(authProvider(passwordEncoder, db));
-//	}
-//
-//	/**
-//	 * Return the mesh auth provider that can be used to authenticate a user.
-//	 * 
-//	 * @return
-//	 */
-//	@Provides
-//	@Singleton
-//	public MeshAuthProvider authProvider(BCryptPasswordEncoder passwordEncoder, Database db) {
-//		return new MeshJWTAuthProvider(passwordEncoder, db);
-//		return new MeshAuthProvider(passwordEncoder, db);
-//	}
 
 	/**
 	 * Return the configured CORS handler.
@@ -179,6 +152,8 @@ public class MeshModule {
 	public SearchProvider searchProvider() {
 		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
 		SearchProvider searchProvider = null;
+		// Automatically select the dummy search provider if no directory or
+		// options have been specified
 		if (options == null || options.getDirectory() == null) {
 			searchProvider = new DummySearchProvider();
 		} else {

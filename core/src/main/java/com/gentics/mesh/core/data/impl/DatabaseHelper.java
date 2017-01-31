@@ -39,9 +39,6 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
-import com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl;
-import com.gentics.mesh.core.data.search.impl.SearchQueueEntryImpl;
-import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -94,9 +91,6 @@ public class DatabaseHelper {
 		ReleaseRootImpl.init(database);
 
 		// Nodes
-		SearchQueueImpl.init(database);
-		SearchQueueBatchImpl.init(database);
-		SearchQueueEntryImpl.init(database);
 		ProjectImpl.init(database);
 		ReleaseImpl.init(database);
 

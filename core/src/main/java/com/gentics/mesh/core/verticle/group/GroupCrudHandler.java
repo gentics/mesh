@@ -2,14 +2,10 @@ package com.gentics.mesh.core.verticle.group;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
-
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -17,15 +13,15 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 import dagger.Lazy;
 import rx.Single;
@@ -37,10 +33,13 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot) {
-		super(db);
+	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue, HandlerUtilities utils) {
+		super(db, utils);
 		this.boot = boot;
+		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -56,16 +55,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 *            Group Uuid from which the roles should be loaded
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
-			PagingParameters pagingInfo = new PagingParameters(ac);
+			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			MeshAuthUser requestUser = ac.getUser();
-			// try {
-			PageImpl<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
+			Page<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
 			return rolePage.transformToRest(ac, 0);
-			// } catch (Exception e) {
-			// return Single.error(e);
-			// }
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -80,19 +75,19 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(roleUuid, "roleUuid");
 
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION);
+			SearchQueueBatch batch = searchQueue.createBatch();
+			Group updatedGroup = db.tx(() -> {
 				group.addRole(role);
-				return Tuple.tuple(batch, group);
+				group.setEditor(ac.getUser());
+				group.setLastEditedTimestamp();
+				// No need to update users as well. Those documents are not affected by this modification
+				batch.store(group, false);
+				return group;
 			});
-			SearchQueueBatch batch = tuple.v1();
-			Group updatedGroup = tuple.v2();
 			return batch.processAsync().andThen(updatedGroup.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -111,20 +106,20 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 		validateParameter(groupUuid, "groupUuid");
 
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			// TODO check whether the role is actually part of the group
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			SearchQueueBatch sqBatch = db.tx(() -> {
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION);
+			SearchQueueBatch batch = searchQueue.createBatch();
+			return db.tx(() -> {
 				group.removeRole(role);
+				group.setEditor(ac.getUser());
+				group.setLastEditedTimestamp();
+				// No need to update users as well. Those documents are not affected by this modification
+				batch.store(group, false);
 				return batch;
-			});
-
-			return sqBatch.processAsync().andThen(Single.just(null));
+			}).processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -138,11 +133,11 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupUserList(InternalActionContext ac, String groupUuid) {
 		validateParameter(groupUuid, "groupUuid");
 
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
-			PagingParameters pagingInfo = new PagingParameters(ac);
+			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
-			PageImpl<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
+			Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
 			return userPage.transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -160,18 +155,15 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
+			SearchQueueBatch batch = searchQueue.createBatch();
+			Group updatedGroup = db.tx(() -> {
 				group.addUser(user);
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION);
-				return Tuple.tuple(batch, group);
+				batch.store(group, true);
+				return group;
 			});
-			SearchQueueBatch batch = tuple.v1();
-			Group updatedGroup = tuple.v2();
 			return batch.processAsync().andThen(updatedGroup.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -190,19 +182,16 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
-				SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-				SearchQueueBatch batch = queue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION);
-				batch.addEntry(user, STORE_ACTION);
+			SearchQueueBatch batch = searchQueue.createBatch();
+			return db.tx(() -> {
+				batch.store(group, true);
+				batch.store(user, false);
 				group.removeUser(user);
-				return Tuple.tuple(batch, group);
-			});
-			SearchQueueBatch batch = tuple.v1();
-			return batch.processAsync().andThen(Single.just(null));
+				return batch;
+			}).processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 

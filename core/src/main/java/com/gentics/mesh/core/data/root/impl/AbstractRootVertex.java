@@ -20,16 +20,17 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ElementIdComparator;
-import com.gentics.mesh.util.InvalidArgumentException;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -57,12 +58,12 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public void addItem(T item) {
-		setUniqueLinkOutTo(item.getImpl(), getRootLabel());
+		setUniqueLinkOutTo(item, getRootLabel());
 	}
 
 	@Override
 	public void removeItem(T item) {
-		unlinkOut(item.getImpl(), getRootLabel());
+		unlinkOut(item, getRootLabel());
 	}
 
 	@Override
@@ -132,7 +133,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
 
 		int page = pagingInfo.getPage();
 		int perPage = pagingInfo.getPerPage();

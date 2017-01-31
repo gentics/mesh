@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.project;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DROP_INDEX;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
-import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -18,11 +19,11 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -30,10 +31,10 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
-import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -70,41 +71,37 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			String uuid = project().getUuid();
 
-			Map<String, ElementEntry> affectedElements = new HashMap<>();
+			Map<String, ElementEntry> batchEnttries = new HashMap<>();
+			
 			// The project
-			affectedElements.put("project", new ElementEntry(DELETE_ACTION, uuid));
+			batchEnttries.put("project", new ElementEntry(DELETE_ACTION, uuid));
 
 			// Meta vertices
-			affectedElements.put("project.tagFamilyRoot", new ElementEntry(null, project().getTagFamilyRoot().getUuid()));
-			affectedElements.put("project.schemaContainerRoot", new ElementEntry(null, project().getSchemaContainerRoot().getUuid()));
-			affectedElements.put("project.nodeRoot", new ElementEntry(null, project().getNodeRoot().getUuid()));
-			affectedElements.put("project.baseNode", new ElementEntry(null, project().getBaseNode().getUuid()));
+			batchEnttries.put("project.tagFamilyRoot", new ElementEntry(null, project().getTagFamilyRoot().getUuid()));
+			batchEnttries.put("project.schemaContainerRoot", new ElementEntry(null, project().getSchemaContainerRoot().getUuid()));
+			batchEnttries.put("project.nodeRoot", new ElementEntry(null, project().getNodeRoot().getUuid()));
+			batchEnttries.put("project.baseNode", new ElementEntry(null, project().getBaseNode().getUuid()));
 
 			// Nodes
 			int i = 0;
-			for (Node node : project().getNodeRoot().findAll()) {
-				if (!node.getUuid().equals(project().getBaseNode().getUuid())) {
-					affectedElements.put("project node " + i, new ElementEntry(DELETE_ACTION, node.getUuid(), node.getAvailableLanguageNames()));
-					i++;
-				}
-			}
+			batchEnttries.put("project node index " + i, new ElementEntry(DROP_INDEX, project().getUuid()));
+			i++;
 
 			// Project tags
 			for (Tag tag : project().getTagRoot().findAll()) {
-				affectedElements.put("project tag " + tag.getName(), new ElementEntry(DELETE_ACTION, tag.getUuid()));
+				batchEnttries.put("project tag " + tag.getName(), new ElementEntry(DROP_INDEX, tag.getUuid()));
 			}
 
 			// Project tagFamilies
 			for (TagFamily tagFamily : project().getTagFamilyRoot().findAll()) {
-				affectedElements.put("project tagfamily " + tagFamily.getName(), new ElementEntry(DELETE_ACTION, tagFamily.getUuid()));
+				batchEnttries.put("project tagfamily " + tagFamily.getName(), new ElementEntry(DROP_INDEX, tagFamily.getUuid()));
 			}
 
 			SearchQueueBatch batch = createBatch();
 			Project project = project();
 			project.delete(batch);
-			batch.reload();
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
-			assertAffectedElements(affectedElements, batch);
+			assertThat(batch).containsEntries(batchEnttries);
 		}
 	}
 
@@ -124,8 +121,8 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
-			PageImpl<? extends Project> page = meshRoot().getProjectRoot().findAll(getMockedInternalActionContext(user()),
-					new PagingParameters(1, 25));
+			Page<? extends Project> page = meshRoot().getProjectRoot().findAll(getMockedInternalActionContext(user()),
+					new PagingParametersImpl(1, 25));
 			assertNotNull(page);
 		}
 	}
@@ -166,7 +163,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			ProjectResponse response = project.transformToRest(ac, 0).toBlocking().value();
 
 			assertEquals(project.getName(), response.getName());
@@ -198,7 +195,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
 			Project project = root.getProjectRoot().create("TestProject", user(), schemaContainer("folder").getLatestVersion());
-			assertFalse("The user should not have create permissions on the project.",user().hasPermission(project, GraphPermission.CREATE_PERM));
+			assertFalse("The user should not have create permissions on the project.", user().hasPermission(project, GraphPermission.CREATE_PERM));
 			user().addCRUDPermissionOnRole(root.getProjectRoot(), GraphPermission.CREATE_PERM, project);
 			ac.data().clear();
 			assertTrue(user().hasPermission(project, GraphPermission.CREATE_PERM));

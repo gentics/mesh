@@ -20,6 +20,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.CorsHandler;
+import io.vertx.ext.web.handler.LoggerHandler;
 
 /**
  * Central storage for all vertx web request routers.
@@ -95,7 +96,7 @@ public class RouterStorage {
 			rootRouter = Router.router(vertx);
 
 			// Root handlers
-			// rootRouter.route().handler(LoggerHandler.create());
+			rootRouter.route().handler(LoggerHandler.create());
 			// TODO add a dedicated error for api router that informs about APPLICATION_JSON requirements. This may not be true for other routes (eg. custom
 			// routes)
 			rootRouter.route().last().handler(DefaultNotFoundHandler.create());
@@ -182,6 +183,13 @@ public class RouterStorage {
 
 	}
 
+	/**
+	 * Remove the project router with the given name from the list of project router.
+	 * 
+	 * @param name
+	 *            Name of the project router
+	 * @return
+	 */
 	public boolean removeProjectRouter(String name) {
 		Router projectRouter = projectRouters.get(name);
 		if (projectRouter != null) {
@@ -199,6 +207,7 @@ public class RouterStorage {
 	 * Add a new project router with the given name to the api router. This method will return an existing router when one already has been setup.
 	 * 
 	 * @param name
+	 *            Name of the project router
 	 * @return Router for the given project name
 	 * @throws InvalidNameException
 	 */

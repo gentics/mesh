@@ -31,7 +31,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -39,10 +39,11 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -51,24 +52,22 @@ import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
 public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 
-	// Create Tests
-
 	@Test
 	public void testCreateNoSchemaReference() {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("Test1234");
-		call(() -> getClient().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
+		call(() -> client().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
 
-		request.setSchemaReference(new SchemaReference());
-		call(() -> getClient().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
+		request.setSchema(new SchemaReference());
+		call(() -> client().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
 	}
 
 	@Test
 	public void testCreateBogusSchemaReference() {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("Test1234");
-		request.setSchemaReference(new SchemaReference().setName("bogus42"));
-		call(() -> getClient().createProject(request), BAD_REQUEST, "error_schema_reference_not_found", "bogus42", "-", "-");
+		request.setSchema(new SchemaReference().setName("bogus42"));
+		call(() -> client().createProject(request), BAD_REQUEST, "error_schema_reference_not_found", "bogus42", "-", "-");
 	}
 
 	@Test
@@ -76,19 +75,19 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		String name = "Tä\u1F921 üst";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchemaReference(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReference().setName("folder"));
 
-		ProjectResponse restProject = call(() -> getClient().createProject(request));
+		ProjectResponse restProject = call(() -> client().createProject(request));
 		assertEquals("The name of the project did not match.", name, restProject.getName());
 
 		NodeResponse response = call(
-				() -> getClient().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
+				() -> client().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		// Test slashes
 		request.setName("Bla/blub");
-		call(() -> getClient().createProject(request));
-		call(() -> getClient().findNodes(request.getName()));
+		call(() -> client().createProject(request));
+		call(() -> client().findNodes(request.getName()));
 
 	}
 
@@ -98,8 +97,8 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		for (String name : names) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(name);
-			request.setSchemaReference(new SchemaReference().setName("folder"));
-			call(() -> getClient().createProject(request), BAD_REQUEST, "project_error_name_already_reserved", name);
+			request.setSchema(new SchemaReference().setName("folder"));
+			call(() -> client().createProject(request), BAD_REQUEST, "project_error_name_already_reserved", name);
 		}
 	}
 
@@ -109,12 +108,12 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchemaReference(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReference().setName("folder"));
 
-		ProjectResponse restProject = call(() -> getClient().createProject(request));
+		ProjectResponse restProject = call(() -> client().createProject(request));
 
 		NodeResponse response = call(
-				() -> getClient().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
+				() -> client().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		assertThat(restProject).matches(request);
@@ -137,14 +136,14 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchemaReference(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReference().setName("folder"));
 
 		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(meshRoot().getProjectRoot(), CREATE_PERM);
 		}
 
 		String projectRootUuid = db.noTx(() -> meshRoot().getProjectRoot().getUuid());
-		call(() -> getClient().createProject(request), FORBIDDEN, "error_missing_perm", projectRootUuid);
+		call(() -> client().createProject(request), FORBIDDEN, "error_missing_perm", projectRootUuid);
 	}
 
 	@Test
@@ -160,11 +159,11 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchemaReference(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReference().setName("folder"));
 
 		try (NoTx noTx = db.noTx()) {
 			// Create a new project
-			ProjectResponse restProject = call(() -> getClient().createProject(request));
+			ProjectResponse restProject = call(() -> client().createProject(request));
 			assertThat(restProject).matches(request);
 			assertEquals(6, restProject.getPermissions().length);
 
@@ -172,12 +171,12 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
 			// Read the project
-			MeshResponse<ProjectResponse> readFuture = getClient().findProjectByUuid(restProject.getUuid()).invoke();
+			MeshResponse<ProjectResponse> readFuture = client().findProjectByUuid(restProject.getUuid()).invoke();
 			latchFor(readFuture);
 			assertSuccess(readFuture);
 
 			// Now delete the project
-			call(() -> getClient().deleteProject(restProject.getUuid()));
+			call(() -> client().deleteProject(restProject.getUuid()));
 		}
 	}
 
@@ -203,7 +202,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			// Don't grant permissions to no perm project
 
 			// Test default paging parameters
-			MeshResponse<ProjectListResponse> future = getClient().findProjects(new PagingParameters()).invoke();
+			MeshResponse<ProjectListResponse> future = client().findProjects(new PagingParametersImpl()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			ProjectListResponse restResponse = future.result();
@@ -212,7 +211,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 11;
-			future = getClient().findProjects(new PagingParameters(3, perPage)).invoke();
+			future = client().findProjects(new PagingParametersImpl(3, perPage)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
@@ -230,7 +229,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			List<ProjectResponse> allProjects = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
 				final int currentPage = page;
-				restResponse = call(() -> getClient().findProjects(new PagingParameters(currentPage, perPage)));
+				restResponse = call(() -> client().findProjects(new PagingParametersImpl(currentPage, perPage)));
 				allProjects.addAll(restResponse.getData());
 			}
 			assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
@@ -240,15 +239,15 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 					.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
 			assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
-			future = getClient().findProjects(new PagingParameters(-1, perPage)).invoke();
+			future = client().findProjects(new PagingParametersImpl(-1, perPage)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = getClient().findProjects(new PagingParameters(1, -1)).invoke();
+			future = client().findProjects(new PagingParametersImpl(1, -1)).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = getClient().findProjects(new PagingParameters(4242, 25)).invoke();
+			future = client().findProjects(new PagingParametersImpl(4242, 25)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -271,34 +270,33 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			final String name = "test12345_" + i;
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(name);
-			request.setSchemaReference(new SchemaReference().setName("folder"));
-			call(() -> getClient().createProject(request));
+			request.setSchema(new SchemaReference().setName("folder"));
+			call(() -> client().createProject(request));
 		}
 
 		// perPage: 0
-		ProjectListResponse list = call(() -> getClient().findProjects(new PagingParameters(1, 0)));
+		ProjectListResponse list = call(() -> client().findProjects(new PagingParametersImpl(1, 0)));
 		assertEquals("The page count should be one.", 0, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be zero", 0, list.getData().size());
 
 		// perPage: 1
-		list = call(() -> getClient().findProjects(new PagingParameters(1, 1)));
+		list = call(() -> client().findProjects(new PagingParametersImpl(1, 1)));
 		assertEquals("The page count should be one.", 11, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be one.", 1, list.getData().size());
 
 		// perPage: 2
-		list = call(() -> getClient().findProjects(new PagingParameters(1, 2)));
+		list = call(() -> client().findProjects(new PagingParametersImpl(1, 2)));
 		assertEquals("The page count should be one.", 6, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be one.", 2, list.getData().size());
 
 		// page: 6
-		list = call(() -> getClient().findProjects(new PagingParameters(6, 2)));
+		list = call(() -> client().findProjects(new PagingParametersImpl(6, 2)));
 		assertEquals("The page count should be one.", 6, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be one.", 1, list.getData().size());
-
 	}
 
 	@Test
@@ -310,7 +308,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
 			role().grantPermissions(project, READ_PERM, UPDATE_PERM);
 
-			MeshResponse<ProjectResponse> future = getClient().findProjectByUuid(uuid).invoke();
+			MeshResponse<ProjectResponse> future = client().findProjectByUuid(uuid).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			ProjectResponse restProject = future.result();
@@ -330,7 +328,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 			String uuid = project.getUuid();
 
-			MeshResponse<ProjectResponse> future = getClient().findProjectByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
+			MeshResponse<ProjectResponse> future = client().findProjectByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
 					.invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -348,7 +346,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
 			role().revokePermissions(project, READ_PERM);
 
-			MeshResponse<ProjectResponse> future = getClient().findProjectByUuid(uuid).invoke();
+			MeshResponse<ProjectResponse> future = client().findProjectByUuid(uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -359,17 +357,17 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testUpdateWithBogusNames() {
 		try (NoTx noTx = db.noTx()) {
-			MeshRoot.getInstance().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
+			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
 
 			String uuid = project().getUuid();
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("Test234");
-			call(() -> getClient().updateProject(uuid, request), CONFLICT, "project_conflicting_name");
+			call(() -> client().updateProject(uuid, request), CONFLICT, "project_conflicting_name");
 
 			// Test slashes
 			request.setName("Bla/blub");
-			call(() -> getClient().updateProject(uuid, request));
-			call(() -> getClient().findNodes(request.getName()));
+			call(() -> client().updateProject(uuid, request));
+			call(() -> client().findNodes(request.getName()));
 			project().reload();
 			assertEquals(request.getName(), project().getName());
 
@@ -385,7 +383,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 				String uuid = project.getUuid();
 				ProjectUpdateRequest request = new ProjectUpdateRequest();
 				request.setName(name);
-				call(() -> getClient().updateProject(uuid, request), BAD_REQUEST, "project_error_name_already_reserved", name);
+				call(() -> client().updateProject(uuid, request), BAD_REQUEST, "project_error_name_already_reserved", name);
 			}
 		}
 	}
@@ -402,11 +400,19 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.setName("New Name");
 
 			assertThat(dummySearchProvider).hasNoStoreEvents();
-			ProjectResponse restProject = call(() -> getClient().updateProject(uuid, request));
+			ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
 			project.reload();
 			assertThat(restProject).matches(project);
-			// All nodes need to be reindex since the project name is part of the search document.
-			assertThat(dummySearchProvider).recordedStoreEvents(57);
+			// All nodes  + project + tags and tag families need to be reindex since the project name is part of the search document.
+			int expectedCount = 1;
+			for (Node node : project().getNodeRoot().findAll()) {
+				expectedCount += node.getGraphFieldContainerCount();
+			}
+			expectedCount += project.getTagRoot().findAll().size();
+			expectedCount += project.getTagFamilyRoot().findAll().size();
+
+			assertThat(dummySearchProvider).hasStore(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
+			assertThat(dummySearchProvider).events(expectedCount, 0, 0, 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			reloadedProject.reload();
@@ -419,10 +425,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("new Name");
-
-		MeshResponse<ProjectResponse> future = getClient().updateProject("bogus", request).invoke();
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().updateProject("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
 	}
 
@@ -439,9 +442,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("New Name");
 
-			MeshResponse<ProjectResponse> future = getClient().updateProject(uuid, request).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().updateProject(uuid, request), FORBIDDEN, "error_missing_perm", uuid);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertEquals("The name should not have been changed", name, reloadedProject.getName());
@@ -463,9 +464,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			String name = project.getName();
 			assertNotNull(uuid);
 			assertNotNull(name);
-			MeshResponse<Void> future = getClient().deleteProject(uuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			call(() -> client().deleteProject(uuid));
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
 			// TODO check for removed routers?
 		}
@@ -478,11 +477,8 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 			String uuid = project.getUuid();
 			role().revokePermissions(project, DELETE_PERM);
-
-			MeshResponse<Void> future = getClient().deleteProject(uuid).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-
+			call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
+			assertThat(dummySearchProvider).events(0, 0, 0, 0);
 			project = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull("The project should not have been deleted", project);
 		}
@@ -500,7 +496,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().updateProject(project().getUuid(), request).invoke());
+				set.add(client().updateProject(project().getUuid(), request).invoke());
 			}
 			validateSet(set, barrier);
 		}
@@ -515,7 +511,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findProjectByUuid(uuid).invoke());
+				set.add(client().findProjectByUuid(uuid).invoke());
 			}
 			validateSet(set, null);
 		}
@@ -530,7 +526,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<MeshResponse<Void>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().deleteProject(uuid).invoke());
+			set.add(client().deleteProject(uuid).invoke());
 		}
 		validateDeletion(set, barrier);
 	}
@@ -546,8 +542,8 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		for (int i = 0; i < nJobs; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("test12345_" + i);
-			request.setSchemaReference(new SchemaReference().setName("folder"));
-			set.add(getClient().createProject(request).invoke());
+			request.setSchema(new SchemaReference().setName("folder"));
+			set.add(client().createProject(request).invoke());
 		}
 		validateCreation(set, null);
 
@@ -568,7 +564,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			int nJobs = 200;
 			Set<MeshResponse<ProjectResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findProjectByUuid(project().getUuid()).invoke());
+				set.add(client().findProjectByUuid(project().getUuid()).invoke());
 			}
 			for (MeshResponse<ProjectResponse> future : set) {
 				latchFor(future);

@@ -19,10 +19,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -32,11 +32,12 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.MeshJsonException;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
-import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.RoutingContext;
@@ -67,12 +68,11 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
-
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			int expectedMicroschemaContainers = microschemaContainers().size();
 
 			for (int i = 1; i <= expectedMicroschemaContainers + 1; i++) {
-				PageImpl<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(ac, new PagingParameters(1, i));
+				Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(ac, new PagingParametersImpl(1, i));
 
 				assertEquals(microschemaContainers().size(), page.getTotalElements());
 				assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());
@@ -142,7 +142,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Microschema schema = new MicroschemaModel();
 			schema.setName("test");
-			MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
+			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
 			assertNotNull("The container was not created.", container);
 			assertNotNull("The container schema was not set", container.getLatestVersion().getSchema());
 			assertEquals("The creator was not set.", user().getUuid(), container.getCreator().getUuid());
@@ -169,11 +169,11 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Microschema schema = new MicroschemaModel();
 			schema.setName("test");
-			MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
-			assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test"));
+			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
+			assertNotNull(MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
 			SearchQueueBatch batch = createBatch();
 			container.delete(batch);
-			assertNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test"));
+			assertNull(MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
 		}
 	}
 
@@ -234,7 +234,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	public void testTransformation() throws IOException {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
 			Microschema schema = vcard.transformToRest(ac, 0, "en").toBlocking().value();
 			assertEquals(vcard.getUuid(), schema.getUuid());

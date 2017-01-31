@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.ExpandableNode;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -78,7 +78,7 @@ public final class JsonUtil {
 		});
 
 		module.addDeserializer(FieldMap.class, new FieldMapDeserializer());
-		module.addDeserializer(NodeReference.class, new UserNodeReferenceDeserializer());
+		module.addDeserializer(ExpandableNode.class, new UserNodeReferenceDeserializer());
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 

@@ -73,17 +73,17 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 			parameters.setLanguages("en", "de");
 
 			// Invoke an initial update on the node
-			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
+			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.1");
 
 			// Update the node again but don't change any data. Base the update on 1.0 thus a conflict check must be performed. No conflict should occur. Since
 			// no fields have been altered no version should be created.
-			restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
+			restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.1");
 
 			// Update the node again but change some fields. A new version should be created (1.2)
 			request.getFields().put("content", FieldUtil.createHtmlField("someValue"));
-			restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
+			restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.2");
 
 		}
@@ -99,19 +99,19 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 			NodeUpdateRequest request1 = prepareNameFieldUpdateRequest("1234", "1.0");
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
-			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request1, parameters));
+			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request1, parameters));
 			assertThat(restNode).hasVersion("1.1");
 
 			// Invoke another update which just changes the title field - Update Title 1.1 -> 1.2
 			NodeUpdateRequest request2 = prepareNameFieldUpdateRequest("1234", "1.1");
 			request2.getFields().put("title", FieldUtil.createStringField("updatedTitle"));
-			restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request2, parameters));
+			restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request2, parameters));
 			assertThat(restNode).hasVersion("1.2");
 
 			// Update the node and change the name field. Base the update on 1.0 thus a conflict check must be performed. A conflict should be detected.
 			NodeUpdateRequest request3 = prepareNameFieldUpdateRequest("1234", "1.0");
 			request3.getFields().put("name", FieldUtil.createStringField("updatedField"));
-			MeshResponse<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request3, parameters).invoke();
+			MeshResponse<NodeResponse> future = client().updateNode(PROJECT_NAME, node.getUuid(), request3, parameters).invoke();
 			latchFor(future);
 			assertTrue("The node update should fail with a conflict error", future.failed());
 			Throwable error = future.cause();
@@ -170,7 +170,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
-			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
+			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.1");
 
 			oldContainer.reload();
@@ -202,7 +202,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),
 							Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname"))));
 
-			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
+			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.2");
 
 			node.reload();
@@ -227,7 +227,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 			parameters.setLanguages("en", "de");
 			// Add another field to the request in order to invoke an update. Otherwise no update would occure and no 1.3 would be created.
 			request.getFields().put("content", FieldUtil.createHtmlField("changed"));
-			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
+			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.3");
 		}
 
@@ -267,7 +267,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 			NodeUpdateRequest request4 = prepareNameFieldUpdateRequest("1234", "1.2");
 			request4.getFields().put("micronode", null);
 			request4.getFields().put("stringList", null);
-			NodeResponse restNode4 = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request4, parameters));
+			NodeResponse restNode4 = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request4, parameters));
 			assertThat(restNode4).hasVersion("1.4");
 		}
 		try (Tx trx = db.tx()) {
@@ -328,7 +328,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),
 							Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname"))));
 
-			NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
+			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.2");
 
 			node.reload();
@@ -350,7 +350,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),
 							Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname-also-modified"))));
 
-			MeshResponse<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters).invoke();
+			MeshResponse<NodeResponse> future = client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters).invoke();
 			latchFor(future);
 			assertTrue("The node update should fail with a conflict error", future.failed());
 			Throwable error = future.cause();
@@ -375,7 +375,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 
-			call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), request, parameters), BAD_REQUEST, "node_error_draft_not_found", "42.1",
+			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters), BAD_REQUEST, "node_error_draft_not_found", "42.1",
 					"en");
 		}
 	}

@@ -45,7 +45,7 @@ public class NodeFieldEndpointTest extends AbstractRestEndpointTest {
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 
-			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"))
+			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"))
 					.invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -58,7 +58,7 @@ public class NodeFieldEndpointTest extends AbstractRestEndpointTest {
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.setVersion(new VersionReference().setNumber("0.1"));
 
-			MeshResponse<NodeResponse> updateFuture = getClient()
+			MeshResponse<NodeResponse> updateFuture = client()
 					.updateNode(PROJECT_NAME, future.result().getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")).invoke();
 			latchFor(updateFuture);
 			assertSuccess(updateFuture);

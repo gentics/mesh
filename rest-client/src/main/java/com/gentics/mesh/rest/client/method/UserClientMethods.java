@@ -4,6 +4,7 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -84,4 +85,13 @@ public interface UserClientMethods {
 	 * @return
 	 */
 	MeshRequest<UserPermissionResponse> readUserPermissions(String uuid, String pathToElement);
+
+	/**
+	 * Fetch a new user token for the user with the given uuid. Note that any previously fetched token for that particular user will be invalidated by this
+	 * action.
+	 * 
+	 * @param userUuid
+	 * @return
+	 */
+	MeshRequest<UserTokenResponse> getUserToken(String userUuid);
 }

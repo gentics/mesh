@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
@@ -59,7 +60,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Migration status.");
 		endpoint.handler(rc -> {
-			handler.handleMigrationStatus(InternalActionContext.create(rc));
+			handler.handleMigrationStatus(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -121,7 +122,8 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.method(GET);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "System status");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			//TODO this is currently polled by apa. We need to update their monitoring as well if we change this
 			handler.handleStatus(ac);
 		});
 

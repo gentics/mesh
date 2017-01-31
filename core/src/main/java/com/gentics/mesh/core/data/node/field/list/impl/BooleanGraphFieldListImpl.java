@@ -1,11 +1,18 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
+import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
@@ -19,6 +26,56 @@ import com.gentics.mesh.util.CompareUtils;
  */
 public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl, Boolean>
 		implements BooleanGraphFieldList {
+
+	public static FieldTransformator<BooleanFieldListImpl> BOOLEAN_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level,
+			parentNode) -> {
+		BooleanGraphFieldList booleanFieldList = container.getBooleanList(fieldKey);
+		if (booleanFieldList == null) {
+			return null;
+		} else {
+			return booleanFieldList.transformToRest(ac, fieldKey, languageTags, level);
+		}
+	};
+
+	public static FieldUpdater BOOLEAN_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		BooleanGraphFieldList graphBooleanFieldList = container.getBooleanList(fieldKey);
+		BooleanFieldListImpl booleanList = fieldMap.getBooleanFieldList(fieldKey);
+		boolean isBooleanListFieldSetToNull = fieldMap.hasField(fieldKey) && booleanList == null;
+		GraphField.failOnDeletionOfRequiredField(graphBooleanFieldList, isBooleanListFieldSetToNull, fieldSchema, fieldKey, schema);
+		boolean restIsNull = booleanList == null;
+		GraphField.failOnMissingRequiredField(graphBooleanFieldList, restIsNull, fieldSchema, fieldKey, schema);
+
+		// Handle Deletion
+		if (isBooleanListFieldSetToNull && graphBooleanFieldList != null) {
+			graphBooleanFieldList.removeField(container);
+			return;
+		}
+
+		// Rest model is empty or null - Abort
+		if (restIsNull) {
+			return;
+		}
+
+		// Always create a new list. 
+		// This will effectively unlink the old list and create a new one. 
+		// Otherwise the list which is linked to old versions would be updated. 
+		graphBooleanFieldList = container.createBooleanList(fieldKey);
+
+		// Handle Update
+		// Remove all and add the listed items
+		graphBooleanFieldList.removeAll();
+		for (Boolean item : booleanList.getItems()) {
+			if (item == null) {
+				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
+			}
+			graphBooleanFieldList.createBoolean(item);
+		}
+
+	};
+
+	public static FieldGetter BOOLEAN_LIST_GETTER = (container, fieldSchema) -> {
+		return container.getBooleanList(fieldSchema.getName());
+	};
 
 	public static void init(Database database) {
 		database.addVertexType(BooleanGraphFieldListImpl.class, MeshVertexImpl.class);
@@ -38,7 +95,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 
 	@Override
 	protected BooleanGraphField createField(String key) {
-		return new BooleanGraphFieldImpl(key, getImpl());
+		return new BooleanGraphFieldImpl(key, this);
 	}
 
 	@Override

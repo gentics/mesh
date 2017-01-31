@@ -40,10 +40,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			requestA.setSchema(new SchemaReference().setName("content"));
 			requestA.getFields().put("name", FieldUtil.createStringField("nodeA"));
 			requestA.getFields().put("filename", FieldUtil.createStringField(conflictingName));
-			NodeResponse nodeA = call(() -> getClient().createNode(PROJECT_NAME, requestA));
+			NodeResponse nodeA = call(() -> client().createNode(PROJECT_NAME, requestA));
 
 			// 2. Publish nodeA
-			call(() -> getClient().publishNode(PROJECT_NAME, nodeA.getUuid()));
+			call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()));
 
 			// 3. Create nodeB
 			Node folderB = folder("2015");
@@ -53,20 +53,20 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			requestB.setSchema(new SchemaReference().setName("content"));
 			requestB.getFields().put("name", FieldUtil.createStringField("nodeB"));
 			requestB.getFields().put("filename", FieldUtil.createStringField(conflictingName));
-			NodeResponse nodeB = call(() -> getClient().createNode(PROJECT_NAME, requestB));
+			NodeResponse nodeB = call(() -> client().createNode(PROJECT_NAME, requestB));
 
 			// 4. Publish nodeB
-			call(() -> getClient().publishNode(PROJECT_NAME, nodeB.getUuid()));
+			call(() -> client().publishNode(PROJECT_NAME, nodeB.getUuid()));
 
 			// 5. Update node b to create a draft which would not conflict with node a
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 			nodeUpdateRequest.setVersion(nodeB.getVersion());
 			nodeUpdateRequest.getFields().put("filename", FieldUtil.createStringField("nodeB"));
 			nodeUpdateRequest.setLanguage("en");
-			call(() -> getClient().updateNode(PROJECT_NAME, nodeB.getUuid(), nodeUpdateRequest));
+			call(() -> client().updateNode(PROJECT_NAME, nodeB.getUuid(), nodeUpdateRequest));
 
 			// 6. Move Node B into FolderA
-			call(() -> getClient().moveNode(PROJECT_NAME, nodeB.getUuid(), folderA.getUuid()), CONFLICT, "node_conflicting_segmentfield_move",
+			call(() -> client().moveNode(PROJECT_NAME, nodeB.getUuid(), folderA.getUuid()), CONFLICT, "node_conflicting_segmentfield_move",
 					"filename", conflictingName);
 
 		}
@@ -88,7 +88,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
+			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -101,7 +101,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some other name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			future = getClient().createNode(PROJECT_NAME, create).invoke();
+			future = client().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
 			return null;
@@ -125,7 +125,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
+			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -138,7 +138,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(nonConflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			future = getClient().createNode(PROJECT_NAME, create).invoke();
+			future = client().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			String uuid = future.result().getUuid();
@@ -149,7 +149,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			update.setVersion(new VersionReference(null, "0.1"));
 			update.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
-			future = getClient().updateNode(PROJECT_NAME, uuid, update).invoke();
+			future = client().updateNode(PROJECT_NAME, uuid, update).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
 			return null;
@@ -172,7 +172,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			MeshResponse<NodeResponse> future = getClient().createNode(PROJECT_NAME, create).invoke();
+			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			String uuid = future.result().getUuid();
@@ -185,7 +185,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			update.getFields().put("name", FieldUtil.createStringField("Irgendein Name"));
 			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			update.getFields().put("content", FieldUtil.createStringField("Gesegnete Mahlzeit!"));
-			future = getClient().updateNode(PROJECT_NAME, uuid, update).invoke();
+			future = client().updateNode(PROJECT_NAME, uuid, update).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
 			return null;
@@ -209,7 +209,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, create));
+			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, create));
 			String uuid = response.getUuid();
 
 			// create a "conflicting" content in another folder
@@ -221,10 +221,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create2.getFields().put("name", FieldUtil.createStringField("some other name"));
 			create2.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			call(() -> getClient().createNode(PROJECT_NAME, create2));
+			call(() -> client().createNode(PROJECT_NAME, create2));
 
 			// try to move the original node
-			call(() -> getClient().moveNode(PROJECT_NAME, uuid, otherParent.getUuid()), CONFLICT, "node_conflicting_segmentfield_move", "filename",
+			call(() -> client().moveNode(PROJECT_NAME, uuid, otherParent.getUuid()), CONFLICT, "node_conflicting_segmentfield_move", "filename",
 					conflictingName);
 			return null;
 		});
@@ -255,7 +255,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			call(() -> getClient().createNode(PROJECT_NAME, create));
+			call(() -> client().createNode(PROJECT_NAME, create));
 
 			return null;
 		});
@@ -270,7 +270,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			call(() -> getClient().createNode(PROJECT_NAME, create, new VersioningParameters().setRelease(project().getInitialRelease().getUuid())));
+			call(() -> client().createNode(PROJECT_NAME, create, new VersioningParameters().setRelease(project().getInitialRelease().getUuid())));
 
 			return null;
 		});
@@ -295,7 +295,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 		});
 
 		// 2. Modify initial content
@@ -304,7 +304,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
 			update.getFields().put("filename", FieldUtil.createStringField(newName));
-			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 			return null;
 		});
 
@@ -318,7 +318,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 		});
 	}
 
@@ -340,7 +340,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(initialName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			String createdUuid = call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+			String createdUuid = call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 			return createdUuid;
 		});
 
@@ -350,7 +350,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
 			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
-			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 			return null;
 		});
 
@@ -364,7 +364,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(initialName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 		});
 
 		// 4. Modify the second node in order to cause a conflict
@@ -373,7 +373,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
 			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
-			call(() -> getClient().updateNode(PROJECT_NAME, otherNodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "filename",
+			call(() -> client().updateNode(PROJECT_NAME, otherNodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "filename",
 					conflictingName);
 			return null;
 		});
@@ -399,9 +399,9 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			String createdUuid = call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+			String createdUuid = call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 
-			call(() -> getClient().publishNode(PROJECT_NAME, createdUuid));
+			call(() -> client().publishNode(PROJECT_NAME, createdUuid));
 
 			return createdUuid;
 		});
@@ -412,7 +412,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
 			update.getFields().put("filename", FieldUtil.createStringField(newName));
-			call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 			return null;
 		});
 
@@ -426,12 +426,12 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			return call(() -> getClient().createNode(PROJECT_NAME, create)).getUuid();
+			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 		});
 
 		// 4. Publish conflicting content
 		db.noTx(() -> {
-			call(() -> getClient().publishNode(PROJECT_NAME, otherNodeUuid), CONFLICT, "node_conflicting_segmentfield_publish", "filename",
+			call(() -> client().publishNode(PROJECT_NAME, otherNodeUuid), CONFLICT, "node_conflicting_segmentfield_publish", "filename",
 					conflictingName);
 
 			return null;

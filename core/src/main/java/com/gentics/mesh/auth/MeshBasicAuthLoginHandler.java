@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
@@ -68,8 +69,9 @@ public class MeshBasicAuthLoginHandler extends AuthHandlerImpl {
 				if (!"Basic".equals(sscheme)) {
 					context.fail(400);
 				} else {
-					// We decoded the basic auth information and can now invoke the login call. The MeshAuthProvider will also set the JWT token in the cookie and return the response to the requestor. 
-					authProvider.login(InternalActionContext.create(context), suser, spass);
+					// We decoded the basic auth information and can now invoke the login call. The MeshAuthProvider will also set the JWT token in the cookie and return the response to the requestor.
+					InternalActionContext ac = new InternalRoutingActionContextImpl(context);
+					authProvider.login(ac, suser, spass);
 				}
 			}
 		}

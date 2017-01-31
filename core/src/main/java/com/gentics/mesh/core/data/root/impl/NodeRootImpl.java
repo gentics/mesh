@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -32,7 +31,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -41,10 +40,10 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.PagingParameters;
-import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -81,15 +80,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public PageImpl<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameters pagingInfo)
+	public Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameters pagingInfo)
 			throws InvalidArgumentException {
-		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().getPermTraversal(READ_PERM);
-		PageImpl<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
+		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM);
+		Page<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
 		return nodePage;
 	}
 
 	@Override
-	public PageImpl<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
 		MeshAuthUser requestUser = ac.getUser();
 		Release release = ac.getRelease(null);
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
@@ -141,9 +140,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node root {" + getUuid() + "}");
 		}
+		// Delete all containers of all nodes
 		for (Node node : findAll()) {
-			node.delete(batch);
+			for (NodeGraphFieldContainer container : node.getAllInitialGraphFieldContainers()) {
+				container.delete(batch);
+			}
+			// Finally remove the node element itself
+			node.getElement().remove();
 		}
+		// All nodes are gone. Lets remove the node root element.
 		getElement().remove();
 	}
 
@@ -162,7 +167,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
 		String body = ac.getBodyAsString();
-
 		NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
 		if (isEmpty(requestModel.getParentNodeUuid())) {
 			throw error(BAD_REQUEST, "node_missing_parentnode_field");
@@ -170,21 +174,25 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (isEmpty(requestModel.getLanguage())) {
 			throw error(BAD_REQUEST, "node_no_languagecode_specified");
 		}
+
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM);
 		Release release = ac.getRelease(project);
 		Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release);
+
+		// Add initial permissions to the created node
 		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 		requestUser.addPermissionsOnRole(parentNode, READ_PUBLISHED_PERM, node, READ_PUBLISHED_PERM);
 		requestUser.addPermissionsOnRole(parentNode, PUBLISH_PERM, node, PUBLISH_PERM);
+
+		// Create the language specific graph field container for the node
 		Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 		if (language == null) {
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}
 		NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
-		// TODO add container specific batch
-		node.addIndexBatchEntry(batch, STORE_ACTION);
+		batch.store(node, release.getUuid(), ContainerType.DRAFT, true);
 		return node;
 	}
 

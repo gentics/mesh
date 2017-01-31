@@ -9,6 +9,7 @@ import java.util.HashMap;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
@@ -22,7 +23,7 @@ public class InternalActionContextTest {
 		when(request.query()).thenReturn("bla=123&blub=123");
 		when(rc.request()).thenReturn(request);
 		when(rc.data()).thenReturn(new HashMap<>());
-		InternalActionContext ac = InternalActionContext.create(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		assertNotNull(ac.splitQuery());
 	}
 }

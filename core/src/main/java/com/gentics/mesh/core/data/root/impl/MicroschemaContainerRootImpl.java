@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -89,7 +88,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		}
 		MicroschemaContainer container = create(microschema, requestUser);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-		container.addIndexBatchEntry(batch, STORE_ACTION);
+		batch.store(container, true);
 		return container;
 
 	}

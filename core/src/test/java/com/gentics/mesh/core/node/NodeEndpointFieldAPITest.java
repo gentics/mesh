@@ -35,7 +35,7 @@ public class NodeEndpointFieldAPITest extends AbstractRestEndpointTest {
 			node.reload();
 
 			// 2. Download the data using the field api
-			MeshResponse<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary")
+			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary")
 					.invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);

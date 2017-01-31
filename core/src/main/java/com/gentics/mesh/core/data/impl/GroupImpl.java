@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -17,25 +17,27 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
+
+import rx.Single;
 
 /**
  * @see Group
@@ -52,11 +54,6 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		return new GroupReference().setName(getName()).setUuid(getUuid());
 	}
 
-	@Override
-	public String getType() {
-		return Group.TYPE;
-	}
-
 	public String getName() {
 		return getProperty("name");
 	}
@@ -70,20 +67,20 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public void addUser(User user) {
-		setUniqueLinkInTo(user.getImpl(), HAS_USER);
+		setUniqueLinkInTo(user, HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
 		for (Role role : getRoles()) {
-			user.getImpl().setUniqueLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 	}
 
 	public void removeUser(User user) {
-		unlinkIn(user.getImpl(), HAS_USER);
+		unlinkIn(user, HAS_USER);
 
 		// Remove shortcut edge from user to roles of this group
 		for (Role role : getRoles()) {
-			user.getImpl().unlinkOut(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.unlinkOut(role, ASSIGNED_TO_ROLE);
 		}
 		PermissionStore.invalidate();
 	}
@@ -93,48 +90,48 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public void addRole(Role role) {
-		setUniqueLinkInTo(role.getImpl(), HAS_ROLE);
+		setUniqueLinkInTo(role, HAS_ROLE);
 
 		// Add shortcut edges from role to users of this group
 		for (User user : getUsers()) {
-			user.getImpl().setUniqueLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 
 	}
 
 	public void removeRole(Role role) {
-		unlinkIn(role.getImpl(), HAS_ROLE);
+		unlinkIn(role, HAS_ROLE);
 
 		// Remove shortcut edges from role to users of this group
 		for (User user : getUsers()) {
-			user.getImpl().unlinkOut(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.unlinkOut(role, ASSIGNED_TO_ROLE);
 		}
 		PermissionStore.invalidate();
 	}
 
 	// TODO add java handler
 	public boolean hasRole(Role role) {
-		return in(HAS_ROLE).retain(role.getImpl()).hasNext();
+		return in(HAS_ROLE).retain(role).hasNext();
 	}
 
 	public boolean hasUser(User user) {
-		return in(HAS_USER).retain(user.getImpl()).hasNext();
+		return in(HAS_USER).retain(user).hasNext();
 	}
 
 	/**
 	 * Get all users within this group that are visible for the given user.
 	 */
-	public PageImpl<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
 
-		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser.getImpl()).back().has(UserImpl.class);
+		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser)
+				.back().has(UserImpl.class);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, UserImpl.class);
 	}
 
 	@Override
-	public PageImpl<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
-		PageImpl<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
+		Page<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
 		return page;
 	}
 
@@ -162,8 +159,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		// TODO don't allow deletion of the admin group
-		batch.addEntry(this, DELETE_ACTION);
-		addRelatedEntries(batch, DELETE_ACTION);
+		batch.delete(this, true);
 		getElement().remove();
 		PermissionStore.invalidate();
 	}
@@ -184,7 +180,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			}
 
 			setName(requestModel.getName());
-			addIndexBatchEntry(batch, STORE_ACTION);
+			batch.store(this, true);
 		}
 		return this;
 	}
@@ -200,10 +196,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
+	public void handleRelatedEntries(HandleElementAction action) {
 		for (User user : getUsers()) {
-			//We need to store users as well since users list their groups - See {@link UserTransformator#toDocument(User)}
-			batch.addEntry(user, STORE_ACTION);
+			// We need to store users as well since users list their groups -
+			// See {@link UserTransformator#toDocument(User)}
+			action.call(user, null);
 		}
 	}
 
@@ -215,6 +212,23 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/groups/" + getUuid();
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+	}
+
+	@Override
+	public Single<GroupResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return db.operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 
 }

@@ -2,7 +2,6 @@ package com.gentics.mesh.core.verticle.webroot;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -16,6 +15,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -44,11 +45,14 @@ public class WebRootHandler {
 
 	private Database db;
 
+	private HandlerUtilities utils;
+
 	@Inject
-	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService) {
+	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService, HandlerUtilities utils) {
 		this.db = database;
 		this.imageManipulator = imageManipulator;
 		this.webrootService = webrootService;
+		this.utils = utils;
 	}
 
 	/**
@@ -57,12 +61,12 @@ public class WebRootHandler {
 	 * @param rc
 	 */
 	public void handleGetPath(RoutingContext rc) {
-		InternalActionContext ac = InternalActionContext.create(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = ac.getParameter("param0");
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 
 			// Load all nodes for the given path
 			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);

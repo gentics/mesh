@@ -36,7 +36,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			Node targetNode = content("concorde");
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			call(() -> getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
+			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
 					"node_move_error_targetnode_is_no_folder");
 			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
 		}
@@ -49,7 +49,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			Node sourceNode = folder("news");
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
 			assertNotEquals(sourceNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			call(() -> getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid()), BAD_REQUEST, "node_move_error_same_nodes");
+			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid()), BAD_REQUEST, "node_move_error_same_nodes");
 			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(releaseUuid).getUuid());
 		}
 	}
@@ -63,7 +63,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
 
-			call(() -> getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
+			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
 					"node_move_error_not_allowed_to_move_node_into_one_of_its_children");
 
 			assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode(releaseUuid).getUuid());
@@ -79,7 +79,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
 			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
 
-			call(() -> getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), FORBIDDEN, "error_missing_perm",
+			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), FORBIDDEN, "error_missing_perm",
 					sourceNode.getUuid());
 			assertNotEquals("The source node should not have been moved.", targetNode.getUuid(),
 					folder("deals").getParentNode(releaseUuid).getUuid());
@@ -94,7 +94,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			Node targetNode = folder("2015");
 			String oldSourceParentId = sourceNode.getParentNode(releaseUuid).getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			call(() -> getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()));
+			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()));
 
 			sourceNode.reload();
 			try (Tx tx = db.tx()) {
@@ -120,17 +120,17 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			schema.setDisplayField("stringField");
 			schema.getFields().add(FieldUtil.createStringFieldSchema("stringField"));
 			schema.validate();
-			Schema schemaResponse = call(() -> getClient().createSchema(schema));
+			Schema schemaResponse = call(() -> client().createSchema(schema));
 
 			// 2. Add schema to project
-			call(() -> getClient().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
+			call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
 
 			// 3. Assign the schema to the initial release
 			String releaseUuid = project().getLatestRelease().getUuid();
 			SchemaReference reference = new SchemaReference();
 			reference.setName("test");
 			reference.setVersion(1);
-			call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid, reference));
+			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid, reference));
 
 			// We don't need to wait for a schema migration because there are no nodes which use the schema
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -139,14 +139,14 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			request.setParentNodeUuid(folder("2015").getUuid());
 			request.setLanguage("en");
 			NodeResponse nodeResponse = call(
-					() -> getClient().createNode(PROJECT_NAME, request, new NodeParameters().setResolveLinks(LinkType.FULL)));
+					() -> client().createNode(PROJECT_NAME, request, new NodeParameters().setResolveLinks(LinkType.FULL)));
 			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", "/api/v1/dummy/webroot/error/404",
 					nodeResponse.getPath());
 			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", "/api/v1/dummy/webroot/error/404",
 					nodeResponse.getLanguagePaths().get("en"));
 
 			// 4. Now move the node to folder 2014
-			call(() -> getClient().moveNode(PROJECT_NAME, nodeResponse.getUuid(), folder("2014").getUuid()));
+			call(() -> client().moveNode(PROJECT_NAME, nodeResponse.getUuid(), folder("2014").getUuid()));
 		}
 
 	}
@@ -159,7 +159,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			Node targetNode = folder("2015");
 
 			// 1. Get original parent uuid
-			String oldParentUuid = call(() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft()))
+			String oldParentUuid = call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft()))
 					.getParentNode().getUuid();
 
 			Release initialRelease = project.getInitialRelease();
@@ -170,15 +170,15 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			assertThat(migrated.getParentNode().getUuid()).as("Migrated node parent").isEqualTo(oldParentUuid);
 
 			// 2. Move in initial release
-			call(() -> getClient().moveNode(PROJECT_NAME, movedNode.getUuid(), targetNode.getUuid(),
+			call(() -> client().moveNode(PROJECT_NAME, movedNode.getUuid(), targetNode.getUuid(),
 					new VersioningParameters().setRelease(initialRelease.getName())));
 
 			// 3. Assert that the node still uses the old parent for the new release
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft())).getParentNode()
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft())).getParentNode()
 					.getUuid()).as("Parent Uuid in new release").isEqualTo(oldParentUuid);
 
 			// 4. Assert that the node uses the new parent for the initial release
-			assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(),
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(),
 					new VersioningParameters().setRelease(initialRelease.getName()).draft())).getParentNode().getUuid())
 							.as("Parent Uuid in initial release").isEqualTo(targetNode.getUuid());
 		}

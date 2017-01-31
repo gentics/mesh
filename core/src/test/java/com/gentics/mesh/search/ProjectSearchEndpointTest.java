@@ -10,7 +10,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.util.MeshAssert;
 
@@ -19,22 +19,22 @@ public class ProjectSearchEndpointTest extends AbstractSearchEndpointTest implem
 	@Test
 	public void testSearchProject() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
-		MeshResponse<ProjectListResponse> future = getClient().searchProjects(getSimpleQuery("dummy"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleQuery("dummy"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		ProjectListResponse response = future.result();
 		assertEquals(1, response.getData().size());
 
-		future = getClient().searchProjects(getSimpleQuery("blub"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		future = client().searchProjects(getSimpleQuery("blub"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
 		assertEquals(0, response.getData().size());
 
-		future = getClient().searchProjects(getSimpleTermQuery("name", "dummy"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		future = client().searchProjects(getSimpleTermQuery("name", "dummy"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -50,8 +50,8 @@ public class ProjectSearchEndpointTest extends AbstractSearchEndpointTest implem
 		try (NoTx noTx = db.noTx()) {
 			MeshAssert.assertElement(boot.projectRoot(), project.getUuid(), true);
 		}
-		MeshResponse<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", newName),
-				new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleTermQuery("name", newName),
+				new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		ProjectListResponse response = future.result();
@@ -64,14 +64,14 @@ public class ProjectSearchEndpointTest extends AbstractSearchEndpointTest implem
 		final String projectName = "newproject";
 		ProjectResponse project = createProject(projectName);
 
-		MeshResponse<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", projectName),
-				new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleTermQuery("name", projectName),
+				new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(1, future.result().getData().size());
 
 		deleteProject(project.getUuid());
-		future = getClient().searchProjects(getSimpleTermQuery("name", projectName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		future = client().searchProjects(getSimpleTermQuery("name", projectName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -86,13 +86,13 @@ public class ProjectSearchEndpointTest extends AbstractSearchEndpointTest implem
 		String newProjectName = "updatedprojectname";
 		updateProject(project.getUuid(), newProjectName);
 
-		MeshResponse<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", projectName),
-				new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleTermQuery("name", projectName),
+				new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
 
-		future = getClient().searchProjects(getSimpleTermQuery("name", newProjectName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		future = client().searchProjects(getSimpleTermQuery("name", newProjectName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(1, future.result().getData().size());

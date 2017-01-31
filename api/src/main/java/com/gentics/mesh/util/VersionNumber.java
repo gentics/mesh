@@ -85,6 +85,15 @@ public class VersionNumber implements Comparable<VersionNumber> {
 	 */
 	@Override
 	public String toString() {
+		return getFullVersion();
+	}
+
+	/**
+	 * Return the full version string.
+	 * 
+	 * @return
+	 */
+	public String getFullVersion() {
 		return fullVersion;
 	}
 

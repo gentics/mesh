@@ -26,19 +26,21 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.RestModelHelper;
 
+import rx.Single;
+
 /**
  * @see SchemaContainerVersion
  */
 public class SchemaContainerVersionImpl extends
 		AbstractGraphFieldSchemaContainerVersion<Schema, SchemaReference, SchemaContainerVersion, SchemaContainer> implements SchemaContainerVersion {
 
-	@Override
-	public String getType() {
-		return SchemaContainer.TYPE;
-	}
-
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
+	}
+
+	@Override
+	public String getType() {
+		return SchemaContainerVersion.TYPE;
 	}
 
 	@Override
@@ -91,7 +93,8 @@ public class SchemaContainerVersionImpl extends
 
 		// Sort the list by project name
 		// restSchema.getProjects()
-		// Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
+		// Collections.sort(restSchema.getProjects(), new
+		// Comparator<ProjectResponse>() {
 		// @Override
 		// public int compare(ProjectResponse o1, ProjectResponse o2) {
 		// return o1.getName().compareTo(o2.getName());
@@ -137,6 +140,13 @@ public class SchemaContainerVersionImpl extends
 	@Override
 	public Release getRelease() {
 		return in(HAS_SCHEMA_VERSION).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	}
+
+	@Override
+	public Single<Schema> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return MeshInternal.get().database().operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 
 }

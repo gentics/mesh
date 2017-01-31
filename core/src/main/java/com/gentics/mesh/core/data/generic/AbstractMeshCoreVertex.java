@@ -14,11 +14,9 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.core.logging.Logger;
@@ -44,7 +42,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	protected <E extends AbstractGenericRestResponse> void setRolePermissions(InternalActionContext ac, E model) {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
-			Role role = MeshRoot.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Role role = MeshInternal.get().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(this);
 				Set<String> humanNames = new HashSet<>();
@@ -100,13 +98,6 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			String[] names = ac.getUser().getPermissionNames(this);
 			model.setPermissions(names);
 		}
-	}
-
-	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		batch.addEntry(this, action);
-		addRelatedEntries(batch, action);
-		return batch;
 	}
 
 	/**

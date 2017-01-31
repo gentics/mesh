@@ -18,7 +18,7 @@ public class NodeIndexHandlerTest extends AbstractIsolatedBasicDBTest {
 			assertThat(meshRoot().getNodeRoot().findAll()).as("Node list").isNotEmpty();
 			searchProvider.reset();
 			assertEquals("Initially no store event should have been recorded.", 0, dummySearchProvider.getStoreEvents().size());
-			meshDagger.nodeIndexHandler().reindexAll().await();
+			meshDagger.nodeContainerIndexHandler().reindexAll().await();
 			assertTrue("We expected to see more than one store event.", dummySearchProvider.getStoreEvents().size() > 1);
 		}
 

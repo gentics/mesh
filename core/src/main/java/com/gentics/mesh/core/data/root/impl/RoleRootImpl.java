@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -10,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -49,7 +49,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	@Override
 	public void addRole(Role role) {
 		if (log.isDebugEnabled()) {
-			log.debug("Adding role {" + role.getUuid() + ":" + role.getName() + "#" + role.getImpl().getId() + "} to roleRoot {" + getId() + "}");
+			log.debug("Adding role {" + role.getUuid() + ":" + role.getName() + "#" + role.getId() + "} to roleRoot {" + getId() + "}");
 		}
 		addItem(role);
 	}
@@ -92,7 +92,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		requestUser.reload();
 		Role role = create(requestModel.getName(), requestUser);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
-		role.addIndexBatchEntry(batch, STORE_ACTION);
+		batch.store(role, true);
 		return role;
 
 	}

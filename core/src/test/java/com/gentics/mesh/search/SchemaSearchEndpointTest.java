@@ -16,7 +16,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
@@ -40,23 +40,23 @@ public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest impleme
 	@Test
 	public void testSearchSchema() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
-		MeshResponse<SchemaListResponse> future = getClient().searchSchemas(getSimpleQuery("folder"), new PagingParameters().setPage(1).setPerPage(2))
+		MeshResponse<SchemaListResponse> future = client().searchSchemas(getSimpleQuery("folder"), new PagingParametersImpl().setPage(1).setPerPage(2))
 				.invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
 		assertEquals(1, response.getData().size());
 
-		future = getClient().searchSchemas(getSimpleQuery("blub"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		future = client().searchSchemas(getSimpleQuery("blub"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
 		assertEquals(0, response.getData().size());
 
-		future = getClient().searchSchemas(getSimpleTermQuery("name", "folder"), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		future = client().searchSchemas(getSimpleTermQuery("name", "folder"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -71,8 +71,8 @@ public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest impleme
 		try (NoTx noTx = db.noTx()) {
 			MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		}
-		MeshResponse<SchemaListResponse> future = getClient()
-				.searchSchemas(getSimpleTermQuery("name", newName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<SchemaListResponse> future = client()
+				.searchSchemas(getSimpleTermQuery("name", newName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
@@ -85,14 +85,14 @@ public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest impleme
 		final String schemaName = "newschemaname";
 		Schema schema = createSchema(schemaName);
 
-		MeshResponse<SchemaListResponse> future = getClient()
-				.searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<SchemaListResponse> future = client()
+				.searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(1, future.result().getData().size());
 
 		deleteSchema(schema.getUuid());
-		future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		future = client().searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -102,7 +102,7 @@ public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest impleme
 	@Override
 	@Ignore
 	public void testDocumentUpdate() throws Exception {
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 		// 1. Create a new schema
 		final String schemaName = "newschemaname";
@@ -116,15 +116,15 @@ public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest impleme
 		failingLatch(latch);
 
 		// 4. Search for the original schema
-		MeshResponse<SchemaListResponse> future = getClient()
-				.searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		MeshResponse<SchemaListResponse> future = client()
+				.searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals("The schema with the old name {" + schemaName + "} was found but it should not have been since we updated it.", 0,
 				future.result().getData().size());
 
 		// 5. Search for the updated schema
-		future = getClient().searchSchemas(getSimpleTermQuery("name", newSchemaName), new PagingParameters().setPage(1).setPerPage(2)).invoke();
+		future = client().searchSchemas(getSimpleTermQuery("name", newSchemaName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals("The schema with the updated name was not found.", 1, future.result().getData().size());

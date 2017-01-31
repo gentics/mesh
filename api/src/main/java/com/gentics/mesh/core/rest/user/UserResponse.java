@@ -3,8 +3,10 @@ package com.gentics.mesh.core.rest.user;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 
 /**
  * User response model.
@@ -19,7 +21,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	private String emailAddress;
 
-	private NodeReference nodeReference;
+	private ExpandableNode nodeReference;
 
 	private boolean enabled;
 
@@ -42,9 +44,11 @@ public class UserResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @param lastname
 	 *            Lastname of the user
+	 * @return Fluent API
 	 */
-	public void setLastname(String lastname) {
+	public UserResponse setLastname(String lastname) {
 		this.lastname = lastname;
+		return this;
 	}
 
 	/**
@@ -61,9 +65,11 @@ public class UserResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @param firstname
 	 *            Firstname of the user
+	 * @return Fluent API
 	 */
-	public void setFirstname(String firstname) {
+	public UserResponse setFirstname(String firstname) {
 		this.firstname = firstname;
+		return this;
 	}
 
 	/**
@@ -80,9 +86,11 @@ public class UserResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @param emailAddress
 	 *            Email address of the user
+	 * @return Fluent API
 	 */
-	public void setEmailAddress(String emailAddress) {
+	public UserResponse setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
+		return this;
 	}
 
 	/**
@@ -99,9 +107,11 @@ public class UserResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @param username
 	 *            Username of the user
+	 * @return Fluent API
 	 */
-	public void setUsername(String username) {
+	public UserResponse setUsername(String username) {
 		this.username = username;
+		return this;
 	}
 
 	/**
@@ -116,19 +126,52 @@ public class UserResponse extends AbstractGenericRestResponse {
 	/**
 	 * Return the node reference that was assigned to the user.
 	 * 
-	 * @return
+	 * @return Node reference or null if no reference has been set
 	 */
-	public NodeReference getNodeReference() {
+	public ExpandableNode getNodeReference() {
 		return nodeReference;
+	}
+
+	@JsonIgnore
+	public NodeResponse getExpandedNodeReference() {
+		return (NodeResponse) nodeReference;
+	}
+
+	@JsonIgnore
+	public NodeReference getReferencedNodeReference() {
+		return (NodeReference) nodeReference;
+	}
+
+	@JsonIgnore
+	public boolean isReference() {
+		return (nodeReference instanceof NodeReference);
+	}
+
+	@JsonIgnore
+	public boolean isExpanded() {
+		return (nodeReference instanceof NodeResponse);
 	}
 
 	/**
 	 * Set the node reference to the user.
 	 * 
 	 * @param nodeReference
+	 * @return Fluent API
 	 */
-	public void setNodeReference(NodeReference nodeReference) {
+	public UserResponse setNodeReference(ExpandableNode nodeReference) {
 		this.nodeReference = nodeReference;
+		return this;
+	}
+
+	/**
+	 * Set the expanded node response.
+	 * 
+	 * @param nodeResponse
+	 * @return Fluent API
+	 */
+	public UserResponse setNodeResponse(NodeResponse nodeResponse) {
+		this.nodeReference = nodeResponse;
+		return this;
 	}
 
 	/**
@@ -145,8 +188,11 @@ public class UserResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @param enabled
 	 *            Enabled flag
+	 * @return Fluent API
 	 */
-	public void setEnabled(boolean enabled) {
+	public UserResponse setEnabled(boolean enabled) {
 		this.enabled = enabled;
+		return this;
 	}
+
 }

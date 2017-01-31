@@ -5,8 +5,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import dagger.Module;

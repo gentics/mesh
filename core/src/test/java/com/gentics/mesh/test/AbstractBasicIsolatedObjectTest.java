@@ -25,7 +25,7 @@ public abstract class AbstractBasicIsolatedObjectTest extends AbstractIsolatedBa
 		try (Tx tx = db.tx()) {
 			assertTrue("The role {" + role().getName() + "} does not grant permission on element {" + element.getUuid()
 					+ "} although we granted those permissions.", role().hasPermission(perm, element));
-			assertTrue("The user has no {" + perm.getSimpleName() + "} permission on node {" + element.getUuid() + "/" + element.getType() + "}",
+			assertTrue("The user has no {" + perm.getSimpleName() + "} permission on node {" + element.getUuid() + "/" + element.getClass().getSimpleName() + "}",
 					getRequestUser().hasPermission(element, perm));
 		}
 
@@ -38,11 +38,11 @@ public abstract class AbstractBasicIsolatedObjectTest extends AbstractIsolatedBa
 		try (Tx tx = db.tx()) {
 			boolean hasPerm = role().hasPermission(perm, element);
 			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getSimpleName() + "} permission on node {" + element.getUuid()
-					+ "/" + element.getType() + "} although we revoked it.", hasPerm);
+					+ "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 
 			hasPerm = getRequestUser().hasPermission(element, perm);
 			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getSimpleName() + "} permission on node {"
-					+ element.getUuid() + "/" + element.getType() + "} although we revoked it.", hasPerm);
+					+ element.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 		}
 	}
 

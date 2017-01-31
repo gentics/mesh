@@ -165,5 +165,17 @@ Transfer-Encoding: chunked
 }
 ```
 
+## IDE Setup - Eclipse
 
+Make sure that you use at least Eclipse Neon.
 
+Install the following maven m2e workshop plugins:
+
+  * m2e-apt-plugin
+
+Note: Make sure that your Eclipse Maven APT settings are set to "Automatically configure JDT APT". 
+If you don't find this option you most likely need to install the M2E APT Plugin for eclipse.
+
+Import all maven modules in your IDE.
+
+Please note that this project is using Google Dagger for dependency injection. Adding new dependencies or beans may require a fresh build (via Project->Clean) of the mesh-core/mesh-api modules.

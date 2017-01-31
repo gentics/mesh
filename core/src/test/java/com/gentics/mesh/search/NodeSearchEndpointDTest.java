@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -35,7 +34,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -47,7 +46,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchListOfMicronodesResolveLinks() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			addMicronodeListField();
-			fullIndex();
+			recreateIndices();
 		}
 
 		for (String firstName : Arrays.asList("Mickey", "Donald")) {
@@ -55,8 +54,8 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				// valid names always begin with the same character
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
-				NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
-						new PagingParameters().setPage(1).setPerPage(2), new NodeParameters().setResolveLinks(LinkType.FULL),
+				NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
+						new PagingParametersImpl().setPage(1).setPerPage(2), new NodeParameters().setResolveLinks(LinkType.FULL),
 						new VersioningParameters().draft()));
 
 				if (expectResult) {
@@ -79,14 +78,15 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 1. Index all existing contents
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		// 2. Assert that the the en, de variant of the node could be found in the search index
 		String uuid = db.noTx(() -> content("concorde").getUuid());
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid),
-				new PagingParameters().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+		NodeListResponse response = call(
+				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl().setPage(1).setPerPage(10),
+						new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
 		assertEquals("We expect to find the two language versions.", 2, response.getData().size());
 
 		// 3. Prepare an updated schema
@@ -102,19 +102,14 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// Clear the schema storage in order to purge the reference from the storage which we would otherwise modify.
 		MeshInternal.get().serverSchemaStorage().clear();
 
-		try (NoTx noTx = db.noTx()) {
-			meshRoot().getSearchQueue().reload();
-			assertEquals("No more entries should remain in the search queue", 0, meshRoot().getSearchQueue().getSize());
-		}
-
 		// 4. Invoke the schema migration
 		GenericMessageResponse message = call(
-				() -> getClient().updateSchema(schemaUuid, schema, new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
+				() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
 		expectResponseMessage(message, "migration_invoked", "content");
 
 		// 5. Assign the new schema version to the release
-		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(schemaUuid));
-		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, db.noTx(() -> project().getLatestRelease().getUuid()),
+		Schema updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db.noTx(() -> project().getLatestRelease().getUuid()),
 				new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 
 		// Wait for migration to complete
@@ -123,8 +118,9 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		searchProvider.refreshIndex();
 
 		// 6. Assert that the two migrated language variations can be found
-		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid),
-				new PagingParameters().setPage(1).setPerPage(10), new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
+		response = call(
+				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl().setPage(1).setPerPage(10),
+						new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
 		assertEquals("We only expect to find the two language versions while searching for uuid {" + uuid + "}", 2, response.getData().size());
 	}
 
@@ -151,11 +147,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				vcardField.getMicronode().createString("lastName").setString("Mouse");
 				role().grantPermissions(node, GraphPermission.READ_PERM);
 			}
-			MeshRoot.getInstance().getNodeRoot().reload();
-			fullIndex();
+			MeshInternal.get().boot().meshRoot().getNodeRoot().reload();
+			recreateIndices();
 
-			NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
-					new PagingParameters().setPage(1).setPerPage(numAdditionalNodes + 1), new VersioningParameters().draft()));
+			NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
+					new PagingParametersImpl().setPage(1).setPerPage(numAdditionalNodes + 1), new VersioningParameters().draft()));
 
 			assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());
 		}
@@ -170,7 +166,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testTagCount() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		try (NoTx noTx = db.noTx()) {
@@ -181,11 +177,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			for (int i = 0; i < tagCount; i++) {
 				TagResponse tagResponse = createTag(PROJECT_NAME, tagFamily("colors").getUuid(), "tag" + i);
 				// Add tags to node:
-				call(() -> getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid(), new VersioningParameters().draft()));
+				call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid(), new VersioningParameters().draft()));
 			}
 
 			NodeListResponse response = call(
-					() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new VersioningParameters().draft()));
+					() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new VersioningParameters().draft()));
 			assertEquals("Expect to only get one search result", 1, response.getMetainfo().getTotalCount());
 
 			// assert tag count
@@ -198,70 +194,122 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testGlobalNodeSearch() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		try (NoTx noTx = db.noTx()) {
 			NodeResponse oldNode = call(
-					() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
+					() -> client().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
 
 			ProjectCreateRequest createProject = new ProjectCreateRequest();
-			createProject.setSchemaReference(new SchemaReference().setName("folder"));
+			createProject.setSchema(new SchemaReference().setName("folder"));
 			createProject.setName("mynewproject");
-			ProjectResponse projectResponse = call(() -> getClient().createProject(createProject));
+			ProjectResponse projectResponse = call(() -> client().createProject(createProject));
 
 			NodeCreateRequest createNode = new NodeCreateRequest();
 			createNode.setLanguage("en");
 			createNode.setSchema(new SchemaReference().setName("folder"));
 			createNode.setParentNodeUuid(projectResponse.getRootNodeUuid());
 			createNode.getFields().put("name", FieldUtil.createStringField("Concorde"));
-			NodeResponse newNode = call(() -> getClient().createNode("mynewproject", createNode));
+			NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
 
 			// search in old project
 			NodeListResponse response = call(
-					() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new VersioningParameters().draft()));
+					() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new VersioningParameters().draft()));
 			assertThat(response.getData()).as("Search result in " + PROJECT_NAME).usingElementComparatorOnFields("uuid").containsOnly(oldNode);
 
 			// search in new project
-			response = call(() -> getClient().searchNodes("mynewproject", getSimpleQuery("Concorde"), new VersioningParameters().draft()));
+			response = call(() -> client().searchNodes("mynewproject", getSimpleQuery("Concorde"), new VersioningParameters().draft()));
 			assertThat(response.getData()).as("Search result in mynewproject").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 			// search globally
-			response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde"), new VersioningParameters().draft()));
+			response = call(() -> client().searchNodes(getSimpleQuery("Concorde"), new VersioningParameters().draft()));
 			assertThat(response.getData()).as("Global search result").usingElementComparatorOnFields("uuid").containsOnly(newNode, oldNode);
 		}
 	}
 
 	@Test
-	public void testGlobalPublishedNodeSearch() throws Exception {
+	public void testTakeDraftOffline() throws Exception {
+
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
+		// 1. Create a new project and a folder schema
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName("mynewproject");
-		createProject.setSchemaReference(new SchemaReference().setName("folder"));
-		ProjectResponse projectResponse = call(() -> getClient().createProject(createProject));
+		createProject.setSchema(new SchemaReference().setName("folder"));
+		ProjectResponse projectResponse = call(() -> client().createProject(createProject));
 
+		// 2. Create a new node in the base of the project
 		NodeCreateRequest createNode = new NodeCreateRequest();
 		createNode.setLanguage("en");
 		createNode.setSchema(new SchemaReference().setName("folder"));
 		createNode.setParentNodeUuid(projectResponse.getRootNodeUuid());
-		createNode.getFields().put("name", FieldUtil.createStringField("Concorde"));
-		NodeResponse newNode = call(() -> getClient().createNode("mynewproject", createNode));
+		createNode.getFields().put("name", FieldUtil.createStringField("AwesomeString"));
+		NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
 
-		String baseUuid = db.noTx(() -> project().getBaseNode().getUuid());
-		call(() -> getClient().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParameters().setRecursive(true)));
-
-		// search globally for published version
-		NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde")));
+		// 3. Search globally for published version - The created node is still a draft and thus can't be found
+		NodeListResponse response = call(
+				() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("published")));
 		assertThat(response.getData()).as("Global search result before publishing").isEmpty();
 
-		// publish the node
-		call(() -> getClient().publishNode("mynewproject", newNode.getUuid()));
+		// 4. Search globally for draft version - The created node should be found since it is a draft
+		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("draft")));
+		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
-		// search globally for published version
-		response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde")));
+		// 5. Invoke the take offline action on the project base node
+		String baseUuid = db.noTx(() -> project().getBaseNode().getUuid());
+		call(() -> client().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParameters().setRecursive(true)));
+
+		// 6. The node should still be found because it is still a draft
+		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("draft")));
+		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
+
+		// 7. Search globally for the published version - Still there is no published version of the node
+		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("published")));
+		assertThat(response.getData()).as("Global search result before publishing").isEmpty();
+
+	}
+
+	@Test
+	public void testGlobalPublishedNodeSearch() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			recreateIndices();
+		}
+
+		// 1. Create a new project and a folder schema
+		ProjectCreateRequest createProject = new ProjectCreateRequest();
+		createProject.setName("mynewproject");
+		createProject.setSchema(new SchemaReference().setName("folder"));
+		ProjectResponse projectResponse = call(() -> client().createProject(createProject));
+
+		// 2. Create a new node in the base of the project
+		NodeCreateRequest createNode = new NodeCreateRequest();
+		createNode.setLanguage("en");
+		createNode.setSchema(new SchemaReference().setName("folder"));
+		createNode.setParentNodeUuid(projectResponse.getRootNodeUuid());
+		createNode.getFields().put("name", FieldUtil.createStringField("AwesomeString"));
+		NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
+
+		// 3. search globally for published version - The created node is still a draft and thus can't be found
+		NodeListResponse response = call(
+				() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("published")));
+		assertThat(response.getData()).as("Global search result before publishing").isEmpty();
+
+		// 4. now publish the node
+		call(() -> client().publishNode("mynewproject", newNode.getUuid()));
+
+		// 5. search globally for published version - by default published nodes will be searched for
+		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("published")));
+		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
+
+		// 6. Invoke the take offline action on the project base node
+		String baseUuid = db.noTx(() -> project().getBaseNode().getUuid());
+		call(() -> client().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParameters().setRecursive(true)));
+
+		// 7. search globally for published version and assert that the node could be found
+		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString")));
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 	}
 

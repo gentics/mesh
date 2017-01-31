@@ -28,6 +28,7 @@ import com.gentics.mesh.core.verticle.microschema.ProjectMicroschemaEndpoint;
 import com.gentics.mesh.core.verticle.navroot.NavRootEndpoint;
 import com.gentics.mesh.core.verticle.node.NodeEndpoint;
 import com.gentics.mesh.core.verticle.project.ProjectEndpoint;
+import com.gentics.mesh.core.verticle.project.ProjectInfoEndpoint;
 import com.gentics.mesh.core.verticle.release.ReleaseEndpoint;
 import com.gentics.mesh.core.verticle.role.RoleEndpoint;
 import com.gentics.mesh.core.verticle.schema.ProjectSchemaEndpoint;
@@ -241,6 +242,10 @@ public class RAMLGenerator {
 		UserEndpoint userVerticle = Mockito.spy(new UserEndpoint());
 		initVerticle(userVerticle);
 		addEndpoints(coreBasePath, resources, userVerticle);
+
+		ProjectInfoEndpoint projectInfoVerticle = Mockito.spy(new ProjectInfoEndpoint());
+		initVerticle(projectInfoVerticle);
+		addEndpoints(coreBasePath, resources, projectInfoVerticle);
 
 		RoleEndpoint roleVerticle = Mockito.spy(new RoleEndpoint());
 		initVerticle(roleVerticle);

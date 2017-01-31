@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 import java.io.File;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.util.ETag;
@@ -38,7 +39,7 @@ public class BinaryFieldResponseHandler implements Handler<BinaryGraphField> {
 			rc.fail(error(NOT_FOUND, "node_error_binary_data_not_found"));
 			return;
 		} else {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String contentLength = String.valueOf(binaryField.getFileSize());
 			String fileName = binaryField.getFileName();
 			String contentType = binaryField.getMimeType();

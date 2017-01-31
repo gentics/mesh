@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -13,6 +16,7 @@ import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
@@ -25,11 +29,6 @@ public class MicroschemaContainerImpl
 	@Override
 	protected Class<MicroschemaContainerImpl> getContainerClass() {
 		return MicroschemaContainerImpl.class;
-	}
-
-	@Override
-	public String getType() {
-		return MicroschemaContainer.TYPE;
 	}
 
 	@Override
@@ -48,7 +47,7 @@ public class MicroschemaContainerImpl
 
 	@Override
 	public RootVertex<MicroschemaContainer> getRoot() {
-		return MeshRoot.getInstance().getMicroschemaContainerRoot();
+		return MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot();
 	}
 
 	@Override
@@ -64,6 +63,16 @@ public class MicroschemaContainerImpl
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/microschemas/" + getUuid();
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 }

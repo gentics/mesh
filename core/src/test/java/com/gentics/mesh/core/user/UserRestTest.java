@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -37,7 +37,7 @@ public class UserRestTest {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(UUIDUtil.randomUUID());
 		nodeResponse.setSchema(new SchemaReference().setName("content"));
-		response.setNodeReference(nodeResponse);
+		response.setNodeResponse(nodeResponse);
 		String json = JsonUtil.toJson(response);
 		assertNotNull(json);
 
@@ -48,7 +48,7 @@ public class UserRestTest {
 		assertEquals(nodeResponse.getUuid(), deserializedResponse.getNodeReference().getUuid());
 
 		// Test again with basic reference
-		NodeReferenceImpl reference = new NodeReferenceImpl();
+		NodeReference reference = new NodeReference();
 		reference.setUuid(UUIDUtil.randomUUID());
 		reference.setProjectName("project123");
 		reference.setDisplayName("123");
@@ -60,7 +60,7 @@ public class UserRestTest {
 		assertNotNull(deserializedResponse);
 		assertNotNull("The node reference field could not be found.", deserializedResponse.getNodeReference());
 		assertEquals(reference.getUuid(), deserializedResponse.getNodeReference().getUuid());
-		assertEquals(NodeReferenceImpl.class, deserializedResponse.getNodeReference().getClass());
+		assertEquals(NodeReference.class, deserializedResponse.getNodeReference().getClass());
 
 	}
 }

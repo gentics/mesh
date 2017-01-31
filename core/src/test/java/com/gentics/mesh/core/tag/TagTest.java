@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.tag;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
-import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -32,19 +33,19 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
-import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -295,11 +296,11 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
-			PageImpl<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParameters(1, 10));
+			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 10));
 			assertEquals(12, tagPage.getTotalElements());
 			assertEquals(10, tagPage.getSize());
 
-			tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParameters(1, 14));
+			tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 14));
 			assertEquals(tags().size(), tagPage.getTotalElements());
 			assertEquals(12, tagPage.getSize());
 		}
@@ -316,21 +317,21 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			assertNotNull(noPermTag.getUuid());
 			assertEquals(tags().size() + 1, meshRoot().getTagRoot().findAll().size());
 
-			PageImpl<? extends Tag> projectTagpage = project().getTagRoot().findAll(getMockedInternalActionContext(user()),
-					new PagingParameters(1, 20));
+			Page<? extends Tag> projectTagpage = project().getTagRoot().findAll(getMockedInternalActionContext(user()),
+					new PagingParametersImpl(1, 20));
 			assertPage(projectTagpage, tags().size());
 
-			PageImpl<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()),
-					new PagingParameters(1, 20));
+			Page<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()),
+					new PagingParametersImpl(1, 20));
 			assertPage(globalTagPage, tags().size());
 
 			role().grantPermissions(noPermTag, READ_PERM);
-			globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()), new PagingParameters(1, 20));
+			globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 20));
 			assertPage(globalTagPage, tags().size() + 1);
 		}
 	}
 
-	private void assertPage(PageImpl<? extends Tag> page, int expectedTagCount) {
+	private void assertPage(Page<? extends Tag> page, int expectedTagCount) {
 		assertNotNull(page);
 
 		int nTags = 0;
@@ -385,8 +386,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("car");
 			assertNotNull("The tag with the uuid could not be found", meshRoot().getTagRoot().findByUuid(tag.getUuid()));
-			assertNull("A tag with the a bogus uuid should not be found but it was.",
-					meshRoot().getTagRoot().findByUuid("bogus"));
+			assertNull("A tag with the a bogus uuid should not be found but it was.", meshRoot().getTagRoot().findByUuid("bogus"));
 		}
 	}
 
@@ -423,7 +423,7 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			int depth = 3;
 
 			RoutingContext rc = getMockedRoutingContext("lang=de,en", user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			int nTransformations = 100;
 			for (int i = 0; i < nTransformations; i++) {
 				long start = System.currentTimeMillis();
@@ -486,13 +486,14 @@ public class TagTest extends AbstractBasicIsolatedObjectTest {
 			Tag tag = tag("red");
 			Map<String, ElementEntry> expectedEntries = new HashMap<>();
 			String uuid = tag.getUuid();
+
+			// Deletion of a tag must remove the tag from the index and update the nodes which reference the tag
 			expectedEntries.put("tag", new ElementEntry(DELETE_ACTION, uuid));
 			expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), project().getUuid(),
-					project().getLatestRelease().getUuid(), ContainerType.DRAFT, "en", "de"));
+					project().getLatestRelease().getUuid(), ContainerType.DRAFT));
 			SearchQueueBatch batch = createBatch();
 			tag.delete(batch);
-			batch.reload();
-			assertAffectedElements(expectedEntries, batch);
+			assertThat(batch).containsEntries(expectedEntries);
 		}
 	}
 

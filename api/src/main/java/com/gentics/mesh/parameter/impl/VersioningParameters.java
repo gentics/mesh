@@ -69,7 +69,7 @@ public class VersioningParameters extends AbstractParameters {
 	}
 
 	/**
-	 * Request the draft version.
+	 * Request the draft version. Alias for setVersion("draft")
 	 * 
 	 * @return fluent API
 	 */

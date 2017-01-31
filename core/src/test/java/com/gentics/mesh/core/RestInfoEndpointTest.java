@@ -14,7 +14,7 @@ public class RestInfoEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testGetInfo() {
-		MeshServerInfoModel info = call(() -> getClient().getApiInfo());
+		MeshServerInfoModel info = call(() -> client().getApiInfo());
 		assertEquals(Mesh.getPlainVersion(), info.getMeshVersion());
 		assertEquals("orientdb", info.getDatabaseVendor());
 		assertEquals("dummy", info.getSearchVendor());

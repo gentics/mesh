@@ -14,9 +14,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -34,7 +35,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
 
 import io.vertx.ext.web.RoutingContext;
@@ -64,7 +65,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 			Release releaseTwo = releaseRoot.create("Two", user());
 			Release releaseThree = releaseRoot.create("Three", user());
 
-			PageImpl<? extends Release> page = releaseRoot.findAll(getMockedInternalActionContext(user()), new PagingParameters(1, 25));
+			Page<? extends Release> page = releaseRoot.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 25));
 			assertThat(page).isNotNull();
 			ArrayList<Release> arrayList = new ArrayList<Release>();
 			page.iterator().forEachRemaining(r -> arrayList.add(r));
@@ -223,7 +224,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 			Release release = project().getInitialRelease();
 
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			ReleaseResponse releaseResponse = release.transformToRestSync(ac, 0);
 			assertThat(releaseResponse).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive().isMigrated();

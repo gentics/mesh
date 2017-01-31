@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -16,10 +15,9 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
+import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -86,7 +84,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setNextChange(SchemaChange<?> change) {
-		setSingleLinkOutTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
+		setSingleLinkOutTo(change, HAS_SCHEMA_CONTAINER);
 	}
 
 	@Override
@@ -96,7 +94,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setPreviousChange(SchemaChange<?> change) {
-		setSingleLinkInTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
+		setSingleLinkInTo(change, HAS_SCHEMA_CONTAINER);
 	}
 
 	@Override
@@ -111,12 +109,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setPreviousVersion(SCV container) {
-		setSingleLinkInTo(container.getImpl(), HAS_VERSION);
+		setSingleLinkInTo(container, HAS_VERSION);
 	}
 
 	@Override
 	public void setNextVersion(SCV container) {
-		setSingleLinkOutTo(container.getImpl(), HAS_VERSION);
+		setSingleLinkOutTo(container, HAS_VERSION);
 	}
 
 	/**
@@ -180,12 +178,6 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch) {
 		if (listOfChanges.getChanges().isEmpty()) {
 			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
@@ -230,18 +222,8 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		getSchemaContainer().setLatestVersion(nextVersion);
 
 		// Update the search index
-		addIndexBatchEntry(batch, STORE_ACTION);
+		batch.store(getSchemaContainer(), true);
 		return nextVersion;
-	}
-
-	/**
-	 * Overwrite default implementation since we need to add the parent container of all versions to the index and not the current version.
-	 */
-	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		batch.addEntry(this.getSchemaContainer(), action);
-		addRelatedEntries(batch, action);
-		return batch;
 	}
 
 	@Override
@@ -255,7 +237,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public SchemaChangesListModel diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator comparator,
+	public SchemaChangesListModel diff(InternalActionContext ac, FieldSchemaContainerComparator comparator,
 			FieldSchemaContainer fieldContainerModel) {
 		SchemaChangesListModel list = new SchemaChangesListModel();
 		fieldContainerModel.validate();
@@ -265,7 +247,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setSchemaContainer(SC container) {
-		setUniqueLinkInTo(container.getImpl(), HAS_PARENT_CONTAINER);
+		setUniqueLinkInTo(container, HAS_PARENT_CONTAINER);
 	}
 
 	@Override
@@ -274,7 +256,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	public String toString() {
-		return "type:" + getType() + "_name:" + getName() + "_uuid:" + getUuid() + "_version:" + getVersion();
+		return "handler:" + getType() + "_name:" + getName() + "_uuid:" + getUuid() + "_version:" + getVersion();
 	}
 
 }

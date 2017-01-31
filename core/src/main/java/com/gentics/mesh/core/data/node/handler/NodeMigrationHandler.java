@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.data.node.handler;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.INITIAL;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -18,7 +20,6 @@ import javax.script.ScriptEngine;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -46,7 +47,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -67,10 +67,13 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 	private Database db;
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public NodeMigrationHandler(NodeFieldAPIHandler nodeFieldAPIHandler, Database db) {
+	public NodeMigrationHandler(NodeFieldAPIHandler nodeFieldAPIHandler, Database db, SearchQueue searchQueue) {
 		this.db = db;
 		this.nodeFieldAPIHandler = nodeFieldAPIHandler;
+		this.searchQueue = searchQueue;
 	}
 
 	/**
@@ -112,8 +115,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		} catch (IOException e) {
 			return Completable.error(e);
 		}
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		SearchQueueBatch batch = searchQueue.createBatch();
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
@@ -135,7 +137,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						publish = true;
 					} else {
 						// check whether there is another published version
-						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, ContainerType.PUBLISHED);
+						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
 						if (oldPublished != null) {
 							ac.getVersioningParameters().setVersion("published");
 							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
@@ -147,7 +149,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 							node.setPublished(migrated, releaseUuid);
 							migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
-							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.PUBLISHED);
+							batch.store(migrated, releaseUuid, PUBLISHED, false);
 
 							ac.getVersioningParameters().setVersion("draft");
 						}
@@ -167,9 +169,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 					}
 					migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
-					migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
+					batch.store(node, releaseUuid, DRAFT, false);
 					if (publish) {
-						migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.PUBLISHED);
+						batch.store(node, releaseUuid, PUBLISHED, false);
 					}
 
 					return null;
@@ -231,8 +233,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return Completable.error(e);
 		}
 
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		SearchQueueBatch batch = searchQueue.createBatch();
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
@@ -251,7 +252,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 						publish = true;
 					} else {
 						// check whether there is another published version
-						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, ContainerType.PUBLISHED);
+						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
 						if (oldPublished != null) {
 							ac.getVersioningParameters().setVersion("published");
 
@@ -265,7 +266,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 							// migrate
 							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 
-							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.PUBLISHED);
+							batch.store(migrated, releaseUuid, PUBLISHED, false);
 
 							ac.getVersioningParameters().setVersion("draft");
 						}
@@ -281,9 +282,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 					// migrate
 					migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 
-					migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.DRAFT);
+					batch.store(node, releaseUuid, DRAFT, false);
 					if (publish) {
-						migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, ContainerType.PUBLISHED);
+						batch.store(node, releaseUuid, PUBLISHED, false);
 					}
 
 					return null;
@@ -334,38 +335,32 @@ public class NodeMigrationHandler extends AbstractHandler {
 		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
 		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
 
-		SearchQueue queue = MeshInternal.get().boot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		SearchQueueBatch batch = searchQueue.createBatch();
 		for (Node node : nodes) {
 			db.tx(() -> {
-				if (!node.getGraphFieldContainers(newRelease, ContainerType.INITIAL).isEmpty()) {
+				if (!node.getGraphFieldContainers(newRelease, INITIAL).isEmpty()) {
 					return null;
 				}
-				node.getGraphFieldContainers(oldRelease, ContainerType.DRAFT).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl initialEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
-							GraphFieldContainerEdgeImpl.class);
+				node.getGraphFieldContainers(oldRelease, DRAFT).stream().forEach(container -> {
+					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-					initialEdge.setType(ContainerType.INITIAL);
+					initialEdge.setType(INITIAL);
 					initialEdge.setReleaseUuid(newReleaseUuid);
 
-					GraphFieldContainerEdgeImpl draftEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
-							GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-					draftEdge.setType(ContainerType.DRAFT);
+					draftEdge.setType(DRAFT);
 					draftEdge.setReleaseUuid(newReleaseUuid);
-
-					container.addIndexBatchEntry(batch, STORE_ACTION, newReleaseUuid, ContainerType.DRAFT);
 				});
+				batch.store(node, newReleaseUuid, DRAFT, false);
 
-				node.getGraphFieldContainers(oldRelease, ContainerType.PUBLISHED).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl edge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
-							GraphFieldContainerEdgeImpl.class);
+				node.getGraphFieldContainers(oldRelease, PUBLISHED).stream().forEach(container -> {
+					GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					edge.setLanguageTag(container.getLanguage().getLanguageTag());
-					edge.setType(ContainerType.PUBLISHED);
+					edge.setType(PUBLISHED);
 					edge.setReleaseUuid(newReleaseUuid);
-
-					container.addIndexBatchEntry(batch, STORE_ACTION, newReleaseUuid, ContainerType.PUBLISHED);
 				});
+				batch.store(node, newReleaseUuid, PUBLISHED, false);
 
 				Node parent = node.getParentNode(oldReleaseUuid);
 				if (parent != null) {
@@ -514,7 +509,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 				newMicronode.clone(oldMicronode);
 
 				// migrate the micronode, if it uses the fromVersion
-				if (newMicronode.getSchemaContainerVersion().getImpl().equals(fromVersion.getImpl())) {
+				if (newMicronode.getSchemaContainerVersion().equals(fromVersion)) {
 					// transform to rest and migrate
 					MicronodeResponse restModel = newMicronode.transformToRestSync(ac, 0);
 					migrate(ac, newMicronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);

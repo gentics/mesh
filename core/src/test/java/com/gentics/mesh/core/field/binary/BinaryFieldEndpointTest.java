@@ -72,9 +72,9 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			//1. Upload a binary field
 			String uuid = db.noTx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
 
-			NodeResponse firstResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
+			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
 			String oldVersion = firstResponse.getVersion().getNumber();
 			BinaryField binaryField = firstResponse.getFields().getBinaryField(FIELD_NAME);
@@ -94,9 +94,9 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			String uuid = db.noTx(() -> folder("2015").getUuid());
 			String filename = "filename.txt";
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, filename, "application/binary"));
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, filename, "application/binary"));
 
-			NodeResponse firstResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
+			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
 			// 2. Set the field to null
@@ -127,9 +127,9 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			//1. Upload a binary field
 			String uuid = db.noTx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
 
-			NodeResponse firstResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
+			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -146,9 +146,9 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			//1. Upload a binary field
 			String uuid = db.noTx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME, buffer, "filename.txt", "application/binary"));
 
-			NodeResponse firstResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
+			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
 
 			// 2. Set the field to empty

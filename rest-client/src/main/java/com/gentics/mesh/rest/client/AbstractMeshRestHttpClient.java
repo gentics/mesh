@@ -3,8 +3,7 @@ package com.gentics.mesh.rest.client;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
-
+import com.gentics.mesh.rest.JWTAuthentication;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
@@ -24,7 +23,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	protected HttpClient client;
 
-	protected MeshRestClientAuthenticationProvider authentication;
+	protected JWTAuthentication authentication;
 
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
@@ -62,16 +61,25 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	/**
 	 * Set the authentication provider.
-	 * 
+	 *
 	 * @param authentication
 	 */
-	public void setAuthentication(MeshRestClientAuthenticationProvider authentication) {
+	public void setAuthentication(JWTAuthentication authentication) {
 		this.authentication = authentication;
 	}
 
 	/**
+	 * Get the authentication provider.
+	 *
+	 * @return
+	 */
+	public JWTAuthentication getAuthentication() {
+		return authentication;
+	}
+
+	/**
 	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
-	 * 
+	 *
 	 * @param method
 	 *            Http method
 	 * @param path
@@ -90,7 +98,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	/**
 	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
-	 * 
+	 *
 	 * @param method
 	 *            Http method
 	 * @param path
@@ -107,7 +115,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	/**
 	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
-	 * 
+	 *
 	 * @param method
 	 * @param path
 	 * @param classOfT
@@ -120,7 +128,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	/**
 	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
-	 * 
+	 *
 	 * @param method
 	 *            Http method
 	 * @param path

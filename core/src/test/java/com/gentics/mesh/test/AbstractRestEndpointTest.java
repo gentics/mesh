@@ -122,10 +122,14 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		});
 		failingLatch(latch2);
 
+		// Setup the rest client
 		try (NoTx trx = db.noTx()) {
 			client = MeshRestClient.create("localhost", getPort(), vertx);
 			client.setLogin(user().getUsername(), getUserInfo().getPassword());
 			client.login().toBlocking().value();
+		}
+		if (dummySearchProvider != null) {
+			dummySearchProvider.clear();
 		}
 	}
 
@@ -142,12 +146,6 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		for (String id : deploymentIds) {
 			vertx.undeploy(id);
 		}
-		//		if (restVerticle != null) {
-		//			restVerticle.stop();
-		//		}
-		//		if (nodeMigrationVerticle != null) {
-		//			nodeMigrationVerticle.stop();
-		//		}
 		resetDatabase();
 	}
 
@@ -162,7 +160,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		return port;
 	}
 
-	public MeshRestClient getClient() {
+	public MeshRestClient client() {
 		return client;
 	}
 
@@ -173,21 +171,21 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		request.setPassword("test1234");
 		request.setGroupUuid(group().getUuid());
 
-		return call(() -> getClient().createUser(request));
+		return call(() -> client().createUser(request));
 	}
 
 	protected UserResponse readUser(String uuid) {
-		return call(() -> getClient().findUserByUuid(uuid));
+		return call(() -> client().findUserByUuid(uuid));
 	}
 
 	protected UserResponse updateUser(String uuid, String newUserName) {
 		UserUpdateRequest userUpdateRequest = new UserUpdateRequest();
 		userUpdateRequest.setUsername(newUserName);
-		return call(() -> getClient().updateUser(uuid, userUpdateRequest));
+		return call(() -> client().updateUser(uuid, userUpdateRequest));
 	}
 
 	protected void deleteUser(String uuid) {
-		call(() -> getClient().deleteUser(uuid));
+		call(() -> client().deleteUser(uuid));
 	}
 
 	// Group
@@ -195,71 +193,65 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	protected GroupResponse createGroup(String groupName) {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(groupName);
-		return call(() -> getClient().createGroup(request));
+		return call(() -> client().createGroup(request));
 	}
 
 	protected GroupResponse readGroup(String uuid) {
-		return call(() -> getClient().findGroupByUuid(uuid));
+		return call(() -> client().findGroupByUuid(uuid));
 	}
 
 	protected GroupResponse updateGroup(String uuid, String newGroupName) {
 		GroupUpdateRequest groupUpdateRequest = new GroupUpdateRequest();
 		groupUpdateRequest.setName(newGroupName);
-		return call(() -> getClient().updateGroup(uuid, groupUpdateRequest));
+		return call(() -> client().updateGroup(uuid, groupUpdateRequest));
 	}
 
 	protected void deleteGroup(String uuid) {
-		call(() -> getClient().deleteGroup(uuid));
+		call(() -> client().deleteGroup(uuid));
 	}
 
 	// Role
-
 	protected RoleResponse createRole(String roleName, String groupUuid) {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
-		return call(() -> getClient().createRole(roleCreateRequest));
+		return call(() -> client().createRole(roleCreateRequest));
 	}
 
 	protected RoleResponse readRole(String uuid) {
-		return call(() -> getClient().findRoleByUuid(uuid));
+		return call(() -> client().findRoleByUuid(uuid));
 	}
 
 	protected void deleteRole(String uuid) {
-		call(() -> getClient().deleteRole(uuid));
+		call(() -> client().deleteRole(uuid));
 	}
 
 	protected RoleResponse updateRole(String uuid, String newRoleName) {
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName(newRoleName);
-		return call(() -> getClient().updateRole(uuid, request));
+		return call(() -> client().updateRole(uuid, request));
 	}
 
 	// Tag
 	protected TagResponse createTag(String projectName, String tagFamilyUuid, String tagName) {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.setName(tagName);
-		return call(() -> getClient().createTag(projectName, tagFamilyUuid, tagCreateRequest));
+		return call(() -> client().createTag(projectName, tagFamilyUuid, tagCreateRequest));
 	}
 
 	protected TagResponse readTag(String projectName, String tagFamilyUuid, String uuid) {
-		return call(() -> getClient().findTagByUuid(projectName, tagFamilyUuid, uuid));
+		return call(() -> client().findTagByUuid(projectName, tagFamilyUuid, uuid));
 	}
 
 	protected TagResponse updateTag(String projectName, String tagFamilyUuid, String uuid, String newTagName) {
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		tagUpdateRequest.setName(newTagName);
-		return call(() -> getClient().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest));
-	}
-
-	protected void deleteTag(String projectName, String tagFamilyUuid, String uuid) {
-		call(() -> getClient().deleteTag(projectName, tagFamilyUuid, uuid));
+		return call(() -> client().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest));
 	}
 
 	// Node
-
 	protected NodeResponse createNode(String projectName, String nameField) {
 		NodeCreateRequest request = new NodeCreateRequest();
-		return call(() -> getClient().createNode(projectName, request));
+		return call(() -> client().createNode(projectName, request));
 	}
 
 	protected MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
@@ -271,7 +263,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
-		return getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"));
+		return client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"));
 	}
 
 	protected NodeResponse createNode(String fieldKey, Field field) {
@@ -284,36 +276,36 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	}
 
 	protected NodeResponse readNode(String projectName, String uuid) {
-		return call(() -> getClient().findNodeByUuid(projectName, uuid, new VersioningParameters().draft()));
+		return call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParameters().draft()));
 	}
 
 	protected void deleteNode(String projectName, String uuid) {
-		call(() -> getClient().deleteNode(projectName, uuid));
+		call(() -> client().deleteNode(projectName, uuid));
 	}
 
 	protected NodeResponse updateNode(String projectName, String uuid, String nameFieldValue) {
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-		return call(() -> getClient().updateNode(projectName, uuid, nodeUpdateRequest));
+		return call(() -> client().updateNode(projectName, uuid, nodeUpdateRequest));
 	}
 
 	protected TagFamilyResponse createTagFamily(String projectName, String tagFamilyName) {
 		TagFamilyCreateRequest tagFamilyCreateRequest = new TagFamilyCreateRequest();
 		tagFamilyCreateRequest.setName(tagFamilyName);
-		return call(() -> getClient().createTagFamily(projectName, tagFamilyCreateRequest));
+		return call(() -> client().createTagFamily(projectName, tagFamilyCreateRequest));
 	}
 
 	protected TagFamilyResponse readTagFamily(String projectName, String uuid) {
-		return call(() -> getClient().findTagFamilyByUuid(projectName, uuid));
+		return call(() -> client().findTagFamilyByUuid(projectName, uuid));
 	}
 
 	protected TagFamilyResponse updateTagFamily(String projectName, String uuid, String newTagFamilyName) {
 		TagFamilyUpdateRequest tagFamilyUpdateRequest = new TagFamilyUpdateRequest();
 		tagFamilyUpdateRequest.setName(newTagFamilyName);
-		return call(() -> getClient().updateTagFamily(projectName, uuid, tagFamilyUpdateRequest));
+		return call(() -> client().updateTagFamily(projectName, uuid, tagFamilyUpdateRequest));
 	}
 
 	protected void deleteTagFamily(String projectName, String uuid) {
-		call(() -> getClient().deleteTagFamily(projectName, uuid));
+		call(() -> client().deleteTagFamily(projectName, uuid));
 	}
 
 	/**
@@ -332,7 +324,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	protected NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
 		// read node from source release
 		NodeResponse nodeResponse = call(
-				() -> getClient().findNodeByUuid(projectName, uuid, new VersioningParameters().setRelease(sourceReleaseName).draft()));
+				() -> client().findNodeByUuid(projectName, uuid, new VersioningParameters().setRelease(sourceReleaseName).draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
@@ -341,50 +333,50 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		update.setLanguage(nodeResponse.getLanguage());
 
 		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> getClient().updateNode(projectName, uuid, update, new VersioningParameters().setRelease(targetReleaseName)));
+		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParameters().setRelease(targetReleaseName)));
 	}
 
 	// Project
 	protected ProjectResponse createProject(String projectName) {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(projectName);
-		projectCreateRequest.setSchemaReference(new SchemaReference().setName("folder"));
-		return call(() -> getClient().createProject(projectCreateRequest));
+		projectCreateRequest.setSchema(new SchemaReference().setName("folder"));
+		return call(() -> client().createProject(projectCreateRequest));
 	}
 
 	protected ProjectResponse readProject(String uuid) {
-		return call(() -> getClient().findProjectByUuid(uuid));
+		return call(() -> client().findProjectByUuid(uuid));
 	}
 
 	protected ProjectResponse updateProject(String uuid, String projectName) {
 		ProjectUpdateRequest projectUpdateRequest = new ProjectUpdateRequest();
 		projectUpdateRequest.setName(projectName);
-		return call(() -> getClient().updateProject(uuid, projectUpdateRequest));
+		return call(() -> client().updateProject(uuid, projectUpdateRequest));
 	}
 
 	protected void deleteProject(String uuid) {
-		call(() -> getClient().deleteProject(uuid));
+		call(() -> client().deleteProject(uuid));
 	}
 
 	// Schema
 	protected Schema createSchema(String schemaName) {
 		Schema schema = FieldUtil.createMinimalValidSchema();
 		schema.setName(schemaName);
-		return call(() -> getClient().createSchema(schema));
+		return call(() -> client().createSchema(schema));
 	}
 
 	protected Schema readSchema(String uuid) {
-		return call(() -> getClient().findSchemaByUuid(uuid));
+		return call(() -> client().findSchemaByUuid(uuid));
 	}
 
 	protected GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
 		Schema schema = FieldUtil.createMinimalValidSchema();
 		schema.setName(schemaName);
-		return call(() -> getClient().updateSchema(uuid, schema, updateParameters));
+		return call(() -> client().updateSchema(uuid, schema, updateParameters));
 	}
 
 	protected void deleteSchema(String uuid) {
-		call(() -> getClient().deleteSchema(uuid));
+		call(() -> client().deleteSchema(uuid));
 	}
 
 	// Microschema
@@ -392,13 +384,13 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	protected Microschema createMicroschema(String microschemaName) {
 		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
 		microschema.setName(microschemaName);
-		return call(() -> getClient().createMicroschema(microschema));
+		return call(() -> client().createMicroschema(microschema));
 	}
 
 	protected GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
 		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
 		microschema.setName(microschemaName);
-		return call(() -> getClient().updateMicroschema(uuid, microschema, parameters));
+		return call(() -> client().updateMicroschema(uuid, microschema, parameters));
 	}
 
 	public void assertEqualsSanitizedJson(String msg, String expectedJson, String unsanitizedResponseJson) {
@@ -504,7 +496,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		return getClient().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldKey, buffer, fileName, contentType);
+		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldKey, buffer, fileName, contentType);
 	}
 
 	protected void uploadImage(Node node, String languageTag, String fieldName) throws IOException {
@@ -516,7 +508,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
 
-		call(() -> getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer, fileName, contentType));
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer, fileName, contentType));
 	}
 
 }

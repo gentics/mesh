@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
@@ -63,7 +64,8 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(InternalActionContext.create(rc), uuid);
+				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+				crudHandler.handleRead(ac, uuid);
 			}
 		});
 
@@ -74,7 +76,8 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		readAll.exampleResponse(OK, schemaExamples.getSchemaListResponse(), "Loaded list of schemas.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.handler(rc -> {
-			crudHandler.handleReadProjectList(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleReadProjectList(ac);
 		});
 	}
 
@@ -83,12 +86,13 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
-		endpoint.description("Assign the schema to the project. This will automatically assign the latest schema version to all releases of the project.");
+		endpoint.description(
+				"Assign the schema to the project. This will automatically assign the latest schema version to all releases of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchema(), "Assigned schema.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleAddSchemaToProject(ac, uuid);
 		});
@@ -99,11 +103,12 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
-		endpoint.description("Remove the schema with the given uuid from the project. This will automatically remove all schema versions of the given schema from all releases of the project.");
+		endpoint.description(
+				"Remove the schema with the given uuid from the project. This will automatically remove all schema versions of the given schema from all releases of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully removed.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleRemoveSchemaFromProject(ac, uuid);
 		});

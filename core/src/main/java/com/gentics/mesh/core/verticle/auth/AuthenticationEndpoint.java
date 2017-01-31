@@ -9,7 +9,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
-import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
@@ -50,7 +50,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		meEndpoint.description("Load your own user which is currently logged in.");
 		meEndpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "Currently logged in user.");
 		meEndpoint.handler(rc -> {
-			authRestHandler.handleMe(InternalActionContext.create(rc));
+			authRestHandler.handleMe(new InternalRoutingActionContextImpl(rc));
 		});
 
 		Endpoint basicAuthLoginEndpoint = createEndpoint();
@@ -70,7 +70,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		loginEndpoint.exampleRequest(miscExamples.getLoginRequest());
 		loginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
 		loginEndpoint.handler(rc -> {
-			authRestHandler.handleLoginJWT(InternalActionContext.create(rc));
+			authRestHandler.handleLoginJWT(new InternalRoutingActionContextImpl(rc));
 		});
 
 		// Only secure logout
@@ -82,7 +82,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		logoutEndpoint.description("Logout and delete the currently active session.");
 		logoutEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "User was successfully logged out.");
 		logoutEndpoint.handler(rc -> {
-			authRestHandler.handleLogout(InternalActionContext.create(rc));
+			authRestHandler.handleLogout(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 }

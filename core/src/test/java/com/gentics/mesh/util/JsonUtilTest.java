@@ -55,7 +55,7 @@ public class JsonUtilTest {
 			fail("json parsing should fail");
 		} catch (GenericRestException e) {
 			assertEquals("error_json_structure_invalid", e.getI18nKey());
-			assertThat(e.getI18nParameters()).containsExactly("1", "2", "schema");
+			assertThat(e.getI18nParameters()).containsExactly("1", "11", "schema");
 		}
 	}
 

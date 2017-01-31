@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 
 public class MeshRootTest extends AbstractIsolatedBasicDBTest {
@@ -110,7 +110,7 @@ public class MeshRootTest extends AbstractIsolatedBasicDBTest {
 	}
 
 	private MeshVertex resolve(String pathToElement) throws InterruptedException {
-		return MeshRoot.getInstance().resolvePathToElement(pathToElement);
+		return MeshInternal.get().boot().meshRoot().resolvePathToElement(pathToElement);
 	}
 
 }

@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
@@ -14,6 +16,7 @@ import java.util.List;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
@@ -29,16 +32,17 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.InvalidArgumentException;
+
+import rx.Single;
 
 /**
  * @see Release
@@ -56,6 +60,11 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	public static void init(Database database) {
 		database.addVertexType(ReleaseImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(UNIQUENAME_INDEX_NAME, ReleaseImpl.class, true, UNIQUENAME_PROPERTY_KEY);
+	}
+
+	@Override
+	public String getType() {
+		return Release.TYPE;
 	}
 
 	@Override
@@ -78,21 +87,11 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
 		}
-		// TODO: Not yet fully implemented 
-		//			if (requestModel.getActive() != null) {
-		//				setActive(requestModel.getActive());
-		//			}
+		// TODO: Not yet fully implemented
+		// if (requestModel.getActive() != null) {
+		// setActive(requestModel.getActive());
+		// }
 		return this;
-	}
-
-	@Override
-	public String getType() {
-		return Release.TYPE;
-	}
-
-	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		// Releases have no foreign references
 	}
 
 	@Override
@@ -100,7 +99,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 		ReleaseResponse restRelease = new ReleaseResponse();
 		restRelease.setName(getName());
-		//		restRelease.setActive(isActive());
+		// restRelease.setActive(isActive());
 		restRelease.setMigrated(isMigrated());
 
 		// Add common fields
@@ -153,7 +152,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Release setNextRelease(Release release) {
-		setUniqueLinkOutTo(release.getImpl(), HAS_NEXT_RELEASE);
+		setUniqueLinkOutTo(release, HAS_NEXT_RELEASE);
 		return this;
 	}
 
@@ -257,18 +256,18 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 			edgeLabel = HAS_MICROSCHEMA_VERSION;
 		}
 
-		setUniqueLinkOutTo(version.getImpl(), edgeLabel);
+		setUniqueLinkOutTo(version, edgeLabel);
 
 		// unlink all other versions
 		SCV previous = version.getPreviousVersion();
 		while (previous != null) {
-			unlinkOut(previous.getImpl(), edgeLabel);
+			unlinkOut(previous, edgeLabel);
 			previous = previous.getPreviousVersion();
 		}
 
 		SCV next = version.getNextVersion();
 		while (next != null) {
-			unlinkOut(next.getImpl(), edgeLabel);
+			unlinkOut(next, edgeLabel);
 			next = next.getNextVersion();
 		}
 	}
@@ -289,9 +288,10 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 			edgeLabel = HAS_MICROSCHEMA_VERSION;
 		}
 
-		// Iterate over all versions of the container and unassign it from the release
+		// Iterate over all versions of the container and unassign it from the
+		// release
 		while (version != null) {
-			unlinkOut(version.getImpl(), edgeLabel);
+			unlinkOut(version, edgeLabel);
 			version = version.getPreviousVersion();
 		}
 	}
@@ -313,7 +313,24 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Release setProject(Project project) {
-		setUniqueLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+		setUniqueLinkOutTo(project, ASSIGNED_TO_PROJECT);
 		return this;
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+	}
+
+	@Override
+	public Single<ReleaseResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return db.operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 }

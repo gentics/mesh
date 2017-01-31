@@ -3,7 +3,6 @@ package com.gentics.mesh.core.group;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -15,9 +14,10 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -25,10 +25,10 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
-import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -69,13 +69,13 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
-			PageImpl<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParameters(1, 19));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			Page<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParametersImpl(1, 19));
 
 			assertEquals(groups().size(), page.getTotalElements());
 			assertEquals(groups().size(), page.getSize());
 
-			page = boot.groupRoot().findAll(ac, new PagingParameters(1, 3));
+			page = boot.groupRoot().findAll(ac, new PagingParametersImpl(1, 3));
 			assertEquals(groups().size(), page.getTotalElements());
 			assertEquals(3, page.getSize());
 		}
@@ -126,7 +126,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	public void testTransformation() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			GroupResponse response = group().transformToRest(ac, 0).toBlocking().value();
 
@@ -204,7 +204,6 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 			group.delete(batch);
 			assertElement(meshRoot().getGroupRoot(), uuid, false);
 			assertElement(meshRoot().getUserRoot(), userUuid, true);
-			assertThat(batch.findEntryByUuid(uuid)).isPresent();
 			assertEquals(1, batch.getEntries().size());
 		}
 

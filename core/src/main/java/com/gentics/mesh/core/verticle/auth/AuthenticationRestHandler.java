@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.auth;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.verticle.handler.HandlerUtilities.operateNoTx;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
@@ -15,16 +14,19 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
 @Singleton
 public class AuthenticationRestHandler extends AbstractHandler {
 
 	private MeshAuthProvider authProvider;
+	private Database db;
 
 	@Inject
-	public AuthenticationRestHandler(MeshAuthProvider authProvider) {
+	public AuthenticationRestHandler(MeshAuthProvider authProvider, Database db) {
 		this.authProvider = authProvider;
+		this.db = db;
 	}
 
 	/**
@@ -33,7 +35,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleMe(InternalActionContext ac) {
-		operateNoTx(() -> {
+		db.operateNoTx(() -> {
 			// TODO add permission check
 			MeshAuthUser requestUser = ac.getUser();
 			return requestUser.transformToRest(ac, 0);

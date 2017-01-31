@@ -23,9 +23,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.changelog.changes.Change_424FA7436B6541269E6CE90C8C3D812D;
-import com.gentics.mesh.changelog.changes.Change_424FA7436B6541269E6CE90C8C3D812D3;
-import com.gentics.mesh.changelog.changes.Change_424FA7436B6541269E6CE90C8C3D812D_Failing;
+import com.gentics.mesh.changelog.changes.ChangeDummy;
+import com.gentics.mesh.changelog.changes.ChangeDummy2;
+import com.gentics.mesh.changelog.changes.ChangeDummyFailing;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -48,8 +48,8 @@ public class ChangelogSystemTest {
 	@BeforeClass
 	public static void setupOnce() {
 		// Add dummy changes
-		ChangesList.getList().add(new Change_424FA7436B6541269E6CE90C8C3D812D());
-		ChangesList.getList().add(new Change_424FA7436B6541269E6CE90C8C3D812D3());
+		ChangesList.getList().add(new ChangeDummy());
+		ChangesList.getList().add(new ChangeDummy2());
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class ChangelogSystemTest {
 		Collection<Object[]> data = new ArrayList<Object[]>();
 		for (String version : metadata.getVersions()) {
 			// Only test mesh release dumps since a specific version
-			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.6.17")) >= 0) {
+			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.6.20")) >= 0) {
 				data.add(new Object[] { version });
 			}
 		}
@@ -95,15 +95,6 @@ public class ChangelogSystemTest {
 	}
 
 	@Test
-	public void testRunner() throws Exception {
-		MeshOptions options = new MeshOptions();
-		options.getStorageOptions().setDirectory("target/dump/graphdb");
-		//		options.getStorageOptions().setStartServer(true);
-		new ChangelogRunner().run(options);
-		//		System.out.println("done");
-	}
-
-	@Test
 	public void testChangelogSystem() {
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory("target/dump/graphdb");
@@ -112,11 +103,11 @@ public class ChangelogSystemTest {
 		Database db = ChangelogRunner.getDatabase(options);
 		ChangelogSystem cls = new ChangelogSystem(db);
 		List<Change> testChanges = new ArrayList<>();
-		testChanges.add(new Change_424FA7436B6541269E6CE90C8C3D812D3());
-		testChanges.add(new Change_424FA7436B6541269E6CE90C8C3D812D());
-		assertTrue("All changes should have been applied", cls.applyChanges(testChanges));
-		assertTrue("All changes should have been applied", cls.applyChanges(testChanges));
-		assertTrue("All changes should have been applied", cls.applyChanges(testChanges));
+		testChanges.add(new ChangeDummy2());
+		testChanges.add(new ChangeDummy());
+		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
+		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
+		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
 		Iterator<Vertex> it = db.rawTx().getVertices("name", "moped2").iterator();
 		assertTrue("The changelog was executed but the expected vertex which was created could not be found.", it.hasNext());
 		Vertex vertex = it.next();
@@ -127,7 +118,7 @@ public class ChangelogSystemTest {
 	@Test
 	public void testFailingChange() {
 		List<Change> listWithFailingChange = new ArrayList<>();
-		listWithFailingChange.add(new Change_424FA7436B6541269E6CE90C8C3D812D_Failing());
+		listWithFailingChange.add(new ChangeDummyFailing());
 		//		new DaggerChangelogSpringConfiguration().build();
 		//		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ChangelogSpringConfiguration.class)) {
 		//			ctx.start();

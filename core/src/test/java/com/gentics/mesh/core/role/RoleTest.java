@@ -4,12 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -18,12 +15,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -31,19 +28,18 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
-import com.gentics.mesh.util.InvalidArgumentException;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
@@ -119,7 +115,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	private long countEdges(MeshVertex vertex, String label, Direction direction) {
 		long count = 0;
-		Iterator<Edge> it = vertex.getImpl().getElement().getEdges(direction, label).iterator();
+		Iterator<Edge> it = vertex.getElement().getEdges(direction, label).iterator();
 		while (it.hasNext()) {
 			it.next();
 			count++;
@@ -209,7 +205,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testRoleAddCrudPermissions() {
 		try (NoTx noTx = db.noTx()) {
-			MeshAuthUser requestUser = user().getImpl().reframe(MeshAuthUserImpl.class);
+			MeshAuthUser requestUser = user().reframe(MeshAuthUserImpl.class);
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 			Node parentNode = folder("2015");
 			assertNotNull(parentNode);
@@ -224,7 +220,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			}
 
 			RoutingContext rc = getMockedRoutingContext();
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 			assertEquals(0, requestUser.getPermissions(node).size());
 			requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
@@ -260,9 +256,9 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 			role().grantPermissions(extraRole, READ_PERM);
 			RoutingContext rc = getMockedRoutingContext();
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			PageImpl<? extends Role> roles = group().getRoles(requestUser, new PagingParameters(1, 10));
+			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParametersImpl(1, 10));
 			assertEquals(2, roles.getSize());
 			assertEquals(1, extraRole.getGroups().size());
 
@@ -275,12 +271,12 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db.noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
-			PageImpl<? extends Role> page = boot.roleRoot().findAll(ac, new PagingParameters(1, 5));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			Page<? extends Role> page = boot.roleRoot().findAll(ac, new PagingParametersImpl(1, 5));
 			assertEquals(roles().size(), page.getTotalElements());
 			assertEquals(4, page.getSize());
 
-			page = boot.roleRoot().findAll(ac, new PagingParameters(1, 15));
+			page = boot.roleRoot().findAll(ac, new PagingParametersImpl(1, 15));
 			assertEquals(roles().size(), page.getTotalElements());
 			assertEquals(4, page.getSize());
 		}
@@ -312,7 +308,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 		try (NoTx noTx = db.noTx()) {
 			Role role = role();
 			RoutingContext rc = getMockedRoutingContext(user());
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			RoleResponse restModel = role.transformToRest(ac, 0).toBlocking().value();
 
 			assertNotNull(restModel);
@@ -393,17 +389,16 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 				role.delete(batch);
 				tx.success();
 			}
-			batch.reload();
 			assertElement(boot.roleRoot(), uuid, false);
 
 			// Check role entry
-			Optional<? extends SearchQueueEntry> roleEntry = batch.findEntryByUuid(uuid);
-			assertThat(roleEntry).isPresent();
-			assertEquals(DELETE_ACTION, roleEntry.get().getElementAction());
-
-			Optional<? extends SearchQueueEntry> groupEntry = batch.findEntryByUuid(group().getUuid());
-			assertThat(groupEntry).isPresent();
-			assertEquals(STORE_ACTION, groupEntry.get().getElementAction());
+//			Optional<? extends SearchQueueEntry> roleEntry = batch.findEntryByUuid(uuid);
+//			assertThat(roleEntry).isPresent();
+//			assertEquals(DELETE_ACTION, roleEntry.get().getElementAction());
+//
+//			Optional<? extends SearchQueueEntry> groupEntry = batch.findEntryByUuid(group().getUuid());
+//			assertThat(groupEntry).isPresent();
+//			assertEquals(STORE_ACTION, groupEntry.get().getElementAction());
 
 			assertEquals(2, batch.getEntries().size());
 		}

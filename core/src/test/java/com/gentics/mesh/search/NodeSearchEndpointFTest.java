@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 
 public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
@@ -24,7 +24,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchAndSort() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String json = "{";
@@ -41,7 +41,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		json += "			}";
 
 		String search = json;
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
@@ -61,11 +61,11 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchContent() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
-		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("the"),
-				new PagingParameters().setPage(1).setPerPage(2), new VersioningParameters().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("the"),
+				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -84,11 +84,11 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchMissingVertex() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 
 			Node node = content("honda nr");
-			node.getImpl().remove();
-			NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("the"), new PagingParameters().setPage(1).setPerPage(2)));
+			node.remove();
+			NodeListResponse response = call(() -> client().searchNodes(getSimpleQuery("the"), new PagingParametersImpl().setPage(1).setPerPage(2)));
 			assertEquals(0, response.getData().size());
 			assertEquals(0, response.getMetainfo().getTotalCount());
 		}

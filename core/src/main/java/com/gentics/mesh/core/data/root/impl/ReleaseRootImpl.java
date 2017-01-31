@@ -24,18 +24,15 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 public class ReleaseRootImpl extends AbstractRootVertex<Release> implements ReleaseRoot {
 
@@ -64,14 +61,14 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 		if (latestRelease == null) {
 			// if this is the first release, make it the initial release
-			setSingleLinkOutTo(release.getImpl(), HAS_INITIAL_RELEASE);
+			setSingleLinkOutTo(release, HAS_INITIAL_RELEASE);
 		} else {
 			// otherwise link the releases
 			latestRelease.setNextRelease(release);
 		}
 
 		// make the new release the latest
-		setSingleLinkOutTo(release.getImpl(), HAS_LATEST_RELEASE);
+		setSingleLinkOutTo(release, HAS_LATEST_RELEASE);
 
 		// set initial permissions on the release
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, release);
@@ -132,10 +129,8 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 		// A new release was created - We also need to create new indices for the nodes within the release
 		for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-			batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), DRAFT), Node.TYPE,
-					SearchQueueEntryAction.CREATE_INDEX);
-			batch.addEntry(NodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), version.getUuid(), PUBLISHED), Node.TYPE,
-					SearchQueueEntryAction.CREATE_INDEX);
+			batch.addNodeIndex(project, release, version, DRAFT);
+			batch.addNodeIndex(project, release, version, PUBLISHED);
 		}
 
 		return release;

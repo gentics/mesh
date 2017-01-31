@@ -19,7 +19,7 @@ public class RoleSearchEndpointTest extends AbstractSearchEndpointTest implement
 		String roleName = "rolename42a";
 		createRole(roleName, db.noTx(() -> group().getUuid()));
 
-		MeshResponse<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
+		MeshResponse<RoleListResponse> searchFuture = client().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -31,14 +31,14 @@ public class RoleSearchEndpointTest extends AbstractSearchEndpointTest implement
 		String roleName = "rolename42a";
 		RoleResponse role = createRole(roleName, db.noTx(() -> group().getUuid()));
 
-		MeshResponse<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
+		MeshResponse<RoleListResponse> searchFuture = client().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
 
 		deleteRole(role.getUuid());
 
-		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
+		searchFuture = client().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
@@ -51,7 +51,7 @@ public class RoleSearchEndpointTest extends AbstractSearchEndpointTest implement
 		String roleName = "rolename42a";
 		RoleResponse role = createRole(roleName, db.noTx(() -> group().getUuid()));
 
-		MeshResponse<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
+		MeshResponse<RoleListResponse> searchFuture = client().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
@@ -59,12 +59,12 @@ public class RoleSearchEndpointTest extends AbstractSearchEndpointTest implement
 		String newRoleName = "updatedrolename";
 		updateRole(role.getUuid(), newRoleName);
 
-		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", newRoleName)).invoke();
+		searchFuture = client().searchRoles(getSimpleTermQuery("name", newRoleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
 
-		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
+		searchFuture = client().searchRoles(getSimpleTermQuery("name", roleName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

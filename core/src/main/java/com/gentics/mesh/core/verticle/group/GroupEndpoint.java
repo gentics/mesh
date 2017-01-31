@@ -12,9 +12,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
@@ -60,10 +61,10 @@ public class GroupEndpoint extends AbstractEndpoint {
 		readRoles.method(GET);
 		readRoles.produces(APPLICATION_JSON);
 		readRoles.exampleResponse(OK, roleExamples.getRoleListResponse(), "List of roles which were assigned to the group.");
-		readRoles.addQueryParameters(PagingParameters.class);
+		readRoles.addQueryParameters(PagingParametersImpl.class);
 		readRoles.addQueryParameters(RolePermissionParameters.class);
 		readRoles.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			crudHandler.handleGroupRolesList(ac, groupUuid);
 		});
@@ -77,7 +78,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		addRole.produces(APPLICATION_JSON);
 		addRole.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Loaded role.");
 		addRole.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");
 			crudHandler.handleAddRoleToGroup(ac, groupUuid, roleUuid);
@@ -91,7 +92,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		removeRole.description("Remove the given role from the group.");
 		removeRole.exampleResponse(NO_CONTENT, "Role was removed from the group.");
 		removeRole.produces(APPLICATION_JSON).handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");
 			crudHandler.handleRemoveRoleFromGroup(ac, groupUuid, roleUuid);
@@ -107,7 +108,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		readUsers.exampleResponse(OK, userExamples.getUserListResponse(), "List of users which belong to the group.");
 		readUsers.description("Load a list of users which have been assigned to the group.");
 		readUsers.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			crudHandler.handleGroupUserList(ac, groupUuid);
 		});
@@ -121,7 +122,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		addUser.produces(APPLICATION_JSON);
 		addUser.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Updated group.");
 		addUser.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String userUuid = ac.getParameter("userUuid");
 			crudHandler.handleAddUserToGroup(ac, groupUuid, userUuid);
@@ -134,7 +135,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		removeUser.description("Remove the given user from the group.");
 		removeUser.exampleResponse(NO_CONTENT, "User was removed from the group.");
 		removeUser.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String userUuid = ac.getParameter("userUuid");
 			crudHandler.handleRemoveUserFromGroup(ac, groupUuid, userUuid);
@@ -150,7 +151,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		deleteGroup.exampleResponse(NO_CONTENT, "Group was deleted.");
 		deleteGroup.produces(APPLICATION_JSON);
 		deleteGroup.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleDelete(ac, uuid);
 		});
@@ -169,7 +170,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
 		endpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated group.");
 		endpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleUpdate(ac, uuid);
 		});
@@ -186,7 +187,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		readOne.exampleResponse(OK, groupExamples.getGroupResponse1("Admin Group"), "Loaded group.");
 		readOne.addQueryParameters(RolePermissionParameters.class);
 		readOne.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleRead(ac, uuid);
 		});
@@ -200,10 +201,11 @@ public class GroupEndpoint extends AbstractEndpoint {
 		readAll.description("Read multiple groups and return a paged list response.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(OK, groupExamples.getGroupListResponse(), "List response which contains the found  groups.");
-		readAll.addQueryParameters(PagingParameters.class);
+		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParameters.class);
 		readAll.handler(rc -> {
-			crudHandler.handleReadList(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleReadList(ac);
 		});
 	}
 
@@ -216,7 +218,8 @@ public class GroupEndpoint extends AbstractEndpoint {
 		endpoint.exampleRequest(groupExamples.getGroupCreateRequest("New group"));
 		endpoint.exampleResponse(CREATED, groupExamples.getGroupResponse1("New group"), "Created group.");
 		endpoint.handler(rc -> {
-			crudHandler.handleCreate(InternalActionContext.create(rc));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleCreate(ac);
 		});
 
 	}

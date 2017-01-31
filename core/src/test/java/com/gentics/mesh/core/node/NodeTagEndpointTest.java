@@ -41,7 +41,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 			assertNotNull(node.getSchemaContainer());
-			MeshResponse<TagListResponse> future = getClient().findTagsForNode(PROJECT_NAME, node.getUuid()).invoke();
+			MeshResponse<TagListResponse> future = client().findTagsForNode(PROJECT_NAME, node.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			TagListResponse tagList = future.result();
@@ -58,7 +58,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 
 			assertThat(dummySearchProvider).recordedStoreEvents(0);
-			MeshResponse<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
+			MeshResponse<NodeResponse> future = client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertThat(dummySearchProvider)
@@ -68,7 +68,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			dummySearchProvider.getStoreEvents().containsKey("node-" + node.getUuid() + "-published-folder-1-" + project().getLatestRelease().getUuid());
 			dummySearchProvider.getStoreEvents().containsKey("node-" + node.getUuid() + "-draft-folder-1-" + project().getLatestRelease().getUuid());
 
-			future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
+			future = client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -89,7 +89,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 
-			MeshResponse<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
+			MeshResponse<NodeResponse> future = client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -104,7 +104,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(tag, READ_PERM);
 
-			MeshResponse<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
+			MeshResponse<NodeResponse> future = client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 
@@ -119,9 +119,9 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 
-			call(() -> getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid()));
+			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid()));
 
-			NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
 			assertThat(restNode).contains(tag);
 			node.reload();
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -135,7 +135,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
-			call(() -> getClient().removeTagFromNode(PROJECT_NAME, uuid, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			call(() -> client().removeTagFromNode(PROJECT_NAME, uuid, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
 	}
 
@@ -147,7 +147,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 
-			call(() -> getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN,
+			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN,
 					"error_missing_perm", node.getUuid());
 
 			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
@@ -160,11 +160,11 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 		String releaseTwo = "ReleaseV2";
 
 		// 1. Create release v1
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		try (NoTx noTx = db.noTx()) {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(releaseOne);
-			ReleaseResponse releaseResponse = call(() -> getClient().createRelease(PROJECT_NAME, request));
+			ReleaseResponse releaseResponse = call(() -> client().createRelease(PROJECT_NAME, request));
 			assertThat(releaseResponse).as("Release Response").isNotNull().hasName(releaseOne).isActive().isNotMigrated();
 		}
 		failingLatch(latch);
@@ -173,7 +173,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			Tag tag = tag("red");
-			call(() -> getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 		}
 
 		// Assert that the node is tagged with red in release one
@@ -181,19 +181,19 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
-			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
+			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
 					new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
@@ -201,11 +201,11 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 		}
 
 		// 3. Create release v2
-		latch = TestUtils.latchForMigrationCompleted(getClient());
+		latch = TestUtils.latchForMigrationCompleted(client());
 		try (NoTx noTx = db.noTx()) {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(releaseTwo);
-			ReleaseResponse releaseResponse = call(() -> getClient().createRelease(PROJECT_NAME, request));
+			ReleaseResponse releaseResponse = call(() -> client().createRelease(PROJECT_NAME, request));
 			assertThat(releaseResponse).as("Release Response").isNotNull().hasName(releaseTwo).isActive().isNotMigrated();
 		}
 
@@ -214,7 +214,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			Tag tag = tag("blue");
-			call(() -> getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 		}
 
 		// Assert that the node is tagged with both tags in releaseTwo
@@ -222,7 +222,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
@@ -230,7 +230,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
@@ -238,13 +238,13 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
-			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
+			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
 					new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 			Tag tag2 = tag("blue");
-			taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
+			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
 					new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
@@ -255,7 +255,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Node node = content();
 			Tag tag = tag("red");
-			call(() -> getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 		}
 
 		// Assert that the node is still tagged with both tags in releaseTwo
@@ -263,7 +263,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
@@ -271,7 +271,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
@@ -279,13 +279,13 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
-			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
+			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
 					new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 			Tag tag2 = tag("blue");
-			taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
+			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
 					new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
@@ -297,17 +297,17 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> getClient().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected to find no tags for the node in release one.", 0, tagsForNode.getData().size());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected to find no tags for the node in release one.", 0, response.getTags().size());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
-			NodeListResponse taggedNodes = call(() -> getClient().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
+			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
 					new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected to find the node not be tagged by tag red.", 0,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
@@ -323,7 +323,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(tag, READ_PERM);
-			call(() -> getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN,
+			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN,
 					"error_missing_perm", tag.getUuid());
 
 			assertTrue("The tag should not have been removed from the node", node.getTags(project().getLatestRelease()).contains(tag));

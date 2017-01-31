@@ -46,17 +46,17 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 
 			// 3. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
-			MeshResponse<WebRootResponse> response = getClient().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft"))
+			MeshResponse<WebRootResponse> response = client().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft"))
 					.invoke();
 			latchFor(response);
 			assertSuccess(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
-			expect304(getClient().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), etag, false);
+			expect304(client().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), etag, false);
 
 			params.setHeight(103);
-			String newETag = expectNo304(getClient().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), etag,
+			String newETag = expectNo304(client().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), etag,
 					false);
-			expect304(getClient().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), newETag, false);
+			expect304(client().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), newETag, false);
 
 		}
 	}
@@ -81,7 +81,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
-			MeshResponse<WebRootResponse> response = getClient()
+			MeshResponse<WebRootResponse> response = client()
 					.webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setResolveLinks(LinkType.FULL)).invoke();
 
 			latchFor(response);
@@ -89,7 +89,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			assertNotNull(etag);
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<WebRootResponse> request = getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+			MeshRequest<WebRootResponse> request = client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
 					new NodeParameters().setResolveLinks(LinkType.FULL));
 			assertEquals(etag, expect304(request, etag, false));
 
@@ -109,14 +109,14 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			node.getGraphFieldContainer("en").getSchemaContainerVersion().setSchema(schema);
 			node.getGraphFieldContainer("en").createNode("reference", folder("2015"));
 
-			MeshResponse<WebRootResponse> response = getClient()
+			MeshResponse<WebRootResponse> response = client()
 					.webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")).invoke();
 			latchFor(response);
 			String etag = node.getETag(getMockedInternalActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<WebRootResponse> request = getClient().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
+			MeshRequest<WebRootResponse> request = client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
 					new NodeParameters().setLanguages("en", "de"));
 			assertEquals(etag, expect304(request, etag, true));
 

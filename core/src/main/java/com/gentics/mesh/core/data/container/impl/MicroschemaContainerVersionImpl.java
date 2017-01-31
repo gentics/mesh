@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
-
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -31,6 +30,8 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.RestModelHelper;
 
+import rx.Single;
+
 public class MicroschemaContainerVersionImpl
 		extends AbstractGraphFieldSchemaContainerVersion<Microschema, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
 		implements MicroschemaContainerVersion {
@@ -41,7 +42,7 @@ public class MicroschemaContainerVersionImpl
 
 	@Override
 	public String getType() {
-		return MicroschemaContainer.TYPE;
+		return MicroschemaContainerVersion.TYPE;
 	}
 
 	@Override
@@ -133,5 +134,12 @@ public class MicroschemaContainerVersionImpl
 	@Override
 	public Release getRelease() {
 		return in(HAS_MICROSCHEMA_VERSION).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	}
+
+	@Override
+	public Single<Microschema> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return MeshInternal.get().database().operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 }

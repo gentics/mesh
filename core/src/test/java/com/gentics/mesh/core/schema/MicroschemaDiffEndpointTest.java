@@ -65,7 +65,7 @@ public class MicroschemaDiffEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
-			MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = client().diffMicroschema(microschema.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();
@@ -83,7 +83,7 @@ public class MicroschemaDiffEndpointTest extends AbstractRestEndpointTest {
 			stringField.setAllowedValues("one", "two");
 			request.addField(stringField);
 
-			MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = client().diffMicroschema(microschema.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();
@@ -103,7 +103,7 @@ public class MicroschemaDiffEndpointTest extends AbstractRestEndpointTest {
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binaryField");
 			request.addField(binaryField);
 
-			MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = client().diffMicroschema(microschema.getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "microschema_error_field_type_not_allowed", "binaryField", "binary");
 		}
@@ -115,7 +115,7 @@ public class MicroschemaDiffEndpointTest extends AbstractRestEndpointTest {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
 			request.removeField("postcode");
-			MeshResponse<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request).invoke();
+			MeshResponse<SchemaChangesListModel> future = client().diffMicroschema(microschema.getUuid(), request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			SchemaChangesListModel changes = future.result();

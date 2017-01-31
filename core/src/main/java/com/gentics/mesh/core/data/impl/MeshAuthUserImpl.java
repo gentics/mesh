@@ -90,13 +90,8 @@ public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 		throw new NotImplementedException();
 	}
 
+	@Override
 	public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
 		return out(HAS_USER).in(HAS_ROLE).out(permission.label());
 	}
-
-	@Override
-	public MeshAuthUserImpl getImpl() {
-		return this;
-	}
-
 }

@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
@@ -46,6 +47,7 @@ import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Single;
 
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
@@ -100,7 +102,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> version) {
-		setLinkOut(version.getImpl(), HAS_MICROSCHEMA_CONTAINER);
+		setLinkOut(version, HAS_MICROSCHEMA_CONTAINER);
 	}
 
 	@Override
@@ -254,5 +256,12 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	public String getAPIPath(InternalActionContext ac) {
 		// Micronodes have no public location
 		return null;
+	}
+
+	@Override
+	public Single<MicronodeResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return MeshInternal.get().database().operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 }

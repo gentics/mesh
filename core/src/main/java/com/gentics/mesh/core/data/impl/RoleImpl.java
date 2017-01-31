@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
 import java.util.HashSet;
@@ -13,13 +13,14 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
@@ -28,6 +29,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
+
+import rx.Single;
 
 /**
  * @see Role
@@ -42,11 +45,6 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public RoleReference transformToReference() {
 		return new RoleReference().setName(getName()).setUuid(getUuid());
-	}
-
-	@Override
-	public String getType() {
-		return Role.TYPE;
 	}
 
 	@Override
@@ -68,7 +66,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
 		Set<GraphPermission> permissions = new HashSet<>();
 		for (GraphPermission permission : GraphPermission.values()) {
-			if (hasPermission(permission, vertex.getImpl())) {
+			if (hasPermission(permission, vertex)) {
 				permissions.add(permission);
 			}
 		}
@@ -79,7 +77,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
-				MeshInternal.get().database().createComposedIndexKey(vertex.getImpl().getId(), getId()));
+				MeshInternal.get().database().createComposedIndexKey(vertex.getId(), getId()));
 		return edges.iterator().hasNext();
 	}
 
@@ -87,7 +85,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public void grantPermissions(MeshVertex vertex, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
 			if (!hasPermission(permission, vertex)) {
-				addFramedEdge(permission.label(), vertex.getImpl());
+				addFramedEdge(permission.label(), vertex);
 			}
 		}
 	}
@@ -121,10 +119,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		// TODO don't allow deletion of admin role
-		batch.addEntry(this, DELETE_ACTION);
-		for (Group group : getGroups()) {
-			batch.addEntry(group, STORE_ACTION);
-		}
+		batch.delete(this, true);
 		getVertex().remove();
 		PermissionStore.invalidate();
 	}
@@ -141,15 +136,15 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 			}
 
 			setName(requestModel.getName());
-			addIndexBatchEntry(batch, STORE_ACTION);
+			batch.store(this, true);
 		}
 		return this;
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
+	public void handleRelatedEntries(HandleElementAction action) {
 		for (Group group : getGroups()) {
-			batch.addEntry(group, STORE_ACTION);
+			action.call(group, null);
 		}
 	}
 
@@ -161,6 +156,23 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
 		return "/api/v1/roles/" + getUuid();
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
+	public User getEditor() {
+		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+	}
+
+	@Override
+	public Single<RoleResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return db.operateNoTx(() -> {
+			return Single.just(transformToRestSync(ac, level, languageTags));
+		});
 	}
 
 }

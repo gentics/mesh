@@ -28,12 +28,12 @@ public class SchemaProjectEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testReadProjectSchemas() {
 		try (NoTx noTx = db.noTx()) {
-			SchemaListResponse list = call(() -> getClient().findSchemas(PROJECT_NAME));
+			SchemaListResponse list = call(() -> client().findSchemas(PROJECT_NAME));
 			assertEquals(3, list.getData().size());
 
-			call(() -> getClient().unassignSchemaFromProject(PROJECT_NAME, schemaContainer("folder").getUuid()));
+			call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schemaContainer("folder").getUuid()));
 
-			list = call(() -> getClient().findSchemas(PROJECT_NAME));
+			list = call(() -> client().findSchemas(PROJECT_NAME));
 			assertEquals(2, list.getData().size());
 		}
 	}
@@ -47,12 +47,12 @@ public class SchemaProjectEndpointTest extends AbstractRestEndpointTest {
 			SchemaContainer schema = schemaContainer("content");
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchemaReference(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReference().setName("folder"));
 			request.setName(name);
 
-			ProjectResponse restProject = call(() -> getClient().createProject(request));
+			ProjectResponse restProject = call(() -> client().createProject(request));
 
-			call(() -> getClient().assignSchemaToProject(restProject.getName(), schema.getUuid()));
+			call(() -> client().assignSchemaToProject(restProject.getName(), schema.getUuid()));
 		}
 	}
 
@@ -64,15 +64,15 @@ public class SchemaProjectEndpointTest extends AbstractRestEndpointTest {
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
-			request.setSchemaReference(new SchemaReference().setName("folder"));
-			ProjectResponse created = call(() -> getClient().createProject(request));
+			request.setSchema(new SchemaReference().setName("folder"));
+			ProjectResponse created = call(() -> client().createProject(request));
 			Project extraProject = projectRoot.findByUuid(created.getUuid());
 
 			// Add only read perms
 			role().grantPermissions(schema, READ_PERM);
 			role().grantPermissions(extraProject, UPDATE_PERM);
 
-			Schema restSchema = call(() -> getClient().assignSchemaToProject(extraProject.getName(), schema.getUuid()));
+			Schema restSchema = call(() -> client().assignSchemaToProject(extraProject.getName(), schema.getUuid()));
 			assertThat(restSchema).matches(schema);
 			extraProject.getSchemaContainerRoot().reload();
 			assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()));
@@ -90,14 +90,14 @@ public class SchemaProjectEndpointTest extends AbstractRestEndpointTest {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
-			request.setSchemaReference(new SchemaReference().setName("folder"));
-			ProjectResponse response = call(() -> getClient().createProject(request));
+			request.setSchema(new SchemaReference().setName("folder"));
+			ProjectResponse response = call(() -> client().createProject(request));
 			projectUuid = response.getUuid();
 			extraProject = projectRoot.findByUuid(projectUuid);
 			// Revoke Update perm on project
 			role().revokePermissions(extraProject, UPDATE_PERM);
 		}
-		call(() -> getClient().assignSchemaToProject("extraProject", schemaUuid), FORBIDDEN, "error_missing_perm", projectUuid);
+		call(() -> client().assignSchemaToProject("extraProject", schemaUuid), FORBIDDEN, "error_missing_perm", projectUuid);
 		try (NoTx noTx = db.noTx()) {
 			// Reload the schema and check for expected changes
 			SchemaContainer schema = schemaContainer("content");
@@ -115,9 +115,9 @@ public class SchemaProjectEndpointTest extends AbstractRestEndpointTest {
 			Project project = project();
 			assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 
-			call(() -> getClient().unassignSchemaFromProject(project.getName(), schema.getUuid()));
+			call(() -> client().unassignSchemaFromProject(project.getName(), schema.getUuid()));
 
-			SchemaListResponse list = call(() -> getClient().findSchemas(PROJECT_NAME));
+			SchemaListResponse list = call(() -> client().findSchemas(PROJECT_NAME));
 
 			// final String removedProjectName = project.getName();
 			assertEquals("The removed schema should not be listed in the response", 0,
@@ -137,7 +137,7 @@ public class SchemaProjectEndpointTest extends AbstractRestEndpointTest {
 			// Revoke update perms on the project
 			role().revokePermissions(project, UPDATE_PERM);
 
-			call(() -> getClient().unassignSchemaFromProject(project.getName(), schema.getUuid()), FORBIDDEN, "error_missing_perm",
+			call(() -> client().unassignSchemaFromProject(project.getName(), schema.getUuid()), FORBIDDEN, "error_missing_perm",
 					project.getUuid());
 
 			// Reload the schema and check for expected changes

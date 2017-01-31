@@ -52,7 +52,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -65,10 +64,11 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -428,6 +428,12 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<UserTokenResponse> getUserToken(String userUuid) {
+		Objects.requireNonNull(userUuid, "userUuid must not be null");
+		return prepareRequest(GET, "/users/" + userUuid + "/token", UserTokenResponse.class);
+	}
+
+	@Override
 	public MeshRequest<Void> deleteUser(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(DELETE, "/users/" + uuid, Void.class);
@@ -745,11 +751,6 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/" + encodeFragment(projectName) + "/search/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class,
 				json);
-	}
-
-	@Override
-	public MeshRequest<SearchStatusResponse> loadSearchStatus() {
-		return prepareRequest(GET, "/search/status", SearchStatusResponse.class);
 	}
 
 	@Override

@@ -11,10 +11,13 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Completable;
+import rx.Observable;
+import rx.Single;
 
 /**
  * Wrapper for a mesh http request.
- * 
+ *
  * @param <T>
  */
 public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
@@ -45,6 +48,7 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 		return request;
 	}
 
+	@Override
 	public MeshResponse<T> invoke() {
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking request to {" + handler.getUri() + "}");
@@ -89,4 +93,19 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 		return handler.getFuture();
 	}
 
+	@Override
+	public Completable toCompletable() {
+		return toObservable().toCompletable();
+	}
+
+	@Override
+	public Single<T> toSingle() {
+		return toObservable().toSingle();
+	}
+
+
+	@Override
+	public Observable<T> toObservable() {
+		return Observable.defer(() -> invoke().setHandlerObservable());
+	}
 }

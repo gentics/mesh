@@ -19,7 +19,7 @@ import rx.Single;
  * @see Page
  * @param <T>
  */
-public class PageImpl<T extends TransformableElement<? extends RestModel>> implements Iterable<T>, Page {
+public class PageImpl<T extends TransformableElement<? extends RestModel>> implements Iterable<T>, Page<T> {
 
 	private List<? extends T> wrappedList;
 	private long totalElements;

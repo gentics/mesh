@@ -275,7 +275,6 @@ public class TestDataProvider {
 
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 		User user = root.getUserRoot().create(username, null);
-		user.setUuid("UUIDOFUSER1");
 		user.setPassword(password);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);

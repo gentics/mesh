@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -13,6 +12,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Iterator;
 
 import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -25,8 +25,8 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -156,18 +156,18 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		user.setEmailAddress(requestModel.getEmailAddress());
 		user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
-		NodeReference reference = requestModel.getNodeReference();
-		user.addIndexBatchEntry(batch, STORE_ACTION);
+		ExpandableNode reference = requestModel.getNodeReference();
+		batch.store(user, true);
 
 		if (!isEmpty(groupUuid)) {
 			Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			parentGroup.addUser(user);
-			batch.addEntry(parentGroup, STORE_ACTION);
+			batch.store(parentGroup, false);
 			requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 		}
 
-		if (reference != null && reference instanceof NodeReferenceImpl) {
-			NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
+		if (reference != null && reference instanceof NodeReference) {
+			NodeReference basicReference = ((NodeReference) reference);
 			String referencedNodeUuid = basicReference.getUuid();
 			String projectName = basicReference.getProjectName();
 

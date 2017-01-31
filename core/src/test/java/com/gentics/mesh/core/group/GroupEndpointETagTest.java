@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
@@ -25,13 +25,13 @@ public class GroupEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db.noTx()) {
-			MeshResponse<GroupListResponse> response = getClient().findGroups().invoke();
+			MeshResponse<GroupListResponse> response = client().findGroups().invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
-			expect304(getClient().findGroups(), etag, true);
-			expectNo304(getClient().findGroups(new PagingParameters().setPage(2)), etag, true);
+			expect304(client().findGroups(), etag, true);
+			expectNo304(client().findGroups(new PagingParametersImpl().setPage(2)), etag, true);
 		}
 	}
 
@@ -40,21 +40,21 @@ public class GroupEndpointETagTest extends AbstractETagTest {
 		try (NoTx noTx = db.noTx()) {
 			Group group = group();
 
-			MeshResponse<GroupResponse> response = getClient().findGroupByUuid(group.getUuid()).invoke();
+			MeshResponse<GroupResponse> response = client().findGroupByUuid(group.getUuid()).invoke();
 			latchFor(response);
 			String etag = group.getETag(getMockedInternalActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<GroupResponse> request = getClient().findGroupByUuid(group.getUuid());
+			MeshRequest<GroupResponse> request = client().findGroupByUuid(group.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertThat(expect304(getClient().findGroupByUuid(group.getUuid(), new NodeParameters().setExpandAll(true)), etag, true)).contains(etag);
+			assertThat(expect304(client().findGroupByUuid(group.getUuid(), new NodeParameters().setExpandAll(true)), etag, true)).contains(etag);
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(getClient().findGroupByUuid(group.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
-			expect304(getClient().findGroupByUuid(group.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
+			expect304(client().findGroupByUuid(group.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
+			expect304(client().findGroupByUuid(group.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
 		}
 
 	}

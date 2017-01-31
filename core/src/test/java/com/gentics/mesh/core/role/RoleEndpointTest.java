@@ -29,9 +29,9 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -39,8 +39,9 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
@@ -55,7 +56,9 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 
-		RoleResponse restRole = call(() -> getClient().createRole(request));
+		RoleResponse restRole = call(() -> client().createRole(request));
+		assertThat(dummySearchProvider).hasStore(Role.composeIndexName(), Role.composeIndexType(), restRole.getUuid());
+		assertThat(dummySearchProvider).events(1, 0, 0, 0);
 
 		try (NoTx noTx = db.noTx()) {
 			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
@@ -65,7 +68,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertTrue(user().hasPermission(createdRole, CREATE_PERM));
 
 			String roleUuid = restRole.getUuid();
-			restRole = call(() -> getClient().findRoleByUuid(roleUuid));
+			restRole = call(() -> client().findRoleByUuid(roleUuid));
 			assertThat(restRole).matches(request);
 			assertElement(meshRoot().getRoleRoot(), restRole.getUuid(), true);
 		}
@@ -82,7 +85,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 
 		String roleRootUuid = db.noTx(() -> meshRoot().getRoleRoot().getUuid());
-		call(() -> getClient().createRole(request), FORBIDDEN, "error_missing_perm", roleRootUuid);
+		call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", roleRootUuid);
 
 	}
 
@@ -91,10 +94,10 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		String name = "new_role";
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName(name);
-		call(() -> getClient().createRole(request));
+		call(() -> client().createRole(request));
 
 		// Creating the second role must fail due to name conflict
-		call(() -> getClient().createRole(request), CONFLICT, "role_conflicting_name");
+		call(() -> client().createRole(request), CONFLICT, "role_conflicting_name");
 	}
 
 	@Test
@@ -103,10 +106,10 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 
-		RoleResponse restRole = call(() -> getClient().createRole(request));
+		RoleResponse restRole = call(() -> client().createRole(request));
 		assertThat(restRole).matches(request);
 
-		call(() -> getClient().deleteRole(restRole.getUuid()));
+		call(() -> client().deleteRole(restRole.getUuid()));
 	}
 
 	@Test
@@ -120,7 +123,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 
 		try (NoTx noTx = db.noTx()) {
-			call(() -> getClient().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid());
+			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid());
 		}
 	}
 
@@ -135,7 +138,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testCreateRoleWithNoName() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
-		call(() -> getClient().createRole(request), BAD_REQUEST, "error_name_must_be_set");
+		call(() -> client().createRole(request), BAD_REQUEST, "error_name_must_be_set");
 	}
 
 	// Read tests
@@ -147,7 +150,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			String uuid = role.getUuid();
 			assertNotNull("The UUID of the role must not be null.", role.getUuid());
 
-			RoleResponse restRole = call(() -> getClient().findRoleByUuid(uuid));
+			RoleResponse restRole = call(() -> client().findRoleByUuid(uuid));
 			assertThat(restRole).matches(role());
 		}
 	}
@@ -162,7 +165,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 			role().grantPermissions(extraRole, READ_PERM);
 
-			RoleResponse restRole = call(() -> getClient().findRoleByUuid(extraRole.getUuid()));
+			RoleResponse restRole = call(() -> client().findRoleByUuid(extraRole.getUuid()));
 			assertThat(restRole).matches(extraRole);
 		}
 
@@ -175,7 +178,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			Role role = role();
 			String uuid = role.getUuid();
 
-			RoleResponse restRole = call(() -> getClient().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+			RoleResponse restRole = call(() -> client().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
 			assertNotNull(restRole.getRolePerms());
 			assertEquals(6, restRole.getRolePerms().length);
 		}
@@ -192,7 +195,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			role().revokePermissions(extraRole, READ_PERM);
 
 			assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-			call(() -> getClient().findRoleByUuid(extraRole.getUuid()), FORBIDDEN, "error_missing_perm", extraRole.getUuid());
+			call(() -> client().findRoleByUuid(extraRole.getUuid()), FORBIDDEN, "error_missing_perm", extraRole.getUuid());
 		}
 
 	}
@@ -204,7 +207,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			String uuid = role.getUuid();
 			assertNotNull("The UUID of the role must not be null.", role.getUuid());
 			role.revokePermissions(role, READ_PERM);
-			call(() -> getClient().findRoleByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().findRoleByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid);
 		}
 	}
 
@@ -232,14 +235,14 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			noPermRoleName = noPermRole.getName();
 
 			// Test default paging parameters
-			RoleListResponse restResponse = call(() -> getClient().findRoles());
+			RoleListResponse restResponse = call(() -> client().findRoles());
 			assertEquals(25, restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 11;
 			final int currentPage = 1;
-			restResponse = call(() -> getClient().findRoles(new PagingParameters(currentPage, perPage)));
+			restResponse = call(() -> client().findRoles(new PagingParametersImpl(currentPage, perPage)));
 			assertEquals("The amount of items for page {" + currentPage + "} does not match the expected amount.", 11, restResponse.getData().size());
 
 			// created roles + test data role
@@ -259,7 +262,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			List<RoleResponse> allRoles = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
 				final int cPage = page;
-				restResponse = call(() -> getClient().findRoles(new PagingParameters(cPage, perPage)));
+				restResponse = call(() -> client().findRoles(new PagingParametersImpl(cPage, perPage)));
 				allRoles.addAll(restResponse.getData());
 			}
 			assertEquals("Somehow not all roles were loaded when loading all pages.", totalRoles, allRoles.size());
@@ -269,9 +272,9 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 					.collect(Collectors.toList());
 			assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			call(() -> getClient().findRoles(new PagingParameters(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
-			call(() -> getClient().findRoles(new PagingParameters(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
-			RoleListResponse response = call(() -> getClient().findRoles(new PagingParameters(4242, 25)));
+			call(() -> client().findRoles(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+			call(() -> client().findRoles(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
+			RoleListResponse response = call(() -> client().findRoles(new PagingParametersImpl(4242, 25)));
 
 			assertEquals(0, response.getData().size());
 			assertEquals(4242, response.getMetainfo().getCurrentPage());
@@ -283,7 +286,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<RoleListResponse> future = getClient().findRoles(new PagingParameters(1, 0)).invoke();
+		MeshResponse<RoleListResponse> future = client().findRoles(new PagingParametersImpl(1, 0)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -303,7 +306,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			RoleUpdateRequest request = new RoleUpdateRequest();
 			request.setName("renamed role");
 
-			MeshResponse<RoleResponse> future = getClient().updateRole(roleUuid, request).invoke();
+			MeshResponse<RoleResponse> future = client().updateRole(roleUuid, request).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			RoleResponse restRole = future.result();
@@ -326,7 +329,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			RoleUpdateRequest request = new RoleUpdateRequest();
 			request.setName("New Name");
 
-			MeshResponse<RoleResponse> future = getClient().updateRole(uuid, request).invoke();
+			MeshResponse<RoleResponse> future = client().updateRole(uuid, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -336,11 +339,11 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testUpdateConflictCheck() {
 		try (NoTx noTx = db.noTx()) {
-			MeshRoot.getInstance().getRoleRoot().create("test123", user());
+			MeshInternal.get().boot().meshRoot().getRoleRoot().create("test123", user());
 			RoleUpdateRequest request = new RoleUpdateRequest();
 			request.setName("test123");
 
-			MeshResponse<RoleResponse> future = getClient().updateRole(role().getUuid(), request).invoke();
+			MeshResponse<RoleResponse> future = client().updateRole(role().getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "role_conflicting_name");
 		}
@@ -352,7 +355,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
 
-		MeshResponse<RoleResponse> future = getClient().updateRole("bogus", request).invoke();
+		MeshResponse<RoleResponse> future = client().updateRole("bogus", request).invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
@@ -369,14 +372,14 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			RoleUpdateRequest restRole = new RoleUpdateRequest();
 			restRole.setName("renamed role");
 
-			MeshResponse<RoleResponse> future = getClient().updateRole(uuid, restRole).invoke();
+			MeshResponse<RoleResponse> future = client().updateRole(uuid, restRole).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
 			// Add the missing permission and try again
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 
-			future = getClient().updateRole(uuid, restRole).invoke();
+			future = client().updateRole(uuid, restRole).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
@@ -388,8 +391,6 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	}
 
-	// Delete tests
-
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
@@ -398,12 +399,13 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
 			String roleUuid = extraRole.getUuid();
-			String roleName = extraRole.getName();
 			role().grantPermissions(extraRole, DELETE_PERM);
 
-			MeshResponse<Void> future = getClient().deleteRole(roleUuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			dummySearchProvider.clear();
+			call(() -> client().deleteRole(roleUuid));
+			assertThat(dummySearchProvider).hasStore(Group.composeIndexName(), Group.composeIndexType(), group().getUuid());
+			assertThat(dummySearchProvider).hasDelete(Role.composeIndexName(), Role.composeIndexType(), roleUuid);
+			assertThat(dummySearchProvider).events(1, 1, 0, 0);
 			meshRoot().getRoleRoot().reload();
 			assertElement(meshRoot().getRoleRoot(), roleUuid, false);
 		}
@@ -418,9 +420,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		try (NoTx noTx = db.noTx()) {
 			String uuid = role().getUuid();
-			MeshResponse<Void> future = getClient().deleteRole(uuid).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().deleteRole(uuid), FORBIDDEN, "error_missing_perm", uuid);
 			assertElement(meshRoot().getRoleRoot(), uuid, true);
 		}
 	}
@@ -436,7 +436,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().updateRole(role().getUuid(), request).invoke());
+			set.add(client().updateRole(role().getUuid(), request).invoke());
 		}
 		validateSet(set, barrier);
 	}
@@ -446,7 +446,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Ignore("not yet enabled")
 	public void testReadByUuidMultithreaded() throws Exception {
 
-		Single<GenericMessageResponse> future = getClient().login();
+		Single<GenericMessageResponse> future = client().login();
 		future.toBlocking().value();
 
 		int nJobs = 10;
@@ -454,7 +454,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findRoleByUuid(uuid).invoke());
+			set.add(client().findRoleByUuid(uuid).invoke());
 		}
 		validateSet(set, barrier);
 	}
@@ -468,7 +468,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<MeshResponse<Void>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().deleteRole(uuid).invoke());
+			set.add(client().deleteRole(uuid).invoke());
 		}
 		validateDeletion(set, barrier);
 	}
@@ -478,7 +478,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Ignore("not yet enabled")
 	public void testCreateMultithreaded() throws Exception {
 
-		Single<GenericMessageResponse> future = getClient().login();
+		Single<GenericMessageResponse> future = client().login();
 		future.toBlocking().value();
 
 		int nJobs = 20;
@@ -487,7 +487,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 		for (int i = 0; i < nJobs; i++) {
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName("new_role_" + i);
-			set.add(getClient().createRole(request).invoke());
+			set.add(client().createRole(request).invoke());
 		}
 		validateFutures(set);
 	}
@@ -497,13 +497,13 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Ignore("disabled due to instability")
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			Single<GenericMessageResponse> observable = getClient().login();
+			Single<GenericMessageResponse> observable = client().login();
 			observable.toBlocking().value();
 
 			int nJobs = 400;
 			Set<MeshResponse<RoleResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findRoleByUuid(role().getUuid()).invoke());
+				set.add(client().findRoleByUuid(role().getUuid()).invoke());
 			}
 			for (MeshResponse<RoleResponse> future : set) {
 				latchFor(future);
