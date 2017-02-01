@@ -155,7 +155,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 
 	private void initialRequest() {
 
-		try (Tx trx = db.tx()) {
+		try (Tx tx = db.tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer oldContainer = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.0");

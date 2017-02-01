@@ -60,6 +60,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -1268,10 +1269,14 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadNodeByUUIDLanguageFallback() {
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			Node node = folder("products");
 			SearchQueueBatch batch = createBatch();
 			node.getLatestDraftFieldContainer(english()).delete(batch);
+		}
+
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("products");
 			String uuid = node.getUuid();
 
 			// Request the node with various language parameter values. Fallback to "de"

@@ -36,6 +36,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -46,14 +47,14 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreate() throws GenericRestException, Exception {
-		try (NoTx noTx = db.noTx()) {
-			Schema schema = FieldUtil.createMinimalValidSchema();
+		Schema schema = FieldUtil.createMinimalValidSchema();
 
-			assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
-			Schema restSchema = call(() -> client().createSchema(schema));
-			assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
-			assertThat(dummySearchProvider).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeIndexType(),
-					SchemaContainer.composeDocumentId(restSchema.getUuid()));
+		assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
+		Schema restSchema = call(() -> client().createSchema(schema));
+		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeIndexType(),
+				SchemaContainer.composeDocumentId(restSchema.getUuid()));
+		try (NoTx noTx = db.noTx()) {
 			assertThat(schema).matches(restSchema);
 			assertThat(restSchema.getPermissions()).isNotEmpty().contains("create", "read", "update", "delete");
 
@@ -271,32 +272,35 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 	}
 
-	// Delete Tests
-
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			assertThat(schema.getNodes()).isNotEmpty();
+		}
 
-			String uuid = schema.getUuid();
-			call(() -> client().deleteSchema(schema.getUuid()), BAD_REQUEST, "schema_delete_still_in_use", uuid);
+		String uuid = db.noTx(() -> schemaContainer("content").getUuid());
+		call(() -> client().deleteSchema(uuid), BAD_REQUEST, "schema_delete_still_in_use", uuid);
 
+		try (Tx tx = db.tx()) {
 			SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(uuid);
 			assertNotNull("The schema should not have been deleted.", reloaded);
-
 			// Validate and delete all remaining nodes that use the schema
 			assertThat(reloaded.getNodes()).isNotEmpty();
 			SearchQueueBatch batch = createBatch();
 			for (Node node : reloaded.getNodes()) {
 				node.delete(batch);
 			}
+			assertThat(reloaded.getNodes()).isEmpty();
+			tx.success();
+		}
 
-			call(() -> client().deleteSchema(schema.getUuid()));
+		call(() -> client().deleteSchema(uuid));
 
+		try (Tx tx = db.tx()) {
 			boot.schemaContainerRoot().reload();
-			reloaded = boot.schemaContainerRoot().findByUuid(uuid);
+			SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(uuid);
 			assertNull("The schema should have been deleted.", reloaded);
 		}
 	}

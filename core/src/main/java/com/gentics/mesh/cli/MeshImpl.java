@@ -84,10 +84,15 @@ public class MeshImpl implements Mesh {
 		dontExit();
 	}
 
+	/**
+	 * Check whether it is first of april
+	 * 
+	 * @return
+	 */
 	private boolean isFirstApril() {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("MM-dd");
-			return new DateTime(sdf.parse("01-01")).equals(new DateTime());
+			return new DateTime(sdf.parse("01-04")).equals(new DateTime());
 		} catch (Exception e) {
 			return false;
 		}
@@ -232,6 +237,7 @@ public class MeshImpl implements Mesh {
 		MeshInternal.get().searchProvider().stop();
 		getVertx().close();
 		MeshFactoryImpl.clear();
+
 		latch.countDown();
 	}
 
