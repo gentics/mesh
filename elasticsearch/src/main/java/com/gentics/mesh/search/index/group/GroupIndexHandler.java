@@ -12,7 +12,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.UpdateBatchEntry;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -42,7 +42,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateBatchEntry entry) {
+	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
 		return Group.composeIndexType();
 	}
 
@@ -52,12 +52,12 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	protected String composeDocumentIdFromEntry(UpdateBatchEntry entry) {
+	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
 		return entry.getElementUuid();
 	}
 
 	@Override
-	protected String composeIndexNameFromEntry(UpdateBatchEntry entry) {
+	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
 		return Group.composeIndexName();
 	}
 

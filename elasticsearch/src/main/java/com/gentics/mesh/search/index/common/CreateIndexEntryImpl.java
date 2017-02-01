@@ -8,13 +8,14 @@ import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.search.index.entry.AbstractEntry;
 
 import rx.Completable;
 
 /**
  * @see CreateIndexEntry
  */
-public class CreateIndexEntryImpl implements CreateIndexEntry {
+public class CreateIndexEntryImpl extends AbstractEntry implements CreateIndexEntry {
 
 	private String indexName;
 	private String indexType;
@@ -23,6 +24,7 @@ public class CreateIndexEntryImpl implements CreateIndexEntry {
 
 	@Inject
 	public CreateIndexEntryImpl(IndexHandler indexHandler, String indexName, String indexType) {
+		super(CREATE_INDEX);
 		this.indexName = indexName;
 		this.indexType = indexType;
 		this.indexHandler = indexHandler;

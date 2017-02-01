@@ -58,7 +58,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		RoleResponse restRole = call(() -> client().createRole(request));
 		assertThat(dummySearchProvider).hasStore(Role.composeIndexName(), Role.composeIndexType(), restRole.getUuid());
-		assertThat(dummySearchProvider).events(1, 0, 0, 0);
+		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 
 		try (NoTx noTx = db.noTx()) {
 			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
@@ -405,7 +405,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 			call(() -> client().deleteRole(roleUuid));
 			assertThat(dummySearchProvider).hasStore(Group.composeIndexName(), Group.composeIndexType(), group().getUuid());
 			assertThat(dummySearchProvider).hasDelete(Role.composeIndexName(), Role.composeIndexType(), roleUuid);
-			assertThat(dummySearchProvider).events(1, 1, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(1, 1, 0, 0);
 			meshRoot().getRoleRoot().reload();
 			assertElement(meshRoot().getRoleRoot(), roleUuid, false);
 		}

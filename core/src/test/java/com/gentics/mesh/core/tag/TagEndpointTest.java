@@ -237,7 +237,7 @@ public class TagEndpointTest extends AbstractBasicCrudEndpointTest {
 			}
 			assertThat(dummySearchProvider).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeTypeName(),
 					TagFamily.composeDocumentId(parentTagFamily.getUuid()));
-			assertThat(dummySearchProvider).events(2 + (nodes.size() * 4), 0, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(2 + (nodes.size() * 4), 0, 0, 0);
 
 			// 4. read the tag again and verify that it was changed
 			TagResponse reloadedTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
@@ -334,7 +334,7 @@ public class TagEndpointTest extends AbstractBasicCrudEndpointTest {
 						NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, ContainerType.DRAFT),
 						NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 			}
-			assertThat(dummySearchProvider).events(4, 1, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(4, 1, 0, 0);
 
 			tag = boot.tagRoot().findByUuid(uuid);
 			assertNull("The tag should have been deleted", tag);
@@ -393,7 +393,7 @@ public class TagEndpointTest extends AbstractBasicCrudEndpointTest {
 		assertEquals("SomeName", response.getName());
 		assertThat(dummySearchProvider).hasStore(Tag.composeIndexName(projectUuid), Tag.composeIndexType(),
 				Tag.composeDocumentId(response.getUuid()));
-		assertThat(dummySearchProvider).events(1, 0, 0, 0);
+		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 		try (NoTx noTx = db.noTx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
 			assertNotNull("The tag could not be found within the project.tagRoot node.", project().getTagRoot().findByUuid(response.getUuid()));

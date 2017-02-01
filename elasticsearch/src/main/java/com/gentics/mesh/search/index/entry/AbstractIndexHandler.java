@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.UpdateBatchEntry;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -34,6 +34,8 @@ import rx.Completable;
  * Abstract class for index handlers.
  * 
  * @see IndexHandler
+ * @param <T>
+ *            Type of the elements which are handled by the index handler
  */
 public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> implements IndexHandler {
 
@@ -81,7 +83,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * @param entry
 	 * @return
 	 */
-	abstract protected String composeIndexNameFromEntry(UpdateBatchEntry entry);
+	abstract protected String composeIndexNameFromEntry(UpdateDocumentEntry entry);
 
 	/**
 	 * Compose the document id using the batch entry data.
@@ -89,7 +91,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * @param entry
 	 * @return
 	 */
-	abstract protected String composeDocumentIdFromEntry(UpdateBatchEntry entry);
+	abstract protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry);
 
 	/**
 	 * Compose the index type using the batch entry data.
@@ -97,7 +99,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * @param entry
 	 * @return
 	 */
-	abstract protected String composeIndexTypeFromEntry(UpdateBatchEntry entry);
+	abstract protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry);
 
 	/**
 	 * Store the given object within the search index.
@@ -107,7 +109,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 *            search queue entry
 	 * @return
 	 */
-	public Completable store(T object, UpdateBatchEntry entry) {
+	public Completable store(T object, UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		String indexType = composeIndexTypeFromEntry(entry);
@@ -120,7 +122,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Completable delete(UpdateBatchEntry entry) {
+	public Completable delete(UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String typeId = composeIndexTypeFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
@@ -129,7 +131,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Completable store(UpdateBatchEntry entry) {
+	public Completable store(UpdateDocumentEntry entry) {
 		return Completable.defer(() -> {
 			try (NoTx noTx = db.noTx()) {
 				String uuid = entry.getElementUuid();

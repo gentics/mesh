@@ -49,9 +49,9 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
-			assertThat(dummySearchProvider).events(0, 0, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
 			Schema restSchema = call(() -> client().createSchema(schema));
-			assertThat(dummySearchProvider).events(1, 0, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 			assertThat(dummySearchProvider).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeIndexType(),
 					SchemaContainer.composeDocumentId(restSchema.getUuid()));
 			assertThat(schema).matches(restSchema);
@@ -81,11 +81,11 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		try (NoTx noTx = db.noTx()) {
-			assertThat(dummySearchProvider).events(0, 0, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
 			Schema schema = FieldUtil.createMinimalValidSchema();
 
 			Schema restSchema = call(() -> client().createSchema(schema));
-			assertThat(dummySearchProvider).events(1, 0, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
 			assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
@@ -93,7 +93,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 			dummySearchProvider.clear();
 			call(() -> client().deleteSchema(restSchema.getUuid()));
 			// Only schemas which are not in use can be delete and also removed from the index
-			assertThat(dummySearchProvider).events(0, 1, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(0, 1, 0, 0);
 		}
 
 	}

@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.UpdateBatchEntry;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -44,22 +44,22 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	protected String composeDocumentIdFromEntry(UpdateBatchEntry entry) {
+	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
 		return TagFamily.composeDocumentId(entry.getElementUuid());
 	}
 
 	@Override
-	protected String composeIndexNameFromEntry(UpdateBatchEntry entry) {
+	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
 		return TagFamily.composeIndexName(entry.getContext().getProjectUuid());
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateBatchEntry entry) {
+	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
 		return TagFamily.composeTypeName();
 	}
 
 	@Override
-	public Completable store(TagFamily tagFamily, UpdateBatchEntry entry) {
+	public Completable store(TagFamily tagFamily, UpdateDocumentEntry entry) {
 		entry.getContext().setProjectUuid(tagFamily.getProject().getUuid());
 		return super.store(tagFamily, entry);
 	}

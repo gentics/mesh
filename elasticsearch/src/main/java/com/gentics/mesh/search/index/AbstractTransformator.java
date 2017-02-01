@@ -25,6 +25,7 @@ import io.vertx.core.json.JsonObject;
  * Abstract search document transformator which provides various helper methods which are commonly used among transformer implementations.
  *
  * @param <T>
+ *            Type of the element which can be transformed
  */
 public abstract class AbstractTransformator<T> implements Transformator<T> {
 

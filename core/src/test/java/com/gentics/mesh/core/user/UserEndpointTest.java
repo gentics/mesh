@@ -451,7 +451,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 
 		assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), uuid);
-		assertThat(dummySearchProvider).events(1, 0, 0, 0);
+		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 		dummySearchProvider.clear();
 
 		try (NoTx noTx = db.noTx()) {
@@ -1125,7 +1125,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			UserResponse restUser = call(() -> client().createUser(newUser));
 			assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), restUser.getUuid());
-			assertThat(dummySearchProvider).events(2, 0, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(2, 0, 0, 0);
 			dummySearchProvider.clear();
 
 			assertTrue(restUser.getEnabled());
@@ -1144,7 +1144,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 			assertThat(dummySearchProvider).hasDelete(User.composeIndexName(), User.composeIndexType(), uuid);
-			assertThat(dummySearchProvider).events(0, 1, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(0, 1, 0, 0);
 		}
 
 	}

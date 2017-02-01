@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.UpdateBatchEntry;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -45,7 +45,7 @@ import rx.Single;
 /**
  * Handler for the node specific search index.
  * 
- * This handler can process {@link UpdateBatchEntry} objects which may contain additional {@link HandleContext} information. The handler will use the context
+ * This handler can process {@link UpdateDocumentEntry} objects which may contain additional {@link HandleContext} information. The handler will use the context
  * information in order to determine which elements need to be stored in or removed from the index.
  * 
  * Additionally the handler may infer the scope of store actions if the context information is lacking certain information. A context which does not include the
@@ -71,17 +71,17 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	protected String composeDocumentIdFromEntry(UpdateBatchEntry entry) {
+	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
 		return NodeGraphFieldContainer.composeDocumentId(entry.getElementUuid(), entry.getContext().getLanguageTag());
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateBatchEntry entry) {
+	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
 		return NodeGraphFieldContainer.composeIndexType();
 	}
 
 	@Override
-	protected String composeIndexNameFromEntry(UpdateBatchEntry entry) {
+	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
 		HandleContext context = entry.getContext();
 		String projectUuid = context.getProjectUuid();
 		String releaseUuid = context.getReleaseUuid();
@@ -171,7 +171,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Completable store(Node node, UpdateBatchEntry entry) {
+	public Completable store(Node node, UpdateDocumentEntry entry) {
 		return Completable.defer(() -> {
 			HandleContext context = entry.getContext();
 			Set<Single<String>> obs = new HashSet<>();
@@ -256,60 +256,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 
 	}
-
-	//	/**
-	//	 * Sanitize the search index for nodes.
-	//	 * 
-	//	 * We'll need to delete all documents which match the given query: match node documents with same UUID match node documents with same language exclude all
-	//	 * documents which have the same document type in order to avoid deletion of the document which will be updated later on.
-	//	 * 
-	//	 * This will ensure that only one version of the node document remains in the search index.
-	//	 * 
-	//	 * A node migration for example requires old node documents to be removed from the index since the migration itself may create new node versions. Those
-	//	 * documents are stored within a schema container version specific index type. We need to ensure that those documents are purged from the index.
-	//	 * 
-	//	 * @param node
-	//	 * @param container
-	//	 * @param languageTag
-	//	 * @return Single which emits the amount of affected elements
-	//	 */
-	//	private Single<Integer> sanitizeIndex(Node node, NodeGraphFieldContainer container, String languageTag) {
-	//
-	//		JSONObject query = new JSONObject();
-	//		try {
-	//			JSONObject queryObject = new JSONObject();
-	//
-	//			// Only handle selected language
-	//			JSONObject langTerm = new JSONObject().put("term", new JSONObject().put("language", languageTag));
-	//			// Only handle nodes with the same uuid
-	//			JSONObject uuidTerm = new JSONObject().put("term", new JSONObject().put("uuid", node.getUuid()));
-	//
-	//			JSONArray mustArray = new JSONArray();
-	//			mustArray.put(uuidTerm);
-	//			mustArray.put(langTerm);
-	//
-	//			JSONObject boolFilter = new JSONObject();
-	//			boolFilter.put("must", mustArray);
-	//
-	//			// Only limit the deletion if a container could be found. Otherwise delete all the documents in oder to sanitize the index
-	//			//			if (container != null) {
-	//			//				// Don't delete the document which is specific to the language container (via the document type)
-	//			//				JSONObject mustNotTerm = new JSONObject().put("term", new JSONObject().put("_type", NodeGraphFieldContainer.composeIndexType()));
-	//			//				boolFilter.put("must_not", mustNotTerm);
-	//			//			}
-	//			queryObject.put("bool", boolFilter);
-	//			query.put("query", queryObject);
-	//		} catch (Exception e) {
-	//			log.error("Error while building deletion query", e);
-	//			throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
-	//		}
-	//		//		// Don't store the container if it is null.
-	//		//		if (container != null) {
-	//		//			obs.add(storeContainer(container, indexName, releaseUuid));
-	//		//		}
-	//		return searchProvider.deleteDocumentsViaQuery(query, indices);
-	//
-	//	}
 
 	/**
 	 * Generate an elasticsearch document object from the given container and stores it in the search index.

@@ -44,7 +44,7 @@ public interface SearchQueueEntry extends Comparable<SearchQueueEntry> {
 	 * Compare the given entry. The order of the element action will be used to compare the entries.
 	 */
 	default int compareTo(SearchQueueEntry o) {
-		return getElementAction().getOrder().compareTo(o.getElementAction().getOrder());
+		return getElementAction().getPriority().compareTo(o.getElementAction().getPriority());
 	}
 
 }

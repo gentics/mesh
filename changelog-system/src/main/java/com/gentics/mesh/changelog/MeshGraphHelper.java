@@ -6,7 +6,7 @@ import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
-public class MeshGraphHelper {
+public final class MeshGraphHelper {
 
 	private static final String MESH_ROOT_TYPE = "MeshRootImpl";
 	private static final String MESH_ROOT_LEGACY_TYPE = "com.gentics.mesh.core.data.root.impl.MeshRootImpl";

@@ -26,7 +26,9 @@ import io.vertx.core.logging.LoggerFactory;
  * Abstract class for mesh core vertices that includes methods which are commonly used when transforming the vertices into REST POJO's.
  * 
  * @param <T>
+ *            Rest model representation of the core vertex
  * @param <R>
+ *            Type of the core vertex which is used to determine type of chained vertices
  */
 public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertexImpl
 		implements MeshCoreVertex<T, R> {

@@ -17,6 +17,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -24,6 +25,7 @@ import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.Language;
@@ -207,6 +209,26 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		}
 		RouterStorage.getIntance().removeProjectRouter(getName());
 
+		// Remove the project from the index
+		batch.delete(this, false);
+
+		// Drop the project specific indices
+		batch.dropIndex(TagFamily.composeIndexName(getUuid()));
+		batch.dropIndex(Tag.composeIndexName(getUuid()));
+
+		// Drop all node indices for all releases and all schema versions
+		for (Release release : getReleaseRoot().findAll()) {
+			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
+					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), type);
+					if (log.isDebugEnabled()) {
+						log.debug("Adding drop entry for index {" + pubIndex + "}");
+					}
+					batch.dropIndex(pubIndex);
+				}
+			}
+		}
+
 		// Create a dummy batch which we will use to handle deletion for elements which must not update the batch since the documents are deleted by dedicated index deletion entries.
 		DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
 
@@ -223,21 +245,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 		// Remove the project schema root from the index
 		getSchemaContainerRoot().delete(batch);
-
-		// Remove the project from the index
-		batch.delete(this, false);
-
-		// Drop the project specific indices
-		batch.dropIndex(TagFamily.composeIndexName(getUuid()));
-		batch.dropIndex(Tag.composeIndexName(getUuid()));
-
-		// Drop all node indices for all releases and all schema versions
-		for (Release release : getReleaseRoot().findAll()) {
-			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-				batch.dropIndex(NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), PUBLISHED));
-				batch.dropIndex(NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), DRAFT));
-			}
-		}
 
 		// Finally remove the project node
 		getVertex().remove();
