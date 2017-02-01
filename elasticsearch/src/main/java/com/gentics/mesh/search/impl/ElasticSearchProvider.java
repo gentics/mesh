@@ -81,6 +81,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				.put("plugin.types", DeleteByQueryPlugin.class.getName())
 
 				.put("node.local", true)
+				
+				.put("index.store.type", "mmapfs")
 
 				.put("index.max_result_window", Integer.MAX_VALUE)
 
