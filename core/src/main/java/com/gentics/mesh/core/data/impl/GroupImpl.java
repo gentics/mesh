@@ -54,18 +54,22 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		return new GroupReference().setName(getName()).setUuid(getUuid());
 	}
 
+	@Override
 	public String getName() {
 		return getProperty("name");
 	}
 
+	@Override
 	public void setName(String name) {
 		setProperty("name", name);
 	}
 
+	@Override
 	public List<? extends User> getUsers() {
 		return in(HAS_USER).toListExplicit(UserImpl.class);
 	}
 
+	@Override
 	public void addUser(User user) {
 		setUniqueLinkInTo(user, HAS_USER);
 
@@ -75,6 +79,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		}
 	}
 
+	@Override
 	public void removeUser(User user) {
 		unlinkIn(user, HAS_USER);
 
@@ -85,10 +90,12 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		PermissionStore.invalidate();
 	}
 
+	@Override
 	public List<? extends Role> getRoles() {
 		return in(HAS_ROLE).toListExplicit(RoleImpl.class);
 	}
 
+	@Override
 	public void addRole(Role role) {
 		setUniqueLinkInTo(role, HAS_ROLE);
 
@@ -99,6 +106,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	}
 
+	@Override
 	public void removeRole(Role role) {
 		unlinkIn(role, HAS_ROLE);
 
@@ -109,18 +117,17 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		PermissionStore.invalidate();
 	}
 
-	// TODO add java handler
+	@Override
 	public boolean hasRole(Role role) {
 		return in(HAS_ROLE).retain(role).hasNext();
 	}
 
+	@Override
 	public boolean hasUser(User user) {
 		return in(HAS_USER).retain(user).hasNext();
 	}
 
-	/**
-	 * Get all users within this group that are visible for the given user.
-	 */
+	@Override
 	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser)
