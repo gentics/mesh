@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
@@ -37,7 +38,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 		queryEndpoint.description("Endpoint which accepts GraphQL queries.");
 		queryEndpoint.path("/");
 		queryEndpoint.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String body = ac.getBodyAsString();
 			queryHandler.handleQuery(ac, body);
 		});
