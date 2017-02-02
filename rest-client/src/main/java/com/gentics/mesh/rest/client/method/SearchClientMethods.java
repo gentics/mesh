@@ -7,7 +7,6 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;

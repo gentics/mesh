@@ -20,7 +20,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 	public void testReindexNodeIndex() throws Exception {
 
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String oldContent = "supersonic";
@@ -58,7 +58,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchPublishedNodes() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String oldContent = "supersonic";

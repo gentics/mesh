@@ -304,7 +304,7 @@ public abstract class AbstractDBTest {
 	}
 
 	public SearchQueueBatch createBatch() {
-		return MeshInternal.get().searchQueue().createBatch();
+		return MeshInternal.get().searchQueue().create();
 	}
 
 	/**

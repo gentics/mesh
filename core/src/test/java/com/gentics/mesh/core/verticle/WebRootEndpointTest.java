@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -171,8 +172,8 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		List<MeshResponse<WebRootResponse>> futures = new ArrayList<>();
 		for (int i = 0; i < nJobs; i++) {
-			futures.add(client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de"))
-					.invoke());
+			futures.add(
+					client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")).invoke());
 		}
 
 		for (MeshResponse<WebRootResponse> fut : futures) {
@@ -322,8 +323,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			create404Node.setLanguage("en");
 			call(() -> client().createNode(PROJECT_NAME, create404Node));
 
-			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft())
-					.invoke();
+			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft()).invoke();
 			latchFor(webrootFuture);
 			expectFailureMessage(webrootFuture, NOT_FOUND, null);
 		}
@@ -343,8 +343,9 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		// 2. Publish nodes
 		try (NoTx noTx = db.noTx()) {
-			folder("news").publish(getMockedInternalActionContext(user())).await();
-			folder("2015").publish(getMockedInternalActionContext(user())).await();
+			SearchQueueBatch batch = createBatch();
+			folder("news").publish(getMockedInternalActionContext(user()), batch).await();
+			folder("2015").publish(getMockedInternalActionContext(user()), batch).await();
 		}
 
 		// 3. Assert that published path can be found
@@ -361,8 +362,9 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		// 1. Publish nodes
 		db.noTx(() -> {
-			folder("news").publish(getMockedInternalActionContext()).await();
-			folder("2015").publish(getMockedInternalActionContext()).await();
+			SearchQueueBatch batch = createBatch();
+			folder("news").publish(getMockedInternalActionContext(), batch).await();
+			folder("2015").publish(getMockedInternalActionContext(), batch).await();
 			return null;
 		});
 

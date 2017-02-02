@@ -125,13 +125,9 @@ public abstract class AbstractChange implements Change {
 		return true;
 	}
 
-	/**
-	 * Add a reindex batch entry which will be handled during mesh startup.
-	 * 
-	 * @param elementType
-	 */
-	public void addFullReindexEntry(String elementType) {
-		MeshGraphHelper.addFullReindexEntry(getGraph(), elementType);
+	@Override
+	public boolean requiresReindex() {
+		return false;
 	}
 
 }

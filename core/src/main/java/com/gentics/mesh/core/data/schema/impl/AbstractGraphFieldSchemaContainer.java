@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,13 +10,13 @@ import java.util.Map;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.util.ETag;
@@ -38,7 +37,7 @@ import rx.Single;
  *            Graph vertex version type
  */
 public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>, SCV extends GraphFieldSchemaContainerVersion<R, RE, SCV, SC>>
-		extends AbstractMeshCoreVertex<R, SC> implements GraphFieldSchemaContainer<R, RE, SC, SCV> {
+		extends AbstractMeshCoreVertex<R, SC> implements GraphFieldSchemaContainer<R, RE, SC, SCV> , IndexableElement {
 
 	/**
 	 * Return the class that is used to construct new containers.
@@ -86,11 +85,6 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-
-	}
-
-	@Override
 	public Single<R> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		// Delegate transform call to latest version
 		return getLatestVersion().transformToRest(ac, level, languageTags);
@@ -115,7 +109,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		// TODO should all references be updated to a new fallback schema?
-		addIndexBatchEntry(batch, DELETE_ACTION, true);
+		batch.delete(this,  true);
 		getElement().remove();
 		// TODO delete versions and nodes as well
 	}

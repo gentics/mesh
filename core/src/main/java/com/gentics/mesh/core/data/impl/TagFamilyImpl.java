@@ -7,8 +7,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
@@ -16,11 +14,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HandleContext;
+import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -36,8 +34,6 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -46,7 +42,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -87,11 +82,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public String getType() {
-		return TagFamily.TYPE;
-	}
-
-	@Override
 	public String getName() {
 		return getProperty("name");
 	}
@@ -122,8 +112,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameters pagingInfo)
-			throws InvalidArgumentException {
+	public Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
 		// TODO check perms
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, TagImpl.class);
@@ -151,8 +140,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 		Tag conflictingTag = getTagRoot().findByName(tagName);
 		if (conflictingTag != null) {
-			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName,
-					getName());
+			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
 		}
 
 		Tag newTag = create(requestModel.getName(), project, requestUser);
@@ -160,7 +148,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		MeshInternal.get().boot().meshRoot().getTagRoot().addTag(newTag);
 		getTagRoot().addTag(newTag);
 
-		newTag.addIndexBatchEntry(batch, STORE_ACTION, true);
+		batch.store(newTag, true);
 		return newTag;
 	}
 
@@ -177,16 +165,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void delete(SearchQueueBatch batch) {
-		batch.addEntry(this, DELETE_ACTION);
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + getName() + "}");
 		}
-		for (Tag tag : getTagRoot().findAll()) {
-			tag.delete(batch);
-		}
 		getTagRoot().delete(batch);
+		// Remove the tag family from the index
+		batch.delete(this, false);
 		getElement().remove();
-
 	}
 
 	@Override
@@ -204,13 +189,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 		}
 		this.setName(newName);
-		addIndexBatchEntry(batch, STORE_ACTION, true);
+		batch.store(this, true);
 		return this;
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Tag tag : getTagRoot().findAll()) {
 				tag.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
@@ -220,31 +204,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		Map<String, Object> properties = new HashMap<>();
-		properties.put(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
-
-		if (action == DELETE_ACTION) {
-			for (Tag tag : getTagRoot().findAll()) {
-				SearchQueueEntry entry = batch.addEntry(tag, DELETE_ACTION);
-				entry.set(properties);
-			}
-		} else {
-			for (Tag tag : getTagRoot().findAll()) {
-				SearchQueueEntry entry = batch.addEntry(tag, STORE_ACTION);
-				entry.set(properties);
-			}
+	public void handleRelatedEntries(HandleElementAction action) {
+		for (Tag tag : getTagRoot().findAll()) {
+			HandleContext context = new HandleContext();
+			context.setProjectUuid(tag.getProject().getUuid());
+			action.call(tag, context);
 		}
-	}
-
-	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action,
-			boolean addRelatedEntries) {
-		batch.addEntry(this, action).set(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
-		if (addRelatedEntries) {
-			addRelatedEntries(batch, action);
-		}
-		return batch;
 	}
 
 	@Override

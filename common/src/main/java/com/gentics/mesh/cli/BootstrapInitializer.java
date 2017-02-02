@@ -140,11 +140,12 @@ public interface BootstrapInitializer {
 	 * <li>Load verticles and setup routes / endpoints
 	 * </ul>
 	 * 
+	 * @param hasOldLock
 	 * @param configuration
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	void init(MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception;
+	void init(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception;
 
 	/**
 	 * Initialize the languages by loading the JSON file and creating the language graph elements.

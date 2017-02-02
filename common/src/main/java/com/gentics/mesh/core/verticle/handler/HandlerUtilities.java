@@ -56,7 +56,7 @@ public class HandlerUtilities {
 		operateNoTx(ac, () -> {
 			ResultInfo info = database.tx(() -> {
 				RootVertex<T> root = handler.call();
-				SearchQueueBatch batch = searchQueue.createBatch();
+				SearchQueueBatch batch = searchQueue.create();
 				T created = root.create(ac, batch);
 				RM model = created.transformToRestSync(ac, 0);
 				String path = created.getAPIPath(ac);
@@ -89,7 +89,7 @@ public class HandlerUtilities {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			String elementUuid = element.getUuid();
 			database.tx(() -> {
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
@@ -100,7 +100,7 @@ public class HandlerUtilities {
 					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 				}
 			});
-			log.info("Deleted element {" + elementUuid + "}");
+			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
 			return database.noTx(() -> {
 				batch.processSync();
 				return (RM) null;
@@ -127,7 +127,7 @@ public class HandlerUtilities {
 			T element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 
 			// 2. Create a batch before starting the update to prevent creation of duplicate batches due to trx retry actions
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			RM model = database.tx(() -> {
 				T updatedElement = element.update(ac, batch);
 				return updatedElement.transformToRestSync(ac, 0);

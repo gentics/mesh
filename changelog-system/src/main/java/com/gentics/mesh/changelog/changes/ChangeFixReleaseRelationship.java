@@ -1,5 +1,7 @@
 package com.gentics.mesh.changelog.changes;
 
+import java.util.Iterator;
+
 import com.gentics.mesh.changelog.AbstractChange;
 import com.gentics.mesh.changelog.MeshGraphHelper;
 import com.tinkerpop.blueprints.Direction;
@@ -27,10 +29,13 @@ public class ChangeFixReleaseRelationship extends AbstractChange {
 		Vertex meshRoot = MeshGraphHelper.getMeshRootVertex(getGraph());
 		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
 		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {
-			Vertex releaseRoot = project.getVertices(Direction.OUT, "HAS_RELEASE_ROOT").iterator().next();
-			for (Vertex release : releaseRoot.getVertices(Direction.OUT, "HAS_RELEASE")) {
-				// Assign the release to the project
-				release.addEdge("ASSIGNED_TO_PROJECT", project);
+			Iterator<Vertex> it = project.getVertices(Direction.OUT, "HAS_RELEASE_ROOT").iterator();
+			if (it.hasNext()) {
+				Vertex releaseRoot = it.next();
+				for (Vertex release : releaseRoot.getVertices(Direction.OUT, "HAS_RELEASE")) {
+					// Assign the release to the project
+					release.addEdge("ASSIGNED_TO_PROJECT", project);
+				}
 			}
 		}
 	}

@@ -9,8 +9,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
@@ -22,8 +20,9 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.HandleContext;
+import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
@@ -35,8 +34,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -44,7 +41,6 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.EdgeTraversal;
@@ -65,11 +61,6 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	public static void init(Database database) {
 		database.addVertexType(TagImpl.class, MeshVertexImpl.class);
-	}
-
-	@Override
-	public String getType() {
-		return Tag.TYPE;
 	}
 
 	@Override
@@ -141,21 +132,13 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag {" + getName() + "}");
 		}
-		batch.addEntry(this, DELETE_ACTION);
+		batch.delete(this, true);
 
-		// Nodes which used this tag must be updated in the search index
-		// for all releases
+		// Nodes which used this tag must be updated in the search index  for all releases
 		for (Release release : getProject().getReleaseRoot().findAll()) {
 			String releaseUuid = release.getUuid();
-			// all nodes
 			for (Node node : getNodes(release)) {
-				// draft and published versions
-				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-					// all languages
-					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(release, type)) {
-						container.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, type);
-					}
-				}
+				batch.store(node, releaseUuid);
 			}
 		}
 		getVertex().remove();
@@ -215,34 +198,26 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			setLastEditedTimestamp();
 			setName(requestModel.getName());
 		}
-		addIndexBatchEntry(batch, STORE_ACTION, true);
+		batch.store(getTagFamily(), false);
+		batch.store(this, true);
 		return this;
 
 	}
 
 	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, boolean addRelatedEntries) {
-		batch.addEntry(this, action).set(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
-		if (addRelatedEntries) {
-			addRelatedEntries(batch, action);
-		}
-		return batch;
-	}
-
-	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
+	public void handleRelatedEntries(HandleElementAction action) {
+		// Locate all nodes that use the tag across all releases and update these nodes
 		for (Release release : getProject().getReleaseRoot().findAll()) {
-			String releaseUuid = release.getUuid();
 			for (Node node : getNodes(release)) {
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(release, type)) {
-						container.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, type);
-					}
+					HandleContext context = new HandleContext();
+					context.setContainerType(type);
+					context.setReleaseUuid(release.getUuid());
+					context.setProjectUuid(node.getProject().getUuid());
+					action.call(node, context);
 				}
 			}
 		}
-		SearchQueueEntry entry = batch.addEntry(getTagFamily(), STORE_ACTION);
-		entry.set(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid());
 	}
 
 	@Override

@@ -14,8 +14,6 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -28,7 +26,9 @@ import io.vertx.core.logging.LoggerFactory;
  * Abstract class for mesh core vertices that includes methods which are commonly used when transforming the vertices into REST POJO's.
  * 
  * @param <T>
+ *            Rest model representation of the core vertex
  * @param <R>
+ *            Type of the core vertex which is used to determine type of chained vertices
  */
 public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertexImpl
 		implements MeshCoreVertex<T, R> {
@@ -100,15 +100,6 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			String[] names = ac.getUser().getPermissionNames(this);
 			model.setPermissions(names);
 		}
-	}
-
-	@Override
-	public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, boolean addRelatedEntries) {
-		batch.addEntry(this, action);
-		if (addRelatedEntries) {
-			addRelatedEntries(batch, action);
-		}
-		return batch;
 	}
 
 	/**

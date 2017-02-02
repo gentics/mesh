@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;

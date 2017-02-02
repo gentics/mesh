@@ -16,10 +16,12 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.AbstractIndexHandler;
+import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
+
+import rx.Completable;
 
 /**
  * Handler for the tag specific search index.
@@ -28,7 +30,7 @@ import com.gentics.mesh.search.index.AbstractIndexHandler;
 public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	/**
-	 * Name of the custom property of SearchQueueEntry containing the project uuid
+	 * Name of the custom property of SearchQueueEntry containing the project uuid.
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
@@ -41,34 +43,45 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
+	protected Class<Tag> getElementClass() {
+		return Tag.class;
+	}
+
+	@Override
 	protected TagTransformator getTransformator() {
 		return transformator;
 	}
 
 	@Override
-	protected String getIndex(SearchQueueEntry entry) {
-		return getIndexName(entry.get(CUSTOM_PROJECT_UUID));
+	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
+		return Tag.composeDocumentId(entry.getElementUuid());
 	}
 
 	@Override
-	protected String getDocumentType(SearchQueueEntry entry) {
-		// The document type for tags is not entry specific
-		return getDocumentType();
-	}
-
-	public String getDocumentType() {
-		return Tag.TYPE;
+	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
+		return Tag.composeIndexName(entry.getContext().getProjectUuid());
 	}
 
 	@Override
-	public Map<String, Set<String>> getIndices() {
+	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
+		return Tag.composeTypeName();
+	}
+
+	@Override
+	public Completable store(Tag tag, UpdateDocumentEntry entry) {
+		entry.getContext().setProjectUuid(tag.getProject().getUuid());
+		return super.store(tag, entry);
+	}
+
+	@Override
+	public Map<String, String> getIndices() {
 		return db.noTx(() -> {
-			Map<String, Set<String>> indexInfo = new HashMap<>();
+			Map<String, String> indexInfo = new HashMap<>();
 			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
 			projectRoot.reload();
 			List<? extends Project> projects = projectRoot.findAll();
 			for (Project project : projects) {
-				indexInfo.put(getIndexName(project.getUuid()), Collections.singleton(getDocumentType()));
+				indexInfo.put(Tag.composeIndexName(project.getUuid()), Tag.TYPE);
 			}
 			return indexInfo;
 		});
@@ -79,29 +92,11 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 		return db.noTx(() -> {
 			Project project = ac.getProject();
 			if (project != null) {
-				return Collections.singleton(getIndexName(project.getUuid()));
+				return Collections.singleton(Tag.composeIndexName(project.getUuid()));
 			} else {
 				return getIndices().keySet();
 			}
 		});
-	}
-
-	/**
-	 * Get the index name for the given project.
-	 * 
-	 * @param projectUuid
-	 *            Uuid of the project
-	 * @return Index name
-	 */
-	public static String getIndexName(String projectUuid) {
-		StringBuilder indexName = new StringBuilder(Tag.TYPE);
-		indexName.append("-").append(projectUuid);
-		return indexName.toString();
-	}
-
-	@Override
-	public String getKey() {
-		return Tag.TYPE;
 	}
 
 	@Override

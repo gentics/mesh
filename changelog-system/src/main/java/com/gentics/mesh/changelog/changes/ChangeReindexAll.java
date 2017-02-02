@@ -2,26 +2,31 @@ package com.gentics.mesh.changelog.changes;
 
 import com.gentics.mesh.changelog.AbstractChange;
 
-public class ChangeReindex extends AbstractChange {
+public class ChangeReindexAll extends AbstractChange {
 
 	@Override
 	public String getUuid() {
-		return "610A32F04FC7414E8A32F04FC7614EF5";
+		return "B33EF099EF144CE7BEF099EF14BCE788";
 	}
 
 	@Override
 	public String getName() {
-		return "Invoke full node reindex";
+		return "Invoke full reindex";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Reindex all nodes due to fixed displayFieldValue in node documents";
+		return "Reindex all documents";
 	}
 
 	@Override
 	public void apply() {
-		addFullReindexEntry("node");
+
+	}
+
+	@Override
+	public boolean requiresReindex() {
+		return true;
 	}
 
 }

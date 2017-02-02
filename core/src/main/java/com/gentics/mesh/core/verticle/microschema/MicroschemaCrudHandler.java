@@ -76,7 +76,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				return message(ac, "schema_update_no_difference_detected", name);
 			}
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
+				SearchQueueBatch batch = searchQueue.create();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
@@ -147,7 +147,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		utils.operateNoTx(ac, () -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
+				SearchQueueBatch batch = searchQueue.create();
 				schema.getLatestVersion().applyChanges(ac, batch);
 				return batch;
 			}).processSync();

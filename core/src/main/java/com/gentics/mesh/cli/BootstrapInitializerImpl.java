@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.ChangelogSystem;
+import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -44,6 +45,7 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -63,7 +65,7 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
-import com.gentics.mesh.search.index.IndexHandler;
+import com.gentics.mesh.search.SearchProvider;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -84,6 +86,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private Database db;
 
+	private SearchProvider searchProvider;
+
 	private BCryptPasswordEncoder encoder;
 
 	private RouterStorage routerStorage;
@@ -98,12 +102,33 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private List<String> allLanguageTags = new ArrayList<>();
 
-	public BootstrapInitializerImpl(Database db, Lazy<IndexHandlerRegistry> indexHandlerRegistry, BCryptPasswordEncoder encoder,
-			RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
+	private final ReindexAction REINDEX_ACTION = (() -> {
+
+		// 1. Drop all indices
+		log.info("Clearing all indices..");
+		searchProvider.clear();
+		log.info("Clearing indices completed.");
+
+		// 2. Recreate indices + mappings and reindex the documents
+		IndexHandlerRegistry registry = indexHandlerRegistry.get();
+		for (IndexHandler handler : registry.getHandlers()) {
+			String handlerName = handler.getClass().getSimpleName();
+			log.info("Invoking reindex on handler {" + handlerName + "}. This may take some time..");
+			handler.init().await();
+			try (NoTx noTx = db.noTx()) {
+				handler.reindexAll().await();
+			}
+			log.info("Reindex on handler {" + handlerName + "} completed.");
+		}
+	});
+
+	public BootstrapInitializerImpl(Database db, SearchProvider searchProvider, Lazy<IndexHandlerRegistry> indexHandlerRegistry,
+			BCryptPasswordEncoder encoder, RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
 
 		clearReferences();
 
 		this.db = db;
+		this.searchProvider = searchProvider;
 		this.indexHandlerRegistry = indexHandlerRegistry;
 		this.schemaStorage = new ServerSchemaStorage(this);
 		this.encoder = encoder;
@@ -141,7 +166,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void init(MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	public void init(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
@@ -161,6 +186,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		if (isEmptyInstallation) {
 			initPermissions();
+		}
+
+		// An old lock file has been detected. Normally the lock file should be removed during shutdown. 
+		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of 
+		// the ES index in those cases in order to ensure consistency.
+		if (hasOldLock) {
+			REINDEX_ACTION.invoke();
 		}
 
 		// Mark all changelog entries as applied for new installations
@@ -201,9 +233,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void invokeChangelog() {
 		log.info("Invoking database changelog check...");
 		ChangelogSystem cls = new ChangelogSystem(db);
-		if (!cls.applyChanges()) {
+		if (!cls.applyChanges(REINDEX_ACTION)) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
+		log.info("Changelog completed.");
 	}
 
 	@Override

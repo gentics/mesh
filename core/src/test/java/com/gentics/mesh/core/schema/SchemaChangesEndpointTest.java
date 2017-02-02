@@ -47,12 +47,12 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.json.JsonObject;
 
-public class SchemaChangesEndpointTest extends AbstractRestEndpointTest {
+public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testUpdateName() throws GenericRestException, Exception {
@@ -213,7 +213,8 @@ public class SchemaChangesEndpointTest extends AbstractRestEndpointTest {
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// 4. Update the schema server side -> 2.0
-			GenericMessageResponse status = call(() -> client().updateSchema(container.getUuid(), schema, new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
+			GenericMessageResponse status = call(
+					() -> client().updateSchema(container.getUuid(), schema, new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
 			expectResponseMessage(status, "migration_invoked", schema.getName());
 			// 5. assign the new schema version to the release (which will start the migration)
 			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
@@ -559,14 +560,13 @@ public class SchemaChangesEndpointTest extends AbstractRestEndpointTest {
 			Schema schema = container.getLatestVersion().getSchema();
 			schema.removeField("content");
 
-			// Update the schema client side
 			MeshInternal.get().serverSchemaStorage().clear();
 
-			// 2. Setup eventbus bridged latch
+			// Setup eventbus bridged latch - This will effectively block the unit test until the background schema migration process has finished. 
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// Update the schema server side
-			call(() -> client().updateSchema(container.getUuid(), schema, new SchemaUpdateParameters().setUpdateAssignedReleases(true)));
+			call(() -> client().updateSchema(container.getUuid(), schema));
 
 			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),

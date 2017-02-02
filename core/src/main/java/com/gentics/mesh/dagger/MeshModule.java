@@ -1,5 +1,6 @@
 package com.gentics.mesh.dagger;
 
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -9,6 +10,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
@@ -47,9 +49,9 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
-	public BootstrapInitializer bootstrapInitializer(Database db, Lazy<IndexHandlerRegistry> indexHandlerRegistry, BCryptPasswordEncoder encoder,
-			RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
-		return new BootstrapInitializerImpl(db, indexHandlerRegistry, encoder, routerStorage, loader);
+	public BootstrapInitializer bootstrapInitializer(Database db, SearchProvider searchProvider, Lazy<IndexHandlerRegistry> indexHandlerRegistry,
+			BCryptPasswordEncoder encoder, RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
+		return new BootstrapInitializerImpl(db, searchProvider, indexHandlerRegistry, encoder, routerStorage, loader);
 	}
 
 	@Provides
@@ -61,7 +63,8 @@ public class MeshModule {
 	@Provides
 	@Singleton
 	public ImageManipulator imageProvider() {
-		// ImageManipulator provider = imageProviderService().getImageProvider();
+		// ImageManipulator provider =
+		// imageProviderService().getImageProvider();
 		// TODO assert provider
 		// return provider;
 		return new ImgscalrImageManipulator();
@@ -93,8 +96,8 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
-	public static SearchQueue searchQueue() {
-		return new SearchQueueImpl();
+	public static SearchQueue searchQueue(Provider<SearchQueueBatch> provider) {
+		return new SearchQueueImpl(provider);
 	}
 
 	@Provides
@@ -149,7 +152,8 @@ public class MeshModule {
 	public SearchProvider searchProvider() {
 		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
 		SearchProvider searchProvider = null;
-		// Automatically select the dummy search provider if no directory or options have been specified
+		// Automatically select the dummy search provider if no directory or
+		// options have been specified
 		if (options == null || options.getDirectory() == null) {
 			searchProvider = new DummySearchProvider();
 		} else {

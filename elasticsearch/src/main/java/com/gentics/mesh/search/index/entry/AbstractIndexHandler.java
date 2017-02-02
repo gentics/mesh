@@ -1,11 +1,8 @@
-package com.gentics.mesh.search.index;
+package com.gentics.mesh.search.index.entry;
 
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -15,15 +12,18 @@ import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuild
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.CreateIndexEntry;
+import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.Transformator;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -34,6 +34,8 @@ import rx.Completable;
  * Abstract class for index handlers.
  * 
  * @see IndexHandler
+ * @param <T>
+ *            Type of the elements which are handled by the index handler
  */
 public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> implements IndexHandler {
 
@@ -55,75 +57,90 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	/**
-	 * Return the index name.
-	 * 
-	 * @param entry
-	 *            entry
-	 * 
-	 * @return
-	 */
-	abstract protected String getIndex(SearchQueueEntry entry);
-
-	@Override
-	public Map<String, Set<String>> getIndices() {
-		Map<String, Set<String>> indexInfo = new HashMap<>();
-		indexInfo.put(getIndex(null), Collections.singleton(getDocumentType(null)));
-		return indexInfo;
-	}
-
-	/**
-	 * Extract the search index document type from the entry.
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	abstract protected String getDocumentType(SearchQueueEntry entry);
-
-	/**
 	 * Return the root vertex of the index handler. The root vertex is used to retrieve nodes by UUID in order to update the search index.
 	 * 
 	 * @return
 	 */
 	abstract protected RootVertex<T> getRootVertex();
 
+	/**
+	 * Return the index specific transformator which is used to generate the search document and mappings.
+	 * 
+	 * @return
+	 */
 	abstract protected Transformator getTransformator();
+
+	/**
+	 * Return the class of elements which can be handled by this handler.
+	 * 
+	 * @return
+	 */
+	abstract protected Class<?> getElementClass();
+
+	/**
+	 * Compose the index name using the batch entry data.
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	abstract protected String composeIndexNameFromEntry(UpdateDocumentEntry entry);
+
+	/**
+	 * Compose the document id using the batch entry data.
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	abstract protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry);
+
+	/**
+	 * Compose the index type using the batch entry data.
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	abstract protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry);
 
 	/**
 	 * Store the given object within the search index.
 	 * 
 	 * @param object
-	 * @param documentType
 	 * @param entry
 	 *            search queue entry
 	 * @return
 	 */
-	public Completable store(T object, String documentType, SearchQueueEntry entry) {
-		return searchProvider.storeDocument(getIndex(entry), documentType, object.getUuid(), getTransformator().toDocument(object))
-				.doOnCompleted(() -> {
-					if (log.isDebugEnabled()) {
-						log.debug("Stored object in index.");
-					}
-					searchProvider.refreshIndex();
-				});
+	public Completable store(T object, UpdateDocumentEntry entry) {
+		String indexName = composeIndexNameFromEntry(entry);
+		String documentId = composeDocumentIdFromEntry(entry);
+		String indexType = composeIndexTypeFromEntry(entry);
+		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformator().toDocument(object)).doOnCompleted(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Stored object in index.");
+			}
+			searchProvider.refreshIndex();
+		});
 	}
 
 	@Override
-	public Completable delete(SearchQueueEntry entry) {
+	public Completable delete(UpdateDocumentEntry entry) {
+		String indexName = composeIndexNameFromEntry(entry);
+		String typeId = composeIndexTypeFromEntry(entry);
+		String documentId = composeDocumentIdFromEntry(entry);
 		// We don't need to resolve the uuid and load the graph object in this case.
-		return searchProvider.deleteDocument(getIndex(entry), getDocumentType(entry), entry.getElementUuid());
+		return searchProvider.deleteDocument(indexName, typeId, documentId);
 	}
 
 	@Override
-	public Completable store(SearchQueueEntry entry) {
+	public Completable store(UpdateDocumentEntry entry) {
 		return Completable.defer(() -> {
 			try (NoTx noTx = db.noTx()) {
 				String uuid = entry.getElementUuid();
-				String type = entry.getElementType();
+				String type = composeIndexTypeFromEntry(entry);
 				T element = getRootVertex().findByUuid(uuid);
 				if (element == null) {
 					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
 				} else {
-					return store(element, type, entry);
+					return store(element, entry);
 				}
 			}
 		});
@@ -139,36 +156,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return searchProvider != null;
 	}
 
-	@Override
-	public Completable handleAction(SearchQueueEntry entry) {
-
-		if (!isSearchClientAvailable()) {
-			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";
-			log.error(msg);
-			return Completable.error(new Exception(msg));
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug("Handling entry {" + entry.toString() + "}");
-		}
-		SearchQueueEntryAction action = entry.getElementAction();
-		switch (action) {
-		case DELETE_ACTION:
-			return delete(entry);
-		case STORE_ACTION:
-			return store(entry);
-		case REINDEX_ALL:
-			return reindexAll();
-		case UPDATE_MAPPING:
-			return updateMapping(entry);
-		case CREATE_INDEX:
-			createIndex(entry).await();
-			return Completable.complete();
-		default:
-			return Completable.error(new Exception("Action type {" + action + "} is unknown."));
-		}
-	}
-
 	/**
 	 * Update the index and type specific mapping. This method will use the implementation specific transformer in order to generate the needed mappings.
 	 * 
@@ -181,15 +168,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
 
-				// Fetch the elastic search instance
-				org.elasticsearch.node.Node esNode = null;
-				if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-					esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
-				} else {
-					throw new RuntimeException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
-				}
-
-				PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
+				org.elasticsearch.node.Node node = getESNode();
+				PutMappingRequestBuilder mappingRequestBuilder = node.client().admin().indices().preparePutMapping(indexName);
 				mappingRequestBuilder.setType(documentType);
 
 				// Generate the mapping for the specific type
@@ -217,10 +197,26 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		}
 	}
 
+	/**
+	 * Utility method that is used to return the elasticsearch node.
+	 * 
+	 * @return es node
+	 * @throws RuntimeException
+	 *             Exception which will be thrown if the ES node can't be returned
+	 */
+	protected org.elasticsearch.node.Node getESNode() {
+		// Fetch the elastic search instance
+		if (searchProvider.getNode() != null && searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
+			return (org.elasticsearch.node.Node) searchProvider.getNode();
+		} else {
+			throw new RuntimeException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+		}
+	}
+
 	@Override
-	public Completable updateMapping(SearchQueueEntry entry) {
-		String indexName = entry.getElementUuid();
-		String documentType = getDocumentType(entry);
+	public Completable updateMapping(CreateIndexEntry entry) {
+		String indexName = entry.getIndexName();
+		String documentType = entry.getIndexType();
 		return updateMapping(indexName, documentType);
 	}
 
@@ -228,34 +224,31 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Completable reindexAll() {
 		return Completable.defer(() -> {
 			log.info("Handling full reindex entry");
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			// Add all elements from the root vertex of the handler to the created batch
 			for (T element : getRootVertex().findAll()) {
-				log.info("Invoking reindex for {" + element.getType() + "/" + element.getUuid() + "}");
-				element.addIndexBatchEntry(batch, STORE_ACTION, false);
+				if (element instanceof IndexableElement) {
+					IndexableElement indexableElement = (IndexableElement) element;
+					log.info("Invoking reindex in handler {" + getClass().getName() + "} for element {" + indexableElement.getUuid() + "}");
+					batch.store(indexableElement, false);
+				} else {
+					log.info("Found element {" + element.getUuid() + "} is not indexable. Ignoring element.");
+				}
 			}
 			return batch.processAsync();
 		});
 	}
 
-	/**
-	 * Create the index, if it is one of the indices handled by this index handler. If the index name is not handled by this index handler, an error will be
-	 * thrown
-	 * 
-	 * @param entry
-	 *            Search queue entry for create index action
-	 * @return
-	 */
-	protected Completable createIndex(SearchQueueEntry entry) {
-		String indexName = entry.getElementUuid();
-		Map<String, Set<String>> indexInfo = getIndices();
+	@Override
+	public Completable createIndex(CreateIndexEntry entry) {
+		String indexName = entry.getIndexName();
+		Map<String, String> indexInfo = getIndices();
 		if (indexInfo.containsKey(indexName)) {
-			// Iterate over all document types of the found index and add completables which will create/update the mapping
-			Set<String> documentTypes = indexInfo.get(indexName);
+			// Iterate over all document types of the found index and add
+			// completables which will create/update the mapping
+			String documentType = indexInfo.get(indexName);
 			Set<Completable> mappingObs = new HashSet<>();
-			for (String documentType : documentTypes) {
-				mappingObs.add(updateMapping(indexName, documentType));
-			}
+			mappingObs.add(updateMapping(indexName, documentType));
 			return searchProvider.createIndex(indexName).andThen(Completable.merge(mappingObs));
 		} else {
 			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
@@ -265,24 +258,23 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable init() {
 		// 1. Create the indices
-		Map<String, Set<String>> indexInfo = getIndices();
+		Map<String, String> indexInfo = getIndices();
 		Set<Completable> indexCreationObs = new HashSet<>();
 
-		indexInfo.keySet().forEach(index -> {
+		for (String indexKey : indexInfo.keySet()) {
 			if (log.isDebugEnabled()) {
-				log.debug("Creating index  " + index);
+				log.debug("Creating index {" + indexKey + "}");
 			}
-			indexCreationObs.add(searchProvider.createIndex(index));
-		});
+			indexCreationObs.add(searchProvider.createIndex(indexKey));
+		}
 		if (indexCreationObs.isEmpty()) {
 			return Completable.complete();
 		} else {
 			// 2. Create the mappings
 			Set<Completable> mappingUpdateObs = new HashSet<>();
 			for (String indexName : indexInfo.keySet()) {
-				for (String documentType : indexInfo.get(indexName)) {
-					mappingUpdateObs.add(updateMapping(indexName, documentType));
-				}
+				String documentType = indexInfo.get(indexName);
+				mappingUpdateObs.add(updateMapping(indexName, documentType));
 			}
 			return Completable.merge(indexCreationObs).andThen(Completable.merge(mappingUpdateObs));
 		}
@@ -291,7 +283,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable clearIndex() {
 		Set<Completable> obs = new HashSet<>();
-		// Iterate over all indices which the handler is responsible for and clear all of them.
+		// Iterate over all indices which the handler is responsible for and
+		// clear all of them.
 		getIndices().keySet().forEach(index -> obs.add(searchProvider.clearIndex(index)));
 		if (obs.isEmpty()) {
 			return Completable.complete();
@@ -299,4 +292,10 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			return Completable.merge(obs);
 		}
 	}
+
+	@Override
+	public boolean accepts(Class<?> clazzOfElement) {
+		return getElementClass().isAssignableFrom(clazzOfElement);
+	}
+
 }

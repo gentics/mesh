@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -47,7 +46,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchListOfMicronodesResolveLinks() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			addMicronodeListField();
-			fullIndex();
+			recreateIndices();
 		}
 
 		for (String firstName : Arrays.asList("Mickey", "Donald")) {
@@ -79,7 +78,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 1. Index all existing contents
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		// 2. Assert that the the en, de variant of the node could be found in the search index
@@ -149,7 +148,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				role().grantPermissions(node, GraphPermission.READ_PERM);
 			}
 			MeshInternal.get().boot().meshRoot().getNodeRoot().reload();
-			fullIndex();
+			recreateIndices();
 
 			NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
 					new PagingParametersImpl().setPage(1).setPerPage(numAdditionalNodes + 1), new VersioningParameters().draft()));
@@ -167,7 +166,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testTagCount() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		try (NoTx noTx = db.noTx()) {
@@ -195,7 +194,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testGlobalNodeSearch() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		try (NoTx noTx = db.noTx()) {
@@ -230,10 +229,10 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testTakeDraftOffline() throws InterruptedException, InvalidArgumentException {
+	public void testTakeDraftOffline() throws Exception {
 
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		// 1. Create a new project and a folder schema
@@ -250,12 +249,12 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		createNode.getFields().put("name", FieldUtil.createStringField("AwesomeString"));
 		NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
 
-		// 3. search globally for published version - The created node is still a draft and thus can't be found
+		// 3. Search globally for published version - The created node is still a draft and thus can't be found
 		NodeListResponse response = call(
 				() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("published")));
 		assertThat(response.getData()).as("Global search result before publishing").isEmpty();
 
-		// 4. search globally for draft version - The created node should be found since it is a draft
+		// 4. Search globally for draft version - The created node should be found since it is a draft
 		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("draft")));
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
@@ -267,7 +266,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("draft")));
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
-		// 7. search globally for the published version - Still there is no published version of the node
+		// 7. Search globally for the published version - Still there is no published version of the node
 		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("published")));
 		assertThat(response.getData()).as("Global search result before publishing").isEmpty();
 
@@ -276,7 +275,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testGlobalPublishedNodeSearch() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		// 1. Create a new project and a folder schema

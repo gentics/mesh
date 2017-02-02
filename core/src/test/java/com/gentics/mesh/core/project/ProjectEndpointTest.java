@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -29,8 +31,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -50,8 +58,6 @@ import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
 public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
-
-	// Create Tests
 
 	@Test
 	public void testCreateNoSchemaReference() {
@@ -298,7 +304,6 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		assertEquals("The page count should be one.", 6, list.getMetainfo().getPageCount());
 		assertEquals("Total count should be one.", 11, list.getMetainfo().getTotalCount());
 		assertEquals("Total data size should be one.", 1, list.getData().size());
-
 	}
 
 	@Test
@@ -405,8 +410,16 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
 			project.reload();
 			assertThat(restProject).matches(project);
-			// All nodes need to be reindex since the project name is part of the search document.
-			assertThat(dummySearchProvider).recordedStoreEvents(57);
+			// All nodes  + project + tags and tag families need to be reindex since the project name is part of the search document.
+			int expectedCount = 1;
+			for (Node node : project().getNodeRoot().findAll()) {
+				expectedCount += node.getGraphFieldContainerCount();
+			}
+			expectedCount += project.getTagRoot().findAll().size();
+			expectedCount += project.getTagFamilyRoot().findAll().size();
+
+			assertThat(dummySearchProvider).hasStore(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
+			assertThat(dummySearchProvider).hasEvents(expectedCount, 0, 0, 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			reloadedProject.reload();
@@ -419,10 +432,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("new Name");
-
-		MeshResponse<ProjectResponse> future = client().updateProject("bogus", request).invoke();
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().updateProject("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
 	}
 
@@ -439,16 +449,12 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("New Name");
 
-			MeshResponse<ProjectResponse> future = client().updateProject(uuid, request).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().updateProject(uuid, request), FORBIDDEN, "error_missing_perm", uuid);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertEquals("The name should not have been changed", name, reloadedProject.getName());
 		}
 	}
-
-	// Delete Tests
 
 	@Test
 	@Override
@@ -460,12 +466,33 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
+
+			//1. Determine a list all project indices which must be dropped
+			Set<String> indices = new HashSet<>();
+			for (Release release : project.getReleaseRoot().findAll()) {
+				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+					String schemaContainerVersionUuid = version.getUuid();
+					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, PUBLISHED));
+					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, DRAFT));
+				}
+			}
+
 			String name = project.getName();
 			assertNotNull(uuid);
 			assertNotNull(name);
-			MeshResponse<Void> future = client().deleteProject(uuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
+
+			//2. Delete the project
+			call(() -> client().deleteProject(uuid));
+
+			//3. Assert that the indices have been dropped and the project has been deleted from the project index
+			assertThat(dummySearchProvider).hasDelete(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
+			assertThat(dummySearchProvider).hasDrop(TagFamily.composeIndexName(uuid));
+			assertThat(dummySearchProvider).hasDrop(Tag.composeIndexName(uuid));
+			for (String index : indices) {
+				assertThat(dummySearchProvider).hasDrop(index);
+			}
+			assertThat(dummySearchProvider).hasEvents(0, 1, 2 + indices.size(), 0);
+
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
 			// TODO check for removed routers?
 		}
@@ -478,11 +505,8 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 			String uuid = project.getUuid();
 			role().revokePermissions(project, DELETE_PERM);
-
-			MeshResponse<Void> future = client().deleteProject(uuid).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-
+			call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
+			assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
 			project = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull("The project should not have been deleted", project);
 		}

@@ -83,21 +83,22 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testAddUserToGroupWithPerm() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			Group group = group();
 			UserRoot userRoot = meshRoot().getUserRoot();
 
 			User extraUser = userRoot.create("extraUser", user());
 			role().grantPermissions(extraUser, READ_PERM);
 
-			assertFalse("User should not be member of the group.", group.hasUser(extraUser));
+			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 
-			MeshResponse<GroupResponse> future = client().addUserToGroup(group().getUuid(), extraUser.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			GroupResponse restGroup = future.result();
+			GroupResponse restGroup = call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()));
 			assertThat(restGroup).matches(group());
+			assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), user().getUuid());
+			assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), extraUser.getUuid());
+			assertThat(dummySearchProvider).hasStore(Group.composeIndexName(), Group.composeIndexType(), group().getUuid());
+			assertThat(dummySearchProvider).hasEvents(3, 0, 0, 0);
+			dummySearchProvider.clear();
 
-			group.reload();
+			group().reload();
 			assertTrue("User should be member of the group.", group().hasUser(extraUser));
 		}
 

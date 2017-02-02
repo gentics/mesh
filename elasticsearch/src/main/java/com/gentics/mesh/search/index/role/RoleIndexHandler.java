@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.index.role;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -11,10 +12,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.AbstractIndexHandler;
+import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
 /**
  * Handler for the elasticsearch role index.
@@ -31,13 +32,23 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	protected String getIndex(SearchQueueEntry entry) {
-		return Role.TYPE;
+	protected Class<Role> getElementClass() {
+		return Role.class;
 	}
 
 	@Override
-	protected String getDocumentType(SearchQueueEntry entry) {
-		return Role.TYPE;
+	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
+		return Role.composeDocumentId(entry.getElementUuid());
+	}
+
+	@Override
+	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
+		return Role.composeIndexName();
+	}
+
+	@Override
+	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
+		return Role.composeIndexType();
 	}
 
 	@Override
@@ -46,13 +57,13 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	public Set<String> getSelectedIndices(InternalActionContext ac) {
-		return Collections.singleton(Role.TYPE);
+	public Map<String, String> getIndices() {
+		return Collections.singletonMap(Role.TYPE, Role.TYPE);
 	}
 
 	@Override
-	public String getKey() {
-		return Role.TYPE;
+	public Set<String> getSelectedIndices(InternalActionContext ac) {
+		return Collections.singleton(Role.TYPE);
 	}
 
 	@Override

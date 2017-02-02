@@ -65,19 +65,16 @@ import io.vertx.core.http.HttpHeaders;
 
 public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
-	// Read Tests
-
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
+		String uuid = db.noTx(() -> user().getUuid());
+		UserResponse restUser = call(() -> client().findUserByUuid(uuid));
 		try (NoTx noTx = db.noTx()) {
-			User user = user();
-			assertNotNull("The UUID of the user must not be null.", user.getUuid());
-			UserResponse restUser = call(() -> client().findUserByUuid(user.getUuid()));
-			assertThat(restUser).matches(user);
-			// TODO assert groups
-			// TODO assert perms
+			assertThat(restUser).matches(user());
 		}
+		// TODO assert groups
+		// TODO assert perms
 	}
 
 	@Test
@@ -238,11 +235,9 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			User user = user();
 			String uuid = user.getUuid();
 
-			MeshResponse<UserResponse> future = client().findUserByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertNotNull(future.result().getRolePerms());
-			assertThat(future.result().getRolePerms()).containsOnly("read", "readpublished", "publish", "create", "update", "delete");
+			UserResponse userResponse = call(() -> client().findUserByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+			assertNotNull(userResponse.getRolePerms());
+			assertThat(userResponse.getRolePerms()).containsOnly("read", "readpublished", "publish", "create", "update", "delete");
 		}
 	}
 
@@ -258,10 +253,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			}
 
 			assertEquals(11, user().getGroups().size());
-			MeshResponse<UserResponse> future = client().findUserByUuid(user().getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			UserResponse response = future.result();
+			UserResponse response = call(() -> client().findUserByUuid(user().getUuid()));
 			assertEquals(11, response.getGroups().size());
 		}
 	}
@@ -306,9 +298,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull("The username of the user must not be null.", user.getUsername());
 			role().revokePermissions(user, READ_PERM);
 
-			MeshResponse<UserResponse> future = client().findUserByUuid(uuid).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().findUserByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid);
 		}
 	}
 
@@ -400,21 +390,15 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testInvalidPageParameter() {
-		MeshResponse<UserListResponse> future = client().findUsers(new PagingParametersImpl(1, 0)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(0, future.result().getData().size());
-		assertTrue(future.result().getMetainfo().getTotalCount() > 0);
+		UserListResponse list = call(() -> client().findUsers(new PagingParametersImpl(1, 0)));
+		assertEquals(0, list.getData().size());
+		assertTrue(list.getMetainfo().getTotalCount() > 0);
 	}
 
 	@Test
 	public void testInvalidPageParameter2() {
-		MeshResponse<UserListResponse> future = client().findUsers(new PagingParametersImpl(-1, 25)).invoke();
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+		call(() -> client().findUsers(new PagingParametersImpl(-1, 25)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 	}
-
-	// Update tests
 
 	@Test
 	@Override
@@ -443,20 +427,19 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testUpdate() throws Exception {
 		String oldName = db.tx(() -> user().getUsername());
+		String uuid = db.noTx(() -> user().getUuid());
 
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
 		updateRequest.setFirstname("Tony Awesome");
 		updateRequest.setLastname("Epic Stark");
 		updateRequest.setUsername("dummy_user_changed");
+		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 
-		UserResponse restUser = db.tx(() -> {
-			User user = user();
-			MeshResponse<UserResponse> future = client().updateUser(user.getUuid(), updateRequest).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			return future.result();
-		});
+		assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), uuid);
+		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
+		dummySearchProvider.clear();
+
 		try (NoTx noTx = db.noTx()) {
 			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldName));
@@ -471,13 +454,9 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateWithSpecialCharacters() throws Exception {
-		String uuid;
-		String oldUsername;
-		try (NoTx noTx = db.noTx()) {
-			User user = user();
-			uuid = user.getUuid();
-			oldUsername = user.getUsername();
-		}
+		String uuid = db.noTx(() -> user().getUuid());
+		String oldUsername = db.noTx(() -> user().getUsername());
+
 		final char c = '\u2665';
 		String email = "t.stark@stärk-industries.com" + c;
 		String firstname = "Töny Awesöme" + c;
@@ -512,9 +491,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setUsername("New Name");
 
-		MeshResponse<UserResponse> future = client().updateUser("bogus", request).invoke();
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().updateUser("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
@@ -665,9 +642,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "project_not_found", "bogus_name");
+			call(() -> client().createUser(newUser), BAD_REQUEST, "project_not_found", "bogus_name");
 		}
 	}
 
@@ -684,9 +659,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
-			latchFor(future);
-			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus_uuid");
+			call(() -> client().createUser(newUser), NOT_FOUND, "object_not_found_for_uuid", "bogus_uuid");
 		}
 	}
 
@@ -702,9 +675,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
+			call(() -> client().createUser(newUser), BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 		}
 	}
 
@@ -720,9 +691,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "user_incomplete_node_reference");
+			call(() -> client().createUser(newUser), BAD_REQUEST, "user_incomplete_node_reference");
 		}
 	}
 
@@ -896,8 +865,6 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertSuccess(future);
 		}
 	}
-
-	// Create tests
 
 	@Test
 	public void testCreateUserWithConflictingUsername() throws Exception {
@@ -1121,6 +1088,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (NoTx noTx = db.noTx()) {
+			dummySearchProvider.clear();
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -1129,10 +1097,10 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			newUser.setPassword("test123456");
 			newUser.setGroupUuid(group().getUuid());
 
-			MeshResponse<UserResponse> createFuture = client().createUser(newUser).invoke();
-			latchFor(createFuture);
-			assertSuccess(createFuture);
-			UserResponse restUser = createFuture.result();
+			UserResponse restUser = call(() -> client().createUser(newUser));
+			assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), restUser.getUuid());
+			assertThat(dummySearchProvider).hasEvents(2, 0, 0, 0);
+			dummySearchProvider.clear();
 
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
@@ -1147,10 +1115,10 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			}
 
 			// Load the user again and check whether it is disabled
-			MeshResponse<UserResponse> userFuture = client().findUserByUuid(uuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertNull(userFuture.result());
+			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
+
+			assertThat(dummySearchProvider).hasDelete(User.composeIndexName(), User.composeIndexType(), uuid);
+			assertThat(dummySearchProvider).hasEvents(0, 1, 0, 0);
 		}
 
 	}

@@ -10,10 +10,9 @@ public class ChangeAddPublishFlag extends AbstractChange {
 	public String getUuid() {
 		return "07F0975BD47249C6B0975BD472E9C6A4";
 	}
-	
+
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
 		return "Migrate published flag";
 	}
 

@@ -12,6 +12,8 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
  */
 public interface SchemaContainerVersion extends GraphFieldSchemaContainerVersion<Schema, SchemaReference, SchemaContainerVersion, SchemaContainer> {
 
+	static String TYPE = "schemaVersion";
+
 	/**
 	 * Return a list {@link NodeGraphFieldContainer} that use this schema version and are DRAFT versions for the given release
 	 * 

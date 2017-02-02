@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.search;
 
-import java.util.Map;
+import com.gentics.mesh.core.data.HandleContext;
 
 import rx.Completable;
 
@@ -13,35 +13,10 @@ import rx.Completable;
  * <li>Element UUUID - dd5e85cebb7311e49640316caf57479f</li>
  * <li>Element Type - node, tag, role</li>
  * <li>Element Action - delete, update, create</li>
- * <li>Element Index Type - en, de (some search indices have different types for each document. We use types to separate language variations of nodes)</li>
+ * <li>Element Context - ProjectUuid, ReleaseUuid</li>
  * </ul>
- *
  */
-public interface SearchQueueEntry {
-
-	/**
-	 * Return the search queue entry element uuid which identifies the element that should be handled.
-	 * 
-	 * @return
-	 */
-	String getElementUuid();
-
-	SearchQueueEntry setElementUuid(String uuid);
-
-	/**
-	 * Return the search element type.
-	 * 
-	 * @return
-	 */
-	String getElementType();
-
-	/**
-	 * Set the search element type (node, tag, role..)
-	 * 
-	 * @param type
-	 * @return
-	 */
-	SearchQueueEntry setElementType(String type);
+public interface SearchQueueEntry extends Comparable<SearchQueueEntry> {
 
 	/**
 	 * Return the search queue entry action (eg. Update, delete..)
@@ -51,14 +26,6 @@ public interface SearchQueueEntry {
 	SearchQueueEntryAction getElementAction();
 
 	/**
-	 * Set the entry action (eg. update, delete, create)
-	 * 
-	 * @param action
-	 * @return
-	 */
-	SearchQueueEntry setElementAction(SearchQueueEntryAction action);
-
-	/**
 	 * Process the entry.
 	 * 
 	 * @return
@@ -66,46 +33,18 @@ public interface SearchQueueEntry {
 	Completable process();
 
 	/**
-	 * Get property with given key
-	 * 
-	 * @param key
-	 *            property key
-	 * @return property
-	 */
-	<T> T get(final String key);
-
-	/**
-	 * Set the property with given key
-	 * 
-	 * @param key
-	 *            property key
-	 * @param value
-	 *            property value
-	 * @return Fluent API
-	 */
-	SearchQueueEntry set(final String key, final Object value);
-
-	/**
-	 * Set custom properties.
-	 * 
-	 * @param properties
-	 * @return Fluent API
-	 */
-	SearchQueueEntry set(Map<String, Object> properties);
-
-	/**
-	 * Set the timestamp for the entry.
-	 * 
-	 * @param currentTimeMillis
-	 * @return
-	 */
-	SearchQueueEntry setTime(long currentTimeMillis);
-
-	/**
-	 * Return the timestamp on which the entry was created.
+	 * Return the context of the entry. The context contains information about the origin and scope of the action. This is later used to apply the desired
+	 * action only to a specific index.
 	 * 
 	 * @return
 	 */
-	long getTime();
+	HandleContext getContext();
+
+	/**
+	 * Compare the given entry. The order of the element action will be used to compare the entries.
+	 */
+	default int compareTo(SearchQueueEntry o) {
+		return getElementAction().getPriority().compareTo(o.getElementAction().getPriority());
+	}
 
 }

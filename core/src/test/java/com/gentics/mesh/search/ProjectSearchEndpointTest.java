@@ -19,7 +19,7 @@ public class ProjectSearchEndpointTest extends AbstractSearchEndpointTest implem
 	@Test
 	public void testSearchProject() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		MeshResponse<ProjectListResponse> future = client().searchProjects(getSimpleQuery("dummy"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();

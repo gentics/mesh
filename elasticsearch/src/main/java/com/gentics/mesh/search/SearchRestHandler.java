@@ -27,8 +27,8 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -41,7 +41,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.util.Tuple;
 
@@ -271,13 +270,13 @@ public class SearchRestHandler {
 						// if (error instanceof IndexMissingException) {
 						// return true;
 						// } else {
-						log.error("Can't clear index for {" + handler.getKey() + "}", error);
+						log.error("Can't clear index for {" + handler.getClass().getName() + "}", error);
 						return false;
 						// }
 					}).await();
+					
+					handler.reindexAll().await();
 				}
-				SearchQueueBatch batch = searchQueue.addFullIndex();
-				batch.processSync();
 				return Single.just(message(ac, "search_admin_reindex_invoked"));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");

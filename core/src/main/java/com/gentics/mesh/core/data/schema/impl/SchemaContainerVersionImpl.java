@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -31,16 +32,15 @@ import rx.Single;
  * @see SchemaContainerVersion
  */
 public class SchemaContainerVersionImpl extends
-		AbstractGraphFieldSchemaContainerVersion<Schema, SchemaReference, SchemaContainerVersion, SchemaContainer>
-		implements SchemaContainerVersion {
-
-	@Override
-	public String getType() {
-		return SchemaContainer.TYPE;
-	}
+		AbstractGraphFieldSchemaContainerVersion<Schema, SchemaReference, SchemaContainerVersion, SchemaContainer> implements SchemaContainerVersion {
 
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
+	}
+
+	@Override
+	public String getType() {
+		return SchemaContainerVersion.TYPE;
 	}
 
 	@Override
@@ -62,8 +62,7 @@ public class SchemaContainerVersionImpl extends
 	public List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
 		return in(HAS_SCHEMA_CONTAINER_VERSION).mark().inE(HAS_FIELD_CONTAINER)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back()
-				.toListExplicit(NodeGraphFieldContainerImpl.class);
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back().toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override

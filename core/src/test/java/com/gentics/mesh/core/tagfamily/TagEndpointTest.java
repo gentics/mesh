@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.tagfamily;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
-import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -194,7 +194,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 				tagFamily.delete(batch);
 				tx.success();
 			}
-			assertAffectedElements(affectedElements, batch);
+			assertThat(batch).containsEntries(affectedElements);
 		}
 	}
 

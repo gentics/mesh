@@ -32,11 +32,6 @@ public class MicroschemaContainerImpl
 	}
 
 	@Override
-	public String getType() {
-		return MicroschemaContainer.TYPE;
-	}
-
-	@Override
 	protected Class<? extends MicroschemaContainerVersion> getContainerVersionClass() {
 		return MicroschemaContainerVersionImpl.class;
 	}

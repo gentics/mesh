@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,9 +29,12 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -104,8 +108,8 @@ public class TagEndpointTest extends AbstractBasicCrudEndpointTest {
 					.collect(Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			MeshResponse<TagListResponse> pageFuture = client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(-1, perPage))
-					.invoke();
+			MeshResponse<TagListResponse> pageFuture = client()
+					.findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(-1, perPage)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
@@ -195,39 +199,49 @@ public class TagEndpointTest extends AbstractBasicCrudEndpointTest {
 			String tagUuid = tag.getUuid();
 			String tagName = tag.getName();
 			assertNotNull(tag.getEditor());
-			MeshResponse<TagResponse> readTagFut = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).invoke();
-			latchFor(readTagFut);
-			assertSuccess(readTagFut);
+			TagResponse restTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
 
 			// 1. Read the current tag
 			assertNotNull("The name of the tag should be loaded.", tagName);
-			String restName = readTagFut.result().getName();
+			String restName = restTag.getName();
 			assertNotNull("The tag name must be set.", restName);
 			assertEquals(tagName, restName);
 
 			// 2. Update the tag
-			TagUpdateRequest request = new TagUpdateRequest();
-			request.setName("new Name");
 			TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 			final String newName = "new Name";
 			tagUpdateRequest.setName(newName);
 			assertEquals(newName, tagUpdateRequest.getName());
 
 			// 3. Send the request to the server
-			MeshResponse<TagResponse> updatedTagFut = client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest)
-					.invoke();
-			latchFor(updatedTagFut);
-			assertSuccess(updatedTagFut);
-			TagResponse tag2 = updatedTagFut.result();
+			dummySearchProvider.clear();
+			List<? extends Node> nodes = tag.getNodes(project().getLatestRelease());
+
+			TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest));
 			assertThat(tag2).matches(tag);
+			assertThat(dummySearchProvider).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeIndexType(),
+					Tag.composeDocumentId(tag2.getUuid()));
+			// Assert that all nodes which previously referenced the tag were updated in the index
+			String projectUuid = project().getUuid();
+			String releaseUuid = project().getLatestRelease().getUuid();
+			for (Node node : nodes) {
+				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
+				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
+					assertThat(dummySearchProvider).hasStore(
+							NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type),
+							NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+					assertThat(dummySearchProvider).hasStore(
+							NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type),
+							NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
+				}
+			}
+			assertThat(dummySearchProvider).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeTypeName(),
+					TagFamily.composeDocumentId(parentTagFamily.getUuid()));
+			assertThat(dummySearchProvider).hasEvents(2 + (nodes.size() * 4), 0, 0, 0);
 
 			// 4. read the tag again and verify that it was changed
-			MeshResponse<TagResponse> reloadedTagFut = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).invoke();
-			latchFor(reloadedTagFut);
-			assertSuccess(reloadedTagFut);
-			TagResponse reloadedTag = reloadedTagFut.result();
-			assertEquals(request.getName(), reloadedTag.getName());
-
+			TagResponse reloadedTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
+			assertEquals(tagUpdateRequest.getName(), reloadedTag.getName());
 			assertThat(reloadedTag).matches(tag);
 		}
 	}
@@ -297,19 +311,30 @@ public class TagEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 	}
 
-	// Delete Tests
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
+		String projectUuid = db.noTx(() -> project().getUuid());
+		String releaseUuid = db.noTx(() -> project().getLatestRelease().getUuid());
+
 		try (NoTx noTx = db.noTx()) {
 			Tag tag = tag("vehicle");
 			TagFamily parentTagFamily = tagFamily("basic");
 
-			String uuid = tag.getUuid();
+			List<? extends Node> nodes = tag.getNodes(project().getLatestRelease());
 
-			MeshResponse<Void> future = client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			String uuid = tag.getUuid();
+			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid));
+
+			assertThat(dummySearchProvider).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeIndexType(), Tag.composeDocumentId(uuid));
+			// Assert that all nodes which previously referenced the tag were updated in the index
+			for (Node node : nodes) {
+				String schemaContainerVersionUuid = db.noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+				assertThat(dummySearchProvider).hasStore(
+						NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, ContainerType.DRAFT),
+						NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+			}
+			assertThat(dummySearchProvider).hasEvents(4, 1, 0, 0);
 
 			tag = boot.tagRoot().findByUuid(uuid);
 			assertNull("The tag should have been deleted", tag);
@@ -361,10 +386,14 @@ public class TagEndpointTest extends AbstractBasicCrudEndpointTest {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.setName("SomeName");
 		String parentTagFamilyUuid = db.noTx(() -> tagFamily("colors").getUuid());
+		String projectUuid = db.noTx(() -> project().getUuid());
 
+		dummySearchProvider.clear();
 		TagResponse response = call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));
 		assertEquals("SomeName", response.getName());
-
+		assertThat(dummySearchProvider).hasStore(Tag.composeIndexName(projectUuid), Tag.composeIndexType(),
+				Tag.composeDocumentId(response.getUuid()));
+		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 		try (NoTx noTx = db.noTx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
 			assertNotNull("The tag could not be found within the project.tagRoot node.", project().getTagRoot().findByUuid(response.getUuid()));

@@ -11,7 +11,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -64,7 +63,6 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 	}
 
 	@Test
-	@Ignore("Unstable test")
 	public void testEmptyMigration() throws Throwable {
 		try (NoTx tx = db.noTx()) {
 
@@ -83,15 +81,11 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 
 			// Trigger migration by sending a event
 			vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-				// future.complete(rh);
+				latch.countDown();
 			});
 
 			failingLatch(latch);
 
-			// AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-			// if (result.cause() != null) {
-			// throw result.cause();
-			// }
 		}
 
 	}
@@ -137,6 +131,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 					.isEqualTo("modified second content");
+			assertThat(dummySearchProvider).hasEvents(2, 0, 0, 0);
 		}
 	}
 

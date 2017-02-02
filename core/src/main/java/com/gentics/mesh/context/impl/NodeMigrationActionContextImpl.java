@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -136,6 +135,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public String getType() {
+				return User.TYPE;
+			}
+
+			@Override
 			public String getName() {
 				return "node_migration";
 			}
@@ -157,21 +161,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public String getAPIPath(InternalActionContext ac) {
-				return null;
-			}
-
-			@Override
-			public String getType() {
-				return null;
-			}
-
-			@Override
-			public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-
-			}
-
-			@Override
-			public SearchQueueBatch addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, boolean addRelatedEntries) {
 				return null;
 			}
 

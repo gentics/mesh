@@ -17,4 +17,9 @@ public abstract class AbstractResponse implements RestResponse {
 		this.uuid = uuid;
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + " Uuid: " + getUuid();
+	}
+
 }

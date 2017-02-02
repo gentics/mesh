@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -11,7 +12,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.util.Tuple;
@@ -21,6 +21,85 @@ import com.gentics.mesh.util.VersionNumber;
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
  */
 public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
+
+	/**
+	 * Type Value: {@value #TYPE}
+	 */
+	static final String TYPE = "nodeContainer";
+
+	/**
+	 * Construct the index name using the provided information.
+	 * 
+	 * <p>
+	 * <ul>
+	 * <li>Document Index: [node-:projectUuid-:releaseUuid-:schemaVersionUuid-:versionType]</li>
+	 * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
+	 * </ul>
+	 * <p>
+	 * 
+	 * @param projectUuid
+	 * @param releaseUuid
+	 * @param schemaContainerVersionUuid
+	 * @param type
+	 * @return
+	 */
+	static String composeIndexName(String projectUuid, String releaseUuid, String schemaContainerVersionUuid, ContainerType type) {
+		Objects.requireNonNull(projectUuid, "The project uuid was not set");
+		Objects.requireNonNull(releaseUuid, "The release uuid was not set");
+		Objects.requireNonNull(schemaContainerVersionUuid, "The schema container version uuid was not set");
+		Objects.requireNonNull(type, "The container type was not set");
+		// TODO check that only "draft" and "published" are used for version
+		StringBuilder indexName = new StringBuilder();
+		indexName.append("node");
+		indexName.append("-");
+		indexName.append(projectUuid);
+		indexName.append("-");
+		indexName.append(releaseUuid);
+		indexName.append("-");
+		indexName.append(schemaContainerVersionUuid);
+		indexName.append("-");
+		indexName.append(type.toString().toLowerCase());
+		return indexName.toString();
+	}
+
+	/**
+	 * Compose the index type
+	 * <p>
+	 * <ul>
+	 * <li>Index Type: node</li>
+	 * </ul>
+	 * <p>
+	 * 
+	 * @return
+	 */
+	static String composeIndexType() {
+		return Node.TYPE;
+	}
+
+	/**
+	 * Construct the document id using the given information.
+	 *
+	 * <p>
+	 * Format:
+	 * <ul>
+	 * <li>Document Id: [:uuid-:languageTag]</li>
+	 * <li>Example: 234ef7f2510e4d0e8ef9f2210e0d0ec2-en</li>
+	 * </ul>
+	 * <p>
+	 * 
+	 * @param nodeUuid
+	 * @param languageTag
+	 * @return
+	 */
+	static String composeDocumentId(String nodeUuid, String languageTag) {
+		Objects.requireNonNull(nodeUuid, "The nodeUuid was not set");
+		Objects.requireNonNull(languageTag, "The language was was not set");
+		StringBuilder id = new StringBuilder();
+		id.append(nodeUuid);
+		id.append("-");
+		id.append(languageTag);
+		return id.toString();
+	}
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists. If the container has a "next" container, that container will be deleted as
@@ -141,18 +220,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	Set<String> getReleases(ContainerType type);
 
 	/**
-	 * Add a search queue batch entry to the given batch for the given action.
-	 * 
-	 * @param batch
-	 * @param action
-	 * @param releaseUuid
-	 *            release Uuid
-	 * @param type
-	 *            type
-	 */
-	void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, ContainerType type);
-
-	/**
 	 * Compare the container values of both containers and return a list of differences.
 	 * 
 	 * @param container
@@ -200,4 +267,5 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Determine the display field value by checking the schema and the referenced field and store it as a property.
 	 */
 	void updateDisplayFieldValue();
+
 }

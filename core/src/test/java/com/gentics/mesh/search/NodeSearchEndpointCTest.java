@@ -28,7 +28,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		int numberValue = 1200;
 		try (NoTx noTx = db.noTx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
-			fullIndex();
+			recreateIndices();
 		}
 
 		// from 100 to 9000
@@ -43,7 +43,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			content().getLatestDraftFieldContainer(english()).createNumber("speed").setNumber(92.1535f);
-			fullIndex();
+			recreateIndices();
 		}
 
 		// from 9 to 1
@@ -69,7 +69,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			// file
 			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.dat").setFileSize(200)
 					.setMimeType("application/test").setSHA512Sum("someHash");
-			fullIndex();
+			recreateIndices();
 		}
 
 		// filesize
@@ -78,8 +78,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("Exactly two nodes should be found for the given filesize range.", 2, response.getData().size());
 
 		// width
-		response = call(
-				() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.width", 300, 500), new VersioningParameters().draft()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.width", 300, 500), new VersioningParameters().draft()));
 		assertEquals("Exactly one node should be found for the given image width range.", 1, response.getData().size());
 
 		// height
@@ -104,7 +103,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		int numberValue = 1200;
 		try (NoTx noTx = db.noTx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
-			fullIndex();
+			recreateIndices();
 		}
 
 		// out of bounds
@@ -117,7 +116,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchMicronode() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			addMicronodeField();
-			fullIndex();
+			recreateIndices();
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
@@ -137,7 +136,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchStringFieldRaw() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.name.raw", "Concorde_english_name"),
@@ -148,7 +147,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchStringFieldRawAfterReindex() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		// Add the user to the admin group - this way the user is in fact an admin.
@@ -168,7 +167,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testDocumentUpdate() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String newString = "ABCDEFGHI";
@@ -196,7 +195,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchContentResolveLinksAndLangFallback() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		NodeListResponse response = call(
@@ -213,7 +212,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchContentResolveLinks() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		NodeListResponse response = call(

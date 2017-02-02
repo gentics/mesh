@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -158,12 +157,12 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 		ExpandableNode reference = requestModel.getNodeReference();
-		user.addIndexBatchEntry(batch, STORE_ACTION, true);
+		batch.store(user, true);
 
 		if (!isEmpty(groupUuid)) {
 			Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			parentGroup.addUser(user);
-			batch.addEntry(parentGroup, STORE_ACTION);
+			batch.store(parentGroup, false);
 			requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 		}
 

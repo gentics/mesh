@@ -23,7 +23,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchDraftNodes() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String oldContent = "supersonic";
@@ -54,7 +54,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchPublishedInRelease() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String uuid = db.noTx(() -> content("concorde").getUuid());

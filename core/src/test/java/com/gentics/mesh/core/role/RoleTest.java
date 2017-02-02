@@ -4,12 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -18,7 +15,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Test;
@@ -37,7 +33,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -397,13 +392,13 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			assertElement(boot.roleRoot(), uuid, false);
 
 			// Check role entry
-			Optional<? extends SearchQueueEntry> roleEntry = batch.findEntryByUuid(uuid);
-			assertThat(roleEntry).isPresent();
-			assertEquals(DELETE_ACTION, roleEntry.get().getElementAction());
-
-			Optional<? extends SearchQueueEntry> groupEntry = batch.findEntryByUuid(group().getUuid());
-			assertThat(groupEntry).isPresent();
-			assertEquals(STORE_ACTION, groupEntry.get().getElementAction());
+//			Optional<? extends SearchQueueEntry> roleEntry = batch.findEntryByUuid(uuid);
+//			assertThat(roleEntry).isPresent();
+//			assertEquals(DELETE_ACTION, roleEntry.get().getElementAction());
+//
+//			Optional<? extends SearchQueueEntry> groupEntry = batch.findEntryByUuid(group().getUuid());
+//			assertThat(groupEntry).isPresent();
+//			assertEquals(STORE_ACTION, groupEntry.get().getElementAction());
 
 			assertEquals(2, batch.getEntries().size());
 		}

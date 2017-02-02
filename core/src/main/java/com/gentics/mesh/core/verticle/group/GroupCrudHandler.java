@@ -2,13 +2,10 @@ package com.gentics.mesh.core.verticle.group;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
-
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -82,14 +79,15 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION, true);
+			SearchQueueBatch batch = searchQueue.create();
+			Group updatedGroup = db.tx(() -> {
 				group.addRole(role);
-				return Tuple.tuple(batch, group);
+				group.setEditor(ac.getUser());
+				group.setLastEditedTimestamp();
+				// No need to update users as well. Those documents are not affected by this modification
+				batch.store(group, false);
+				return group;
 			});
-			SearchQueueBatch batch = tuple.v1();
-			Group updatedGroup = tuple.v2();
 			return batch.processAsync().andThen(updatedGroup.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -113,14 +111,15 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			SearchQueueBatch sqBatch = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION, true);
+			SearchQueueBatch batch = searchQueue.create();
+			return db.tx(() -> {
 				group.removeRole(role);
+				group.setEditor(ac.getUser());
+				group.setLastEditedTimestamp();
+				// No need to update users as well. Those documents are not affected by this modification
+				batch.store(group, false);
 				return batch;
-			});
-
-			return sqBatch.processAsync().andThen(Single.just(null));
+			}).processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -159,14 +158,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
+			SearchQueueBatch batch = searchQueue.create();
+			Group updatedGroup = db.tx(() -> {
 				group.addUser(user);
-				SearchQueueBatch batch = searchQueue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION, true);
-				return Tuple.tuple(batch, group);
+				batch.store(group, true);
+				return group;
 			});
-			SearchQueueBatch batch = tuple.v1();
-			Group updatedGroup = tuple.v2();
 			return batch.processAsync().andThen(updatedGroup.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -188,15 +185,13 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			Tuple<SearchQueueBatch, Group> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
-				group.addIndexBatchEntry(batch, STORE_ACTION, true);
-				batch.addEntry(user, STORE_ACTION);
+			SearchQueueBatch batch = searchQueue.create();
+			return db.tx(() -> {
+				batch.store(group, true);
+				batch.store(user, false);
 				group.removeUser(user);
-				return Tuple.tuple(batch, group);
-			});
-			SearchQueueBatch batch = tuple.v1();
-			return batch.processAsync().andThen(Single.just(null));
+				return batch;
+			}).processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 

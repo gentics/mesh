@@ -15,6 +15,8 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 public interface MicroschemaContainerVersion
 		extends GraphFieldSchemaContainerVersion<Microschema, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer> {
 
+	static String TYPE = "microschemaVersion";
+
 	/**
 	 * Return a list {@link NodeGraphFieldContainer} that contain at least one micronode field (or list of micronodes field) that uses this schema version for
 	 * the given release.

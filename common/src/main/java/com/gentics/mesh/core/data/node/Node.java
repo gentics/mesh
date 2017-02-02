@@ -6,6 +6,7 @@ import java.util.Stack;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -40,12 +41,17 @@ import rx.Single;
  * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
  * vertices which contain the language specific data.
  */
-public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex {
+public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, IndexableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
 	public static final String TYPE = "node";
+
+	@Override
+	default String getType() {
+		return Node.TYPE;
+	}
 
 	/**
 	 * Maximum depth for transformations: {@value #MAX_TRANSFORMATION_LEVEL}
@@ -259,7 +265,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	Node getParentNode(String releaseUuid);
 
 	/**
-	 * Set the parent node of this node
+	 * Set the parent node of this node.
 	 * 
 	 * @param releaseUuid
 	 * @param parentNode
@@ -267,7 +273,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void setParentNode(String releaseUuid, Node parentNode);
 
 	/**
-	 * Create a child node in this node in the latest release of the project
+	 * Create a child node in this node in the latest release of the project.
 	 * 
 	 * @param creator
 	 * @param schemaVersion
@@ -361,9 +367,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Publish the node (all languages)
 	 *
 	 * @param ac
+	 * @param batch
 	 * @return
 	 */
-	Completable publish(InternalActionContext ac);
+	Completable publish(InternalActionContext ac, SearchQueueBatch batch);
 
 	/**
 	 * Take the node offline (all languages)
@@ -421,13 +428,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	void deleteLanguageContainer(Release release, Language language, SearchQueueBatch batch);
 
-	// /**
-	// * Return the path segment of this node.
-	// *
-	// * @return
-	// */
-	// String getPathSegment(InternalActionContext ac);
-
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
 	 *
@@ -482,22 +482,15 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	String getPathSegment(String releaseUuid, ContainerType type, String... languageTag);
 
 	/**
-	 * Delete the node and ignore any checks.
-	 * 
-	 * @param ignoreChecks
-	 * @param batch
-	 */
-	void delete(boolean ignoreChecks, SearchQueueBatch batch);
-
-	/**
 	 * Delete the node from the given release. This will also delete children from the release.
 	 * 
 	 * If the node is deleted from its last release, it is (permanently) deleted from the db
 	 *
 	 * @param release
 	 * @param batch
+	 * @param ignoreChecks
 	 */
-	void deleteFromRelease(Release release, SearchQueueBatch batch);
+	void deleteFromRelease(Release release, SearchQueueBatch batch, boolean ignoreChecks);
 
 	/**
 	 * Return the schema container for the node.
@@ -558,6 +551,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags);
 
-
-
+	/**
+	 * Delete the node. Please use {@link #deleteFromRelease(Release, SearchQueueBatch)} if you want to delete the node just from a specific release.
+	 * 
+	 * @param batch
+	 * @param ignoreChecks
+	 */
+	void delete(SearchQueueBatch batch, boolean ignoreChecks);
 }

@@ -4,6 +4,7 @@ import static org.elasticsearch.client.Requests.refreshRequest;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -80,6 +81,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				.put("plugin.types", DeleteByQueryPlugin.class.getName())
 
 				.put("node.local", true)
+				
+//				.put("index.store.type", "mmapfs")
 
 				.put("index.max_result_window", Integer.MAX_VALUE)
 
@@ -359,14 +362,14 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Single<Integer> deleteDocumentsViaQuery(String indexName, String searchQuery) {
+	public Single<Integer> deleteDocumentsViaQuery(String searchQuery, String... indices) {
 		return Single.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
-				log.debug("Deleting documents from index {" + indexName + "} via query {" + searchQuery + "}");
+				log.debug("Deleting documents from indices {" + Arrays.toString(indices) + "} via query {" + searchQuery + "}");
 			}
 			Client client = getNode().client();
-			SearchRequestBuilder builder = client.prepareSearch(indexName).setSource(searchQuery);
+			SearchRequestBuilder builder = client.prepareSearch(indices).setSource(searchQuery);
 
 			Set<Completable> obs = new HashSet<>();
 			builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
@@ -384,14 +387,15 @@ public class ElasticSearchProvider implements SearchProvider {
 					Completable.merge(obs).await();
 
 					if (log.isDebugEnabled()) {
-						log.debug("Deleted {" + obs.size() + "} documents from index {" + indexName + "}");
+						log.debug("Deleted {" + obs.size() + "} documents from indices {" + Arrays.toString(indices) + "}");
 					}
 					sub.onSuccess(obs.size());
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Error deleting from index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+					log.error("Error deleting from indices {" + Arrays.toString(indices) + "}. Duration " + (System.currentTimeMillis() - start)
+							+ "[ms]", e);
 					sub.onError(e);
 				}
 			});

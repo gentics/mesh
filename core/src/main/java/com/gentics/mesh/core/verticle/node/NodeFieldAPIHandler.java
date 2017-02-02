@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.verticle.node;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -42,7 +42,6 @@ import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -76,15 +75,12 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	private SearchQueue searchQueue;
 
-	private HandlerUtilities utils;
-
 	@Inject
 	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
 		this.searchQueue = searchQueue;
-		this.utils = utils;
 	}
 
 	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
@@ -145,7 +141,8 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 			if (latestDraftVersion == null) {
 				// Create a new field container
-				// latestDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser());
+				// latestDraftVersion = node.createGraphFieldContainer(language,
+				// release, ac.getUser());
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
 
@@ -184,7 +181,8 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			String fieldUuid = field.getUuid();
 			Single<ImageInfo> obsImage;
 
-			// Only gather image info for actual images. Otherwise return an empty image info object.
+			// Only gather image info for actual images. Otherwise return an
+			// empty image info object.
 			if (contentType.startsWith("image/")) {
 				try {
 					obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
@@ -199,8 +197,8 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 			Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
 			return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
-				SearchQueueBatch batch = db.tx(() -> {
-					SearchQueueBatch sqb = searchQueue.createBatch();
+				SearchQueueBatch batch = searchQueue.create();
+				return db.tx(() -> {
 
 					field.setFileName(fileName);
 					field.setFileSize(ul.size());
@@ -210,15 +208,14 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					field.setImageHeight(imageInfo.getHeight());
 					field.setImageWidth(imageInfo.getWidth());
 
-					// if the binary field is the segment field, we need to update the webroot info in the node
+					// if the binary field is the segment field, we need to
+					// update the webroot info in the node
 					if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
 						newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 					}
 
-					return node.addIndexBatchEntry(sqb, STORE_ACTION, true);
-				});
-
-				return batch.processAsync().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
+					return batch.store(node, release.getUuid(), DRAFT, false);
+				}).processAsync().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
 
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
@@ -262,7 +259,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleRemoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		//TODO validation
+		// TODO validation
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -272,7 +269,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleUpdateFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		//TODO validation
+		// TODO validation
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -282,7 +279,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleReadFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		//TODO validation
+		// TODO validation
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
@@ -291,7 +288,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleMoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		//TODO validation
+		// TODO validation
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -307,7 +304,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 *            routing context
 	 */
 	public void handleTransformImage(RoutingContext rc, String uuid, String languageTag, String fieldName) {
-		//TODO validation
+		// TODO validation
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 		db.operateNoTx(() -> {
@@ -359,26 +356,25 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 						});
 
 				return obsHashAndSize.flatMap(hashAndSize -> {
-					Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
-						SearchQueueBatch batch = searchQueue.createBatch();
+					SearchQueueBatch batch = searchQueue.create();
+					String updatedNodeUuid = db.tx(() -> {
 
 						field.setSHA512Sum(hashAndSize.v1());
 						field.setFileSize(hashAndSize.v2());
 						// resized images will always be jpeg
 						field.setMimeType("image/jpeg");
 
-						// TODO should we rename the image, if the extension is wrong?
+						// TODO should we rename the image, if the extension is
+						// wrong?
 
 						// TODO handle image properties as well
 						// node.setBinaryImageDPI(dpi);
 						// node.setBinaryImageHeight(heigth);
 						// node.setBinaryImageWidth(width);
-						node.addIndexBatchEntry(batch, STORE_ACTION, true);
-						return Tuple.tuple(batch, node.getUuid());
+						batch.store(container, node.getProject().getReleaseRoot().getLatestRelease().getUuid(), DRAFT, false);
+						return node.getUuid();
 					});
 
-					SearchQueueBatch batch = tuple.v1();
-					String updatedNodeUuid = tuple.v2();
 					return batch.processAsync().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
 				});
 			} catch (GenericRestException e) {
@@ -393,10 +389,12 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	// // TODO abstract rc away
 	// public void handleDownload(RoutingContext rc) {
 	// InternalActionContext ac = InternalActionContext.create(rc);
-	// BinaryFieldResponseHandler binaryHandler = new BinaryFieldResponseHandler(rc, imageManipulator);
+	// BinaryFieldResponseHandler binaryHandler = new
+	// BinaryFieldResponseHandler(rc, imageManipulator);
 	// db.asyncNoTrx(() -> {
 	// Project project = ac.getProject();
-	// return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node-> {
+	// return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node->
+	// {
 	// db.noTrx(()-> {
 	// Node node = rh.result();
 	// binaryHandler.handle(node);

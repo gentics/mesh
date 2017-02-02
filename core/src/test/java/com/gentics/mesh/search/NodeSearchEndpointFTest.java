@@ -24,7 +24,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchAndSort() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		String json = "{";
@@ -61,7 +61,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchContent() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("the"),
@@ -84,7 +84,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchMissingVertex() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			fullIndex();
+			recreateIndices();
 
 			Node node = content("honda nr");
 			node.remove();

@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
@@ -130,7 +131,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			SearchQueueBatch batch = createBatch();
 			String uuid = getSchemaContainer().getUuid();
 			for (Node node : getSchemaContainer().getNodes()) {

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
@@ -10,13 +12,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -25,10 +26,15 @@ import javax.naming.InvalidNameException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.HandleContext;
+import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -50,7 +56,7 @@ import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.search.impl.DummySearchQueueBatch;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
@@ -79,11 +85,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	@Override
 	public ProjectReference transformToReference() {
 		return new ProjectReference().setName(getName()).setUuid(getUuid());
-	}
-
-	@Override
-	public String getType() {
-		return Project.TYPE;
 	}
 
 	@Override
@@ -206,18 +207,46 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + getName() + "}");
 		}
-		batch.addEntry(this, DELETE_ACTION);
-
 		RouterStorage.getIntance().removeProjectRouter(getName());
-		getBaseNode().delete(true, batch);
-		getTagFamilyRoot().delete(batch);
-		getNodeRoot().delete(batch);
 
+		// Remove the project from the index
+		batch.delete(this, false);
+
+		// Drop the project specific indices
+		batch.dropIndex(TagFamily.composeIndexName(getUuid()));
+		batch.dropIndex(Tag.composeIndexName(getUuid()));
+
+		// Drop all node indices for all releases and all schema versions
+		for (Release release : getReleaseRoot().findAll()) {
+			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
+					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), type);
+					if (log.isDebugEnabled()) {
+						log.debug("Adding drop entry for index {" + pubIndex + "}");
+					}
+					batch.dropIndex(pubIndex);
+				}
+			}
+		}
+
+		// Create a dummy batch which we will use to handle deletion for elements which must not update the batch since the documents are deleted by dedicated index deletion entries.
+		DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
+
+		// Remove the tagfamilies from the index
+		getTagFamilyRoot().delete(dummyBatch);
+
+		// Remove all other project nodes from the index
+		getNodeRoot().delete(dummyBatch);
+
+		// Unassign the schema from the container
 		for (SchemaContainer container : getSchemaContainerRoot().findAll()) {
 			getSchemaContainerRoot().removeSchemaContainer(container);
 		}
+
+		// Remove the project schema root from the index
 		getSchemaContainerRoot().delete(batch);
-		reload();
+
+		// Finally remove the project node
 		getVertex().remove();
 	}
 
@@ -242,7 +271,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			setName(newName);
 			routerStorage.removeProjectRouter(oldName);
 
-			// Old router was removed. Now lets add the new one and revert the change if an error occures.
+			// Old router was removed. Now lets add the new one and revert the change if an error ocures.
 			try {
 				routerStorage.addProjectRouter(newName);
 			} catch (InvalidNameException e) {
@@ -258,7 +287,16 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
-			addIndexBatchEntry(batch, STORE_ACTION, true);
+
+			// Update the project and its nodes in the index
+			batch.store(this, true);
+			// Store all nodes in all releases
+			//			for (Node node : getNodeRoot().findAll()) {
+			//				batch.store(node, false);
+			//			}
+			//			for(Tag tag : getTagRoot().findAll()) {
+			//				
+			//			}
 		}
 		return this;
 	}
@@ -274,21 +312,20 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		String baseNodeUuid = getBaseNode().getUuid();
-		List<? extends Release> releases = getReleaseRoot().findAll();
+	public void handleRelatedEntries(HandleElementAction action) {
+		// Check whether a base node exits. The base node may have been deleted. In that case we can't handle related entries
+		if (getBaseNode() == null) {
+			return;
+		}
+		// All nodes of all releases are related to this project. All nodes/containers must be updated if the project name changes. 
 		for (Node node : getNodeRoot().findAll()) {
-			if (baseNodeUuid.equals(node.getUuid())) {
-				continue;
-			}
-			releases.forEach(release -> {
-				node.getGraphFieldContainers(release, ContainerType.DRAFT).forEach(container -> {
-					container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), ContainerType.DRAFT);
-				});
-				node.getGraphFieldContainers(release, ContainerType.PUBLISHED).forEach(container -> {
-					container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), ContainerType.PUBLISHED);
-				});
-			});
+			action.call(node, new HandleContext());
+		}
+		for (Tag tag : getTagRoot().findAll()) {
+			action.call(tag, new HandleContext().setProjectUuid(getUuid()));
+		}
+		for (TagFamily tagFamily : getTagFamilyRoot().findAll()) {
+			action.call(tagFamily, new HandleContext().setProjectUuid(getUuid()));
 		}
 	}
 

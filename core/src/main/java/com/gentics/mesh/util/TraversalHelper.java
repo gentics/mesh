@@ -61,7 +61,7 @@ public final class TraversalHelper {
 		// External (for the enduser) all pages start with 1.
 		page = page - 1;
 
-		int low = page * pageSize -1;
+		int low = page * pageSize - 1;
 		int upper = low + pageSize;
 
 		if (pageSize == 0) {
@@ -126,6 +126,7 @@ public final class TraversalHelper {
 	 */
 	public static void debug(EdgeTraversal<?, ?, ?> traversal) {
 		for (MeshEdgeImpl e : traversal.toListExplicit(MeshEdgeImpl.class)) {
+			System.out.println(e.getElement().getId() + "from " + e.inV().next() + " to " + e.outV().next());
 			System.out.println(e.getLabel() + " type: " + e.getFermaType() + " json: " + e.toJson());
 		}
 	}
