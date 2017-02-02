@@ -12,6 +12,7 @@ dependency-reduced-pom.xml
 .checkstyle
 mesh.json
 .bak
+mesh.lock
 verticles/admin-gui/node_modules
 verticles/admin-gui/bower_components
 npm-debug.log*
