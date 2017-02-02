@@ -89,7 +89,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			}
 
 			List<DeliveryOptions> events = new ArrayList<>();
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
 				// 3. Apply the found changes to the schema
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
@@ -186,7 +186,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				Tuple<SearchQueueBatch, Single<Schema>> tuple = db.tx(() -> {
 
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
-					SearchQueueBatch batch = searchQueue.createBatch();
+					SearchQueueBatch batch = searchQueue.create();
 
 					String releaseUuid = project.getLatestRelease().getUuid();
 					SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
@@ -261,7 +261,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		utils.operateNoTx(ac, () -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
+				SearchQueueBatch batch = searchQueue.create();
 				schema.getLatestVersion().applyChanges(ac, batch);
 				return batch;
 			}).processSync();

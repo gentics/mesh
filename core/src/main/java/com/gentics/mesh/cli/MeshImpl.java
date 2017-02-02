@@ -2,6 +2,8 @@ package com.gentics.mesh.cli;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -10,7 +12,9 @@ import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -30,6 +34,11 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
 public class MeshImpl implements Mesh {
 
 	private static final Logger log;
+
+	/**
+	 * Name of the mesh lock file: {@value #TYPE} The file is used to determine whether mesh shutdown cleanly.
+	 */
+	private final String LOCK_FILENAME = "mesh.lock";
 
 	private MeshCustomLoader<Vertx> verticleLoader;
 
@@ -71,6 +80,11 @@ public class MeshImpl implements Mesh {
 		checkSystemRequirements();
 		registerShutdownHook();
 
+		boolean hasOldLock = hasLockFile();
+		if (!hasOldLock) {
+			createLockFile();
+		}
+
 		if (isFirstApril()) {
 			printAprilFoolJoke();
 		} else {
@@ -80,7 +94,7 @@ public class MeshImpl implements Mesh {
 			invokeUpdateCheck();
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
-		MeshInternal.create().boot().init(options, verticleLoader);
+		MeshInternal.create().boot().init(hasOldLock, options, verticleLoader);
 		dontExit();
 	}
 
@@ -233,12 +247,41 @@ public class MeshImpl implements Mesh {
 	@Override
 	public void shutdown() throws Exception {
 		log.info("Mesh shutting down...");
-		MeshInternal.get().database().stop();
-		MeshInternal.get().searchProvider().stop();
+		MeshComponent meshInternal = MeshInternal.get();
+		meshInternal.searchQueue().blockUntilEmpty(120);
+		meshInternal.database().stop();
+		meshInternal.searchProvider().stop();
 		getVertx().close();
 		MeshFactoryImpl.clear();
-
+		deleteLock();
+		log.info("Shutdown completed...");
 		latch.countDown();
+	}
+
+	/**
+	 * Create a new mesh lock file.
+	 * 
+	 * @throws IOException
+	 */
+	private void createLockFile() throws IOException {
+		new File(LOCK_FILENAME).createNewFile();
+
+	}
+
+	/**
+	 * Check whether the mesh lock file exists.
+	 * 
+	 * @return
+	 */
+	private boolean hasLockFile() {
+		return new File(LOCK_FILENAME).exists();
+	}
+
+	/**
+	 * Delete the mesh lock file.
+	 */
+	private void deleteLock() {
+		new File(LOCK_FILENAME).delete();
 	}
 
 }

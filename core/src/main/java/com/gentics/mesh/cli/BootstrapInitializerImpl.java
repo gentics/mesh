@@ -166,7 +166,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void init(MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	public void init(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
@@ -186,6 +186,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		if (isEmptyInstallation) {
 			initPermissions();
+		}
+
+		// An old lock file has been detected. Normally the lock file should be removed during shutdown. 
+		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of 
+		// the ES index in those cases in order to ensure consistency.
+		if (hasOldLock) {
+			REINDEX_ACTION.invoke();
 		}
 
 		// Mark all changelog entries as applied for new installations

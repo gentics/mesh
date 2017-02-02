@@ -1006,7 +1006,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String releaseUuid = release.getUuid();
 
 		SearchQueue queue = MeshInternal.get().searchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		SearchQueueBatch batch = queue.create();
 		List<Completable> obs = new ArrayList<>();
 		// publish all unpublished containers
 
@@ -1089,7 +1089,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Database db = MeshInternal.get().database();
 		Release release = ac.getRelease(getProject());
 		SearchQueue queue = MeshInternal.get().searchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		SearchQueueBatch batch = queue.create();
 		PublishParameters parameters = ac.getPublishParameters();
 		return db.tx(() -> {
 			return takeOffline(ac, batch, release, parameters);
@@ -1139,7 +1139,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// TODO check whether all required fields are filled, if not -> unable to publish
 
 		SearchQueue queue = MeshInternal.get().searchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		SearchQueueBatch batch = queue.create();
 		return db.tx(() -> {
 			publish(draftVersion.getLanguage(), release, ac.getUser());
 			// Invoke a store of the document since it must now also be added to the published index
@@ -1155,7 +1155,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		return db.tx(() -> {
 			SearchQueue queue = MeshInternal.get().searchQueue();
-			SearchQueueBatch batch = queue.createBatch();
+			SearchQueueBatch batch = queue.create();
 
 			NodeGraphFieldContainer published = getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
 			if (published == null) {

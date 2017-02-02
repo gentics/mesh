@@ -197,7 +197,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 			Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
 			return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
+				SearchQueueBatch batch = searchQueue.create();
 				return db.tx(() -> {
 
 					field.setFileName(fileName);
@@ -356,7 +356,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 						});
 
 				return obsHashAndSize.flatMap(hashAndSize -> {
-					SearchQueueBatch batch = searchQueue.createBatch();
+					SearchQueueBatch batch = searchQueue.create();
 					String updatedNodeUuid = db.tx(() -> {
 
 						field.setSHA512Sum(hashAndSize.v1());

@@ -79,7 +79,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			Group updatedGroup = db.tx(() -> {
 				group.addRole(role);
 				group.setEditor(ac.getUser());
@@ -111,7 +111,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			return db.tx(() -> {
 				group.removeRole(role);
 				group.setEditor(ac.getUser());
@@ -158,7 +158,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			Group updatedGroup = db.tx(() -> {
 				group.addUser(user);
 				batch.store(group, true);
@@ -185,7 +185,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			return db.tx(() -> {
 				batch.store(group, true);
 				batch.store(user, false);

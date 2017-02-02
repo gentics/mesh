@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.index.common.CreateIndexEntryImpl;
 import com.gentics.mesh.search.index.common.DropIndexEntryImpl;
@@ -212,24 +211,29 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public Completable processAsync() {
-		Database db = MeshInternal.get().database();
-
 		// Process the batch
-		return db.noTx(() -> {
+		Completable obs = Completable.complete();
+		List<Completable> entryList = getEntries().stream().map(entry -> entry.process()).collect(Collectors.toList());
+		if (!entryList.isEmpty()) {
+			obs = Completable.concat(entryList);
+		}
 
-			Completable obs = Completable.complete();
-				List<Completable> entryList = getEntries().stream().map(entry -> entry.process()).collect(Collectors.toList());
-				if (!entryList.isEmpty()) {
-					obs = Completable.concat(entryList);
-				}
+		return obs.doOnCompleted(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Handled all search queue items.");
+			}
+			// Clear the batch entries so that the GC can claim the memory
+			clear();
 
-			return obs.doOnCompleted(() -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Handled all search queue items.");
-				}
-				// Clear the batch entries so that the GC can claim the memory
-				clear();
-			});
+			// Remove the batch from the queue
+			MeshInternal.get().searchQueue().remove(this);
+		}).doOnError(error -> {
+			log.error("Error while processing batch {" + batchId + "}");
+			if (log.isDebugEnabled()) {
+				printDebug();
+			}
+			clear();
+			MeshInternal.get().searchQueue().remove(this);
 		});
 
 	}
@@ -240,8 +244,6 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 			throw error(INTERNAL_SERVER_ERROR,
 					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name() + "} exceeded.");
 		}
-		// Clear the batch entries so that the GC can claim the memory
-		clear();
 	}
 
 	@Override

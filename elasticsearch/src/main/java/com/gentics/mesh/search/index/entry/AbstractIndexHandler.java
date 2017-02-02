@@ -224,7 +224,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Completable reindexAll() {
 		return Completable.defer(() -> {
 			log.info("Handling full reindex entry");
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			// Add all elements from the root vertex of the handler to the created batch
 			for (T element : getRootVertex().findAll()) {
 				if (element instanceof IndexableElement) {
