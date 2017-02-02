@@ -22,6 +22,7 @@ core/tmp
 mesh-searchindex
 mesh-graphdb
 /bower_components/
+mesh.lock
 /build
 /dist
 /node

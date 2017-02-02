@@ -24,7 +24,7 @@ public class GraphQLEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + content().getUuid() + "\"){uuid}}"));
 			MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + content().getUuid() + "'}}}", response);
-			
+
 			response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + content().getUuid() + "\") {uuid, fields { ... on content {title}}}}"));
 			System.out.println(response.toString());
 			MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + content().getUuid() + "'}}}", response);
