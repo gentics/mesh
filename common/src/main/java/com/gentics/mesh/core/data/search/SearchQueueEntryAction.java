@@ -11,8 +11,6 @@ public enum SearchQueueEntryAction {
 
 	DELETE_ACTION("delete", 80),
 
-	REINDEX_ALL("reindex_all", 70),
-
 	STORE_ACTION("store", 60);
 
 	private String name;
@@ -42,11 +40,11 @@ public enum SearchQueueEntryAction {
 	}
 
 	/**
-	 * Return the order of the action. Lower order means the action should be executed earlier compared to entries with higher order.
+	 * Return the priority of the action. Lower priority means the action should be executed laster compared to entries with higher priority.
 	 * 
 	 * @return
 	 */
-	public Integer getOrder() {
+	public Integer getPriority() {
 		return new Integer(priority);
 	}
 
@@ -73,7 +71,7 @@ public enum SearchQueueEntryAction {
 	 */
 	public int compareOrder(SearchQueueEntryAction o) {
 		//TODO handle null
-		return getOrder().compareTo(o.getOrder());
+		return getPriority().compareTo(o.getPriority());
 	}
 
 }

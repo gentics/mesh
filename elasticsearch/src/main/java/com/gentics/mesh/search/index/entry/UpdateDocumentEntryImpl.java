@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.data.search.UpdateBatchEntry;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 
 import rx.Completable;
 
@@ -16,7 +16,7 @@ import rx.Completable;
  * 
  * @see UpdateBatcheEntry
  */
-public class UpdateBatchEntryImpl extends AbstractEntry implements UpdateBatchEntry {
+public class UpdateDocumentEntryImpl extends AbstractEntry implements UpdateDocumentEntry {
 
 	private String elementUuid;
 	private IndexHandler indexHandler;
@@ -30,7 +30,7 @@ public class UpdateBatchEntryImpl extends AbstractEntry implements UpdateBatchEn
 	 * @param context
 	 * @param action
 	 */
-	public UpdateBatchEntryImpl(IndexHandler indexHandler, IndexableElement element, HandleContext context, SearchQueueEntryAction action) {
+	public UpdateDocumentEntryImpl(IndexHandler indexHandler, IndexableElement element, HandleContext context, SearchQueueEntryAction action) {
 		super(action);
 		this.context = context;
 		this.elementUuid = element.getUuid();

@@ -72,7 +72,24 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 				System.out.println("Recorded delete event: " + event);
 			}
 		}
-		assertTrue("The delete event could not be found.", hasKey);
+		assertTrue("The delete event could not be found. {" + indexName + "} - {" + indexType + "} - {" + documentId + "}", hasKey);
+		return this;
+	}
+
+	/**
+	 * Verify that the search provider recorded the given drop index event.
+	 * 
+	 * @param composeIndexName
+	 * @return Fluent API
+	 */
+	public DummySearchProviderAssert hasDrop(String indexName) {
+		boolean hasDrop = actual.getDropIndexEvents().contains(indexName);
+		if (!hasDrop) {
+			for (String event : actual.getDropIndexEvents()) {
+				System.out.println("Recorded drop event: " + event);
+			}
+		}
+		assertTrue("The drop index event could not be found. {" + indexName + "}", hasDrop);
 		return this;
 	}
 
@@ -85,7 +102,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param createIndexEvents
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert events(int storeEvents, int deleteEvents, int dropIndexEvents, int createIndexEvents) {
+	public DummySearchProviderAssert hasEvents(int storeEvents, int deleteEvents, int dropIndexEvents, int createIndexEvents) {
 		String storeInfo = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
 		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + storeInfo + "\n}", storeEvents,
 				actual.getStoreEvents().size());
@@ -104,4 +121,5 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 
 		return this;
 	}
+
 }

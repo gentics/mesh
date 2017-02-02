@@ -75,7 +75,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 			ResultInfo info = db.tx(() -> {
 				RootVertex<Release> root = getRootVertex(ac);
-				SearchQueueBatch batch = searchQueue.createBatch();
+				SearchQueueBatch batch = searchQueue.create();
 
 				Release created = root.create(ac, batch);
 				Project project = created.getProject();
@@ -135,7 +135,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			List<DeliveryOptions> events = new ArrayList<>();
 
 			Tuple<SearchQueueBatch, Single<SchemaReferenceList>> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
+				SearchQueueBatch batch = searchQueue.create();
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList) {

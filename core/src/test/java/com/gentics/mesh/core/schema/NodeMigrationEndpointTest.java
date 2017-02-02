@@ -131,7 +131,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 					.isEqualTo("modified second content");
-			assertThat(dummySearchProvider).events(2, 0, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(2, 0, 0, 0);
 		}
 	}
 

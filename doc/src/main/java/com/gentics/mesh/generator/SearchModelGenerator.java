@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.UpdateBatchEntry;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -190,7 +190,7 @@ public class SearchModelGenerator {
 			return tagList;
 		});
 		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();
-		UpdateBatchEntry entry = mock(UpdateBatchEntry.class);
+		UpdateDocumentEntry entry = mock(UpdateDocumentEntry.class);
 		HandleContext context = new HandleContext();
 		context.setProjectUuid(UUIDUtil.randomUUID());
 		when(entry.getContext()).thenReturn(context);
@@ -222,7 +222,7 @@ public class SearchModelGenerator {
 		TagFamily tagFamily = mockTagFamily("colors", user, project);
 		Tag tag = mockTag("red", user, tagFamily, project);
 		TagIndexHandler tagIndexHandler = meshDagger.tagIndexHandler();
-		UpdateBatchEntry entry = mock(UpdateBatchEntry.class);
+		UpdateDocumentEntry entry = mock(UpdateDocumentEntry.class);
 		HandleContext context = new HandleContext();
 		context.setProjectUuid(UUIDUtil.randomUUID());
 		when(entry.getContext()).thenReturn(context);

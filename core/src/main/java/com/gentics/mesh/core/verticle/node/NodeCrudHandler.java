@@ -74,7 +74,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			}
 
 			// Create the batch first since we can't delete the container and access it later in batch creation
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
 				node.deleteFromRelease(ac.getRelease(null), batch , false);
 				return batch;
@@ -103,7 +103,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			}
 
 			// Create the batch first since we can't delete the container and access it later in batch creation
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
 				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
 				return batch;
@@ -132,7 +132,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node sourceNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Node targetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
 				sourceNode.moveTo(ac, targetNode, batch);
 				return batch;
@@ -236,7 +236,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tag tag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			Node updatedNode = db.tx(() -> {
 				node.addTag(tag, release);
 				batch.store(node, release.getUuid(), PUBLISHED, false);
@@ -267,7 +267,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
 				batch.store(node, release.getUuid(), PUBLISHED, false);
 				batch.store(node, release.getUuid(), DRAFT, false);
@@ -306,7 +306,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.create();
 			return node.publish(ac, batch).andThen(Single.defer(() -> {
 				return db.noTx(() -> {
 					node.reload();

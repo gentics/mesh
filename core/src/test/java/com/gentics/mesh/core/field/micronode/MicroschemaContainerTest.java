@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
@@ -166,7 +167,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws MeshJsonException {
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			Microschema schema = new MicroschemaModel();
 			schema.setName("test");
 			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());

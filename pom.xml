@@ -17,13 +17,13 @@
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<ferma.version>2.2.1</ferma.version>
-		<elasticsearch.version>2.4.3</elasticsearch.version>
-		<orientdb.version>2.2.13</orientdb.version>
+		<elasticsearch.version>2.4.4</elasticsearch.version>
+		<orientdb.version>2.2.15</orientdb.version>
 		<ferma.extensions.version>0.0.4</ferma.extensions.version>
 		<dagger.version>2.6</dagger.version>
 		<rx.version>1.2.3</rx.version>
 
-		<surefire.forkcount>4</surefire.forkcount>
+		<surefire.forkcount>3</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 	</properties>

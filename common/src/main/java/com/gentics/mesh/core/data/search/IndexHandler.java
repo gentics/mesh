@@ -43,7 +43,7 @@ public interface IndexHandler {
 	 *            search queue entry
 	 * @return
 	 */
-	Completable delete(UpdateBatchEntry entry);
+	Completable delete(UpdateDocumentEntry entry);
 
 	/**
 	 * Load the given element and invoke store(T element) to store it in the index.
@@ -52,7 +52,7 @@ public interface IndexHandler {
 	 *            search queue entry
 	 * @return
 	 */
-	Completable store(UpdateBatchEntry entry);
+	Completable store(UpdateDocumentEntry entry);
 
 	/**
 	 * Reindex all documents for the type which the handler is capable of.

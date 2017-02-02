@@ -9,9 +9,9 @@ public class SearchQueueBatchTest extends AbstractDBTest {
 
 	@Test
 	public void testDependency() {
-		SearchQueueBatch batch = meshDagger.searchQueue().createBatch();
+		SearchQueueBatch batch = meshDagger.searchQueue().create();
 		System.out.println(batch);
-		batch = meshDagger.searchQueue().createBatch();
+		batch = meshDagger.searchQueue().create();
 		System.out.println(batch);
 		batch.createIndex(null, null, User.class);
 	}

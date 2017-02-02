@@ -102,7 +102,7 @@ public class TagCrudHandler extends AbstractHandler {
 		utils.operateNoTx(ac, () -> {
 			Database db = MeshInternal.get().database();
 			ResultInfo info = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.createBatch();
+				SearchQueueBatch batch = searchQueue.create();
 
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
 				TagResponse model = tag.transformToRestSync(ac, 0);

@@ -12,7 +12,7 @@ import org.assertj.core.api.AbstractAssert;
 import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.core.data.search.UpdateBatchEntry;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -74,8 +74,8 @@ public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAsser
 								// Language does not match up - check next
 								continue;
 							}
-							if (currentEntry instanceof UpdateBatchEntry) {
-								UpdateBatchEntry be = (UpdateBatchEntry) currentEntry;
+							if (currentEntry instanceof UpdateDocumentEntry) {
+								UpdateDocumentEntry be = (UpdateDocumentEntry) currentEntry;
 								if (!be.getElementUuid().equals(entry.getUuid())) {
 									// Element uuid does not match up - check next
 									continue;

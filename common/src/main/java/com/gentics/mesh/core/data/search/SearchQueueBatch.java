@@ -31,7 +31,7 @@ public interface SearchQueueBatch {
 	 *            Type of the index which should be created
 	 * @param elementClass
 	 *            Class of the elements that are stored in the index. This value is used to determine the correct index handler when creating the index
-	 * @return
+	 * @return Fluent API
 	 */
 	SearchQueueBatch createIndex(String indexName, String indexType, Class<?> elementClass);
 
@@ -39,7 +39,7 @@ public interface SearchQueueBatch {
 	 * Queue an drop index action.
 	 * 
 	 * @param indexName
-	 * @return
+	 * @return Fluent API
 	 */
 	SearchQueueBatch dropIndex(String indexName);
 
@@ -51,7 +51,7 @@ public interface SearchQueueBatch {
 	 * @param release
 	 * @param version
 	 * @param type
-	 * @return
+	 * @return Fluent API
 	 */
 	default SearchQueueBatch addNodeIndex(Project project, Release release, SchemaContainerVersion version, ContainerType type) {
 		return createNodeIndex(project.getUuid(), release.getUuid(), version.getUuid(), type);
@@ -65,7 +65,7 @@ public interface SearchQueueBatch {
 	 * @param releaseUuid
 	 * @param versionUuid
 	 * @param type
-	 * @return
+	 * @return Fluent API
 	 */
 	SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type);
 
@@ -73,7 +73,7 @@ public interface SearchQueueBatch {
 	 * Add the tag family index to the search database. See {@link TagFamilyEntry#composeIndexName(String)} for details.
 	 * 
 	 * @param projectUuid
-	 * @return
+	 * @return Fluent API
 	 */
 	default SearchQueueBatch createTagFamilyIndex(String projectUuid) {
 		return createIndex(TagFamily.composeIndexName(projectUuid), TagFamily.composeTypeName(), TagFamily.class);
@@ -83,12 +83,21 @@ public interface SearchQueueBatch {
 	 * Add the tag index to the search database. See {@link TagEntry#composeIndexName(String)} for details.
 	 * 
 	 * @param projectUuid
-	 * @return
+	 * @return Fluent API
 	 */
 	default SearchQueueBatch createTagIndex(String projectUuid) {
 		return createIndex(Tag.composeIndexName(projectUuid), Tag.composeTypeName(), Tag.class);
 	}
 
+	/**
+	 * Add the the given element to the search index.
+	 * 
+	 * @param element
+	 *            Element to be stored in the index
+	 * @param addRelatedEntries
+	 *            Flag which indicates whether related elements should also be stored
+	 * @return Fluent API
+	 */
 	default SearchQueueBatch store(IndexableElement element, boolean addRelatedEntries) {
 		return store(element, new HandleContext(), addRelatedEntries);
 	}
@@ -99,7 +108,7 @@ public interface SearchQueueBatch {
 	 * @param element
 	 * @param context
 	 * @param addRelatedEntries
-	 * @return
+	 * @return Fluent API
 	 */
 	SearchQueueBatch store(IndexableElement element, HandleContext context, boolean addRelatedEntries);
 
@@ -109,7 +118,7 @@ public interface SearchQueueBatch {
 	 * @param element
 	 * @param context
 	 * @param addRelatedEntries
-	 * @return
+	 * @return Fluent API
 	 */
 	SearchQueueBatch delete(IndexableElement element, HandleContext context, boolean addRelatedEntries);
 
@@ -138,12 +147,14 @@ public interface SearchQueueBatch {
 	/**
 	 * Return the batch id for this batch.
 	 * 
-	 * @return
+	 * @return Id of the batch
 	 */
 	String getBatchId();
 
 	/**
 	 * Process this batch by invoking process on all batch entries.
+	 * 
+	 * @return
 	 */
 	Completable processAsync();
 
@@ -170,13 +181,20 @@ public interface SearchQueueBatch {
 	 * 
 	 * @param element
 	 * @param addRelatedEntries
-	 * @return
+	 * @return Fluent API
 	 */
 	default SearchQueueBatch delete(IndexableElement element, boolean addRelatedEntries) {
 		return delete(element, new HandleContext(), addRelatedEntries);
 	}
 
-	SearchQueueBatch delete(Tag element, boolean addRelatedEntries);
+	/**
+	 * Delete the tag document from the index.
+	 * 
+	 * @param tag
+	 * @param addRelatedEntries
+	 * @return Fluent API
+	 */
+	SearchQueueBatch delete(Tag tag, boolean addRelatedEntries);
 
 	/**
 	 * Add an store entry for the given node. The index handler will automatically handle all languages of the found containers.
@@ -185,7 +203,7 @@ public interface SearchQueueBatch {
 	 * @param releaseUuid
 	 * @param type
 	 * @param addRelatedElements
-	 * @return
+	 * @return Fluent API
 	 */
 	SearchQueueBatch store(Node node, String releaseUuid, ContainerType type, boolean addRelatedElements);
 
@@ -195,7 +213,7 @@ public interface SearchQueueBatch {
 	 * overhead.
 	 * 
 	 * @param node
-	 * @return
+	 * @return Fluent API
 	 */
 	default SearchQueueBatch store(Node node) {
 		return store(node, null, null, false);
@@ -208,7 +226,7 @@ public interface SearchQueueBatch {
 	 * 
 	 * @param node
 	 * @param releaseUuid
-	 * @return
+	 * @return Fluent API
 	 */
 	default SearchQueueBatch store(Node node, String releaseUuid) {
 		return store(node, releaseUuid, null, false);
@@ -235,7 +253,7 @@ public interface SearchQueueBatch {
 	 * 
 	 * @param tagFammily
 	 * @param addRelatedEntries
-	 * @return
+	 * @return Fluent API
 	 */
 	SearchQueueBatch delete(TagFamily tagFammily, boolean addRelatedEntries);
 

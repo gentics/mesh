@@ -61,7 +61,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 		assertThat(restGroup).matches(request);
 
 		assertThat(dummySearchProvider).hasStore(Group.composeIndexName(), Group.composeIndexType(), restGroup.getUuid());
-		assertThat(dummySearchProvider).events(1, 0, 0, 0);
+		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 		dummySearchProvider.clear();
 
 		try (NoTx noTx = db.noTx()) {
@@ -330,7 +330,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 		GroupResponse restGroup = call(() -> client().updateGroup(uuid, request));
 		assertThat(dummySearchProvider).hasStore(Group.composeIndexName(), Group.composeIndexType(), uuid);
 		assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), userUuid);
-		assertThat(dummySearchProvider).events(2, 0, 0, 0);
+		assertThat(dummySearchProvider).hasEvents(2, 0, 0, 0);
 
 		try (Tx tx = db.tx()) {
 			assertThat(restGroup).matches(request);
@@ -441,7 +441,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 		call(() -> client().deleteGroup(groupUuid));
 		assertThat(dummySearchProvider).hasDelete(Group.composeIndexName(), Group.composeIndexType(), groupUuid);
 		assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), userUuid);
-		assertThat(dummySearchProvider).events(1, 1, 0, 0);
+		assertThat(dummySearchProvider).hasEvents(1, 1, 0, 0);
 
 		try (NoTx noTx = db.noTx()) {
 			assertElement(boot.groupRoot(), groupUuid, false);

@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -29,9 +31,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -412,7 +419,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			expectedCount += project.getTagFamilyRoot().findAll().size();
 
 			assertThat(dummySearchProvider).hasStore(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
-			assertThat(dummySearchProvider).events(expectedCount, 0, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(expectedCount, 0, 0, 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			reloadedProject.reload();
@@ -449,8 +456,6 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 	}
 
-	// Delete Tests
-
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
@@ -461,10 +466,33 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
+
+			//1. Determine a list all project indices which must be dropped
+			Set<String> indices = new HashSet<>();
+			for (Release release : project.getReleaseRoot().findAll()) {
+				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+					String schemaContainerVersionUuid = version.getUuid();
+					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, PUBLISHED));
+					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, DRAFT));
+				}
+			}
+
 			String name = project.getName();
 			assertNotNull(uuid);
 			assertNotNull(name);
+
+			//2. Delete the project
 			call(() -> client().deleteProject(uuid));
+
+			//3. Assert that the indices have been dropped and the project has been deleted from the project index
+			assertThat(dummySearchProvider).hasDelete(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
+			assertThat(dummySearchProvider).hasDrop(TagFamily.composeIndexName(uuid));
+			assertThat(dummySearchProvider).hasDrop(Tag.composeIndexName(uuid));
+			for (String index : indices) {
+				assertThat(dummySearchProvider).hasDrop(index);
+			}
+			assertThat(dummySearchProvider).hasEvents(0, 1, 2 + indices.size(), 0);
+
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
 			// TODO check for removed routers?
 		}
@@ -478,7 +506,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			String uuid = project.getUuid();
 			role().revokePermissions(project, DELETE_PERM);
 			call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
-			assertThat(dummySearchProvider).events(0, 0, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
 			project = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull("The project should not have been deleted", project);
 		}

@@ -115,7 +115,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		} catch (IOException e) {
 			return Completable.error(e);
 		}
-		SearchQueueBatch batch = searchQueue.createBatch();
+		SearchQueueBatch batch = searchQueue.create();
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
@@ -233,7 +233,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return Completable.error(e);
 		}
 
-		SearchQueueBatch batch = searchQueue.createBatch();
+		SearchQueueBatch batch = searchQueue.create();
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
@@ -335,7 +335,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
 		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
 
-		SearchQueueBatch batch = searchQueue.createBatch();
+		SearchQueueBatch batch = searchQueue.create();
 		for (Node node : nodes) {
 			db.tx(() -> {
 				if (!node.getGraphFieldContainers(newRelease, INITIAL).isEmpty()) {

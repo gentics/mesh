@@ -73,7 +73,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 		// 3. Publish the created node - It should fail since the parentfolder is not published
 		dummySearchProvider.clear();
 		call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published", subFolderUuid);
-		assertThat(dummySearchProvider).events(0, 0, 0, 0);
+		assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
 
 		// 4. Publish the parent folder
 		call(() -> client().publishNode(PROJECT_NAME, subFolderUuid));
@@ -107,7 +107,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 					NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, PUBLISHED),
 					NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
-			assertThat(dummySearchProvider).events(1, 0, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 
 		}
 	}

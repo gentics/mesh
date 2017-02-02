@@ -60,6 +60,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -1268,10 +1269,14 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadNodeByUUIDLanguageFallback() {
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			Node node = folder("products");
 			SearchQueueBatch batch = createBatch();
 			node.getLatestDraftFieldContainer(english()).delete(batch);
+		}
+
+		try (NoTx noTx = db.noTx()) {
+			Node node = folder("products");
 			String uuid = node.getUuid();
 
 			// Request the node with various language parameter values. Fallback to "de"
@@ -1430,7 +1435,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		assertThat(dummySearchProvider).hasStore(
 				NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, ContainerType.DRAFT),
 				NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(uuid, "en"));
-		assertThat(dummySearchProvider).events(1, 0, 0, 0);
+		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
 		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("1.1").hasStringField("name", newName)
@@ -1494,7 +1499,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 				NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, ContainerType.DRAFT),
 				NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(uuid, "de"));
 
-		assertThat(dummySearchProvider).events(1, 0, 0, 0);
+		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 	}
 
 	@Test
@@ -1649,7 +1654,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
-			assertThat(dummySearchProvider).events(0, 4, 0, 0);
+			assertThat(dummySearchProvider).hasEvents(0, 4, 0, 0);
 		}
 	}
 
