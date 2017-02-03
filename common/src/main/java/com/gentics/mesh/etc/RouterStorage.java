@@ -11,7 +11,11 @@ import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.graphdb.spi.Database;
 
+import dagger.Lazy;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -50,13 +54,20 @@ public class RouterStorage {
 
 	public static final String DEFAULT_API_MOUNTPOINT = "/api/v1";
 	public static final String DEFAULT_CUSTOM_MOUNTPOINT = "/custom";
-	public static final String PROJECT_CONTEXT_KEY = "mesh-project";
+	public static final String PROJECT2_CONTEXT_KEY = "mesh-project";
 
 	private static RouterStorage instance;
 
+	private Lazy<BootstrapInitializer> boot;
+
+	private Lazy<Database> db;
+
 	@Inject
-	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler) {
+	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, Lazy<BootstrapInitializer> boot,
+			Lazy<Database> db) {
 		this.vertx = Mesh.vertx();
+		this.boot = boot;
+		this.db = db;
 		RouterStorage.instance = this;
 		initAPIRouter(corsHandler, bodyHandler);
 	}
@@ -107,8 +118,7 @@ public class RouterStorage {
 	}
 
 	/**
-	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like
-	 * /api/v1/[groups|users|roles]
+	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like /api/v1/[groups|users|roles]
 	 */
 	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler) {
 		Router router = getAPIRouter();
@@ -225,7 +235,8 @@ public class RouterStorage {
 			log.info("Added project router {" + name + "}");
 
 			projectRouter.route().handler(ctx -> {
-				ctx.data().put(PROJECT_CONTEXT_KEY, name);
+				Project project = db.get().noTx(() -> boot.get().projectRoot().findByName(name));
+				ctx.data().put(PROJECT2_CONTEXT_KEY, project);
 				ctx.next();
 			});
 
@@ -258,7 +269,8 @@ public class RouterStorage {
 	 */
 	public void mountRouterInProjects(Router localRouter, String mountPoint) {
 		for (Entry<String, Router> projectRouterEntry : projectRouters.entrySet()) {
-			log.info("Mounting router onto project router {" + projectRouterEntry.getKey() + "} with mountpoint {" + mountPoint + "}");
+			log.info("Mounting router onto project router {" + projectRouterEntry.getKey() + "} with mountpoint {"
+					+ mountPoint + "}");
 			projectRouterEntry.getValue().mountSubRouter("/" + mountPoint, localRouter);
 		}
 	}

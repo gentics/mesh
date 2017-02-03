@@ -8,11 +8,14 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.path.Path;
 
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
@@ -45,6 +48,12 @@ public class RootTypeProvider {
 	public GroupTypeProvider groupTypeProvider;
 
 	@Inject
+	public WebRootService webrootService;
+	
+	@Inject 
+	public BootstrapInitializer boot;
+
+	@Inject
 	public RootTypeProvider() {
 	}
 
@@ -53,29 +62,42 @@ public class RootTypeProvider {
 		root.name("Mesh root");
 
 		// .me
-		root.field(newFieldDefinition().name("me").description("The current user").type(userFieldProvider.getUserType()).dataFetcher(fetcher -> {
-			Object source = fetcher.getSource();
-			if (source instanceof InternalActionContext) {
-				InternalActionContext ac = (InternalActionContext) source;
-				MeshAuthUser requestUser = ac.getUser();
-				return requestUser;
-			}
-			return null;
-		}).build());
+		root.field(newFieldDefinition().name("me").description("The current user").type(userFieldProvider.getUserType())
+				.dataFetcher(fetcher -> {
+					Object source = fetcher.getSource();
+					if (source instanceof InternalActionContext) {
+						InternalActionContext ac = (InternalActionContext) source;
+						MeshAuthUser requestUser = ac.getUser();
+						return requestUser;
+					}
+					return null;
+				}).build());
 
 		// .projects
 		root.field(newFieldDefinition().name("projects").description("Load a project")
-				.argument(newArgument().name("uuid").type(GraphQLString).description("Project uuid").build()).dataFetcher(fetcher -> {
+				.argument(newArgument().name("uuid").type(GraphQLString).description("Project uuid").build())
+				.dataFetcher(fetcher -> {
 					String uuid = fetcher.getArgument("uuid");
-					return MeshInternal.get().boot().projectRoot().findByUuid(uuid);
+					return boot.projectRoot().findByUuid(uuid);
 				}).type(projectTypeProvider.getProjectType(project)).build());
 
 		// .nodes
-		root.field(newFieldDefinition().name("nodes").description("Load a node")
-				.argument(newArgument().name("uuid").type(GraphQLString).description("Node uuid").build()).dataFetcher(fetcher -> {
+		GraphQLFieldDefinition nodeField = newFieldDefinition().name("nodes").description("Load a node")
+				.argument(newArgument().name("uuid").type(GraphQLString).description("Node uuid").build())
+				.argument(newArgument().name("path").type(GraphQLString).description("Node webroot path").build())
+				.dataFetcher(fetcher -> {
 					String uuid = fetcher.getArgument("uuid");
-					return MeshInternal.get().boot().nodeRoot().findByUuid(uuid);
-				}).type(nodeTypeProvider.getNodeType(project)).build());
+					if (uuid != null) {
+						return boot.nodeRoot().findByUuid(uuid);
+					}
+					String path = fetcher.getArgument("path");
+					if (path != null) {
+						Path pathResult = webrootService.findByProjectPath(null, path);
+						return pathResult.getLast().getNode();
+					}
+					return null;
+				}).type(nodeTypeProvider.getNodeType(project)).build();
+		root.field(nodeField);
 
 		// // .tags
 		// root.field(newFieldDefinition().name("tags").description("Load a tag").argument(newArgument().name("uuid").description("Tag uuid").build())

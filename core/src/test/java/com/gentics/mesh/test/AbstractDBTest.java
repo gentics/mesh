@@ -331,7 +331,8 @@ public abstract class AbstractDBTest {
 	protected String getJson(Node node) throws Exception {
 		RoutingContext rc = Mocks.getMockedRoutingContext("lang=en&version=draft", user());
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		Project project = MeshInternal.get().boot().projectRoot().findByName(TestDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT2_CONTEXT_KEY, project);
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
 	}
 

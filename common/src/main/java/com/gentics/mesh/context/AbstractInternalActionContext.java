@@ -8,8 +8,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -34,11 +32,6 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 			}
 		};
 		return handler;
-	}
-
-	@Override
-	public Database getDatabase() {
-		return MeshInternal.get().database();
 	}
 
 	@Override

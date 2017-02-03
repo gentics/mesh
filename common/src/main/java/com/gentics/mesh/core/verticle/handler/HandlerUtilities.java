@@ -32,6 +32,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.functions.Action1;
 
+/**
+ * Common request handler methods which can be used for CRUD operations.
+ */
 @Singleton
 public class HandlerUtilities {
 
@@ -52,7 +55,8 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param handler
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxHandler<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac,
+			TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
 			ResultInfo info = database.tx(() -> {
 				RootVertex<T> root = handler.call();
@@ -84,8 +88,8 @@ public class HandlerUtilities {
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxHandler<RootVertex<T>> handler,
-			String uuid) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac,
+			TxHandler<RootVertex<T>> handler, String uuid) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
@@ -118,8 +122,8 @@ public class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 * 
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
-			TxHandler<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac,
+			String uuid, TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 
@@ -150,8 +154,8 @@ public class HandlerUtilities {
 	 * @param handler
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
-			TxHandler<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac,
+			String uuid, TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 			T element = root.loadObjectByUuid(ac, uuid, READ_PERM);
@@ -173,7 +177,8 @@ public class HandlerUtilities {
 	 * @param handler
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxHandler<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac,
+			TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 
@@ -200,7 +205,8 @@ public class HandlerUtilities {
 	 * @param action
 	 *            Action which will be invoked once the handler has finished
 	 */
-	public <RM extends RestModel> void operateNoTx(InternalActionContext ac, TxHandler<RM> handler, Action1<RM> action) {
+	public <RM extends RestModel> void operateNoTx(InternalActionContext ac, TxHandler<RM> handler,
+			Action1<RM> action) {
 		operate(ac, () -> {
 			return database.noTx(handler);
 		}, action);

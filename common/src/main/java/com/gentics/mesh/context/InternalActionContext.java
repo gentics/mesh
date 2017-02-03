@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.ParameterProviderContext;
 
@@ -60,13 +59,6 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * @return
 	 */
 	<T> Handler<AsyncResult<T>> errorHandler();
-
-	/**
-	 * Return the currently used database.
-	 * 
-	 * @return
-	 */
-	Database getDatabase();
 
 	/**
 	 * Transform the rest model to JSON and send the JSON as a respond with the given status code.

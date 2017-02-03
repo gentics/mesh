@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 
 import org.mockito.Mockito;
 
+import com.gentics.mesh.cli.MeshIntegerationTest;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
@@ -86,6 +87,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.TestDataProvider;
@@ -404,7 +406,8 @@ public final class Mocks {
 
 	public static InternalActionContext getMockedVoidInternalActionContext(String query, User user) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, true, user, null));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		Project project = MeshInternal.get().boot().projectRoot().findByName(TestDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT2_CONTEXT_KEY, project);
 		return ac;
 	}
 
@@ -422,7 +425,7 @@ public final class Mocks {
 
 	public static InternalActionContext getMockedInternalActionContext(String query, User user) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT2_CONTEXT_KEY, MeshInternal.get().boot().projectRoot().findByName(TestDataProvider.PROJECT_NAME));
 		return ac;
 	}
 
@@ -476,7 +479,7 @@ public final class Mocks {
 		when(rc.session()).thenReturn(session);
 
 		if (project != null) {
-			when(rc.get(RouterStorage.PROJECT_CONTEXT_KEY)).thenReturn(project.getName());
+			when(rc.get(RouterStorage.PROJECT2_CONTEXT_KEY)).thenReturn(project);
 		}
 		return rc;
 

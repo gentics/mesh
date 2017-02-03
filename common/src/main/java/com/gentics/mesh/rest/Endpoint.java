@@ -22,7 +22,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
@@ -206,7 +205,7 @@ public class Endpoint implements Route {
 	}
 
 	@Override
-	public @Nullable String getPath() {
+	public String getPath() {
 		return route.getPath();
 	}
 

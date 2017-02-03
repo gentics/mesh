@@ -17,10 +17,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -55,11 +55,14 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	protected Database db;
 
 	private BCryptPasswordEncoder passwordEncoder;
+	
+	private BootstrapInitializer boot;
 
 	@Inject
-	public MeshAuthProvider(BCryptPasswordEncoder passwordEncoder, Database database) {
+	public MeshAuthProvider(BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
+		this.boot = boot;
 
 		// Use the mesh jwt options in order to setup the JWTAuth provider
 		AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
@@ -151,7 +154,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 */
 	private void authenticate(String username, String password, Handler<AsyncResult<User>> resultHandler) {
 		try (NoTx noTx = db.noTx()) {
-			MeshAuthUser user = MeshInternal.get().boot().userRoot().findMeshAuthUserByUsername(username);
+			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);
 			if (user != null) {
 				String accountPasswordHash = user.getPasswordHash();
 				// TODO check if user is enabled
@@ -206,7 +209,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		try (NoTx noTx = db.noTx()) {
 			JsonObject authInfo = vertxUser.principal();
 			String userUuid = authInfo.getString(USERID_FIELD_NAME);
-			MeshAuthUser user = MeshInternal.get().boot().userRoot().findMeshAuthUserByUuid(userUuid);
+			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
 			if (user == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with UUID {" + userUuid + "}.");

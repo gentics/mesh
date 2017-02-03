@@ -13,7 +13,6 @@ import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.util.ETag;
 
@@ -182,8 +181,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	@Override
 	public Project getProject() {
 		if (project == null) {
-			String projectName = get(RouterStorage.PROJECT_CONTEXT_KEY);
-			project = MeshInternal.get().boot().meshRoot().getProjectRoot().findByName(projectName);
+			project = get(RouterStorage.PROJECT2_CONTEXT_KEY);
 		}
 		return project;
 	}
