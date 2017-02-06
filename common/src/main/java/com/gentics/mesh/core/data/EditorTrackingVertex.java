@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 
+import com.gentics.mesh.util.DateUtils;
+
 /**
  * Interface for vertices that track their editor and editing time
  */
@@ -49,6 +51,15 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 */
 	default void setLastEditedTimestamp() {
 		setLastEditedTimestamp(System.currentTimeMillis());
+	}
+
+	/**
+	 * Return the ISO8601 formatted edited date.
+	 * 
+	 * @return
+	 */
+	default String getLastEditedDate() {
+		return DateUtils.toISO8601(getLastEditedTimestamp(), 0);
 	}
 
 }

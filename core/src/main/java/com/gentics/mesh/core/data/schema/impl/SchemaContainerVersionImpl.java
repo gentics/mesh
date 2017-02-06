@@ -82,6 +82,10 @@ public class SchemaContainerVersionImpl extends
 		Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);
 		restSchema.setUuid(getSchemaContainer().getUuid());
 
+		SchemaContainer container = getSchemaContainer();
+		container.fillCommonRestFields(ac, restSchema);
+		container.setRolePermissions(ac, restSchema);
+
 		// TODO Get list of projects to which the schema was assigned
 		// for (Project project : getProjects()) {
 		// }

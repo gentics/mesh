@@ -154,6 +154,12 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		return restGroup;
 	}
 
+	/**
+	 * Load the roles that are assigned to this group and add the transformed references to the rest model.
+	 * 
+	 * @param ac
+	 * @param restGroup
+	 */
 	private void setRoles(InternalActionContext ac, GroupResponse restGroup) {
 		for (Role role : getRoles()) {
 			String name = role.getName();

@@ -5,7 +5,6 @@ import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
-import static com.gentics.mesh.util.DateUtils.toISO8601;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,12 +41,12 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 		if (vertex instanceof CreatorTrackingVertex) {
 			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex) vertex;
 			addUser(document, "creator", createdVertex.getCreator());
-			document.put("created", toISO8601(createdVertex.getCreationTimestamp()));
+			document.put("created", createdVertex.getCreationDate());
 		}
 		if (vertex instanceof EditorTrackingVertex) {
 			EditorTrackingVertex editedVertex = (EditorTrackingVertex) vertex;
 			addUser(document, "editor", editedVertex.getEditor());
-			document.put("edited", toISO8601(editedVertex.getLastEditedTimestamp()));
+			document.put("edited", editedVertex.getLastEditedDate());
 		}
 	}
 

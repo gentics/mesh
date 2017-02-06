@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -784,6 +785,17 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			public User setResetTokenIssueTimestamp(Long timestamp) {
 				// TODO Auto-generated method stub
 				return null;
+			}
+
+			@Override
+			public void fillCommonRestFields(InternalActionContext ac, GenericRestResponse model) {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
+				// TODO Auto-generated method stub
+				
 			}
 		};
 		return user;

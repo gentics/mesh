@@ -30,6 +30,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -192,12 +193,10 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testReadByUUID() throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			SchemaContainer schemaContainer = schemaContainer("content");
-			MeshResponse<Schema> future = client().findSchemaByUuid(schemaContainer.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			Schema restSchema = future.result();
-			assertThat(restSchema).matches(schemaContainer);
+			SchemaContainer container = schemaContainer("content");
+			SchemaContainerVersion schemaContainerVersion = container.getLatestVersion();
+			Schema restSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
+			assertThat(restSchema).matches(schemaContainerVersion).isValid();
 		}
 	}
 
