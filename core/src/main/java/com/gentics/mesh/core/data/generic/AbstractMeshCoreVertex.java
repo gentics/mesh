@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.generic;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -15,6 +14,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
 
@@ -40,15 +40,17 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		if (!isEmpty(roleUuid)) {
 			Role role = MeshInternal.get().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
+
+				PermissionInfo permissionInfo = new PermissionInfo();
 				Set<GraphPermission> permSet = role.getPermissions(this);
-				Set<String> humanNames = new HashSet<>();
 				for (GraphPermission permission : permSet) {
-					humanNames.add(permission.getSimpleName());
+					permissionInfo.set(permission.getRestPerm(), true);
 				}
-				String[] names = humanNames.toArray(new String[humanNames.size()]);
-				model.setRolePerms(names);
+				permissionInfo.setOthers(false);
+				model.setRolePerms(permissionInfo);
 			}
 		}
+
 	}
 
 	@Override
@@ -84,8 +86,8 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 		// When this is a node migration, do not set user permissions
 		if (!(ac instanceof NodeMigrationActionContextImpl)) {
-			String[] names = ac.getUser().getPermissionNames(this);
-			model.setPermissions(names);
+			PermissionInfo permissionInfo = ac.getUser().getPermissionInfo(this);
+			model.setPermissions(permissionInfo);
 		}
 	}
 

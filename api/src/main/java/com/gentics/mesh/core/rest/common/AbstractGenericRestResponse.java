@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.rest.common;
 
+import java.util.Arrays;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
@@ -15,9 +19,11 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 
 	private String edited;
 
-	private String[] permissions = {};
+	@JsonProperty("permissions")
+	private PermissionInfo permissions = new PermissionInfo();
 
-	private String[] rolePerms;
+	@JsonProperty("rolePerms")
+	private PermissionInfo rolePerms;
 
 	@Override
 	public UserReference getCreator() {
@@ -60,23 +66,44 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 	}
 
 	@Override
-	public String[] getPermissions() {
+	public PermissionInfo getPermissions() {
 		return permissions;
 	}
 
 	@Override
-	public void setPermissions(String... permissions) {
+	public void setPermissions(PermissionInfo permissions) {
 		this.permissions = permissions;
 	}
 
 	@Override
-	public String[] getRolePerms() {
+	@JsonIgnore
+	public void setPermissions(Permission... permissions) {
+		for (Permission permission : Arrays.asList(permissions)) {
+			getPermissions().set(permission, true);
+		}
+		getPermissions().setOthers(false);
+	}
+
+	@Override
+	public PermissionInfo getRolePerms() {
 		return rolePerms;
 	}
 
 	@Override
-	public void setRolePerms(String... rolePerms) {
+	public void setRolePerms(PermissionInfo rolePerms) {
 		this.rolePerms = rolePerms;
+	}
+
+	@Override
+	@JsonIgnore
+	public void setRolePerms(Permission... permissions) {
+		if (rolePerms == null) {
+			rolePerms = new PermissionInfo();
+		}
+		for (Permission permission : Arrays.asList(permissions)) {
+			rolePerms.set(permission, true);
+		}
+		rolePerms.setOthers(false);
 	}
 
 }

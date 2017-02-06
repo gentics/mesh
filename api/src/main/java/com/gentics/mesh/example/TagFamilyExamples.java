@@ -1,5 +1,9 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -9,7 +13,7 @@ public class TagFamilyExamples extends AbstractExamples {
 
 	public TagFamilyResponse getTagFamilyResponse(String name) {
 		TagFamilyResponse response = new TagFamilyResponse();
-		response.setPermissions("READ", "CREATE", "UPDATE");
+		response.setPermissions(READ, DELETE, CREATE);
 		response.setName(name);
 		response.setEdited(getTimestamp());
 		response.setEditor(getUserReference());

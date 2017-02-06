@@ -1,7 +1,10 @@
 package com.gentics.mesh.util;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.junit.Assert.*;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -32,6 +35,15 @@ public class JsonUtilTest {
 		list.getData().add(user);
 		String json = JsonUtil.toJson(list);
 		assertNotNull(json);
+	}
+
+	@Test
+	public void testPermMap() {
+		UserResponse group = new UserResponse();
+		group.getPermissions().setOthers(false);
+		group.getPermissions().set(READ, true);
+		group.getPermissions().setCreate(true);
+		JsonUtil.toJson(group);
 	}
 
 	@Test

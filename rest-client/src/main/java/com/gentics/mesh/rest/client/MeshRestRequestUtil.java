@@ -36,6 +36,7 @@ public final class MeshRestRequestUtil {
 	 * @param bodyData
 	 *            Body data to post
 	 * @param contentType
+	 *            Content type of the posted data
 	 * @param client
 	 *            Client to use
 	 * @param authentication

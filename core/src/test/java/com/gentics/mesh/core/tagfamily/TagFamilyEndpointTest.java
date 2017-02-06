@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -68,12 +69,10 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
 
-			MeshResponse<TagFamilyResponse> future = client()
-					.findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertNotNull("The response did not contain the expected role permission field value", future.result().getRolePerms());
-			assertEquals("The response did not contain the expected amount of role permissions.", 6, future.result().getRolePerms().length);
+			TagFamilyResponse response = call(
+					() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+			assertNotNull("The response did not contain the expected role permission field value", response.getRolePerms());
+			assertThat(response.getRolePerms()).hasPerm(Permission.values());
 		}
 
 	}
@@ -285,8 +284,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
-			call(() -> client().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()), FORBIDDEN, "error_missing_perm",
-					basicTagFamily.getUuid());
+			call(() -> client().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()), FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
 
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 		}

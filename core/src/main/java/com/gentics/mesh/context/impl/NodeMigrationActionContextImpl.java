@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -284,11 +285,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public Set<GraphPermission> getPermissions(MeshVertex vertex) {
 				return new HashSet<GraphPermission>(Arrays.asList(GraphPermission.values()));
-			}
-
-			@Override
-			public String[] getPermissionNames(MeshVertex vertex) {
-				return null;
 			}
 
 			@Override
@@ -796,6 +792,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
 				// TODO Auto-generated method stub
 				
+			}
+
+			@Override
+			public PermissionInfo getPermissionInfo(MeshVertex vertex) {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		};
 		return user;

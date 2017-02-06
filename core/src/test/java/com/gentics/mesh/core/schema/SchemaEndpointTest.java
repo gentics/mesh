@@ -5,6 +5,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -32,6 +36,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
@@ -57,7 +62,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 				SchemaContainer.composeDocumentId(restSchema.getUuid()));
 		try (NoTx noTx = db.noTx()) {
 			assertThat(schema).matches(restSchema);
-			assertThat(restSchema.getPermissions()).isNotEmpty().contains("create", "read", "update", "delete");
+			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 
 			SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchema.getUuid());
 			assertNotNull(schemaContainer);
@@ -207,7 +212,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		Schema schema = call(() -> client().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTx(() -> role().getUuid()))));
 		assertNotNull(schema.getRolePerms());
-		assertEquals(6, schema.getRolePerms().length);
+		assertThat(schema.getRolePerms()).hasPerm(Permission.values());
 	}
 
 	@Test

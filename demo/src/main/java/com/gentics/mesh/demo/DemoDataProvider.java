@@ -1,5 +1,8 @@
 package com.gentics.mesh.demo;
 
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -130,8 +133,8 @@ public class DemoDataProvider {
 	private void addWebclientPermissions() throws InterruptedException {
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
-		request.getPermissions().add("read");
-		request.getPermissions().add("update");
+		request.getPermissions().add(READ);
+		request.getPermissions().add(UPDATE);
 		call(() -> client.updateRolePermissions(getRole("Client Role").getUuid(), "projects/" + getProject("demo").getUuid(), request));
 		call(() -> client.updateRolePermissions(getRole("Client Role").getUuid(), "users/" + users.get("webclient").getUuid(), request));
 	}

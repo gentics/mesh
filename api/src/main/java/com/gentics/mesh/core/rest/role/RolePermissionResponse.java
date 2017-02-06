@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.role;
 
-import com.gentics.mesh.core.rest.common.AbstractPermissionResponse;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 
-public class RolePermissionResponse extends AbstractPermissionResponse {
+public class RolePermissionResponse extends PermissionInfo {
+
 }

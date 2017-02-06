@@ -1,5 +1,13 @@
 package com.gentics.mesh.core.data.relationship;
 
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+
+import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
@@ -7,17 +15,17 @@ import com.gentics.mesh.graphdb.spi.Database;
  */
 public enum GraphPermission {
 
-	CREATE_PERM("HAS_CREATE_PERMISSION", "create"),
+	CREATE_PERM("HAS_CREATE_PERMISSION", CREATE),
 
-	READ_PERM("HAS_READ_PERMISSION", "read"),
+	READ_PERM("HAS_READ_PERMISSION", READ),
 
-	UPDATE_PERM("HAS_UPDATE_PERMISSION", "update"),
+	UPDATE_PERM("HAS_UPDATE_PERMISSION", UPDATE),
 
-	DELETE_PERM("HAS_DELETE_PERMISSION", "delete"),
+	DELETE_PERM("HAS_DELETE_PERMISSION", DELETE),
 
-	READ_PUBLISHED_PERM("HAS_READ_PUBLISHED_PERMISSION", "readpublished"),
+	READ_PUBLISHED_PERM("HAS_READ_PUBLISHED_PERMISSION", READ_PUBLISHED),
 
-	PUBLISH_PERM("HAS_PUBLISH_PERMISSION", "publish");
+	PUBLISH_PERM("HAS_PUBLISH_PERMISSION", PUBLISH);
 
 	public static void init(Database database) {
 		for (String label : GraphPermission.labels()) {
@@ -26,11 +34,18 @@ public enum GraphPermission {
 	}
 
 	private String label;
-	private String simpleName;
+	private Permission restPerm;
 
-	GraphPermission(String label, String simpleName) {
+	/**
+	 * Create a new graph permission.
+	 * 
+	 * @param label
+	 * @param restPerm
+	 *            Rest permission representation
+	 */
+	GraphPermission(String label, Permission restPerm) {
 		this.label = label;
-		this.simpleName = simpleName;
+		this.restPerm = restPerm;
 	}
 
 	/**
@@ -74,27 +89,12 @@ public enum GraphPermission {
 	}
 
 	/**
-	 * Convert the human readable permission name back into a graph permission object.
-	 * 
-	 * @param simpleName
-	 * @return
-	 */
-	public static GraphPermission valueOfSimpleName(String simpleName) {
-		for (GraphPermission p : GraphPermission.values()) {
-			if (simpleName.equals(p.getSimpleName())) {
-				return p;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Return the human friendly name for the permission.
+	 * Return the rest permission representation.
 	 * 
 	 * @return
 	 */
-	public String getSimpleName() {
-		return simpleName;
+	public Permission getRestPerm() {
+		return restPerm;
 	}
 
 	@Override

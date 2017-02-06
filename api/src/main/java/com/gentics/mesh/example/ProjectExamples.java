@@ -1,5 +1,8 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -18,7 +21,7 @@ public class ProjectExamples extends AbstractExamples {
 		project.setCreator(getUserReference());
 		project.setEdited(getTimestamp());
 		project.setEditor(getUserReference());
-		project.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		project.setPermissions(READ, DELETE, CREATE);
 		project.setRootNodeUuid(randomUUID());
 		return project;
 	}
@@ -31,7 +34,7 @@ public class ProjectExamples extends AbstractExamples {
 		project2.setCreator(getUserReference());
 		project2.setEdited(getTimestamp());
 		project2.setEditor(getUserReference());
-		project2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		project2.setPermissions(READ, DELETE, CREATE);
 		project2.setRootNodeUuid(randomUUID());
 		return project2;
 	}

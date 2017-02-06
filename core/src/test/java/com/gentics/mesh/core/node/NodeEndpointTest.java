@@ -48,6 +48,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -949,7 +950,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new RolePermissionParameters().setRoleUuid(role().getUuid()), new VersioningParameters().draft()));
 			assertNotNull(response.getRolePerms());
-			assertEquals(6, response.getRolePerms().length);
+			assertThat(response.getRolePerms()).hasPerm(Permission.values());
 		}
 	}
 

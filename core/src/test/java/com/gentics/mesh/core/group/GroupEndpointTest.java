@@ -5,6 +5,12 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -38,6 +44,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -274,27 +281,19 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 			Group group = group();
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
 
-			MeshResponse<GroupResponse> future = client().findGroupByUuid(group.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertThat(future.result()).matches(group());
+			GroupResponse response = call(() -> client().findGroupByUuid(group.getUuid()));
+			assertThat(response).matches(group());
 		}
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (NoTx noTx = db.noTx()) {
-			Group group = group();
-			String uuid = group.getUuid();
-
-			MeshResponse<GroupResponse> future = client().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
-					.invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertNotNull(future.result().getRolePerms());
-			assertThat(future.result().getRolePerms()).containsOnly("read", "readpublished", "publish", "update", "delete", "create");
-		}
+		String uuid = db.noTx(() -> group().getUuid());
+		String roleUuid = db.noTx(() -> role().getUuid());
+		GroupResponse response = call(() -> client().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(roleUuid)));
+		assertNotNull(response.getRolePerms());
+		assertThat(response.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, UPDATE, DELETE, CREATE);
 	}
 
 	@Test
@@ -304,18 +303,14 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 			Group group = group();
 			role().revokePermissions(group, READ_PERM);
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
-			MeshResponse<GroupResponse> future = client().findGroupByUuid(group.getUuid()).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
+			call(() -> client().findGroupByUuid(group.getUuid()), FORBIDDEN, "error_missing_perm", group.getUuid());
 		}
 	}
 
 	@Test
 	public void testReadGroupWithBogusUUID() throws Exception {
 		final String bogusUuid = "sadgasdasdg";
-		MeshResponse<GroupResponse> future = client().findGroupByUuid(bogusUuid).invoke();
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
+		call(() -> client().findGroupByUuid(bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
 	}
 
 	@Test

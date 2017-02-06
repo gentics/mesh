@@ -1,5 +1,9 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
@@ -53,7 +57,7 @@ public class SchemaExamples extends AbstractExamples {
 		schema.setDisplayField("name");
 		// schema.setDescription("Description of the schema");
 		// schema.setName("extended-content");
-		schema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		schema.setPermissions(READ, UPDATE, DELETE, CREATE);
 
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("name");

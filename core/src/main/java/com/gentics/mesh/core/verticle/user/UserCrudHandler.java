@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserTokenResponse;
@@ -77,9 +78,14 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 				}
 				UserPermissionResponse response = new UserPermissionResponse();
+
+				// 1. Add granted permissions
 				for (GraphPermission perm : user.getPermissions(targetElement)) {
-					response.getPermissions().add(perm.getSimpleName());
+					response.set(perm.getRestPerm(), true);
 				}
+
+				// 2. Add not granted permissions
+				response.setOthers(false);
 				return Single.just(response);
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);

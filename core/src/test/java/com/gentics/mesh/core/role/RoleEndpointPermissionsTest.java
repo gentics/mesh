@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.role;
 
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -14,10 +15,10 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 
 public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
@@ -31,8 +32,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
-			GenericMessageResponse message = call(
-					() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request));
+			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
 
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
@@ -48,9 +48,9 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(false);
-			request.getPermissions().add("read");
-			request.getPermissions().add("update");
-			request.getPermissions().add("create");
+			request.getPermissions().add(READ);
+			request.getPermissions().add(UPDATE);
+			request.getPermissions().add(CREATE);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(),
 					"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
@@ -75,11 +75,10 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(false);
-			request.getPermissions().add("read");
-			request.getPermissions().add("update");
-			request.getPermissions().add("create");
-			GenericMessageResponse message = call(
-					() -> client().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request));
+			request.getPermissions().add(READ);
+			request.getPermissions().add(UPDATE);
+			request.getPermissions().add(CREATE);
+			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
 
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
@@ -96,9 +95,9 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
-			request.getPermissions().add("read");
-			request.getPermissions().add("update");
-			request.getPermissions().add("create");
+			request.getPermissions().add(READ);
+			request.getPermissions().add(UPDATE);
+			request.getPermissions().add(CREATE);
 			assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), pathToElement, request));
@@ -116,12 +115,9 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 
 			String pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid();
-			MeshResponse<RolePermissionResponse> future = client().readRolePermissions(role().getUuid(), pathToElement).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			RolePermissionResponse response = future.result();
-			assertNotNull(response.getPermissions());
-			assertEquals(6, response.getPermissions().size());
+			RolePermissionResponse response = call(() -> client().readRolePermissions(role().getUuid(), pathToElement));
+			assertNotNull(response);
+			assertThat(response).hasPerm(Permission.values());
 		}
 	}
 
@@ -135,12 +131,12 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(false);
-			request.getPermissions().add("read");
-			request.getPermissions().add("update");
-			request.getPermissions().add("create");
+			request.getPermissions().add(READ);
+			request.getPermissions().add(UPDATE);
+			request.getPermissions().add(CREATE);
 
-			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(),
-					"projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request));
+			GenericMessageResponse message = call(
+					() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
 
 			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, node));
@@ -151,7 +147,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 	public void testAddPermissionToNonExistingProject() {
 		try (NoTx noTx = db.noTx()) {
 			RolePermissionRequest request = new RolePermissionRequest();
-			request.getPermissions().add("read");
+			request.getPermissions().add(READ);
 			String path = "projects/bogus1234/nodes";
 			call(() -> client().updateRolePermissions(role().getUuid(), path, request), NOT_FOUND, "error_element_for_path_not_found", path);
 		}

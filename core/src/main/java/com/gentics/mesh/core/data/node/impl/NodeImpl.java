@@ -1791,7 +1791,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				Set<GraphPermission> permSet = role.getPermissions(this);
 				Set<String> humanNames = new HashSet<>();
 				for (GraphPermission permission : permSet) {
-					humanNames.add(permission.getSimpleName());
+					humanNames.add(permission.getRestPerm().getName());
 				}
 				String[] names = humanNames.toArray(new String[humanNames.size()]);
 				keyBuilder.append(names);

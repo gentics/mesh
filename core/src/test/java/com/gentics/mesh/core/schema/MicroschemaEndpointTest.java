@@ -5,6 +5,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -12,7 +16,6 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -28,6 +31,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -120,7 +124,7 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		assertThat(dummySearchProvider).recordedStoreEvents(0);
 		Microschema microschemaResponse = call(() -> client().createMicroschema(request));
 		assertThat(dummySearchProvider).recordedStoreEvents(1);
-		assertThat(microschemaResponse.getPermissions()).isNotEmpty().contains("read", "create", "delete", "update");
+		assertThat(microschemaResponse.getPermissions()).hasPerm(READ, CREATE, DELETE, UPDATE);
 		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
 	}
 
@@ -169,12 +173,9 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
-			MeshResponse<Microschema> future = client().findMicroschemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
-					.invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertNotNull(future.result().getRolePerms());
-			assertEquals(6, future.result().getRolePerms().length);
+			Microschema microschema = call(() -> client().findMicroschemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+			assertNotNull(microschema.getRolePerms());
+			assertThat(microschema.getRolePerms()).hasPerm(Permission.values());
 		}
 	}
 

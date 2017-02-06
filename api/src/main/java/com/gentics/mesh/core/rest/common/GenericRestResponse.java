@@ -62,32 +62,46 @@ public interface GenericRestResponse extends RestResponse {
 	void setEdited(String edited);
 
 	/**
-	 * Return human readable permissions for the element.
-	 * 
-	 * @return Array of human readable permissions
-	 */
-	String[] getPermissions();
-
-	/**
-	 * Set the human readable permission names for the element.
-	 * 
-	 * @param permissions
-	 *            Human readable permissions
-	 */
-	void setPermissions(String... permissions);
-
-	/**
-	 * Return the human readable role permissions for the element.
+	 * Return the permissions for the element.
 	 * 
 	 * @return
 	 */
-	String[] getRolePerms();
+	PermissionInfo getPermissions();
 
 	/**
-	 * Set the human readable role permissions for the element.
+	 * Set the permissions for the element.
+	 * 
+	 * @param permissions
+	 */
+	void setPermissions(PermissionInfo permissions);
+
+	/**
+	 * Set specific granted permissions for the element. Permissions which are not included will be set to false.
+	 * 
+	 * @param permissions
+	 */
+	void setPermissions(Permission... permissions);
+
+	/**
+	 * Return the role permissions for the element.
+	 * 
+	 * @return
+	 */
+	PermissionInfo getRolePerms();
+
+	/**
+	 * Set the role permissions for the element.
 	 * 
 	 * @param rolePerms
 	 */
-	void setRolePerms(String... rolePerms);
+	void setRolePerms(PermissionInfo rolePerms);
+
+	/**
+	 * 
+	 * Set specific granted role permissions for the element. Permissions which are not included will be set to false.
+	 * 
+	 * @param permissions
+	 */
+	void setRolePerms(Permission... permissions);
 
 }
