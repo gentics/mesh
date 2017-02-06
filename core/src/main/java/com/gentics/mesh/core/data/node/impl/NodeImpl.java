@@ -843,7 +843,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return Single.error(new NotModifiedException());
 			} else {
 				NavigationResponse response = new NavigationResponse();
-				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response.getRoot(),
+				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response,
 						ac.getRelease(getProject()).getUuid(), forVersion(ac.getVersioningParameters().getVersion()));
 			}
 		});

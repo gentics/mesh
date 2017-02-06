@@ -67,7 +67,7 @@ public class NavigationResponseAssert extends AbstractAssert<NavigationResponseA
 	 * @return
 	 */
 	public NavigationResponseAssert hasDepth(int depth) {
-		assertEquals("The depth of the navigation response did not match the expected depth.", depth, maxDepth(actual.getRoot(), 0));
+		assertEquals("The depth of the navigation response did not match the expected depth.", depth, maxDepth(actual, 0));
 		return this;
 	}
 
@@ -78,7 +78,7 @@ public class NavigationResponseAssert extends AbstractAssert<NavigationResponseA
 	 * @return
 	 */
 	public NavigationResponseAssert isValid(int nElements) {
-		assertEquals("Did not find the expected amount of elements.", nElements, validateNavigation(actual.getRoot(), 0));
+		assertEquals("Did not find the expected amount of elements.", nElements, validateNavigation(actual, 0));
 		return this;
 	}
 

@@ -88,7 +88,7 @@ public class NavRootEndpointTest extends AbstractRestEndpointTest {
 			assertSuccess(future);
 			assertThat(future.result()).isValid(7).hasDepth(3);
 			assertEquals("The root element of the navigation did not contain the project basenode uuid.", project().getBaseNode().getUuid(),
-					future.result().getRoot().getUuid());
+					future.result().getUuid());
 		}
 	}
 

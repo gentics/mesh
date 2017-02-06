@@ -126,16 +126,14 @@ public class NodeExamples extends AbstractExamples {
 
 	public NavigationResponse getNavigationResponse() {
 		NavigationResponse response = new NavigationResponse();
-
-		NavigationElement root = new NavigationElement();
 		String rootUuid = randomUUID();
 
 		// Level 0
 		NodeResponse rootElement = getNodeResponseWithAllFields();
 		rootElement.setUuid(rootUuid);
-		root.setUuid(rootUuid);
-		root.setNode(rootElement);
-		root.setChildren(new ArrayList<>());
+		response.setUuid(rootUuid);
+		response.setNode(rootElement);
+		response.setChildren(new ArrayList<>());
 
 		// Level 1
 		NavigationElement navElement = new NavigationElement();
@@ -144,9 +142,8 @@ public class NodeExamples extends AbstractExamples {
 		navElementNode.setUuid(navElementUuid);
 		navElement.setUuid(navElementUuid);
 		navElement.setNode(navElementNode);
-		root.getChildren().add(navElement);
+		response.getChildren().add(navElement);
 
-		response.setRoot(root);
 		return response;
 	}
 
