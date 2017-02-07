@@ -37,6 +37,9 @@ public class MeshJsonResponseHandler<T> extends AbstractMeshResponseHandler<T> {
 		this.classOfT = classOfT;
 	}
 
+	/**
+	 * Handle the mesh response. This method will deserialise the JSON response.
+	 */
 	public void handleSuccess(HttpClientResponse response) {
 		String contentType = response.getHeader("Content-Type");
 		//FIXME TODO in theory it would also be possible that a customer uploads JSON into mesh. In those cases we would also need to return it directly (without parsing)
@@ -48,7 +51,7 @@ public class MeshJsonResponseHandler<T> extends AbstractMeshResponseHandler<T> {
 		} else if (contentType.startsWith(HttpConstants.APPLICATION_JSON)) {
 			response.bodyHandler(bh -> {
 				String json = bh.toString();
-//				System.out.println(json);
+				//				System.out.println(json);
 				if (log.isDebugEnabled()) {
 					log.debug(json);
 				}

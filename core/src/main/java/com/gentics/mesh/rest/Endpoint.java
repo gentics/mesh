@@ -34,7 +34,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Simple wrapper for vert.x routes. The wrapper is commonly used to generate RAML descriptions for the route.
  */
-public class Endpoint implements Route {
+public class Endpoint implements Route, Comparable<Endpoint> {
 
 	private static final Logger log = LoggerFactory.getLogger(Endpoint.class);
 
@@ -454,6 +454,11 @@ public class Endpoint implements Route {
 		param.setDescription(description);
 		param.setExample(example);
 		uriParameters.put(key, param);
+	}
+
+	@Override
+	public int compareTo(Endpoint o) {
+		return getRamlPath().compareTo(o.getRamlPath());
 	}
 
 }

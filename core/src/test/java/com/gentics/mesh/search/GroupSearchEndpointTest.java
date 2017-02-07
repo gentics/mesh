@@ -3,6 +3,7 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONException;
@@ -24,6 +25,20 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
+	}
+
+	@Test
+	public void testBogusQuery() {
+		String groupName = "testgroup42a";
+		String uuid = createGroup(groupName).getUuid();
+
+		// 1. Search with bogus query
+		call(() -> client().searchGroups("HudriWudri"), BAD_REQUEST, "search_query_not_parsable");
+
+		// 2. Assert that search still works
+		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("uuid", uuid)));
+		assertThat(result.getData()).hasSize(1);
+		assertEquals(uuid, result.getData().get(0).getUuid());
 	}
 
 	@Test

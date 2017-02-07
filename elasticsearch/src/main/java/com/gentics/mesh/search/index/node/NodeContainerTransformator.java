@@ -498,7 +498,8 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject displayField = new JsonObject();
 		displayField.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
 		displayField.put("value", container.getDisplayFieldValue());
-		return document.put("displayField", displayField);
+		document.put("displayField", displayField);
+		return document;
 	}
 
 	@Override

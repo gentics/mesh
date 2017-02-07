@@ -50,11 +50,11 @@ public class SchemaEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() throws Exception {
 		secureAll();
+		addReadHandlers();
+
 		addDiffHandler();
 		addChangesHandler();
-
 		addCreateHandler();
-		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
 	}

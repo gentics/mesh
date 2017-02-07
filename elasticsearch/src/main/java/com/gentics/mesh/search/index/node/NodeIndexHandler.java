@@ -292,6 +292,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return Completable.merge(obs);
 	}
 
+	/**
+	 * Update the node mapping for the index which is identified using the provided elements.
+	 * 
+	 * @param project
+	 * @param release
+	 * @param schemaVersion
+	 * @param containerType
+	 * @param schema
+	 * @return
+	 */
 	public Completable updateNodeIndexMapping(Project project, Release release, SchemaContainerVersion schemaVersion, ContainerType containerType,
 			Schema schema) {
 		String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), schemaVersion.getUuid(), containerType);

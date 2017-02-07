@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.mockito.Mockito;
@@ -74,7 +75,7 @@ public class RAMLGenerator {
 	public void run() throws Exception {
 		log.info("Starting RAML generation...");
 		raml.setTitle("Gentics Mesh REST API");
-		raml.setVersion("1");
+		raml.setVersion("0.7");
 		raml.setBaseUri("http://localhost:8080/api/v1");
 		raml.getProtocols().add(Protocol.HTTP);
 		raml.getProtocols().add(Protocol.HTTPS);
@@ -101,7 +102,7 @@ public class RAMLGenerator {
 	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractEndpoint verticle) throws IOException {
 
 		Resource verticleResource = new Resource();
-		for (Endpoint endpoint : verticle.getEndpoints()) {
+		for (Endpoint endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
 
 			String fullPath = "api/v1" + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
 			Action action = new Action();
