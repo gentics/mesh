@@ -18,7 +18,8 @@ public class PermissionInfoAssert extends AbstractAssert<PermissionInfoAssert, P
 	}
 
 	public PermissionInfoAssert hasPerm(Permission... permissions) {
-		List<String> hasPerm= actual.asMap().entrySet().stream().filter(p -> p.getValue() == true).map(e -> e.getKey().getName()).collect(Collectors.toList());
+		List<String> hasPerm = actual.asMap().entrySet().stream().filter(p -> p.getValue() == true).map(e -> e.getKey().getName())
+				.collect(Collectors.toList());
 		List<String> mustHave = Arrays.asList(permissions).stream().map(e -> e.getName()).collect(Collectors.toList());
 		assertThat(hasPerm).containsAll(mustHave);
 		return this;

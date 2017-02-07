@@ -178,22 +178,18 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			// Create a new project
 			ProjectResponse restProject = call(() -> client().createProject(request));
 			assertThat(restProject).matches(request);
-			assertThat(restProject.getRolePerms()).hasPerm(Permission.values());
+			assertThat(restProject.getPermissions()).hasPerm(Permission.values());
 
 			meshRoot().getProjectRoot().reload();
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
 			// Read the project
-			MeshResponse<ProjectResponse> readFuture = client().findProjectByUuid(restProject.getUuid()).invoke();
-			latchFor(readFuture);
-			assertSuccess(readFuture);
+			call(() -> client().findProjectByUuid(restProject.getUuid()));
 
 			// Now delete the project
 			call(() -> client().deleteProject(restProject.getUuid()));
 		}
 	}
-
-	// Read Tests
 
 	@Test
 	@Override

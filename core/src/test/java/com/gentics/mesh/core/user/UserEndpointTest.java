@@ -226,7 +226,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			UserPermissionResponse response  = call(() -> client().readUserPermissions(user.getUuid(), pathToElement));
 			assertNotNull(response);
-			assertThat(response).hasPerm(Permission.values());
+			assertThat(response).hasPerm(READ, CREATE, DELETE, PUBLISH, READ_PUBLISHED);
 		}
 	}
 
