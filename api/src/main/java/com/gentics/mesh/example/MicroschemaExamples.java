@@ -1,5 +1,10 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
@@ -9,8 +14,8 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 public class MicroschemaExamples extends AbstractExamples {
-	
-	public  MicroschemaReferenceList createMicroschemaReferenceList() {
+
+	public MicroschemaReferenceList createMicroschemaReferenceList() {
 		MicroschemaReferenceList microschemas = new MicroschemaReferenceList();
 		microschemas.add(getMicroschemaReference("vcard", 2));
 		microschemas.add(getMicroschemaReference("geolocation", 1));
@@ -40,7 +45,7 @@ public class MicroschemaExamples extends AbstractExamples {
 		//		latitudeFieldSchema.setMax(90);
 		microschema.addField(latitudeFieldSchema);
 
-		microschema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		microschema.setPermissions(READ, UPDATE, DELETE, CREATE);
 		microschema.validate();
 		return microschema;
 	}

@@ -7,6 +7,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -39,6 +43,8 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -172,22 +178,18 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			// Create a new project
 			ProjectResponse restProject = call(() -> client().createProject(request));
 			assertThat(restProject).matches(request);
-			assertEquals(6, restProject.getPermissions().length);
+			assertThat(restProject.getPermissions()).hasPerm(Permission.values());
 
 			meshRoot().getProjectRoot().reload();
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
 			// Read the project
-			MeshResponse<ProjectResponse> readFuture = client().findProjectByUuid(restProject.getUuid()).invoke();
-			latchFor(readFuture);
-			assertSuccess(readFuture);
+			call(() -> client().findProjectByUuid(restProject.getUuid()));
 
 			// Now delete the project
 			call(() -> client().deleteProject(restProject.getUuid()));
 		}
 	}
-
-	// Read Tests
 
 	@Test
 	@Override
@@ -321,11 +323,11 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			ProjectResponse restProject = future.result();
 			assertThat(restProject).matches(project());
 
-			List<String> permissions = Arrays.asList(restProject.getPermissions());
-			assertTrue(permissions.contains("create"));
-			assertTrue(permissions.contains("read"));
-			assertTrue(permissions.contains("update"));
-			assertTrue(permissions.contains("delete"));
+			PermissionInfo permissions = restProject.getPermissions();
+			assertTrue(permissions.hasPerm(CREATE));
+			assertTrue(permissions.hasPerm(READ));
+			assertTrue(permissions.hasPerm(UPDATE));
+			assertTrue(permissions.hasPerm(DELETE));
 		}
 	}
 
@@ -335,12 +337,9 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			Project project = project();
 			String uuid = project.getUuid();
 
-			MeshResponse<ProjectResponse> future = client().findProjectByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid()))
-					.invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertNotNull(future.result().getRolePerms());
-			assertEquals(6, future.result().getRolePerms().length);
+			ProjectResponse response = call(() -> client().findProjectByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+			assertNotNull(response.getRolePerms());
+			assertThat(response.getRolePerms()).hasPerm(Permission.values());
 		}
 	}
 
@@ -353,9 +352,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
 			role().revokePermissions(project, READ_PERM);
 
-			MeshResponse<ProjectResponse> future = client().findProjectByUuid(uuid).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			call(() -> client().findProjectByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid);
 		}
 	}
 

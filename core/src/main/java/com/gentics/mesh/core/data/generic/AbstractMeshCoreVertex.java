@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.generic;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -14,10 +13,10 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.common.GenericRestResponse;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -35,35 +34,27 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
 
-	/**
-	 * Add role permissions to given rest model object.
-	 * 
-	 * @param ac
-	 * @param model
-	 */
-	protected <E extends AbstractGenericRestResponse> void setRolePermissions(InternalActionContext ac, E model) {
+	@Override
+	public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
 			Role role = MeshInternal.get().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
+
+				PermissionInfo permissionInfo = new PermissionInfo();
 				Set<GraphPermission> permSet = role.getPermissions(this);
-				Set<String> humanNames = new HashSet<>();
 				for (GraphPermission permission : permSet) {
-					humanNames.add(permission.getSimpleName());
+					permissionInfo.set(permission.getRestPerm(), true);
 				}
-				String[] names = humanNames.toArray(new String[humanNames.size()]);
-				model.setRolePerms(names);
+				permissionInfo.setOthers(false);
+				model.setRolePerms(permissionInfo);
 			}
 		}
+
 	}
 
-	/**
-	 * Add common fields to the given rest model object. The method will add common files like creator, editor, uuid, permissions, edited, created.
-	 * 
-	 * @param model
-	 * @param ac
-	 */
-	protected <E extends AbstractGenericRestResponse> void fillCommonRestFields(InternalActionContext ac, E model) {
+	@Override
+	public void fillCommonRestFields(InternalActionContext ac, GenericRestResponse model) {
 		model.setUuid(getUuid());
 
 		if (this instanceof EditorTrackingVertex) {
@@ -76,8 +67,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no editor. Omitting editor field");
 			}
 
-			// Convert unixtime to iso-8601
-			String date = DateUtils.toISO8601(edited.getLastEditedTimestamp(), 0);
+			String date = edited.getLastEditedDate();
 			model.setEdited(date);
 		}
 
@@ -90,15 +80,14 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
 			}
 
-			// Convert unixtime to iso-8601
-			String date = DateUtils.toISO8601(created.getCreationTimestamp(), 0);
+			String date = created.getCreationDate();
 			model.setCreated(date);
 		}
 
 		// When this is a node migration, do not set user permissions
 		if (!(ac instanceof NodeMigrationActionContextImpl)) {
-			String[] names = ac.getUser().getPermissionNames(this);
-			model.setPermissions(names);
+			PermissionInfo permissionInfo = ac.getUser().getPermissionInfo(this);
+			model.setPermissions(permissionInfo);
 		}
 	}
 

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -30,4 +31,20 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	 * @return
 	 */
 	String getType();
+
+	/**
+	 * Add common fields to the given rest model object. The method will add common files like creator, editor, uuid, permissions, edited, created.
+	 * 
+	 * @param model
+	 * @param ac
+	 */
+	void fillCommonRestFields(InternalActionContext ac, GenericRestResponse model);
+
+	/**
+	 * Add role permissions to given rest model object.
+	 * 
+	 * @param ac
+	 * @param model
+	 */
+	void setRolePermissions(InternalActionContext ac, GenericRestResponse model);
 }

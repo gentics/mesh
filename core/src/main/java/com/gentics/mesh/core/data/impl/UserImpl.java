@@ -19,7 +19,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +40,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
@@ -218,21 +218,21 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public String[] getPermissionNames(MeshVertex vertex) {
+	public PermissionInfo getPermissionInfo(MeshVertex vertex) {
+		PermissionInfo info = new PermissionInfo();
 		Set<GraphPermission> permissions = getPermissions(vertex);
-		String[] strings = new String[permissions.size()];
-		Iterator<GraphPermission> it = permissions.iterator();
-		for (int i = 0; i < permissions.size(); i++) {
-			strings[i] = it.next().getSimpleName();
+		for (GraphPermission perm : permissions) {
+			info.set(perm.getRestPerm(), true);
 		}
-		return strings;
+		info.setOthers(false);
+
+		return info;
 	}
 
 	@Override
 	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
 		Set<GraphPermission> graphPermissions = new HashSet<>();
-		// Check all permissions one at a time and add granted permissions to
-		// the set
+		// Check all permissions one at a time and add granted permissions to the set
 		for (GraphPermission perm : GraphPermission.values()) {
 			if (hasPermission(vertex, perm)) {
 				graphPermissions.add(perm);

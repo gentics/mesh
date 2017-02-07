@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
+
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -28,7 +29,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.RestModelHelper;
 
 import rx.Single;
 
@@ -102,11 +102,10 @@ public class MicroschemaContainerVersionImpl
 	public Microschema transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		// Load the microschema and add/overwrite some properties
 		Microschema microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
-		microschema.setUuid(getSchemaContainer().getUuid());
-
 		// Role permissions
-		RestModelHelper.setRolePermissions(ac, getSchemaContainer(), microschema);
-		microschema.setPermissions(ac.getUser().getPermissionNames(getSchemaContainer()));
+		MicroschemaContainer container = getSchemaContainer();
+		container.setRolePermissions(ac, microschema);
+		container.fillCommonRestFields(ac, microschema);
 
 		return microschema;
 	}

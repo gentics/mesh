@@ -20,7 +20,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
@@ -89,9 +88,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private void addNavigationHandlers() {
 
 		NavigationResponse responseExample = new NavigationResponse();
-		NavigationElement root = new NavigationElement();
-		root.setUuid(UUIDUtil.randomUUID());
-		responseExample.setRoot(root);
+		responseExample.setUuid(UUIDUtil.randomUUID());
 
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:nodeUuid/navigation");

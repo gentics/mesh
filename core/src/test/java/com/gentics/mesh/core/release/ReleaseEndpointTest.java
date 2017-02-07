@@ -3,6 +3,10 @@ package com.gentics.mesh.core.release;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -255,7 +259,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 		String roleUuid = db.noTx(() -> role().getUuid());
 
 		ReleaseResponse response = call(() -> client().findReleaseByUuid(projectName, uuid, new RolePermissionParameters().setRoleUuid(roleUuid)));
-		assertThat(response.getRolePerms()).isNotNull().contains("read", "create", "update", "delete");
+		assertThat(response.getRolePerms()).hasPerm(READ, CREATE, UPDATE, DELETE);
 	}
 
 	@Test

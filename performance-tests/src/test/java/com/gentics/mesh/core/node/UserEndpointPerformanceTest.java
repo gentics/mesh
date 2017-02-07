@@ -36,12 +36,12 @@ public class UserEndpointPerformanceTest extends AbstractRestEndpointTest {
 	}
 
 	@Test
-	public void testPermissionNamesPerformance() {
+	public void testPermissionInfoPerformance() {
 		User user = db.noTx(() -> user());
 		Node content = db.noTx(() -> content());
-		loggingStopWatch(logger, "user.getPermissionNames", 70000, (step) -> {
+		loggingStopWatch(logger, "user.getPermissionInfo", 70000, (step) -> {
 			try (NoTx noTx = db.noTx()) {
-				user.getPermissionNames(content);
+				user.getPermissionInfo(content);
 			}
 		});
 

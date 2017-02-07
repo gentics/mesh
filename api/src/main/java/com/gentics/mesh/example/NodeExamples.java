@@ -12,6 +12,10 @@ import static com.gentics.mesh.FieldUtil.createNumberField;
 import static com.gentics.mesh.FieldUtil.createNumberListField;
 import static com.gentics.mesh.FieldUtil.createStringField;
 import static com.gentics.mesh.FieldUtil.createStringListField;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import java.util.ArrayDeque;
@@ -66,21 +70,21 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfo().setCount(5).setSchemaUuid(randomUUID()));
 
 		FieldMap fields = nodeResponse.getFields();
-		fields.put("name-stringField", createStringField("Name for language tag de-DE"));
-		fields.put("filename-stringField", createStringField("dummy-content.de.html"));
-		fields.put("teaser-stringField", createStringField("Dummy teaser for de-DE"));
-		fields.put("content-htmlField", createHtmlField("Content for language tag de-DE"));
-		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
-		fields.put("price-numberField", createNumberField(100.1));
-		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(getTimestamp()));
-		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
-		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
-		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
-		fields.put("binary-binaryField", createBinaryField());
-		fields.put("location-micronodeField", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+		fields.put("name", createStringField("Name for language tag de-DE"));
+		fields.put("filename", createStringField("dummy-content.de.html"));
+		fields.put("teaser", createStringField("Dummy teaser for de-DE"));
+		fields.put("content", createHtmlField("Content for language tag de-DE"));
+		fields.put("relatedProduct", createNodeField(randomUUID()));
+		fields.put("price", createNumberField(100.1));
+		fields.put("enabled", createBooleanField(true));
+		fields.put("release", createDateField(getTimestamp()));
+		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
+		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
+		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
+		fields.put("binary", createBinaryField());
+		fields.put("location", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
 				Tuple.tuple("longitude", createNumberField(16.373063840833))));
-		fields.put("locations-micronodeListField",
+		fields.put("locations",
 				createMicronodeListField(
 						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
 								Tuple.tuple("longitude", createNumberField(16.373063840833))),
@@ -88,7 +92,7 @@ public class NodeExamples extends AbstractExamples {
 								Tuple.tuple("longitude", createNumberField(11.575556)))));
 
 		nodeResponse.setSchema(getSchemaReference("content"));
-		nodeResponse.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		nodeResponse.setPermissions(READ, UPDATE, DELETE, CREATE);
 
 		// breadcrumb
 		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
@@ -126,16 +130,14 @@ public class NodeExamples extends AbstractExamples {
 
 	public NavigationResponse getNavigationResponse() {
 		NavigationResponse response = new NavigationResponse();
-
-		NavigationElement root = new NavigationElement();
 		String rootUuid = randomUUID();
 
 		// Level 0
 		NodeResponse rootElement = getNodeResponseWithAllFields();
 		rootElement.setUuid(rootUuid);
-		root.setUuid(rootUuid);
-		root.setNode(rootElement);
-		root.setChildren(new ArrayList<>());
+		response.setUuid(rootUuid);
+		response.setNode(rootElement);
+		response.setChildren(new ArrayList<>());
 
 		// Level 1
 		NavigationElement navElement = new NavigationElement();
@@ -144,9 +146,8 @@ public class NodeExamples extends AbstractExamples {
 		navElementNode.setUuid(navElementUuid);
 		navElement.setUuid(navElementUuid);
 		navElement.setNode(navElementNode);
-		root.getChildren().add(navElement);
+		response.getChildren().add(navElement);
 
-		response.setRoot(root);
 		return response;
 	}
 
@@ -171,7 +172,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("teaser", createStringField("Dummy teaser for en"));
 		fields.put("content", createStringField("Content for language tag en"));
 
-		nodeResponse.setPermissions("READ", "CREATE");
+		nodeResponse.setPermissions(READ, CREATE);
 
 		// breadcrumb
 		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
@@ -206,16 +207,16 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("content", createStringField("English content"));
 		fields.put("title", createStringField("English title"));
 		fields.put("teaser", createStringField("English teaser"));
-		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
-		fields.put("price-numberField", createNumberField(100.1));
-		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(getTimestamp()));
-		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
-		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
-		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
-		fields.put("location-micronodeField", createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+		fields.put("relatedProduct", createNodeField(randomUUID()));
+		fields.put("price", createNumberField(100.1));
+		fields.put("enabled", createBooleanField(true));
+		fields.put("release", createDateField(getTimestamp()));
+		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
+		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
+		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
+		fields.put("location", createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
 				Tuple.tuple("longitude", createNumberField(16.373063840833))));
-		fields.put("locations-micronodeListField",
+		fields.put("locations",
 				createMicronodeListField(
 						createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
 								Tuple.tuple("longitude", createNumberField(16.373063840833))),
@@ -262,16 +263,16 @@ public class NodeExamples extends AbstractExamples {
 
 		FieldMap fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));
-		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
-		fields.put("price-numberField", createNumberField(100.1));
-		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(getTimestamp()));
-		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
-		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
-		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
-		fields.put("location-micronodeField", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+		fields.put("relatedProduct-", createNodeField(randomUUID()));
+		fields.put("price", createNumberField(100.1));
+		fields.put("enabled", createBooleanField(true));
+		fields.put("release", createDateField(getTimestamp()));
+		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
+		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
+		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
+		fields.put("location", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
 				Tuple.tuple("longitude", createNumberField(16.373063840833))));
-		fields.put("locations-micronodeListField",
+		fields.put("locations",
 				createMicronodeListField(
 						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
 								Tuple.tuple("longitude", createNumberField(16.373063840833))),

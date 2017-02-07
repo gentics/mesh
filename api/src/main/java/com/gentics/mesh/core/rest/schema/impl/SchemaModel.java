@@ -11,6 +11,9 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 
+/**
+ * @see Schema
+ */
 public class SchemaModel extends AbstractFieldSchemaContainer implements Schema {
 
 	private String displayField;

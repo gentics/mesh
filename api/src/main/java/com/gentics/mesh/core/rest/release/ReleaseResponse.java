@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.release;
 
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.common.Permission;
 
 /**
  * POJO for a release response.

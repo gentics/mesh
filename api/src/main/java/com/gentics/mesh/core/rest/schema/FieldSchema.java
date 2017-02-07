@@ -84,6 +84,11 @@ public interface FieldSchema {
 	 */
 	void validate();
 
+	/**
+	 * Return a map of all properties of the schema.
+	 * 
+	 * @return
+	 */
 	Map<String, Object> getAllChangeProperties();
 
 }

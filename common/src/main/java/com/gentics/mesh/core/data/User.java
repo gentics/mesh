@@ -7,6 +7,7 @@ import java.util.Set;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
@@ -169,13 +170,12 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	User setReferencedNode(Node node);
 
 	/**
-	 * Return an array of human readable permissions for the given vertex.
+	 * Return the permission info object for the given vertex.
 	 * 
 	 * @param vertex
 	 * @return
-	 * 
 	 */
-	String[] getPermissionNames(MeshVertex vertex);
+	PermissionInfo getPermissionInfo(MeshVertex vertex);
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.

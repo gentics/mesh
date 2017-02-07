@@ -665,9 +665,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				log.error("Node {" + getUuid() + "} - container {" + fieldContainer.getLanguage().getLanguageTag() + "} has no editor");
 			}
 
-			// Convert unixtime to iso-8601
-			String date = DateUtils.toISO8601(fieldContainer.getLastEditedTimestamp(), 0);
-			restNode.setEdited(date);
+			restNode.setEdited(fieldContainer.getLastEditedDate());
 
 			// Iterate over all fields and transform them to rest
 			for (FieldSchema fieldEntry : schema.getFields()) {
@@ -843,7 +841,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return Single.error(new NotModifiedException());
 			} else {
 				NavigationResponse response = new NavigationResponse();
-				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response.getRoot(),
+				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response,
 						ac.getRelease(getProject()).getUuid(), forVersion(ac.getVersioningParameters().getVersion()));
 			}
 		});
@@ -1102,7 +1100,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, release.getUuid(), PUBLISHED);
 		if (container != null) {
-			String date = DateUtils.toISO8601(container.getLastEditedTimestamp(), 0);
+			String date = container.getLastEditedDate();
 			return new PublishStatusModel().setPublished(true)
 					.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()))
 					.setPublisher(container.getEditor().transformToReference()).setPublishDate(date);
@@ -1793,7 +1791,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				Set<GraphPermission> permSet = role.getPermissions(this);
 				Set<String> humanNames = new HashSet<>();
 				for (GraphPermission permission : permSet) {
-					humanNames.add(permission.getSimpleName());
+					humanNames.add(permission.getRestPerm().getName());
 				}
 				String[] names = humanNames.toArray(new String[humanNames.size()]);
 				keyBuilder.append(names);

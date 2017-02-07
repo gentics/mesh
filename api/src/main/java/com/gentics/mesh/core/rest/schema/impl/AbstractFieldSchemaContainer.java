@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -25,11 +26,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 /**
  * Abstract class for field container REST Model POJO's (e.g: {@link SchemaModel}, {@link MicroschemaModel}
  */
-public abstract class AbstractFieldSchemaContainer implements FieldSchemaContainer {
+public abstract class AbstractFieldSchemaContainer extends AbstractGenericRestResponse implements FieldSchemaContainer {
 
 	private String uuid;
-	private String[] permissions = {};
-	private String[] rolePerms;
 	private int version;
 	private String description;
 	private String name;
@@ -50,26 +49,6 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 	@Override
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
-	}
-
-	@Override
-	public String[] getPermissions() {
-		return permissions;
-	}
-
-	@Override
-	public void setPermissions(String... permissions) {
-		this.permissions = permissions;
-	}
-
-	@Override
-	public String[] getRolePerms() {
-		return rolePerms;
-	}
-
-	@Override
-	public void setRolePerms(String... rolePerms) {
-		this.rolePerms = rolePerms;
 	}
 
 	@Override

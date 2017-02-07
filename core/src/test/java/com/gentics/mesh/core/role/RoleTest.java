@@ -231,7 +231,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 				for (Role role : roles().values()) {
 					for (GraphPermission permission : GraphPermission.values()) {
 						assertTrue(
-								"The role {" + role.getName() + "} does not grant perm {" + permission.getSimpleName() + "} to the node {"
+								"The role {" + role.getName() + "} does not grant perm {" + permission.getRestPerm().getName() + "} to the node {"
 										+ node.getUuid() + "} but it should since the parent object got this role permission.",
 								role.hasPermission(permission, node));
 					}

@@ -1,5 +1,9 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -21,7 +25,7 @@ public class GroupExamples extends AbstractExamples {
 		group.setEdited(getTimestamp());
 		group.setEditor(getUserReference());
 		group.setName(name);
-		group.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		group.setPermissions(READ, UPDATE, DELETE, CREATE);
 		group.getRoles().add(new RoleReference().setName("admin").setUuid(randomUUID()));
 		return group;
 	}
@@ -30,7 +34,7 @@ public class GroupExamples extends AbstractExamples {
 		GroupResponse group2 = new GroupResponse();
 		group2.setUuid(randomUUID());
 		group2.setName("Editor Group");
-		group2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		group2.setPermissions(READ, UPDATE, DELETE, CREATE);
 		return group2;
 	}
 

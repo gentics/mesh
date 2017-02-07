@@ -1,5 +1,9 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -25,7 +29,7 @@ public class TagExamples extends AbstractExamples {
 		tag.setEdited(getTimestamp());
 		tag.setEditor(getUserReference());
 		tag.setName(name);
-		tag.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		tag.setPermissions(READ, UPDATE, DELETE, CREATE);
 		tag.setTagFamily(getTagFamilyReference());
 		return tag;
 	}
@@ -39,7 +43,7 @@ public class TagExamples extends AbstractExamples {
 		tag.setEditor(getUserReference());
 		tag.setName("Name for language tag en");
 		tag.setTagFamily(getTagFamilyReference());
-		tag.setPermissions("READ", "CREATE");
+		tag.setPermissions(READ, CREATE);
 		return tag;
 	}
 

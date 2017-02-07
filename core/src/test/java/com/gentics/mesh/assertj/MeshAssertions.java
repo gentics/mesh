@@ -13,6 +13,7 @@ import com.gentics.mesh.assertj.impl.NavigationResponseAssert;
 import com.gentics.mesh.assertj.impl.NodeAssert;
 import com.gentics.mesh.assertj.impl.NodeGraphFieldContainerAssert;
 import com.gentics.mesh.assertj.impl.NodeResponseAssert;
+import com.gentics.mesh.assertj.impl.PermissionInfoAssert;
 import com.gentics.mesh.assertj.impl.ProjectResponseAssert;
 import com.gentics.mesh.assertj.impl.PublishStatusModelAssert;
 import com.gentics.mesh.assertj.impl.PublishStatusResponseAssert;
@@ -34,6 +35,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -159,5 +161,9 @@ public class MeshAssertions extends Assertions {
 
 	public static PublishStatusModelAssert assertThat(PublishStatusModel actual) {
 		return new PublishStatusModelAssert(actual);
+	}
+
+	public static PermissionInfoAssert assertThat(PermissionInfo actual) {
+		return new PermissionInfoAssert(actual);
 	}
 }

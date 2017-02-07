@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
@@ -180,7 +181,7 @@ public class RoleEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			RoleResponse restRole = call(() -> client().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
 			assertNotNull(restRole.getRolePerms());
-			assertEquals(6, restRole.getRolePerms().length);
+			assertThat(restRole.getRolePerms()).hasPerm(Permission.values());
 		}
 	}
 

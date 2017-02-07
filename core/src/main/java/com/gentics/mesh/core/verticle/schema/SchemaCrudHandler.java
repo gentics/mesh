@@ -72,7 +72,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.operateNoTx(ac, () -> {
-			
+
 			// 1. Load the schema container with update permissions
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -192,16 +192,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 					SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
 					batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT);
 					batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED);
-					
-					//					nodeIndexHandler.
-					//					
-					//					String draftIndexName = NodeIndexHandler.getIndexName(projectUuid, project.getLatestRelease().getUuid(), schema.getUuid(), DRAFT);
-					//					nodeIndexHandler.updateNodeIndexMapping(draftIndexName, schema.getLatestVersion().getSchema()).await();
-					//
-					//					String publishIndexName = NodeIndexHandler.getIndexName(projectUuid, project.getLatestRelease().getUuid(), schema.getUuid(),
-					//							PUBLISHED);
-					//					nodeIndexHandler.updateNodeIndexMapping(publishIndexName, schema.getLatestVersion().getSchema()).await();
-
 					return Tuple.tuple(batch, schema.transformToRest(ac, 0));
 				});
 				tuple.v1().processSync();
@@ -287,8 +277,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 					}
 					//TODO determine the releaseUuid
 					String releaseUuid = null;
-					System.out.println("Before migration " + schemaContainer.getName() + " - " + currentVersion.getUuid() + "="
-							+ currentVersion.getFieldContainers(releaseUuid).size());
+					//					System.out.println("Before migration " + schemaContainer.getName() + " - " + currentVersion.getUuid() + "="
+					//							+ currentVersion.getFieldContainers(releaseUuid).size());
 					//					if (!getLatestVersion().getUuid().equals(version.getUuid())) {
 					//						for (GraphFieldContainer container : version.getFieldContainers()) {
 					//							NodeImpl node = container.in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);

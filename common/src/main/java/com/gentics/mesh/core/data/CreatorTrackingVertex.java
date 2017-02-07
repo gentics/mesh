@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 
+import com.gentics.mesh.util.DateUtils;
+
 /**
  * Interface for vertices that track their creator and creation time.
  */
@@ -36,6 +38,15 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	}
 
 	/**
+	 * Return the ISO 8601 formatted creation date.
+	 * 
+	 * @return
+	 */
+	default String getCreationDate() {
+		return DateUtils.toISO8601(getCreationTimestamp(), 0);
+	}
+
+	/**
 	 * Set the timestamp on which the vertex was created.
 	 * 
 	 * @param timestamp
@@ -62,4 +73,5 @@ public interface CreatorTrackingVertex extends MeshVertex {
 		setCreator(creator);
 		setCreationTimestamp(System.currentTimeMillis());
 	}
+
 }

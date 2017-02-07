@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.verticle.role;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
@@ -84,9 +82,13 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
 			RolePermissionResponse response = new RolePermissionResponse();
+
+			// 1. Add granted permissions 
 			for (GraphPermission perm : role.getPermissions(targetElement)) {
-				response.getPermissions().add(perm.getSimpleName());
+				response.set(perm.getRestPerm(), true);
 			}
+			// 2. Add not granted permissions
+			response.setOthers(false);
 			return Single.just(response);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -103,7 +105,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	 */
 	public void handlePermissionUpdate(InternalActionContext ac, String roleUuid, String pathToElement) {
 		//TODO validate uuids
-		
+
 		db.operateNoTx(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
@@ -133,20 +135,14 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				Role updatedRole = db.tx(() -> {
 					Set<GraphPermission> permissionsToGrant = new HashSet<>();
 					Set<GraphPermission> permissionsToRevoke = new HashSet<>();
-					permissionsToRevoke.add(CREATE_PERM);
-					permissionsToRevoke.add(READ_PERM);
-					permissionsToRevoke.add(UPDATE_PERM);
-					permissionsToRevoke.add(DELETE_PERM);
-					for (String permName : requestModel.getPermissions()) {
-						GraphPermission permission = GraphPermission.valueOfSimpleName(permName);
-						if (permission == null) {
-							throw error(BAD_REQUEST, "role_error_permission_name_unknown", permName);
+
+					for (GraphPermission permission : GraphPermission.values()) {
+
+						if (requestModel.getPermissions().get(permission.getRestPerm()) == true) {
+							permissionsToGrant.add(permission);
+						} else {
+							permissionsToRevoke.add(permission);
 						}
-						if (log.isDebugEnabled()) {
-							log.debug("Adding permission {" + permission.getSimpleName() + "} to list of permissions to add.");
-						}
-						permissionsToRevoke.remove(permission);
-						permissionsToGrant.add(permission);
 					}
 					if (log.isDebugEnabled()) {
 						for (GraphPermission p : permissionsToGrant) {

@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.rest.role;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -11,7 +9,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class RolePermissionRequest implements RestModel {
 
-	private Set<String> permissions = new HashSet<>();
+	private PermissionInfo permissions = new PermissionInfo();
 
 	private Boolean recursive = false;
 
@@ -23,18 +21,8 @@ public class RolePermissionRequest implements RestModel {
 	 * 
 	 * @return
 	 */
-	public Set<String> getPermissions() {
+	public PermissionInfo getPermissions() {
 		return permissions;
-	}
-
-	/**
-	 * Set a set of permissions that should be set to the affected elements.
-	 * 
-	 * @param permissions
-	 *            Permissions to be set to the affected elements. Omitted permissions will be revoked.
-	 */
-	public void setPermissions(Set<String> permissions) {
-		this.permissions = permissions;
 	}
 
 	/**

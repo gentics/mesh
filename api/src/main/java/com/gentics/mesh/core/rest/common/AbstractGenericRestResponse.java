@@ -1,11 +1,15 @@
 package com.gentics.mesh.core.rest.common;
 
+import java.util.Arrays;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
  * Basic rest model abstract class for most mesh rest POJOs.
  */
-public class AbstractGenericRestResponse extends AbstractResponse {
+public abstract class AbstractGenericRestResponse extends AbstractResponse implements GenericRestResponse {
 
 	private UserReference creator;
 
@@ -15,118 +19,91 @@ public class AbstractGenericRestResponse extends AbstractResponse {
 
 	private String edited;
 
-	private String[] permissions = {};
+	@JsonProperty("permissions")
+	private PermissionInfo permissions = new PermissionInfo();
 
-	private String[] rolePerms;
+	@JsonProperty("rolePerms")
+	private PermissionInfo rolePerms;
 
-	/**
-	 * Return the creator user reference.
-	 * 
-	 * @return Creator user reference
-	 */
+	@Override
 	public UserReference getCreator() {
 		return creator;
 	}
 
-	/**
-	 * Set the creator user reference.
-	 * 
-	 * @param creator
-	 */
+	@Override
 	public void setCreator(UserReference creator) {
 		this.creator = creator;
 	}
 
-	/**
-	 * Return the creation date in an ISO-8601 format.
-	 * 
-	 * @return Creation date
-	 */
+	@Override
 	public String getCreated() {
 		return created;
 	}
 
-	/**
-	 * Set the creation date in an ISO-8601 format.
-	 * 
-	 * @param created
-	 *            Creation date
-	 */
+	@Override
 	public void setCreated(String created) {
 		this.created = created;
 	}
 
-	/**
-	 * Return the editor user reference.
-	 * 
-	 * @return Editor user reference.
-	 */
+	@Override
 	public UserReference getEditor() {
 		return editor;
 	}
 
-	/**
-	 * Set the editor user reference.
-	 * 
-	 * @param editor
-	 */
+	@Override
 	public void setEditor(UserReference editor) {
 		this.editor = editor;
 	}
 
-	/**
-	 * Return the last edited date in an ISO-8601 format.
-	 * 
-	 * @return
-	 */
+	@Override
 	public String getEdited() {
 		return edited;
 	}
 
-	/**
-	 * Set the last edited date in an ISO-8601 format.
-	 * 
-	 * @param edited
-	 */
+	@Override
 	public void setEdited(String edited) {
 		this.edited = edited;
 	}
 
-	/**
-	 * Return human readable permissions for the element.
-	 * 
-	 * @return Array of human readable permissions
-	 */
-	public String[] getPermissions() {
+	@Override
+	public PermissionInfo getPermissions() {
 		return permissions;
 	}
 
-	/**
-	 * Set the human readable permission names for the element.
-	 * 
-	 * @param permissions
-	 *            Human readable permissions
-	 */
-	public void setPermissions(String... permissions) {
+	@Override
+	public void setPermissions(PermissionInfo permissions) {
 		this.permissions = permissions;
 	}
 
-	/**
-	 * Return the human readable role permissions for the element.
-	 * 
-	 * @return
-	 */
-	public String[] getRolePerms() {
+	@Override
+	@JsonIgnore
+	public void setPermissions(Permission... permissions) {
+		for (Permission permission : Arrays.asList(permissions)) {
+			getPermissions().set(permission, true);
+		}
+		getPermissions().setOthers(false);
+	}
+
+	@Override
+	public PermissionInfo getRolePerms() {
 		return rolePerms;
 	}
 
-	/**
-	 * Set the human readable role permissions for the element.
-	 * 
-	 * @param rolePerms
-	 */
-	public void setRolePerms(String... rolePerms) {
+	@Override
+	public void setRolePerms(PermissionInfo rolePerms) {
 		this.rolePerms = rolePerms;
+	}
+
+	@Override
+	@JsonIgnore
+	public void setRolePerms(Permission... permissions) {
+		if (rolePerms == null) {
+			rolePerms = new PermissionInfo();
+		}
+		for (Permission permission : Arrays.asList(permissions)) {
+			rolePerms.set(permission, true);
+		}
+		rolePerms.setOthers(false);
 	}
 
 }

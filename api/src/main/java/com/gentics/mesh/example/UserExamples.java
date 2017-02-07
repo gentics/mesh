@@ -1,5 +1,9 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
@@ -57,7 +61,7 @@ public class UserExamples extends AbstractExamples {
 		user.setNodeReference(reference);
 		user.setEmailAddress("j.doe@nowhere.com");
 		user.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
-		user.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		user.setPermissions(READ, UPDATE, DELETE, CREATE);
 		return user;
 	}
 
@@ -95,10 +99,10 @@ public class UserExamples extends AbstractExamples {
 
 	public UserPermissionResponse getUserPermissionResponse() {
 		UserPermissionResponse userPermResponse = new UserPermissionResponse();
-		userPermResponse.getPermissions().add("create");
-		userPermResponse.getPermissions().add("read");
-		userPermResponse.getPermissions().add("update");
-		userPermResponse.getPermissions().add("delete");
+		userPermResponse.add(CREATE);
+		userPermResponse.add(READ);
+		userPermResponse.add(UPDATE);
+		userPermResponse.add(DELETE);
 		return userPermResponse;
 	}
 

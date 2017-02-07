@@ -5,6 +5,12 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -42,6 +48,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -206,12 +213,9 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 
 		try (NoTx noTx = db.noTx()) {
-			MeshResponse<UserPermissionResponse> future = client().readUserPermissions(user.getUuid(), pathToElement).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			UserPermissionResponse response = future.result();
+			UserPermissionResponse response = call(() -> client().readUserPermissions(user.getUuid(), pathToElement));
 			assertNotNull(response);
-			assertThat(response.getPermissions()).containsOnly("read", "readpublished", "publish", "update", "create", "delete");
+			assertThat(response).hasPerm(Permission.values());
 		}
 
 		try (NoTx noTx = db.noTx()) {
@@ -220,12 +224,9 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
 		}
 		try (NoTx noTx = db.noTx()) {
-			MeshResponse<UserPermissionResponse> future = client().readUserPermissions(user.getUuid(), pathToElement).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			UserPermissionResponse response = future.result();
+			UserPermissionResponse response  = call(() -> client().readUserPermissions(user.getUuid(), pathToElement));
 			assertNotNull(response);
-			assertThat(response.getPermissions()).containsOnly("read", "readpublished", "publish", "create", "delete");
+			assertThat(response).hasPerm(READ, CREATE, DELETE, PUBLISH, READ_PUBLISHED);
 		}
 	}
 
@@ -237,7 +238,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			UserResponse userResponse = call(() -> client().findUserByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
 			assertNotNull(userResponse.getRolePerms());
-			assertThat(userResponse.getRolePerms()).containsOnly("read", "readpublished", "publish", "create", "update", "delete");
+			assertThat(userResponse.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, CREATE, UPDATE, DELETE);
 		}
 	}
 

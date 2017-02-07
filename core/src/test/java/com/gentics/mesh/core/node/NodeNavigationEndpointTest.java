@@ -40,7 +40,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 
 			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(0),
 					new VersioningParameters().draft()));
-			assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
+			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 			assertThat(response).hasDepth(0).isValid(1);
 		}
 	}
@@ -58,7 +58,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 
 			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(42),
 					new VersioningParameters().draft()));
-			assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
+			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 			assertThat(response).hasDepth(0).isValid(1);
 		}
 	}
@@ -115,7 +115,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 					new VersioningParameters().draft()));
 
 			assertThat(response).hasDepth(1).isValid(4);
-			assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
+			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 		}
 	}
 
@@ -132,7 +132,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 
 			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(2),
 					new VersioningParameters().draft()));
-			assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
+			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 			assertThat(response).hasDepth(2).isValid(6);
 		}
 	}
@@ -155,10 +155,10 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			latchFor(future);
 			assertSuccess(future);
 			NavigationResponse response = future.result();
-			assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
+			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 
 			String[] expectedNodes = { "2015", "2014", "News Overview_english_name" };
-			List<String> nodeNames = response.getRoot().getChildren().stream().map(e -> e.getNode().getFields().getStringField("name").getString())
+			List<String> nodeNames = response.getChildren().stream().map(e -> e.getNode().getFields().getStringField("name").getString())
 					.collect(Collectors.toList());
 			assertThat(response).hasDepth(2).isValid(8);
 			assertThat(nodeNames).containsExactly(expectedNodes);
@@ -183,10 +183,10 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 			latchFor(future);
 			assertSuccess(future);
 			NavigationResponse response = future.result();
-			assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
+			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 
 			String[] expectedNodes = { "2015", "2014" };
-			List<String> nodeNames = response.getRoot().getChildren().stream().map(e -> e.getNode().getFields().getStringField("name").getString())
+			List<String> nodeNames = response.getChildren().stream().map(e -> e.getNode().getFields().getStringField("name").getString())
 					.collect(Collectors.toList());
 			assertThat(response).hasDepth(2).isValid(4);
 			assertThat(nodeNames).containsExactly(expectedNodes);
@@ -206,8 +206,8 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 
 			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(42),
 					new VersioningParameters().draft()));
-			assertEquals(uuid, response.getRoot().getUuid());
-			assertNotNull("root was null", response.getRoot());
+			assertEquals(uuid, response.getUuid());
+			assertNotNull("root was null", response);
 		}
 	}
 

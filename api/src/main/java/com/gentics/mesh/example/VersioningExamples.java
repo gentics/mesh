@@ -1,5 +1,9 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import java.util.HashMap;
@@ -85,8 +89,8 @@ public class VersioningExamples extends AbstractExamples {
 		response.setEdited(getTimestamp());
 		response.setEditor(getUserReference());
 		response.setMigrated(true);
-		response.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		response.setRolePerms("READ", "UPDATE", "DELETE", "CREATE");
+		response.setPermissions(READ, UPDATE,  DELETE, CREATE);
+		response.setRolePerms(READ, UPDATE,  DELETE, CREATE);
 		return response;
 	}
 }

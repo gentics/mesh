@@ -24,7 +24,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.RestModelHelper;
 
 import rx.Single;
 
@@ -80,7 +79,9 @@ public class SchemaContainerVersionImpl extends
 		// Load the schema and add/overwrite some properties
 		// Use getSchema to utilise the schema storage
 		Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);
-		restSchema.setUuid(getSchemaContainer().getUuid());
+		SchemaContainer container = getSchemaContainer();
+		container.fillCommonRestFields(ac, restSchema);
+		container.setRolePermissions(ac, restSchema);
 
 		// TODO Get list of projects to which the schema was assigned
 		// for (Project project : getProjects()) {
@@ -100,11 +101,6 @@ public class SchemaContainerVersionImpl extends
 		// return o1.getName().compareTo(o2.getName());
 		// };
 		// });
-
-		// Role permissions
-		RestModelHelper.setRolePermissions(ac, getSchemaContainer(), restSchema);
-
-		restSchema.setPermissions(ac.getUser().getPermissionNames(getSchemaContainer()));
 		return restSchema;
 
 	}

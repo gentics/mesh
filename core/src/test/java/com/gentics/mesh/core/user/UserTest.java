@@ -5,8 +5,13 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static org.junit.Assert.assertEquals;
@@ -29,6 +34,8 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -165,12 +172,12 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testGetPermissions() {
 		try (NoTx noTx = db.noTx()) {
-			String[] perms = { "create", "update", "delete", "read", "readpublished", "publish" };
+			Permission[] perms = { CREATE, UPDATE, DELETE, READ, READ_PUBLISHED, PUBLISH };
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
 			for (int i = 0; i < nChecks; i++) {
-				String[] loadedPerms = user().getPermissionNames(content());
-				assertThat(loadedPerms).containsOnly(perms);
+				PermissionInfo loadedPermInfo = user().getPermissionInfo(content());
+				assertThat(loadedPermInfo).hasPerm(perms);
 				// assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 			}
 			System.out.println("Duration: " + (System.currentTimeMillis() - start));
@@ -184,7 +191,7 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			group().addUser(extraUser);
-			role().grantPermissions(extraUser, READ_PERM);
+			role().grantPermissions(extraUser, GraphPermission.READ_PERM);
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
@@ -285,27 +292,28 @@ public class UserTest extends AbstractBasicIsolatedObjectTest {
 			// Create test roles
 			roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newUser);
 			newGroup.addRole(roleWithDeletePerm);
-			roleWithDeletePerm.grantPermissions(sourceNode, DELETE_PERM);
+			roleWithDeletePerm.grantPermissions(sourceNode, GraphPermission.DELETE_PERM);
 
 			roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newUser);
 			newGroup.addRole(roleWithReadPerm);
-			roleWithReadPerm.grantPermissions(sourceNode, READ_PERM);
+			roleWithReadPerm.grantPermissions(sourceNode, GraphPermission.READ_PERM);
 
 			roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newUser);
 			newGroup.addRole(roleWithUpdatePerm);
-			roleWithUpdatePerm.grantPermissions(sourceNode, UPDATE_PERM);
+			roleWithUpdatePerm.grantPermissions(sourceNode, GraphPermission.UPDATE_PERM);
 
 			roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newUser);
 			newGroup.addRole(roleWithAllPerm);
-			roleWithAllPerm.grantPermissions(sourceNode, CREATE_PERM, UPDATE_PERM, DELETE_PERM, READ_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
+			roleWithAllPerm.grantPermissions(sourceNode, GraphPermission.CREATE_PERM, GraphPermission.UPDATE_PERM, GraphPermission.DELETE_PERM,
+					GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM, PUBLISH_PERM);
 
 			roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newUser);
 			newGroup.addRole(roleWithCreatePerm);
-			roleWithCreatePerm.grantPermissions(sourceNode, CREATE_PERM);
+			roleWithCreatePerm.grantPermissions(sourceNode, GraphPermission.CREATE_PERM);
 
 			roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newUser);
 			newGroup.addRole(roleWithNoPerm);
-			user().addCRUDPermissionOnRole(sourceNode, CREATE_PERM, targetNode);
+			user().addCRUDPermissionOnRole(sourceNode, GraphPermission.CREATE_PERM, targetNode);
 			ac.data().clear();
 			newUser.reload();
 			for (GraphPermission perm : GraphPermission.values()) {
