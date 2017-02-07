@@ -34,6 +34,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -208,6 +209,31 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
 			assertNotNull(deserializedNodeField);
 			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+		}
+	}
+
+	@Test
+	public void testReadNodeWithResolveLinks() {
+		try (NoTx noTx = db.noTx()) {
+			Node newsNode = folder("news");
+			Node node = folder("2015");
+
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			container.createNode(FIELD_NAME, newsNode);
+
+			// Read the node
+			NodeParameters parameters = new NodeParameters();
+			parameters.setLanguages("en");
+			parameters.setResolveLinks(LinkType.FULL);
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParameters().draft()));
+
+			// Check whether the field contains the languagePath
+			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
+			assertNotNull(deserializedNodeField);
+			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+			assertNotNull(deserializedNodeField.getPath());
+			assertNotNull(deserializedNodeField.getLanguagePaths());
+			assertThat(deserializedNodeField.getLanguagePaths()).containsKeys("en", "de");
 		}
 	}
 

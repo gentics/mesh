@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.field;
+package com.gentics.mesh.core.field.node;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -23,7 +23,7 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 
-public class NodeFieldEndpointTest extends AbstractRestEndpointTest {
+public class BasicNodeFieldEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testUpdateNodeAndOmitRequiredField() throws IOException {
@@ -45,12 +45,9 @@ public class NodeFieldEndpointTest extends AbstractRestEndpointTest {
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"))
-					.invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertNotNull("The response could not be found in the result of the future.", future.result());
-			assertNotNull("The field was not included in the response.", future.result().getFields().getHtmlField("htmlField"));
+			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")));
+			assertNotNull("The response could not be found in the result of the future.", response);
+			assertNotNull("The field was not included in the response.", response.getFields().getHtmlField("htmlField"));
 
 			// 3. Update node
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
@@ -59,7 +56,7 @@ public class NodeFieldEndpointTest extends AbstractRestEndpointTest {
 			nodeUpdateRequest.setVersion(new VersionReference().setNumber("0.1"));
 
 			MeshResponse<NodeResponse> updateFuture = client()
-					.updateNode(PROJECT_NAME, future.result().getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")).invoke();
+					.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")).invoke();
 			latchFor(updateFuture);
 			assertSuccess(updateFuture);
 			assertNotNull("The response could not be found in the result of the future.", updateFuture.result());

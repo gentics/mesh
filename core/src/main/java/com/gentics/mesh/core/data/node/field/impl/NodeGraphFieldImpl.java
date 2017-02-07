@@ -1,10 +1,13 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.forVersion;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,6 +15,8 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
@@ -20,6 +25,7 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
@@ -126,10 +132,26 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		} else {
 			NodeFieldImpl nodeField = new NodeFieldImpl();
 			nodeField.setUuid(node.getUuid());
-			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-				nodeField.setPath(MeshInternal.get().webRootLinkReplacer().resolve(ac.getRelease(null).getUuid(),
-						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), node, ac.getNodeParameters().getResolveLinks(),
-						languageTags.toArray(new String[languageTags.size()])));
+			LinkType type = ac.getNodeParameters().getResolveLinks();
+			if (type != LinkType.OFF) {
+
+				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
+				Release release = ac.getRelease(null);
+				ContainerType containerType = forVersion(ac.getVersioningParameters().getVersion());
+
+				// Set the webroot path for the currently active language
+				nodeField.setPath(
+						linkReplacer.resolve(release.getUuid(), containerType, node, type, languageTags.toArray(new String[languageTags.size()])));
+
+				// Set the languagePaths for all field containers
+				Map<String, String> languagePaths = new HashMap<>();
+				for (GraphFieldContainer currentFieldContainer : node.getGraphFieldContainers(release, containerType)) {
+					Language currLanguage = currentFieldContainer.getLanguage();
+					String languagePath = linkReplacer.resolve(release.getUuid(), containerType, node, type, currLanguage.getLanguageTag());
+					languagePaths.put(currLanguage.getLanguageTag(), languagePath);
+				}
+				nodeField.setLanguagePaths(languagePaths);
+
 			}
 			return nodeField;
 		}
