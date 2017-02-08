@@ -1,9 +1,13 @@
 package com.gentics.mesh.core.rest.project;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 public class ProjectCreateRequest extends ProjectUpdateRequest {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Reference to the schema of the root node. Creating a project will also automatically create the base node of the project and link the schema to the initial release of the project.")
 	private SchemaReference schema;
 
 	/**

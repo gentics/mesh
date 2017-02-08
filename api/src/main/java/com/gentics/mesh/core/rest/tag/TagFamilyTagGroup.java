@@ -3,13 +3,18 @@ package com.gentics.mesh.core.rest.tag;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+
 /**
  * A tag family tag group holds the tag references for a tag family.
  */
 public class TagFamilyTagGroup {
 
+	@JsonPropertyDescription("Uuid of the tag family")
 	private String uuid;
 
+	@JsonPropertyDescription("List of tags that belong to the tag family in reference form")
 	private List<TagReference> items = new ArrayList<>();
 
 	public TagFamilyTagGroup() {

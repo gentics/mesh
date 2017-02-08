@@ -1,10 +1,15 @@
 package com.gentics.mesh.core.rest.node.field.impl;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.DateField;
 
+/**
+ * @see DateField
+ */
 public class DateFieldImpl implements DateField {
 
+	@JsonPropertyDescription("ISO8601 formatted date field value")
 	private String date;
 
 	@Override

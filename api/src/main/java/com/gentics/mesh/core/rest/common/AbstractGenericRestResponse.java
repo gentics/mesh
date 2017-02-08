@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
@@ -11,18 +12,27 @@ import com.gentics.mesh.core.rest.user.UserReference;
  */
 public abstract class AbstractGenericRestResponse extends AbstractResponse implements GenericRestResponse {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("User reference of the creator of the element.")
 	private UserReference creator;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("ISO8601 formatted created date string.")
 	private String created;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("User reference of the editor of the element.")
 	private UserReference editor;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("ISO8601 formatted edited date string.")
 	private String edited;
 
-	@JsonProperty("permissions")
+	@JsonProperty(value = "permissions", required = true)
 	private PermissionInfo permissions = new PermissionInfo();
 
-	@JsonProperty("rolePerms")
+	@JsonPropertyDescription("Permission information for provided role.")
+	@JsonProperty(value = "rolePerms", required = false)
 	private PermissionInfo rolePerms;
 
 	@Override

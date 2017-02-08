@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.role;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -7,6 +9,8 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class RoleUpdateRequest implements RestModel {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("New name of the role")
 	private String name;
 
 	public RoleUpdateRequest() {

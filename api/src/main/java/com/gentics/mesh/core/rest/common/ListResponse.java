@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 /**
  * RestModel POJO for list responses.
@@ -14,6 +15,7 @@ public class ListResponse<T> implements RestModel {
 
 	private List<T> data = new ArrayList<>();
 
+	@JsonPropertyDescription("Paging information of the list result.")
 	@JsonProperty("_metainfo")
 	private PagingMetaInfo metainfo = new PagingMetaInfo();
 

@@ -1,10 +1,15 @@
 package com.gentics.mesh.core.rest.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+
+/**
+ * POJO for a user create request model.
+ */
 public class UserCreateRequest extends UserUpdateRequest {
 
-	/**
-	 * UUID of the parent group for this user.
-	 */
+	@JsonPropertyDescription("Optional group id for the user. If provided the user will automatically be assigned to the identified group.")
+	@JsonProperty(required = false)
 	private String groupUuid;
 
 	public UserCreateRequest() {

@@ -325,6 +325,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 		MimeType mimeType = new MimeType();
 		String json = JsonUtil.toJson(model);
 		mimeType.setExample(json);
+		mimeType.setSchema("");
 		map.put("application/json", mimeType);
 
 		exampleResponses.put(status.code(), response);

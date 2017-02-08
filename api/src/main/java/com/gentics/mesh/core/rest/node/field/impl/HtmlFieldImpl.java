@@ -3,6 +3,9 @@ package com.gentics.mesh.core.rest.node.field.impl;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 
+/**
+ * @see HtmlField
+ */
 public class HtmlFieldImpl implements HtmlField {
 
 	private String html;

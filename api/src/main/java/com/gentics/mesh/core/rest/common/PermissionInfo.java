@@ -11,22 +11,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 /**
  * Permission information
  */
 public class PermissionInfo implements RestModel {
 
+	@JsonPropertyDescription("Flag which indicates whether the create permission is granted.")
 	private Boolean create;
 
+	@JsonPropertyDescription("Flag which indicates whether the read permission is granted.")
 	private Boolean read;
 
+	@JsonPropertyDescription("Flag which indicates whether the update permission is granted.")
 	private Boolean update;
 
+	@JsonPropertyDescription("Flag which indicates whether the delete permission is granted.")
 	private Boolean delete;
 
+	@JsonPropertyDescription("Flag which indicates whether the publish permission is granted.")
 	private Boolean publish;
 
+	@JsonPropertyDescription("Flag which indicates whether the read published permission is granted.")
 	private Boolean readPublished;
 
 	public Boolean getRead() {

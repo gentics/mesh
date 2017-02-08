@@ -11,7 +11,10 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -35,6 +38,26 @@ public class JsonUtilTest {
 		list.getData().add(user);
 		String json = JsonUtil.toJson(list);
 		assertNotNull(json);
+	}
+
+	@Test
+	public void testSchema() throws JsonProcessingException {
+		
+		ObjectMapper mapper = new ObjectMapper();
+		// configure mapper, if necessary, then create schema generator
+		JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
+		com.fasterxml.jackson.module.jsonSchema.JsonSchema schema = schemaGen.generateSchema(NodeResponse.class);
+		String schemaStr = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+		System.out.println(schemaStr);
+
+		//		ObjectMapper objectMapper = new ObjectMapper();
+		//
+		//		JsonSchemaConfig config = JsonSchemaConfig.nullableJsonSchemaDraft4();
+		//		JsonSchemaGenerator generator = new JsonSchemaGenerator(objectMapper, config);
+		//		JsonNode schema = generator.generateJsonSchema(GroupResponse.class);
+		//		String schemaStr = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+		//		System.out.println(schemaStr);
+
 	}
 
 	@Test

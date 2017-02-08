@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -28,10 +29,16 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
  */
 public abstract class AbstractFieldSchemaContainer extends AbstractGenericRestResponse implements FieldSchemaContainer {
 
-	private String uuid;
+	@JsonPropertyDescription("Version of the schema")
 	private int version;
+
+	@JsonPropertyDescription("Description of the schema")
 	private String description;
+
+	@JsonPropertyDescription("Name of the schema")
 	private String name;
+	
+	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
 	public AbstractFieldSchemaContainer(String name) {
@@ -39,16 +46,6 @@ public abstract class AbstractFieldSchemaContainer extends AbstractGenericRestRe
 	}
 
 	public AbstractFieldSchemaContainer() {
-	}
-
-	@Override
-	public String getUuid() {
-		return uuid;
-	}
-
-	@Override
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
 	}
 
 	@Override

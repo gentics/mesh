@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.tag;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 
 /**
@@ -7,6 +8,7 @@ import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
  */
 public class TagFamilyResponse extends AbstractGenericRestResponse {
 
+	@JsonPropertyDescription("Name of the tag family.")
 	private String name;
 
 	/**

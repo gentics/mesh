@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.node;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.user.UserReference;
 
@@ -8,12 +9,16 @@ import com.gentics.mesh.core.rest.user.UserReference;
  */
 public class PublishStatusModel implements RestModel {
 
+	@JsonPropertyDescription("Flag which indicates whether the content is published.")
 	private boolean published;
 
+	@JsonPropertyDescription("Reference to the node content.")
 	private VersionReference version;
 
+	@JsonPropertyDescription("Reference to the publisher user of the node content.")
 	private UserReference publisher;
 
+	@JsonPropertyDescription("ISO8601 formatted publish date string.")
 	private String publishDate;
 
 	public PublishStatusModel() {

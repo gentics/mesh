@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.node;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -9,12 +11,20 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
  */
 public class NodeUpdateRequest implements RestModel, FieldContainer {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Reference to the schema of the node.")
 	private SchemaReference schema;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")
 	private String language;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Dynamic map with fields of the node content.")
 	private FieldMap fields = new FieldMapImpl();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Version reference which must be provided in order to handle and detect concurrent changes to the node content.")
 	private VersionReference version;
 
 	public NodeUpdateRequest() {
@@ -67,11 +77,11 @@ public class NodeUpdateRequest implements RestModel, FieldContainer {
 		return fields;
 	}
 
-
 	/**
 	 * Set the fields which should be updated.
 	 *
-	 * @param fields A field map containing all fields to be updated.
+	 * @param fields
+	 *            A field map containing all fields to be updated.
 	 * @return this
 	 */
 	public NodeUpdateRequest setFields(FieldMap fields) {
@@ -81,6 +91,7 @@ public class NodeUpdateRequest implements RestModel, FieldContainer {
 
 	/**
 	 * Get the version of the fields
+	 * 
 	 * @return version number
 	 */
 	public VersionReference getVersion() {
@@ -89,6 +100,7 @@ public class NodeUpdateRequest implements RestModel, FieldContainer {
 
 	/**
 	 * Set the version of the fields
+	 * 
 	 * @param version
 	 */
 	public void setVersion(VersionReference version) {

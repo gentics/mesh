@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.micronode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -14,6 +15,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
  */
 public class MicronodeResponse extends AbstractResponse implements MicronodeField, FieldContainer {
 
+	@JsonPropertyDescription("Reference to the microschema of the micronode.")
 	private MicroschemaReference microschema;
 
 	private FieldMap fields = new FieldMapImpl();
