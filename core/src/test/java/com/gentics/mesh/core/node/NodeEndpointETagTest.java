@@ -19,9 +19,11 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
@@ -82,13 +84,13 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			// Create a new node in the parent folder
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
-			request.setParentNodeUuid(uuid);
+			request.setParentNode(new NodeReference().setUuid(uuid));
 			request.setSchema(new SchemaReference().setName("content"));
 			request.getFields().put("name", FieldUtil.createStringField("someName"));
 			NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, request));
 
 			// We added another node but it has not yet been published
-			expect304(client().findNodeChildren(PROJECT_NAME, uuid), etag, true);
+			expect304(client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParameters().published()), etag, true);
 
 			call(() -> client().publishNode(PROJECT_NAME, createdNode.getUuid()));
 

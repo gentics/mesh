@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.node;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.user.NodeReference;
 
 /**
  * POJO for a node create request.
@@ -9,28 +10,39 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 public class NodeCreateRequest extends NodeUpdateRequest {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Uuid of the parent node in which the node will be created")
-	private String parentNodeUuid;
+	@JsonPropertyDescription("Reference to the parent node in which the node will be created. The uuid of this object must be set.")
+	private NodeReference parentNode;
 
 	public NodeCreateRequest() {
 	}
 
 	/**
-	 * Return the parent node uuid.
+	 * Return the parent node reference.
 	 * 
 	 * @return
 	 */
-	public String getParentNodeUuid() {
-		return parentNodeUuid;
+	public NodeReference getParentNode() {
+		return parentNode;
 	}
 
 	/**
-	 * Set the parent node uuid for the node that should be created.
+	 * Set the parent node reference for the node that should be created.
 	 * 
-	 * @param parentNodeUuid
+	 * @param parentNode
+	 * @return Fluent API
 	 */
-	public void setParentNodeUuid(String parentNodeUuid) {
-		this.parentNodeUuid = parentNodeUuid;
+	public NodeCreateRequest setParentNode(NodeReference parentNode) {
+		this.parentNode = parentNode;
+		return this;
+	}
+
+	/**
+	 * Helper method which can be used to quickly set the parent node uuid.
+	 * 
+	 * @param uuid
+	 */
+	public void setParentNodeUuid(String uuid) {
+		this.parentNode = new NodeReference().setUuid(uuid);
 	}
 
 }

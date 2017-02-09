@@ -294,14 +294,14 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 			update.getFields().put("name", FieldUtil.createStringField("changed-de"));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"))).getAvailableLanguages())
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"), new VersioningParameters().published())).getAvailableLanguages())
 					.containsOnly("en");
 
 			// Take english language offline
 			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, node.getUuid(), "en"));
 
 			// The node should not be loadable since both languages are offline
-			call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de")), NOT_FOUND,
+			call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"), new VersioningParameters().published()), NOT_FOUND,
 					"node_error_published_not_found_for_uuid_release_version", nodeUuid, project().getLatestRelease().getUuid());
 
 			// Publish german version
@@ -309,7 +309,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 			assertThat(publishStatus).as("Publish status").isPublished().hasVersion("1.0");
 
 			// Assert that german is published and english is offline
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"))).getAvailableLanguages())
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"), new VersioningParameters().published())).getAvailableLanguages())
 					.containsOnly("de");
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isPublished("de")
 					.hasVersion("de", "1.0").isNotPublished("en").hasVersion("en", "2.0");

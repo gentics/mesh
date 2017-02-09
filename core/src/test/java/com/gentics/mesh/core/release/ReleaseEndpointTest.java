@@ -72,7 +72,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Override
 	public void testDeleteByUUIDMultithreaded() throws Exception {
-
+		// Releases can't be deleted
 	}
 
 	@Test

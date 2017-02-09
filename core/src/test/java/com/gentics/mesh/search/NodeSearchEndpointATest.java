@@ -85,9 +85,9 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().updateNode(PROJECT_NAME, concorde.getUuid(), update));
 
 		// "supersonic" still found, "urschnell" not found in published nodes
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().published()));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParameters().published()));
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		// publish content "urschnell"

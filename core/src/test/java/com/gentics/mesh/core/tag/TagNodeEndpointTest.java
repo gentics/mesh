@@ -34,7 +34,7 @@ public class TagNodeEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
-			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
+			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(), new VersioningParameters().published()));
 			assertThat(nodeList.getData()).as("Published tagged nodes").isNotNull().isEmpty();
 
 			

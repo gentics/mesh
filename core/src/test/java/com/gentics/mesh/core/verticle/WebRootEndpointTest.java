@@ -338,7 +338,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		}
 		// 1. Assert that published path cannot be found
 		try (NoTx noTx = db.noTx()) {
-			call(() -> client().webroot(PROJECT_NAME, path, new NodeParameters()), NOT_FOUND, "node_not_found_for_path", path);
+			call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().published()), NOT_FOUND, "node_not_found_for_path", path);
 		}
 
 		// 2. Publish nodes
@@ -377,7 +377,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		// 3. Assert published path in published
 		db.noTx(() -> {
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, publishedPath, new NodeParameters()));
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParameters().published()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 			return null;
 		});
@@ -398,7 +398,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		// 6. Assert draft path in published
 		db.noTx(() -> {
-			call(() -> client().webroot(PROJECT_NAME, draftPath, new NodeParameters()), NOT_FOUND, "node_not_found_for_path", draftPath);
+			call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParameters().published()), NOT_FOUND, "node_not_found_for_path", draftPath);
 			return null;
 		});
 	}

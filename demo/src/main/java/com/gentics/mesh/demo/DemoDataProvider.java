@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -300,9 +301,9 @@ public class DemoDataProvider {
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 			nodeCreateRequest.setLanguage("en");
 			if (parentNode != null) {
-				nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
+				nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNode.getUuid()));
 			} else {
-				nodeCreateRequest.setParentNodeUuid(project.getRootNodeUuid());
+				nodeCreateRequest.setParentNode(new NodeReference().setUuid(project.getRootNodeUuid()));
 			}
 			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
 			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));

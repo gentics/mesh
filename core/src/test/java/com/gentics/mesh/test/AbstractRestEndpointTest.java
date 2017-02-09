@@ -49,6 +49,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
@@ -257,7 +258,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	protected MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
 		Node parentNode = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
+		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNode.getUuid()));
 		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		if (fieldKey != null) {
