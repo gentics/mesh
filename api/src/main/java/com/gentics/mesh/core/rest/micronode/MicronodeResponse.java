@@ -18,6 +18,7 @@ public class MicronodeResponse extends AbstractResponse implements MicronodeFiel
 	@JsonPropertyDescription("Reference to the microschema of the micronode.")
 	private MicroschemaReference microschema;
 
+	@JsonPropertyDescription("Fields that are stored in the micronode.")
 	private FieldMap fields = new FieldMapImpl();
 
 	/**

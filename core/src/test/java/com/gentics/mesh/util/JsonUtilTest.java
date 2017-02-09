@@ -42,22 +42,8 @@ public class JsonUtilTest {
 
 	@Test
 	public void testSchema() throws JsonProcessingException {
-		
-		ObjectMapper mapper = new ObjectMapper();
-		// configure mapper, if necessary, then create schema generator
-		JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
-		com.fasterxml.jackson.module.jsonSchema.JsonSchema schema = schemaGen.generateSchema(NodeResponse.class);
-		String schemaStr = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
-		System.out.println(schemaStr);
-
-		//		ObjectMapper objectMapper = new ObjectMapper();
-		//
-		//		JsonSchemaConfig config = JsonSchemaConfig.nullableJsonSchemaDraft4();
-		//		JsonSchemaGenerator generator = new JsonSchemaGenerator(objectMapper, config);
-		//		JsonNode schema = generator.generateJsonSchema(GroupResponse.class);
-		//		String schemaStr = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
-		//		System.out.println(schemaStr);
-
+		String json = JsonUtil.getJsonSchema(NodeResponse.class);
+		assertNotNull(json);
 	}
 
 	@Test
@@ -66,7 +52,7 @@ public class JsonUtilTest {
 		group.getPermissions().setOthers(false);
 		group.getPermissions().set(READ, true);
 		group.getPermissions().setCreate(true);
-		JsonUtil.toJson(group);
+		assertNotNull(JsonUtil.toJson(group));
 	}
 
 	@Test

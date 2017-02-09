@@ -157,7 +157,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	}
 
 	/**
-	 * Parse the raml path and return a list of all segment name variables.
+	 * Parse the RAML path and return a list of all segment name variables.
 	 * 
 	 * @return
 	 */
@@ -325,7 +325,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 		MimeType mimeType = new MimeType();
 		String json = JsonUtil.toJson(model);
 		mimeType.setExample(json);
-		mimeType.setSchema("");
+		mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
 		map.put("application/json", mimeType);
 
 		exampleResponses.put(status.code(), response);

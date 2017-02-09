@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -46,11 +47,13 @@ import io.vertx.core.logging.LoggerFactory;
 public final class JsonUtil {
 
 	protected static ObjectMapper defaultMapper;
+	protected static JsonSchemaGenerator schemaGen;
 
 	private static final Logger log = LoggerFactory.getLogger(JsonUtil.class);
 
 	static {
 		initDefaultMapper();
+		initSchemaMapper();
 	}
 
 	/**
@@ -83,7 +86,6 @@ public final class JsonUtil {
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 
 		defaultMapper.registerModule(module);
-
 		defaultMapper.registerModule(new SimpleModule("interfaceMapping") {
 			private static final long serialVersionUID = -4667167382238425197L;
 
@@ -94,6 +96,15 @@ public final class JsonUtil {
 			}
 		});
 
+	}
+
+	/**
+	 * Setup the JSON schema generator.
+	 */
+	private static void initSchemaMapper() {
+		ObjectMapper mapper = new ObjectMapper();
+		// configure mapper, if necessary, then create schema generator
+		schemaGen = new JsonSchemaGenerator(mapper);
 	}
 
 	/**
@@ -159,7 +170,24 @@ public final class JsonUtil {
 	}
 
 	/**
+	 * Generate the JSON schema for the given model class.
+	 * 
+	 * @param clazz
+	 *            Model class
+	 * @return
+	 */
+	public static String getJsonSchema(Class<?> clazz)  {
+		try {
+		com.fasterxml.jackson.module.jsonSchema.JsonSchema schema = schemaGen.generateSchema(clazz);
+		return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+		} catch (Exception e) {
+			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
+		}
+	}
+
+	/**
 	 * Return the JSON object mapper.
+	 * 
 	 * @return
 	 */
 	public static ObjectMapper getMapper() {

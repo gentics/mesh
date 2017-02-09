@@ -13,7 +13,7 @@ public class NavigationElement {
 	@JsonPropertyDescription("Uuid of the node within this navigation element.")
 	private String uuid;
 
-	@JsonPropertyDescription("Detailed node information")
+	@JsonPropertyDescription("Detailed node information.")
 	private NodeResponse node;
 
 	@JsonPropertyDescription("List of further child elements of the node.")
