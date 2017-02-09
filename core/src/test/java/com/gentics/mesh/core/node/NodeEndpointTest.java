@@ -649,7 +649,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 
 			// 2. Assert that all nodes are offline. The findNodes method should not find any node because it searches for published nodes by default.
-			NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000)));
+			NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParameters().published(), new PagingParametersImpl(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 			List<Node> nodes = Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015"));
@@ -659,7 +659,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 					.collect(Collectors.toList());
 			assertThat(publishedNodes).hasSize(nodes.size());
 
-			listResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000)));
+			listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParameters().published(), new PagingParametersImpl(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid")
 					.containsOnlyElementsOf(publishedNodes);
 		}
@@ -673,7 +673,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		// Take all nodes offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParameters().setRecursive(true)));
 
-		NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000)));
+		NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParameters().published(), new PagingParametersImpl(1, 1000)));
 		assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 		List<Node> nodes = db.noTx(() -> {
@@ -693,11 +693,11 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			// Load all nodes and check whether they are published
 			List<NodeResponse> publishedNodes = nodes.stream().map(node -> {
 				String uuid = db.noTx(() -> node.getUuid());
-				return call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
+				return call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().published()));
 			}).collect(Collectors.toList());
 			assertThat(publishedNodes).hasSize(nodes.size());
 
-			listResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000)));
+			listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParameters().published(), new PagingParametersImpl(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid")
 					.containsOnlyElementsOf(publishedNodes);
 		}
@@ -1077,7 +1077,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		call(() -> client().takeNodeOffline(PROJECT_NAME, uuid, new PublishParameters().setRecursive(true)));
 
 		// 2. Load node using default options. By default the scope published is active. Thus the node can't be found.
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", uuid,
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().published()), NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", uuid,
 				releaseUuid);
 
 		// 3. Publish the node again.

@@ -73,11 +73,11 @@ public enum ContainerType {
 	 */
 	public static ContainerType forVersion(String version) {
 		if ("draft".equals(version)) {
-			return ContainerType.DRAFT;
+			return DRAFT;
 		} else if ("published".equals(version)) {
-			return ContainerType.PUBLISHED;
+			return PUBLISHED;
 		} else {
-			return ContainerType.INITIAL;
+			return INITIAL;
 		}
 	}
 
