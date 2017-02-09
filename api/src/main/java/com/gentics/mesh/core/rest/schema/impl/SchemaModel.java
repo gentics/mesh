@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -16,8 +17,13 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
  */
 public class SchemaModel extends AbstractFieldSchemaContainer implements Schema {
 
+	@JsonPropertyDescription("Name of the display field.")
 	private String displayField;
+
+	@JsonPropertyDescription("Name of the segment field. This field is used to construct the webroot path to the node.")
 	private String segmentField;
+
+	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
 	private boolean container = false;
 
 	/**

@@ -2,14 +2,15 @@ package com.gentics.mesh.core.rest.project;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 
 public class ProjectResponse extends AbstractGenericRestResponse {
 
-	@JsonPropertyDescription("Name of the project")
+	@JsonPropertyDescription("The name of the project.")
 	private String name;
 
-	@JsonPropertyDescription("Uuid of the project root node. All futher nodes are children of this node.")
-	private String rootNodeUuid;
+	@JsonPropertyDescription("The project root node. All futher nodes are children of this node.")
+	private NodeReference rootNode;
 
 	public ProjectResponse() {
 	}
@@ -37,17 +38,17 @@ public class ProjectResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @return
 	 */
-	public String getRootNodeUuid() {
-		return rootNodeUuid;
+	public NodeReference getRootNode() {
+		return rootNode;
 	}
 
 	/**
 	 * Set the root node uuid of the project.
 	 * 
-	 * @param rootNodeUuid
+	 * @param rootNode
 	 */
-	public void setRootNodeUuid(String rootNodeUuid) {
-		this.rootNodeUuid = rootNodeUuid;
+	public void setRootNode(NodeReference rootNode) {
+		this.rootNode = rootNode;
 	}
 
 }

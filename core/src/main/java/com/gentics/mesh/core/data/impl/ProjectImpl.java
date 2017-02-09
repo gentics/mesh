@@ -176,7 +176,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		ProjectResponse restProject = new ProjectResponse();
 		restProject.setName(getName());
-		restProject.setRootNodeUuid(getBaseNode().getUuid());
+		restProject.setRootNode(getBaseNode().transformToReference(ac));
 
 		fillCommonRestFields(ac, restProject);
 		setRolePermissions(ac, restProject);

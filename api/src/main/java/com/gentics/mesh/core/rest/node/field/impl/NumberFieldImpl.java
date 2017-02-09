@@ -5,7 +5,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 
 /**
- * @See {@link NumberField}
+ * @see NumberField
  */
 public class NumberFieldImpl implements NumberField {
 

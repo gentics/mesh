@@ -209,7 +209,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			NodeCreateRequest createNode = new NodeCreateRequest();
 			createNode.setLanguage("en");
 			createNode.setSchema(new SchemaReference().setName("folder"));
-			createNode.setParentNodeUuid(projectResponse.getRootNodeUuid());
+			createNode.setParentNode(projectResponse.getRootNode());
 			createNode.getFields().put("name", FieldUtil.createStringField("Concorde"));
 			NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
 
@@ -245,7 +245,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		NodeCreateRequest createNode = new NodeCreateRequest();
 		createNode.setLanguage("en");
 		createNode.setSchema(new SchemaReference().setName("folder"));
-		createNode.setParentNodeUuid(projectResponse.getRootNodeUuid());
+		createNode.setParentNode(projectResponse.getRootNode());
 		createNode.getFields().put("name", FieldUtil.createStringField("AwesomeString"));
 		NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
 
@@ -288,7 +288,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		NodeCreateRequest createNode = new NodeCreateRequest();
 		createNode.setLanguage("en");
 		createNode.setSchema(new SchemaReference().setName("folder"));
-		createNode.setParentNodeUuid(projectResponse.getRootNodeUuid());
+		createNode.setParentNodeUuid(projectResponse.getRootNode().getUuid());
 		createNode.getFields().put("name", FieldUtil.createStringField("AwesomeString"));
 		NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
 

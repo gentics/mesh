@@ -27,7 +27,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")
 	private String language;
 
-	@JsonPropertyDescription("List of languages for which content is available")
+	@JsonPropertyDescription("List of languages for which content is available.")
 	private List<String> availableLanguages;
 
 	@JsonPropertyDescription("Map of webroot paths per language. This property will only be populated if the "
@@ -37,19 +37,19 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	@JsonPropertyDescription("Reference to the parent node. Note that the root node of the project has no parent node.")
 	private NodeReference parentNode;
 
-	@JsonPropertyDescription("Map of tag family names and their group information")
+	@JsonPropertyDescription("Map of tag family names and their group information.")
 	private Map<String, TagFamilyTagGroup> tags = new HashMap<>();
 
-	@JsonPropertyDescription("Reference to the project of the node")
+	@JsonPropertyDescription("Reference to the project of the node.")
 	private ProjectResponse project;
 
 	/**
 	 * Key: Schema name, Value: Node information
 	 */
+	@JsonPropertyDescription("Object which contains information about child elements.")
 	private Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 
-		//@JsonProperty(required = true)
-	@JsonPropertyDescription("Reference to the schema of the node")
+	@JsonPropertyDescription("Reference to the schema of the node.")
 	private SchemaReference schema;
 
 	@JsonPropertyDescription("Flag which indicates whether the node is a container and can contain nested elements.")

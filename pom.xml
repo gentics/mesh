@@ -23,7 +23,7 @@
 		<dagger.version>2.6</dagger.version>
 		<rx.version>1.2.3</rx.version>
 
-		<surefire.forkcount>3</surefire.forkcount>
+		<surefire.forkcount>6</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 	</properties>
@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.3.3</version>
+		<version>3.4.0.Beta1</version>
 	</parent>
 
 	<developers>

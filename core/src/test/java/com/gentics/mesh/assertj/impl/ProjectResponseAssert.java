@@ -16,8 +16,10 @@ public class ProjectResponseAssert extends AbstractMeshAssert<ProjectResponseAss
 
 	public ProjectResponseAssert matches(Project project) {
 		assertGenericNode(project, actual);
-		assertNotNull(actual.getRootNodeUuid());
+		assertNotNull(actual.getRootNode());
 		assertEquals(project.getName(), actual.getName());
+		assertNotNull(actual.getRootNode());
+		assertEquals(project.getBaseNode().getUuid(), actual.getRootNode().getUuid());
 		return this;
 	}
 

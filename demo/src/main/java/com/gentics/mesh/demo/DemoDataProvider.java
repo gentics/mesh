@@ -122,7 +122,7 @@ public class DemoDataProvider {
 	 */
 	private void publishAllNodes() throws InterruptedException {
 		for (ProjectResponse project : projects.values()) {
-			call(() -> client.publishNode(PROJECT_NAME, project.getRootNodeUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client.publishNode(PROJECT_NAME, project.getRootNode().getUuid(), new PublishParameters().setRecursive(true)));
 		}
 	}
 
@@ -303,7 +303,7 @@ public class DemoDataProvider {
 			if (parentNode != null) {
 				nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNode.getUuid()));
 			} else {
-				nodeCreateRequest.setParentNode(new NodeReference().setUuid(project.getRootNodeUuid()));
+				nodeCreateRequest.setParentNode(project.getRootNode());
 			}
 			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
 			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));

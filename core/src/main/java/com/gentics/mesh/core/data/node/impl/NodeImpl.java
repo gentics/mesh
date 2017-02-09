@@ -805,17 +805,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
 				break;
 			}
-			NodeReference reference = new NodeReference();
-			reference.setUuid(current.getUuid());
-			reference.setDisplayName(current.getDisplayName(ac));
-
-			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-				ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
-				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-						getProject().getName(), ac.getNodeParameters().getLanguages());
-				reference.setPath(url);
-			}
+			NodeReference reference = current.transformToReference(ac);
+//			NodeReference reference = new NodeReference();
+//			reference.setUuid(current.getUuid());
+//			reference.setDisplayName(current.getDisplayName(ac));
+//
+//			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+//				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
+//				ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
+//				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
+//						getProject().getName(), ac.getNodeParameters().getLanguages());
+//				reference.setPath(url);
+//			}
 			breadcrumb.add(reference);
 			current = current.getParentNode(releaseUuid);
 		}
@@ -952,11 +953,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public NodeReference transformToReference(InternalActionContext ac) {
+		Release release = ac.getRelease(getProject());
+
 		NodeReference nodeReference = new NodeReference();
 		nodeReference.setUuid(getUuid());
 		nodeReference.setDisplayName(getDisplayName(ac));
 		nodeReference.setSchema(getSchemaContainer().transformToReference());
 		nodeReference.setProjectName(getProject().getName());
+		if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+			WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
+			ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
+			String url = linkReplacer.resolve(release.getUuid(), type, this, ac.getNodeParameters().getResolveLinks(), ac.getNodeParameters().getLanguages());
+			nodeReference.setPath(url);
+		}
 		return nodeReference;
 	}
 

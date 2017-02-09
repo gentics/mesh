@@ -10,10 +10,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
  */
 public class TagFamilyTagGroup {
 
-	@JsonPropertyDescription("Uuid of the tag family")
+	@JsonPropertyDescription("Uuid of the tag family.")
 	private String uuid;
 
-	@JsonPropertyDescription("List of tags that belong to the tag family in reference form")
+	@JsonPropertyDescription("List of tags that belong to the tag family in reference form.")
 	private List<TagReference> items = new ArrayList<>();
 
 	public TagFamilyTagGroup() {

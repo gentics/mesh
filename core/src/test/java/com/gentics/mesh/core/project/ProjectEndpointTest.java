@@ -56,6 +56,8 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -94,7 +96,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		assertEquals("The name of the project did not match.", name, restProject.getName());
 
 		NodeResponse response = call(
-				() -> client().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
+				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParameters().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		// Test slashes
@@ -126,7 +128,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
 		NodeResponse response = call(
-				() -> client().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
+				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParameters().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		assertThat(restProject).matches(request);
@@ -317,13 +319,14 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
 			role().grantPermissions(project, READ_PERM, UPDATE_PERM);
 
-			MeshResponse<ProjectResponse> future = client().findProjectByUuid(uuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			ProjectResponse restProject = future.result();
-			assertThat(restProject).matches(project());
+			ProjectResponse response = call(() ->  client().findProjectByUuid(uuid));
+			assertThat(response).matches(project());
+			System.out.println(response.getRootNode().getDisplayName());
 
-			PermissionInfo permissions = restProject.getPermissions();
+			response = call(() ->  client().findProjectByUuid(uuid, new NodeParameters().setResolveLinks(LinkType.FULL)));
+			assertNotNull(response.getRootNode().getPath());
+			
+			PermissionInfo permissions = response.getPermissions();
 			assertTrue(permissions.hasPerm(CREATE));
 			assertTrue(permissions.hasPerm(READ));
 			assertTrue(permissions.hasPerm(UPDATE));
