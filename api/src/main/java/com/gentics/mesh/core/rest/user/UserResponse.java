@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -13,25 +14,32 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
  * User response model.
  */
 public class UserResponse extends AbstractGenericRestResponse {
-
+	
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Lastname of the user.")
 	private String lastname;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Firstname of the user.")
 	private String firstname;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Username of the user.")
 	private String username;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Email address of the user")
 	private String emailAddress;
 
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related.")
 	private ExpandableNode nodeReference;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether the user is enabled or disabled. Deleting a user will disable it.")
 	private boolean enabled;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of groups to which the user belongs")
 	private List<GroupReference> groups = new ArrayList<>();
 

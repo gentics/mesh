@@ -13,24 +13,28 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
  */
 public abstract class AbstractGenericRestResponse extends AbstractResponse implements GenericRestResponse {
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("User reference of the creator of the element.")
 	private UserReference creator;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("ISO8601 formatted created date string.")
 	private String created;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("User reference of the editor of the element.")
 	private UserReference editor;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("ISO8601 formatted edited date string.")
 	private String edited;
 
-	@JsonProperty(value = "permissions")
+	@JsonProperty(value = "permissions", required = true)
 	private PermissionInfo permissions = new PermissionInfo();
 
 	@JsonPropertyDescription("Permission information for provided role. This property will only be populated if a "
 			+ RolePermissionParameters.ROLE_PERMISSION_QUERY_PARAM_KEY + " query parameter has been specified.")
-	@JsonProperty(value = "rolePerms")
+	@JsonProperty(value = "rolePerms", required = false)
 	private PermissionInfo rolePerms;
 
 	@Override

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.common;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 /**
@@ -7,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
  */
 public abstract class AbstractResponse implements RestResponse {
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Uuid of the element")
 	private String uuid;
 
