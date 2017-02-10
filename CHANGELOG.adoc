@@ -1,0 +1,291 @@
+= Gentics Mesh Changelog
+
+== 0.8.0 (Pending)
+
+* __[Enhancement]__ The rootNodeUuid property within node project response was changed. 
+
+[quote, Example]
+____
+Old structure:
+[source,json]
+----
+{
+…
+  "rootNodeUuid" : "cd5ac8943a4448ee9ac8943a44a8ee25",
+…
+}
+----
+
+New structure:
+[source,json]
+----
+{
+…
+  "rootNode": {
+    "uuid" : "cd5ac8943a4448ee9ac8943a44a8ee25",
+  },
+…
+}
+----
+____
+
+* __[Enhancement]__ The parentNodeUuid property within node create requests was changed. 
+
+[quote, Example]
+____
+Old structure:
+[source,json]
+----
+{
+…
+  "parentNodeUuid" : "cd5ac8943a4448ee9ac8943a44a8ee25",
+…
+}
+----
+
+New structure:
+[source,json]
+----
+{
+…
+  "parentNode": {
+    "uuid" : "cd5ac8943a4448ee9ac8943a44a8ee25",
+  },
+…
+}
+----
+____
+
+* __[Enhancement]__ JSON Schema information have been added to the RAML API documentation 
+
+* __[Enhancement]__ The navigation response JSON was restructured. The root element was removed. 
+
+[quote, Example]
+____
+Old structure:
+[source,json]
+----
+{
+  "root" : {
+    "uuid" : "cd5ac8943a4448ee9ac8943a44a8ee25",
+    "node" : {…},
+    "children" : […]
+  }
+}
+----
+
+New structure:
+[source,json]
+----
+{
+  "uuid" : "cd5ac8943a4448ee9ac8943a44a8ee25",
+  "node" : {…},
+  "children" : […]
+}
+----
+____
+
+== 0.7.0 (SNAPSHOT)
+
+* __[Feature]__ Content releases support
+
+[quote]
+____
+This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our [Documentation](http://getmesh.io/docs/beta/index.html).
+____
+
+* __[Feature]__ Versioning support
+
+[quote]
+____
+This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our [Documentation](http://getmesh.io/docs/beta/index.html).
+
+Important changes summary:
+
+* Node update request must now include the version information
+* The query parameter `?version=published` must be used to load published nodes. Otherwise the node will not be found because the default version scope is __draft__.
+* Two additional permissions for nodes have been added: __publish__, __readpublished__
+
+Existing databases will automatically be migrated during the first setup.
+____
+
+* __[Enhancement]__ The missing *availableLanguages* and *defaultLanguage* parameters have been added to the *mesh-ui-config.js* file. Previously no language was configured which removed the option to translate contents.
+
+* __[Enhancement]__ Image Property Support - The binary field will not automatically contain properties for image *width*, image *height* and the main *dominant color* in the image.
+
+* __[Enhancement]__ API Version endpoint -  It is now possible to load the mesh version information via a `GET` request to `/api/v1/`.
+
+* __[Enhancement]__ Project endpoint - The current project information can now be loaded via a `GET` request to `/api/v1/:projectName`.
+
+* __[Bugfix]__ When the search indices where recreated with the reindex endpoint, the mapping for the raw fields was not added. This has been fixed now.
+
+* __[Bugfix]__ The search index mapping of fields of type "list" were incorrect and have been fixed now.
+
+* __[Bugfix]__ Various issues with the schema node migration process have been fixed.
+
+== 0.6.26 (05.10.2016)
+
+* __[Enhancement]__ The maximum transformation depth limit was raised from 2 to 3.
+
+== 0.6.25 (20.09.2016)
+
+* __[Enhancement]__ The used Vert.x version was bumped to 3.3.3.
+
+== 0.6.24 (19.09.2016)
+
+* __[Enhancement]__ The Gentics Mesh admin ui has been updated. The UI will no longer send basic auth information for succeeding requests which were invoked after the login action had been invoked. Instead the basic auth login information will only be send directly during login.
+
+* __[Bugfix]__ A bug within the breadcrumb resolver has been fixed. Previouly breadcrumbs did not account for language fallback options and thus returned a 404 path for nodes which used a different language compared to the language of the retrieved node. This has been fixed.
+
+== 0.6.23 (14.09.2016)
+
+* __[Bugfix]__ The missing availableLanguages and defaultLanguage parameters have been added to the mesh-ui-config.js file. Previously no language was configured which removed the option to translate contents.
+
+== 0.6.22 (24.08.2016)
+
+* __[Enhancement]__ It is now possible to publish language variants. Previously it was only possible to publish nodes. This affected all language variants of the node.
+
+== 0.6.21 (17.08.2016)
+
+* __[Enhancement]__ The debug output in case of errors has been enhanced.
+
+== 0.6.20 (03.08.2016)
+
+* __[Bugfix]__ The changelog processing action for existing installations was fixed.
+
+== 0.6.19 (02.08.2016)
+
+* __[Bugfix]__ Mesh-Admin-UI was updated to version 0.6.13
+
+== 0.6.18 (24.06.2016)
+
+* __[Bugfix]__ Previously a search request which queried a lot of nodes could result in a StackOverflow exception. The cause for this exception was fixed.
+
+* __[Enhancement]__ The gentics/mesh and gentics/mesh-demo images now use the alpine flavour base image and thus the size of the image stack has been reduced.
+
+* __[Enhancement]__ The performance of the search endpoints have been improved.
+
+== 0.6.17 (22.06.2016)
+
+* __[Bugfix]__ The path property within the node response breadcrumb was not set. The property will contain the resolved webroot path for the breadcrumb element. No value will be set if the resolveLinks query parameter was configured or set to OFF. CL-459
+
+== 0.6.16 (21.06.2016)
+
+* __[Enhancement]__ Gzip compression support was added. JSON responses are now pretty printed by default.
+
+== 0.6.15 (20.06.2016)
+
+* __[Enhancement]__ Mesh-Admin-UI was updated to version 0.6.12
+
+== 0.6.13 (17.06.2016)
+
+* __[Enhancement]__ Mesh-Admin-UI was updated to version 0.6.10
+
+== 0.6.12 (02.06.2016)
+
+* __[Bugfix]__ A bug within the schema migration process was fixed. The label field was previously not correctly handled for newly added fields.
+* __[Bugfix]__ A bug within the schema migration process was fixed. The segmentfield value was reset to null when updating a schema. This has been fixed now.
+* __[Bugfix]__ The "AllChangeProperties" field was removed from the JSON response of schema fields.
+
+== 0.6.11 (31.05.2016)
+
+* __[Bugfix]__ A bug which prevented node reference deletion was fixed. It is now possible to delete node references using a json null value in update requests.
+* __[Enhancement]__ OrientDB was updated to version 2.1.18
+
+== 0.6.10 (25.05.2016)
+
+* __[Bugfix]__ It is now possible to grant and revoke permissions to microschemas using the roles/:uuid/permissions endpoint.
+
+== 0.6.9 (04.05.2016)
+
+* __[Enhancement]__ The mesh-ui was updated.
+* __[Enhancement]__ It is now possible to also include non-container nodes in a navigation response using the includeAll parameter. By default only container nodes will be included in the response.
+* __[Bugfix]__ A minor issue within the webroot path handling of node references was fixed. CL-425
+* __[Bugfix]__ Fix label and allow field property handling when updating schema fields. CL-357
+* __[Bugfix]__ Various concurrency issues have been addressed.
+
+== 0.6.8 (26.04.2016)
+
+* __[Enhancement]__ The mesh-ui was updated.
+* __[Enhancement]__ OrientDB was updated to version 2.1.16
+
+== 0.6.7 (25.04.2016)
+
+* __[Bugfix]__ Update checker. A bug that prevented the update checker from working correctly was fixed.
+
+== 0.6.6 (06.04.2016)
+
+* Public open beta release
+* __[Bugfix]__ A bug within the reindex changelog entry was fixed. The bug prevented the node index to be recreated.
+* __[Bugfix]__ The mesh-ui-config.js default apiUrl parameter was changed to /api/v1 in order to allow access from hosts other than localhost.
+
+== 0.6.5 (05.04.2016)
+
+* __[Bugfix]__ The displayField value was missing within the node search document. The value was added.
+* __[Bugfix]__ The changelog execution information was added to the demo data dump and thus no further changelog execution will happen during mesh demo startup.
+* __[Bugfix]__ An edge case that could cause multiple stack overflow exception was fixed.
+* __[Enhancement]__ A Cache-Control: no-cache header has been set to mesh responses.
+* __[Enhancement]__ The mesh-ui was updated.
+* __[Bugfix]__ Various search index related bugs have been fixed.
+* __[Enhancement]__ The mesh-ui configuration file was renamed to mesh-ui.config.js 
+
+== 0.6.4 (24.03.2016)
+
+* __[Enhancement]__ The mesh ui was updated.
+
+== 0.6.3 (22.03.2016)
+
+* __[Enhancement]__ Database migration/changelog system.
+       A changelog system was added to mesh. The system is used to upgrade mesh data from one mesh version to another.
+* __[Enhancement]__ The *published* flag can now be referenced within an elasticsearch query.
+* __[Bugfix]__ It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
+* __[Bugfix]__ The schema migration process did not update the node search index correctly. 
+       In some cases duplicate nodes would be returned (the old node and the migrated one).
+       This has been fixed. Only the latest version of nodes will be returned now.
+* __[Bugfix]__ It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
+* __[Bugfix]__ A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358)
+* __[Bugfix]__ A typo within the search model document for users was fixed.
+       The property emailadress was renamed to emailaddress. 
+
+== 0.6.2 (15.03.2016)
+
+* __[Bugfix]__ The microschema and schema permission field was always empty for newly created elements.
+
+== 0.6.1 (14.03.2016)
+
+* __[Enhancement]__ Add mesh-ui to gentics/mesh docker image
+
+== 0.6.0 (14.03.2016)
+
+* __[Enhancement]__ Added image API endpoint
+  Images can now be resized and cropped using the image endpoint.
+
+* __[Enhancement]__ Added schema versioning
+
+* __[Enhancement]__ Added schema migration process
+  It is now possible to update schemas. Custom migration 
+  handlers can be defined in order to modify the node data.
+
+* __[Enhancement]__ Added Micronodes/Microschemas
+  A new field type has been added which allows creation of micronodes.
+
+* __[Enhancement]__ Webroot API
+  The webroot REST endpoint was added which allows easy retrieval of nodes by its web path.
+
+* __[Enhancement]__ JWT Authentication support has been added
+  It is now possible to select JWT in order to authenticate the user.
+  
+* __[Enhancement]__ Navigation Endpoint
+  The navigation REST endpoint was added which allows retrieval of navigation tree data which can be used to render navigations.
+
+* __[Enhancement]__ Added docker support
+  It is now possible to start mesh using the gentics/mesh or gentics/mesh-demo docker image.
+
+* __[Bugfix]__ Fixed paging issue for nested tags
+
+* __[Enhancement]__ Vertx update
+  The Vertx dependency was updated to version 3.2.1
+
+== 0.5.0 (17.11.2015)
+
+* Closed beta release
