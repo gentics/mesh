@@ -10,7 +10,6 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.util.VersionNumber;
 
 //TODO split this class into two since some actions are not versioing specific but release specific 

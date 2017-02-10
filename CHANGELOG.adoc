@@ -2,6 +2,8 @@
 
 == 0.8.0 (Pending)
 
+* __[Enhancement]__ The no longer needed schemaReference property was removed from node update requests.
+
 * __[Enhancement]__ The rootNodeUuid property within node project response was changed. 
 
 [quote, Example]

@@ -12,6 +12,10 @@ public class UserCreateRequest extends UserUpdateRequest {
 	@JsonProperty(required = false)
 	private String groupUuid;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("New username of the user")
+	private String username;
+
 	public UserCreateRequest() {
 	}
 

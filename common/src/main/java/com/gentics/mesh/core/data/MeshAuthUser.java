@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.shareddata.impl.ClusterSerializable;

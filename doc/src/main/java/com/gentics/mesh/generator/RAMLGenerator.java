@@ -3,7 +3,6 @@ package com.gentics.mesh.generator;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -13,7 +12,6 @@ import org.mockito.Mockito;
 import org.raml.emitter.RamlEmitter;
 import org.raml.model.Action;
 import org.raml.model.ActionType;
-import org.raml.model.MimeType;
 import org.raml.model.Protocol;
 import org.raml.model.Raml;
 import org.raml.model.Resource;
@@ -38,7 +36,6 @@ import com.gentics.mesh.core.verticle.tagfamily.TagFamilyEndpoint;
 import com.gentics.mesh.core.verticle.user.UserEndpoint;
 import com.gentics.mesh.core.verticle.utility.UtilityEndpoint;
 import com.gentics.mesh.core.verticle.webroot.WebRootEndpoint;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.ProjectSearchEndpoint;
 import com.gentics.mesh.search.SearchEndpoint;
@@ -125,17 +122,23 @@ public class RAMLGenerator {
 			}
 
 			// Add request example
-			if (endpoint.getExampleRequest() != null) {
-				HashMap<String, MimeType> bodyMap = new HashMap<>();
-				MimeType mimeType = new MimeType();
-				String json = JsonUtil.toJson(endpoint.getExampleRequest());
-				mimeType.setExample(json);
-				bodyMap.put("application/json", mimeType);
-				action.setBody(bodyMap);
+			if (endpoint.getExampleRequestMap() != null) {
+				action.setBody(endpoint.getExampleRequestMap());
 
-				//write example request to dedicated file
-				String filename = "request/" + fullPath + "/" + endpoint.getExampleRequest().getClass().getSimpleName() + ".json";
-				writeFile(filename, json);
+				for (String mimeType : endpoint.getExampleRequestMap().keySet()) {
+					String body = endpoint.getExampleRequestMap().get(mimeType).getExample();
+					if (mimeType.equalsIgnoreCase("application/json")) {
+						//write example request to dedicated file
+						String filename = "request/" + fullPath + "/request-body.json";
+						writeFile(filename, body);
+					} else if (mimeType.equalsIgnoreCase("text/plain")) {
+						//write example request to dedicated file
+						String filename = "request/" + fullPath + "/request-body.txt";
+						writeFile(filename, body);
+					}
+
+				}
+
 			}
 
 			String path = endpoint.getRamlPath();

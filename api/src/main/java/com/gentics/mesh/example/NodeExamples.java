@@ -240,7 +240,6 @@ public class NodeExamples extends AbstractExamples {
 	public NodeUpdateRequest getNodeUpdateRequest2() {
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
-		nodeUpdateRequest.setSchema(new SchemaReference().setName("vehicle"));
 		nodeUpdateRequest.getFields().put("weight", new NumberFieldImpl().setNumber(1230));
 		return nodeUpdateRequest;
 	}
@@ -259,7 +258,6 @@ public class NodeExamples extends AbstractExamples {
 	public NodeUpdateRequest getNodeUpdateRequest() {
 		NodeUpdateRequest nodeUpdate = new NodeUpdateRequest();
 		nodeUpdate.setLanguage("en");
-		nodeUpdate.setSchema(getSchemaReference("content"));
 
 		FieldMap fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));

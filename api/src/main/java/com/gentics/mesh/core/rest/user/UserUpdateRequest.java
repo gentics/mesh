@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.rest.user;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
@@ -9,29 +8,23 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class UserUpdateRequest implements RestModel {
 
-	@JsonProperty(required = false)
 	@JsonPropertyDescription("New password of the user")
 	private String password;
 
 	private String oldPassword;
 
-	@JsonProperty(required = false)
 	@JsonPropertyDescription("New lastname of the user")
 	private String lastname;
 
-	@JsonProperty(required = false)
 	@JsonPropertyDescription("New firstname of the user")
 	private String firstname;
 
-	@JsonProperty(required = false)
 	@JsonPropertyDescription("New username of the user")
 	private String username;
 
-	@JsonProperty(required = false)
 	@JsonPropertyDescription("New email address of the user")
 	private String emailAddress;
 
-	@JsonProperty(required = false)
 	@JsonPropertyDescription("New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user")
 	private ExpandableNode nodeReference;
 

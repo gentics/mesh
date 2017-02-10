@@ -736,10 +736,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			createRequest.setParentNodeUuid(uuid);
 
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("folder");
-			schemaReference.setUuid(schemaContainer("folder").getUuid());
-			updateRequest.setSchema(schemaReference);
 			updateRequest.setLanguage("en");
 			updateRequest.getFields().put("name", FieldUtil.createStringField("UPDATED"));
 
@@ -856,9 +852,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		VersionNumber version = db.noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
-		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setName("folder");
-		request.setSchema(schemaReference);
 		request.setLanguage("en");
 
 		NodeParameters parameters = new NodeParameters();
@@ -1416,8 +1409,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		// 2. Prepare the update request (change name field of english node)
 		NodeUpdateRequest request = new NodeUpdateRequest();
-		SchemaReference schemaReference = new SchemaReference().setName("content");
-		request.setSchema(schemaReference);
 		request.setLanguage("en");
 		request.setVersion(new VersionReference(null, "0.1"));
 		request.getFields().put("name", FieldUtil.createStringField(newName));
@@ -1482,8 +1473,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		final String uuid = db.noTx(() -> folder("2015").getUuid());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
-		SchemaReference schemaReference = new SchemaReference().setName("content");
-		request.setSchema(schemaReference);
 		request.setLanguage("de");
 		request.setVersion(new VersionReference(null, "0.1"));
 		request.getFields().put("name", FieldUtil.createStringField(germanName));
@@ -1511,9 +1500,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			role().revokePermissions(node, UPDATE_PERM);
 			String uuid = node.getUuid();
 			NodeUpdateRequest request = new NodeUpdateRequest();
-			SchemaReference reference = new SchemaReference();
-			reference.setName("content");
-			request.setSchema(reference);
 			request.setLanguage("en");
 
 			call(() -> client().updateNode(PROJECT_NAME, uuid, request), FORBIDDEN, "error_missing_perm", uuid);
@@ -1526,10 +1512,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		try (NoTx noTx = db.noTx()) {
 			NodeUpdateRequest request = new NodeUpdateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("folder");
-			schemaReference.setUuid(schemaContainer("folder").getUuid());
-			request.setSchema(schemaReference);
 			request.setLanguage("en");
 
 			NodeParameters parameters = new NodeParameters();
@@ -1612,7 +1594,6 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			String uuid = node.getUuid();
 
 			NodeUpdateRequest request = new NodeUpdateRequest();
-			request.setSchema(new SchemaReference().setName("content"));
 			request.setLanguage("en");
 			request.setVersion(new VersionReference(null, "0.1"));
 			final String newName = "english renamed name";

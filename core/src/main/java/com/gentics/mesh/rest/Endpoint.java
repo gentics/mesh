@@ -56,7 +56,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 
 	private String[] traits = new String[] {};
 
-	private Object exampleRequest = null;
+	private HashMap<String, MimeType> exampleRequestMap = null;
 
 	private String pathRegex;
 
@@ -137,7 +137,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
 			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
 		}
-		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequest == null) {
+		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequestMap == null) {
 			log.error("Endpoint {" + getPath() + "} has no example request.");
 			throw new RuntimeException("Endpoint has no example request.");
 		}
@@ -323,10 +323,15 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 		response.setBody(map);
 
 		MimeType mimeType = new MimeType();
-		String json = JsonUtil.toJson(model);
-		mimeType.setExample(json);
-		mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
-		map.put("application/json", mimeType);
+		if (model instanceof String) {
+			String json = JsonUtil.toJson(model);
+			mimeType.setExample(json);
+			mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
+			map.put("application/json", mimeType);
+		} else {
+			mimeType.setExample(model.toString());
+			map.put("text/plain", mimeType);
+		}
 
 		exampleResponses.put(status.code(), response);
 		return this;
@@ -339,7 +344,21 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	 * @return Fluent API
 	 */
 	public Endpoint exampleRequest(Object model) {
-		this.exampleRequest = model;
+
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+
+		if (model instanceof String) {
+			mimeType.setExample(model.toString());
+			bodyMap.put("text/plain", mimeType);
+		} else {
+			String json = JsonUtil.toJson(model);
+			mimeType.setExample(json);
+			mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
+			bodyMap.put("application/json", mimeType);
+		}
+
+		this.exampleRequestMap = bodyMap;
 		return this;
 	}
 
@@ -373,12 +392,12 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	}
 
 	/**
-	 * Return the endpoint HTTP example request body.
+	 * Return the endpoint HTTP example request map.
 	 * 
 	 * @return
 	 */
-	public Object getExampleRequest() {
-		return exampleRequest;
+	public HashMap<String, MimeType> getExampleRequestMap() {
+		return exampleRequestMap;
 	}
 
 	/**

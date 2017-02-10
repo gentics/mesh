@@ -235,7 +235,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// 7. Update the node and set the new field
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 			nodeUpdateRequest.setLanguage("en");
-			nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
 			nodeUpdateRequest.getFields().put("content", new NumberFieldImpl().setNumber(42.01));
 			nodeUpdateRequest.setVersion(new VersionReference().setNumber("2.0"));
 			response = call(() -> client().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));
@@ -537,7 +536,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.setVersion(new VersionReference().setNumber("2.0"));
-			nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
 			nodeUpdateRequest.getFields().put("extraname", new StringFieldImpl().setString("sometext"));
 			response = call(() -> client().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));
 			assertNotNull(response);

@@ -172,7 +172,6 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertEquals(folder("news").getUuid(), field.getUuid());
 
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-			nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.getFields().put(FIELD_NAME, null);
 
@@ -350,7 +349,6 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse germanTarget = createGermanFuture.result();
 
 			NodeUpdateRequest createEnglishNode = new NodeUpdateRequest();
-			createEnglishNode.setSchema(new SchemaReference().setName("folder"));
 			createEnglishNode.setLanguage("en");
 			createEnglishNode.getFields().put("name", FieldUtil.createStringField("English Target"));
 

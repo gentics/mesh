@@ -29,7 +29,6 @@ import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -49,10 +48,6 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 
 	private NodeUpdateRequest prepareNameFieldUpdateRequest(String nameFieldValue, String baseVersion) {
 		NodeUpdateRequest request = new NodeUpdateRequest();
-		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setName("content");
-		schemaReference.setUuid(schemaContainer("content").getUuid());
-		request.setSchema(schemaReference);
 		request.setLanguage("en");
 		// Only update the name field
 		request.getFields().put("name", FieldUtil.createStringField(nameFieldValue));
