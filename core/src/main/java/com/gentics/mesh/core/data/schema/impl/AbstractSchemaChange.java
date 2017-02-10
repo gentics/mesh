@@ -49,23 +49,23 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	abstract public SchemaChangeOperation getOperation();
 
 	@Override
-	public <R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?>> R getPreviousContainerVersion() {
+	public <R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>> R getPreviousContainerVersion() {
 		return (R) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange<T> setPreviousContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> containerVersion) {
+	public SchemaChange<T> setPreviousContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> containerVersion) {
 		setSingleLinkInTo(containerVersion, HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 
 	@Override
-	public <R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?>> R getNextContainerVersion() {
+	public <R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>> R getNextContainerVersion() {
 		return (R) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange<T> setNextSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> containerVersion) {
+	public SchemaChange<T> setNextSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> containerVersion) {
 		setSingleLinkOutTo(containerVersion, HAS_SCHEMA_CONTAINER);
 		return this;
 	}

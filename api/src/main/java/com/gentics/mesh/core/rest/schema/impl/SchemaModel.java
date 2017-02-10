@@ -29,13 +29,4 @@ public class SchemaModel extends SchemaUpdateRequest implements Schema {
 	public SchemaModel() {
 	}
 
-//	@Override
-//	public SchemaReference toReference() {
-//		SchemaReference reference = new SchemaReference();
-//		reference.setUuid(getUuid());
-//		reference.setVersion(getVersion());
-//		reference.setName(getName());
-//		return reference;
-//	}
-
 }

@@ -115,9 +115,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.setParentNodeUuid(folder("news").getUuid());
 
 			assertThat(dummySearchProvider).recordedStoreEvents(0);
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "language_not_found", "BOGUS");
+			call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "language_not_found", "BOGUS");
 			assertThat(dummySearchProvider).recordedStoreEvents(0);
 		}
 	}

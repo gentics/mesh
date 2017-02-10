@@ -253,7 +253,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 			Micronode micronode = field.getMicronode();
 
-			MicroschemaModel schema = micronode.getSchemaContainerVersion().getSchema();
+			Microschema schema = micronode.getSchemaContainerVersion().getSchema();
 			schema.addField(FieldUtil.createStringFieldSchema("stringfield"));
 			micronode.getSchemaContainerVersion().setSchema(schema);
 			InternalActionContext ac = getMockedInternalActionContext();

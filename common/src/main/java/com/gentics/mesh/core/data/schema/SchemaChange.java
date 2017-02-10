@@ -68,7 +68,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * 
 	 * @return
 	 */
-	<R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?>> R getPreviousContainerVersion();
+	<R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>> R getPreviousContainerVersion();
 
 	/**
 	 * Set the <b>in-bound</b> connection from the schema change to the container version.
@@ -76,14 +76,14 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * @param containerVersion
 	 * @return Fluent API
 	 */
-	SchemaChange<T> setPreviousContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> containerVersion);
+	SchemaChange<T> setPreviousContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> containerVersion);
 
 	/**
 	 * Return the out-bound connected schema container version.
 	 * 
 	 * @return
 	 */
-	<R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?>> R getNextContainerVersion();
+	<R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>> R getNextContainerVersion();
 
 	/**
 	 * Set the out-bound connected schema container.
@@ -91,7 +91,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * @param containerVersion
 	 * @return
 	 */
-	SchemaChange<T> setNextSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> containerVersion);
+	SchemaChange<T> setNextSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> containerVersion);
 
 	/**
 	 * Get the migration script for the change. May either be a custom script or an automatically created

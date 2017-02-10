@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -12,24 +13,31 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 public class SchemaResponse extends AbstractGenericRestResponse implements Schema {
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the display field.")
 	private String displayField;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the segment field. This field is used to construct the webroot path to the node.")
 	private String segmentField;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
 	private boolean container = false;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Version of the schema")
 	private int version;
 
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Description of the schema")
 	private String description;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the schema")
 	private String name;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 

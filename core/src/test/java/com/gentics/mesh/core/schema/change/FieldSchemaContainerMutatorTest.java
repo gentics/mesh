@@ -52,7 +52,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
 	public void testNullOperation() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			version.setSchema(schema);
 			Schema updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
@@ -66,7 +66,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel("testschema");
+			SchemaModel schema = new SchemaModel("testschema");
 
 			NumberFieldSchema numberField = new NumberFieldSchemaImpl();
 			numberField.setName("testField");
@@ -97,7 +97,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel("testschema");
+			SchemaModel schema = new SchemaModel("testschema");
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();
 			stringField.setAllowedValues("blub");
@@ -128,7 +128,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel("testschema");
+			SchemaModel schema = new SchemaModel("testschema");
 
 			BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
 			binaryField.setName("binaryField");

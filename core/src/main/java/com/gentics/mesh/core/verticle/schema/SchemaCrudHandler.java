@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -46,7 +47,7 @@ import dagger.Lazy;
 import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Single;
 
-public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Schema> {
+public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
 
 	private SchemaComparator comparator;
 
@@ -183,7 +184,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			String projectUuid = project.getUuid();
 			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
 				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
-				Tuple<SearchQueueBatch, Single<Schema>> tuple = db.tx(() -> {
+				Tuple<SearchQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
 
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
 					SearchQueueBatch batch = searchQueue.create();

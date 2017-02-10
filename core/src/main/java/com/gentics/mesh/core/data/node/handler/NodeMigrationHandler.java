@@ -401,7 +401,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @throws Exception
 	 */
 	protected <T extends FieldContainer> void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer container, RestModel restModel,
-			GraphFieldSchemaContainerVersion<?, ?, ?, ?> newVersion, Set<String> touchedFields,
+			GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields,
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Class<T> clazz) throws Exception {
 		// collect the files for all binary fields (keys are the sha512sums,
 		// values are filepaths to the binary files)
@@ -529,7 +529,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 *            Set of touched fields (will be modified)
 	 * @throws IOException
 	 */
-	protected void prepareMigration(GraphFieldSchemaContainerVersion<?, ?, ?, ?> fromVersion,
+	protected void prepareMigration(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Set<String> touchedFields) throws IOException {
 		SchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {

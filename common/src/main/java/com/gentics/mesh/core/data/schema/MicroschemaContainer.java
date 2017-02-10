@@ -3,14 +3,14 @@ package com.gentics.mesh.core.data.schema;
 import java.util.Objects;
 
 import com.gentics.mesh.core.data.IndexableElement;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
 /**
  * A microschema container is a graph element which stores the JSON microschema data.
  */
 public interface MicroschemaContainer
-		extends GraphFieldSchemaContainer<MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>, IndexableElement {
+		extends GraphFieldSchemaContainer<MicroschemaResponse, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>, IndexableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}

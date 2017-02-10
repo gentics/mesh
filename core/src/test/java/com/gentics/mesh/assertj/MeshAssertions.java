@@ -133,7 +133,7 @@ public class MeshAssertions extends Assertions {
 		return new SchemaContainerAssert(actual);
 	}
 
-	public static SchemaContainerVersionAssert assertThat(GraphFieldSchemaContainerVersion<?, ?, ?, ?> actual) {
+	public static SchemaContainerVersionAssert assertThat(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> actual) {
 		return new SchemaContainerVersionAssert(actual);
 	}
 

@@ -136,9 +136,7 @@ public class RAMLGenerator {
 						String filename = "request/" + fullPath + "/request-body.txt";
 						writeFile(filename, body);
 					}
-
 				}
-
 			}
 
 			String path = endpoint.getRamlPath();

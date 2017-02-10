@@ -36,8 +36,8 @@ import com.gentics.mesh.json.JsonUtil;
  * @param <SC>
  *            Schema container type
  */
-public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
-		extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RE, SCV, SC> {
+public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
+		extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> {
 
 	public static final String VERSION_PROPERTY_KEY = "version";
 
@@ -191,7 +191,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 			}
 		}
 
-		R resultingSchema = new FieldSchemaContainerMutator().apply(this);
+		RM resultingSchema = new FieldSchemaContainerMutator().apply(this);
 		resultingSchema.validate();
 
 		// Increment version of the schema

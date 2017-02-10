@@ -34,7 +34,7 @@ import com.gentics.mesh.util.ETag;
 import rx.Single;
 
 public class MicroschemaContainerVersionImpl
-		extends AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
+		extends AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, Microschema, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
 		implements MicroschemaContainerVersion {
 
 	public static void init(Database database) {
@@ -81,8 +81,8 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public MicroschemaResponse getSchema() {
-		MicroschemaModel microschema = MeshInternal.get().serverSchemaStorage().getMicroschema(getName(), getVersion());
+	public Microschema getSchema() {
+		Microschema microschema = MeshInternal.get().serverSchemaStorage().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
 			microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
 			MeshInternal.get().serverSchemaStorage().addMicroschema(microschema);
@@ -91,7 +91,7 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public void setSchema(MicroschemaResponse microschema) {
+	public void setSchema(Microschema microschema) {
 		MeshInternal.get().serverSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
 		MeshInternal.get().serverSchemaStorage().addMicroschema(microschema);
 		String json = JsonUtil.toJson(microschema);
@@ -137,7 +137,7 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public Single<Microschema> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+	public Single<MicroschemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		return MeshInternal.get().database().operateNoTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});

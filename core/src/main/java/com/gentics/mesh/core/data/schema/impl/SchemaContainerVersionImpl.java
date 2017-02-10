@@ -32,7 +32,7 @@ import rx.Single;
  * @see SchemaContainerVersion
  */
 public class SchemaContainerVersionImpl extends
-		AbstractGraphFieldSchemaContainerVersion<Schema, SchemaReference, SchemaContainerVersion, SchemaContainer> implements SchemaContainerVersion {
+		AbstractGraphFieldSchemaContainerVersion<SchemaResponse, Schema, SchemaReference, SchemaContainerVersion, SchemaContainer> implements SchemaContainerVersion {
 
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
@@ -140,7 +140,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Single<Schema> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+	public Single<SchemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		return MeshInternal.get().database().operateNoTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});

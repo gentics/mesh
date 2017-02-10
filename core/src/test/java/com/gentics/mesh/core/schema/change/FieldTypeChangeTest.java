@@ -40,7 +40,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			schema.setName("testschema");
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();
@@ -68,7 +68,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			schema.setName("testschema");
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();

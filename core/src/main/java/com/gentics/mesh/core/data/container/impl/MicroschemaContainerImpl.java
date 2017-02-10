@@ -24,7 +24,7 @@ import com.gentics.mesh.graphdb.spi.Database;
  * See {@link MicroschemaContainer}
  */
 public class MicroschemaContainerImpl
-		extends AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
+		extends AbstractGraphFieldSchemaContainer<MicroschemaResponse, Microschema, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
 		implements MicroschemaContainer {
 
 	@Override

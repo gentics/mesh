@@ -55,7 +55,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApply() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("name");
 			change.setType("html");
@@ -94,7 +94,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApplyStringFieldAtPosition() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
 			schema.addField(FieldUtil.createStringFieldSchema("thirdField"));
@@ -118,7 +118,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApplyStringField() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringField");
 			change.setType("string");
@@ -134,7 +134,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApplyNodeField() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeField");
 			change.setType("node");
@@ -151,7 +151,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApplyMicronodeField() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeField");
 			change.setType("micronode");
@@ -168,7 +168,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApplyDateField() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("dateField");
 			change.setType("date");
@@ -184,7 +184,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApplyNumberField() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("numberField");
 			change.setType("number");
@@ -200,7 +200,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApplyBinaryField() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("binaryField");
 			change.setType("binary");
@@ -216,7 +216,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApplyListField() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("listField");
 			change.setType("list");

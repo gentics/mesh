@@ -51,8 +51,8 @@ public class RestModelTest extends AbstractDBTest {
 		assertNotNull(deserializedResponse);
 	}
 
-	private Schema getDummySchema() {
-		Schema schema = new SchemaModel();
+	private SchemaModel getDummySchema() {
+		SchemaModel schema = new SchemaModel();
 		schema.setName("content");
 		schema.setDisplayField("title");
 		//		schema.setMeshVersion(Mesh.getVersion());

@@ -11,12 +11,10 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -74,7 +72,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public SchemaModel getSchema(String name) {
+	public Schema getSchema(String name) {
 		Map<Integer, Schema> schemaMap = schemas.get(name);
 		if (schemaMap == null) {
 			return null;
@@ -89,7 +87,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public SchemaModel getSchema(String name, int version) {
+	public Schema getSchema(String name, int version) {
 		Map<Integer, Schema> schemaMap = schemas.get(name);
 		if (schemaMap == null) {
 			return null;
@@ -112,7 +110,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public void addSchema(SchemaModel schema) {
+	public void addSchema(Schema schema) {
 		Map<Integer, Schema> schemaMap = schemas.computeIfAbsent(schema.getName(), k -> new HashMap<>());
 		if (schemaMap.containsKey(schema.getVersion())) {
 			log.error("Schema " + schema.getName() + ", version " + schema.getVersion() + " is already stored.");
@@ -123,7 +121,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public MicroschemaModel getMicroschema(String name) {
+	public Microschema getMicroschema(String name) {
 		Map<Integer, Microschema> microschemaMap = microschemas.get(name);
 		if (microschemaMap == null) {
 			return null;
@@ -138,7 +136,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public MicroschemaModel getMicroschema(String name, int version) {
+	public Microschema getMicroschema(String name, int version) {
 		Map<Integer, Microschema> microschemaMap = microschemas.get(name);
 		if (microschemaMap == null) {
 			return null;
@@ -148,7 +146,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public void addMicroschema(MicroschemaModel microschema) {
+	public void addMicroschema(Microschema microschema) {
 		Map<Integer, Microschema> microschemaMap = microschemas.computeIfAbsent(microschema.getName(), k -> new HashMap<>());
 		if (microschemaMap.containsKey(microschema.getVersion())) {
 			log.error("Microschema " + microschema.getName() + ", version " + microschema.getVersion() + " is already stored.");
