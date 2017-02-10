@@ -10,7 +10,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -40,13 +40,13 @@ public class MicroschemaEndpointETagTest extends AbstractETagTest {
 		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainer schema = microschemaContainers().get("vcard");
 
-			MeshResponse<Microschema> response = client().findMicroschemaByUuid(schema.getUuid()).invoke();
+			MeshResponse<MicroschemaResponse> response = client().findMicroschemaByUuid(schema.getUuid()).invoke();
 			latchFor(response);
 			String etag = schema.getETag(getMockedInternalActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<Microschema> request = client().findMicroschemaByUuid(schema.getUuid());
+			MeshRequest<MicroschemaResponse> request = client().findMicroschemaByUuid(schema.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
 			// The node has no node reference and thus expanding will not affect the etag

@@ -57,7 +57,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.description("Load the schema with the given uuid.");
-		readOne.exampleResponse(OK, schemaExamples.getSchema(), "Loaded schema.");
+		readOne.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Loaded schema.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("schemaUuid");
@@ -90,7 +90,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 				"Assign the schema to the project. This will automatically assign the latest schema version to all releases of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
-		endpoint.exampleResponse(OK, schemaExamples.getSchema(), "Assigned schema.");
+		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Assigned schema.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("schemaUuid");

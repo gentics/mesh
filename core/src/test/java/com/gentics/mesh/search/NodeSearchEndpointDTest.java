@@ -27,11 +27,13 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -91,11 +93,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 3. Prepare an updated schema
 		String schemaUuid;
-		Schema schema;
+		SchemaUpdateRequest schema;
 		try (NoTx noTx = db.noTx()) {
 			Node concorde = content("concorde");
 			SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
-			schema = schemaVersion.getSchema();
+			schema = JsonUtil.readValue(schemaVersion.getJson(), SchemaUpdateRequest.class);
 			schema.addField(FieldUtil.createStringFieldSchema("extraField"));
 			schemaUuid = concorde.getSchemaContainer().getUuid();
 		}
@@ -108,7 +110,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		expectResponseMessage(message, "migration_invoked", "content");
 
 		// 5. Assign the new schema version to the release
-		Schema updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db.noTx(() -> project().getLatestRelease().getUuid()),
 				new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 

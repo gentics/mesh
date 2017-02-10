@@ -154,12 +154,8 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	}
 
-	/**
-	 * Load the stored schema JSON data.
-	 * 
-	 * @return
-	 */
-	protected String getJson() {
+	@Override
+	public String getJson() {
 		return getProperty("json");
 	}
 

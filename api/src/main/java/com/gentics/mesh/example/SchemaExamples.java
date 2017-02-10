@@ -24,6 +24,7 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 public class SchemaExamples extends AbstractExamples {
@@ -49,8 +50,8 @@ public class SchemaExamples extends AbstractExamples {
 		return schemaUpdateRequest;
 	}
 
-	public Schema getSchema() {
-		Schema schema = new SchemaModel();
+	public SchemaResponse getSchemaResponse() {
+		SchemaResponse schema = new SchemaResponse();
 		schema.setUuid(randomUUID());
 		schema.setName("Example Schema");
 		schema.setSegmentField("name");
@@ -110,8 +111,8 @@ public class SchemaExamples extends AbstractExamples {
 
 	public SchemaListResponse getSchemaListResponse() {
 		SchemaListResponse schemaList = new SchemaListResponse();
-		schemaList.getData().add(getSchema());
-		schemaList.getData().add(getSchema());
+		schemaList.getData().add(getSchemaResponse());
+		schemaList.getData().add(getSchemaResponse());
 		setPaging(schemaList, 1, 10, 2, 20);
 		return schemaList;
 	}

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 
 public class FieldSchemaContainerAssert extends AbstractObjectAssert<FieldSchemaContainerAssert, FieldSchemaContainer> {
 

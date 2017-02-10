@@ -18,7 +18,9 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -51,7 +53,9 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -98,9 +102,8 @@ import io.vertx.ext.web.FileUpload;
 import rx.Single;
 
 /**
- * Local client implementation. This client will invoke endpoint handlers
- * instead of sending http rest requests. Please note that is implementation is
- * not very well tested and may lack a lot of endpoint implementations.
+ * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests. Please note that is implementation is not very
+ * well tested and may lack a lot of endpoint implementations.
  */
 @Singleton
 public class MeshLocalClientImpl implements MeshRestClient {
@@ -177,8 +180,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest,
-			ParameterProvider... parameters) {
+	public MeshRequest<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest, ParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
 		ac.setProject(projectName);
 		ac.setPayloadObject(nodeCreateRequest);
@@ -205,8 +207,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> deleteNode(String projectName, String uuid, String languageTag,
-			ParameterProvider... parameters) {
+	public MeshRequest<Void> deleteNode(String projectName, String uuid, String languageTag, ParameterProvider... parameters) {
 		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		ac.setQuery("?lang=" + languageTag);
@@ -224,8 +225,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NodeListResponse> findNodeChildren(String projectName, String parentNodeUuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<NodeListResponse> findNodeChildren(String projectName, String parentNodeUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<NodeListResponse> ac = createContext(NodeListResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleReadChildren(ac, parentNodeUuid);
@@ -233,16 +233,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NodeListResponse> findNodesForTag(String projectName, String tagFamilyUuid, String tagUuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<NodeListResponse> findNodesForTag(String projectName, String tagFamilyUuid, String tagUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<NodeListResponse> ac = createContext(NodeListResponse.class, parameters);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<NodeResponse> addTagToNode(String projectName, String nodeUuid, String tagUuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<NodeResponse> addTagToNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
 		ac.setProject(projectName);
 		ac.getVersioningParameters().setVersion("draft");
@@ -251,8 +249,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> removeTagFromNode(String projectName, String nodeUuid, String tagUuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<Void> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleRemoveTag(ac, nodeUuid, tagUuid);
@@ -261,8 +258,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> moveNode(String projectName, String nodeUuid, String targetFolderUuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<Void> moveNode(String projectName, String nodeUuid, String targetFolderUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleMove(ac, nodeUuid, targetFolderUuid);
@@ -270,8 +266,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<TagListResponse> findTagsForNode(String projectName, String nodeUuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<TagListResponse> findTagsForNode(String projectName, String nodeUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class, parameters);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -287,8 +282,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class, parameters);
 		ac.setProject(projectName);
 		tagCrudHandler.handleRead(ac, tagFamilyUuid, uuid);
@@ -296,8 +290,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid,
-			TagUpdateRequest request) {
+	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request) {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(request);
@@ -314,8 +307,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<TagListResponse> findTags(String projectName, String tagFamilyUuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<TagListResponse> findTags(String projectName, String tagFamilyUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class, parameters);
 		ac.setProject(projectName);
 		tagCrudHandler.handleReadTagList(ac, tagFamilyUuid);
@@ -380,8 +372,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Schema> assignSchemaToProject(String projectName, String schemaUuid) {
-		LocalActionContextImpl<Schema> ac = createContext(Schema.class);
+	public MeshRequest<SchemaResponse> assignSchemaToProject(String projectName, String schemaUuid) {
+		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class);
 		ac.setProject(projectName);
 		schemaCrudHandler.handleAddSchemaToProject(ac, schemaUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -402,8 +394,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Microschema> assignMicroschemaToProject(String projectName, String microschemaUuid) {
-		LocalActionContextImpl<Microschema> ac = createContext(Microschema.class);
+	public MeshRequest<MicroschemaResponse> assignMicroschemaToProject(String projectName, String microschemaUuid) {
+		LocalActionContextImpl<MicroschemaResponse> ac = createContext(MicroschemaResponse.class);
 		microschemaCrudHandler.handleAddMicroschemaToProject(ac, microschemaUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -423,8 +415,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class, parameters);
 		ac.setProject(projectName);
 		tagFamilyCrudHandler.handleRead(ac, uuid);
@@ -457,8 +448,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid,
-			TagFamilyUpdateRequest request) {
+	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request) {
 		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class);
 		ac.setPayloadObject(request);
 		ac.setProject(projectName);
@@ -483,31 +473,29 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<WebRootResponse> webroot(String projectName, String[] pathSegments,
-			ParameterProvider... parameters) {
+	public MeshRequest<WebRootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
 		LocalActionContextImpl<WebRootResponse> ac = createContext(WebRootResponse.class, parameters);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<Schema> createSchema(Schema request) {
-		LocalActionContextImpl<Schema> ac = createContext(SchemaModel.class);
+	public MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request) {
+		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class);
 		ac.setPayloadObject(request);
 		schemaCrudHandler.handleCreate(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<Schema> findSchemaByUuid(String uuid, ParameterProvider... parameters) {
-		LocalActionContextImpl<Schema> ac = createContext(SchemaModel.class, parameters);
+	public MeshRequest<SchemaResponse> findSchemaByUuid(String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class, parameters);
 		schemaCrudHandler.handleRead(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, Schema request,
-			ParameterProvider... parameters) {
+	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request, ParameterProvider... parameters) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
 		ac.setPayloadObject(request);
 		schemaCrudHandler.handleUpdate(ac, uuid);
@@ -645,8 +633,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<UserResponse> updateUser(String uuid, UserUpdateRequest request,
-			ParameterProvider... parameters) {
+	public MeshRequest<UserResponse> updateUser(String uuid, UserUpdateRequest request, ParameterProvider... parameters) {
 		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class, parameters);
 		ac.setPayloadObject(request);
 		userCrudHandler.handleUpdate(ac, uuid);
@@ -711,8 +698,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateRolePermissions(String roleUuid, String pathToElement,
-			RolePermissionRequest request) {
+	public MeshRequest<GenericMessageResponse> updateRolePermissions(String roleUuid, String pathToElement, RolePermissionRequest request) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
 		ac.setPayloadObject(request);
 		roleCrudHandler.handlePermissionUpdate(ac, roleUuid, pathToElement);
@@ -753,8 +739,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission,
-			boolean recursive) {
+	public MeshRequest<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -834,23 +819,22 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Microschema> createMicroschema(Microschema request) {
-		LocalActionContextImpl<Microschema> ac = createContext(MicroschemaModel.class);
+	public MeshRequest<MicroschemaResponse> createMicroschema(MicroschemaCreateRequest request) {
+		LocalActionContextImpl<MicroschemaResponse> ac = createContext(MicroschemaResponse.class);
 		ac.setPayloadObject(request);
 		microschemaCrudHandler.handleCreate(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<Microschema> findMicroschemaByUuid(String uuid, ParameterProvider... parameters) {
-		LocalActionContextImpl<Microschema> ac = createContext(Microschema.class, parameters);
+	public MeshRequest<MicroschemaResponse> findMicroschemaByUuid(String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<MicroschemaResponse> ac = createContext(MicroschemaResponse.class, parameters);
 		microschemaCrudHandler.handleRead(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, Microschema request,
-			ParameterProvider... parameters) {
+	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
 		ac.setPayloadObject(request);
 		microschemaCrudHandler.handleUpdate(ac, uuid);
@@ -878,8 +862,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid,
-			String languageTag, String fieldKey, Buffer fileData, String fileName, String contentType) {
+	public MeshRequest<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+			Buffer fileData, String fileName, String contentType) {
 
 		Vertx vertx = Mesh.vertx();
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
@@ -936,16 +920,16 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid,
-			String languageTag, String fieldKey, ParameterProvider... parameters) {
+	public MeshRequest<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+			ParameterProvider... parameters) {
 		// LocalActionContextImpl<NodeResponse> ac = createContext();
 		// return new MeshLocalRequestImpl<>( ac.getFuture());
 		return null;
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid,
-			String languageTag, String fieldKey, ImageManipulationParameters imageManipulationParameter) {
+	public MeshRequest<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+			ImageManipulationParameters imageManipulationParameter) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -959,8 +943,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NavigationResponse> loadNavigation(String projectName, String uuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<NavigationResponse> loadNavigation(String projectName, String uuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<NavigationResponse> ac = createContext(NavigationResponse.class, parameters);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -1003,8 +986,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	 *            Parameters which will be transformed to query parameters
 	 * @return
 	 */
-	private <T> LocalActionContextImpl<T> createContext(Class<? extends T> responseType,
-			ParameterProvider... parameters) {
+	private <T> LocalActionContextImpl<T> createContext(Class<? extends T> responseType, ParameterProvider... parameters) {
 		LocalActionContextImpl<T> ac = new LocalActionContextImpl<>(user, responseType, parameters);
 		return ac;
 	}
@@ -1014,22 +996,20 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<PublishStatusResponse> getNodePublishStatus(String projectName, String nodeUuid,
+	public MeshRequest<PublishStatusResponse> getNodePublishStatus(String projectName, String nodeUuid, ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<PublishStatusModel> getNodeLanguagePublishStatus(String projectName, String nodeUuid, String languageTag,
 			ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<PublishStatusModel> getNodeLanguagePublishStatus(String projectName, String nodeUuid,
-			String languageTag, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<PublishStatusResponse> ac = createContext(PublishStatusResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handlePublish(ac, nodeUuid);
@@ -1054,8 +1034,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<Void> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
-			ParameterProvider... parameters) {
+	public MeshRequest<Void> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
 		LocalActionContextImpl<Void> ac = createContext(Void.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleTakeOffline(ac, nodeUuid, languageTag);
@@ -1076,8 +1055,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid,
-			ParameterProvider... parameters) {
+	public MeshRequest<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1091,8 +1069,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ReleaseResponse> updateRelease(String projectName, String releaseUuid,
-			ReleaseUpdateRequest request) {
+	public MeshRequest<ReleaseResponse> updateRelease(String projectName, String releaseUuid, ReleaseUpdateRequest request) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1127,15 +1104,15 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName,
-			String releaseUuid, MicroschemaReferenceList microschemaVersionReferences) {
+	public MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			MicroschemaReferenceList microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName,
-			String releaseUuid, MicroschemaReference... microschemaVersionReferences) {
+	public MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			MicroschemaReference... microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1153,8 +1130,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<TagFamilyListResponse> searchTagFamilies(String projectName, String json,
-			ParameterProvider... parameters) {
+	public MeshRequest<TagFamilyListResponse> searchTagFamilies(String projectName, String json, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}

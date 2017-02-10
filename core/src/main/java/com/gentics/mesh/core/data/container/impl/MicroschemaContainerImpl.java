@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -23,7 +24,7 @@ import com.gentics.mesh.graphdb.spi.Database;
  * See {@link MicroschemaContainer}
  */
 public class MicroschemaContainerImpl
-		extends AbstractGraphFieldSchemaContainer<Microschema, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
+		extends AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
 		implements MicroschemaContainer {
 
 	@Override

@@ -137,7 +137,7 @@ public final class Mocks {
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
 		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 		when(micronode.getSchemaContainerVersion()).thenReturn(latestVersion);
-		Microschema microschema = microschemaContainer.getLatestVersion().getSchema();
+		MicroschemaModel microschema = microschemaContainer.getLatestVersion().getSchema();
 		when(micronode.getSchemaContainerVersion().getSchema()).thenReturn(microschema);
 
 		// longitude field

@@ -34,7 +34,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	public void testApply() {
 		try (NoTx noTx = db.noTx()) {
 			MicroschemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
-			Microschema schema = new MicroschemaModel();
+			MicroschemaModel schema = new MicroschemaModel();
 
 			UpdateMicroschemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setName("updated");

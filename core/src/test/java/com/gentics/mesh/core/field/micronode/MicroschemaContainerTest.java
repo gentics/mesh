@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -237,7 +238,7 @@ public class MicroschemaContainerTest extends AbstractBasicIsolatedObjectTest {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
-			Microschema schema = vcard.transformToRest(ac, 0, "en").toBlocking().value();
+			MicroschemaResponse schema = vcard.transformToRest(ac, 0, "en").toBlocking().value();
 			assertEquals(vcard.getUuid(), schema.getUuid());
 		}
 	}

@@ -42,8 +42,10 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -60,7 +62,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			String name = "new-name";
 			SchemaContainer container = schemaContainer("content");
 			SchemaContainerVersion currentVersion = container.getLatestVersion();
-			Schema request = container.getLatestVersion().getSchema();
+			SchemaUpdateRequest request = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 			request.setName(name);
 
 			MeshInternal.get().serverSchemaStorage().clear();
@@ -144,7 +146,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			String name = "folder";
 			String originalSchemaName = "content";
 			SchemaContainer schema = schemaContainer(originalSchemaName);
-			Schema request = schema.getLatestVersion().getSchema();
+			SchemaUpdateRequest request = JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 
 			MeshInternal.get().serverSchemaStorage().clear();
 
@@ -203,7 +205,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 1. Create update request by removing the content field from schema and adding a new content with different type
 			SchemaContainer container = schemaContainer("content");
-			Schema schema = container.getLatestVersion().getSchema();
+			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 			schema.removeField("content");
 			schema.addField(FieldUtil.createNumberFieldSchema("content"));
 
@@ -491,7 +493,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	public void testNoChangesUpdate() {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer container = schemaContainer("content");
-			Schema schema = container.getLatestVersion().getSchema();
+			SchemaUpdateRequest schema = JsonUtil.readValue(JsonUtil.toJson(container.getLatestVersion().getSchema()), SchemaUpdateRequest.class);
 
 			// Update the schema server side
 			GenericMessageResponse status = call(() -> client().updateSchema(container.getUuid(), schema));
@@ -505,7 +507,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// 1. Setup schema
 			Node content = content();
 			SchemaContainer container = schemaContainer("content");
-			Schema schema = container.getLatestVersion().getSchema();
+			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 			assertEquals("The segment field name should be set", "filename", schema.getSegmentField());
 			schema.getFields().add(FieldUtil.createStringFieldSchema("extraname").setLabel("someLabel"));
 			MeshInternal.get().serverSchemaStorage().clear();
@@ -555,7 +557,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			Node content = content();
 
 			SchemaContainer container = schemaContainer("content");
-			Schema schema = container.getLatestVersion().getSchema();
+			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 			schema.removeField("content");
 
 			MeshInternal.get().serverSchemaStorage().clear();
@@ -591,7 +593,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			content.createGraphFieldContainer(english(), newRelease, user());
 
 			SchemaContainer container = schemaContainer("content");
-			Schema schema = container.getLatestVersion().getSchema();
+			SchemaUpdateRequest schema = JsonUtil.readValue(JsonUtil.toJson(container.getLatestVersion().getSchema()), SchemaUpdateRequest.class);
 			schema.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
 			MeshInternal.get().serverSchemaStorage().clear();
 

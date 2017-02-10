@@ -29,6 +29,9 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -39,10 +42,12 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -359,9 +364,8 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		call(() -> client().deleteProject(uuid));
 	}
 
-	// Schema
-	protected Schema createSchema(String schemaName) {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+	protected SchemaResponse createSchema(String schemaName) {
+		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().createSchema(schema));
 	}
@@ -371,7 +375,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	}
 
 	protected GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+		SchemaUpdateRequest schema = new SchemaUpdateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().updateSchema(uuid, schema, updateParameters));
 	}
@@ -380,16 +384,14 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		call(() -> client().deleteSchema(uuid));
 	}
 
-	// Microschema
-
-	protected Microschema createMicroschema(String microschemaName) {
-		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
+	protected MicroschemaResponse createMicroschema(String microschemaName) {
+		MicroschemaCreateRequest microschema = new MicroschemaCreateRequest();
 		microschema.setName(microschemaName);
 		return call(() -> client().createMicroschema(microschema));
 	}
 
 	protected GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
-		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
+		MicroschemaUpdateRequest microschema = FieldUtil.createMinimalValidMicroschemaUpdateRequest();
 		microschema.setName(microschemaName);
 		return call(() -> client().updateMicroschema(uuid, microschema, parameters));
 	}

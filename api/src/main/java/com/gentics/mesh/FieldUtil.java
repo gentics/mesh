@@ -2,6 +2,7 @@ package com.gentics.mesh;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -43,6 +44,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.util.Tuple;
@@ -54,12 +56,43 @@ import com.gentics.mesh.util.UUIDUtil;
 public final class FieldUtil {
 
 	/**
-	 * Create a minimal valid test schema which only contains a single string field.
+	 * Create a minimal valid test schema..
 	 * 
 	 * @return
 	 */
+	public static SchemaCreateRequest createMinimalValidSchemaCreateRequest() {
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("test");
+		request.validate();
+		return request;
+	}
+
 	public static Schema createMinimalValidSchema() {
-		Schema schema = new SchemaModel();
+		Schema request = new SchemaModel();
+		request.setName("test");
+		request.validate();
+		return request;
+	}
+
+	/**
+	 * Create a minimal valid test schema create request.
+	 * 
+	 * @return
+	 */
+	public static SchemaCreateRequest createSchemaCreateRequest() {
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("test");
+		request.validate();
+		return request;
+	}
+
+	/**
+	 * Create a minimal valid test microschema.
+	 * 
+	 * @return
+	 */
+	public static Microschema createMinimalValidMicroschema() {
+		Microschema schema = new MicroschemaModel();
 		schema.setName("test");
 		schema.validate();
 		return schema;
@@ -70,8 +103,8 @@ public final class FieldUtil {
 	 * 
 	 * @return
 	 */
-	public static Microschema createMinimalValidMicroschema() {
-		Microschema schema = new MicroschemaModel();
+	public static MicroschemaUpdateRequest createMinimalValidMicroschemaUpdateRequest() {
+		MicroschemaUpdateRequest schema = new MicroschemaUpdateRequest();
 		schema.setName("test");
 		schema.validate();
 		return schema;
@@ -283,4 +316,5 @@ public final class FieldUtil {
 		field.setName(name);
 		return field;
 	}
+
 }

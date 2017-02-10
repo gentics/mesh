@@ -1,11 +1,14 @@
 package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 
@@ -17,7 +20,7 @@ public interface SchemaClientMethods {
 	 * @param request
 	 * @return
 	 */
-	MeshRequest<Schema> createSchema(Schema request);
+	MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request);
 
 	/**
 	 * Load the schema with the given uuid.
@@ -27,7 +30,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<Schema> findSchemaByUuid(String uuid, ParameterProvider... parameters);
+	MeshRequest<SchemaResponse> findSchemaByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Update the schema with the given request.
@@ -39,7 +42,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> updateSchema(String uuid, Schema request, ParameterProvider... parameters);
+	MeshRequest<GenericMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Compare the given schema with the currently stored one and return a list of schema changes.
@@ -96,7 +99,7 @@ public interface SchemaClientMethods {
 	 *            schema uuid
 	 * @return
 	 */
-	MeshRequest<Schema> assignSchemaToProject(String projectName, String schemaUuid);
+	MeshRequest<SchemaResponse> assignSchemaToProject(String projectName, String schemaUuid);
 
 	/**
 	 * Unassign a schema from the project
@@ -128,7 +131,7 @@ public interface SchemaClientMethods {
 	 *            microschema uuid
 	 * @return
 	 */
-	MeshRequest<Microschema> assignMicroschemaToProject(String projectName, String microschemaUuid);
+	MeshRequest<MicroschemaResponse> assignMicroschemaToProject(String projectName, String microschemaUuid);
 
 	/**
 	 * Unassign a microschema from the project

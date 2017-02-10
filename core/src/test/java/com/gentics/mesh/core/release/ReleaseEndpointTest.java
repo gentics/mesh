@@ -26,16 +26,17 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
@@ -421,7 +422,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testAssignSchemaVersionViaSchemaUpdate() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a schema
-			Schema schema = createSchema("schemaname");
+			SchemaResponse schema = createSchema("schemaname");
 			Project project = project();
 
 			// Assign schema to project
@@ -476,7 +477,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testAssignSchemaVersion() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a schema
-			Schema schema = createSchema("schemaname");
+			SchemaResponse schema = createSchema("schemaname");
 			Project project = project();
 
 			// assign schema to project
@@ -553,7 +554,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testAssignOlderSchemaVersion() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a schema
-			Schema schema = createSchema("schemaname");
+			SchemaResponse schema = createSchema("schemaname");
 			Project project = project();
 
 			// generate version 2
@@ -584,7 +585,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testAssignLatestSchemaVersion() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a schema
-			Schema schema = createSchema("schemaname");
+			SchemaResponse schema = createSchema("schemaname");
 			Project project = project();
 
 			// assign schema to project
@@ -633,7 +634,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testAssignMicroschemaVersion() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a microschema
-			Microschema microschema = createMicroschema("microschemaname");
+			MicroschemaResponse microschema = createMicroschema("microschemaname");
 			Project project = project();
 
 			// assign microschema to project
@@ -666,7 +667,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testAssignMicroschemaVersionViaMicroschemaUpdate() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a microschema
-			Microschema microschema = createMicroschema("microschemaname");
+			MicroschemaResponse microschema = createMicroschema("microschemaname");
 			Project project = project();
 
 			// assign microschema to project
@@ -744,7 +745,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testAssignOlderMicroschemaVersion() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a microschema
-			Microschema microschema = createMicroschema("microschemaname");
+			MicroschemaResponse microschema = createMicroschema("microschemaname");
 			Project project = project();
 
 			// generate version 2
@@ -776,7 +777,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testAssignLatestMicroschemaVersion() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			// create version 1 of a microschema
-			Microschema microschema = createMicroschema("microschemaname");
+			MicroschemaResponse microschema = createMicroschema("microschemaname");
 			Project project = project();
 
 			// Assign microschema to project

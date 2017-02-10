@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.rest.schema;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Schema which is used for nodes. Various fields can be added to the schema in order build data structures for nodes.
  */
@@ -50,11 +55,29 @@ public interface Schema extends FieldSchemaContainer {
 	 */
 	void setSegmentField(String segmentField);
 
-	/**
-	 * Create a schema reference using the schema as source.
-	 * 
-	 * @return
-	 */
-	SchemaReference toReference();
+	default void validate() {
+		FieldSchemaContainer.super.validate();
+		// TODO make sure that the display name field only maps to string fields since NodeImpl can currently only deal with string field values for
+		// displayNames
+		if (!StringUtils.isEmpty(getDisplayField())) {
+			if (!getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getDisplayField()))) {
+				throw error(BAD_REQUEST, "schema_error_displayfield_invalid", getDisplayField());
+			}
 
+			// TODO maybe we should also allow other field types
+			if (!(getField(getDisplayField()) instanceof StringFieldSchema)) {
+				throw error(BAD_REQUEST, "schema_error_displayfield_type_invalid", getDisplayField());
+			}
+		}
+
+		FieldSchema segmentFieldSchema = getField(getSegmentField());
+		if (segmentFieldSchema != null
+				&& (!((segmentFieldSchema instanceof StringFieldSchema) || (segmentFieldSchema instanceof BinaryFieldSchema)))) {
+			throw error(BAD_REQUEST, "schema_error_segmentfield_type_invalid", segmentFieldSchema.getType());
+		}
+
+		if (getSegmentField() != null && !getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getSegmentField()))) {
+			throw error(BAD_REQUEST, "schema_error_segmentfield_invalid", getSegmentField());
+		}
+	}
 }

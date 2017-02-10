@@ -40,7 +40,10 @@ import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -53,20 +56,20 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreate() throws GenericRestException, Exception {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
 
 		assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
-		Schema restSchema = call(() -> client().createSchema(schema));
+		SchemaResponse restSchema = call(() -> client().createSchema(createRequest));
 		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 		assertThat(dummySearchProvider).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeIndexType(),
 				SchemaContainer.composeDocumentId(restSchema.getUuid()));
 		try (NoTx noTx = db.noTx()) {
-			assertThat(schema).matches(restSchema);
+			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 
 			SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchema.getUuid());
 			assertNotNull(schemaContainer);
-			assertEquals("Name does not match with the requested name", schema.getName(), schemaContainer.getName());
+			assertEquals("Name does not match with the requested name", createRequest.getName(), schemaContainer.getName());
 			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 		}
@@ -75,7 +78,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 		String schemaRootUuid = db.noTx(() -> meshRoot().getSchemaContainerRoot().getUuid());
 		try (NoTx noTx = db.noTx()) {
 			role().revokePermissions(meshRoot().getSchemaContainerRoot(), CREATE_PERM);
@@ -89,9 +92,9 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		try (NoTx noTx = db.noTx()) {
 			assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
-			Schema schema = FieldUtil.createMinimalValidSchema();
+			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 
-			Schema restSchema = call(() -> client().createSchema(schema));
+			SchemaResponse restSchema = call(() -> client().createSchema(schema));
 			assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
 			assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
@@ -200,7 +203,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer container = schemaContainer("content");
 			SchemaContainerVersion schemaContainerVersion = container.getLatestVersion();
-			Schema restSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
+			SchemaResponse restSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			assertThat(restSchema).matches(schemaContainerVersion).isValid();
 		}
 	}
@@ -210,7 +213,8 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testReadByUuidWithRolePerms() {
 		String uuid = db.noTx(() -> schemaContainer("content").getUuid());
 
-		Schema schema = call(() -> client().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTx(() -> role().getUuid()))));
+		SchemaResponse schema = call(
+				() -> client().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db.noTx(() -> role().getUuid()))));
 		assertNotNull(schema.getRolePerms());
 		assertThat(schema.getRolePerms()).hasPerm(Permission.values());
 	}
@@ -229,17 +233,13 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 
 		try (NoTx noTx = db.noTx()) {
-			MeshResponse<Schema> future = client().findSchemaByUuid(schema.getUuid()).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
+			call(() -> client().findSchemaByUuid(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid());
 		}
 	}
 
 	@Test
 	public void testReadSchemaByInvalidUUID() throws Exception {
-		MeshResponse<Schema> future = client().findSchemaByUuid("bogus").invoke();
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().findSchemaByUuid("bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
@@ -252,7 +252,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testCreateWithConflictingName() {
 		String name = "folder";
-		Schema request = new SchemaModel();
+		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setSegmentField("name");
 		request.getFields().add(FieldUtil.createStringFieldSchema("name").setRequired(true));
 		request.setDisplayField("name");
@@ -266,7 +266,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 			String oldName = schema.getName();
-			Schema request = new SchemaModel();
+			SchemaUpdateRequest request = new SchemaUpdateRequest();
 			request.setName("new-name");
 
 			call(() -> client().updateSchema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
@@ -326,7 +326,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testUpdateMultithreaded() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
-			Schema request = new SchemaModel();
+			SchemaUpdateRequest request = new SchemaUpdateRequest();
 			request.setName("new-name");
 
 			int nJobs = 5;
@@ -377,7 +377,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Ignore("not yet supported")
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
-		Schema request = new SchemaModel();
+		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("new schema name");
 		request.setDisplayField("name");
 
@@ -395,11 +395,11 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		int nJobs = 200;
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
-			Set<MeshResponse<Schema>> set = new HashSet<>();
+			Set<MeshResponse<SchemaResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(client().findSchemaByUuid(schema.getUuid()).invoke());
 			}
-			for (MeshResponse<Schema> future : set) {
+			for (MeshResponse<SchemaResponse> future : set) {
 				latchFor(future);
 				assertSuccess(future);
 			}
@@ -417,7 +417,7 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 
 		try (NoTx noTx = db.noTx()) {
-			Schema request = new SchemaModel();
+			SchemaUpdateRequest request = new SchemaUpdateRequest();
 			request.setName("new-name");
 			call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid);
 		}

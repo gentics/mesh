@@ -31,7 +31,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
@@ -76,7 +76,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			// 1. Load the schema container with update permissions
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+			SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
 			// 2. Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
@@ -153,7 +153,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 		utils.operateNoTx(ac, () -> {
 			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			return schema.getLatestVersion().diff(ac, comparator, requestModel);
 		}, model -> ac.send(model, OK));
 	}

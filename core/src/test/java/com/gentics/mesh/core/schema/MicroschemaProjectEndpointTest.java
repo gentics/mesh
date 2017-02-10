@@ -15,9 +15,9 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
@@ -72,7 +72,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 			role().grantPermissions(microschema, READ_PERM);
 			role().grantPermissions(extraProject, UPDATE_PERM);
 
-			Microschema restMicroschema = call(() -> client().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
+			MicroschemaResponse restMicroschema = call(() -> client().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
 			assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
 			extraProject.reload();
 			extraProject.getMicroschemaContainerRoot().reload();

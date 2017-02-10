@@ -156,4 +156,11 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 */
 	Release getRelease();
 
+	/**
+	 * Load the stored schema JSON data.
+	 * 
+	 * @return
+	 */
+	String getJson();
+
 }
