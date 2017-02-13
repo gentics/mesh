@@ -257,20 +257,28 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testUnsetSegmentField() throws JsonParseException, JsonMappingException, IOException {
-		try (NoTx noTx = db.noTx()) {
-			// 1. Create changes
-			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-			SchemaChangeModel change = SchemaChangeModel.createUpdateSchemaChange();
-			change.setProperty(SchemaChangeModel.SEGMENT_FIELD_KEY, null);
-			listOfChanges.getChanges().add(change);
+		// 1. Create changes
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		SchemaChangeModel change = SchemaChangeModel.createUpdateSchemaChange();
+		change.setProperty(SchemaChangeModel.SEGMENT_FIELD_KEY, null);
+		listOfChanges.getChanges().add(change);
 
-			// 2. Invoke migration
+		String uuid = db.noTx(() -> schemaContainer("content").getUuid());
+
+		SchemaContainerVersion currentVersion = db.noTx(() -> {
 			SchemaContainer container = schemaContainer("content");
-			SchemaContainerVersion currentVersion = container.getLatestVersion();
-			assertNull("The schema should not yet have any changes", currentVersion.getNextChange());
-			call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
+			SchemaContainerVersion version = container.getLatestVersion();
+			assertNull("The schema should not yet have any changes", version.getNextChange());
+			return version;
+		});
 
+		// 2. Invoke migration
+		call(() -> client().applyChangesToSchema(uuid, listOfChanges));
+
+		try (NoTx noTx = db.noTx()) {
 			// 3. Assert updated schema
+			SchemaContainer container = schemaContainer("content");
+
 			container.reload();
 			currentVersion.reload();
 			assertNull("The segment field reference should have been set to null", currentVersion.getNextVersion().getSchema().getSegmentField());

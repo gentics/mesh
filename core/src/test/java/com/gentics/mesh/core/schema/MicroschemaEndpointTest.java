@@ -247,14 +247,14 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
+		String uuid = db.noTx(() -> microschemaContainers().get("vcard").getUuid());
+
+		call(() -> client().deleteMicroschema(uuid));
+
+		// schema_delete_still_in_use
+
 		try (NoTx noTx = db.noTx()) {
-			MicroschemaContainer microschema = microschemaContainers().get("vcard");
-			assertNotNull(microschema);
-			call(() -> client().deleteMicroschema(microschema.getUuid()));
-
-			// schema_delete_still_in_use
-
-			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid());
+			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(uuid);
 			assertNull("The microschema should have been deleted.", reloaded);
 		}
 	}
