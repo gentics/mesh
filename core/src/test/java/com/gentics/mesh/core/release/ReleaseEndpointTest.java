@@ -268,12 +268,13 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		try (NoTx noTx = db.noTx()) {
 			Project project = project();
-			String releaseUuid = project.getInitialRelease().getUuid();
-			String name = project.getName();
 			role().revokePermissions(project.getInitialRelease(), READ_PERM);
-
-			call(() -> client().findReleaseByUuid(name, releaseUuid), FORBIDDEN, "error_missing_perm", releaseUuid);
 		}
+
+		String releaseUuid = db.noTx(() -> project().getInitialRelease().getUuid());
+		String projectName = db.noTx(() -> project().getName());
+		call(() -> client().findReleaseByUuid(projectName, releaseUuid), FORBIDDEN, "error_missing_perm", releaseUuid);
+
 	}
 
 	@Test
@@ -380,25 +381,20 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		try (NoTx noTx = db.noTx()) {
-			Project project = project();
-
-			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
-			// request.setActive(false);
-			call(() -> client().updateRelease(project.getName(), "bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
-		}
+		String projectName = db.noTx(() -> project().getName());
+		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
+		// request.setActive(false);
+		call(() -> client().updateRelease(projectName, "bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		// TODO Auto-generated method stub
-
 	}
 
 	// Tests for assignment of schema versions to releases
