@@ -51,6 +51,9 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
 public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
@@ -206,6 +209,23 @@ public class SchemaEndpointTest extends AbstractBasicCrudEndpointTest {
 			SchemaResponse restSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			assertThat(restSchema).matches(schemaContainerVersion).isValid();
 		}
+	}
+
+	@Test
+	public void testRead2ByUUID() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			SchemaContainer container = schemaContainer("content");
+			SchemaContainerVersion schemaContainerVersion = container.getLatestVersion();
+			String json = schemaContainerVersion.getJson();
+			JsonObject schema = new JsonObject(json);
+			schema.put("permissions", new JsonArray());
+			//schema.add("permission", new JsonObject().put("read", true));
+			schemaContainerVersion.setJson(schema.toString());
+			meshDagger.serverSchemaStorage().clear();
+		}
+
+		String uuid = db.noTx(() -> schemaContainer("content").getUuid());
+		call(() -> client().findSchemaByUuid(uuid));
 	}
 
 	@Test

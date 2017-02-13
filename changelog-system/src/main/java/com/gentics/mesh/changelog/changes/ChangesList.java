@@ -19,6 +19,7 @@ public final class ChangesList {
 		list.add(new ChangeFixReleaseRelationship());
 		list.add(new ChangeRemoveSearchQueueNodes());
 		list.add(new ChangeReindexAll());
+		list.add(new ChangeSanitizeSchemaJson());
 		return list;
 	}
 }

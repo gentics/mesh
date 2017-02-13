@@ -34,7 +34,6 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -63,7 +62,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static SchemaContainerRoot schemaContainerRoot;
 	private static MicroschemaContainerRoot microschemaContainerRoot;
-	private static SearchQueue searchQueueRoot;
 
 	public static MeshRoot getInstance() {
 		return instance;
@@ -282,7 +280,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		MeshRootImpl.groupRoot = null;
 		MeshRootImpl.roleRoot = null;
 
-		MeshRootImpl.searchQueueRoot = null;
 		MeshRootImpl.schemaContainerRoot = null;
 		MeshRootImpl.tagFamilyRoot = null;
 		MeshRootImpl.microschemaContainerRoot = null;

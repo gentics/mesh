@@ -15,7 +15,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
@@ -395,10 +394,10 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	 * 
 	 * @return
 	 */
-	public static CyclicBarrier waitForMigration(MeshRestClient client) {
+	public static CountDownLatch waitForMigration(MeshRestClient client) {
 		// Construct latch in order to wait until the migration completed event
 		// was received
-		CyclicBarrier barrier = new CyclicBarrier(2);
+		CountDownLatch latch = new CountDownLatch(1);
 		client.eventbus(ws -> {
 			// Register to migration events
 			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION.toString());
@@ -411,7 +410,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				JsonObject rec = received.getJsonObject("body");
 				if ("completed".equalsIgnoreCase(rec.getString("type"))) {
 					try {
-						barrier.await(10, TimeUnit.SECONDS);
+						latch.countDown();
 					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}
@@ -419,36 +418,44 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			});
 
 		});
-		return barrier;
+		return latch;
 	}
 
 	@Test
 	public void testUpdateMultipleTimes() throws Exception {
+		SchemaContainerVersion currentVersion;
+		SchemaContainer container;
 		try (NoTx noTx = db.noTx()) {
 			// Assert start condition
-			SchemaContainer container = schemaContainer("content");
-			SchemaContainerVersion currentVersion = container.getLatestVersion();
+			container = schemaContainer("content");
+			currentVersion = container.getLatestVersion();
 			assertNull("The schema should not yet have any changes", currentVersion.getNextChange());
+		}
+
+		String containerUuid = db.noTx(() -> schemaContainer("content").getUuid());
+		String releaseUuid = db.noTx(() -> project().getLatestRelease().getUuid());
+
+		for (int i = 0; i < 10; i++) {
+
+			// 1. Setup changes
+			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html", null);
+			listOfChanges.getChanges().add(change);
 
 			// 2. Setup eventbus bridged latch
-			CyclicBarrier barrier = waitForMigration(client());
+			CountDownLatch latch = waitForMigration(client());
 
-			for (int i = 0; i < 10; i++) {
+			// 3. Invoke migration
+			GenericMessageResponse status = call(() -> client().applyChangesToSchema(containerUuid, listOfChanges));
+			expectResponseMessage(status, "migration_invoked", "content");
+			Schema updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
+			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid,
+					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
-				// 1. Setup changes
-				SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-				SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html", null);
-				listOfChanges.getChanges().add(change);
+			// 4. Latch for completion
+			latch.await(40, TimeUnit.SECONDS);
 
-				// 3. Invoke migration
-				GenericMessageResponse status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
-				expectResponseMessage(status, "migration_invoked", "content");
-				Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
-				call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
-						new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
-
-				// 4. Latch for completion
-				barrier.await(10, TimeUnit.SECONDS);
+			try (NoTx noTx = db.noTx()) {
 				container.reload();
 				container.getLatestVersion().reload();
 				currentVersion.reload();
@@ -465,10 +472,13 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 						node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField_" + i));
 				assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
 						currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
-
 			}
 
-			// Validate schema changes and versions
+		}
+
+		// Validate schema changes and versions
+		try (NoTx noTx = db.noTx()) {
+
 			container.reload();
 			assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, container.findAll().size());
 			assertNull("The last version should not have any changes", container.getLatestVersion().getNextChange());
@@ -492,6 +502,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertEquals("The latest version should have exactly 10 previous versions.", nVersions, 10);
 			assertTrue("The user should still have update permissions on the schema", user().hasPermission(container, UPDATE_PERM));
 		}
+
 	}
 
 	/**

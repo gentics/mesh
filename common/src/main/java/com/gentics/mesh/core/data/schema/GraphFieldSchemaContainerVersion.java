@@ -165,4 +165,11 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 */
 	String getJson();
 
+	/**
+	 * Update the stored schema JSON data.
+	 * 
+	 * @param json
+	 */
+	void setJson(String json);
+
 }
