@@ -45,7 +45,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
+import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -63,14 +63,14 @@ import rx.Completable;
 @SuppressWarnings("restriction")
 public class NodeMigrationHandler extends AbstractHandler {
 
-	private NodeFieldAPIHandler nodeFieldAPIHandler;
+	private BinaryFieldHandler nodeFieldAPIHandler;
 
 	private Database db;
 
 	private SearchQueue searchQueue;
 
 	@Inject
-	public NodeMigrationHandler(NodeFieldAPIHandler nodeFieldAPIHandler, Database db, SearchQueue searchQueue) {
+	public NodeMigrationHandler(BinaryFieldHandler nodeFieldAPIHandler, Database db, SearchQueue searchQueue) {
 		this.db = db;
 		this.nodeFieldAPIHandler = nodeFieldAPIHandler;
 		this.searchQueue = searchQueue;

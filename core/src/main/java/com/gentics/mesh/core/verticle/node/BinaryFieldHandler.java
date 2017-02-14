@@ -3,14 +3,13 @@ package com.gentics.mesh.core.verticle.node;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +35,6 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -50,6 +48,7 @@ import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 
 import dagger.Lazy;
+import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -63,9 +62,9 @@ import rx.Single;
 /**
  * Handler which contains field API specific request handlers.
  */
-public class NodeFieldAPIHandler extends AbstractHandler {
+public class BinaryFieldHandler extends AbstractHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeFieldAPIHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(BinaryFieldHandler.class);
 
 	private ImageManipulator imageManipulator;
 
@@ -76,29 +75,30 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	private SearchQueue searchQueue;
 
 	@Inject
-	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
+	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
 		this.searchQueue = searchQueue;
 	}
 
-	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
+	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
-			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
-			if (language == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			}
+			//			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+			//			if (language == null) {
+			//				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			//			}
 
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
-			if (container == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			Release release = ac.getRelease(node.getProject());
+			NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(ac.getNodeParameters().getLanguageList(), release.getUuid(),
+					ac.getVersioningParameters().getVersion());
+			if (fieldContainer == null) {
+				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
-
-			BinaryGraphField binaryField = container.getBinary(fieldName);
+			BinaryGraphField binaryField = fieldContainer.getBinary(fieldName);
 			if (binaryField == null) {
 				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 			}
@@ -118,19 +118,30 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param ac
 	 * @param uuid
 	 *            Uuid of the node which should be updated
-	 * @param languageTag
-	 *            Language tag of the node language which should be modified
 	 * @param fieldName
 	 *            Name of the field which should be created
+	 * @param attributes
+	 *            Additional form data attributes
 	 */
-	public void handleCreateField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
+	public void handleUpdateBinaryField(InternalActionContext ac, String uuid, String fieldName, MultiMap attributes) {
 		validateParameter(uuid, "uuid");
-		validateParameter(languageTag, "languageTag");
 		validateParameter(fieldName, "fieldName");
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
+			//			ContainerType containerType = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+
+			String languageTag = attributes.get("language");
+			if (isEmpty(languageTag)) {
+				throw error(BAD_REQUEST, "upload_error_no_language");
+			}
+
+			String nodeVersion = attributes.get("version");
+			if (isEmpty(nodeVersion)) {
+				throw error(BAD_REQUEST, "upload_error_no_version");
+			}
+
 			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -215,86 +226,11 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					}
 
 					return batch.store(node, release.getUuid(), DRAFT, false);
-				}).processAsync().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
+				}).processAsync().andThen(node.transformToRest(ac, 0));
 
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 
-	}
-
-	/**
-	 * Update a specific node field.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 *            Node uuid
-	 * @param languageTag
-	 *            Language which should be handled
-	 * @param fieldName
-	 *            Field which should be updated
-	 */
-	public void handleUpdateField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		handleCreateField(ac, uuid, languageTag, fieldName);
-	}
-
-	/**
-	 * Remove the field with the given name from the node language.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param languageTag
-	 * @param fieldName
-	 */
-	public void handleRemoveField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		validateParameter(uuid, "uuid");
-		validateParameter(languageTag, "languageTag");
-		validateParameter(fieldName, "fieldName");
-
-		db.operateNoTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			// TODO Update SQB
-			return Single.just(new GenericMessageResponse("Not yet implemented"));
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
-	}
-
-	public void handleRemoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		// TODO validation
-		db.operateNoTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			// TODO Update SQB
-			return Single.just(new GenericMessageResponse("Not yet implemented"));
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
-	}
-
-	public void handleUpdateFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		// TODO validation
-		db.operateNoTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			// TODO Update SQB
-			return Single.just(new GenericMessageResponse("Not yet implemented"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
-	}
-
-	public void handleReadFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		// TODO validation
-		db.operateNoTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
-			return Single.just(new GenericMessageResponse("Not yet implemented"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
-	}
-
-	public void handleMoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		// TODO validation
-		db.operateNoTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			// TODO Update SQB
-			return Single.just(new GenericMessageResponse("Not yet implemented"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -303,28 +239,35 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param rc
 	 *            routing context
 	 */
-	public void handleTransformImage(RoutingContext rc, String uuid, String languageTag, String fieldName) {
-		// TODO validation
+	public void handleTransformImage(RoutingContext rc, String uuid, String fieldName) {
+		validateParameter(uuid, "uuid");
+		validateParameter(fieldName, "fieldName");
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
+		if (isEmpty(transformation.getLanguage())) {
+			throw error(BAD_REQUEST, "image_error_language_not_set");
+		}
 
 		db.operateNoTx(() -> {
+			// 1. Load needed elements
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			// TODO Update SQB
-			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+
+			Language language = boot.get().languageRoot().findByLanguageTag(transformation.getLanguage());
 			if (language == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			}
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
-			if (container == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
 
-			Optional<FieldSchema> fieldSchema = container.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
-			if (!fieldSchema.isPresent()) {
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
+			if (container == null) {
+				throw error(NOT_FOUND, "error_language_not_found", language.getLanguageTag());
+			}
+
+			FieldSchema fieldSchema = container.getSchemaContainerVersion().getSchema().getField(fieldName);
+			if (fieldSchema == null) {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
-			if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
+			if (!(fieldSchema instanceof BinaryFieldSchema)) {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
@@ -338,7 +281,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			}
 
 			try {
-				BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
+				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParameters().setWidth(transformation.getWidth())
 						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
 						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
@@ -348,6 +291,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				String fieldUuid = field.getUuid();
 				String fieldSegmentedPath = field.getSegmentedPath();
 
+				// Resize the image and store the result in the filesystem
 				Single<Tuple<String, Integer>> obsHashAndSize = imageManipulator
 						.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
 							return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).map(hash -> {
@@ -355,9 +299,14 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							});
 						});
 
+				// TODO read the image information
+				//obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
+
 				return obsHashAndSize.flatMap(hashAndSize -> {
+
+					// Finally update the binary field with the new information
 					SearchQueueBatch batch = searchQueue.create();
-					String updatedNodeUuid = db.tx(() -> {
+					Node updatedNodeUuid = db.tx(() -> {
 
 						field.setSHA512Sum(hashAndSize.v1());
 						field.setFileSize(hashAndSize.v2());
@@ -368,14 +317,14 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 						// wrong?
 
 						// TODO handle image properties as well
-						// node.setBinaryImageDPI(dpi);
-						// node.setBinaryImageHeight(heigth);
-						// node.setBinaryImageWidth(width);
+						// field.setBinaryImageDPI(dpi);
+						// field.setImageHeight(heigth);
+						// field.setImageWidth(200);
 						batch.store(container, node.getProject().getReleaseRoot().getLatestRelease().getUuid(), DRAFT, false);
-						return node.getUuid();
+						return node;
 					});
-
-					return batch.processAsync().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
+					//					updatedNodeUuid.reload();
+					return batch.processAsync().andThen(updatedNodeUuid.transformToRest(ac, 0));
 				});
 			} catch (GenericRestException e) {
 				throw e;
@@ -385,24 +334,6 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
-
-	// // TODO abstract rc away
-	// public void handleDownload(RoutingContext rc) {
-	// InternalActionContext ac = InternalActionContext.create(rc);
-	// BinaryFieldResponseHandler binaryHandler = new
-	// BinaryFieldResponseHandler(rc, imageManipulator);
-	// db.asyncNoTrx(() -> {
-	// Project project = ac.getProject();
-	// return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node->
-	// {
-	// db.noTrx(()-> {
-	// Node node = rh.result();
-	// binaryHandler.handle(node);
-	// });
-	// });
-	// }).subscribe(binaryField -> {
-	// }, ac::fail);
-	// }
 
 	/**
 	 * Hash the file upload data and move the temporary uploaded file to its final destination.
@@ -517,7 +448,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	protected Completable moveUploadIntoPlace(FileUpload fileUpload, String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		return fileSystem.moveObservable(fileUpload.uploadedFileName(), targetPath).toCompletable().doOnError(error -> {
+		return fileSystem.rxMove(fileUpload.uploadedFileName(), targetPath).toCompletable().doOnError(error -> {
 			log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
 		}).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {

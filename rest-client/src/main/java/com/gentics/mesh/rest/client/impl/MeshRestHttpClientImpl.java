@@ -28,6 +28,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -79,6 +80,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshBinaryResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshWebrootResponseHandler;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -771,17 +773,29 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
 			Buffer fileData, String fileName, String contentType) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(fileData, "fileData must not be null");
 		Objects.requireNonNull(fileName, "fileName must not be null");
+		Objects.requireNonNull(version, "version must not be null");
 		Objects.requireNonNull(contentType, "contentType must not be null");
 
 		// TODO handle escaping of filename
-		String boundary = "dLV9Wyq26L_-JQxk6ferf-RT153LhOO";
+		String boundary = "--------" + UUIDUtil.randomUUID();
 		Buffer multiPartFormData = Buffer.buffer(fileData.length());
+
+		multiPartFormData.appendString("--" + boundary + "\r\n");
+		multiPartFormData.appendString("Content-Disposition: form-data; name=\"version\"\r\n");
+		multiPartFormData.appendString("\r\n");
+		multiPartFormData.appendString(version + "\r\n");
+
+		multiPartFormData.appendString("--" + boundary + "\r\n");
+		multiPartFormData.appendString("Content-Disposition: form-data; name=\"language\"\r\n");
+		multiPartFormData.appendString("\r\n");
+		multiPartFormData.appendString(languageTag + "\r\n");
+
 		multiPartFormData.appendString("--" + boundary + "\r\n");
 		multiPartFormData.appendString("Content-Disposition: form-data; name=\"" + "someName" + "\"; filename=\"" + fileName + "\"\r\n");
 		multiPartFormData.appendString("Content-Type: " + contentType + "\r\n");
@@ -791,8 +805,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 		String bodyContentType = "multipart/form-data; boundary=" + boundary;
 
-		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey,
-				GenericMessageResponse.class, multiPartFormData, bodyContentType);
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/upload/" + fieldKey, NodeResponse.class,
+				multiPartFormData, bodyContentType);
 	}
 
 	@Override
@@ -801,8 +815,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
-		String path = "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey
-				+ getQuery(parameters);
+		String path = "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/download/" + fieldKey + getQuery(parameters);
 		String uri = BASEURI + path;
 
 		MeshBinaryResponseHandler handler = new MeshBinaryResponseHandler(GET, uri);
@@ -814,21 +827,21 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-			ImageManipulationParameters imageManipulationParameter) {
+	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
+			String fieldKey, ImageManipulationParameters imageManipulationParameter) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "language must not be null");
+		Objects.requireNonNull(version, "version must not be null");
 		Objects.requireNonNull(fieldKey, "field key must not be null");
 
 		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest().setWidth(imageManipulationParameter.getWidth())
 				.setHeight(imageManipulationParameter.getHeight()).setCropx(imageManipulationParameter.getStartx())
 				.setCropy(imageManipulationParameter.getStarty()).setCroph(imageManipulationParameter.getCroph())
-				.setCropw(imageManipulationParameter.getCropw());
+				.setCropw(imageManipulationParameter.getCropw()).setLanguage(languageTag).setVersion(new VersionReference().setNumber(version));
 
-		return prepareRequest(POST,
-				"/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey + "/transform",
-				GenericMessageResponse.class, transformRequest);
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/transform/" + fieldKey, NodeResponse.class,
+				transformRequest);
 	}
 
 	@Override

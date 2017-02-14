@@ -64,8 +64,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			String fileName = "somefile.dat";
 
 			// 2. Update the binary data
-			GenericMessageResponse message = call(() -> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName));
-			expectResponseMessage(message, "node_binary_field_updated", "binary");
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";

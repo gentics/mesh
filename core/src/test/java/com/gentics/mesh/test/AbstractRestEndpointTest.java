@@ -69,6 +69,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
+import com.gentics.mesh.util.VersionNumber;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.DeploymentOptions;
@@ -494,15 +495,17 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
-	protected MeshRequest<GenericMessageResponse> uploadRandomData(String uuid, String languageTag, String fieldKey, int binaryLen,
-			String contentType, String fileName) {
+	protected MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
+			String fileName) {
+
+		VersionNumber version = node.getGraphFieldContainer("en").getVersion();
 
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldKey, buffer, fileName, contentType);
+		return client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldKey, buffer, fileName, contentType);
 	}
 
-	protected void uploadImage(Node node, String languageTag, String fieldName) throws IOException {
+	protected NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
 		prepareSchema(node, "image/.*", fieldName);
@@ -510,8 +513,10 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
+		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
 
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer, fileName, contentType));
+		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldName, buffer, fileName,
+				contentType));
 	}
 
 }

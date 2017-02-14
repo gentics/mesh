@@ -604,8 +604,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			requestedLanguageTags = nodeParameters.getLanguageList();
 		}
 
-		// First check whether the NGFC for the requested language,release and
-		// version could be found.
+		// First check whether the NGFC for the requested language,release and version could be found.
 		NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(),
 				versioiningParameters.getVersion());
 		if (fieldContainer == null) {
@@ -806,17 +805,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				break;
 			}
 			NodeReference reference = current.transformToReference(ac);
-//			NodeReference reference = new NodeReference();
-//			reference.setUuid(current.getUuid());
-//			reference.setDisplayName(current.getDisplayName(ac));
-//
-//			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-//				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-//				ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
-//				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-//						getProject().getName(), ac.getNodeParameters().getLanguages());
-//				reference.setPath(url);
-//			}
+			//			NodeReference reference = new NodeReference();
+			//			reference.setUuid(current.getUuid());
+			//			reference.setDisplayName(current.getDisplayName(ac));
+			//
+			//			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+			//				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
+			//				ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
+			//				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
+			//						getProject().getName(), ac.getNodeParameters().getLanguages());
+			//				reference.setPath(url);
+			//			}
 			breadcrumb.add(reference);
 			current = current.getParentNode(releaseUuid);
 		}
@@ -842,8 +841,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return Single.error(new NotModifiedException());
 			} else {
 				NavigationResponse response = new NavigationResponse();
-				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response,
-						ac.getRelease(getProject()).getUuid(), forVersion(ac.getVersioningParameters().getVersion()));
+				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response, ac.getRelease(getProject()).getUuid(),
+						forVersion(ac.getVersioningParameters().getVersion()));
 			}
 		});
 	}
@@ -963,7 +962,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
 			WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
 			ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
-			String url = linkReplacer.resolve(release.getUuid(), type, this, ac.getNodeParameters().getResolveLinks(), ac.getNodeParameters().getLanguages());
+			String url = linkReplacer.resolve(release.getUuid(), type, this, ac.getNodeParameters().getResolveLinks(),
+					ac.getNodeParameters().getLanguages());
 			nodeReference.setPath(url);
 		}
 		return nodeReference;

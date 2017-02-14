@@ -31,6 +31,8 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.core.MultiMap;
+
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
@@ -41,17 +43,17 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	private Resource resource = new Resource();
 
-	private NodeFieldAPIHandler fieldAPIHandler;
+	private BinaryFieldHandler binaryFieldHandler;
 
 	public NodeEndpoint() {
 		super("nodes", null, null);
 	}
 
 	@Inject
-	public NodeEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, NodeCrudHandler crudHandler, NodeFieldAPIHandler fieldAPIHandler) {
+	public NodeEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, NodeCrudHandler crudHandler, BinaryFieldHandler fieldAPIHandler) {
 		super("nodes", boot, routerStorage);
 		this.crudHandler = crudHandler;
-		this.fieldAPIHandler = fieldAPIHandler;
+		this.binaryFieldHandler = fieldAPIHandler;
 	}
 
 	@Override
@@ -75,7 +77,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addChildrenHandler();
 		addTagsHandler();
 		addMoveHandler();
-		addFieldHandlers();
+		addBinaryHandlers();
 		addLanguageHandlers();
 		addNavigationHandlers();
 		addPublishHandlers();
@@ -124,76 +126,28 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		});
 	}
 
-	private void addFieldHandlers() {
+	private void addBinaryHandlers() {
 		Endpoint fieldUpdate = createEndpoint();
-		fieldUpdate.path("/:nodeUuid/languages/:language/fields/:field");
+		fieldUpdate.path("/:nodeUuid/upload/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		fieldUpdate.addUriParameter("language", "Language tag of the content which contains the field.", "en");
-		fieldUpdate.addUriParameter("field", "Name of the field which should be created.", "stringField");
+		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
-		// TODO consumes json and upload
 		fieldUpdate.exampleResponse(OK, miscExamples.getMessageResponse(), "Field was updated");
-		fieldUpdate.description("Update the field with the given name.");
+		fieldUpdate.description("Update the binaryfield with the given name.");
 		fieldUpdate.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
-			String languageTag = rc.request().getParam("language");
-			String fieldName = rc.request().getParam("field");
+			String fieldName = rc.request().getParam("fieldName");
+			MultiMap attributes = rc.request().formAttributes();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			fieldAPIHandler.handleCreateField(ac, uuid, languageTag, fieldName);
+			binaryFieldHandler.handleUpdateBinaryField(ac, uuid, fieldName, attributes);
 		});
 
-		Endpoint fieldGet = createEndpoint();
-		fieldGet.path("/:nodeUuid/languages/:language/fields/:field");
-		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		fieldGet.addUriParameter("language", "Language tag.", "en");
-		fieldGet.addUriParameter("field", "Name of the field", "content");
-		fieldGet.method(GET);
-		fieldGet.description("Load the field with the given name.");
-		fieldGet.handler(rc -> {
-			String uuid = rc.request().getParam("nodeUuid");
-			String languageTag = rc.request().getParam("language");
-			String fieldName = rc.request().getParam("field");
-			fieldAPIHandler.handleReadField(rc, uuid, languageTag, fieldName);
-		});
-
-		Endpoint fieldCreate = createEndpoint();
-		fieldCreate.path("/:nodeUuid/languages/:language/fields/:field");
-		fieldCreate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		fieldCreate.addUriParameter("language", "Language tag.", "en");
-		fieldCreate.addUriParameter("field", "Name of the field", "binary");
-		fieldCreate.description("Create a new field with the given name.");
-		fieldCreate.method(POST).produces(APPLICATION_JSON).handler(rc -> {
-			String uuid = rc.request().getParam("nodeUuid");
-			String languageTag = rc.request().getParam("language");
-			String fieldName = rc.request().getParam("field");
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			fieldAPIHandler.handleUpdateField(ac, uuid, languageTag, fieldName);
-		});
-
-		Endpoint fieldDelete = createEndpoint();
-		fieldDelete.path("/:nodeUuid/languages/:language/fields/:field");
-		fieldDelete.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		fieldDelete.addUriParameter("language", "Language tag.", "en");
-		fieldDelete.addUriParameter("field", "Name of the field", "content");
-		fieldDelete.method(DELETE);
-		fieldDelete.produces(APPLICATION_JSON);
-		fieldDelete.description("Delete the field with the given name");
-		fieldDelete.exampleResponse(NO_CONTENT, "Field with the given name was deleted.");
-		fieldDelete.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			String uuid = ac.getParameter("nodeUuid");
-			String languageTag = ac.getParameter("language");
-			String fieldName = ac.getParameter("field");
-			fieldAPIHandler.handleRemoveField(ac, uuid, languageTag, fieldName);
-		});
-
-		// Image Transformation
 		Endpoint imageTransform = createEndpoint();
-		imageTransform.path("/:nodeUuid/languages/:language/fields/:field/transform");
+		imageTransform.path("/:nodeUuid/transform/:fieldName");
 		imageTransform.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		imageTransform.addUriParameter("language", "Language tag.", "en");
-		imageTransform.addUriParameter("field", "Name of the field", "image");
+		imageTransform.addUriParameter("fieldName", "Name of the field", "image");
 		imageTransform.method(POST);
 		imageTransform.produces(APPLICATION_JSON);
 		imageTransform.consumes(APPLICATION_JSON);
@@ -202,79 +156,24 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		imageTransform.exampleResponse(OK, miscExamples.getMessageResponse(), "Transformation was executed.");
 		imageTransform.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
-			String languageTag = rc.request().getParam("language");
-			String fieldName = rc.request().getParam("field");
-			fieldAPIHandler.handleTransformImage(rc, uuid, languageTag, fieldName);
+			String fieldName = rc.request().getParam("fieldName");
+			binaryFieldHandler.handleTransformImage(rc, uuid, fieldName);
 		});
 
-		// List methods
-		Endpoint listItemDelete = createEndpoint();
-		listItemDelete.path("/:nodeUuid/languages/:language/fields/:field/:itemIndex");
-		listItemDelete.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		listItemDelete.addUriParameter("language", "Language tag.", "en");
-		listItemDelete.addUriParameter("field", "Name of the field", "stringList");
-		listItemDelete.addUriParameter("itemIndex", "Index which identifies the item which should be deleted", "5");
-		listItemDelete.method(DELETE);
-		listItemDelete.produces(APPLICATION_JSON);
-		listItemDelete.exampleResponse(OK, miscExamples.getMessageResponse(), "Item was deleted.");
-		listItemDelete.description("Delete the field list item at the given index position (Not yet implemented)");
-		listItemDelete.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		Endpoint fieldGet = createEndpoint();
+		fieldGet.path("/:nodeUuid/download/:fieldName");
+		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		fieldGet.addUriParameter("fieldName", "Name of the binary field", "image");
+		fieldGet.method(GET);
+		fieldGet.description("Download the binary field with the given name.");
+		fieldGet.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
-			String languageTag = rc.request().getParam("language");
-			String fieldName = rc.request().getParam("field");
-			fieldAPIHandler.handleRemoveFieldItem(ac, uuid, languageTag, fieldName);
+			String fieldName = rc.request().getParam("fieldName");
+			//InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			//ac.getNodeParameters().getLanguages()
+			binaryFieldHandler.handleReadBinaryField(rc, uuid, fieldName);
 		});
 
-		Endpoint listItemGet = createEndpoint();
-		listItemGet.path("/:nodeUuid/languages/:language/fields/:field/:itemIndex");
-		listItemGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		listItemGet.addUriParameter("language", "Language tag.", "en");
-		listItemGet.addUriParameter("field", "Name of the field", "stringList");
-		listItemGet.addUriParameter("itemIndex", "Index which identifies the item which should be loaded.", "5");
-		listItemGet.method(GET);
-		listItemGet.exampleResponse(OK, miscExamples.getMessageResponse(), "Loaded item.");
-		listItemGet.description("Load the field list item at the given index position. (Not yet implemented)");
-		listItemGet.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			String uuid = rc.request().getParam("nodeUuid");
-			String languageTag = rc.request().getParam("language");
-			String fieldName = rc.request().getParam("field");
-			fieldAPIHandler.handleReadFieldItem(ac, uuid, languageTag, fieldName);
-		});
-
-		Endpoint updateFieldItem = createEndpoint();
-		updateFieldItem.path("/:nodeUuid/languages/:language/fields/:field/:itemIndex");
-		updateFieldItem.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		updateFieldItem.addUriParameter("language", "Language tag.", "en");
-		updateFieldItem.addUriParameter("field", "Name of the field", "stringList");
-		updateFieldItem.addUriParameter("itemIndex", "Index which identifies the item which should be created.", "5");
-		updateFieldItem.method(POST);
-		updateFieldItem.description("Update the field list item at the given index position. (Not yet implemented)");
-		updateFieldItem.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			String uuid = rc.request().getParam("nodeUuid");
-			String languageTag = rc.request().getParam("language");
-			String fieldName = rc.request().getParam("field");
-			fieldAPIHandler.handleUpdateFieldItem(ac, uuid, languageTag, fieldName);
-		});
-
-		Endpoint moveFieldItem = createEndpoint();
-		moveFieldItem.path("/:nodeUuid/languages/:language/fields/:field/:itemIndex/move/:newItemIndex");
-		moveFieldItem.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		moveFieldItem.addUriParameter("language", "Language tag.", "en");
-		moveFieldItem.addUriParameter("field", "Name of the field", "stringList");
-		moveFieldItem.addUriParameter("itemIndex", "Index which identifies the item which should be moved.", "5");
-		moveFieldItem.addUriParameter("newItemIndex", "Index which identifies the item which should be moved to.", "6");
-		moveFieldItem.method(POST);
-		moveFieldItem.description("Move the field list item on a new index position. (Not yet implemented)");
-		moveFieldItem.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			String uuid = rc.request().getParam("nodeUuid");
-			String languageTag = rc.request().getParam("language");
-			String fieldName = rc.request().getParam("field");
-			fieldAPIHandler.handleMoveFieldItem(ac, uuid, languageTag, fieldName);
-		});
 	}
 
 	private void addMoveHandler() {

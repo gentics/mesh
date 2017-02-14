@@ -74,8 +74,8 @@ import com.gentics.mesh.core.verticle.admin.AdminHandler;
 import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.verticle.group.GroupCrudHandler;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaCrudHandler;
+import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.core.verticle.node.NodeCrudHandler;
-import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.project.ProjectCrudHandler;
 import com.gentics.mesh.core.verticle.release.ReleaseCrudHandler;
 import com.gentics.mesh.core.verticle.role.RoleCrudHandler;
@@ -94,8 +94,10 @@ import com.gentics.mesh.rest.client.impl.MeshLocalRequestImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.WebSocket;
 import io.vertx.ext.web.FileUpload;
@@ -138,7 +140,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public NodeCrudHandler nodeCrudHandler;
 
 	@Inject
-	public NodeFieldAPIHandler fieldAPIHandler;
+	public BinaryFieldHandler fieldAPIHandler;
 
 	@Inject
 	public WebRootHandler webrootHandler;
@@ -862,12 +864,16 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
 			Buffer fileData, String fileName, String contentType) {
 
 		Vertx vertx = Mesh.vertx();
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
 		ac.setProject(projectName);
+
+		MultiMap attributes = new CaseInsensitiveHeaders();
+		attributes.add("language", languageTag);
+		attributes.add("version", version);
 
 		Runnable task = () -> {
 
@@ -913,7 +919,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 				}
 			});
 
-			fieldAPIHandler.handleUpdateField(ac, nodeUuid, languageTag, fieldKey);
+			fieldAPIHandler.handleUpdateBinaryField(ac, nodeUuid, fieldKey, attributes);
 		};
 		new Thread(task).start();
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -928,9 +934,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
 			ImageManipulationParameters imageManipulationParameter) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}

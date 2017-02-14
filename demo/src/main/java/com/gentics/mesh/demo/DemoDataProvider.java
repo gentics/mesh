@@ -346,7 +346,7 @@ public class DemoDataProvider {
 				byte[] bytes = IOUtils.toByteArray(ins);
 				Buffer fileData = Buffer.buffer(bytes);
 
-				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image", fileData, filenName, contentType));
+				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image", fileData, filenName, contentType));
 
 			}
 
