@@ -453,7 +453,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
 			// 4. Latch for completion
-			latch.await(40, TimeUnit.SECONDS);
+			latch.await(120, TimeUnit.SECONDS);
 
 			try (NoTx noTx = db.noTx()) {
 				container.reload();
