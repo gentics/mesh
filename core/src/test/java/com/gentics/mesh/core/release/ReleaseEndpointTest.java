@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -78,6 +79,7 @@ public class ReleaseEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	@Override
+	@Ignore
 	public void testCreateMultithreaded() throws Exception {
 		String releaseName = "Release V";
 		try (NoTx noTx = db.noTx()) {
