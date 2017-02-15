@@ -9,17 +9,11 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.raml.model.Resource;
-import org.raml.model.parameter.FormParameter;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -140,7 +134,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
 		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
-		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeListResponse(), "Field was updated.");
+		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldUpdate.description("Update the binaryfield with the given name.");
 		fieldUpdate.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
@@ -159,7 +153,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		imageTransform.consumes(APPLICATION_JSON);
 		imageTransform.description("Transform the image with the given field name and overwrite the stored image with the transformation result.");
 		imageTransform.exampleRequest(nodeExamples.getBinaryFieldTransformRequest());
-		imageTransform.exampleResponse(OK, nodeExamples.getNodeListResponse(), "Transformation was executed and new node was returned.");
+		imageTransform.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "Transformation was executed and updated node was returned.");
 		imageTransform.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
@@ -175,8 +169,6 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldGet.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			//InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			//ac.getNodeParameters().getLanguages()
 			binaryFieldHandler.handleReadBinaryField(rc, uuid, fieldName);
 		});
 
