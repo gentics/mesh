@@ -47,7 +47,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		addUpdateHandler();
 		secureAll();
 		addCreateHandler();

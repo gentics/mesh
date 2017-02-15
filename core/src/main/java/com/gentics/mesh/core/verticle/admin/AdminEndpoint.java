@@ -38,7 +38,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		addStatusHandler();
 		addMigrationStatusHandler();
 

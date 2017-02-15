@@ -1,6 +1,6 @@
 package com.gentics.mesh.core;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -24,4 +24,9 @@ public class RestInfoEndpointTest extends AbstractRestEndpointTest {
 		assertEquals("1.0", info.getSearchVersion());
 	}
 
+	@Test
+	public void testLoadRAML() {
+		String raml = call(() -> client().getRAML());
+		assertNotNull(raml);
+	}
 }

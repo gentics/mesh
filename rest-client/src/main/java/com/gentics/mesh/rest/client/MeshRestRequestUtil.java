@@ -44,7 +44,7 @@ public final class MeshRestRequestUtil {
 	 * @return
 	 */
 	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
-			HttpClient client, MeshRestClientAuthenticationProvider authentication) {
+			HttpClient client, MeshRestClientAuthenticationProvider authentication, String accepts) {
 		String uri = BASEURI + path;
 		MeshResponseHandler<T> handler = new MeshJsonResponseHandler<T>(classOfT, method, uri);
 
@@ -57,7 +57,7 @@ public final class MeshRestRequestUtil {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
 
-		return new MeshHttpRequestImpl<T>(request, handler, bodyData, contentType, authentication);
+		return new MeshHttpRequestImpl<T>(request, handler, bodyData, contentType, authentication, accepts);
 	}
 
 	/**
@@ -70,7 +70,7 @@ public final class MeshRestRequestUtil {
 	 * @param classOfT
 	 *            Expected response object class
 	 * @param restModel
-	 *            Model to be converted to json and send to the path
+	 *            Model to be converted to JSON and send to the path
 	 * @param client
 	 *            Http client to be used
 	 * @param authentication
@@ -85,7 +85,7 @@ public final class MeshRestRequestUtil {
 			log.debug(json);
 		}
 		buffer.appendString(json);
-		return prepareRequest(method, path, classOfT, buffer, "application/json", client, authentication);
+		return prepareRequest(method, path, classOfT, buffer, "application/json", client, authentication, "application/json");
 	}
 
 	/**
@@ -116,7 +116,7 @@ public final class MeshRestRequestUtil {
 			buffer.appendString(jsonBodyData);
 		}
 
-		return prepareRequest(method, path, classOfT, buffer, "application/json", client, authentication);
+		return prepareRequest(method, path, classOfT, buffer, "application/json", client, authentication, "application/json");
 	}
 
 	/**
@@ -136,6 +136,6 @@ public final class MeshRestRequestUtil {
 	 */
 	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, HttpClient client,
 			MeshRestClientAuthenticationProvider authentication) {
-		return prepareRequest(method, path, classOfT, Buffer.buffer(), null, client, authentication);
+		return prepareRequest(method, path, classOfT, Buffer.buffer(), null, client, authentication, "application/json");
 	}
 }

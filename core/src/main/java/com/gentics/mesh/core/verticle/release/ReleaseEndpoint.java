@@ -44,7 +44,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		addCreateHandler();
 		addReadHandler();

@@ -934,8 +934,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
-			ImageManipulationParameters imageManipulationParameter) {
+	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
+			String fieldKey, ImageManipulationParameters imageManipulationParameter) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -1143,6 +1143,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<UserTokenResponse> getUserToken(String userUuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<String> getRAML() {
 		// TODO Auto-generated method stub
 		return null;
 	}

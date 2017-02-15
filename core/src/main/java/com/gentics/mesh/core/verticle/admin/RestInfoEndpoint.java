@@ -13,7 +13,9 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.ext.web.Router;
@@ -38,9 +40,24 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
-		// Endpoint endpoint = createEndpoint();
-		routerStorage.getAPIRouter().route("/").method(GET).handler(rc -> {
+	public void registerEndPoints() {
+
+		Endpoint endpoint = new Endpoint(routerStorage.getAPIRouter());
+		endpoint.path("/raml");
+		endpoint.method(GET);
+		endpoint.description("Endpoint which provides a RAML document for all registed endpoints.");
+		endpoint.displayName("RAML specification");
+		endpoint.exampleResponse(OK, "123");
+		endpoint.produces("text/vnd.yaml");
+		endpoint.handler(rc -> {
+			RAMLGenerator generator = new RAMLGenerator(null);
+			String raml = generator.generate();
+			rc.response().end(raml);
+		});
+		endpoints.add(endpoint);
+
+		
+		routerStorage.getAPIRouter().route("/versions").method(GET).handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshServerInfoModel info = new MeshServerInfoModel();
 			info.setDatabaseVendor(db.getVendorName());

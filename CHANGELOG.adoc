@@ -2,6 +2,16 @@
 
 == 0.8.0 (Pending)
 
+* __[Enhancement]__ Binary Endpoint Overhaul
+
+The field API endpoint `/api/v1/:projectName/nodes/:nodeUuid/languages/:language/fields/:field` was removed and replaced by the binary `/api/v1/:projectName/nodes/:nodeUuid/binary` endpoint.
+The binary endpoints are now also versioning aware and handle conflict detection. It is thus required to add the `language` and `version` form data parameters to the upload request. 
+
+* __[Enhancement]__ Transform Endpoint Overhaul
+
+The endpoint `/api/v1/:projectName/nodes/:nodeUuid/languages/:language/fields/:field/transform` was renamed to `/api/v1/:projectName/nodes/:nodeUuid/binaryTransform`.
+The transform endpoint will now return the updated node.  
+
 * __[Enhancement]__ The no longer needed schemaReference property was removed from node update requests.
 
 * __[Enhancement]__ The rootNodeUuid property within node project response was changed. 

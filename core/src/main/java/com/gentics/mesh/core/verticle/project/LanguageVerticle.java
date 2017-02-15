@@ -28,7 +28,7 @@ public class LanguageVerticle extends AbstractProjectEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 
 		// TODO Add method that allows assigning languages from and to the project

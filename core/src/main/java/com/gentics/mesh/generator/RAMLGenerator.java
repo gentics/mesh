@@ -1,5 +1,7 @@
 package com.gentics.mesh.generator;
 
+import static org.mockito.Mockito.mock;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -55,21 +57,20 @@ public class RAMLGenerator {
 
 	private Raml raml = new Raml();
 
-	private static File outputFolder = new File("target", "api");
+	private File outputFolder;
 
-	public static void main(String[] args) throws Exception {
-		if (outputFolder.exists()) {
-			FileUtils.deleteDirectory(outputFolder);
-		}
-		new RAMLGenerator().run();
+	public RAMLGenerator(File outputFolder) {
+		this.outputFolder = outputFolder;
 	}
 
 	/**
 	 * Run the RAML generation.
 	 * 
+	 * @param writeFiles
 	 * @throws Exception
+	 * @return Generated RAML
 	 */
-	public void run() throws Exception {
+	public String generate() {
 		log.info("Starting RAML generation...");
 		raml.setTitle("Gentics Mesh REST API");
 		raml.setVersion("0.7");
@@ -78,13 +79,17 @@ public class RAMLGenerator {
 		raml.getProtocols().add(Protocol.HTTPS);
 		raml.setMediaType("application/json");
 
-		addCoreVerticles(raml.getResources());
-		addProjectVerticles(raml.getResources());
+		try {
+			addCoreVerticles(raml.getResources());
+			addProjectVerticles(raml.getResources());
+		} catch (IOException e) {
+			throw new RuntimeException("Could not add all verticles to raml generator", e);
+		}
 
 		RamlEmitter emitter = new RamlEmitter();
 		String dumpFromRaml = emitter.dump(raml);
-		writeFile("api.raml", dumpFromRaml);
 		log.info("RAML generation completed.");
+		return dumpFromRaml;
 	}
 
 	/**
@@ -170,10 +175,12 @@ public class RAMLGenerator {
 	 * @param content
 	 * @throws IOException
 	 */
-	private void writeFile(String filename, String content) throws IOException {
-		File outputFile = new File(outputFolder, filename);
-		FileUtils.writeStringToFile(outputFile, content);
-		log.info("File saved to {" + outputFile.getPath() + "}");
+	public void writeFile(String filename, String content) throws IOException {
+		if (outputFolder != null) {
+			File outputFile = new File(outputFolder, filename);
+			FileUtils.writeStringToFile(outputFile, content);
+			log.info("File saved to {" + outputFile.getPath() + "}");
+		}
 	}
 
 	/**
@@ -186,8 +193,9 @@ public class RAMLGenerator {
 		return ActionType.valueOf(method.name());
 	}
 
-	private void initVerticle(AbstractEndpoint verticle) throws Exception {
-		Mockito.when(verticle.getRouter()).thenReturn(Router.router(Vertx.vertx()));
+	private void initVerticle(AbstractEndpoint verticle) {
+		Vertx vertx = mock(Vertx.class);
+		Mockito.when(verticle.getRouter()).thenReturn(Router.router(vertx));
 		verticle.registerEndPoints();
 	}
 
@@ -195,9 +203,10 @@ public class RAMLGenerator {
 	 * Add all project verticles to the list resources.
 	 * 
 	 * @param resources
+	 * @throws IOException
 	 * @throws Exception
 	 */
-	private void addProjectVerticles(Map<String, Resource> resources) throws Exception {
+	private void addProjectVerticles(Map<String, Resource> resources) throws IOException {
 		NodeEndpoint nodeVerticle = Mockito.spy(new NodeEndpoint());
 		initVerticle(nodeVerticle);
 		String projectBasePath = "/{project}";
@@ -237,9 +246,10 @@ public class RAMLGenerator {
 	 * Add all core verticles to the map of RAML resources.
 	 * 
 	 * @param resources
+	 * @throws IOException
 	 * @throws Exception
 	 */
-	private void addCoreVerticles(Map<String, Resource> resources) throws Exception {
+	private void addCoreVerticles(Map<String, Resource> resources) throws IOException {
 		String coreBasePath = "";
 		UserEndpoint userVerticle = Mockito.spy(new UserEndpoint());
 		initVerticle(userVerticle);

@@ -44,7 +44,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		addReadHandlers();
 		addAssignHandler();

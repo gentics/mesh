@@ -28,7 +28,7 @@ import io.vertx.ext.web.Router;
  */
 public abstract class AbstractEndpoint {
 
-	private List<Endpoint> endpoints = new ArrayList<>();
+	protected List<Endpoint> endpoints = new ArrayList<>();
 
 	protected NodeExamples nodeExamples = new NodeExamples();
 	protected TagExamples tagExamples = new TagExamples();
@@ -75,10 +75,8 @@ public abstract class AbstractEndpoint {
 
 	/**
 	 * Register all endpoints to the local router.
-	 * 
-	 * @throws Exception
 	 */
-	public abstract void registerEndPoints() throws Exception;
+	public abstract void registerEndPoints();
 
 	/**
 	 * Description of the endpoints in a broader scope.

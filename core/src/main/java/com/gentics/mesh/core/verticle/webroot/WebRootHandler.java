@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;

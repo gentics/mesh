@@ -43,7 +43,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		addCreateHandler();
 		addReadHandler();

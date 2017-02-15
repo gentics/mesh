@@ -77,6 +77,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshBinaryResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshWebrootResponseHandler;
@@ -635,7 +636,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			request.headers().add("Accept", "*/*");
 		});
 
-		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication);
+		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
 
 	}
 
@@ -774,7 +775,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
-			Buffer fileData, String fileName, String contentType, ParameterProvider...parameters) {
+			Buffer fileData, String fileName, String contentType, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(fileData, "fileData must not be null");
@@ -805,8 +806,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 		String bodyContentType = "multipart/form-data; boundary=" + boundary;
 
-		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters), NodeResponse.class,
-				multiPartFormData, bodyContentType);
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters),
+				NodeResponse.class, multiPartFormData, bodyContentType);
 	}
 
 	@Override
@@ -823,7 +824,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "application/json");
 		});
-		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication);
+		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
 	}
 
 	@Override
@@ -946,6 +947,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	@Override
 	public MeshRequest<MeshServerInfoModel> getApiInfo() {
 		return prepareRequest(GET, "/", MeshServerInfoModel.class);
+	}
+
+	@Override
+	public MeshRequest<String> getRAML() {
+		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, client, authentication, "text/vnd.yaml");
 	}
 
 	@Override

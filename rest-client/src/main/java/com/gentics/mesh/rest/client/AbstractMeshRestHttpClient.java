@@ -93,7 +93,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType) {
-		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, bodyData, contentType, client, authentication);
+		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, bodyData, contentType, client, authentication, "application/json");
 	}
 
 	/**
