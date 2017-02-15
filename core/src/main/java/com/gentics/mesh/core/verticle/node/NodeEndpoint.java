@@ -9,11 +9,17 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.raml.model.Resource;
+import org.raml.model.parameter.FormParameter;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -133,7 +139,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
-		fieldUpdate.exampleResponse(OK, miscExamples.getMessageResponse(), "Field was updated");
+		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeListResponse(), "Field was updated.");
 		fieldUpdate.description("Update the binaryfield with the given name.");
 		fieldUpdate.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
@@ -146,14 +153,13 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		Endpoint imageTransform = createEndpoint();
 		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");
 		imageTransform.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
-		imageTransform.addUriParameter("language", "Language tag.", "en");
 		imageTransform.addUriParameter("fieldName", "Name of the field", "image");
 		imageTransform.method(POST);
 		imageTransform.produces(APPLICATION_JSON);
 		imageTransform.consumes(APPLICATION_JSON);
 		imageTransform.description("Transform the image with the given field name and overwrite the stored image with the transformation result.");
 		imageTransform.exampleRequest(nodeExamples.getBinaryFieldTransformRequest());
-		imageTransform.exampleResponse(OK, miscExamples.getMessageResponse(), "Transformation was executed.");
+		imageTransform.exampleResponse(OK, nodeExamples.getNodeListResponse(), "Transformation was executed and new node was returned.");
 		imageTransform.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");

@@ -797,7 +797,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		multiPartFormData.appendString(languageTag + "\r\n");
 
 		multiPartFormData.appendString("--" + boundary + "\r\n");
-		multiPartFormData.appendString("Content-Disposition: form-data; name=\"" + "someName" + "\"; filename=\"" + fileName + "\"\r\n");
+		multiPartFormData.appendString("Content-Disposition: form-data; name=\"" + UUIDUtil.randomUUID() + "\"; filename=\"" + fileName + "\"\r\n");
 		multiPartFormData.appendString("Content-Type: " + contentType + "\r\n");
 		multiPartFormData.appendString("Content-Transfer-Encoding: binary\r\n" + "\r\n");
 		multiPartFormData.appendBuffer(fileData);

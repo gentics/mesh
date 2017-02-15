@@ -13,11 +13,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
 import org.raml.model.Response;
+import org.raml.model.parameter.FormParameter;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 
@@ -338,26 +341,64 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	}
 
 	/**
-	 * Set the endpoint example request.
+	 * Set the endpoint request example via a plain text body.
+	 * 
+	 * @param bodyText
+	 * @return Fluent API
+	 */
+	public Endpoint exampleRequest(String bodyText) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		mimeType.setExample(bodyText);
+		bodyMap.put("text/plain", mimeType);
+		this.exampleRequestMap = bodyMap;
+		return this;
+	}
+
+	/**
+	 * Set the endpoint request example via a form parameter list.
+	 * 
+	 * @param parameters
+	 * @return Fluent API
+	 */
+	public Endpoint exampleRequest(Map<String, List<FormParameter>> parameters) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		mimeType.setFormParameters(parameters);
+		bodyMap.put("multipart/form-data", mimeType);
+		this.exampleRequestMap = bodyMap;
+		return this;
+	}
+
+	/**
+	 * Set the endpoint example request via a JSON example model. The json schema will automatically be generated.
 	 * 
 	 * @param model
 	 * @return Fluent API
 	 */
-	public Endpoint exampleRequest(Object model) {
-
+	public Endpoint exampleRequest(RestModel model) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
+		String json = JsonUtil.toJson(model);
+		mimeType.setExample(json);
+		mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
+		bodyMap.put("application/json", mimeType);
+		this.exampleRequestMap = bodyMap;
+		return this;
+	}
 
-		if (model instanceof String) {
-			mimeType.setExample(model.toString());
-			bodyMap.put("text/plain", mimeType);
-		} else {
-			String json = JsonUtil.toJson(model);
-			mimeType.setExample(json);
-			mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
-			bodyMap.put("application/json", mimeType);
-		}
-
+	/**
+	 * Set the endpoint json example request via the provided json object. The JSON schema will not be generated.
+	 * 
+	 * @param jsonObject
+	 * @return Fluent API
+	 */
+	public Endpoint exampleRequest(JSONObject jsonObject) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		String json = jsonObject.toString();
+		mimeType.setExample(json);
+		bodyMap.put("application/json", mimeType);
 		this.exampleRequestMap = bodyMap;
 		return this;
 	}
