@@ -143,9 +143,11 @@ node('dockerRoot') {
 			}
 			sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 				sh "${mvnHome}/bin/mvn -B -DskipTests clean deploy"
-				def gitCommit = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
-				sh "git push origin " + gitCommit
-				sh "git push origin ${v}"
+				if (Boolean.valueOf(runReleaseBuild)) {
+					def gitCommit = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
+					sh "git push origin " + gitCommit
+					sh "git push origin ${v}"
+				}
 			}
 		} else {
 			echo "Deploy/Push skipped.."
